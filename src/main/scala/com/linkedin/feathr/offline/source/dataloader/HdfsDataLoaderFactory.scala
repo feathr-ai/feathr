@@ -1,0 +1,22 @@
+package com.linkedin.feathr.offline.source.dataloader
+
+import org.apache.spark.sql.SparkSession
+
+/**
+ * A data loader factory for production HDFS environment. In this case, it will always create a [[SparkDataLoader]].
+ *
+ * @param ss the spark session.
+ */
+private[offline] class HdfsDataLoaderFactory(ss: SparkSession) extends  DataLoaderFactory {
+
+  /**
+   * create a data loader based on the file type.
+   *
+   * @param path the input file path
+   * @return a [[DataLoader]]
+   */
+  override def create(path: String): DataLoader = {
+    log.info(s"Creating spark data loader for path: ${path}")
+    new SparkDataLoader(ss, path)
+  }
+}
