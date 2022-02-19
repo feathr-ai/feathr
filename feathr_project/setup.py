@@ -7,8 +7,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'Click',
-        "azure-storage-file-datalake",
-        "azure-synapse-spark",
+        "azure-storage-file-datalake>=12.5.0",
+        "azure-synapse-spark>=0.7.0",
         "azure-identity",
         "py4j",
         "loguru",
