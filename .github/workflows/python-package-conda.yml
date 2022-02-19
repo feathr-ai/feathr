@@ -34,6 +34,6 @@ jobs:
         AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
       run: |
         conda install pytest
-        python -m pip install ./feathr_project/
+        pip install ./feathr_project/
         cd feathr_project
         pytest
