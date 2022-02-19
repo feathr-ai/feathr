@@ -1,3 +1,6 @@
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Feathr Runtime](https://github.com/linkedin/feathr/actions/workflows/scala.yml/badge.svg)](https://github.com/linkedin/feathr/actions/workflows/scala.yml)
+
+
 Feathr Python Project Developer Guide
 =============================
 
