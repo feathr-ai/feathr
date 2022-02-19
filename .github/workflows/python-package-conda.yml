@@ -26,8 +26,14 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
+      env:
+        REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
+        AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
+        AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
+        AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
       run: |
         conda install pytest
         python -m pip install ./feathr_project/
         cd feathr_project
+        
         pytest
