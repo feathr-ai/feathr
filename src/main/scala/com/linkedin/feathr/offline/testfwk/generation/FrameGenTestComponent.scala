@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.testfwk.generation
 
 import com.linkedin.feathr.common.TaggedFeatureName
 import com.linkedin.feathr.offline.client.FeathrClient
+import com.linkedin.feathr.offline.config.FeathrConfigLoader
 import com.linkedin.feathr.offline.generation.FeatureGenKeyTagAnalyzer
 import com.linkedin.feathr.offline.job.{FeatureGenConfigOverrider, FeatureGenJobContext, FeatureGenSpec, LocalFeatureGenJob}
 import com.linkedin.feathr.offline.source.DataSource
@@ -12,8 +13,9 @@ import org.apache.log4j.Logger
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
-import java.nio.file.Paths
 import java.util.Optional
+import java.nio.file.Paths
+import java.nio.file.Files
 import scala.collection.JavaConverters._
 
 /**
@@ -40,10 +42,43 @@ class FeathrGenTestComponent(resourceLocation: Map[String, List[String]], extraP
   }
 
   /**
-   * based on resourceLocation, discover Feathr data configs, e.g. Feature configs, join config, observation path, etc.
-   * @return discovered config
+   * Validate the feature config and some basic information.
+   * @return Tuple of: true(validation passed) or false(validation failed) to error message.
    */
-  private def discoverDataConfigurations(): FeatureGenDataConfiguration = {
+  def validate(featureName: String, mockDataDir: String): (Boolean, String) = {
+    val overriddenFeatureDefConfig = getOverriddenFeatureDefConfig()
+
+    val feathrConfigLoader = FeathrConfigLoader();
+    val feathrConfig = feathrConfigLoader.load(overriddenFeatureDefConfig.get)
+
+    val allFeatures =  feathrConfig.anchoredFeatures.keySet union feathrConfig.derivedFeatures.keySet
+    if (!allFeatures.contains(featureName)) {
+      val localFeatureDefConfigPaths = resourceLocation.get(FeathrGenTestComponent.LocalConfPaths)
+      val errorMsg = f"${Console.RED}Error: feature $featureName is not defined in your config: ${localFeatureDefConfigPaths.get.mkString(",")}${Console.RESET}"
+      println(errorMsg)
+      return (false, errorMsg)
+    }
+
+    if (feathrConfig.anchoredFeatures.contains(featureName)) {
+      val sourceInConfig = feathrConfig.anchoredFeatures(featureName).source
+
+      // get the mock dir from the config dir
+      val localTestDir = Paths.get(mockDataDir, sourceInConfig.path.replace("abfss://", ""))
+
+      val exist = Files.exists(localTestDir)
+      println(f"${Console.GREEN}Your source is specified as: {$sourceInConfig}${Console.RESET}")
+      if (exist) {
+        println(f"${Console.GREEN}Local mock source file exist: {$localTestDir}${Console.RESET}")
+      } else {
+        val errorMsg = f"${Console.RED}Error: Local mock source file doesn't exist: $localTestDir${Console.RESET}"
+        println(errorMsg)
+        return (false, errorMsg)
+      }
+    }
+    (true, "")
+  }
+
+  private def getOverriddenFeatureDefConfig(): Option[String] = {
     val defaultParams = Array("--work-dir", "featureGen/localFeatureGenerate/")
     val jobContext = FeatureGenJobContext.parse(defaultParams ++ extraParams)
     // find local feature config
@@ -52,6 +87,17 @@ class FeathrGenTestComponent(resourceLocation: Map[String, List[String]], extraP
     val featureMPDefConfigStr = TestFwkUtils.getFeathrConfFromFeatureRepo()
     val featureDefConfigs = (localFeatureDefConfig ++ featureMPDefConfigStr).reduceOption(_ + "\n" + _)
     val (overriddenFeatureDefConfig, _) = FeatureGenConfigOverrider.overrideFeatureDefs(featureDefConfigs, None, jobContext)
+    overriddenFeatureDefConfig
+  }
+
+  /**
+   * based on resourceLocation, discover Feathr data configs, e.g. Feature configs, join config, observation path, etc.
+   * @return discovered config
+   */
+  private def discoverDataConfigurations(): FeatureGenDataConfiguration = {
+    val defaultParams = Array("--work-dir", "featureGen/localFeatureGenerate/")
+    val jobContext = FeatureGenJobContext.parse(defaultParams ++ extraParams)
+    val overriddenFeatureDefConfig = getOverriddenFeatureDefConfig()
     val feathrClient = FeathrClient.builder(ss).addLocalOverrideDef(overriddenFeatureDefConfig).build()
     // find generation config
     val genConfigAsString = if (resourceLocation.contains(FeathrGenTestComponent.GenerationConfigPath)) {

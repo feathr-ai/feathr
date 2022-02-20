@@ -5,6 +5,7 @@ import com.linkedin.feathr.offline.anchored.anchorExtractor.TimeWindowConfigurab
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.job.TransformedResult
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
+import com.linkedin.feathr.offline.testfwk.TestFwkUtils
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.expr
@@ -50,6 +51,9 @@ private[offline] object WindowAggregationEvaluator {
       val intervalOpt = inputDateInterval.orElse(defaultTimeParams.map(OfflineDateTimeUtils.createIntervalFromFeatureGenDateParam))
       transformer.initParams(timestampCol, keyAlias)
       if (intervalOpt.isDefined) {
+        if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
+          println(f"${Console.GREEN}Defined window is from {${intervalOpt.get.getStart}} to ${intervalOpt.get.getEnd}${Console.RESET}")
+        }
         val interval = intervalOpt.get
         val epocStart = interval.getStart.toInstant.getEpochSecond
         val epocEnd = interval.getEnd.toInstant.getEpochSecond
@@ -66,6 +70,15 @@ private[offline] object WindowAggregationEvaluator {
     // Apply transformation and get transformed column
     val transformedColumns = transformer.transformAsColumns(filteredDF)
     val transformedDF = transformedColumns.foldLeft(filteredDF)((baseDF, columnWithName) => baseDF.withColumn(columnWithName._1, columnWithName._2))
+
+    if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
+      println(f"${Console.GREEN}Showing the dataset in the window: ${Console.RESET}")
+      if (transformedDF.isEmpty) {
+        println(f"${Console.RED}There doesnt seem to have any data in the window you defined. Please check your window configurations.${Console.RESET}")
+      }
+      transformedDF.show(10)
+    }
+
     TransformedResult(
       requestedFeatureNameAndPrefix,
       transformedDF,

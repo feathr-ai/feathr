@@ -24,6 +24,11 @@ import static org.testng.Assert.*;
  * Unit tests for {@link MvelContextUDFs}
  */
 public class TestMvelContextUDFs extends TestNGSuite {
+  @Test
+  public void testGetDataType() {
+    Assert.assertEquals(getDataType("A"), "java.lang.String");
+    Assert.assertEquals(getDataType(null), "null");
+  }
 
   @Test
   public void testCosineSimilarity() {
