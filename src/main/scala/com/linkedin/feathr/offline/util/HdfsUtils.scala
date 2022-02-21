@@ -1,16 +1,15 @@
 package com.linkedin.feathr.offline.util
 
-import java.io.{BufferedOutputStream, File, FileNotFoundException, InputStream, PrintStream}
-import java.io.{BufferedWriter, OutputStreamWriter}
-import java.time.{LocalDateTime, ZoneId, ZoneOffset}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs._
+import org.apache.log4j.{Logger, PatternLayout, WriterAppender}
+
+import java.io.{FileSystem => _, _}
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import java.time.{LocalDateTime, ZoneId, ZoneOffset}
 
 import scala.annotation.tailrec
-
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
-import org.apache.log4j.{Logger, PatternLayout, WriterAppender}
 
 
 object HdfsUtils {
@@ -185,13 +184,20 @@ object HdfsUtils {
    * @tparam T The type of the unit (e.g., ChronoUnit.DAYS.type)
    * @return A Seq of paths under basePath covering the period [startInclusive, endExclusive).
    */
-  def getPaths[T <: ChronoUnit: TemporalPathFormats.TemporalPathFormat](
-                                                                         basePath: String,
-                                                                         startInclusive: LocalDateTime,
-                                                                         endExclusive: LocalDateTime,
-                                                                         unit: ChronoUnit): Seq[String] = {
-    getPaths(basePath, startInclusive, endExclusive, unit,
-      implicitly[TemporalPathFormats.TemporalPathFormat[T]].formatter)
+  def getPaths(
+                basePath: String,
+                startInclusive: LocalDateTime,
+                endExclusive: LocalDateTime,
+                unit: ChronoUnit): Seq[String] = {
+    val formatter = unit match {
+      case ChronoUnit.DAYS =>
+        TemporalPathFormats.Daily.formatter
+      case ChronoUnit.HOURS =>
+        TemporalPathFormats.Hourly.formatter
+      case _ =>
+        throw new IllegalArgumentException(s"Unsupported path resolution unit: ${unit}")
+    }
+    getPaths(basePath, startInclusive, endExclusive, unit, formatter)
   }
 
   /**

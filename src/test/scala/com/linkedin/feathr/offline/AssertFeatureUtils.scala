@@ -261,7 +261,7 @@ object AssertFeatureUtils {
 
   /** Produce a StructType schema object from a JSON string */
   def deserializeSchema(json: String): StructType = {
-    Try(DataType.fromJson(json)).getOrElse(LegacyTypeStringParser.parse(json)) match {
+    Try(DataType.fromJson(json)).getOrElse(LegacyTypeStringParser.parseString(json)) match {
       case t: StructType => t
       case _ => throw new RuntimeException(s"Failed parsing StructType: $json")
     }

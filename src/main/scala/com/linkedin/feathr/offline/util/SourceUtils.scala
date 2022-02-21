@@ -221,9 +221,9 @@ private[offline] object SourceUtils {
    * @param field the avro field for which the default value is to be extracted
    * return the JsonNode containing the default value or otherwise null
    */
-  def getDefaultValueFromAvroRecord(field: Schema.Field): JsonNode = {
+  def getDefaultValueFromAvroRecord(field: Schema.Field): AnyRef = {
     // This utility method throws an error if the field does not have a default value, hence we need to check if the field has a default first.
-    field.defaultValue()
+    field.defaultVal()
   }
 
   /* Defines a symmetric relationship for two keys regarding to that target fields, for example
@@ -345,9 +345,9 @@ private[offline] object SourceUtils {
         val (factDataStartTime, factDataEndTime) = getFactDataTimeRange(obsDataStartTime, obsDataEndTime, window, isDaily, timeDelayMapOpt)
         // getPaths is left-inclusive
         val hdfsPaths = if (isDaily) {
-          HdfsUtils.getPaths[ChronoUnit.DAYS.type](factDataSourcePath, factDataStartTime, factDataEndTime.plusDays(1), ChronoUnit.DAYS)
+          HdfsUtils.getPaths(factDataSourcePath, factDataStartTime, factDataEndTime.plusDays(1), ChronoUnit.DAYS)
         } else {
-          HdfsUtils.getPaths[ChronoUnit.HOURS.type](factDataSourcePath, factDataStartTime, factDataEndTime.plusHours(1), ChronoUnit.HOURS)
+          HdfsUtils.getPaths(factDataSourcePath, factDataStartTime, factDataEndTime.plusHours(1), ChronoUnit.HOURS)
         }
         val existingHdfsPaths = hdfsPaths.filter(HdfsUtils.exists(_))
         if (existingHdfsPaths.isEmpty) {
