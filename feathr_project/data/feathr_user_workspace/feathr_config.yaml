@@ -11,7 +11,7 @@ resource:
     SYNAPSE_EXECUTOR_NUM: 4
 
     # Redis configs to access Redis cluster
-    REDIS_PASSWORD: 'Li7Nn63iNB0x731VTnnz2Vr29WYJHx7JlAzCaH9lbHw='
+    REDIS_PASSWORD: "Li7Nn63iNB0x731VTnnz2Vr29WYJHx7JlAzCaH9lbHw="
     REDIS_HOST: "feathrazuretest3redis.redis.cache.windows.net"
     REDIS_PORT: 6380
     REDIS_SSL_ENABLED: True
@@ -20,7 +20,6 @@ resource:
     FEATHR_RUNTIME_LOCATION: abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/frame_getting_started/feathr-assembly-0.1.0-SNAPSHOT.jar
     # configure number of parts for the spark output for feature generation job
     RESULT_OUTPUT_PARTS: "1"
-
 
     # Feature Registry Related Configs:
 

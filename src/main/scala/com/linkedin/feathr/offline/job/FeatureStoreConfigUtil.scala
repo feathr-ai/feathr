@@ -8,7 +8,11 @@ import scala.io.Source
 case class AzureResource(@JsonProperty("REDIS_PASSWORD") redisPassword: String,
                          @JsonProperty("REDIS_HOST") redisHost: String,
                          @JsonProperty("REDIS_PORT") redisPort: String,
-                         @JsonProperty("REDIS_SSL_ENABLED") redisSslEnabled: String)
+                         @JsonProperty("REDIS_SSL_ENABLED") redisSslEnabled: String,
+                         @JsonProperty("ADLS_ACCOUNT") adlsAccount: String,
+                         @JsonProperty("ADLS_KEY") adlsKey: String,
+                         @JsonProperty("BLOB_ACCOUNT") blobAccount: String,
+                         @JsonProperty("BLOB_KEY") blobKey: String)
 case class AwsResource(@JsonProperty("S3_ENDPOINT") s3Endpoint: String,
                        @JsonProperty("S3_ACCESS_KEY") s3AccessKey: String,
                        @JsonProperty("S3_SECRET_KEY") s3SecretKey: String)
@@ -26,6 +30,12 @@ object FeatureStoreConfigUtil {
   val S3_ACCESS_KEY = "S3_ACCESS_KEY"
   val S3_SECRET_KEY = "S3_SECRET_KEY"
 
+  val ADLS_ACCOUNT = "ADLS_ACCOUNT"
+  val ADLS_KEY = "ADLS_KEY"
+
+  val BLOB_ACCOUNT = "BLOB_ACCOUNT"
+  val BLOB_KEY = "BLOB_KEY"
+
   val EMPTY_STRING = ""
   private val yamlMapper = new ObjectMapper(new YAMLFactory())
   val featureStoreConfig: FeathrStoreConfig = loadYamlConfig("feathr_project/data/feathr_user_workspace/feathr_config.yaml")
@@ -36,8 +46,64 @@ object FeatureStoreConfigUtil {
       val config = yamlMapper.readValue(contents, classOf[FeathrStoreConfig])
       config
     } catch {
-      case _ =>
+      case _: Throwable =>
         FeathrStoreConfig(null)
+    }
+  }
+
+  def getADLSAuthStr(str: String, featureGenContext: Option[FeatureGenJobContext]): String = {
+    sys.env.get(str).getOrElse(
+      if (featureGenContext.isDefined) {
+        getADLSAuthFromContext(str, featureGenContext.get)
+      } else if(featureStoreConfig.resource != null) {
+        getADLSAuthFromConfig(str)
+      } else EMPTY_STRING
+    )
+  }
+
+  private def getADLSAuthFromContext(str: String, featureGenContext: FeatureGenJobContext): String = {
+    featureGenContext.adlsConfig.map(config => {
+      str match {
+        case ADLS_ACCOUNT => config.getString(ADLS_ACCOUNT)
+        case ADLS_KEY => config.getString(ADLS_KEY)
+        case _ => EMPTY_STRING
+      }
+    }).getOrElse(EMPTY_STRING)
+  }
+
+  private def getADLSAuthFromConfig(str: String): String = {
+    str match {
+      case ADLS_ACCOUNT => featureStoreConfig.resource.azureResource.adlsAccount
+      case ADLS_KEY => featureStoreConfig.resource.azureResource.adlsKey
+      case _ => EMPTY_STRING
+    }
+  }
+
+  def getBlobAuthStr(str: String, featureGenContext: Option[FeatureGenJobContext]): String = {
+    sys.env.get(str).getOrElse(
+      if (featureGenContext.isDefined) {
+        getBlobAuthFromContext(str, featureGenContext.get)
+      } else if(featureStoreConfig.resource != null) {
+        getBlobAuthFromConfig(str)
+      } else EMPTY_STRING
+    )
+  }
+
+  private def getBlobAuthFromContext(str: String, featureGenContext: FeatureGenJobContext): String = {
+    featureGenContext.blobConfig.map(config => {
+      str match {
+        case BLOB_ACCOUNT => config.getString(BLOB_ACCOUNT)
+        case BLOB_KEY => config.getString(BLOB_KEY)
+        case _ => EMPTY_STRING
+      }
+    }).getOrElse(EMPTY_STRING)
+  }
+
+  private def getBlobAuthFromConfig(str: String): String = {
+    str match {
+      case BLOB_ACCOUNT => featureStoreConfig.resource.azureResource.blobAccount
+      case BLOB_KEY => featureStoreConfig.resource.azureResource.blobKey
+      case _ => EMPTY_STRING
     }
   }
 
