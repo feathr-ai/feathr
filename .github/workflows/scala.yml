@@ -25,7 +25,7 @@ jobs:
     - name: Azure Blob Storage Upload
       uses: fixpoint/azblob-upload-artifact@v4
       with:
-        connection-string: ${{secrets.JAR_BLOB_CONNECTION_STRING}}
+        connection-string: 'BlobEndpoint=https://azurefeathrstorage.blob.core.windows.net/;QueueEndpoint=https://azurefeathrstorage.queue.core.windows.net/;FileEndpoint=https://azurefeathrstorage.file.core.windows.net/;TableEndpoint=https://azurefeathrstorage.table.core.windows.net/;SharedAccessSignature=sv=2020-08-04&ss=bfqt&srt=sco&sp=rwdlacupx&se=2022-02-25T14:24:11Z&st=2022-02-22T06:24:11Z&spr=https&sig=eV%2F9IrGz1ctYtjSwar2pyr0NKyOrH8ftHOK3dCod%2B%2F0%3D'
         name: Feathr JAR
         path: 'target/scala-2.11/feathr-assembly-0.1.0-SNAPSHOT.JAR'
-        container: ${{secrets.JAR_BLOB_CONTAINER}}
+        container: 'github'
