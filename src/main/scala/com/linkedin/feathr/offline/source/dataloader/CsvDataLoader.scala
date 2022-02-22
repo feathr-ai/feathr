@@ -38,7 +38,7 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
       log.debug(s"Got absolute CSV path: ${absolutePath}, loading..")
       ss.read.format("csv").option("header", "true").load(absolutePath)
     } catch {
-      case _ =>
+      case _: Throwable =>
         log.debug(s"Loading CSV failed, retry with class loader..")
         val absolutePath = getClass.getClassLoader.getResource(path).getPath
         log.debug(s"Got absolution CSV path from class loader: ${absolutePath}, loading.. ")

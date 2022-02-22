@@ -324,7 +324,9 @@ class FeathrClient(object):
                 '--feature-config', self.feathr_spark_laucher.upload_to_work_dir(
                     generation_config.feature_config),
                 '--redis-config', self._getRedisConfigStr(),
-                '--s3-config', self._get_s3_config_str()
+                '--s3-config', self._get_s3_config_str(),
+                '--adls-config', self._get_adls_config_str(),
+                '--blob-config', self._get_blob_config_str()
             ],
             reference_files_path=[],
         )
@@ -362,4 +364,32 @@ class FeathrClient(object):
             S3_ACCESS_KEY: "{S3_ACCESS_KEY}"
             S3_SECRET_KEY: "{S3_SECRET_KEY}"
             """.format(S3_ENDPOINT=endpoint, S3_ACCESS_KEY=access_key, S3_SECRET_KEY=secret_key)
+        return config_str
+
+    def _get_adls_config_str(self):
+        """Construct the ADLS config string for abfs(s). The Account, access key and other parameters can be set via
+        environment variables."""
+        account = _EnvVaraibleUtil.get_environment_variable('ADLS_ACCOUNT')
+        # if ADLS Account is set in the feathr_config, then we need other environment variables
+        # keys can't be only accessed through environment
+        key = _EnvVaraibleUtil.get_environment_variable('ADLS_KEY')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            ADLS_ACCOUNT: {ADLS_ACCOUNT}
+            ADLS_KEY: "{ADLS_KEY}"
+            """.format(ADLS_ACCOUNT=account, ADLS_KEY=key)
+        return config_str
+
+    def _get_blob_config_str(self):
+        """Construct the Blob config string for wasb(s). The Account, access key and other parameters can be set via
+        environment variables."""
+        account = _EnvVaraibleUtil.get_environment_variable('BLOB_ACCOUNT')
+        # if ADLS Account is set in the feathr_config, then we need other environment variables
+        # keys can't be only accessed through environment
+        key = _EnvVaraibleUtil.get_environment_variable('BLOB_KEY')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            BLOB_ACCOUNT: {BLOB_ACCOUNT}
+            BLOB_KEY: "{BLOB_KEY}"
+            """.format(BLOB_ACCOUNT=account, BLOB_KEY=key)
         return config_str

@@ -62,7 +62,7 @@ private[offline] class SparkDataLoader(ss: SparkSession, path: String) extends D
     try {
       SparkIOUUtil.createDataFrame(path, dataIOParametersWithSplitSize)
     } catch {
-      case _ =>
+      case _: Throwable =>
         ss.read.format("csv").option("header", "true").load(path)
     }
   }
