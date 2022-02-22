@@ -90,7 +90,7 @@ class _FeathrSynapseJobLauncher(object):
                                                                  reference_files=reference_files_path,
                                                                  tags=job_tags,
                                                                  configuration=configuration)
-
+        logger.info('See submitted job here: https://web.azuresynapse.net/en-us/monitoring/sparkapplication')
         return self.current_job_info
 
     def wait_for_completion(self, timeout_seconds: Optional[float]) -> bool:

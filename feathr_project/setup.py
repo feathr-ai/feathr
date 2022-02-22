@@ -14,6 +14,7 @@ setup(
         "loguru",
         "pandas",
         "redis",
+        "requests",
         "scikit-learn",
         "pyapacheatlas",
         "pyhocon",

@@ -7,7 +7,8 @@ from pyhocon import ConfigFactory
 
 from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._feature_registry import _FeatureRegistry
-from feathr._submission import _FeathrSynapseJobLauncher
+from feathr._synapse_submission import _FeathrSynapseJobLauncher
+from feathr._databricks_submission import _FeathrDatabricksJobLauncher
 
 
 class FeatureJoinJobParams:
@@ -71,19 +72,49 @@ class FeathrClient(object):
 
         self._check_required_environment_variables_exist()
 
-        # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
-        # submission. The feathr jar hosted in Azure saves the time users needed to upload the jar from their local.
-        self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_from_config('FEATHR_RUNTIME_LOCATION')
+        # this is a temp way to decide which spark runtime to use; we need to update this after we move to the new config style
+        if _EnvVaraibleUtil.get_from_config('SYNAPSE_ENABLED') and _EnvVaraibleUtil.get_from_config('DATABRICKS_ENABLED'):
+            RuntimeError(
+                "Only one of the spark environment can be set at a time. You have enabled both Synapse and Databricks.")
+        elif _EnvVaraibleUtil.get_from_config('SYNAPSE_ENABLED'):
+            # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
+            # submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from their local env.
+            self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_from_config(
+                'FEATHR_RUNTIME_LOCATION')
+            self.spark_runtime = 'synapse'
+        elif _EnvVaraibleUtil.get_from_config('DATABRICKS_ENABLED'):
+            self.spark_runtime = 'databricks'
+            # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
+            # submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from their local env.
+            self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_from_config(
+                'DATABRICKS_FEATHR_RUNTIME_LOCATION')
+        else:
+            RuntimeError(
+                "At least one of the spark environment should be set. You have disabled all the spark environments.")
+
         # configure the remote environment
-        self.feathr_synapse_laucher = _FeathrSynapseJobLauncher(
-            synapse_dev_url=_EnvVaraibleUtil.get_from_config(
-                'SYNAPSE_DEV_URL'),
-            pool_name=_EnvVaraibleUtil.get_from_config(
-                'SYNAPSE_POOL_NAME'),
-            datalake_dir=_EnvVaraibleUtil.get_from_config(
-                'SYNAPSE_WORKSPACE_DIR'),
-            executor_size=_EnvVaraibleUtil.get_from_config('SYNAPSE_EXECUTOR_SIZE'),
-            executors=_EnvVaraibleUtil.get_from_config('SYNAPSE_EXECUTOR_NUM'))
+        if self.spark_runtime == 'synapse':
+            self.feathr_spark_laucher = _FeathrSynapseJobLauncher(
+                synapse_dev_url=_EnvVaraibleUtil.get_from_config(
+                    'SYNAPSE_DEV_URL'),
+                pool_name=_EnvVaraibleUtil.get_from_config(
+                    'SYNAPSE_POOL_NAME'),
+                datalake_dir=_EnvVaraibleUtil.get_from_config(
+                    'SYNAPSE_WORKSPACE_DIR'),
+                executor_size=_EnvVaraibleUtil.get_from_config(
+                    'SYNAPSE_EXECUTOR_SIZE'),
+                executors=_EnvVaraibleUtil.get_from_config('SYNAPSE_EXECUTOR_NUM'))
+        else:
+            self.feathr_spark_laucher = _FeathrDatabricksJobLauncher(
+                workspace_instance_url=_EnvVaraibleUtil.get_environment_variable_with_default(
+                    'azure', 'DATABRICKS_WORKSPACE_INSTANCE_URL'),
+                token_value=_EnvVaraibleUtil.get_environment_variable(
+                    'DATABRICKS_WORKSPACE_TOKEN_VALUE'),
+                config_template=_EnvVaraibleUtil.get_environment_variable_with_default(
+                    'azure', 'DATABRICKS_CONFIG_TEMPLATE'),
+                databricks_work_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
+                    'azure', 'DATABRICKS_WORK_DIR')
+            )
 
         self._construct_redis_client()
 
@@ -94,7 +125,8 @@ class FeathrClient(object):
 
         Some required information has to be set via environment variables so the client can work.
         """
-        all_required_vars = _EnvVaraibleUtil.get_from_config("REQUIRED_ENVIRONMENT_VARIABLES")
+        all_required_vars = _EnvVaraibleUtil.get_from_config(
+            "REQUIRED_ENVIRONMENT_VARIABLES")
         for required_field in all_required_vars:
             if required_field not in os.environ:
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
@@ -189,9 +221,12 @@ class FeathrClient(object):
         parameters.
         """
         password = _EnvVaraibleUtil.get_environment_variable(REDIS_PASSWORD)
-        host = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_HOST)
-        port = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_PORT)
-        ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_SSL_ENABLED)
+        host = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_HOST)
+        port = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_PORT)
+        ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_SSL_ENABLED)
 
         redis_clint = redis.Redis(
             host=host,
@@ -208,7 +243,8 @@ class FeathrClient(object):
           feature_join_conf_path: Relative path to your feature join config file.
         """
         if not feature_join_conf_path.startswith('feature_join_conf'):
-            raise RuntimeError('Feature join config should be in feature_join_conf folder.')
+            raise RuntimeError(
+                'Feature join config should be in feature_join_conf folder.')
 
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
@@ -220,19 +256,20 @@ class FeathrClient(object):
                                                        )
 
         # submit the jars
-        return self.feathr_synapse_laucher.submit_feathr_job(
+        return self.feathr_spark_laucher.submit_feathr_job(
             job_name=_EnvVaraibleUtil.get_from_config(
                 'PROJECT_NAME') + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
-                '--join-config', self.feathr_synapse_laucher.upload_to_work_dir(
+                '--join-config', self.feathr_spark_laucher.upload_to_work_dir(
                     feature_join_job_params.join_config_path),
                 '--input', feature_join_job_params.observation_path,
                 '--output', feature_join_job_params.job_output_path,
-                '--feature-config', self.feathr_synapse_laucher.upload_to_work_dir(
+                '--feature-config', self.feathr_spark_laucher.upload_to_work_dir(
                     feature_join_job_params.feature_config),
-                '--num-parts', _EnvVaraibleUtil.get_from_config('RESULT_OUTPUT_PARTS')
+                '--num-parts', _EnvVaraibleUtil.get_from_config(
+                    'RESULT_OUTPUT_PARTS'),
             ],
             reference_files_path=[],
         )
@@ -245,15 +282,16 @@ class FeathrClient(object):
         if not block:
             return feathr_feature['outputPath']
         # Block the API by pooling the job status and wait for complete
-        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
+        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
             return feathr_feature['outputPath']
         else:
-            raise RuntimeError('Spark job failed so output cannot be retrieved.')
+            raise RuntimeError(
+                'Spark job failed so output cannot be retrieved.')
 
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
         """
-        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
+        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
             return
         else:
             raise RuntimeError('Spark job failed.')
@@ -274,19 +312,16 @@ class FeathrClient(object):
             generation_config_path=os.path.abspath(feature_gen_conf_path),
             feature_config=os.path.abspath("feature_conf/features.conf"))
 
-        # submit the jars
-        logger.info('See materialization job here: https://ms.web.azuresynapse.net/en-us/monitoring/sparkapplication')
-
-        return self.feathr_synapse_laucher.submit_feathr_job(
+        return self.feathr_spark_laucher.submit_feathr_job(
             job_name=_EnvVaraibleUtil.get_from_config(
                 'PROJECT_NAME') + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[
-                '--generation-config', self.feathr_synapse_laucher.upload_to_work_dir(
+                '--generation-config', self.feathr_spark_laucher.upload_to_work_dir(
                     generation_config.generation_config_path),
                 # Local Config, comma seperated file names
-                '--feature-config', self.feathr_synapse_laucher.upload_to_work_dir(
+                '--feature-config', self.feathr_spark_laucher.upload_to_work_dir(
                     generation_config.feature_config),
                 '--redis-config', self._getRedisConfigStr(),
                 '--s3-config', self._get_s3_config_str()
@@ -298,9 +333,12 @@ class FeathrClient(object):
         """Construct the Redis config string. The host, port, credential and other parameters can be set via environment
         variables."""
         password = _EnvVaraibleUtil.get_environment_variable(REDIS_PASSWORD)
-        host = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_HOST)
-        port = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_PORT)
-        ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_SSL_ENABLED)
+        host = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_HOST)
+        port = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_PORT)
+        ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_SSL_ENABLED)
         config_str = """
         REDIS_PASSWORD: "{REDIS_PASSWORD}"
         REDIS_HOST: "{REDIS_HOST}"
@@ -312,7 +350,8 @@ class FeathrClient(object):
     def _get_s3_config_str(self):
         """Construct the S3 config string. The endpoint, access key, secret key, and other parameters can be set via
         environment variables."""
-        endpoint = _EnvVaraibleUtil.get_environment_variable_with_default('aws', 'S3_ENDPOINT')
+        endpoint = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'aws', 'S3_ENDPOINT')
         # if s3 endpoint is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
         access_key = _EnvVaraibleUtil.get_environment_variable('S3_ACCESS_KEY')

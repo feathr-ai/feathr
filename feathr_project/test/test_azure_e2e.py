@@ -57,7 +57,7 @@ def test_feathr_get_historical_features():
         returned_spark_job = client.join_offline_features()
         res_url = client.get_job_result_uri(block=True, timeout_sec=500)
         tmp_dir = tempfile.TemporaryDirectory()
-        client.feathr_synapse_laucher.download_result(result_path=res_url, local_folder=tmp_dir.name)
+        client.feathr_spark_laucher.download_result(result_path=res_url, local_folder=tmp_dir.name)
         dataframe_list = []
         # assuming the result are in avro format
         for file in glob.glob(os.path.join(tmp_dir.name, '*.avro')):
