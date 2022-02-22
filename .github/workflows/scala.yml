@@ -25,7 +25,7 @@ jobs:
     - name: Azure Blob Storage Upload
       uses: fixpoint/azblob-upload-artifact@v4
       with:
-        connection-string: ${{SPARK_JAR_BLOB_CONNECTION_STRING}}
+        connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
         name: Feathr JAR
         path: 'target/scala-2.11/feathr-assembly-0.1.0-SNAPSHOT.jar'
-        container: ${{SPARK_JAR_BLOB_CONTAINER}}
+        container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
