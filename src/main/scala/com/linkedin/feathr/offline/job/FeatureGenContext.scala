@@ -25,9 +25,13 @@ class FeatureGenJobContext(
     val paramsOverride: Option[String] = None,
     val featureConfOverride: Option[String] = None,
     val redisConfigStr: Option[String] = None,
-    val s3ConfigStr: Option[String] = None) {
+    val s3ConfigStr: Option[String] = None,
+    val adlsConfigStr: Option[String] = None,
+    val blobConfigStr: Option[String] = None) {
     val redisConfig: Option[Config] = redisConfigStr.map(configStr => ConfigFactory.parseString(configStr))
     val s3Config: Option[Config] = s3ConfigStr.map(configStr => ConfigFactory.parseString(configStr))
+    val adlsConfig: Option[Config] = adlsConfigStr.map(configStr => ConfigFactory.parseString(configStr))
+    val blobConfig: Option[Config] = blobConfigStr.map(configStr => ConfigFactory.parseString(configStr))
 }
 
 object FeatureGenJobContext {

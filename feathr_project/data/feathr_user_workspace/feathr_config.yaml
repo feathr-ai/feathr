@@ -21,7 +21,6 @@ resource:
     # configure number of parts for the spark output for feature generation job
     RESULT_OUTPUT_PARTS: "1"
 
-
     # Feature Registry Related Configs:
 
     # Registry configs
