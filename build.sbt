@@ -72,7 +72,7 @@ val localAndCloudCommonDependencies = Seq(
 // To assembly with certain java version: sbt assembly -java-home "/Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home"
 // To execute the jar: java -jar target/scala-2.11/feathr-assembly-0.1.0-SNAPSHOT.jar
 
-assemblyMergeStrategy in assembly := {
+assembly / assemblyMergeStrategy := {
     // See https://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
     // See https://stackoverflow.com/questions/62232209/classnotfoundexception-caused-by-java-lang-classnotfoundexception-csv-default
     case PathList("META-INF","services",xs @ _*) => MergeStrategy.filterDistinctLines // Added this

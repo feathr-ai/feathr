@@ -5,7 +5,7 @@ import com.linkedin.feathr.common.configObj.configbuilder.FeatureGenConfigBuilde
 import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeathrConfigLoader
 import com.linkedin.feathr.offline.job.FeatureJoinJob._
-import com.linkedin.feathr.offline.job.FeatureStoreConfigUtil.{REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_SSL_ENABLED, S3_ACCESS_KEY, S3_ENDPOINT, S3_SECRET_KEY}
+import com.linkedin.feathr.offline.job.FeatureStoreConfigUtil.{ADLS_ACCOUNT, ADLS_KEY, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_SSL_ENABLED, S3_ACCESS_KEY, S3_ENDPOINT, S3_SECRET_KEY, BLOB_ACCOUNT, BLOB_KEY}
 import com.linkedin.feathr.offline.util.{CmdLineParser, OptionParam, SparkFeaturizedDataset}
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import org.apache.avro.generic.GenericRecord
@@ -39,7 +39,10 @@ object FeatureGenJob {
       "params-override" -> OptionParam("ac", "parameter to override in feature generation config", "PARAM_OVERRIDE", "[]"),
       "feature-conf-override" -> OptionParam("fco", "parameter to override in feature definition config", "FEATURE_CONF_OVERRIDE", "[]"),
       "redis-config" -> OptionParam("ac", "Authentication config for Redis", "REDIS_CONFIG", ""),
-      "s3-config" -> OptionParam("ac", "Authentication config for S3", "S3_CONFIG", ""))
+      "s3-config" -> OptionParam("ac", "Authentication config for S3", "S3_CONFIG", ""),
+      "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
+      "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", "")
+    )
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
 
     val cmdParser = new CmdLineParser(args, params, extraOptions)
@@ -54,7 +57,9 @@ object FeatureGenJob {
     val workDir = cmdParser.extractRequiredValue("work-dir")
     val redisConfig = cmdParser.extractOptionalValue("redis-config")
     val s3Config = cmdParser.extractOptionalValue("s3-config")
-    val featureGenJobContext = new FeatureGenJobContext(workDir, paramsOverride, featureConfOverride, redisConfig, s3Config)
+    val adlsConfig = cmdParser.extractOptionalValue("adls-config")
+    val blobConfig = cmdParser.extractOptionalValue("blob-config")
+    val featureGenJobContext = new FeatureGenJobContext(workDir, paramsOverride, featureConfOverride, redisConfig, s3Config, adlsConfig, blobConfig)
 
     (applicationConfigPath, featureDefinitionsInput, featureGenJobContext)
   }
@@ -193,6 +198,22 @@ object FeatureGenJob {
       .hadoopConfiguration.set("fs.s3a.secret.key", s3SecretKey)
   }
 
+  private[feathr] def setupADLSParams(ss: SparkSession, featureGenContext: Option[FeatureGenJobContext] = None) = {
+    val adlsParam = s"fs.azure.account.key.${FeatureStoreConfigUtil.getADLSAuthStr(ADLS_ACCOUNT, featureGenContext)}.dfs.core.windows.net"
+    val adlsKey = FeatureStoreConfigUtil.getADLSAuthStr(ADLS_KEY, featureGenContext)
+
+    ss.sparkContext
+      .hadoopConfiguration.set(adlsParam, adlsKey)
+  }
+
+  private[feathr] def setupBlobParams(ss: SparkSession, featureGenContext: Option[FeatureGenJobContext] = None) = {
+    val blobParam = s"fs.azure.account.key.${FeatureStoreConfigUtil.getBlobAuthStr(BLOB_ACCOUNT, featureGenContext)}.blob.core.windows.net"
+    val blobKey = FeatureStoreConfigUtil.getBlobAuthStr(BLOB_KEY, featureGenContext)
+
+    ss.sparkContext
+      .hadoopConfiguration.set(blobParam, blobKey)
+  }
+
   private[feathr] def process(params: Array[String]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
     val (applicationConfigPath, featureDefs, jobContext) = parseInputArguments(params)
     val sparkConf = new SparkConf().registerKryoClasses(Array(classOf[GenericRecord]))
@@ -204,6 +225,9 @@ object FeatureGenJob {
       .enableHiveSupport()
 
     val ss = sparkSessionBuilder.getOrCreate()
+    setupADLSParams(ss, Some(jobContext))
+    setupBlobParams(ss, Some(jobContext))
+    setupS3Params(ss, Some(jobContext))
     setupS3Params(ss, Some(jobContext))
     run(ss, applicationConfigPath, featureDefs, jobContext)
   }
