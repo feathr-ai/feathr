@@ -17,7 +17,7 @@ resource:
     REDIS_SSL_ENABLED: True
 
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
-    FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar
+    FEATHR_RUNTIME_LOCATION: https://feathrazuretest3storage.blob.core.windows.net/feathrazuretest3fs/feathr_jar_github_action/feathr-assembly-0.1.0-SNAPSHOT.jar
     # configure number of parts for the spark output for feature generation job
     RESULT_OUTPUT_PARTS: "1"
 
