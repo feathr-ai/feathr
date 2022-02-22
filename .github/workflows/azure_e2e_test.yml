@@ -4,16 +4,15 @@ name: Azure End to End Testing with Existing Jars
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
 on: 
-  pull_request:
+  workflow_run:
+    workflows: ["Feathr Scala Tests"]
     types:
-        - opened
-        - reopened
-        - synchronize
-        - ready_for_review
+      - completed
 
 jobs:
-  build:
+  on-success:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       fail-fast: false
       matrix:
@@ -41,17 +40,20 @@ jobs:
         python -m pip install -e ./feathr_project/
     - name: Test with pytest
       env:
+        FEATHR_RUNTIME_LOCATION: 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action/feathr-assembly-0.1.0-SNAPSHOT.jar'
         REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
         AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
         AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
         AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
         S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
         S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
-        ADLS_ACCOUNT: ${{secrets.ADLS_ACCOUNT}}
-        ADLS_KEY: ${{secrets.ADLS_KEY}}
-        BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
-        BLOB_KEY: ${{secrets.BLOB_KEY}}
 
       run: |        
         cd feathr_project
         pytest
+
+  on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - run: echo "Feathr Scala Tests workflow was a failure, skip e2e test."
