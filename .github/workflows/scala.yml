@@ -30,7 +30,6 @@ jobs:
         path: 'target/scala-2.11/feathr-assembly-0.1.0-SNAPSHOT.jar'
         container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
         cleanup: 'true'
-    - uses: actions/checkout@v2
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
