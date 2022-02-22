@@ -22,10 +22,11 @@ jobs:
       run: sbt test
     - name: Build JAR
       run: sbt assembly
-    - name: Azure Blob Storage Upload
+    - name: Azure Blob Storage Upload (Overwrite)
       uses: fixpoint/azblob-upload-artifact@v4
       with:
         connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
-        name: Feathr JAR
+        name: 'feathr_jar_github_action'
         path: 'target/scala-2.11/feathr-assembly-0.1.0-SNAPSHOT.jar'
         container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
+        cleanup: 'true'
