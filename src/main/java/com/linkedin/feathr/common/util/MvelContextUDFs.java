@@ -63,6 +63,19 @@ public class MvelContextUDFs {
   @Target(ElementType.METHOD)
   private @interface ExportToMvel { }
 
+  /**
+   * Get the class type of the input object
+   * WARNING: This is only used for debug for users.
+   * @return Type in String form
+   */
+  @ExportToMvel
+  public static String getDataType(Object input) {
+    if (input == null) {
+      return "null";
+    }
+    return input.getClass().getName();
+  }
+
 
   /**
    * Return true if a feature has at least 1 term with value not zero.

@@ -4,6 +4,7 @@ import com.linkedin.feathr.common
 import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig}
 import com.linkedin.feathr.offline.FeatureValue
 import com.linkedin.feathr.offline.mvel.{FeatureVariableResolverFactory, MvelContext, MvelUtils}
+import com.linkedin.feathr.offline.testfwk.TestFwkUtils
 import org.apache.log4j.Logger
 import org.mvel2.MVEL
 
@@ -42,6 +43,13 @@ private[offline] class SimpleMvelDerivationFunction(expression: String, featureN
 
     // In order to prevent MVEL from barfing if a feature is null, we use a custom variable resolver that understands `Option`
     val variableResolverFactory = new FeatureVariableResolverFactory(args)
+
+    if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
+      while(TestFwkUtils.DERIVED_FEATURE_COUNTER > 0) {
+        TestFwkUtils.DERIVED_FEATURE_COUNTER = TestFwkUtils.DERIVED_FEATURE_COUNTER - 1
+        println(f"${Console.GREEN}Your inputs to the derived feature({$expression}) with detailed type info: {$args}${Console.RESET}")
+      }
+    }
 
     MvelUtils.executeExpression(compiledExpression, null, variableResolverFactory) match {
       case Some(value) =>
