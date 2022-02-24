@@ -363,6 +363,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
        |  }
        |}
     """.stripMargin
+    ss.sql("set spark.sql.legacy.allowUntypedScalaUDF=true")
     val applicationConfig4 =
       generateSimpleApplicationConfig(features = "f4, f3", endTime = "2019-05-21")
     val dfs = localFeatureGenerate(applicationConfig4, featureDefConfig4)

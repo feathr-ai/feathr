@@ -98,6 +98,7 @@ private[offline] object FeathrTestUtils {
     val conf = sparkConf
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     // LIHADOOP-41472
+    conf.set("spark.sql.legacy.allowUntypedScalaUDF","true")
     conf.set("spark.kryo.mllib.register", "false")
     conf.set("spark.driver.host", "localhost")
     conf.set("spark.isolated.classloader", "true")
@@ -117,6 +118,9 @@ private[offline] object FeathrTestUtils {
           s"can only be integers or '*'.")
     }
     val sessionBuilder = SparkSession.builder().appName(appName).master(s"local[${numThreads}]").config(conf)
-    sessionBuilder.getOrCreate()
+    val ss = sessionBuilder.getOrCreate()
+
+//    ss.sql("set spark.sql.legacy.allowUntypedScalaUDF = true")
+    ss
   }
 }

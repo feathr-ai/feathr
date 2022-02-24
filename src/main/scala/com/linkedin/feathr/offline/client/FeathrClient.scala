@@ -76,6 +76,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
    */
   @InternalApi
   def generateFeatures(featureGenSpec: FeatureGenSpec): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+    prepareExecuteEnv()
     // Compute KeyTags for Anchored and Derived features
     val keyTaggedAnchoredFeatures = FeatureGenKeyTagAnalyzer.inferKeyTagsForAnchoredFeatures(featureGenSpec, featureGroups)
     val keyTaggedDerivedFeatures = FeatureGenKeyTagAnalyzer.inferKeyTagsForDerivedFeatures(featureGenSpec, featureGroups, keyTaggedAnchoredFeatures)
@@ -94,6 +95,11 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
         (taggedFeatureName, fds)
     }
   }
+
+  private def prepareExecuteEnv(): Unit = {
+    sparkSession.sql("set spark.sql.legacy.allowUntypedScalaUDF = true")
+  }
+
 
   /**
    * get all the sources in the feature configs
@@ -125,6 +131,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
   private[offline] def doJoinObsAndFeatures(joinConfig: FeatureJoinConfig, jobContext: JoinJobContext, obsData: DataFrame): (DataFrame, Header) = {
     log.info("All anchored feature names (sorted):\n\t" + stringifyFeatureNames(allAnchoredFeatures.keySet))
     log.info("All derived feature names (sorted):\n\t" + stringifyFeatureNames(allDerivedFeatures.keySet))
+    prepareExecuteEnv()
     val enableCheckPoint = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.ENABLE_CHECKPOINT).toBoolean
     val checkpointDir = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.CHECKPOINT_OUTPUT_PATH)
     if (enableCheckPoint) {
