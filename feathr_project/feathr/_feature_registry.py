@@ -581,3 +581,32 @@ class _FeatureRegistry():
                 feature_list.append(entity["name"])
 
         return feature_list
+
+    def sync_features_from_registry(self, project_name: str, workspace_path: str):
+        """[Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
+
+        Args:
+            project_name (str): project name.
+            workspace_path (str): path to a workspace.
+
+        """
+
+        entities = self.purview_client.get_entity(qualifiedName=project_name,
+                                                    typeName="feathr_workspace")
+        # TODO - Change implementation to support traversing the workspace and construct the file, item by item 
+        # We don't support modifying features outside of registring this should be fine.
+        file_content = entities["entities"][0]["attributes"]["raw_hocon_feature_definition_config"]
+
+        feature_conf_dir = os.path.join(workspace_path,"feature_conf")
+        feature_conf_path = ""
+        if os.path.exists(feature_conf_dir):
+            feature_conf_path = os.path.join(workspace_path,"feature_conf", 'feature.conf')
+        else:
+            os.makedirs(feature_conf_dir)
+            feature_conf_path = os.path.join(workspace_path,"feature_conf", 'feature.conf')
+
+        logger.info("Writing feature configuration from feathr registry to {}",
+                    feature_conf_path)
+        f = open(feature_conf_path, "w")
+        f.write(file_content)
+        f.close()

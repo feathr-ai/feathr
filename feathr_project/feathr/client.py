@@ -114,6 +114,12 @@ class FeathrClient(object):
         """
         return self.registry.list_registered_features(project_name)
 
+    def sync_features(self, project_name):
+        '''
+        Sync features from the registry given a project name
+        '''
+        self.registry.sync_features_from_registry(project_name, os.path.abspath("./"))
+    
     def get_registry_client(self):
         """
         Returns registry client in case users want to perform more advanced operations
