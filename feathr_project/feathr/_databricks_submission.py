@@ -9,21 +9,15 @@ from importlib.resources import contents, path
 from inspect import trace
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
+from feathr._abc import SparkJobLauncher
 
 import requests
 from loguru import logger
 from requests.structures import CaseInsensitiveDict
 
 
-class _FeathrDatabricksJobLauncher(object):
-    def __init__(
-            self,
-            workspace_instance_url: str,
-            token_value: str,
-            config_template: str,
-            databricks_work_dir: str = "dbfs:/feathr_jobs",
-    ):
-        """Class to interact with Databricks Spark cluster
+class _FeathrDatabricksJobLauncher(SparkJobLauncher):
+    """Class to interact with Databricks Spark cluster
         This is a light-weight databricks job runner, users should use the provided template json string to config more 
         For example, whether to use a new cluster to run the job or not, specify the cluster ID, running frequency, node size, workder no., whether to send out failed notification email, etc.
         This runner will only fill in necessary arguments in the JSON template.
@@ -40,19 +34,33 @@ class _FeathrDatabricksJobLauncher(object):
             workspace_instance_url (str): the workinstance url. Document to get workspakce_instance_url: https://docs.microsoft.com/en-us/azure/databricks/workspace/workspace-details#workspace-url
             token_value (str): see here on how to get tokens: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/authentication
             config_template (str): config template for databricks cluster. See https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit for more details.
-            databricks_work_dir (_type_, optional): databricks_work_dir must start with dbfs:/. Defaults to "dbfs:/feathr_jobs".
-        """    
+            databricks_work_dir (_type_, optional): databricks_work_dir must start with dbfs:/. Defaults to 'dbfs:/feathr_jobs'.
+        """  
+    def __init__(
+            self,
+            workspace_instance_url: str,
+            token_value: str,
+            config_template: str,
+            databricks_work_dir: str = 'dbfs:/feathr_jobs',
+    ):
+          
+
+        # Below we will use Databricks job APIs (as well as many other APIs) to submit jobs or transfer files
+        # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
+        # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
         self.config_template = config_template
         # remove possible trailing '/' due to wrong input format
-        self.workspace_instance_url = workspace_instance_url.rstrip("/")
+        self.workspace_instance_url = workspace_instance_url.rstrip('/')
         self.auth_headers = CaseInsensitiveDict()
-        self.auth_headers["Accept"] = "application/json"
-        self.auth_headers["Authorization"] = f"Bearer {token_value}"
+
+        # Authenticate the REST APIs. Documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/authentication
+        self.auth_headers['Accept'] = 'application/json'
+        self.auth_headers['Authorization'] = f'Bearer {token_value}'
         self.databricks_work_dir = databricks_work_dir
 
     def upload_to_work_dir(self, local_path_or_http_path: str):
         """
-        Suports transferring file from an http path to cloud working storage, or upload directly from a local storage.
+        Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
         """
         src_parse_result = urlparse(local_path_or_http_path)
         file_name = os.path.basename(local_path_or_http_path)
@@ -62,27 +70,29 @@ class _FeathrDatabricksJobLauncher(object):
             with urllib.request.urlopen(local_path_or_http_path) as f:
                 data = f.read()
                 files = {'file': data}
-                r = requests.post(url=self.workspace_instance_url+"/api/2.0/dbfs/put",
+                # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
+                r = requests.post(url=self.workspace_instance_url+'/api/2.0/dbfs/put',
                                   headers=self.auth_headers, files=files,  data={'overwrite': 'true', 'path': returned_path})
-                logger.debug("{} is downloaded and then uploaded to location: {}",
+                logger.debug('{} is downloaded and then uploaded to location: {}',
                              local_path_or_http_path, returned_path)
         elif src_parse_result.scheme.startswith('dbfs'):
             # passed a cloud path
             logger.debug(
-                "Skipping file {} as it's already in the cloud", local_path_or_http_path)
+                'Skipping file {} as it is already in the cloud', local_path_or_http_path)
             returned_path = local_path_or_http_path
         else:
             # else it should be a local file path
             with open(local_path_or_http_path, 'rb') as f:
                 data = f.read()
                 files = {'file': data}
-                r = requests.post(url=self.workspace_instance_url+"/api/2.0/dbfs/put",
+                # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
+                r = requests.post(url=self.workspace_instance_url+'/api/2.0/dbfs/put',
                                   headers=self.auth_headers, files=files,  data={'overwrite': 'true', 'path': returned_path})
-                logger.debug("{} is uploaded to location: {}",
+                logger.debug('{} is uploaded to location: {}',
                              local_path_or_http_path, returned_path)
         return returned_path
 
-    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
+    def submits_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
         """
         submit the feathr job to databricks
         Refer to the databricks doc for more details on the meaning of the parameters:
@@ -96,21 +106,23 @@ class _FeathrDatabricksJobLauncher(object):
         """
 
         submission_params = json.loads(self.config_template)
-        submission_params["run_name"] = job_name
-        submission_params["libraries"][0]["jar"] = main_jar_path
-        submission_params["new_cluster"]["spark_conf"] = configuration
-        submission_params["spark_jar_task"]["parameters"] = arguments
-        submission_params["spark_jar_task"]["main_class_name"] = main_class_name
+        submission_params['run_name'] = job_name
+        submission_params['libraries'][0]['jar'] = main_jar_path
+        submission_params['new_cluster']['spark_conf'] = configuration
+        submission_params['spark_jar_task']['parameters'] = arguments
+        submission_params['spark_jar_task']['main_class_name'] = main_class_name
         self.res_job_id = None
 
         try:
-            r = requests.post(url=self.workspace_instance_url+"/api/2.0/jobs/runs/submit",
+            # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
+            r = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
                               headers=self.auth_headers, data=json.dumps(submission_params))
-            self.res_job_id = r.json()["run_id"]
-            r = requests.get(url=self.workspace_instance_url+"/api/2.0/jobs/runs/get",
+            self.res_job_id = r.json()['run_id']
+            # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
+            r = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                              headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-            logger.info("Feathr Job Submitted Sucessfully. View more details here: {}", r.json()[
-                        "run_page_url"])
+            logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', r.json()[
+                        'run_page_url'])
         except:
             traceback.print_exc()
         # return ID as the submission result
@@ -122,25 +134,26 @@ class _FeathrDatabricksJobLauncher(object):
         start_time = time.time()
         while (timeout_seconds is None) or (time.time() - start_time < timeout_seconds):
             status = self.get_status()
-            logger.debug("Current Spark job status: {}", status)
+            logger.debug('Current Spark job status: {}', status)
             # see all the status here:
             # https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runlifecyclestate
             # https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runresultstate
-            if status in {"SUCCESS"}:
+            if status in {'SUCCESS'}:
                 return True
-            elif status in {"INTERNAL_ERROR", "FAILED", "TIMEDOUT", "CANCELED"}:
+            elif status in {'INTERNAL_ERROR', 'FAILED', 'TIMEDOUT', 'CANCELED'}:
                 return False
             else:
                 time.sleep(30)
         else:
-            raise TimeoutError("Timeout waiting for job to complete")
+            raise TimeoutError('Timeout waiting for job to complete')
 
     def get_status(self) -> str:
         assert self.res_job_id is not None
-        job = r = requests.get(url=self.workspace_instance_url+"/api/2.0/jobs/runs/get",
+        # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
+        job = r = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                                headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
         # first try to get result state. it might not be available, and if that's the case, try to get life_cycle_state
-        res_state = r.json()["state"].get("result_state") or r.json()[
-            "state"]["life_cycle_state"]
+        res_state = r.json()['state'].get('result_state') or r.json()[
+            'state']['life_cycle_state']
         assert res_state is not None
         return res_state

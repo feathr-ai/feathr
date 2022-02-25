@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from loguru import logger
 import time
+from feathr._abc import SparkJobLauncher
 
 
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
@@ -15,7 +16,7 @@ from azure.synapse.spark import SparkClient
 from azure.synapse.spark.models import SparkBatchJob, SparkBatchJobOptions, LivyStates
 
 
-class _FeathrSynapseJobLauncher(object):
+class _FeathrSynapseJobLauncher(SparkJobLauncher):
     """
     Submits spark jobs to a Synapse spark cluster.
     """

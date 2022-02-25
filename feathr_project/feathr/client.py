@@ -72,10 +72,9 @@ class FeathrClient(object):
 
         self._check_required_environment_variables_exist()
 
-        # this is a temp way to decide which spark runtime to use; we need to update this after we move to the new config style
         if _EnvVaraibleUtil.get_from_config('SYNAPSE_ENABLED') and _EnvVaraibleUtil.get_from_config('DATABRICKS_ENABLED'):
             RuntimeError(
-                "Only one of the spark environment can be set at a time. You have enabled both Synapse and Databricks.")
+                'Only one of the spark environment can be set at a time. You have enabled both Synapse and Databricks. Please only set \"True\" to one of the configs: SYNAPSE_ENABLED, DATABRICKS_ENABLED')
         elif _EnvVaraibleUtil.get_from_config('SYNAPSE_ENABLED'):
             # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
             # submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from their local env.
@@ -90,7 +89,7 @@ class FeathrClient(object):
                 'DATABRICKS_FEATHR_RUNTIME_LOCATION')
         else:
             RuntimeError(
-                "At least one of the spark environment should be set. You have disabled all the spark environments.")
+                'At least one of the spark environment should be set. You have disabled all the spark environments. Please set \"True\" to one of the configs: SYNAPSE_ENABLED, DATABRICKS_ENABLED')
 
         # configure the remote environment
         if self.spark_runtime == 'synapse':
@@ -256,7 +255,7 @@ class FeathrClient(object):
                                                        )
 
         # submit the jars
-        return self.feathr_spark_laucher.submit_feathr_job(
+        return self.feathr_spark_laucher.submits_feathr_job(
             job_name=_EnvVaraibleUtil.get_from_config(
                 'PROJECT_NAME') + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
@@ -312,7 +311,7 @@ class FeathrClient(object):
             generation_config_path=os.path.abspath(feature_gen_conf_path),
             feature_config=os.path.abspath("feature_conf/features.conf"))
 
-        return self.feathr_spark_laucher.submit_feathr_job(
+        return self.feathr_spark_laucher.submits_feathr_job(
             job_name=_EnvVaraibleUtil.get_from_config(
                 'PROJECT_NAME') + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
