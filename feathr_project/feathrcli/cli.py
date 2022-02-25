@@ -160,9 +160,12 @@ def start():
     don't close the terminal) while you want to use 'feathr test'.
     """
     def run_jar():
-        process = subprocess.Popen(['java', '-jar', jar_name], stdout=subprocess.PIPE)
-        output = process.communicate()[0]
-        click.echo(output)
+        cmd = ['java', '-jar', jar_name]
+        with subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, universal_newlines=True) as p:
+            # Need to continuously pump the results from jar to terminal
+            for line in p.stdout:
+                print(line, end='')
+
 
     check_user_at_root()
     # The jar should be placed under the root of the user workspace

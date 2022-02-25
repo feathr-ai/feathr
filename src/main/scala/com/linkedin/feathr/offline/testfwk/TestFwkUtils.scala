@@ -31,6 +31,8 @@ object TestFwkUtils {
   val JOIN_CONFIG = "joinConfig"
   val JOB_PARAMETER = "jobParameter"
   val PASSTHROUGH = "PASSTHROUGH"
+  var IS_DEBUGGER_ENABLED = false
+  var DERIVED_FEATURE_COUNTER = 10
 
   /**
    * Rewrite a path that contains LATEST to be used in generating mock data

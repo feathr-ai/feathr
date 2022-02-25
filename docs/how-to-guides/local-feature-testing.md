@@ -7,9 +7,10 @@ Local feature testing or experimentation tries to use some mock data to come up 
 
 # How-to Local Feature Testing
 ## Set Up Local Feathr Engine
-Local feature testing requires a local feathr engine(a java jar) to be running to process the feature retrieval or transformaation job. So let's setup local faethr engine first.
+> java(version 8) installation is required so please install java if you haven't.
+Local feature testing requires a local feathr engine(a java jar) to be running to process the feature retrieval or transformation job. So let's setup local feathr engine first.
 
-There are two ways to get the local feathr engine. You can manually download it from [Azure Blob Storage](https://azurefeathrstorage.blob.core.windows.net/public/feathr_local_engine.jar) or download and set it up in the terminal via: 
+There are two ways to get the local feathr engine. You can manually download it from [Azure Blob Storage](https://azurefeathrstorage.blob.core.windows.net/public/feathr_local_engine.jar) or download and set it up in the terminal via:
 
 `feathr start`
 
@@ -43,7 +44,7 @@ feathr_user_workspace/mockdata/azure.net/my_data/green_tripdata_2020-04.csv
 ```
 
 ## Iterate Your Feature Definition
-After your mock data is ready, you can start to iterate your features. For example, you first come with a feature definition like this: 
+After your mock data is ready, you can start to iterate your features. For example, you first come with a feature definition like this:
 ```
 anchors: {
   aggregationFeatures: {

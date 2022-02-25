@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.source.accessor
 
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
+import com.linkedin.feathr.offline.testfwk.TestFwkUtils
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 /**
@@ -24,6 +25,19 @@ private[offline] class NonTimeBasedDataSourceAccessor(
    * @return the dataframe
    */
   override def get(): DataFrame = {
-    source.pathList.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
+    val df = source.pathList.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
+    if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
+      println()
+      println()
+      source.pathList.foreach(sourcePath => println(f"${Console.GREEN}Source is: $sourcePath${Console.RESET}"))
+      println(f"${Console.GREEN}Your source data schema is: ${Console.RESET}")
+      println(f"${Console.GREEN}(meaning: |-- fieldName: type (nullable = true))${Console.RESET}")
+      df.printSchema()
+      println(f"${Console.GREEN}Showing source data: ${Console.RESET}")
+      df.show(10)
+      println()
+      println()
+    }
+    df
   }
 }

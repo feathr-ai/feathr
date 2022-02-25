@@ -73,7 +73,8 @@ class FeathrClient(object):
 
         # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
         # submission. The feathr jar hosted in Azure saves the time users needed to upload the jar from their local.
-        self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_from_config('FEATHR_RUNTIME_LOCATION')
+        self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_from_config(
+            'FEATHR_RUNTIME_LOCATION')
         # configure the remote environment
         self.feathr_synapse_laucher = _FeathrSynapseJobLauncher(
             synapse_dev_url=_EnvVaraibleUtil.get_from_config(
@@ -82,7 +83,8 @@ class FeathrClient(object):
                 'SYNAPSE_POOL_NAME'),
             datalake_dir=_EnvVaraibleUtil.get_from_config(
                 'SYNAPSE_WORKSPACE_DIR'),
-            executor_size=_EnvVaraibleUtil.get_from_config('SYNAPSE_EXECUTOR_SIZE'),
+            executor_size=_EnvVaraibleUtil.get_from_config(
+                'SYNAPSE_EXECUTOR_SIZE'),
             executors=_EnvVaraibleUtil.get_from_config('SYNAPSE_EXECUTOR_NUM'))
 
         self._construct_redis_client()
@@ -94,7 +96,8 @@ class FeathrClient(object):
 
         Some required information has to be set via environment variables so the client can work.
         """
-        all_required_vars = _EnvVaraibleUtil.get_from_config("REQUIRED_ENVIRONMENT_VARIABLES")
+        all_required_vars = _EnvVaraibleUtil.get_from_config(
+            "REQUIRED_ENVIRONMENT_VARIABLES")
         for required_field in all_required_vars:
             if required_field not in os.environ:
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
@@ -189,9 +192,12 @@ class FeathrClient(object):
         parameters.
         """
         password = _EnvVaraibleUtil.get_environment_variable(REDIS_PASSWORD)
-        host = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_HOST)
-        port = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_PORT)
-        ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_SSL_ENABLED)
+        host = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_HOST)
+        port = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_PORT)
+        ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_SSL_ENABLED)
 
         redis_clint = redis.Redis(
             host=host,
@@ -208,7 +214,8 @@ class FeathrClient(object):
           feature_join_conf_path: Relative path to your feature join config file.
         """
         if not feature_join_conf_path.startswith('feature_join_conf'):
-            raise RuntimeError('Feature join config should be in feature_join_conf folder.')
+            raise RuntimeError(
+                'Feature join config should be in feature_join_conf folder.')
 
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
@@ -232,7 +239,8 @@ class FeathrClient(object):
                 '--output', feature_join_job_params.job_output_path,
                 '--feature-config', self.feathr_synapse_laucher.upload_to_work_dir(
                     feature_join_job_params.feature_config),
-                '--num-parts', _EnvVaraibleUtil.get_from_config('RESULT_OUTPUT_PARTS')
+                '--num-parts', _EnvVaraibleUtil.get_from_config(
+                    'RESULT_OUTPUT_PARTS')
             ],
             reference_files_path=[],
         )
@@ -248,7 +256,8 @@ class FeathrClient(object):
         if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
             return feathr_feature['outputPath']
         else:
-            raise RuntimeError('Spark job failed so output cannot be retrieved.')
+            raise RuntimeError(
+                'Spark job failed so output cannot be retrieved.')
 
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
@@ -275,7 +284,8 @@ class FeathrClient(object):
             feature_config=os.path.abspath("feature_conf/features.conf"))
 
         # submit the jars
-        logger.info('See materialization job here: https://ms.web.azuresynapse.net/en-us/monitoring/sparkapplication')
+        logger.info(
+            'See materialization job here: https://ms.web.azuresynapse.net/en-us/monitoring/sparkapplication')
 
         return self.feathr_synapse_laucher.submit_feathr_job(
             job_name=_EnvVaraibleUtil.get_from_config(
@@ -289,7 +299,9 @@ class FeathrClient(object):
                 '--feature-config', self.feathr_synapse_laucher.upload_to_work_dir(
                     generation_config.feature_config),
                 '--redis-config', self._getRedisConfigStr(),
-                '--s3-config', self._get_s3_config_str()
+                '--s3-config', self._get_s3_config_str(),
+                '--adls-config', self._get_adls_config_str(),
+                '--blob-config', self._get_blob_config_str()
             ],
             reference_files_path=[],
         )
@@ -298,9 +310,12 @@ class FeathrClient(object):
         """Construct the Redis config string. The host, port, credential and other parameters can be set via environment
         variables."""
         password = _EnvVaraibleUtil.get_environment_variable(REDIS_PASSWORD)
-        host = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_HOST)
-        port = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_PORT)
-        ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default('azure', REDIS_SSL_ENABLED)
+        host = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_HOST)
+        port = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_PORT)
+        ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'azure', REDIS_SSL_ENABLED)
         config_str = """
         REDIS_PASSWORD: "{REDIS_PASSWORD}"
         REDIS_HOST: "{REDIS_HOST}"
@@ -312,7 +327,8 @@ class FeathrClient(object):
     def _get_s3_config_str(self):
         """Construct the S3 config string. The endpoint, access key, secret key, and other parameters can be set via
         environment variables."""
-        endpoint = _EnvVaraibleUtil.get_environment_variable_with_default('aws', 'S3_ENDPOINT')
+        endpoint = _EnvVaraibleUtil.get_environment_variable_with_default(
+            'aws', 'S3_ENDPOINT')
         # if s3 endpoint is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
         access_key = _EnvVaraibleUtil.get_environment_variable('S3_ACCESS_KEY')
@@ -323,4 +339,32 @@ class FeathrClient(object):
             S3_ACCESS_KEY: "{S3_ACCESS_KEY}"
             S3_SECRET_KEY: "{S3_SECRET_KEY}"
             """.format(S3_ENDPOINT=endpoint, S3_ACCESS_KEY=access_key, S3_SECRET_KEY=secret_key)
+        return config_str
+
+    def _get_adls_config_str(self):
+        """Construct the ADLS config string for abfs(s). The Account, access key and other parameters can be set via
+        environment variables."""
+        account = _EnvVaraibleUtil.get_environment_variable('ADLS_ACCOUNT')
+        # if ADLS Account is set in the feathr_config, then we need other environment variables
+        # keys can't be only accessed through environment
+        key = _EnvVaraibleUtil.get_environment_variable('ADLS_KEY')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            ADLS_ACCOUNT: {ADLS_ACCOUNT}
+            ADLS_KEY: "{ADLS_KEY}"
+            """.format(ADLS_ACCOUNT=account, ADLS_KEY=key)
+        return config_str
+
+    def _get_blob_config_str(self):
+        """Construct the Blob config string for wasb(s). The Account, access key and other parameters can be set via
+        environment variables."""
+        account = _EnvVaraibleUtil.get_environment_variable('BLOB_ACCOUNT')
+        # if ADLS Account is set in the feathr_config, then we need other environment variables
+        # keys can't be only accessed through environment
+        key = _EnvVaraibleUtil.get_environment_variable('BLOB_KEY')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            BLOB_ACCOUNT: {BLOB_ACCOUNT}
+            BLOB_KEY: "{BLOB_KEY}"
+            """.format(BLOB_ACCOUNT=account, BLOB_KEY=key)
         return config_str
