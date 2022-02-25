@@ -2,6 +2,8 @@ package com.linkedin.feathr.offline.job
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.typesafe.config.Config
+import org.apache.spark.sql.SparkSession
 
 import scala.io.Source
 
@@ -107,10 +109,10 @@ object FeatureStoreConfigUtil {
     }
   }
 
-  def getS3AuthStr(str: String, featureGenContext: Option[FeatureGenJobContext]): String = {
+  def getS3AuthStr(str: String, s3ConfigOption: Option[Config]): String = {
     sys.env.get(str).getOrElse(
-      if (featureGenContext.isDefined) {
-        getS3AuthFromContext(str, featureGenContext.get)
+      if (s3ConfigOption.isDefined) {
+        getS3AuthFromContext(str, s3ConfigOption.get)
       } else if(featureStoreConfig.resource != null) {
         getS3AuthFromConfig(str)
       } else EMPTY_STRING
@@ -118,15 +120,26 @@ object FeatureStoreConfigUtil {
   }
 
 
-  private def getS3AuthFromContext(str: String, featureGenContext: FeatureGenJobContext): String = {
-    featureGenContext.s3Config.map(config => {
-      str match {
-        case S3_ENDPOINT => config.getString(S3_ENDPOINT)
-        case S3_ACCESS_KEY => config.getString(S3_ACCESS_KEY)
-        case S3_SECRET_KEY => config.getString(S3_SECRET_KEY)
-        case _ => EMPTY_STRING
-      }
-    }).getOrElse(EMPTY_STRING)
+  def getS3AuthFromContext(str: String, s3Config: Config): String = {
+    str match {
+      case S3_ENDPOINT => s3Config.getString(S3_ENDPOINT)
+      case S3_ACCESS_KEY => s3Config.getString(S3_ACCESS_KEY)
+      case S3_SECRET_KEY => s3Config.getString(S3_SECRET_KEY)
+      case _ => EMPTY_STRING
+    }
+  }
+
+  private[feathr] def setupS3Params(ss: SparkSession, s3ConfigOption: Option[Config] = None) = {
+    val s3Endpoint = FeatureStoreConfigUtil.getS3AuthStr(S3_ENDPOINT, s3ConfigOption)
+    val s3AccessKey = FeatureStoreConfigUtil.getS3AuthStr(S3_ACCESS_KEY, s3ConfigOption)
+    val s3SecretKey = FeatureStoreConfigUtil.getS3AuthStr(S3_SECRET_KEY, s3ConfigOption)
+
+    ss.sparkContext
+      .hadoopConfiguration.set("fs.s3a.endpoint", s3Endpoint)
+    ss.sparkContext
+      .hadoopConfiguration.set("fs.s3a.access.key", s3AccessKey)
+    ss.sparkContext
+      .hadoopConfiguration.set("fs.s3a.secret.key", s3SecretKey)
   }
 
   private def getS3AuthFromConfig(str: String): String = {
