@@ -5,7 +5,8 @@ import com.linkedin.feathr.common.configObj.configbuilder.FeatureGenConfigBuilde
 import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeathrConfigLoader
 import com.linkedin.feathr.offline.job.FeatureJoinJob._
-import com.linkedin.feathr.offline.job.FeatureStoreConfigUtil.{ADLS_ACCOUNT, ADLS_KEY, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_SSL_ENABLED, S3_ACCESS_KEY, S3_ENDPOINT, S3_SECRET_KEY, BLOB_ACCOUNT, BLOB_KEY}
+import com.linkedin.feathr.offline.job.FeatureStoreConfigUtil.{ADLS_ACCOUNT, ADLS_KEY, BLOB_ACCOUNT, BLOB_KEY,
+  REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_SSL_ENABLED, setupS3Params}
 import com.linkedin.feathr.offline.util.{CmdLineParser, OptionParam, SparkFeaturizedDataset}
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import org.apache.avro.generic.GenericRecord
@@ -39,7 +40,7 @@ object FeatureGenJob {
       "params-override" -> OptionParam("ac", "parameter to override in feature generation config", "PARAM_OVERRIDE", "[]"),
       "feature-conf-override" -> OptionParam("fco", "parameter to override in feature definition config", "FEATURE_CONF_OVERRIDE", "[]"),
       "redis-config" -> OptionParam("ac", "Authentication config for Redis", "REDIS_CONFIG", ""),
-      "s3-config" -> OptionParam("ac", "Authentication config for S3", "S3_CONFIG", ""),
+      "s3-config" -> OptionParam("sc", "Authentication config for S3", "S3_CONFIG", ""),
       "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", "")
     )
@@ -185,19 +186,6 @@ object FeatureGenJob {
     sparkConf.set("spark.redis.auth", auth)
   }
 
-  private[feathr] def setupS3Params(ss: SparkSession, featureGenContext: Option[FeatureGenJobContext] = None) = {
-    val s3Endpoint = FeatureStoreConfigUtil.getS3AuthStr(S3_ENDPOINT, featureGenContext)
-    val s3AccessKey = FeatureStoreConfigUtil.getS3AuthStr(S3_ACCESS_KEY, featureGenContext)
-    val s3SecretKey = FeatureStoreConfigUtil.getS3AuthStr(S3_SECRET_KEY, featureGenContext)
-
-    ss.sparkContext
-      .hadoopConfiguration.set("fs.s3a.endpoint", s3Endpoint)
-    ss.sparkContext
-      .hadoopConfiguration.set("fs.s3a.access.key", s3AccessKey)
-    ss.sparkContext
-      .hadoopConfiguration.set("fs.s3a.secret.key", s3SecretKey)
-  }
-
   private[feathr] def setupADLSParams(ss: SparkSession, featureGenContext: Option[FeatureGenJobContext] = None) = {
     val adlsParam = s"fs.azure.account.key.${FeatureStoreConfigUtil.getADLSAuthStr(ADLS_ACCOUNT, featureGenContext)}.dfs.core.windows.net"
     val adlsKey = FeatureStoreConfigUtil.getADLSAuthStr(ADLS_KEY, featureGenContext)
@@ -227,8 +215,8 @@ object FeatureGenJob {
     val ss = sparkSessionBuilder.getOrCreate()
     setupADLSParams(ss, Some(jobContext))
     setupBlobParams(ss, Some(jobContext))
-    setupS3Params(ss, Some(jobContext))
-    setupS3Params(ss, Some(jobContext))
+    setupS3Params(ss, jobContext.s3Config)
+
     run(ss, applicationConfigPath, featureDefs, jobContext)
   }
 
