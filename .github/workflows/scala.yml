@@ -26,7 +26,7 @@ jobs:
       uses: fixpoint/azblob-upload-artifact@v4
       with:
         connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
-        name: 'feathr_jar_github_action'
+        name: 'feathr_jar_github_action_spark3'
         path: 'target/scala-2.12/feathr-assembly-0.1.0-SNAPSHOT.jar'
         container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
         cleanup: 'true'
