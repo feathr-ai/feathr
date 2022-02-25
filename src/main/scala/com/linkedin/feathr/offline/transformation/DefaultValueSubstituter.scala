@@ -113,7 +113,6 @@ private[offline] object DataFrameDefaultValueSubstituter extends DataFrameDefaul
         val schema = field.dataType
         val tensorData = defaultFeatureValue.getAsTensorData
         val ts = FeaturizedDatasetUtils.tensorToDataFrameRow(tensorData)
-        SQLConf.get.setConfString("spark.sql.legacy.allowUntypedScalaUDF", "true")
         val fdsTensorDefaultUDF = getFDSTensorDefaultUDF(schema, ts)
         ss.udf.register("tz_udf", fdsTensorDefaultUDF)
         expr(s"tz_udf($featureColumnName)")

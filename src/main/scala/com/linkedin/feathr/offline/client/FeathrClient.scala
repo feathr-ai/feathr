@@ -12,6 +12,7 @@ import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.util.{FeathrUtils, _}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.internal.SQLConf
 
 import scala.util.{Failure, Success}
 
@@ -97,7 +98,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
   }
 
   private def prepareExecuteEnv(): Unit = {
-    sparkSession.sql("set spark.sql.legacy.allowUntypedScalaUDF = true")
+    SQLConf.get.setConfString("spark.sql.legacy.allowUntypedScalaUDF", "true")
   }
 
 

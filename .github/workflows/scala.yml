@@ -12,7 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Git checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+    - name: Branch name
+      run: echo running on branch ${GITHUB_REF##*/}
     - name: Set up JDK 8
       uses: actions/setup-java@v2
       with:
@@ -50,6 +55,7 @@ jobs:
         python -m pip install -e ./feathr_project/
     - name: Test with pytest
       env:
+        PROJECT_NAME: "feathr_ci_project"
         FEATHR_RUNTIME_LOCATION: 'abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0-SNAPSHOT.jar'
         REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
         AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}

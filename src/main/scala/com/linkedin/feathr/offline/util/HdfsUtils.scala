@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.util
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs._
+import org.apache.hadoop.fs.{Path,LocatedFileStatus,FileSystem,PathFilter,RemoteIterator}
 import org.apache.log4j.{Logger, PatternLayout, WriterAppender}
 
 import java.io.{FileSystem => _, _}
