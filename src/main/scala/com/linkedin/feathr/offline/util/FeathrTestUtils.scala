@@ -1,5 +1,5 @@
 package com.linkedin.feathr.offline.util
-
+import org.apache.spark.sql.internal.SQLConf
 import Transformations.sortColumns
 import com.linkedin.feathr.offline.job.FeatureGenJob
 import org.apache.avro.generic.GenericRecord
@@ -98,7 +98,7 @@ private[offline] object FeathrTestUtils {
     val conf = sparkConf
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     // LIHADOOP-41472
-    conf.set("spark.sql.legacy.allowUntypedScalaUDF","true")
+    SQLConf.get.setConfString("spark.sql.legacy.allowUntypedScalaUDF", "true")
     conf.set("spark.kryo.mllib.register", "false")
     conf.set("spark.driver.host", "localhost")
     conf.set("spark.isolated.classloader", "true")

@@ -7,6 +7,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, expr, udf, when}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable
@@ -112,6 +113,7 @@ private[offline] object DataFrameDefaultValueSubstituter extends DataFrameDefaul
         val schema = field.dataType
         val tensorData = defaultFeatureValue.getAsTensorData
         val ts = FeaturizedDatasetUtils.tensorToDataFrameRow(tensorData)
+        SQLConf.get.setConfString("spark.sql.legacy.allowUntypedScalaUDF", "true")
         val fdsTensorDefaultUDF = getFDSTensorDefaultUDF(schema, ts)
         ss.udf.register("tz_udf", fdsTensorDefaultUDF)
         expr(s"tz_udf($featureColumnName)")
