@@ -221,7 +221,7 @@ private[offline] object SourceUtils {
    * @param field the avro field for which the default value is to be extracted
    * return the JsonNode containing the default value or otherwise null
    */
-  def getDefaultValueFromAvroRecord(field: Schema.Field): AnyRef = {
+  def getDefaultValueFromAvroRecord(field: Schema.Field) = {
     // This utility method throws an error if the field does not have a default value, hence we need to check if the field has a default first.
     field.defaultVal()
   }

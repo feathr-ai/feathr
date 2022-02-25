@@ -119,8 +119,6 @@ private[offline] object FeathrTestUtils {
           s"can only be integers or '*'.")
     }
     val sessionBuilder = SparkSession.builder().appName(appName).master(s"local[${numThreads}]").config(conf)
-    val ss = sessionBuilder.getOrCreate()
-
-    ss
+    sessionBuilder.getOrCreate()
   }
 }
