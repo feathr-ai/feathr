@@ -1,4 +1,5 @@
 package com.linkedin.feathr.offline.util
+
 import org.apache.spark.sql.internal.SQLConf
 import Transformations.sortColumns
 import com.linkedin.feathr.offline.job.FeatureGenJob
@@ -120,7 +121,6 @@ private[offline] object FeathrTestUtils {
     val sessionBuilder = SparkSession.builder().appName(appName).master(s"local[${numThreads}]").config(conf)
     val ss = sessionBuilder.getOrCreate()
 
-//    ss.sql("set spark.sql.legacy.allowUntypedScalaUDF = true")
     ss
   }
 }

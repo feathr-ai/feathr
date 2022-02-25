@@ -49,7 +49,7 @@ lazy val root = (project in file("."))
       libraryDependencies ++= cloudProvidedDeps,
       libraryDependencies ++= localAndCloudCommonDependencies,
       libraryDependencies ++= Seq(
-          "org.apache.spark" %% "spark-core" % "3.1.2" % "provided"
+      "org.apache.spark" %% "spark-core" % "3.1.2" % "provided"
       )
   )
 
@@ -63,8 +63,8 @@ lazy val root = (project in file("."))
 //     libraryDependencies ++= localAndCloudDiffDependencies,
 //     libraryDependencies ++= localAndCloudCommonDependencies,
 //     libraryDependencies ++= Seq(
-//         // See https://stackoverflow.com/questions/55923943/how-to-fix-unsupported-class-file-major-version-55-while-executing-org-apache
-//         "org.apache.spark" %% "spark-core" % "3.1.2" exclude("org.apache.xbean","xbean-asm6-shaded")
+//     // See https://stackoverflow.com/questions/55923943/how-to-fix-unsupported-class-file-major-version-55-while-executing-org-apache
+//     "org.apache.spark" %% "spark-core" % "3.1.2" exclude("org.apache.xbean","xbean-asm6-shaded")
 //     )
 // )
 
