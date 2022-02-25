@@ -44,3 +44,9 @@ Ref: [Installing packages using pip and virtual environments](https://packaging.
 * To deactivate: `conda deactivate`
 Ref: [Managing environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
 
+## Distribute Feathr Python Library via PYPI
+* Do NOT use `python3 -m build` since it will result in unknown issues.
+* Generate wheel: `python3 -m build --wheel`
+* Generate sdist: `python3 -m build --sdist`
+* Upload to Pypi: `python3 -m twine upload dist/*`
+Ref [Packaging Python Projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
