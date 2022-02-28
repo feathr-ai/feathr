@@ -48,10 +48,15 @@ private[feathr] class CmdLineParser(args: Array[String], optionParams: Map[Strin
    * @return optional string value of the optName
    */
   def extractOptionalValue(optName: String): Option[String] = {
-    commandLine.getOptionValue(optName, optionParams(optName).defaultValue) match {
-      case "" => None
-      case value: String => Some(value)
-      case _ => None
+    try{
+      commandLine.getOptionValue(optName, optionParams(optName).defaultValue) match {
+        case "" => None
+        case value: String => Some(value)
+        case _ => None
+      }
+    }
+    catch{
+      case _: Exception => None
     }
   }
 }

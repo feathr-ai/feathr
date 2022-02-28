@@ -1,0 +1,39 @@
+package com.linkedin.feathr.offline.config.datasource
+
+import org.apache.spark.SparkConf
+
+private[feathr]  class RedisConfigExtractor extends ConfigExtractor() {
+  val REDIS_HOST = "REDIS_HOST"
+  val REDIS_PORT = "REDIS_PORT"
+  val REDIS_SSL_ENABLED = "REDIS_SSL_ENABLED"
+  val REDIS_PASSWORD = "REDIS_PASSWORD"
+
+  override val params = List(REDIS_HOST, REDIS_PORT, REDIS_SSL_ENABLED, REDIS_PASSWORD)
+
+   def setup(sparkConf: SparkConf, context: AuthContext, resource: Resource){
+    setupSparkConf(sparkConf, Some(context), Some(resource))
+  }
+
+  def setupSparkConf(sparkConf: SparkConf, context: Option[AuthContext], resource: Option[Resource]): Unit = {
+    val host = getAuthStr(REDIS_HOST, context, resource)
+    val port = getAuthStr(REDIS_PORT, context, resource)
+    val sslEnabled = getAuthStr(REDIS_SSL_ENABLED, context, resource)
+    val auth = getAuthStr(REDIS_PASSWORD, context, resource)
+
+    sparkConf.set("spark.redis.host", host)
+    sparkConf.set("spark.redis.port", port)
+    sparkConf.set("spark.redis.ssl", sslEnabled)
+    sparkConf.set("spark.redis.auth", auth)
+  }
+
+  def getAuthFromConfig(str: String, resource: Resource): String = {
+    str match {
+      case REDIS_HOST => resource.azureResource.redisHost
+      case REDIS_PORT => resource.azureResource.redisPort
+      case REDIS_SSL_ENABLED => resource.azureResource.redisSslEnabled
+      case REDIS_PASSWORD => resource.azureResource.redisPassword
+      case _ => EMPTY_STRING
+    }
+  }
+}
+

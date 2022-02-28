@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.util
 
 import Transformations.sortColumns
+import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
 import com.linkedin.feathr.offline.job.FeatureGenJob
 import org.apache.avro.generic.GenericRecord
 import org.apache.spark.SparkConf
@@ -105,8 +106,7 @@ private[offline] object FeathrTestUtils {
     conf.set("spark.isolated.classloader.driver.jar", path)
     conf.set("spark.expressionencoder.org.apache.avro.specific.SpecificRecord",
       "org.apache.spark.sql.avro.AvroEncoder$")
-    FeatureGenJob.setupSparkRedis(conf)
-
+    DataSourceConfigUtils.setupSparkConf(conf, new DataSourceConfigs())
 
     // conf.set("spark.kryo.registrator", "org.apache.spark.serializer.AvroGenericArrayKryoRegistrator")
 
