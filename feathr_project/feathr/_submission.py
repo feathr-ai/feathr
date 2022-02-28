@@ -74,6 +74,8 @@ class _FeathrSynapseJobLauncher(object):
             logger.info(
                 'Cloud path {} is used for running the job: {}', main_jar_path, job_name)
         else:
+            logger.info('Uploading jar from {} to cloud for running job: {}',
+                        main_jar_path, job_name)
             main_jar_cloud_path = self._datalake.upload_file_to_workdir(main_jar_path)
             logger.info('{} is uploaded to {} for running job: {}',
                          main_jar_path, main_jar_cloud_path, job_name)
