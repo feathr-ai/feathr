@@ -361,7 +361,7 @@ class FeathrClient(object):
             'azure', REDIS_HOST)
         port = _EnvVaraibleUtil.get_environment_variable_with_default(
             'azure', REDIS_PORT)
-        ssl_enablesd = _EnvVaraibleUtil.get_environment_variable_with_default(
+        ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default(
             'azure', REDIS_SSL_ENABLED)
         config_str = """
         REDIS_PASSWORD: "{REDIS_PASSWORD}"
