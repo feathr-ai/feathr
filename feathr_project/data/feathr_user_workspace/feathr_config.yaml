@@ -1,14 +1,14 @@
 # DO NOT MOVE OR DELETE THIS FILE
 resource:
   azure:
-    PROJECT_NAME: "frame_getting_started"
+    PROJECT_NAME: "feathr_getting_started"
 
     SYNAPSE_ENABLED: True
 
     # Spark cluster configs
     SYNAPSE_DEV_URL: "https://feathrazuretest3synapse.dev.azuresynapse.net"
     SYNAPSE_POOL_NAME: "spark3"
-    SYNAPSE_WORKSPACE_DIR: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/frame_getting_started"
+    SYNAPSE_WORKSPACE_DIR: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started"
     SYNAPSE_EXECUTOR_SIZE: "Small"
     SYNAPSE_EXECUTOR_NUM: 4
 
@@ -24,13 +24,13 @@ resource:
 
 
     # Redis configs to access Redis cluster
-    REDIS_PASSWORD: "Li7Nn63iNB0x731VTnnz2Vr29WYJHx7JlAzCaH9lbHw="
+    REDIS_PASSWORD: ''
     REDIS_HOST: "feathrazuretest3redis.redis.cache.windows.net"
     REDIS_PORT: 6380
     REDIS_SSL_ENABLED: True
 
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
-    FEATHR_RUNTIME_LOCATION: abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/frame_getting_started/feathr-assembly-0.1.0-SNAPSHOT.jar
+    FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar
     # configure number of parts for the spark output for feature generation job
     RESULT_OUTPUT_PARTS: "1"
 

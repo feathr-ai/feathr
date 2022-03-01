@@ -6,6 +6,7 @@ import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig,
 import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.derived.{DerivedFeature, DerivedFeatureEvaluator}
+import com.linkedin.feathr.offline.testfwk.TestFwkUtils
 import com.linkedin.feathr.offline.transformation.FDSConversionUtils
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils.tensorTypeToDataFrameSchema
 import com.linkedin.feathr.offline.util.{CoercionUtilsScala, FeaturizedDatasetUtils}
@@ -66,6 +67,11 @@ class RowBasedDerivation(dependentFeatureTypeConfigs: Map[String, FeatureTypeCon
 
     val contextDFSchema = df.schema
     // 2. calculate derived feature
+
+    if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
+      println(f"${Console.GREEN}Your input table to the derived feature is: ${Console.RESET}")
+      df.show(10)
+    }
     val outputDF = df.map(row => {
       try {
         // prepare context values
