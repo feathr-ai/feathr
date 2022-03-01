@@ -15,7 +15,7 @@ val localAndCloudDiffDependencies = Seq(
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
     "org.apache.hadoop" % "hadoop-mapreduce-client-core" % "2.7.2",
     "org.apache.hadoop" % "hadoop-common" % "2.7.2",
-    "org.apache.avro" % "avro" % "1.9.2",
+    "org.apache.avro" % "avro" % "1.8.2",
     "org.apache.xbean" % "xbean-asm6-shaded" % "4.10",
 )
 
