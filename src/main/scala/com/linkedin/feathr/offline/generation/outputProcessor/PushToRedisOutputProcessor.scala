@@ -34,10 +34,18 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
     val outputKeyColumnName = "feature_key"
     val decoratedDf = df.withColumn(outputKeyColumnName, newColExpr)
       .drop(keyColumns: _*)
+
+
+    // set the host/post/auth/ssl configs in Redis again in the output directly
+    // otherwise, in some environment (like databricks), the configs from the active spark session is not passed here.
     decoratedDf.write
       .format("org.apache.spark.sql.redis")
       .option("table", tableName)
       .option("key.column", outputKeyColumnName)
+      .option("host", ss.conf.get("spark.redis.host"))
+      .option("port", ss.conf.get("spark.redis.port"))
+      .option("auth", ss.conf.get("spark.redis.auth"))
+      .option("ssl", ss.conf.get("spark.redis.ssl"))
       .mode(SaveMode.Overwrite)
       .save()
     (df, header)

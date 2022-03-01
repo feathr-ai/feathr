@@ -114,7 +114,7 @@ class TestAnchorToDataSourceMapper extends TestFeathr with MockitoSugar {
     val date2018011004 = LocalDateTime.of(2018, 1, 10, 4, 0)
 
     val paths =
-      HdfsUtils.getPaths[ChronoUnit.HOURS.type](hourlyMockDataPath, LocalDateTime.of(2018, 1, 10, 1, 0), LocalDateTime.of(2018, 1, 10, 4, 0), ChronoUnit.HOURS)
+      HdfsUtils.getPaths(hourlyMockDataPath, LocalDateTime.of(2018, 1, 10, 1, 0), LocalDateTime.of(2018, 1, 10, 4, 0), ChronoUnit.HOURS)
 
     val records2018011001 = getTestRecords(2, date2018011001, date2018011002)
     val records2018011002 = getTestRecords(2, date2018011002, date2018011003)
@@ -183,7 +183,7 @@ class TestAnchorToDataSourceMapper extends TestFeathr with MockitoSugar {
     val date20180112 = LocalDate.of(2018, 1, 12)
 
     val paths = HdfsUtils
-      .getPaths[ChronoUnit.DAYS.type](dailyMockDataPath, LocalDate.of(2018, 1, 10).atStartOfDay(), LocalDate.of(2018, 1, 13).atStartOfDay(), ChronoUnit.DAYS)
+      .getPaths(dailyMockDataPath, LocalDate.of(2018, 1, 10).atStartOfDay(), LocalDate.of(2018, 1, 13).atStartOfDay(), ChronoUnit.DAYS)
 
     val records20180110 = getTestRecords(2, date20180110.atStartOfDay(), date20180110.atTime(LocalTime.MAX))
     val records20180111 = getTestRecords(2, date20180111.atStartOfDay(), date20180111.atTime(LocalTime.MAX))

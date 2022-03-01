@@ -466,33 +466,33 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
   @DataProvider
   def elementwiseTensorTestCases: Array[Array[Any]] = {
     val dimArray: Array[Array[Any]] = Array(
-      Array(StringType, Array("2", "1", "3")),
-      Array(IntegerType, Array(2, 1, 3)),
-      Array(LongType, Array(2L, 1L, 3L))
+      Array(StringType, Array("1", "3", "2")),
+      Array(IntegerType, Array(1, 3, 2)),
+      Array(LongType, Array(1L, 3L, 2L))
     )
     val valuesArrayForSum: Array[Array[Any]] = Array(
-      Array(IntegerType, Array(200, 110, 30)),
-      Array(LongType, Array(200L, 110L, 30L)),
-      Array(FloatType, Array(200.0f, 110.0f, 30.0f)),
-      Array(DoubleType, Array(200.0d, 110.0d, 30.0d))
+      Array(IntegerType, Array(110, 30, 200)),
+      Array(LongType, Array(110L, 30L, 200L)),
+      Array(FloatType, Array(110.0f, 30.0f, 200.0f)),
+      Array(DoubleType, Array(110.0d, 30.0d, 200.0d))
     )
     val valuesArrayForAvg: Array[Array[Any]] = Array(
-      Array(IntegerType, Array(100, 55, 15)),
-      Array(LongType, Array(100L, 55L, 15L)),
-      Array(FloatType, Array(100.0f, 55.0f, 15.0f)),
-      Array(DoubleType, Array(100.0d, 55.0d, 15.0d))
+      Array(IntegerType, Array(55, 15, 100)),
+      Array(LongType, Array(55L, 15L, 100L)),
+      Array(FloatType, Array(55.0f, 15.0f, 100.0f)),
+      Array(DoubleType, Array(55.0d, 15.0d, 100.0d))
     )
     val valuesArrayForMin: Array[Array[Any]] = Array(
-      Array(IntegerType, Array(200, 10, 30)),
-      Array(LongType, Array(200L, 10L, 30L)),
-      Array(FloatType, Array(200.0f, 10.0f, 30.0f)),
-      Array(DoubleType, Array(200.0d, 10.0d, 30.0d))
+      Array(IntegerType, Array(10, 30, 200)),
+      Array(LongType, Array(10L, 30L, 200L)),
+      Array(FloatType, Array(10.0f, 30.0f, 200.0f)),
+      Array(DoubleType, Array(10.0d, 30.0d, 200.0d))
     )
     val valuesArrayForMax: Array[Array[Any]] = Array(
-      Array(IntegerType, Array(200, 100, 30)),
-      Array(LongType, Array(200L, 100L, 30L)),
-      Array(FloatType, Array(200.0f, 100.0f, 30.0f)),
-      Array(DoubleType, Array(200.0d, 100.0d, 30.0d))
+      Array(IntegerType, Array(100, 30, 200)),
+      Array(LongType, Array(100L, 30L, 200L)),
+      Array(FloatType, Array(100.0f, 30.0f, 200.0f)),
+      Array(DoubleType, Array(100.0d, 30.0d, 200.0d))
     )
     val sumCases = for (dim <- dimArray; values <- valuesArrayForSum) yield Array(ELEMENTWISE_SUM) ++ dim ++ values
     val avgCases = for (dim <- dimArray; values <- valuesArrayForAvg) yield Array(ELEMENTWISE_AVG) ++ dim ++ values

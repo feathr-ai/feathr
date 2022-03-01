@@ -71,25 +71,22 @@ class FeathrClient(object):
         self._KEY_SEPARATOR = ':'
 
         self._check_required_environment_variables_exist()
-
-        if _EnvVaraibleUtil.get_from_config('SYNAPSE_ENABLED') and _EnvVaraibleUtil.get_from_config('DATABRICKS_ENABLED'):
+        
+        if _EnvVaraibleUtil.get_from_config('SPARK_RUNTIME') not in {'AZURE_SYNAPSE', 'DATABRICKS'}:
             RuntimeError(
-                'Only one of the spark environment can be set at a time. You have enabled both Synapse and Databricks. Please only set \"True\" to one of the configs: SYNAPSE_ENABLED, DATABRICKS_ENABLED')
-        elif _EnvVaraibleUtil.get_from_config('SYNAPSE_ENABLED'):
+                'Only \'AZURE_SYNAPSE\' and \'DATABRICKS\' are currently supported.')
+        elif _EnvVaraibleUtil.get_from_config('SPARK_RUNTIME') == "AZURE_SYNAPSE":
             # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
             # submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from their local env.
             self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_from_config(
                 'FEATHR_RUNTIME_LOCATION')
             self.spark_runtime = 'synapse'
-        elif _EnvVaraibleUtil.get_from_config('DATABRICKS_ENABLED'):
+        elif _EnvVaraibleUtil.get_from_config('SPARK_RUNTIME') == "DATABRICKS":
             self.spark_runtime = 'databricks'
             # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
             # submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from their local env.
             self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_from_config(
                 'DATABRICKS_FEATHR_RUNTIME_LOCATION')
-        else:
-            RuntimeError(
-                'At least one of the spark environment should be set. You have disabled all the spark environments. Please set \"True\" to one of the configs: SYNAPSE_ENABLED, DATABRICKS_ENABLED')
 
         # configure the remote environment
         if self.spark_runtime == 'synapse':
