@@ -255,7 +255,7 @@ class FeathrClient(object):
                                                        )
 
         # submit the jars
-        return self.feathr_spark_laucher.submits_feathr_job(
+        return self.feathr_spark_laucher.submit_feathr_job(
             job_name=_EnvVaraibleUtil.get_from_config(
                 'PROJECT_NAME') + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
@@ -312,7 +312,7 @@ class FeathrClient(object):
             generation_config_path=os.path.abspath(feature_gen_conf_path),
             feature_config=os.path.abspath("feature_conf/features.conf"))
 
-        return self.feathr_spark_laucher.submits_feathr_job(
+        return self.feathr_spark_laucher.submit_feathr_job(
             job_name=_EnvVaraibleUtil.get_from_config(
                 'PROJECT_NAME') + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
@@ -339,7 +339,7 @@ class FeathrClient(object):
         if not block:
             return feathr_feature['outputPath']
         # Block the API by pooling the job status and wait for complete
-        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
+        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
             return feathr_feature['outputPath']
         else:
             raise RuntimeError(
@@ -348,7 +348,7 @@ class FeathrClient(object):
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
         """
-        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
+        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
             return
         else:
             raise RuntimeError('Spark job failed.')

@@ -92,7 +92,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                              local_path_or_http_path, returned_path)
         return returned_path
 
-    def submits_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
+    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
         """
         submit the feathr job to databricks
         Refer to the databricks doc for more details on the meaning of the parameters:
