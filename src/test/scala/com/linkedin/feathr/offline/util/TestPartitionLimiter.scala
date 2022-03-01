@@ -50,7 +50,9 @@ class TestPartitionLimiter extends TestFeathr with MockitoSugar{
   @BeforeClass
   override def setup(): Unit = {
     super.setup()
-    testDataFrame = ss.emptyDataFrame
+    val sqlContext = ss.sqlContext
+    import sqlContext.implicits._
+    testDataFrame = Range(1, 2).map(k => (k, k)).toDF("id", "val")
   }
 
   @Test(description = "test limitPartition with DataFrame", dataProvider = "testCases")

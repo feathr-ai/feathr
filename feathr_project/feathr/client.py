@@ -73,19 +73,19 @@ class FeathrClient(object):
 
         # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
         # submission. The feathr jar hosted in Azure saves the time users needed to upload the jar from their local.
-        self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_from_config(
-            'FEATHR_RUNTIME_LOCATION')
+        self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_environment_variable_with_default(
+           'azure', 'FEATHR_RUNTIME_LOCATION')
         # configure the remote environment
         self.feathr_synapse_laucher = _FeathrSynapseJobLauncher(
-            synapse_dev_url=_EnvVaraibleUtil.get_from_config(
-                'SYNAPSE_DEV_URL'),
-            pool_name=_EnvVaraibleUtil.get_from_config(
-                'SYNAPSE_POOL_NAME'),
-            datalake_dir=_EnvVaraibleUtil.get_from_config(
-                'SYNAPSE_WORKSPACE_DIR'),
-            executor_size=_EnvVaraibleUtil.get_from_config(
-                'SYNAPSE_EXECUTOR_SIZE'),
-            executors=_EnvVaraibleUtil.get_from_config('SYNAPSE_EXECUTOR_NUM'))
+            synapse_dev_url=_EnvVaraibleUtil.get_environment_variable_with_default(
+               'azure', 'SYNAPSE_DEV_URL'),
+            pool_name=_EnvVaraibleUtil.get_environment_variable_with_default(
+              'azure',  'SYNAPSE_POOL_NAME'),
+            datalake_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
+               'azure', 'SYNAPSE_WORKSPACE_DIR'),
+            executor_size=_EnvVaraibleUtil.get_environment_variable_with_default(
+               'azure', 'SYNAPSE_EXECUTOR_SIZE'),
+            executors=_EnvVaraibleUtil.get_environment_variable_with_default('azure','SYNAPSE_EXECUTOR_NUM'))
 
         self._construct_redis_client()
 
@@ -228,8 +228,8 @@ class FeathrClient(object):
 
         # submit the jars
         return self.feathr_synapse_laucher.submit_feathr_job(
-            job_name=_EnvVaraibleUtil.get_from_config(
-                'PROJECT_NAME') + '_feathr_feature_join_job',
+            job_name=_EnvVaraibleUtil.get_environment_variable_with_default(
+               'azure', 'PROJECT_NAME') + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
@@ -267,8 +267,8 @@ class FeathrClient(object):
             'See materialization job here: https://ms.web.azuresynapse.net/en-us/monitoring/sparkapplication')
 
         return self.feathr_synapse_laucher.submit_feathr_job(
-            job_name=_EnvVaraibleUtil.get_from_config(
-                'PROJECT_NAME') + '_feathr_feature_materialization_job',
+            job_name=_EnvVaraibleUtil.get_environment_variable_with_default(
+               'azure', 'PROJECT_NAME') + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[

@@ -6,6 +6,6 @@ import com.linkedin.feathr.common.tensor.TensorType;
 /**
  * A converter for a single feature from Spark value to a TensorData of a specific {@link TensorType}.
  */
-interface FeatureDeserializer {
+public interface FeatureDeserializer {
     TensorData deserialize(Object featureValue);
 }

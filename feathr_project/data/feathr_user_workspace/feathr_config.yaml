@@ -5,7 +5,7 @@ resource:
 
     # Spark cluster configs
     SYNAPSE_DEV_URL: "https://feathrazuretest3synapse.dev.azuresynapse.net"
-    SYNAPSE_POOL_NAME: "spark24"
+    SYNAPSE_POOL_NAME: "spark3"
     SYNAPSE_WORKSPACE_DIR: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started"
     SYNAPSE_EXECUTOR_SIZE: "Small"
     SYNAPSE_EXECUTOR_NUM: 4
