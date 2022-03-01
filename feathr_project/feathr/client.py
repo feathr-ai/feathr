@@ -96,7 +96,7 @@ class FeathrClient(object):
 
         Some required information has to be set via environment variables so the client can work.
         """
-        all_required_vars = _EnvVaraibleUtil.get_environment_variable_with_default(
+        all_required_vars = _EnvVaraibleUtil.get_environment_variable(
             "REQUIRED_ENVIRONMENT_VARIABLES")
         for required_field in all_required_vars:
             if required_field not in os.environ:
