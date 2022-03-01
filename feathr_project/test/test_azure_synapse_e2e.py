@@ -1,7 +1,6 @@
 from feathrcli.cli import init
 from click.testing import CliRunner
 from feathr.client import FeathrClient
-from _envsetter import _EnvSetterForTest
 import os
 import glob
 import pandavro as pdx
@@ -12,7 +11,6 @@ import tempfile
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_online_store():
-    _EnvSetterForTest.set_env_feathr_client()
     """
     Test FeathrClient() online_get_features and batch_get can get data correctly.
     """
@@ -44,7 +42,6 @@ def test_feathr_online_store():
 
 
 def test_feathr_get_historical_features():
-    _EnvSetterForTest.set_env_feathr_client()
     """
     Test FeathrClient() get_features and batch_get can get data correctly.
     """
@@ -57,7 +54,7 @@ def test_feathr_get_historical_features():
         returned_spark_job = client.join_offline_features()
         res_url = client.get_job_result_uri(block=True, timeout_sec=600)
         tmp_dir = tempfile.TemporaryDirectory()
-        client.feathr_synapse_laucher.download_result(result_path=res_url, local_folder=tmp_dir.name)
+        client.feathr_spark_laucher.download_result(result_path=res_url, local_folder=tmp_dir.name)
         dataframe_list = []
         # assuming the result are in avro format
         for file in glob.glob(os.path.join(tmp_dir.name, '*.avro')):

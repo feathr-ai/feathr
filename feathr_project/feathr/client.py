@@ -7,7 +7,8 @@ from pyhocon import ConfigFactory
 
 from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._feature_registry import _FeatureRegistry
-from feathr._submission import _FeathrSynapseJobLauncher
+from feathr._synapse_submission import _FeathrSynapseJobLauncher
+from feathr._databricks_submission import _FeathrDatabricksJobLauncher
 
 
 class FeatureJoinJobParams:
@@ -70,22 +71,46 @@ class FeathrClient(object):
         self._KEY_SEPARATOR = ':'
 
         self._check_required_environment_variables_exist()
+        
+        if _EnvVaraibleUtil.get_from_config('SPARK_RUNTIME') not in {'AZURE_SYNAPSE', 'DATABRICKS'}:
+            RuntimeError(
+                'Only \'AZURE_SYNAPSE\' and \'DATABRICKS\' are currently supported.')
+        elif _EnvVaraibleUtil.get_from_config('SPARK_RUNTIME') == "AZURE_SYNAPSE":
+            # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
+            # submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from their local env.
+            self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_environment_variable_with_default(
+                'azure','SYNAPSE_FEATHR_RUNTIME_LOCATION')
+            self.spark_runtime = 'synapse'
+        elif _EnvVaraibleUtil.get_from_config('SPARK_RUNTIME') == "DATABRICKS":
+            self.spark_runtime = 'databricks'
+            # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
+            # submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from their local env.
+            self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_environment_variable_with_default(
+                'azure', 'DATABRICKS_FEATHR_RUNTIME_LOCATION')
 
-        # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
-        # submission. The feathr jar hosted in Azure saves the time users needed to upload the jar from their local.
-        self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_environment_variable_with_default(
-           'azure', 'FEATHR_RUNTIME_LOCATION')
         # configure the remote environment
-        self.feathr_synapse_laucher = _FeathrSynapseJobLauncher(
-            synapse_dev_url=_EnvVaraibleUtil.get_environment_variable_with_default(
-               'azure', 'SYNAPSE_DEV_URL'),
-            pool_name=_EnvVaraibleUtil.get_environment_variable_with_default(
-              'azure',  'SYNAPSE_POOL_NAME'),
-            datalake_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
-               'azure', 'SYNAPSE_WORKSPACE_DIR'),
-            executor_size=_EnvVaraibleUtil.get_environment_variable_with_default(
-               'azure', 'SYNAPSE_EXECUTOR_SIZE'),
-            executors=_EnvVaraibleUtil.get_environment_variable_with_default('azure','SYNAPSE_EXECUTOR_NUM'))
+        if self.spark_runtime == 'synapse':
+            self.feathr_spark_laucher = _FeathrSynapseJobLauncher(
+                synapse_dev_url=_EnvVaraibleUtil.get_environment_variable_with_default(
+                   'azure', 'SYNAPSE_DEV_URL'),
+                pool_name=_EnvVaraibleUtil.get_environment_variable_with_default(
+                   'azure', 'SYNAPSE_POOL_NAME'),
+                datalake_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
+                   'azure', 'SYNAPSE_WORKSPACE_DIR'),
+                executor_size=_EnvVaraibleUtil.get_environment_variable_with_default(
+                   'azure', 'SYNAPSE_EXECUTOR_SIZE'),
+                executors=_EnvVaraibleUtil.get_environment_variable_with_default('azure','SYNAPSE_EXECUTOR_NUM'))
+        else:
+            self.feathr_spark_laucher = _FeathrDatabricksJobLauncher(
+                workspace_instance_url=_EnvVaraibleUtil.get_environment_variable_with_default(
+                    'azure', 'DATABRICKS_WORKSPACE_INSTANCE_URL'),
+                token_value=_EnvVaraibleUtil.get_environment_variable(
+                    'DATABRICKS_WORKSPACE_TOKEN_VALUE'),
+                config_template=_EnvVaraibleUtil.get_environment_variable_with_default(
+                    'azure', 'DATABRICKS_CONFIG_TEMPLATE'),
+                databricks_work_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
+                    'azure', 'DATABRICKS_WORK_DIR')
+            )
 
         self._construct_redis_client()
 
@@ -227,17 +252,17 @@ class FeathrClient(object):
                                                        )
 
         # submit the jars
-        return self.feathr_synapse_laucher.submit_feathr_job(
-            job_name=_EnvVaraibleUtil.get_environment_variable_with_default(
-               'azure', 'PROJECT_NAME') + '_feathr_feature_join_job',
+        return self.feathr_spark_laucher.submit_feathr_job(
+            job_name=_EnvVaraibleUtil.get_from_config(
+                'PROJECT_NAME') + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
-                '--join-config', self.feathr_synapse_laucher.upload_to_work_dir(
+                '--join-config', self.feathr_spark_laucher.upload_to_work_dir(
                     feature_join_job_params.join_config_path),
                 '--input', feature_join_job_params.observation_path,
                 '--output', feature_join_job_params.job_output_path,
-                '--feature-config', self.feathr_synapse_laucher.upload_to_work_dir(
+                '--feature-config', self.feathr_spark_laucher.upload_to_work_dir(
                     feature_join_job_params.feature_config),
                 '--num-parts', _EnvVaraibleUtil.get_from_config(
                     'RESULT_OUTPUT_PARTS'),
@@ -245,6 +270,28 @@ class FeathrClient(object):
             ],
             reference_files_path=[],
         )
+
+    def get_job_result_uri(self, feature_join_conf_path='feature_join_conf/feature_join.conf', local_folder='/tmp',
+                           block=True, timeout_sec=300):
+        """Gets the job output URI
+        """
+        feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
+        if not block:
+            return feathr_feature['outputPath']
+        # Block the API by pooling the job status and wait for complete
+        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
+            return feathr_feature['outputPath']
+        else:
+            raise RuntimeError(
+                'Spark job failed so output cannot be retrieved.')
+
+    def wait_job_to_finish(self, timeout_sec: int = 300):
+        """Waits for the job to finish in a blocking way unless it times out
+        """
+        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
+            return
+        else:
+            raise RuntimeError('Spark job failed.')
 
     def materialize_features(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf'):
         """Materializes feature data based on the feature generation config. The feature
@@ -262,20 +309,16 @@ class FeathrClient(object):
             generation_config_path=os.path.abspath(feature_gen_conf_path),
             feature_config=os.path.abspath("feature_conf/features.conf"))
 
-        # submit the jars
-        logger.info(
-            'See materialization job here: https://ms.web.azuresynapse.net/en-us/monitoring/sparkapplication')
-
-        return self.feathr_synapse_laucher.submit_feathr_job(
-            job_name=_EnvVaraibleUtil.get_environment_variable_with_default(
-               'azure', 'PROJECT_NAME') + '_feathr_feature_materialization_job',
+        return self.feathr_spark_laucher.submit_feathr_job(
+            job_name=_EnvVaraibleUtil.get_from_config(
+                'PROJECT_NAME') + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[
-                '--generation-config', self.feathr_synapse_laucher.upload_to_work_dir(
+                '--generation-config', self.feathr_spark_laucher.upload_to_work_dir(
                     generation_config.generation_config_path),
                 # Local Config, comma seperated file names
-                '--feature-config', self.feathr_synapse_laucher.upload_to_work_dir(
+                '--feature-config', self.feathr_spark_laucher.upload_to_work_dir(
                     generation_config.feature_config),
                 '--redis-config', self._getRedisConfigStr(),
                 '--s3-config', self._get_s3_config_str(),
@@ -293,7 +336,7 @@ class FeathrClient(object):
         if not block:
             return feathr_feature['outputPath']
         # Block the API by pooling the job status and wait for complete
-        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
+        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
             return feathr_feature['outputPath']
         else:
             raise RuntimeError(
@@ -302,7 +345,7 @@ class FeathrClient(object):
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
         """
-        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
+        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
             return
         else:
             raise RuntimeError('Spark job failed.')

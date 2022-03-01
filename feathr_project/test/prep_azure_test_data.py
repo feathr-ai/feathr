@@ -8,7 +8,6 @@ sys.path.append(os.path.abspath(os.getcwd()))
 from feathrcli.cli import init
 from click.testing import CliRunner
 from feathr.client import FeathrClient
-from _envsetter import _EnvSetterForTest
 
 def initialize_data():
     """
@@ -24,7 +23,6 @@ def initialize_data():
 
 runner = CliRunner()
 with runner.isolated_filesystem():
-    _EnvSetterForTest.set_env_feathr_client()
     runner.invoke(init, [])
     # Need to be in the workspace so it won't complain
     os.chdir('feathr_user_workspace')

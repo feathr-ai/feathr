@@ -3,12 +3,29 @@ resource:
   azure:
     PROJECT_NAME: "feathr_getting_started"
 
+    # choice for spark runtime. Currently support: DATABRICKS, AZURE_SYNAPSE
+    # The `DATABRICKS` configs will be ignored if `AZURE_SYNAPSE` is set and vice versa.
+    SPARK_RUNTIME: AZURE_SYNAPSE
+
     # Spark cluster configs
     SYNAPSE_DEV_URL: "https://feathrazuretest3synapse.dev.azuresynapse.net"
     SYNAPSE_POOL_NAME: "spark3"
     SYNAPSE_WORKSPACE_DIR: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started"
     SYNAPSE_EXECUTOR_SIZE: "Small"
     SYNAPSE_EXECUTOR_NUM: 4
+    # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
+    SYNAPSE_FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar
+    # configure number of parts for the spark output for feature generation job
+
+    # configs for databricks:
+    DATABRICKS_WORKSPACE_INSTANCE_URL: 'https://adb-6885802458123232.12.azuredatabricks.net/'
+    DATABRICKS_WORKSPACE_TOKEN_VALUE: ''
+    DATABRICKS_WORK_DIR: 'dbfs:/feathr_getting_started'
+    # config string including run time information, spark version, machine size, etc.
+    DATABRICKS_CONFIG_TEMPLATE: '{"run_name":"","new_cluster":{"spark_version":"9.1.x-scala2.12","node_type_id":"Standard_D3_v2","num_workers":2,"spark_conf":{}},"libraries":[{"jar":""}],"spark_jar_task":{"main_class_name":"","parameters":[""]}}'
+    # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
+    DATABRICKS_FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar
+
 
     # Redis configs to access Redis cluster
     REDIS_PASSWORD: ''
@@ -16,9 +33,7 @@ resource:
     REDIS_PORT: 6380
     REDIS_SSL_ENABLED: True
 
-    # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
-    FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar
-    # configure number of parts for the spark output for feature generation job
+    
     RESULT_OUTPUT_PARTS: "1"
 
     # Feature Registry Related Configs:
