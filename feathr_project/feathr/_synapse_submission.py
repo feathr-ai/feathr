@@ -63,6 +63,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         you are running with Azure Synapse.
 
         Args:
+            job_name (str): name of the job
             main_jar_path (str): main file paths, usually your main jar file
             main_class_name (str): name of your main class
             arguments (str): all the arugments you want to pass into the spark job
@@ -114,6 +115,11 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             raise TimeoutError('Timeout waiting for job to complete')
 
     def get_status(self) -> str:
+        """Get current job status
+
+        Returns:
+            str: Status of the current job
+        """
         job = self._api.get_spark_batch_job(self.current_job_info.id)
         assert job is not None
         return job.state

@@ -18,12 +18,12 @@ from requests.structures import CaseInsensitiveDict
 
 class _FeathrDatabricksJobLauncher(SparkJobLauncher):
     """Class to interact with Databricks Spark cluster
-        This is a light-weight databricks job runner, users should use the provided template json string to config more 
-        For example, whether to use a new cluster to run the job or not, specify the cluster ID, running frequency, node size, workder no., whether to send out failed notification email, etc.
+        This is a light-weight databricks job runner, users should use the provided template json string to get more fine controlled environment for databricks cluster.
+        For example, user can control whether to use a new cluster to run the job or not, specify the cluster ID, running frequency, node size, workder no., whether to send out failed notification email, etc.
         This runner will only fill in necessary arguments in the JSON template.
 
-        This class will read from the provided configs, and do the following steps. 
-        This default template can be overrided by users, but users need to make sure the template is compatible with the default template.
+        This class will read from the provided configs string, and do the following steps. 
+        This default template can be overwritten by users, but users need to make sure the template is compatible with the default template. Specifically:
         1. it's a SparkJarTask (rather than other types of jobs, say NotebookTask or others). See https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit for more details
         2. Use the Feathr Jar to run the job (hence will add an entry in `libraries` section)
         3. Only supports `new_cluster` type for now
