@@ -3,7 +3,8 @@ import os
 
 class _EnvSetterForTest(object):
     """
-    Environment variables setter used for testing. It's safe to store it here since it's our testing cluster.
+    Environment variables setter used for testing. 
+    This file is added in .gitignore so all the crednetials will be stored locally.
     """
     @staticmethod
     def set_env_feathr_client():

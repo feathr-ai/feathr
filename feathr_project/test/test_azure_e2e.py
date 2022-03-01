@@ -1,7 +1,7 @@
 from feathrcli.cli import init
 from click.testing import CliRunner
 from feathr.client import FeathrClient
-from _envsetter import _EnvSetterForTest
+from ._envsetter import _EnvSetterForTest
 import os
 import glob
 import pandavro as pdx
