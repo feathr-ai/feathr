@@ -3,15 +3,17 @@ import os
 
 class _EnvSetterForTest(object):
     """
-    Environment variables setter used for testing. It's safe to store it here since it's our testing cluster.
+    Environment variables setter used for testing. 
+    This file is added in .gitignore so all the crednetials will be stored locally.
     """
     @staticmethod
     def set_env_feathr_client():
-        os.environ['REDIS_PASSWORD'] = 'Li7Nn63iNB0x731VTnnz2Vr29WYJHx7JlAzCaH9lbHw='
-        os.environ['AZURE_CLIENT_ID'] = "b40e49c0-75c7-4959-ad25-896118cd79e8"
-        os.environ['AZURE_TENANT_ID'] = '72f988bf-86f1-41af-91ab-2d7cd011db47'
-        os.environ['AZURE_CLIENT_SECRET'] = 'kAB5ps6yvo_f08n-4Av~.IDwHFL_xl_63I'
-        #os.environ['ADLS_ACCOUNT'] = 'feathrazuretest3storage'
-        #os.environ['ADLS_KEY'] = 'Fg7Wm/aTjTXzGYiVAP1yfUwcaiHaSy0lVDr/5HLi89iBH2N+Gg8CstQ8gWMynwk+9GYUTvabF5X5zORDwGuiag=='
-        os.environ['BLOB_ACCOUNT'] = 'feathrazuretest3storage'
-        os.environ['BLOB_KEY'] = 'Fg7Wm/aTjTXzGYiVAP1yfUwcaiHaSy0lVDr/5HLi89iBH2N+Gg8CstQ8gWMynwk+9GYUTvabF5X5zORDwGuiag=='
+        # os.environ['REDIS_PASSWORD'] = ''
+        # os.environ['AZURE_CLIENT_ID'] = ''
+        # os.environ['AZURE_TENANT_ID'] = ''
+        # os.environ['AZURE_CLIENT_SECRET'] = ''
+        # os.environ['ADLS_ACCOUNT'] = ''
+        # os.environ['ADLS_KEY'] = ''
+        # os.environ['BLOB_ACCOUNT'] = ''
+        # os.environ['BLOB_KEY'] = ''
+        pass
