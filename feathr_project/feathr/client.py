@@ -76,14 +76,14 @@ class FeathrClient(object):
             RuntimeError(
                 'Only \'AZURE_SYNAPSE\' and \'DATABRICKS\' are currently supported.')
         elif _EnvVaraibleUtil.get_from_config('SPARK_RUNTIME') == "AZURE_SYNAPSE":
-            # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
+            # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
             # submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from their local env.
             self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_environment_variable_with_default(
-                'azure','FEATHR_RUNTIME_LOCATION')
+                'azure','SYNAPSE_FEATHR_RUNTIME_LOCATION')
             self.spark_runtime = 'synapse'
         elif _EnvVaraibleUtil.get_from_config('SPARK_RUNTIME') == "DATABRICKS":
             self.spark_runtime = 'databricks'
-            # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
+            # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
             # submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from their local env.
             self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_environment_variable_with_default(
                 'azure', 'DATABRICKS_FEATHR_RUNTIME_LOCATION')
@@ -99,7 +99,7 @@ class FeathrClient(object):
                    'azure', 'SYNAPSE_WORKSPACE_DIR'),
                 executor_size=_EnvVaraibleUtil.get_environment_variable_with_default(
                    'azure', 'SYNAPSE_EXECUTOR_SIZE'),
-                executors=_EnvVaraibleUtil.get_environment_variable_with_default('SYNAPSE_EXECUTOR_NUM'))
+                executors=_EnvVaraibleUtil.get_environment_variable_with_default('azure','SYNAPSE_EXECUTOR_NUM'))
         else:
             self.feathr_spark_laucher = _FeathrDatabricksJobLauncher(
                 workspace_instance_url=_EnvVaraibleUtil.get_environment_variable_with_default(

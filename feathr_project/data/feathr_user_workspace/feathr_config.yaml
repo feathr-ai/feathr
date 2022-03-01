@@ -13,6 +13,9 @@ resource:
     SYNAPSE_WORKSPACE_DIR: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started"
     SYNAPSE_EXECUTOR_SIZE: "Small"
     SYNAPSE_EXECUTOR_NUM: 4
+    # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
+    SYNAPSE_FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar
+    # configure number of parts for the spark output for feature generation job
 
     # configs for databricks:
     DATABRICKS_WORKSPACE_INSTANCE_URL: 'https://adb-6885802458123232.12.azuredatabricks.net/'
@@ -30,9 +33,7 @@ resource:
     REDIS_PORT: 6380
     REDIS_SSL_ENABLED: True
 
-    # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
-    FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar
-    # configure number of parts for the spark output for feature generation job
+    
     RESULT_OUTPUT_PARTS: "1"
 
     # Feature Registry Related Configs:
