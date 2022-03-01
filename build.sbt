@@ -4,11 +4,12 @@ ThisBuild / scalaVersion     := "2.12.15"
 ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "com.example"
 ThisBuild / organizationName := "feathr"
+val sparkVersion = "3.1.2"
 
 val localAndCloudDiffDependencies = Seq(
-    "org.apache.spark" %% "spark-avro" % "3.1.2",
-    "org.apache.spark" %% "spark-sql" % "3.1.2",
-    "org.apache.spark" %% "spark-hive" % "3.1.2",
+    "org.apache.spark" %% "spark-avro" % sparkVersion,
+    "org.apache.spark" %% "spark-sql" % sparkVersion,
+    "org.apache.spark" %% "spark-hive" % sparkVersion,
     "com.google.guava" % "guava" % "17.0",
     "org.apache.logging.log4j" % "log4j-core" % "2.17.1",
     "com.typesafe" % "config" % "1.3.2",
@@ -23,7 +24,7 @@ val cloudProvidedDeps = localAndCloudDiffDependencies.map(x => x % "provided")
 
 
 val localAndCloudCommonDependencies = Seq(
-    "org.apache.spark" %% "spark-catalyst" % "3.1.2" % Test,
+    "org.apache.spark" %% "spark-catalyst" % sparkVersion % Test,
     "org.testng" % "testng" % "6.14.3" % Test,
     "org.mockito" % "mockito-core" % "3.1.0" % Test,
     "nl.jqno.equalsverifier" % "equalsverifier" % "3.1.12" % Test,
@@ -49,7 +50,7 @@ lazy val root = (project in file("."))
       libraryDependencies ++= cloudProvidedDeps,
       libraryDependencies ++= localAndCloudCommonDependencies,
       libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % "3.1.2" % "provided"
+      "org.apache.spark" %% "spark-core" % sparkVersion % "provided"
       )
   )
 
@@ -64,7 +65,7 @@ lazy val root = (project in file("."))
 //     libraryDependencies ++= localAndCloudCommonDependencies,
 //     libraryDependencies ++= Seq(
 //     // See https://stackoverflow.com/questions/55923943/how-to-fix-unsupported-class-file-major-version-55-while-executing-org-apache
-//     "org.apache.spark" %% "spark-core" % "3.1.2" exclude("org.apache.xbean","xbean-asm6-shaded")
+//     "org.apache.spark" %% "spark-core" % sparkVersion exclude("org.apache.xbean","xbean-asm6-shaded")
 //     )
 // )
 
