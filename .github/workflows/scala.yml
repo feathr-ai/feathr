@@ -19,7 +19,7 @@ jobs:
         java-version: '8'
         distribution: 'temurin'
     - name: Run tests
-      run: sbt test
+      run: sbt clean && sbt test
     - name: Build JAR
       run: sbt assembly
     - name: Azure Blob Storage Upload (Overwrite)
