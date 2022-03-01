@@ -74,18 +74,18 @@ class FeathrClient(object):
         # Feahtr is a spark-based application so the feathr jar compiled from source code will be used in the Spark job
         # submission. The feathr jar hosted in Azure saves the time users needed to upload the jar from their local.
         self._FEATHR_JOB_JAR_PATH = _EnvVaraibleUtil.get_environment_variable_with_default(
-            'FEATHR_RUNTIME_LOCATION')
+           'azure', 'FEATHR_RUNTIME_LOCATION')
         # configure the remote environment
         self.feathr_synapse_laucher = _FeathrSynapseJobLauncher(
             synapse_dev_url=_EnvVaraibleUtil.get_environment_variable_with_default(
-                'SYNAPSE_DEV_URL'),
+               'azure', 'SYNAPSE_DEV_URL'),
             pool_name=_EnvVaraibleUtil.get_environment_variable_with_default(
-                'SYNAPSE_POOL_NAME'),
+              'azure',  'SYNAPSE_POOL_NAME'),
             datalake_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
-                'SYNAPSE_WORKSPACE_DIR'),
+               'azure', 'SYNAPSE_WORKSPACE_DIR'),
             executor_size=_EnvVaraibleUtil.get_environment_variable_with_default(
-                'SYNAPSE_EXECUTOR_SIZE'),
-            executors=_EnvVaraibleUtil.get_environment_variable_with_default('SYNAPSE_EXECUTOR_NUM'))
+               'azure', 'SYNAPSE_EXECUTOR_SIZE'),
+            executors=_EnvVaraibleUtil.get_environment_variable_with_default('azure','SYNAPSE_EXECUTOR_NUM'))
 
         self._construct_redis_client()
 
@@ -96,7 +96,7 @@ class FeathrClient(object):
 
         Some required information has to be set via environment variables so the client can work.
         """
-        all_required_vars = _EnvVaraibleUtil.get_environment_variable(
+        all_required_vars = _EnvVaraibleUtil.get_from_config(
             "REQUIRED_ENVIRONMENT_VARIABLES")
         for required_field in all_required_vars:
             if required_field not in os.environ:
@@ -229,7 +229,7 @@ class FeathrClient(object):
         # submit the jars
         return self.feathr_synapse_laucher.submit_feathr_job(
             job_name=_EnvVaraibleUtil.get_environment_variable_with_default(
-                'PROJECT_NAME') + '_feathr_feature_join_job',
+               'azure', 'PROJECT_NAME') + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
@@ -268,7 +268,7 @@ class FeathrClient(object):
 
         return self.feathr_synapse_laucher.submit_feathr_job(
             job_name=_EnvVaraibleUtil.get_environment_variable_with_default(
-                'PROJECT_NAME') + '_feathr_feature_materialization_job',
+               'azure', 'PROJECT_NAME') + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[

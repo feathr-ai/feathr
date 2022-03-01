@@ -21,7 +21,7 @@ class _FeatureRegistry():
         - Initialize the GUID tracker, project name, etc.
         """
         self.FEATURE_REGISTRY_DELIMITER = _EnvVaraibleUtil.get_environment_variable_with_default(
-            "FEATURE_REGISTRY_DELIMITER")
+            'azure',"FEATURE_REGISTRY_DELIMITER")
 
         self.oauth = ServicePrincipalAuthentication(
             tenant_id=_EnvVaraibleUtil.get_environment_variable(
@@ -33,15 +33,15 @@ class _FeatureRegistry():
         )
         self.purview_client = PurviewClient(
             account_name=_EnvVaraibleUtil.get_environment_variable_with_default(
-                "AZURE_PURVIEW_NAME"),
+               'azure', "AZURE_PURVIEW_NAME"),
             authentication=self.oauth
         )
         self.guid = GuidTracker(starting=-1000)
-        self.project_name = _EnvVaraibleUtil.get_environment_variable_with_default("PROJECT_NAME")
+        self.project_name = _EnvVaraibleUtil.get_environment_variable_with_default('azure',"PROJECT_NAME")
         self.entity_batch_queue = []
 
         type_system_initialization = _EnvVaraibleUtil.get_environment_variable_with_default(
-            "AZURE_PURVIEW_TYPE_SYSTEM_INITIALIZATION")
+           'azure', "AZURE_PURVIEW_TYPE_SYSTEM_INITIALIZATION")
 
         if type_system_initialization:
             self._register_feathr_feature_types()
