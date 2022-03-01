@@ -645,6 +645,8 @@ private[offline] object SourceUtils {
       loadJsonFileAsAvroToDF(ss, inputData.inputPath).get
     } else if (inputData.inputPath.endsWith(".csv")) {
       ss.read.format("csv").option("header", "true").load(inputData.inputPath)
+    } else if (inputData.inputPath.endsWith(".parquet")) {
+      ss.read.parquet(inputData.inputPath)
     } else {
       val pathList = getPathList(inputData.sourceType, inputData.inputPath, ss, inputData.dateParam, None, failOnMissing)
       if (ss.sparkContext.isLocal) { // for test

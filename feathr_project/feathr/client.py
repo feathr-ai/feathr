@@ -239,33 +239,12 @@ class FeathrClient(object):
                 '--output', feature_join_job_params.job_output_path,
                 '--feature-config', self.feathr_synapse_laucher.upload_to_work_dir(
                     feature_join_job_params.feature_config),
-                '--num-parts', _EnvVaraibleUtil.get_environment_variable_with_default(
-                    'RESULT_OUTPUT_PARTS')
+                '--num-parts', _EnvVaraibleUtil.get_from_config(
+                    'RESULT_OUTPUT_PARTS'),
+                '--s3-config', self._get_s3_config_str()
             ],
             reference_files_path=[],
         )
-
-    def get_job_result_uri(self, feature_join_conf_path='feature_join_conf/feature_join.conf', local_folder='/tmp',
-                           block=True, timeout_sec=300):
-        """Gets the job output URI
-        """
-        feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
-        if not block:
-            return feathr_feature['outputPath']
-        # Block the API by pooling the job status and wait for complete
-        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
-            return feathr_feature['outputPath']
-        else:
-            raise RuntimeError(
-                'Spark job failed so output cannot be retrieved.')
-
-    def wait_job_to_finish(self, timeout_sec: int = 300):
-        """Waits for the job to finish in a blocking way unless it times out
-        """
-        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
-            return
-        else:
-            raise RuntimeError('Spark job failed.')
 
     def materialize_features(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf'):
         """Materializes feature data based on the feature generation config. The feature
@@ -305,6 +284,28 @@ class FeathrClient(object):
             ],
             reference_files_path=[],
         )
+
+    def get_job_result_uri(self, feature_join_conf_path='feature_join_conf/feature_join.conf', local_folder='/tmp',
+                           block=True, timeout_sec=300):
+        """Gets the job output URI
+        """
+        feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
+        if not block:
+            return feathr_feature['outputPath']
+        # Block the API by pooling the job status and wait for complete
+        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
+            return feathr_feature['outputPath']
+        else:
+            raise RuntimeError(
+                'Spark job failed so output cannot be retrieved.')
+
+    def wait_job_to_finish(self, timeout_sec: int = 300):
+        """Waits for the job to finish in a blocking way unless it times out
+        """
+        if self.feathr_synapse_laucher.wait_for_completion(timeout_sec):
+            return
+        else:
+            raise RuntimeError('Spark job failed.')
 
     def _getRedisConfigStr(self):
         """Construct the Redis config string. The host, port, credential and other parameters can be set via environment
