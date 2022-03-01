@@ -203,4 +203,3 @@ feathr_project/feathr_cli.egg-info/*
 
 # VS Code
 .vscode
-feathr_project/test/_envsetter.py
