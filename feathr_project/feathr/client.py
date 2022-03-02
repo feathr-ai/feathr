@@ -266,7 +266,9 @@ class FeathrClient(object):
                     feature_join_job_params.feature_config),
                 '--num-parts', _EnvVaraibleUtil.get_from_config(
                     'RESULT_OUTPUT_PARTS'),
-                '--s3-config', self._get_s3_config_str()
+                '--s3-config', self._get_s3_config_str(),
+                '--adls-config', self._get_adls_config_str(),
+                '--blob-config', self._get_blob_config_str()
             ],
             reference_files_path=[],
         )

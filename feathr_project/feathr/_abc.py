@@ -15,17 +15,6 @@ class SparkJobLauncher(ABC):
         """
         pass
 
-    @abstractmethod
-    def download_result(self, result_path: str, local_folder: str):
-        """
-        Supports downloading files from the result folder
-
-        Args:
-            result_path (str): path to the job output
-            local_folder (str): local folder to save the downloaded result
-        """
-        pass
-
 
     @abstractmethod
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str],
