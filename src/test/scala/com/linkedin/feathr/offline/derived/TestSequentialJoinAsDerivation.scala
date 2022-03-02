@@ -20,6 +20,7 @@ import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert._
 import org.testng.annotations.{DataProvider, Test}
+import org.apache.spark.sql.internal.SQLConf
 
 class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
   Logger.getLogger("org").setLevel(Level.OFF)
@@ -513,6 +514,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val groupByColumn = "version"
     val inputDF = defaultTensorEmbeddingDataProvider(dimType, valType)
     val mockSparkSession = mock[SparkSession]
+    SQLConf.get.setConfString("spark.sql.legacy.allowUntypedScalaUDF", "true")
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
     val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
