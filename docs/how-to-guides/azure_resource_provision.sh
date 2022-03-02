@@ -6,7 +6,7 @@ resource_prefix="feathrazuretest3"
 location="eastus2"
 synapse_sql_admin_name="cliuser1"
 synapse_sql_admin_password="Password123!"
-synapse_sparkpool_name="spark24"
+synapse_sparkpool_name="spark31"
 
 # detect whether az cli is installed or not
 if ! [ -x "$(command -v az)" ]; then
@@ -59,7 +59,7 @@ az role assignment create --role "Storage Blob Data Contributor" --assignee "$sp
 # Create Synapse Cluster
 az synapse workspace create --name $synapse_workspace_name --resource-group $resoruce_group_name  --storage-account $storage_account_name --file-system $storage_file_system_name --sql-admin-login-user $synapse_sql_admin_name --sql-admin-login-password $synapse_sql_admin_password --location $location
 
-az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $synapse_workspace_name  --resource-group $resoruce_group_name --spark-version 2.4 --node-count 3 --node-size Medium --enable-auto-pause true --delay 30
+az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $synapse_workspace_name  --resource-group $resoruce_group_name --spark-version 3.1 --node-count 3 --node-size Medium --enable-auto-pause true --delay 30
 
 # depending on your preference, you can set a narrow range of IPs (like below) or a broad range of IPs to allow client access to Synapse clusters
 external_ip=$(curl -s http://whatismyip.akamai.com/)
