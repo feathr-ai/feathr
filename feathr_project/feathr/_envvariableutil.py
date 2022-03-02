@@ -23,7 +23,7 @@ class _EnvVaraibleUtil(object):
                 logger.error(exc)
 
     @staticmethod
-    def get_environment_variable_with_default(resource_group, variable_key):
+    def get_environment_variable_with_default(first_layer: str, second_layer: str = None , third_layer: str = None):
         """Gets the environment variable for the variable key.
 
         Args:
@@ -36,9 +36,18 @@ class _EnvVaraibleUtil(object):
         # read default from the file
         with open(os.path.abspath('feathr_config.yaml'), 'r') as stream:
             try:
-                default = yaml.safe_load(stream)['resource'][resource_group][variable_key]
-                env_variable = os.environ.get(variable_key, default)
-                return env_variable
+                if third_layer:
+                    default = yaml.safe_load(stream)[first_layer][second_layer][third_layer]
+                    env_variable = os.environ.get(third_layer.lower(), default)
+                    return env_variable
+                elif second_layer:
+                    default = yaml.safe_load(stream)[first_layer][second_layer]
+                    env_variable = os.environ.get(second_layer.lower(), default)
+                    return env_variable
+                elif first_layer:
+                    default = yaml.safe_load(stream)[first_layer]
+                    env_variable = os.environ.get(first_layer.lower(), default)
+                    return env_variable
             except yaml.YAMLError as exc:
                 print(exc)
 
@@ -57,3 +66,10 @@ class _EnvVaraibleUtil(object):
         if not password:
             print(variable_key + ' is not set in the environment variables.')
         return password
+
+
+if  __name__ == "__main__":
+
+    res1 = _EnvVaraibleUtil.get_environment_variable_with_default('project_config', "project_name")
+    res2 = _EnvVaraibleUtil.get_environment_variable_with_default('spark_launcher', "azure_synapse_config", "synapse_dev_url")
+    print(res1, res2)

@@ -5,7 +5,7 @@ api_version: 1
 project_config:
   project_name: "feathr_getting_started"
   # Information that are required to be set via environment variables.
-  requred_environment_variables:
+  required_environment_variables:
     - "REDIS_PASSWORD"
     # Client IDs and Client Secret for the service principal. Read the getting started docs on how to get those information.
     - "AZURE_CLIENT_ID"
