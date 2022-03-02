@@ -4,43 +4,33 @@ from loguru import logger
 
 
 class _EnvVaraibleUtil(object):
-    """
-    Getter for environment variables or configs from YAML file(currently feathr_config.yaml).
-    """
     @staticmethod
-    def get_from_config(config_key):
-        """Gets config values from the feature_store.yaml file.
-
-        Args:
-            config_key: config key that is used to retrieve the config value from the yaml file
-        Return:
-            A config value. For example, a string, a numeric or a boolean.
-            """
-        with open(os.path.abspath('feathr_config.yaml'), 'r') as stream:
-            try:
-                return yaml.safe_load(stream)['resource']['azure'][config_key]
-            except yaml.YAMLError as exc:
-                logger.error(exc)
-
-    @staticmethod
-    def get_environment_variable_with_default(resource_group, variable_key):
+    def get_environment_variable_with_default(*args):
         """Gets the environment variable for the variable key.
-
         Args:
-            resource_group: resource group in the config yaml file, for example, azure or aws.
-            variable_key: environment variable key that is used to retrieve the environment variable
+            *args: list of keys in feathr_config.yaml file
         Return:
             A environment variable for the variable key. If it's not set in the environment, then a default is retrieved
             from the feathr_config.yaml file with the same config key.
             """
-        # read default from the file
         with open(os.path.abspath('feathr_config.yaml'), 'r') as stream:
             try:
-                default = yaml.safe_load(stream)['resource'][resource_group][variable_key]
-                env_variable = os.environ.get(variable_key, default)
-                return env_variable
+                yaml_config = yaml.safe_load(stream)
+                # concat all layers
+                # check in environment variable
+                yaml_layer = yaml_config
+                env_keyword = "__".join(args)
+                upper_env_keyword = env_keyword.upper()
+                # make it work for lower case and upper case.
+                env_variable = os.environ.get(env_keyword, os.environ.get(upper_env_keyword))
+                if env_variable:
+                    return env_variable
+                # resolve one layer after another
+                for arg in args:
+                    yaml_layer = yaml_layer[arg]
+                return yaml_layer
             except yaml.YAMLError as exc:
-                print(exc)
+                logger.info(exc)
 
     @staticmethod
     def get_environment_variable(variable_key):
@@ -55,5 +45,5 @@ class _EnvVaraibleUtil(object):
             """
         password = os.environ.get(variable_key)
         if not password:
-            print(variable_key + ' is not set in the environment variables.')
+            logger.info(variable_key + ' is not set in the environment variables.')
         return password
