@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.config.datasource
 
 import org.apache.spark.SparkConf
 
-private[feathr]  class RedisConfigExtractor extends ConfigExtractor() {
+private[feathr]  class RedisResourceInfoSetter extends ResourceInfoSetter() {
   val REDIS_HOST = "REDIS_HOST"
   val REDIS_PORT = "REDIS_PORT"
   val REDIS_SSL_ENABLED = "REDIS_SSL_ENABLED"
@@ -10,11 +10,11 @@ private[feathr]  class RedisConfigExtractor extends ConfigExtractor() {
 
   override val params = List(REDIS_HOST, REDIS_PORT, REDIS_SSL_ENABLED, REDIS_PASSWORD)
 
-   def setup(sparkConf: SparkConf, context: AuthContext, resource: Resource){
+  def setup(sparkConf: SparkConf, context: DataSourceConfig, resource: Resource){
     setupSparkConf(sparkConf, Some(context), Some(resource))
   }
 
-  def setupSparkConf(sparkConf: SparkConf, context: Option[AuthContext], resource: Option[Resource]): Unit = {
+  def setupSparkConf(sparkConf: SparkConf, context: Option[DataSourceConfig], resource: Option[Resource]): Unit = {
     val host = getAuthStr(REDIS_HOST, context, resource)
     val port = getAuthStr(REDIS_PORT, context, resource)
     val sslEnabled = getAuthStr(REDIS_SSL_ENABLED, context, resource)
@@ -36,4 +36,3 @@ private[feathr]  class RedisConfigExtractor extends ConfigExtractor() {
     }
   }
 }
-

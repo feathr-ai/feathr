@@ -7,6 +7,6 @@ import com.typesafe.config.{Config, ConfigFactory}
  *
  * @param configStr
  */
-class AuthContext(val configStr: Option[String] = None) {
+class DataSourceConfig(val configStr: Option[String] = None) {
   val config: Option[Config] = configStr.map(configStr => ConfigFactory.parseString(configStr))
 }

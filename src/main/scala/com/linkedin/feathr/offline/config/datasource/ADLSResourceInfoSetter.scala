@@ -2,13 +2,13 @@ package com.linkedin.feathr.offline.config.datasource
 
 import org.apache.spark.sql.SparkSession
 
-private[feathr] class ADLSConfigExtractor extends ConfigExtractor() {
+private[feathr] class ADLSResourceInfoSetter extends ResourceInfoSetter() {
   val ADLS_ACCOUNT = "ADLS_ACCOUNT"
   val ADLS_KEY = "ADLS_KEY"
 
   override val params = List(ADLS_ACCOUNT, ADLS_KEY)
 
-  override def setupHadoopConfig(ss: SparkSession, context: Option[AuthContext] = None, resource: Option[Resource] = None): Unit = {
+  override def setupHadoopConfig(ss: SparkSession, context: Option[DataSourceConfig] = None, resource: Option[Resource] = None): Unit = {
     val adlsParam = s"fs.azure.account.key.${getAuthStr(ADLS_ACCOUNT, context, resource)}.dfs.core.windows.net"
     val adlsKey = getAuthStr(ADLS_KEY, context, resource)
 

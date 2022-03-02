@@ -17,13 +17,13 @@ class DataSourceConfigs(
                          val blobConfigStr: Option[String] = None,
                          val sqlConfigStr: Option[String] = None
                        ) {
-  val redisConfig: AuthContext = parseConfigStr(redisConfigStr)
-  val s3Config: AuthContext = parseConfigStr(s3ConfigStr)
-  val adlsConfig: AuthContext = parseConfigStr(adlsConfigStr)
-  val blobConfig: AuthContext = parseConfigStr(blobConfigStr)
-  val sqlConfig: AuthContext = parseConfigStr(sqlConfigStr)
+  val redisConfig: DataSourceConfig = parseConfigStr(redisConfigStr)
+  val s3Config: DataSourceConfig = parseConfigStr(s3ConfigStr)
+  val adlsConfig: DataSourceConfig = parseConfigStr(adlsConfigStr)
+  val blobConfig: DataSourceConfig = parseConfigStr(blobConfigStr)
+  val sqlConfig: DataSourceConfig = parseConfigStr(sqlConfigStr)
 
-  def parseConfigStr(configStr: Option[String] = None): AuthContext = {
-    new AuthContext(configStr)
+  def parseConfigStr(configStr: Option[String] = None): DataSourceConfig = {
+    new DataSourceConfig(configStr)
   }
 }

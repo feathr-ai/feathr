@@ -2,13 +2,13 @@ package com.linkedin.feathr.offline.config.datasource
 
 import org.apache.spark.sql.SparkSession
 
-private[feathr] class BlobConfigExtractor extends ConfigExtractor() {
+private[feathr] class BlobResourceInfoSetter extends ResourceInfoSetter() {
   val BLOB_ACCOUNT = "BLOB_ACCOUNT"
   val BLOB_KEY = "BLOB_KEY"
 
   override val params = List(BLOB_ACCOUNT, BLOB_KEY)
 
-  override def setupHadoopConfig(ss: SparkSession, context: Option[AuthContext] = None, resource: Option[Resource] = None): Unit = {
+  override def setupHadoopConfig(ss: SparkSession, context: Option[DataSourceConfig] = None, resource: Option[Resource] = None): Unit = {
     val blobParam = s"fs.azure.account.key.${getAuthStr(BLOB_ACCOUNT, context, resource)}.blob.core.windows.net"
     val blobKey = getAuthStr(BLOB_KEY, context, resource)
 

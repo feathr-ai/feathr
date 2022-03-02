@@ -2,14 +2,14 @@ package com.linkedin.feathr.offline.config.datasource
 
 import org.apache.spark.sql.SparkSession
 
-private[feathr] class S3ConfigExtractor extends ConfigExtractor() {
+private[feathr] class S3ResourceInfoSetter extends ResourceInfoSetter() {
   val S3_ENDPOINT = "S3_ENDPOINT"
   val S3_ACCESS_KEY = "S3_ACCESS_KEY"
   val S3_SECRET_KEY = "S3_SECRET_KEY"
 
   override val params = List(S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY)
 
-  override def setupHadoopConfig(ss: SparkSession, context: Option[AuthContext], resource: Option[Resource]): Unit = {
+  override def setupHadoopConfig(ss: SparkSession, context: Option[DataSourceConfig], resource: Option[Resource]): Unit = {
     ss.sparkContext
       .hadoopConfiguration.set("fs.s3a.endpoint", getAuthStr(S3_ENDPOINT, context, resource))
     ss.sparkContext

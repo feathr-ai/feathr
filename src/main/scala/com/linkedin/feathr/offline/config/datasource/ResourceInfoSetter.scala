@@ -8,26 +8,26 @@ import org.apache.spark.sql.SparkSession
  * 1. setup() combination of setupSparkConfig and setupProperties
  * 2. setupSparkConfig() updates spark session configuration with authentication parameters.
  * 3. setupProperties() merge spark read options into properties.
- * 4. getAuthStr() get Authrntication string from job context or local configs
+ * 4. getAuthStr() get Authentication string from job context or local configs
  * 5. getAuthFromContext() get Authentication from job context
  * 6. getAuthFromConfig() get Authentication from local configs
  * When A new Data source is enabled, Please Follow the Steps Below:
- * Step 1: Add a new ConfigExtractor Class in current package
+ * Step 1: Add a new ResourceInfoSetter Class in current package
  * Step 2: Update DataSourceConfigs Class based on input params (Job Param and Python Client)
  * Step 3: Update getConfigs() and related Setup Functions in DataSourceConfigUtils
  * Step 4: Update related Jobs with new Setup Functions
  */
-private[feathr] abstract class ConfigExtractor() {
+private[feathr] abstract class ResourceInfoSetter() {
   val EMPTY_STRING = ""
-  val params = List(EMPTY_STRING)
+  val params: List[String]
 
-  def setup(ss: SparkSession, context: AuthContext, resource: Resource) = {
+  def setup(ss: SparkSession, context: DataSourceConfig, resource: Resource): Unit = {
     setupHadoopConfig(ss, Some(context), Some(resource))
   }
 
-  def setupHadoopConfig(ss: SparkSession, context: Option[AuthContext] = None, resource: Option[Resource] = None): Unit = {}
+  def setupHadoopConfig(ss: SparkSession, context: Option[DataSourceConfig] = None, resource: Option[Resource] = None): Unit = {}
 
-  def getAuthStr(str: String, context: Option[AuthContext] = None, resource: Option[Resource] = None): String = {
+  def getAuthStr(str: String, context: Option[DataSourceConfig] = None, resource: Option[Resource] = None): String = {
     sys.env.getOrElse(str, if (context.isDefined) {
       getAuthFromContext(str, context.get)
     } else if (resource.isDefined) {
@@ -35,7 +35,7 @@ private[feathr] abstract class ConfigExtractor() {
     } else EMPTY_STRING)
   }
 
-  def getAuthFromContext(str: String, context: AuthContext): String = {
+  def getAuthFromContext(str: String, context: DataSourceConfig): String = {
     context.config.map(config => {
       if (params.contains(str)) config.getString(str) else EMPTY_STRING
     }).getOrElse(EMPTY_STRING)

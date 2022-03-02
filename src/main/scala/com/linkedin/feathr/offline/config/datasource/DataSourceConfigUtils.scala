@@ -39,23 +39,17 @@ object DataSourceConfigUtils {
 
   private[feathr] def setupHadoopConf(ss:SparkSession , configs: DataSourceConfigs): Unit ={
     val resource = featureStoreConfig.resource
-    val adlsConfigExtractor = new ADLSConfigExtractor()
-    adlsConfigExtractor.setup(ss, configs.adlsConfig, resource)
-    val blobConfigExtractor = new BlobConfigExtractor()
-    blobConfigExtractor.setup(ss, configs.blobConfig, resource)
-    val s3ConfigExtractor = new S3ConfigExtractor()
-    s3ConfigExtractor.setup(ss, configs.s3Config, resource)
-    logger.info("Data Source Hadoop Configs Extracted Successfully.")
+    val adlsResourceInfoSetter = new ADLSResourceInfoSetter()
+    adlsResourceInfoSetter.setup(ss, configs.adlsConfig, resource)
+    val blobResourceInfoSetter = new BlobResourceInfoSetter()
+    blobResourceInfoSetter.setup(ss, configs.blobConfig, resource)
+    val s3ResourceInfoSetter = new S3ResourceInfoSetter()
+    s3ResourceInfoSetter.setup(ss, configs.s3Config, resource)
   }
 
   private[feathr] def setupSparkConf(sparkConf: SparkConf, configs: DataSourceConfigs): Unit ={
     val resource = featureStoreConfig.resource
-    val redisConfigExtractor = new RedisConfigExtractor()
-    redisConfigExtractor.setup(sparkConf, configs.redisConfig, resource)
-    logger.info("Redis SparkConf Configs Extracted Successfully.")
+    val redisResourceInfoSetter = new RedisResourceInfoSetter()
+    redisResourceInfoSetter.setup(sparkConf, configs.redisConfig, resource)
   }
 }
-
-
-
-
