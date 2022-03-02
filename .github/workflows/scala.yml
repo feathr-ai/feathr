@@ -49,8 +49,9 @@ jobs:
           python -m pip install -e ./feathr_project/
       - name: Test with pytest
         env:
-          PROJECT_NAME: "feathr_ci_project"
-          SYNAPSE_FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0-SNAPSHOT.jar"
+          PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
+          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0-SNAPSHOT.jar"
+          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0-SNAPSHOT.jar"
           REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
           AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
           AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
