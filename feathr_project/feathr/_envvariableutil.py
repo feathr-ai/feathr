@@ -23,8 +23,9 @@ class _EnvVaraibleUtil(object):
                 logger.error(exc)
 
     @staticmethod
-    def get_environment_variable_with_default(resource_group, variable_key):
+    def get_environment_variable_with_default(config_resource_group: str, resource_type: str, resource_key: str):
         """Gets the environment variable for the variable key.
+        configurations from the config file is in lower case and the environment variables are in upper case.
 
         Args:
             resource_group: resource group in the config yaml file, for example, azure or aws.
@@ -36,8 +37,8 @@ class _EnvVaraibleUtil(object):
         # read default from the file
         with open(os.path.abspath('feathr_config.yaml'), 'r') as stream:
             try:
-                default = yaml.safe_load(stream)['resource'][resource_group][variable_key]
-                env_variable = os.environ.get(variable_key, default)
+                default = yaml.safe_load(stream)[config_resource_group][resource_type][resource_key]
+                env_variable = os.environ.get(resource_key.upper(), default)
                 return env_variable
             except yaml.YAMLError as exc:
                 print(exc)
