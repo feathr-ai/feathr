@@ -64,7 +64,7 @@ outputPath: <path of the output dataset, i.e. observation dataset with features 
 settings: {
     joinTimeSettings: {
         timestampColumn: {
-            def: <SPARK SQL expression that extract the timestamp from observation row>
+            def: <Feathr expression that extract the timestamp from observation row>
             format: <format of the timestamp format returned in the above def expression>
         }
     }

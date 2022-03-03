@@ -4,9 +4,8 @@ import com.linkedin.feathr.common.TaggedFeatureName
 import com.linkedin.feathr.common.configObj.configbuilder.FeatureGenConfigBuilder
 import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeathrConfigLoader
+import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
 import com.linkedin.feathr.offline.job.FeatureJoinJob._
-import com.linkedin.feathr.offline.job.FeatureStoreConfigUtil.{ADLS_ACCOUNT, ADLS_KEY, BLOB_ACCOUNT, BLOB_KEY,
-  REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_SSL_ENABLED, setupS3Params}
 import com.linkedin.feathr.offline.util.{CmdLineParser, OptionParam, SparkFeaturizedDataset}
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import org.apache.avro.generic.GenericRecord
@@ -29,7 +28,7 @@ object FeatureGenJob {
    * @return (applicationConfigPath, feature defintions and FeatureGenJobContext)
    * Results wil be used to construct FeathrFeatureGenJobContext
    */
-  private[feathr] def parseInputArguments(args: Array[String]): (ApplicationConfigPath, FeatureDefinitionsInput, FeatureGenJobContext) = {
+  private[feathr] def parseInputArguments(args: Array[String]): (ApplicationConfigPath, FeatureDefinitionsInput, FeatureGenJobContext, DataSourceConfigs) = {
     val params = Map(
       // option long name, short name, description, arg name (null means not argument), default value (null means required)
       "feathr-config" -> OptionParam("lf", "Path of the feathr local config file", "FCONF", ""),
@@ -42,7 +41,8 @@ object FeatureGenJob {
       "redis-config" -> OptionParam("ac", "Authentication config for Redis", "REDIS_CONFIG", ""),
       "s3-config" -> OptionParam("sc", "Authentication config for S3", "S3_CONFIG", ""),
       "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
-      "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", "")
+      "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
+      "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", "")
     )
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
 
@@ -56,13 +56,11 @@ object FeatureGenJob {
     val paramsOverride = cmdParser.extractOptionalValue("params-override")
     val featureConfOverride = cmdParser.extractOptionalValue("feature-conf-override").map(convertToHoconConfig)
     val workDir = cmdParser.extractRequiredValue("work-dir")
-    val redisConfig = cmdParser.extractOptionalValue("redis-config")
-    val s3Config = cmdParser.extractOptionalValue("s3-config")
-    val adlsConfig = cmdParser.extractOptionalValue("adls-config")
-    val blobConfig = cmdParser.extractOptionalValue("blob-config")
-    val featureGenJobContext = new FeatureGenJobContext(workDir, paramsOverride, featureConfOverride, redisConfig, s3Config, adlsConfig, blobConfig)
 
-    (applicationConfigPath, featureDefinitionsInput, featureGenJobContext)
+    val dataSourceConfigs = DataSourceConfigUtils.getConfigs(cmdParser)
+    val featureGenJobContext = new FeatureGenJobContext(workDir, paramsOverride, featureConfOverride)
+
+    (applicationConfigPath, featureDefinitionsInput, featureGenJobContext, dataSourceConfigs)
   }
 
   // Convert parameters passed from hadoop template into global vars section for feature conf
@@ -121,8 +119,8 @@ object FeatureGenJob {
       localFeatureConfig: Option[String],
       jobContext: FeatureGenJobContext): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
 
-    print("featureDefConfig", featureDefConfig)
-    print("localFeatureConfig",localFeatureConfig)
+    logger.info(s"featureDefConfig : ${featureDefConfig}")
+    logger.info(s"localFeatureConfig : ${localFeatureConfig}")
     val feathrClient =
         FeathrClient.builder(ss)
           .addFeatureDef(featureDefConfig)
@@ -175,37 +173,11 @@ object FeatureGenJob {
     withParamsOverrideConfig.root().render()
   }
 
-  private[feathr] def setupSparkRedis(sparkConf: SparkConf, featureGenContext: Option[FeatureGenJobContext] = None) = {
-    val host = FeatureStoreConfigUtil.getRedisAuthStr(REDIS_HOST, featureGenContext)
-    val port = FeatureStoreConfigUtil.getRedisAuthStr(REDIS_PORT, featureGenContext)
-    val sslEnabled = FeatureStoreConfigUtil.getRedisAuthStr(REDIS_SSL_ENABLED, featureGenContext)
-    val auth = FeatureStoreConfigUtil.getRedisAuthStr(REDIS_PASSWORD, featureGenContext)
-    sparkConf.set("spark.redis.host", host)
-    sparkConf.set("spark.redis.port", port)
-    sparkConf.set("spark.redis.ssl", sslEnabled)
-    sparkConf.set("spark.redis.auth", auth)
-  }
-
-  private[feathr] def setupADLSParams(ss: SparkSession, featureGenContext: Option[FeatureGenJobContext] = None) = {
-    val adlsParam = s"fs.azure.account.key.${FeatureStoreConfigUtil.getADLSAuthStr(ADLS_ACCOUNT, featureGenContext)}.dfs.core.windows.net"
-    val adlsKey = FeatureStoreConfigUtil.getADLSAuthStr(ADLS_KEY, featureGenContext)
-
-    ss.sparkContext
-      .hadoopConfiguration.set(adlsParam, adlsKey)
-  }
-
-  private[feathr] def setupBlobParams(ss: SparkSession, featureGenContext: Option[FeatureGenJobContext] = None) = {
-    val blobParam = s"fs.azure.account.key.${FeatureStoreConfigUtil.getBlobAuthStr(BLOB_ACCOUNT, featureGenContext)}.blob.core.windows.net"
-    val blobKey = FeatureStoreConfigUtil.getBlobAuthStr(BLOB_KEY, featureGenContext)
-
-    ss.sparkContext
-      .hadoopConfiguration.set(blobParam, blobKey)
-  }
 
   private[feathr] def process(params: Array[String]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
-    val (applicationConfigPath, featureDefs, jobContext) = parseInputArguments(params)
+    val (applicationConfigPath, featureDefs, jobContext, dataSourceConfigs) = parseInputArguments(params)
     val sparkConf = new SparkConf().registerKryoClasses(Array(classOf[GenericRecord]))
-    setupSparkRedis(sparkConf, Some(jobContext))
+    DataSourceConfigUtils.setupSparkConf(sparkConf, dataSourceConfigs)
     val sparkSessionBuilder = SparkSession
       .builder()
       .config(sparkConf)
@@ -213,14 +185,11 @@ object FeatureGenJob {
       .enableHiveSupport()
 
     val ss = sparkSessionBuilder.getOrCreate()
-    setupADLSParams(ss, Some(jobContext))
-    setupBlobParams(ss, Some(jobContext))
-    setupS3Params(ss, jobContext.s3Config)
-
+    DataSourceConfigUtils.setupHadoopConf(ss, dataSourceConfigs)
     run(ss, applicationConfigPath, featureDefs, jobContext)
   }
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     process(args)
   }
 }

@@ -1,5 +1,9 @@
 # Feature Definition
 
+## Prerequisite
+* [Feathr Expression Language](../how-to-guides/expression-language.md)
+
+## Introduction
 In Feathr, a feature is viewed as a function, mapping from entity id or key, and timestamp to a feature value. <br/>
 1) The entity key (a.k.a. entity id) identifies the subject of feature, e.g. a user id, 123.<br/>
 2) The feature name is the aspect of the entity that the feature is indicating, e.g. the age of the user.<br/>
@@ -38,10 +42,6 @@ The latter case is called derived feature.
 `anchors` section is required in the feature definition config. You can simply write "anchors: {}" 
 if you don't have any anchored features in the feature definition config.
 
-Note:
-Two different expression language are currently supported in different use cases:
-1) [MVEL expression](http://mvel.documentnode.com/)
-2) [Spark SQL expression](https://spark.apache.org/docs/2.3.1/api/sql/index.html)
 
 See the anchored feature config specification below:
 
@@ -104,8 +104,8 @@ anchors: {
 | Field Name | Explanation | Required? | Example
 | --- | --- | --- | --- |
 | source | The data source in which the features are anchored to. It could be PASSTHROUGH or a source name define in the `sources` section | Yes| source: nycTaxiBatchSource // source name defined in sources section <br/> source: PASSTHROUGH // using request data as feature source|
-| key | An MVEL expression specifying how to extract the key for the features defined on this anchor. Usually it is a simple reference for the key field in the data record, e.g "entityId" but it can involve more complex expressions. | Yes | key: "entityId" // single key <br/> key: ["entityId","entityId2"] // multiple/compound key |
-| features | Defines the features to be extracted from this anchor. It is a map of feature names and transformations using expression language MVEL expression. | Yes | features: { f_trip_distance: "(float)trip_distance" } |
+| key | An Feathr expression specifying how to extract the key for the features defined on this anchor. Usually it is a simple reference for the key field in the data record, e.g "entityId" but it can involve more complex expressions. | Yes | key: "entityId" // single key <br/> key: ["entityId","entityId2"] // multiple/compound key |
+| features | Defines the features to be extracted from this anchor. It is a map of feature names and transformations using Feathr expression language. | Yes | features: { f_trip_distance: "(float)trip_distance" } |
 
 For the features field above, there are two different types, simple anchored features and window aggregation features.
 
@@ -114,7 +114,7 @@ For the features field above, there are two different types, simple anchored fea
 ```
     features: {
       <feature name>: {
-        def: <MVEL expression specifying how to extract the key for the feature value>
+        def: <Feathr expression specifying how to extract the key for the feature value>
         type: <feature type>
         default: <default feature value when missing>
       }
@@ -136,11 +136,11 @@ And an example:
 | Field Name | Explanation | Required? |
 | --- | --- | --- |
 | type | The type of the feature value. Possible feature types: BOOLEAN, NUMERIC, CATEGORICAL, CATEGORICAL_SET, TENSOR | No
-| def | An MVEL expression specifying how to extract the key for the feature value | Yes |
+| def | An Feathr expression specifying how to extract the key for the feature value | Yes |
 | default | The default value constant when the feature value is missing| No |
 
 Note that Feathr also support a simple form as a syntax sugar as: <br/>
-`feature name`: `MVEL expression to extract the feature value`
+`feature name`: `Feathr expression to extract the feature value`
 
 ###2) For window aggregation features, see the supported fields below:
 
@@ -198,14 +198,14 @@ derivations: {
   // This is a simple derived feature,  <derived feature name> needs to be unique across ALL feature config files.
   // It assume the 'key' of the derived feature to be the same as that of the dependent feature.
   <derived feature name>: {   
-      definition: <MVEL expression to compute this derived feature, which can referece **ONLY one** other anchored 
+      definition: <Feathr expression to compute this derived feature, which can referece **ONLY one** other anchored 
                   feature or derived feature>
       type: <Feature type, same as anchored feature type>  
   }
    
  <derived feature name>: {     // This is a more comprehensive derived feature syntx
     key: <The name of the derived feature. Note that this is just an arbitrary name, similar to the parameter name of a function,
-          rather than an MVEL or Spark SQL expression>
+          rather than an Feathr expression>
     // All features with corresponding keys that this derived feature depends on
     inputs: {
       <feature_foo_alias>: {key: <key name of feature_foo>, feature: <feature_foo>}
@@ -213,7 +213,7 @@ derivations: {
       ...
       <other_feature_alias>: {key: <other feature key name>, feature: <other feature>}
     }
-    definition: <MVEL expression to produce the feature value, referencing by input features by their alias specifed in the inputs field above>
+    definition: <feathr expression to produce the feature value, referencing by input features by their alias specifed in the inputs field above>
     type: <Feature type, same as anchored feature type>
 }
 }
@@ -235,7 +235,7 @@ For the complex derived features, all supported fields are:
 
 | Field Name | Explanation | Required? |
 | --- | --- | --- | 
-| key | The names of the derived feature. Note that this is just an arbitrary name, similar to the parameter name of a function, rather than an MVEL or Spark SQL expression | Yes|
+| key | The names of the derived feature. Note that this is just an arbitrary name, similar to the parameter name of a function, rather than an Feathr expression | Yes|
 | inputs | All features with corresponding keys that this derived feature depends on |Yes| 
-| definition | MVEL expression to produce the feature value, referencing by input features by their alias specifed in the inputs field above |Yes|
+| definition | Feathr expression to produce the feature value, referencing by input features by their alias specifed in the inputs field above |Yes|
 | type |Feature type, same as anchored feature type|Yes|

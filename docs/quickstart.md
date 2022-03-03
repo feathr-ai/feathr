@@ -56,27 +56,33 @@ In this created workspace, it has the following structure:
 feature_store.yaml:
 ```yaml
 # DO NOT MOVE OR DELETE THIS FILE
-resource:
-  azure:
-    # IDs
-    AZURE_CLIENT_ID: 'b92d6810-7e28-4380-89d8-103ad00e9acd'
-    AZURE_TENANT_ID: '72f988bf-86f1-41af-91ab-2d7cd011db47'
-    AZURE_CLIENT_SECRET: '_l5mz-6vj2c97Nb0YeNfs0Axa-Yhd0Q~u_'
-    # Spark cluster configs
-    synapse_dev_url: "https://feathrazuretest3synapse.dev.azuresynapse.net"
-    pool_name: "spark24"
-    datalake_dir: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/frame_getting_started"
-    executor_size: "Medium"
-    executor_num: 4
-    # PURVIEW configs
-    AZURE_PURVIEW_NAME: 'pvdemocnu0m-pv'
-    # Redis configs
-    redis_password: 'ruWBZ6WZsjUk5lEnDirM9JGoV1UgtMFbAO5lWoRY1QQ='
-    REDIS_HOST: "redistest.redis.cache.windows.net"
-    REDIS_PORT: 6380
-    REDIS_SSL_ENABLED: True
-    # configure number of parts for the spark output
-    RESULT_OUTPUT_PARTS: "1"
+
+# version of API settings
+api_version: 1
+project_config:
+  project_name: "feathr_getting_started"
+  # Information that are required to be set via environment variables.
+  required_environment_variables:
+    # Redis password for your online store
+    - "REDIS_PASSWORD"
+    # Client IDs and Client Secret for the service principal. Read the getting started docs on how to get those information.
+    - "AZURE_CLIENT_ID"
+    - "AZURE_TENANT_ID"
+    - "AZURE_CLIENT_SECRET"
+
+
+offline_store:
+...
+
+spark_config:
+...
+
+online_store:
+...
+
+feature_registry:
+...
+
 ```
 
 ## Step 3: Create features in the workspace
@@ -103,11 +109,11 @@ anchors: {
 
             f_trip_time_duration: "time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')"
 
-            f_day_of_week: "day_of_week(lpep_dropoff_datetime)"
+            f_day_of_week: "dayofweek(lpep_dropoff_datetime)"
 
-            f_day_of_month: "day_of_month(lpep_dropoff_datetime)"
+            f_day_of_month: "dayofmonth(lpep_dropoff_datetime)"
 
-            f_hour_of_day: "hour_of_day(lpep_dropoff_datetime)"
+            f_hour_of_day: "hourofday(lpep_dropoff_datetime)"
         }
     }
 
@@ -116,12 +122,12 @@ anchors: {
         key: DOLocationID
         features: {
             f_location_avg_fare: {
-            def: "float(fare_amount)"
+            def: "cast_float(fare_amount)"
             aggregation: AVG
             window: 3d
             }
             f_location_max_fare: {
-                def: "float(fare_amount)"
+                def: "cast_float(fare_amount)"
                 aggregation: MAX
                 window: 3d
             }
@@ -255,7 +261,7 @@ features: [f_location_avg_fare, f_location_max_fare]
 
 ## Step 7: Fetching feature value for online inference
 For features that are already materialized by the previous step, their latest value can be queried via the client's
-`online_get_features` or `online_get_features` API.
+`online_get_features` or `online_batch_get_features` API.
 
 ```python
 client.online_get_features("nycTaxiDemoFeature", "265", ['f_location_avg_fare', 'f_location_max_fare'])

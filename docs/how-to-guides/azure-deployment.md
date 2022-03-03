@@ -5,19 +5,26 @@ Due to the complexity of the possible cloud environment, it is almost impossible
 The "source of truth" version of the bash script is located  here: [azure_resource_provision.sh](./azure_resource_provision.sh); This document should be used as a more detailed explanation of that script.
 
 
+
 ## Name setup
 Put in the name and password you want to use in the sections below. You can get the subscription ID and the location from your IT admins, and set all the other names based on your preference.
 
 ```bash
-subscription_id="a6c2a7cc-d67e-4a1a-b765-983f08c0423a"
+subscription_id="{your_subscription_id}"
 resource_prefix="feathrazuretest3"
 location="eastus2"
 synapse_sql_admin_name="cliuser1"
-synapse_sql_admin_password="Password123!"
-synapse_sparkpool_name="spark24"
+synapse_sql_admin_password="{your_admin_password}"
+synapse_sparkpool_name="spark31"
 ```
 
 ## Login to Azure and set the corresponding subscription you want to work on
+
+Please make sure you have the latest Azure CLI installed. You can do so by executing:
+```bash
+az upgrade --all true --yes
+```
+
 If you haven't installed Azure CLI, follow the steps in this page to install Azure CLI:
 (https://aka.ms/azure-cli)[https://aka.ms/azure-cli]
 

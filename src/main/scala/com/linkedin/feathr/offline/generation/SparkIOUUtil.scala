@@ -49,6 +49,7 @@ object SparkIOUUtil {
   private val AVRO = "AVRO"
   private val ORC = "ORC"
   private val PARQUET = "PARQUET"
+  private val JDBC = "JDBC"
   private val ALL_OVERWRITE = "ALL"
   private val PARTITION_OVERWRITE = "PARTITION"
   private val NO_OVERWRITE = "NONE"

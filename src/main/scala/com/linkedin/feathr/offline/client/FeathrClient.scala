@@ -280,6 +280,7 @@ object FeathrClient {
    * @return  Builder class
    */
   def builder(sparkSession: SparkSession): Builder = {
+    FeathrUdfRegistry.registerUdf(sparkSession)
     new Builder(sparkSession)
   }
 

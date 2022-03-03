@@ -203,3 +203,6 @@ feathr_project/feathr_cli.egg-info/*
 
 # VS Code
 .vscode
+
+#Local Build
+null/*

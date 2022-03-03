@@ -6,18 +6,18 @@ import com.linkedin.feathr.common.{Header, JoiningFeatureParams}
 import com.linkedin.feathr.offline._
 import com.linkedin.feathr.offline.client._
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
+import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
 import com.linkedin.feathr.offline.generation.SparkIOUUtil
-import com.linkedin.feathr.offline.job.FeatureStoreConfigUtil.{S3_ACCESS_KEY, S3_ENDPOINT, S3_SECRET_KEY, setupS3Params}
 import com.linkedin.feathr.offline.source.SourceFormatType
 import com.linkedin.feathr.offline.util.SourceUtils.getPathList
 import com.linkedin.feathr.offline.util._
-import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.avro.generic.GenericRecord
 import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.hadoop.conf.Configuration
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.reflect.ClassTag
@@ -190,7 +190,10 @@ object FeatureJoinJob {
         "a bloomfilter will be applied", "ROWFILTERTHRESHOLD", "-1"),
       "job-version" -> OptionParam("jv", "Job version, integer, job version 2 uses DataFrame and SQL based anchor, default is 2", "JOBVERSION", "2"),
       "as-tensors" -> OptionParam("at", "If set to true, get features as tensors else as term-vectors", "AS_TENSORS", "false"),
-      "s3-config" -> OptionParam("sc", "Authentication config for S3", "S3_CONFIG", "")
+      "s3-config" -> OptionParam("sc", "Authentication config for S3", "S3_CONFIG", ""),
+      "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
+      "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
+      "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", "")
     )
 
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
@@ -233,9 +236,8 @@ object FeatureJoinJob {
         )
     }
 
-    val s3Config = cmdParser.extractOptionalValue("s3-config")
-
-    FeathrJoinJobContext(joinConfig, joinJobContext, s3Config)
+    val dataSourceConfigs = DataSourceConfigUtils.getConfigs(cmdParser)
+    FeathrJoinJobContext(joinConfig, joinJobContext, dataSourceConfigs)
   }
 
   type KeyTag = Seq[String]
@@ -261,19 +263,16 @@ object FeatureJoinJob {
     val sparkSession = sparkSessionBuilder.getOrCreate()
     val conf = sparkSession.sparkContext.hadoopConfiguration
 
-    setupS3Params(sparkSession, jobContext.s3Config)
+    DataSourceConfigUtils.setupHadoopConf(sparkSession, jobContext.dataSourceConfigs)
 
+    FeathrUdfRegistry.registerUdf(sparkSession)
     HdfsUtils.deletePath(jobContext.jobJoinContext.outputPath, recursive = true, conf)
 
     run(sparkSession, conf, jobContext)
   }
 }
 
-case class FeathrJoinJobContext(joinConfig: String, jobJoinContext: JoinJobContext, s3ConfigStr: Option[String] = None) {
-  val s3Config: Option[Config] = {
-    s3ConfigStr.map(configStr => ConfigFactory.parseString(configStr))
-  }
-}
+case class FeathrJoinJobContext(joinConfig: String, jobJoinContext: JoinJobContext, dataSourceConfigs: DataSourceConfigs) {}
 
 /**
  * This case class describes feature record after join process

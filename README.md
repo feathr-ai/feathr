@@ -13,6 +13,8 @@ Feathr automatically computes your feature values and joins them to your trainin
 data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying
 your features for use online in production.
 
+For more details, read our [documentation](docs/README.md).
+
 ## Defining Features with Transformation
 In **features.conf**:
 ```
@@ -118,13 +120,17 @@ derivations: {
 ```
 
 ## Roadmap
+>`Public Preview` release doesn't guarantee API stability and may introduce API changes.
+
 - [x] Private Preview release
-- [ ] Public Preview release
+- [x] Public Preview release
 - [ ] Alpha version release
   - [ ] Support streaming and online transformation
   - [ ] Support unified feature definition expression language
   - [ ] Support feature versioning
   - [ ] Support more data sources
+
   
 ## Community Guidelines
 Build for the community and build by the community. Check out [community guidelines](CONTRIBUTING.md).
+
