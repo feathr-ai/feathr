@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from loguru import logger
 import time
+from feathr._abc import SparkJobLauncher
 
 
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
@@ -15,7 +16,7 @@ from azure.synapse.spark import SparkClient
 from azure.synapse.spark.models import SparkBatchJob, SparkBatchJobOptions, LivyStates
 
 
-class _FeathrSynapseJobLauncher(object):
+class _FeathrSynapseJobLauncher(SparkJobLauncher):
     """
     Submits spark jobs to a Synapse spark cluster.
     """
@@ -62,6 +63,7 @@ class _FeathrSynapseJobLauncher(object):
         you are running with Azure Synapse.
 
         Args:
+            job_name (str): name of the job
             main_jar_path (str): main file paths, usually your main jar file
             main_class_name (str): name of your main class
             arguments (str): all the arugments you want to pass into the spark job
@@ -92,7 +94,7 @@ class _FeathrSynapseJobLauncher(object):
                                                                  reference_files=reference_files_path,
                                                                  tags=job_tags,
                                                                  configuration=configuration)
-
+        logger.info('See submitted job here: https://web.azuresynapse.net/en-us/monitoring/sparkapplication')
         return self.current_job_info
 
     def wait_for_completion(self, timeout_seconds: Optional[float]) -> bool:
@@ -113,6 +115,11 @@ class _FeathrSynapseJobLauncher(object):
             raise TimeoutError('Timeout waiting for job to complete')
 
     def get_status(self) -> str:
+        """Get current job status
+
+        Returns:
+            str: Status of the current job
+        """
         job = self._api.get_spark_batch_job(self.current_job_info.id)
         assert job is not None
         return job.state

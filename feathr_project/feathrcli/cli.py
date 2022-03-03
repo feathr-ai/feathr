@@ -152,7 +152,7 @@ def register(git, msg):
 @cli.command()
 def start():
     """
-    Starts a local feahtr engine for local experimentation and testing.
+    Starts a local Feathr engine for local experimentation and testing.
 
     Feathr local test requires feathr local engine, a java jar, to stay running locally. You can download the jar
     yourself from feathr website or use this command to download. The jar should be placed under the root of the

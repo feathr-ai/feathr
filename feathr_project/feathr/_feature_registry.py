@@ -20,8 +20,10 @@ class _FeatureRegistry():
         - Initialize an Azure Purview Client
         - Initialize the GUID tracker, project name, etc.
         """
-        self.FEATURE_REGISTRY_DELIMITER = _EnvVaraibleUtil.get_from_config(
-            "FEATURE_REGISTRY_DELIMITER")
+        self.project_name = _EnvVaraibleUtil.get_environment_variable_with_default('project_config', 'project_name')
+        self.FEATURE_REGISTRY_DELIMITER = _EnvVaraibleUtil.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
+        self.azure_purview_name = _EnvVaraibleUtil.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
+        type_system_initialization = _EnvVaraibleUtil.get_environment_variable_with_default('feature_registry', 'purview', 'type_system_initialization')
 
         self.oauth = ServicePrincipalAuthentication(
             tenant_id=_EnvVaraibleUtil.get_environment_variable(
@@ -32,16 +34,11 @@ class _FeatureRegistry():
                 "AZURE_CLIENT_SECRET")
         )
         self.purview_client = PurviewClient(
-            account_name=_EnvVaraibleUtil.get_from_config(
-                "AZURE_PURVIEW_NAME"),
+            account_name=self.azure_purview_name,
             authentication=self.oauth
         )
         self.guid = GuidTracker(starting=-1000)
-        self.project_name = _EnvVaraibleUtil.get_from_config("PROJECT_NAME")
         self.entity_batch_queue = []
-
-        type_system_initialization = _EnvVaraibleUtil.get_from_config(
-            "AZURE_PURVIEW_TYPE_SYSTEM_INITIALIZATION")
 
         if type_system_initialization:
             self._register_feathr_feature_types()
@@ -544,8 +541,8 @@ class _FeatureRegistry():
         results = self.purview_client.upload_entities(
             batch=self.entity_batch_queue)
         if results:
-            webinterface_path = "https://web.purview.azure.com/resource/" + _EnvVaraibleUtil.get_environment_variable_with_default(
-                'azure', "AZURE_PURVIEW_NAME") + "/main/catalog/browseassettypes"
+            webinterface_path = "https://web.purview.azure.com/resource/" + self.azure_purview_name + \
+                                "/main/catalog/browseassettypes"
         else:
             RuntimeError("Feature registration failed.", results)
 
