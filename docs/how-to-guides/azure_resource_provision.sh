@@ -1,12 +1,12 @@
 #!/bin/bash          
 
 # Fill in details in this section
-subscription_id="a6c2a7cc-d67e-4a1a-b765-983f08c0423a"
+subscription_id=""
 resource_prefix="feathrazuretest3"
 location="eastus2"
 synapse_sql_admin_name="cliuser1"
-synapse_sql_admin_password="Password123!"
-synapse_sparkpool_name="spark24"
+synapse_sql_admin_password=""
+synapse_sparkpool_name="spark31"
 
 # detect whether az cli is installed or not
 if ! [ -x "$(command -v az)" ]; then
