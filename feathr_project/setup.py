@@ -34,7 +34,8 @@ setup(
         "pandavro",
         "python-snappy",
         "pyyaml",
-        "Jinja2"
+        "Jinja2",
+        "pytest"
     ],
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']

@@ -145,7 +145,7 @@ def register(git, msg):
         output2 = process2.communicate()[0]
         click.echo(output2)
     client = FeathrClient()
-    client.register_features()
+    client.register_features(Path(".").absolute())
     click.echo(click.style('Feathr registration completed successfully!', fg='green'))
 
 

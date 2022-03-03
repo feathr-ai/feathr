@@ -1,15 +1,19 @@
 import logging
 import os
-from typing import List
+from typing import List, Optional
 import redis
 from loguru import logger
 from pyhocon import ConfigFactory
 
+from pathlib import Path
 from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._feature_registry import _FeatureRegistry
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr._databricks_submission import _FeathrDatabricksJobLauncher
-
+from feathr.file_utils import write_to_file
+from jinja2 import Template
+from feathr.sdk.join.query_feature_list import QueryFeatureList
+from feathr.sdk.join.settings import Settings
 
 class FeatureJoinJobParams:
     """Parameters related to feature join job.
@@ -128,10 +132,11 @@ class FeathrClient(object):
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
                                    f'variables are: {all_required_vars}.')
 
-    def register_features(self):
+    def register_features(self, repo_path: Optional[Path] = Path('./')):
         """Registers features based on the current workspace
         """
-        self.registry.register_features(os.path.abspath('./'))
+        # self.registry.register_features(os.path.abspath(repo_path))
+        self.registry.register_features(repo_path)
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -232,7 +237,41 @@ class FeathrClient(object):
         self.logger.info('Redis connection is successful and completed.')
         self.redis_clint = redis_clint
 
-    def join_offline_features(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
+    def get_offline_features_with_key(self,
+                        features: List[str],
+                        observationPath: str,
+                        outputPath: str,
+                        key_columns: Optional[List[str]] = None):
+        feature_lists = [QueryFeatureList(key = key_columns, feature_list = features)]
+        return self.join_offline_features_with_setting(feature_lists, observationPath, outputPath)
+
+    def join_offline_features_with_setting(self,
+                        feature_lists: List[QueryFeatureList],
+                        observationPath: str,
+                        outputPath: str,
+                        join_settings: Optional[Settings] = None):
+        # produce join config
+        tm = Template("""
+            {% if join_settings is not none %}
+                {{join_settings.to_config()}}
+            {% endif %}
+            featureList: [
+                {% for list in feature_lists %}
+                    {{list.to_config()}}
+                {% endfor %}
+            ]
+            observationPath: "{{observationPath}}"
+            outputPath: "{{outputPath}}"
+        """)
+        config = tm.render(feature_lists = feature_lists, join_settings = join_settings,
+                           observationPath = observationPath, outputPath = outputPath)
+        config_file_name = "feature_join_conf/feature_join.conf"
+        config_file_path = os.path.abspath(config_file_name)
+        write_to_file(content=config, file_name=config_file_path)
+        return self.join_offline_features(config_file_name)
+
+
+    def join_offline_features(self, feature_join_conf_path: str ='feature_join_conf/feature_join.conf'):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:

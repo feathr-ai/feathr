@@ -3,6 +3,8 @@ from feathr.sdk.feature import Feature
 from feathr.sdk.source import Source
 from jinja2 import Template
 
+from pyhocon import ConfigFactory
+
 # passthrough features do not need keys
 DUMMY_KEY = ["NOT_NEEDED"]
 class FeatureAnchor:
@@ -22,6 +24,7 @@ class FeatureAnchor:
 
     def to_feature_config(self) -> str:
         tm = Template("""
+        // THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
         anchors: {
             {{anchor_name}}: {
                 source: {{source.name}}

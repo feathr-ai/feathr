@@ -1,6 +1,9 @@
+from pyexpat import features
 from feathrcli.cli import init
 from click.testing import CliRunner
 from feathr.client import FeathrClient
+from feathr.sdk.join.query_feature_list import QueryFeatureList
+from feathr.sdk.join.settings import Settings
 import os
 import glob
 import pandavro as pdx
@@ -10,7 +13,7 @@ import tempfile
 
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
-def test_feathr_online_store():
+def ttest_feathr_online_store():
     """
     Test FeathrClient() online_get_features and batch_get can get data correctly.
     """
@@ -41,7 +44,7 @@ def test_feathr_online_store():
         assert res['265'][1] != None
 
 
-def test_feathr_get_historical_features():
+def ttest_feathr_get_offline_features_with_config():
     """
     Test FeathrClient() get_features and batch_get can get data correctly.
     """
@@ -65,5 +68,41 @@ def test_feathr_get_historical_features():
         assert vertical_concat_df.shape[0] > 1
 
 
+def ttest_feathr_get_offline_features():
+    """
+    Test FeathrClient() get_features and batch_get can get data correctly.
+    """
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        runner.invoke(init, [])
+        os.chdir('feathr_user_workspace')
+        client = FeathrClient()
 
+        feature_lists = [QueryFeatureList(feature_list = ["f_location_avg_fare"], key = ["DOLocationID"])]
+        settings = Settings(event_timestamp_column="lpep_dropoff_datetime", timestamp_format="yyyy-MM-dd HH:mm:ss")
+        returned_spark_job = client.join_offline_features_with_setting(feature_lists = feature_lists,
+               join_settings = settings,
+               observationPath = "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+               outputPath = "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
+        res_url = client.get_job_result_uri(block=True, timeout_sec=600)
+        tmp_dir = tempfile.TemporaryDirectory()
+        client.feathr_spark_laucher.download_result(result_path=res_url, local_folder=tmp_dir.name)
+        dataframe_list = []
+        # assuming the result are in avro format
+        for file in glob.glob(os.path.join(tmp_dir.name, '*.avro')):
+            dataframe_list.append(pdx.read_avro(file))
+        vertical_concat_df = pd.concat(dataframe_list, axis=0)
+        tmp_dir.cleanup()
+        # just assume there are results. Need to think about this test and make sure it captures the result
+        assert vertical_concat_df.shape[0] > 1
 
+def test_feathr_feature_register():
+    """
+    Test FeathrClient() can register features correctly.
+    """
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        runner.invoke(init, [])
+        os.chdir('feathr_user_workspace')
+        client = FeathrClient()
+        client.register_features()

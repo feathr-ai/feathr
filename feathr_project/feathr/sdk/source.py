@@ -21,7 +21,7 @@ class PassthroughSource(Source):
     def to_feature_config(self) -> str:
         return "source: " + self.name
 
-class ADLSSource(Source):
+class HDFSSource(Source):
     def __init__(self, name: str, path: str, event_timestamp_column: Optional[str], timestamp_format: Optional[str] = "epoc") -> None:
         super().__init__(name, event_timestamp_column, timestamp_format)
         self.path = path

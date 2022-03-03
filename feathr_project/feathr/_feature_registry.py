@@ -1,7 +1,19 @@
-import glob
 import os
+import sys
+import glob
+from pyexpat import features
 from typing import List
+from feathr.sdk.transformation import Transformation
+from feathr.file_utils import write_to_file
+from feathr.sdk.feature_anchor import FeatureAnchor
+from feathr.sdk.source import Source
+from feathr.sdk.feature import Feature
+from feathr.repo_definitions import RepoDefinitions
+from typing import Optional, Set
+
+import importlib
 from loguru import logger
+from pathlib import Path
 from pyapacheatlas.auth import ServicePrincipalAuthentication
 from pyapacheatlas.core import (AtlasEntity, AtlasProcess, PurviewClient, TypeCategory)
 from pyapacheatlas.core.typedef import (AtlasAttributeDef, EntityTypeDef, RelationshipTypeDef)
@@ -422,7 +434,6 @@ class _FeatureRegistry():
         feature_config_path = feature_config_paths[0]
         self.feathr_feature_config = ConfigFactory.parse_file(
             feature_config_path)
-        # print(self.feathr_feature)
         with open(feature_config_path, "r") as f:
             raw_hocon_feature_definition_config = f.read()
 
@@ -451,6 +462,7 @@ class _FeatureRegistry():
         feathr_sources = self.feathr_feature_config.get("sources", "")
         feathr_derivations = self.feathr_feature_config.get("derivations", "")
 
+        sources_batch = []
         # parse all the anchors
         if feathr_anchors:
             anchors_batch = self._parse_anchors(feathr_anchors)
@@ -532,12 +544,64 @@ class _FeatureRegistry():
 
         self.entity_batch_queue.append(workspace)
 
-    def register_features(self, workspace_path: str = None):
+    def get_py_files(self, path: Path) -> List[Path]:
+        py_files = []
+        for item in path.glob('**/*.py'):
+            if "__init__.py" != item.name:
+                py_files.extend([item])
+        return py_files
+
+    def py_path_to_module(self, path: Path, workspace_path: Path) -> str:
+        prefix = os.path.commonprefix([path.resolve(), workspace_path.resolve()])
+        resolved_path = str(path.resolve())
+        module_path = resolved_path[len(prefix): -len(".py")]
+        return (
+            module_path
+            .lstrip('/')
+            .replace("/", ".")
+        )
+
+    def extract_features(self, workspace_path: Path) -> RepoDefinitions:
+        """Collect feature definitions from the python file, convert them into feature config and save them locally"""
+        os.chdir(workspace_path)
+        sys.path.append(str(workspace_path))
+        repo = RepoDefinitions(
+            sources = set(),
+            features = set(),
+            transformations = set(),
+            feature_anchors = set()
+        )
+        for py_file in self.get_py_files(workspace_path):
+            module_path = self.py_path_to_module(py_file, workspace_path)
+            module = importlib.import_module(module_path)
+            for attr_name in dir(module):
+                obj = getattr(module, attr_name)
+                if isinstance(obj, Source):
+                    repo.sources.add(obj)
+                elif isinstance(obj, Feature):
+                    repo.features.add(obj)
+                elif isinstance(obj, FeatureAnchor):
+                    repo.feature_anchors.add(obj)
+                elif isinstance(obj, Transformation):
+                    repo.transformations.add(obj)
+        return repo
+
+    def save_to_feature_config(self, repo_definitions: RepoDefinitions):
+        """Save feature definition into HOCON feature config files"""
+        for anchor in repo_definitions.feature_anchors:
+            config = anchor.to_feature_config()
+            config_file_name = "feature_conf/_" + anchor.name + ".conf"
+            config_file_path = os.path.abspath(config_file_name)
+            write_to_file(content=config, file_name=config_file_path)
+
+    def register_features(self, workspace_path: Path = Path('./')):
         """Register Features for the specified workspace
 
         Args:
             workspace_path (str, optional): path to a workspace. Defaults to None.
         """
+        repo_definitions = self.extract_features(workspace_path)
+        self.save_to_feature_config(repo_definitions)
         self._read_config_from_workspace(workspace_path)
         # Upload all entities
         # need to be all in one batch to be uploaded, otherwise the GUID reference won't work
