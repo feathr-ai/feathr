@@ -37,6 +37,8 @@ private[feathr] object RedisResourceInfoSetter{
   val redisSetter = new RedisResourceInfoSetter()
 
   def setup(sparkConf: SparkConf, config: DataSourceConfig, resource: Resource): Unit ={
-    redisSetter.setupSparkConf(sparkConf, Some(config), Some(resource))
+    if (config.configStr.isDefined){
+      redisSetter.setupSparkConf(sparkConf, Some(config), Some(resource))
+    }
   }
 }

@@ -25,8 +25,6 @@ private[offline] object DataLoaderFactory {
   def apply(ss: SparkSession): DataLoaderFactory = {
     if (ss.sparkContext.isLocal) {
       new LocalDataLoaderFactory(ss)
-    } else if (ss.conf.getOption("jdbc.table").isDefined) {
-      new JDBCDataLoaderFactory(ss)
     } else {
       new HdfsDataLoaderFactory(ss)
     }

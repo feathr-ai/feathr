@@ -36,6 +36,8 @@ private[feathr] object SQLResourceInfoSetter{
   val sqlSetter = new SQLResourceInfoSetter()
 
   def setup(sparkConf: SparkConf, config: DataSourceConfig, resource: Resource): Unit ={
-    sqlSetter.setupSparkConf(sparkConf, Some(config), Some(resource))
+    if (config.configStr.isDefined){
+      sqlSetter.setupSparkConf(sparkConf, Some(config), Some(resource))
+    }
   }
 }
