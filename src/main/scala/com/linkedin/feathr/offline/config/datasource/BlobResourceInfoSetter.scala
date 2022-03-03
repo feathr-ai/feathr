@@ -24,3 +24,11 @@ private[feathr] class BlobResourceInfoSetter extends ResourceInfoSetter() {
     }
   }
 }
+
+private[feathr] object BlobResourceInfoSetter{
+  val blobSetter = new BlobResourceInfoSetter()
+
+  def setup(ss: SparkSession, config: DataSourceConfig, resource: Resource): Unit ={
+    blobSetter.setup(ss, config, resource)
+  }
+}

@@ -39,17 +39,14 @@ object DataSourceConfigUtils {
 
   private[feathr] def setupHadoopConf(ss:SparkSession , configs: DataSourceConfigs): Unit ={
     val resource = featureStoreConfig.resource
-    val adlsResourceInfoSetter = new ADLSResourceInfoSetter()
-    adlsResourceInfoSetter.setup(ss, configs.adlsConfig, resource)
-    val blobResourceInfoSetter = new BlobResourceInfoSetter()
-    blobResourceInfoSetter.setup(ss, configs.blobConfig, resource)
-    val s3ResourceInfoSetter = new S3ResourceInfoSetter()
-    s3ResourceInfoSetter.setup(ss, configs.s3Config, resource)
+    ADLSResourceInfoSetter.setup(ss, configs.adlsConfig, resource)
+    BlobResourceInfoSetter.setup(ss, configs.blobConfig, resource)
+    S3ResourceInfoSetter.setup(ss, configs.s3Config, resource)
   }
 
   private[feathr] def setupSparkConf(sparkConf: SparkConf, configs: DataSourceConfigs): Unit ={
     val resource = featureStoreConfig.resource
-    val redisResourceInfoSetter = new RedisResourceInfoSetter()
-    redisResourceInfoSetter.setup(sparkConf, configs.redisConfig, resource)
+    RedisResourceInfoSetter.setup(sparkConf, configs.redisConfig, resource)
+    SQLResourceInfoSetter.setup(sparkConf, configs.sqlConfig, resource)
   }
 }

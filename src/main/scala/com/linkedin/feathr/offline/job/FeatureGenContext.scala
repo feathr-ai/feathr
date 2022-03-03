@@ -1,6 +1,5 @@
 package com.linkedin.feathr.offline.job
 
-import com.linkedin.feathr.offline.config.datasource.DataSourceConfigs
 import com.linkedin.feathr.offline.util.{CmdLineParser, OptionParam}
 
 /**

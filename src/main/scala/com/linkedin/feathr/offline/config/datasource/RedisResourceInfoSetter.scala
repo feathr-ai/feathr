@@ -10,10 +10,6 @@ private[feathr]  class RedisResourceInfoSetter extends ResourceInfoSetter() {
 
   override val params = List(REDIS_HOST, REDIS_PORT, REDIS_SSL_ENABLED, REDIS_PASSWORD)
 
-  def setup(sparkConf: SparkConf, context: DataSourceConfig, resource: Resource){
-    setupSparkConf(sparkConf, Some(context), Some(resource))
-  }
-
   def setupSparkConf(sparkConf: SparkConf, context: Option[DataSourceConfig], resource: Option[Resource]): Unit = {
     val host = getAuthStr(REDIS_HOST, context, resource)
     val port = getAuthStr(REDIS_PORT, context, resource)
@@ -34,5 +30,13 @@ private[feathr]  class RedisResourceInfoSetter extends ResourceInfoSetter() {
       case REDIS_PASSWORD => resource.azureResource.redisPassword
       case _ => EMPTY_STRING
     }
+  }
+}
+
+private[feathr] object RedisResourceInfoSetter{
+  val redisSetter = new RedisResourceInfoSetter()
+
+  def setup(sparkConf: SparkConf, config: DataSourceConfig, resource: Resource): Unit ={
+    redisSetter.setupSparkConf(sparkConf, Some(config), Some(resource))
   }
 }

@@ -24,3 +24,11 @@ private[feathr] class ADLSResourceInfoSetter extends ResourceInfoSetter() {
     }
   }
 }
+
+private[feathr] object ADLSResourceInfoSetter{
+  val adlsSetter = new ADLSResourceInfoSetter()
+
+  def setup(ss: SparkSession, config: DataSourceConfig, resource: Resource): Unit ={
+    adlsSetter.setup(ss, config, resource)
+  }
+}

@@ -647,6 +647,11 @@ private[offline] object SourceUtils {
       ss.read.format("csv").option("header", "true").load(inputData.inputPath)
     } else if (inputData.inputPath.endsWith(".parquet")) {
       ss.read.parquet(inputData.inputPath)
+    } else if (inputData.inputPath.startsWith("jdbc")){
+      ss.read.format("jdbc").option("url", inputData.inputPath)
+        .option("dbtable", ss.conf.get("jdbc.table"))
+        .option("user", ss.conf.get("jdbc.user"))
+        .option("password", ss.conf.get("jdbc.password")).load()
     } else {
       val pathList = getPathList(inputData.sourceType, inputData.inputPath, ss, inputData.dateParam, None, failOnMissing)
       if (ss.sparkContext.isLocal) { // for test

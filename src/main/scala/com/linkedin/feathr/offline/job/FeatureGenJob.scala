@@ -119,8 +119,8 @@ object FeatureGenJob {
       localFeatureConfig: Option[String],
       jobContext: FeatureGenJobContext): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
 
-    print("featureDefConfig", featureDefConfig)
-    print("localFeatureConfig",localFeatureConfig)
+    logger.info(s"featureDefConfig : ${featureDefConfig}")
+    logger.info(s"localFeatureConfig : ${localFeatureConfig}")
     val feathrClient =
         FeathrClient.builder(ss)
           .addFeatureDef(featureDefConfig)

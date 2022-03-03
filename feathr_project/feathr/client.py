@@ -241,7 +241,10 @@ class FeathrClient(object):
                     feature_join_job_params.feature_config),
                 '--num-parts', _EnvVaraibleUtil.get_from_config(
                     'RESULT_OUTPUT_PARTS'),
-                '--s3-config', self._get_s3_config_str()
+                '--s3-config', self._get_s3_config_str(),
+                '--adls-config', self._get_adls_config_str(),
+                '--blob-config', self._get_blob_config_str(),
+                '--sql-config', self._get_sql_config_str(),
             ],
             reference_files_path=[],
         )
@@ -280,7 +283,8 @@ class FeathrClient(object):
                 '--redis-config', self._getRedisConfigStr(),
                 '--s3-config', self._get_s3_config_str(),
                 '--adls-config', self._get_adls_config_str(),
-                '--blob-config', self._get_blob_config_str()
+                '--blob-config', self._get_blob_config_str(),
+                '--sql-config', self._get_sql_config_str()
             ],
             reference_files_path=[],
         )
@@ -360,7 +364,7 @@ class FeathrClient(object):
         """Construct the Blob config string for wasb(s). The Account, access key and other parameters can be set via
         environment variables."""
         account = _EnvVaraibleUtil.get_environment_variable('BLOB_ACCOUNT')
-        # if ADLS Account is set in the feathr_config, then we need other environment variables
+        # if BLOB Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
         key = _EnvVaraibleUtil.get_environment_variable('BLOB_KEY')
         # HOCCON format will be parsed by the Feathr job
@@ -368,4 +372,18 @@ class FeathrClient(object):
             BLOB_ACCOUNT: {BLOB_ACCOUNT}
             BLOB_KEY: "{BLOB_KEY}"
             """.format(BLOB_ACCOUNT=account, BLOB_KEY=key)
+        return config_str
+
+    def _get_sql_config_str(self):
+        """Construct the SQL config string for jdbc. The dbtable (query), user, password and other parameters can be set via
+        environment variables."""
+        table = _EnvVaraibleUtil.get_environment_variable('JDBC_TABLE')
+        user = _EnvVaraibleUtil.get_environment_variable('JDBC_USER')
+        password = _EnvVaraibleUtil.get_environment_variable('JDBC_PASSWORD')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            JDBC_TABLE: {JDBC_TABLE}
+            JDBC_USER: {JDBC_USER}
+            JDBC_PASSWORD: "{JDBC_PASSWORD}"
+            """.format(JDBC_TABLE=table, JDBC_USER=user, JDBC_PASSWORD=password)
         return config_str

@@ -27,3 +27,11 @@ private[feathr] class S3ResourceInfoSetter extends ResourceInfoSetter() {
     }
   }
 }
+
+private[feathr] object S3ResourceInfoSetter{
+  val sqlSetter = new S3ResourceInfoSetter()
+
+  def setup(ss: SparkSession, config: DataSourceConfig, resource: Resource): Unit ={
+    sqlSetter.setup(ss, config, resource)
+  }
+}
