@@ -66,3 +66,10 @@ Feathr built-in UDFs(user-defined-function) provide useful feature transformatio
 | dayofmonth(input)  | get day of the month from the input    | dayofmonth('2009-07-30') returns 30 |
 | hourofday(input)  | get hour of the day from the input    | hourofday('2021-01-01 23:45:57') returns 23  |
 | time_duration(start, end, unit)  | get the duration in the desired unit between start and end   | time_duration('2021-01-01 23:45:57', '2021-01-01 23:55:57', 'minutes') returns 10 |
+
+
+# How Feathr Expressions Works Under the Hood
+Feathr expressions relies on [Mvel](http://mvel.documentnode.com/) and Spark SQL as the underlying engine. The supported
+functionalities are a subset of Mvel and Spark SQL to ensure cross-platform compatibility. The underlying engine may be
+updated or replaced in the future but the supported operators in this doc will stay. If you are using some operators
+that are not mentioned here, it might work in one platform but might not work on others.

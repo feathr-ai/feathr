@@ -22,7 +22,7 @@ anchors: {                                          // Feature groups
     trip_features: {                                // A feature group
         features: {                                 // Feature names in the group
             f_is_long_trip: "trip_distance > 30"    // A feature by an expression
-            f_day_of_week: "day_of_week(datetime)"  // A feature with built-in function
+            f_day_of_week: "dayofweek(datetime)"    // A feature with built-in function
         }
     }
 }
@@ -53,10 +53,9 @@ In **my_offline_training.py**:
 ```python
 # Prepare training data by joining features to the input (observation) data.
 # feature-join.conf and features.conf are detected and used automatically.
-from  feathr import FeathrClient
+from feathr import FeathrClient
 client = FeathrClient()
 result = client.join_offline_features()
-result.sample(10)
 ```
 
 In **my_online_model.py**:
@@ -86,7 +85,7 @@ anchors: {
         features: {
             f_location_avg_fare: {         // A feature with window aggregation
                 aggregation: AVG           // Aggregation function
-                def: "float(fare_amount)"  // Aggregation expression
+                def: "cast_float(fare_amount)"  // Aggregation expression
                 window: 3d                 // Over a 3-day window
             }
         }

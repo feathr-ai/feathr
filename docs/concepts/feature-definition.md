@@ -67,17 +67,17 @@ anchors: {
         key: NOT_NEEDED
         features: {
 
-            f_trip_distance: "(float)trip_distance"
+            f_trip_distance: "cast_double(trip_distance)"
 
-            f_is_long_trip_distance: "trip_distance>30"
+            f_is_long_trip_distance: "cast_double(trip_distance) > 30"
 
             f_trip_time_duration: "time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')"
 
-            f_day_of_week: "day_of_week(lpep_dropoff_datetime)"
+            f_day_of_week: "dayofweek(lpep_dropoff_datetime)"
 
-            f_day_of_month: "day_of_month(lpep_dropoff_datetime)"
+            f_day_of_month: "dayofmonth(lpep_dropoff_datetime)"
 
-            f_hour_of_day: "hour_of_day(lpep_dropoff_datetime)"
+            f_hour_of_day: "hourofday(lpep_dropoff_datetime)"
         }
     }
 
@@ -86,12 +86,12 @@ anchors: {
         key: DOLocationID
         features: {
             f_location_avg_fare: {
-                def: "float(fare_amount)"
+                def: "cast_float(fare_amount)"
                 aggregation: AVG
                 window: 3d
             }
             f_location_max_fare: {
-                def: "float(fare_amount)"
+                def: "cast_float(fare_amount)"
                 aggregation: MAX
                 window: 3d
             }
@@ -147,11 +147,11 @@ Note that Feathr also support a simple form as a syntax sugar as: <br/>
 ```
     features: {
       <feature name>: {
-        def: <Spark SQL expression specifying how to extract the feature value for source data row>
+        def: <Feathr expression specifying how to extract the feature value for source data row>
         aggregation: <aggregation type>
         window: <time window length to apply the aggregation>
-        filter: <Spark SQL expression applied to each row as a filter>
-        groupby: <Spark SQL expressions applied after the `def` transformation as groupby fields>
+        filter: <Feathr expression applied to each row as a filter>
+        groupby: <Feathr expressions applied after the `def` transformation as groupby fields>
         default: <Constant default value when feature value is missing>
         type: <feature type>
       }
@@ -172,11 +172,11 @@ And an example:
 
 | Field Name | Explanation | Required? |
 | --- | --- | --- |
-| def | An Spark SQL expression specifying how to extract the feature value from the source data row| Yes |
+| def | An Feathr expression specifying how to extract the feature value from the source data row| Yes |
 | aggregation | Aggregation type. Supported aggregation types: SUM, COUNT, MAX, MIN, AVG, LATEST, MAX_POOLING, MIN_POOLING, AVG_POOLING. See table below for detailed explanation of each. | Yes |
 | window | Time window length to apply the aggregation. support 4 type of units: d(day), h(hour), m(minute), s(second). The example value are "7d' or "5h" or "3m" or "1s" | Yes |
-| filter | Spark SQL expression applied to each row as a filter **before** aggregation| No |
-| groupby| Spark SQL expressions applied **after** the `def` transformation as groupby field, **before** aggregation| No|
+| filter | Feathr expression applied to each row as a filter **before** aggregation| No |
+| groupby| Feathr expressions applied **after** the `def` transformation as groupby field, **before** aggregation| No|
 | default | The default value constant when the feature value is missing| No |
 | type | The type of the feature value. Possible feature types: BOOLEAN, NUMERIC, CATEGORICAL, CATEGORICAL_SET, TENSOR | No
 
