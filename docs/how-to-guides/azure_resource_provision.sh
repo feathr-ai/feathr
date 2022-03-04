@@ -1,12 +1,21 @@
 #!/bin/bash          
 
 # Fill in details in this section
-subscription_id=""
-resource_prefix="feathrazuretest3"
+subscription_id="a6c2a7cc-d67e-4a1a-b765-983f08c0423a"
+resource_prefix="feathrazurexyz1"
 location="eastus2"
 synapse_sql_admin_name="cliuser1"
-synapse_sql_admin_password=""
+synapse_sql_admin_password="FeathrRocks1"
 synapse_sparkpool_name="spark31"
+
+# You don't have to modify the names below
+service_principal_name="$resource_prefix"sp
+resoruce_group_name="$resource_prefix"rg
+storage_account_name="$resource_prefix"sto
+storage_file_system_name="$resource_prefix"fs
+synapse_workspace_name="$resource_prefix"spark
+redis_cluster_name="$resource_prefix"redis
+purview_account_name="$resource_prefix"purview
 
 # detect whether az cli is installed or not
 if ! [ -x "$(command -v az)" ]; then
@@ -14,22 +23,17 @@ if ! [ -x "$(command -v az)" ]; then
   exit 1
 fi
 
+az upgrade --all true --yes
 # login if required
 az account get-access-token
 if [[ $? == 0 ]]; then
   echo "Logged in, using current subscriptions "
 else
   echo "Logging in via az login..."
-  az login
+  az login --use-device-code
 fi
 
-service_principal_name="$resource_prefix-sp"
-resoruce_group_name="$resource_prefix-rg"
-storage_account_name="$resource_prefix"storage
-storage_file_system_name="$resource_prefix"fs
-synapse_workspace_name="$resource_prefix"synapse
-redis_cluster_name="$resource_prefix"redis
-purview_account_name="$resource_prefix-purview"
+
 
 echo "Setting subscription to $subscription_id, Creating $service_principal_name service principal"
 az account set -s $subscription_id
@@ -90,7 +94,7 @@ az purview account create --location $location --account-name $purview_account_n
 
 # this is completely optional. It will download some demo NYC data and upload it to the default storage account, to make the setup experience smoother
 echo "preparing data"
-wget -O /tmp/green_tripdata_2020-04.csv https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv
+curl https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv --output /tmp/green_tripdata_2020-04.csv
 az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode login
 
 # show output again
