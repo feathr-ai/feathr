@@ -71,7 +71,7 @@ echo "External IP is: ${external_ip}. Adding it to firewall rules"
 az synapse workspace firewall-rule create --name allowCurrentIP --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
 
 # sleep for a few seconds for the chagne to take effect
-sleep 10
+sleep 30
 az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $service_principal_name
 
 echo "Verify if the assignment is successful or not:"
