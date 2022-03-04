@@ -26,8 +26,32 @@ import static org.testng.Assert.*;
 public class TestMvelContextUDFs extends TestNGSuite {
   @Test
   public void testGetDataType() {
-    Assert.assertEquals(getDataType("A"), "java.lang.String");
-    Assert.assertEquals(getDataType(null), "null");
+    Assert.assertEquals(get_data_type("A"), "java.lang.String");
+    Assert.assertEquals(get_data_type(null), "null");
+  }
+
+  @Test
+  public void testCastDouble() {
+    Assert.assertEquals(cast_double("1.1"), 1.1d);
+    Assert.assertEquals(cast_double("1.1e10"), 1.1E10d);
+  }
+
+
+  @Test
+  public void testCastFloat() {
+    Assert.assertEquals(cast_float("1.1"), 1.1f);
+    Assert.assertEquals(cast_float("1.1e10"), 1.1E10f);
+  }
+
+  @Test
+  public void testCastInteger() {
+    Assert.assertEquals(cast_int("1"), (Integer)1);
+  }
+
+  @Test
+  public void testIfElse() {
+    Assert.assertEquals(if_else(true, "a", "b"), "a");
+    Assert.assertEquals(if_else(false, "a", "b"), "b");
   }
 
   @Test

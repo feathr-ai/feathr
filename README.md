@@ -13,6 +13,8 @@ Feathr automatically computes your feature values and joins them to your trainin
 data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying
 your features for use online in production.
 
+For more details, read our [documentation](docs/README.md).
+
 ## Defining Features with Transformation
 In **features.conf**:
 ```
@@ -20,7 +22,7 @@ anchors: {                                          // Feature groups
     trip_features: {                                // A feature group
         features: {                                 // Feature names in the group
             f_is_long_trip: "trip_distance > 30"    // A feature by an expression
-            f_day_of_week: "day_of_week(datetime)"  // A feature with built-in function
+            f_day_of_week: "dayofweek(datetime)"    // A feature with built-in function
         }
     }
 }
@@ -51,10 +53,9 @@ In **my_offline_training.py**:
 ```python
 # Prepare training data by joining features to the input (observation) data.
 # feature-join.conf and features.conf are detected and used automatically.
-from  feathr import FeathrClient
+from feathr import FeathrClient
 client = FeathrClient()
 result = client.join_offline_features()
-result.sample(10)
 ```
 
 In **my_online_model.py**:
@@ -84,7 +85,7 @@ anchors: {
         features: {
             f_location_avg_fare: {         // A feature with window aggregation
                 aggregation: AVG           // Aggregation function
-                def: "float(fare_amount)"  // Aggregation expression
+                def: "cast_float(fare_amount)"  // Aggregation expression
                 window: 3d                 // Over a 3-day window
             }
         }
@@ -117,14 +118,21 @@ derivations: {
 }
 ```
 
+## Cloud Architecture
+Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
+![Architecture](./images/architecture.png)
+
 ## Roadmap
+>`Public Preview` release doesn't guarantee API stability and may introduce API changes.
+
 - [x] Private Preview release
-- [ ] Public Preview release
+- [x] Public Preview release
 - [ ] Alpha version release
   - [ ] Support streaming and online transformation
   - [ ] Support unified feature definition expression language
   - [ ] Support feature versioning
   - [ ] Support more data sources
-  
+
 ## Community Guidelines
 Build for the community and build by the community. Check out [community guidelines](CONTRIBUTING.md).
+

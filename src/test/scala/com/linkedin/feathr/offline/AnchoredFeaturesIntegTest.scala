@@ -436,11 +436,11 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
         |
         |      f_trip_time_duration: "time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')"
         |
-        |      f_day_of_week: "day_of_week(lpep_dropoff_datetime)"
+        |      f_day_of_week: "dayofweek(lpep_dropoff_datetime)"
         |
-        |      f_day_of_month: "day_of_month(lpep_dropoff_datetime)"
+        |      f_day_of_month: "dayofmonth(lpep_dropoff_datetime)"
         |
-        |      f_hour_of_day: "hour_of_day(lpep_dropoff_datetime)"
+        |      f_hour_of_day: "hourofday(lpep_dropoff_datetime)"
         |    }
         |  }
         |

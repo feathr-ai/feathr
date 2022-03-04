@@ -8,7 +8,7 @@ Feathr Python Project Developer Guide
 - Navigate to feathr_project folder
 - Install the project by `python3 -m pip install -e .` This will install a feathr CLI for you. Type `feathr` in the terminal to see the instructions.
 
-# Usage of `feathr` CLI
+# CLI Usage
 - Run `feathr` in your terminal to see the instructions.
 - Run `feathr init` to create a new workspace
 - Navigate to the new workspace
@@ -29,24 +29,30 @@ Run pytest in this folder to kick off the integration test. The integration test
 It's recommended to use virtual environment for Python project development.
 ## Using Python VENV
 * Install virtualenv: `python3 -m pip install --user virtualenv`
-* Make sure you are not using any other virtualenv(either Python or Conda) with: `deactivate`
-* Create virtualenv in `env` folder: `python3 -m venv env`
-* Activate `env `virtualenv: `source env/bin/activate`.
-* After activated, you should see your terminal started with `(env)`
-* `which python` should show it's in env folder
-* When done, deactivate virtualenv: deactivate 
+* Make sure you are not using any other virtualenv(either Python or Conda) with: `deactivate` or `conda deactivate`
+* Create virtualenv in `my_env` folder: `python3 -m venv my_env`. Use a unique name(here `my_env`), so it doesn't confuse with other virtual environments.
+* Activate `my_env `virtualenv: `source my_env/bin/activate`.
+* After activated, you should see your terminal started with `(my_env)`
+* To confirm your virtual environment is working, you can type `which python` and it should show python path is in `my_env` folder
+* Then follow [Installation](#Installation) and [Usage](#CLI-Usage).
+* To deactivate virtualenv: deactivate
 Ref: [Installing packages using pip and virtual environments](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/)
 
 ## Using Conda VENV
 * To create an environment: `conda create --name myenv`
 * To create an environment with a specific version of Python: `conda create -n myenv python=3.6`
 * To activate `yourenvname`: `conda activate yourenvname`
+* Then follow [Installation](#Installation) and [Usage](#CLI-Usage).
 * To deactivate: `conda deactivate`
 Ref: [Managing environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
 
 ## Distribute Feathr Python Library via PYPI
+* Install build tool: `python3 -m pip install --upgrade build`
 * Do NOT use `python3 -m build` since it will result in unknown issues.
 * Generate wheel: `python3 -m build --wheel`
 * Generate sdist: `python3 -m build --sdist`
 * Upload to Pypi: `python3 -m twine upload dist/*`
+
+### FAQ
+* File already exists. Error: 1. You may be using old dist files. Clear your dist folder. 2. You can't upload same version to Pypi. Change your patch version if you want to re-upload.
 Ref [Packaging Python Projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/)

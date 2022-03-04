@@ -21,6 +21,11 @@ The major problems Feathr solve for the use case are:
 2. Provide Point-in-time feature join to create training dataset to ensure no data leakage.
 3. Deploy the same feature data to online store to eliminate training and inference data skew.
 
+## Provision cloud resources
+
+Please follow the steps [here](./how-to-guides/azure-deployment.md) to provision required cloud resources. Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the use cases. Because of this, [azure_resource_provision.sh](./how-to-guides/azure_resource_provision.sh) is a full end to end command line to create all the required resources, and you can tailor the script as needed, while [the companion documentation](./how-to-guides/azure-deployment.md) can be used as a complete guide for using that shell script.
+
+
 ## Step 1: Install Feathr
 
 Install the Feathr CLI using pip:
@@ -166,7 +171,7 @@ feathr register
 
 Or with Python:
 ```python
-from  feathr.client import FeathrClient
+from feathr.client import FeathrClient
 
 client = FeathrClient()
 client.register_features()
@@ -198,7 +203,6 @@ Or with Python:
 ```python
 returned_spark_job = client.join_offline_features()
 df_res = client.get_job_result()
-df_res.sample(10)
 ```
 
 The following feature join config is used:
@@ -237,7 +241,6 @@ feathr deploy
 Or in Python:
 ```python
 job_res = client.materialize_features()
-job_res.state
 ```
 The following feature generation config is used to materialize feature value to Redis:
 
