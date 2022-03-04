@@ -1,8 +1,8 @@
 
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
-ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "com.example"
+ThisBuild / version          := "0.1.0"
+ThisBuild / organization     := "com.linkedin"
 ThisBuild / organizationName := "feathr"
 val sparkVersion = "3.1.2"
 
@@ -69,16 +69,13 @@ lazy val root = (project in file("."))
 //     )
 // )
 
-// See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
-// publishTo := Some(Resolver.file("file", new File("/Users/tmp")))
-
 // To assembly with certain java version: sbt assembly -java-home "/Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home"
 // To execute the jar: java -jar target/scala-2.12/feathr-assembly-0.1.0-SNAPSHOT.jar
 
 assembly / assemblyMergeStrategy := {
     // See https://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
     // See https://stackoverflow.com/questions/62232209/classnotfoundexception-caused-by-java-lang-classnotfoundexception-csv-default
-    case PathList("META-INF","services",xs @ _*) => MergeStrategy.filterDistinctLines // Added this
+    case PathList("META-INF","services",xs @ _*) => MergeStrategy.filterDistinctLines
     case PathList("META-INF",xs @ _*) => MergeStrategy.discard
     case _ => MergeStrategy.first
 }

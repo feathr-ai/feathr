@@ -166,7 +166,7 @@ feathr register
 
 Or with Python:
 ```python
-from  feathr.client import FeathrClient
+from feathr.client import FeathrClient
 
 client = FeathrClient()
 client.register_features()
@@ -198,7 +198,6 @@ Or with Python:
 ```python
 returned_spark_job = client.join_offline_features()
 df_res = client.get_job_result()
-df_res.sample(10)
 ```
 
 The following feature join config is used:
@@ -237,7 +236,6 @@ feathr deploy
 Or in Python:
 ```python
 job_res = client.materialize_features()
-job_res.state
 ```
 The following feature generation config is used to materialize feature value to Redis:
 

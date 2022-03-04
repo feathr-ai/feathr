@@ -1,5 +1,5 @@
 # Feature Join
-##Intuitions of Frame Join
+## Intuitions of Frame Join
 Observation dataset has 2 records as below, and we want to use it as the 'spine' dataset, joining two 
 features onto it:
 
@@ -122,7 +122,6 @@ Or with Python:
 ```python
 returned_spark_job = client.join_offline_features()
 df_res = client.get_job_result()
-df_res.sample(10)
 ```
 
 

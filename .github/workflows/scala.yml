@@ -26,7 +26,7 @@ jobs:
         with:
           connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
           name: "feathr_jar_github_action_spark3"
-          path: "target/scala-2.12/feathr-assembly-0.1.0-SNAPSHOT.jar"
+          path: "target/scala-2.12/feathr-assembly-0.1.0.jar"
           container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
           cleanup: "true"
       - name: Set up Python 3.8
@@ -50,8 +50,8 @@ jobs:
       - name: Test with pytest
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
-          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0-SNAPSHOT.jar"
-          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0-SNAPSHOT.jar"
+          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0.jar"
+          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0.jar"
           REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
           AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
           AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
