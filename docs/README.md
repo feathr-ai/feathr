@@ -31,7 +31,7 @@ anchors: {       // Feature groups
     trip_features: {          // A feature group
       features: {             // Feature names in the group
           f_is_long_trip: "trip_distance > 30"       // A feature by an expression
-          f_day_of_week: "day_of_week(datetime)"     // A feature with built-in function
+          f_day_of_week: "dayofweek(datetime)"     // A feature with built-in function
       }
     }
 }
@@ -45,7 +45,7 @@ anchors: {
         features: {
             f_location_avg_fare: {     // A feature with window aggregation
                 aggregation: AVG           // Aggregation function
-                def: "float(fare_amount)"  // Aggregation expression
+                def: "cast_float(fare_amount)"  // Aggregation expression
                 window: 3d                 // Over a 3-day window
             }
         }
@@ -119,3 +119,19 @@ client.online_batch_get_features(feature_table = "nycTaxiDemoFeature",
                                  feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 
 ```
+# Next Steps
+## Quickstart
+* [Quickstart](quickstart.md)
+
+## Concepts
+
+* [Feature Definition](concepts/feature-definition.md)
+* [Feature Generation](concepts/feature-generation.md)
+* [Feature Join](concepts/feature-join.md)
+* [Point-in-time Correctness](concepts/point-in-time-join.md)
+
+## How-to-guides
+* [Azure Deployment](how-to-guides/azure-deployment.md)
+* [Local Feature Testing](how-to-guides/local-feature-testing.md)
+* [Feature Definition Troubleshooting Guide](how-to-guides/troubleshoot-feature-definition.md)
+* [Feathr Expression Language](how-to-guides/expression-language.md)

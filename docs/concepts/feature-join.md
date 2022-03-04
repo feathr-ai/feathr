@@ -1,5 +1,5 @@
 # Feature Join
-##Intuitions of Frame Join
+## Intuitions of Frame Join
 Observation dataset has 2 records as below, and we want to use it as the 'spine' dataset, joining two 
 features onto it:
 
@@ -64,7 +64,7 @@ outputPath: <path of the output dataset, i.e. observation dataset with features 
 settings: {
     joinTimeSettings: {
         timestampColumn: {
-            def: <SPARK SQL expression that extract the timestamp from observation row>
+            def: <Feathr expression that extract the timestamp from observation row>
             format: <format of the timestamp format returned in the above def expression>
         }
     }
@@ -122,7 +122,6 @@ Or with Python:
 ```python
 returned_spark_job = client.join_offline_features()
 df_res = client.get_job_result()
-df_res.sample(10)
 ```
 
 

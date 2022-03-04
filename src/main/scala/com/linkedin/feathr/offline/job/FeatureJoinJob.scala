@@ -17,6 +17,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.reflect.ClassTag
@@ -264,6 +265,7 @@ object FeatureJoinJob {
 
     DataSourceConfigUtils.setupHadoopConf(sparkSession, jobContext.dataSourceConfigs)
 
+    FeathrUdfRegistry.registerUdf(sparkSession)
     HdfsUtils.deletePath(jobContext.jobJoinContext.outputPath, recursive = true, conf)
 
     run(sparkSession, conf, jobContext)
