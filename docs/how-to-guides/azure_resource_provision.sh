@@ -68,10 +68,10 @@ az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $sy
 # depending on your preference, you can set a narrow range of IPs (like below) or a broad range of IPs to allow client access to Synapse clusters
 external_ip=$(curl -s http://whatismyip.akamai.com/)
 echo "External IP is: ${external_ip}. Adding it to firewall rules" 
-az synapse workspace firewall-rule create --name allowAll --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
+az synapse workspace firewall-rule create --name allowCurrentIP --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
 
 # sleep for a few seconds for the chagne to take effect
-sleep 2
+sleep 10
 az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $service_principal_name
 
 echo "Verify if the assignment is successful or not:"
