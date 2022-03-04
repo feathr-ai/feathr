@@ -1,11 +1,11 @@
 #!/bin/bash          
 
 # Fill in details in this section
-subscription_id="a6c2a7cc-d67e-4a1a-b765-983f08c0423a"
-resource_prefix="feathrazurexyz1"
+subscription_id="{your_subscription_id}"
+resource_prefix="feathrazuretest"
 location="eastus2"
 synapse_sql_admin_name="cliuser1"
-synapse_sql_admin_password="FeathrRocks1"
+synapse_sql_admin_password="{your_admin_password}"
 synapse_sparkpool_name="spark31"
 
 # You don't have to modify the names below
