@@ -51,7 +51,7 @@ def init(name, git):
 
     output_str = f'Creating workspace {name} with sample config files and mock data ...'
     click.echo(output_str)
-    default_workspace = str(Path(Path(__file__).parent.parent / 'data' / 'feathr_user_workspace').absolute())
+    default_workspace = str(Path(Path(__file__).parent / 'data' / 'feathr_user_workspace').absolute())
 
     # current feathr_user_workspace directory w.r.t. where the init command is executed
     pathlib.Path(name).mkdir(parents=True, exist_ok=True)

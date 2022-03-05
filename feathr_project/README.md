@@ -49,9 +49,12 @@ Ref: [Managing environments](https://docs.conda.io/projects/conda/en/latest/user
 ## Distribute Feathr Python Library via PYPI
 * Install build tool: `python3 -m pip install --upgrade build`
 * Do NOT use `python3 -m build` since it will result in unknown issues.
-* Generate wheel: `python3 -m build --wheel`
-* Generate sdist: `python3 -m build --sdist`
-* Upload to Pypi: `python3 -m twine upload dist/*`
+* Wheel is preferred since package installation with wheel is faster.
+* Generate wheel: `python3 -m build --wheel`. A .whl file will be generated.
+* Generate sdist: `python3 -m build --sdist`. A tar.gz file will be generated.
+* Upload to Pypi. If you want to upload feathr-0.1.9-py3-none-any.whl, then `python3 -m twine upload dist/feathr-0.1.9-py3-none-any.whl`. Username and password of your pypi.org account is needed to finish the uploading.
+* If upload completed, you can see your new version in https://pypi.org/manage/project/feathr/.
+* You can also delete the uploaded package in https://pypi.org/manage/project/feathr/releases/.
 
 ### FAQ
 * File already exists. Error: 1. You may be using old dist files. Clear your dist folder. 2. You can't upload same version to Pypi. Change your patch version if you want to re-upload.
