@@ -19,6 +19,7 @@ class ValueType(enum.Enum):
 
 
 class FeatureType(ABC):
+    """Base class for all feature types"""
     @abstractmethod
     def to_feature_config(self) -> str:
         pass
@@ -26,7 +27,12 @@ class FeatureType(ABC):
 class BooleanFeatureType(FeatureType):
     def to_feature_config(self) -> str:
         return """
-            type: BOOLEAN
+           type: {
+                type: TENSOR
+                tensorCategory: DENSE
+                dimensionType: []
+                valType: BOOLEAN
+            }
         """
 
 class Int32FeatureType(FeatureType):
@@ -54,7 +60,12 @@ class Int64FeatureType(FeatureType):
 class FloatFeatureType(FeatureType):
     def to_feature_config(self) -> str:
         return """
-            type: NUMERIC
+            type: {
+                type: TENSOR
+                tensorCategory: DENSE
+                dimensionType: []
+                valType: FLOAT
+            }
         """
 
 class DoubleFeatureType(FeatureType):
@@ -93,47 +104,20 @@ class BytesFeatureType(FeatureType):
 class DenseVectorFeatureType(FeatureType):
     def to_feature_config(self) -> str:
         return """
-            type: DENSE_VECTOR
+           type: {
+                type: TENSOR
+                tensorCategory: DENSE
+                dimensionType: [INT]
+                valType: FLOAT
+            }
         """
-
 
 # tensor dimension/axis
 class Dimension:
     def __init__(self, shape: int, dType: ValueType = ValueType.INT32):
         self.shape = shape
         self.dType = dType
- 
-class TensorCategory(enum.Enum):
-    DENSE = 0
-    SPARSE = 1
-    RAGGED = 2
 
-class TensorFeatureType(FeatureType):
-    def __init__(self,
-                 dimensions: List[Dimension],
-                 dType: ValueType,
-                 tensor_category: TensorCategory = TensorCategory.DENSE) -> None:
-        self.dimensions = dimensions
-        self.dType = dType
-        self.tensor_category = tensor_category
-
-    def to_feature_config(self) -> str:
-        tm = Template("""
-            type: {
-                type: TENSOR
-                tensorCategory: {{tensor_catgory.name}}
-                shape: [{{shape_list}}]
-                dimensionType: [{{type_list}}]
-                valType: {{val_type}}
-            }
-        """)
-
-        shape_list = ','.join(str(dimension.shape) for dimension in self.dimensions)
-        type_list = ','.join(dimension.dType.name for dimension in self.dimensions)
-        return tm.render(tensor_catgory = self.tensor_category,
-                shape_list = shape_list,
-                type_list = type_list,
-                val_type = self.dType.name)
 
 BOOLEAN = BooleanFeatureType()
 INT32 = Int32FeatureType()

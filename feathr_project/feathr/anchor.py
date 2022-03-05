@@ -1,6 +1,6 @@
 from typing import List, Optional
-from feathr.sdk.feature import Feature
-from feathr.sdk.source import Source
+from feathr.feature import Feature
+from feathr.source import Source
 from jinja2 import Template
 
 # passthrough features do not need keys
@@ -22,6 +22,7 @@ class FeatureAnchor:
 
     def to_feature_config(self) -> str:
         tm = Template("""
+        // THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
         anchors: {
             {{anchor_name}}: {
                 source: {{source.name}}
