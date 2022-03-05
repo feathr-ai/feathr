@@ -129,7 +129,6 @@ Feathr has native integration with Azure and other cloud services, and here's th
 - [x] Public Preview release
 - [ ] Alpha version release
   - [ ] Support streaming and online transformation
-  - [ ] Support unified feature definition expression language
   - [ ] Support feature versioning
   - [ ] Support more data sources
 
