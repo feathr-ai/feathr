@@ -90,6 +90,14 @@ feature_registry:
 
 ```
 
+Credentials need to be set up in the environment variables so Feathr CLI or FeathrClient can successfully manage the resources. For examle, with the default setup, we need Redis and Azure Synapse. Then REDIS_PASSWORD, AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_CLIENT_SECRET are required. So we can set it up via:
+```
+export REDIS_PASSWORD='...'
+export AZURE_CLIENT_ID='...'
+export AZURE_TENANT_ID='...'
+export AZURE_CLIENT_SECRET='...'
+```
+
 ## Step 3: Create features in the workspace
 
 In Feathr, a feature is viewed as a function, mapping from entity id or key, and timestamp to a feature value.
