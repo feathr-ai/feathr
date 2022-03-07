@@ -210,7 +210,7 @@ def start():
 def test(features):
     """
     Tests a single feature definition locally via local spark mode with mock data. Mock data has to be provided by the
-    users.
+    users. Please execute "feathr start" before "feathr test" to setup the local engine.
     """
     check_user_at_root()
     click.echo('\nProducing feature values for requested features ... ')
