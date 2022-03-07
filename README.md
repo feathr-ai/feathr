@@ -118,10 +118,6 @@ derivations: {
 }
 ```
 
-## Cloud Architecture
-Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
-![Architecture](./images/architecture.png)
-
 ## Roadmap
 >`Public Preview` release doesn't guarantee API stability and may introduce API changes.
 
