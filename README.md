@@ -131,3 +131,4 @@ derivations: {
 ## Community Guidelines
 Build for the community and build by the community. Check out [community guidelines](CONTRIBUTING.md).
 
+Join our [slack](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ) for questions and discussions.
