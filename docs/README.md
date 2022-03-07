@@ -135,3 +135,9 @@ client.online_batch_get_features(feature_table = "nycTaxiDemoFeature",
 * [Local Feature Testing](how-to-guides/local-feature-testing.md)
 * [Feature Definition Troubleshooting Guide](how-to-guides/troubleshoot-feature-definition.md)
 * [Feathr Expression Language](how-to-guides/expression-language.md)
+
+
+
+## Cloud Architecture
+Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
+![Architecture](./images/architecture.png)
