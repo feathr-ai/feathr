@@ -272,6 +272,6 @@ client.online_batch_get_features("nycTaxiDemoFeature", ["239", "265"], ['f_locat
 ```
 
 ## Next steps
-* Run the demo notebook to understand the workflow of Feathr.
+* Run the demo notebook to understand the workflow of Feathr: `jupyter notebook`.
 * Read the [Concepts](concepts/) page to understand the Feathr abstractions.
 * Read this guide to understand [how to setup Feathr on Azure cloud](../how-to-guides/azure-deployment.md).
