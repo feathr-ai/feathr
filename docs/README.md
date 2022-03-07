@@ -29,6 +29,8 @@ In **features.conf**:
 ```
 anchors: {       // Feature anchors
     trip_features: {          // A feature anchor
+      source: nycTaxiBatchSource
+      key: DOLocationID
       features: {             // Feature names in this anchor
           f_is_long_trip: "trip_distance > 30"       // A feature by an expression
           f_day_of_week: "dayofweek(datetime)"     // A feature with built-in function
@@ -140,4 +142,4 @@ client.online_batch_get_features(feature_table = "nycTaxiDemoFeature",
 
 ## Cloud Architecture
 Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
-![Architecture](./images/architecture.png)
+![Architecture](./../images/architecture.png)
