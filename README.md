@@ -13,6 +13,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying
 your features for use online in production.
 
+Follow the [quick-start-guide](docs/quickstart.md) to try it out.
 For more details, read our [documentation](docs/README.md).
 
 ## Defining Features with Transformation
@@ -73,7 +74,6 @@ client.online_batch_get_features(feature_table = "agg_features",
 
 ```
 
-Follow the [quick-start-guide](docs/quickstart.md) to try it out.
 
 # More on Defining Features
 
