@@ -21,6 +21,8 @@ In **features.conf**:
 ```
 anchors: {                                          // Feature anchors
     trip_features: {                                // A feature anchor
+        source: nycTaxiBatchSource
+        key: DOLocationID
         features: {                                 // Feature names in this anchor
             f_is_long_trip: "trip_distance > 30"    // A feature by an expression
             f_day_of_week: "dayofweek(datetime)"    // A feature with built-in function
