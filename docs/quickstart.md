@@ -58,7 +58,7 @@ In this created workspace, it has the following structure:
 * `notebook_resource`	contains other resource for the demo notebook
 
 
-feature_store.yaml:
+feathr_config.yaml:
 ```yaml
 # DO NOT MOVE OR DELETE THIS FILE
 
