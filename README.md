@@ -18,9 +18,9 @@ For more details, read our [documentation](docs/README.md).
 ## Defining Features with Transformation
 In **features.conf**:
 ```
-anchors: {                                          // Feature groups
-    trip_features: {                                // A feature group
-        features: {                                 // Feature names in the group
+anchors: {                                          // Feature anchors
+    trip_features: {                                // A feature anchor
+        features: {                                 // Feature names in this anchor
             f_is_long_trip: "trip_distance > 30"    // A feature by an expression
             f_day_of_week: "dayofweek(datetime)"    // A feature with built-in function
         }
@@ -80,7 +80,7 @@ Follow the [quick-start-guide](docs/quickstart.md) to try it out.
 ## Defining Window Aggregation Features
 ```
 anchors: {
-    agg_features: {                        // A feature group (with aggregation)
+    agg_features: {                        // A feature anchor (with aggregation)
         source: nyc_taxi_batch_source      // Features data source
         features: {
             f_location_avg_fare: {         // A feature with window aggregation
