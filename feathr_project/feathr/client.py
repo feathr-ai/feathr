@@ -445,4 +445,4 @@ class FeathrClient(object):
 
     def get_features_from_registry(self, project_name):
         """ Sync features from the registry given a project name """      
-        self.registry.sync_features_from_registry(project_name, os.path.abspath("./"))
+        self.registry.get_features_from_registry(project_name, os.path.abspath("./"))
