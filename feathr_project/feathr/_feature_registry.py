@@ -580,7 +580,7 @@ class _FeatureRegistry():
 
         return feature_list
     
-    def sync_features_from_registry(self, project_name: str, workspace_path: str):
+    def get_features_from_registry(self, project_name: str, workspace_path: str):
         """[Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
         Args:
             project_name (str): project name.

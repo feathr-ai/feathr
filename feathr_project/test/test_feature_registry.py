@@ -5,7 +5,7 @@ import os
 import glob
 
 
-def test_feathr_registry_sync():
+def test_feathr_get_features_from_registry():
     """
     Test FeathrClient() sync features and get all the conf files from registry
     """
@@ -32,7 +32,7 @@ def test_feathr_registry_sync():
         
         client = FeathrClient()
         # Sync workspace from registry, will get all conf files back
-        client.sync_features("frame_getting_started")
+        client.get_features_from_registry("frame_getting_started")
 
         total_conf_files = glob.glob('*/*.conf', recursive=True)
         # we should have at least 3 conf files again
