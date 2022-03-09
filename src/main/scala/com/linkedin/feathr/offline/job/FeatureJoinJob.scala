@@ -7,7 +7,7 @@ import com.linkedin.feathr.offline._
 import com.linkedin.feathr.offline.client._
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
-import com.linkedin.feathr.offline.generation.SparkIOUUtil
+import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.SourceFormatType
 import com.linkedin.feathr.offline.util.SourceUtils.getPathList
 import com.linkedin.feathr.offline.util._
@@ -157,8 +157,8 @@ object FeatureJoinJob {
     val (joinedDF, _) = getFeathrClientAndJoinFeatures(ss, observationsDF, featureGroupings, joinConfig, jobContext, localTestConfig)
 
 
-    val parameters = Map(SparkIOUUtil.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUUtil.OVERWRITE_MODE -> "ALL")
-    SparkIOUUtil.writeDataFrame(joinedDF, jobContext.outputPath, parameters)
+    val parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
+    SparkIOUtils.writeDataFrame(joinedDF, jobContext.outputPath, parameters)
     (None, Some(joinedDF))
   }
 

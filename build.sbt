@@ -41,6 +41,13 @@ val localAndCloudCommonDependencies = Seq(
 
 ) // Common deps
 
+val jdbcDrivers = Seq(
+  "com.microsoft.sqlserver" % "mssql-jdbc" % "10.2.0.jre8",
+  "mysql" % "mysql-connector-java" % "8.0.25",
+  "net.snowflake" % "snowflake-jdbc" % "3.13.14",
+  "org.postgresql" % "postgresql" % "42.3.3",
+)
+
 // For azure
 lazy val root = (project in file("."))
   .settings(
@@ -49,6 +56,7 @@ lazy val root = (project in file("."))
       assembly / mainClass := Some("com.linkedin.feathr.offline.job.FeatureJoinJob"),
       libraryDependencies ++= cloudProvidedDeps,
       libraryDependencies ++= localAndCloudCommonDependencies,
+      libraryDependencies ++= jdbcDrivers,
       libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % sparkVersion % "provided"
       )

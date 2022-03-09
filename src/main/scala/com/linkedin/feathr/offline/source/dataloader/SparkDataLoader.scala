@@ -1,8 +1,9 @@
 package com.linkedin.feathr.offline.source.dataloader
 
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataException}
-import com.linkedin.feathr.offline.generation.SparkIOUUtil
+import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
+import com.linkedin.feathr.offline.source.dataloader.jdbc.JDBCUtils
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
@@ -57,10 +58,14 @@ private[offline] class SparkDataLoader(ss: SparkSession, path: String) extends D
   def loadDataFrame(dataIOParameters: Map[String, String], jobConf: JobConf): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
-    val dataIOParametersWithSplitSize = Map(SparkIOUUtil.SPLIT_SIZE -> inputSplitSize) ++ dataIOParameters
+    val dataIOParametersWithSplitSize = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize) ++ dataIOParameters
     log.info(s"Loading ${path} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
     try {
-      SparkIOUUtil.createDataFrame(path, dataIOParametersWithSplitSize)
+      if (path.startsWith("jdbc")){
+        JDBCUtils.loadDataFrame(ss, path)
+      } else {
+        SparkIOUtils.createDataFrame(path, dataIOParametersWithSplitSize)
+      }
     } catch {
       case _: Throwable =>
         ss.read.format("csv").option("header", "true").load(path)
