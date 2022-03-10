@@ -273,7 +273,7 @@ class FeathrClient(object):
         # submit the jars
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
-            main_jar_path=self.feathr_spark_laucher.upload_to_work_dir(self._FEATHR_JOB_JAR_PATH),
+            main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
                 '--join-config', self.feathr_spark_laucher.upload_to_work_dir(
@@ -331,7 +331,7 @@ class FeathrClient(object):
 
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
-            main_jar_path=self.feathr_spark_laucher.upload_to_work_dir(self._FEATHR_JOB_JAR_PATH),
+            main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[
                 '--generation-config', self.feathr_spark_laucher.upload_to_work_dir(

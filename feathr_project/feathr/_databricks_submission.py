@@ -107,7 +107,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
 
         submission_params = json.loads(self.config_template)
         submission_params['run_name'] = job_name
-        submission_params['libraries'][0]['jar'] = main_jar_path
+        submission_params['libraries'][0]['jar'] = self.upload_to_work_dir(main_jar_path)
         submission_params['new_cluster']['spark_conf'] = configuration
         submission_params['spark_jar_task']['parameters'] = arguments
         submission_params['spark_jar_task']['main_class_name'] = main_class_name
