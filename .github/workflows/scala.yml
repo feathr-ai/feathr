@@ -17,8 +17,8 @@ jobs:
         with:
           java-version: "8"
           distribution: "temurin"
-      - name: Run tests
-        run: sbt clean && sbt test
+      # - name: Run tests
+      #   run: sbt clean && sbt test
       - name: Build JAR
         run: sbt assembly
       - name: Azure Blob Storage Upload (Overwrite)
@@ -54,7 +54,7 @@ jobs:
           SPARK_CONFIG__SPARK_CLUSTER: databricks
           SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: ./target/scala-2.12/feathr-assembly-0.1.0.jar
           SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL: "https://adb-2474129336842816.16.azuredatabricks.net/"
-          SPARK_CONFIG__DATABRICKS__WORKSPACE_TOKEN_VALUE: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
+          DATABRICKS_WORKSPACE_TOKEN_VALUE: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
           SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE: '{"run_name":"","new_cluster":{"spark_version":"9.1.x-scala2.12","node_type_id":"Standard_D3_v2","num_workers":2,"spark_conf":{}},"libraries":[{"jar":""}],"spark_jar_task":{"main_class_name":"","parameters":[""]}}'
           SPARK_CONFIG__DATABRICKS__WORK_DIR: "dbfs:/feathr_ci_project"
           REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
