@@ -47,10 +47,29 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install -e ./feathr_project/
-      - name: Test with pytest
+      - name: Synapse test
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
           SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0.jar"
+          SPARK_CONFIG__SPARK_CLUSTER: azure_synapse
+          REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
+          AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
+          AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
+          AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
+          S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
+          S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
+          ADLS_ACCOUNT: ${{secrets.ADLS_ACCOUNT}}
+          ADLS_KEY: ${{secrets.ADLS_KEY}}
+          BLOB_ACCOUNT:  ${{secrets.BLOB_ACCOUNT}}
+          BLOB_KEY: ${{secrets.BLOB_KEY}}
+
+        run: |
+          cd feathr_project
+          pytest
+      - name: Databricks test
+        env:
+          PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
+          SPARK_CONFIG__SPARK_CLUSTER: databricks
           SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: ./target/scala-2.12/feathr-assembly-0.1.0.jar
           SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL: 'https://adb-2474129336842816.16.azuredatabricks.net/'
           SPARK_CONFIG__DATABRICKS__WORKSPACE_TOKEN_VALUE: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
@@ -69,4 +88,4 @@ jobs:
 
         run: |
           cd feathr_project
-          pytest
+          pytest test/test_databricks_e2e.py
