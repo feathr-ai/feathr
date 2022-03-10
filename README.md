@@ -58,7 +58,7 @@ In **my_offline_training.py**:
 # feature-join.conf and features.conf are detected and used automatically.
 from feathr import FeathrClient
 client = FeathrClient()
-result = client.join_offline_features()
+result = client.get_offline_features()
 ```
 
 In **my_online_model.py**:
@@ -66,11 +66,11 @@ In **my_online_model.py**:
 from  feathr import FeathrClient
 client = FeathrClient()
 # Get features for a locationId (key)
-client.online_get_features(feature_table = "agg_features", 
+client.get_online_features(feature_table = "agg_features", 
                            key = "265",
                            feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 # Batch get for multiple locationIds (keys)
-client.online_batch_get_features(feature_table = "agg_features",
+client.multi_get_online_features(feature_table = "agg_features",
                                  key = ["239", "265"],
                                  feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 

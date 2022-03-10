@@ -1,14 +1,20 @@
 import logging
 import os
-from typing import List
+from pathlib import Path
+from typing import List, Optional, Union
+
 import redis
+from jinja2 import Template
 from loguru import logger
 from pyhocon import ConfigFactory
 
+from feathr._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._feature_registry import _FeatureRegistry
+from feathr._file_utils import write_to_file
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
-from feathr._databricks_submission import _FeathrDatabricksJobLauncher
+from feathr.query_feature_list import FeatureQuery
+from feathr.settings import ObservationSettings
 
 
 class FeatureJoinJobParams:
@@ -150,10 +156,10 @@ class FeathrClient(object):
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
                                    f'variables are: {self.required_fields}.')
 
-    def register_features(self):
+    def register_features(self, repo_path: Optional[Path] = Path('./')):
         """Registers features based on the current workspace
         """
-        self.registry.register_features(os.path.abspath('./'))
+        self.registry.register_features(repo_path)
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -167,7 +173,7 @@ class FeathrClient(object):
         """
         return self.registry.get_registry_client()
 
-    def online_get_features(self, feature_table, key, feature_names):
+    def get_online_features(self, feature_table, key, feature_names):
         """Fetches feature value for a certain key from a online feature table.
 
         Args:
@@ -188,7 +194,7 @@ class FeathrClient(object):
         res = self.redis_clint.hmget(redis_key, *feature_names)
         return res
 
-    def online_batch_get_features(self, feature_table, keys, feature_names):
+    def multi_get_online_features(self, feature_table, keys, feature_names):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
 
         Args:
@@ -251,7 +257,27 @@ class FeathrClient(object):
         self.logger.info('Redis connection is successful and completed.')
         self.redis_clint = redis_clint
 
-    def join_offline_features(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
+
+    def get_offline_features(self,
+                             observation_settings: ObservationSettings,
+                             feature_query: Union[FeatureQuery, List[FeatureQuery]]):
+        # produce join config
+        tm = Template("""
+            {{observation_settings.to_config()}}
+            featureList: [
+                {% for list in feature_lists %}
+                    {{list.to_config()}}
+                {% endfor %}
+            ]
+        """)
+        feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
+        config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings)
+        config_file_name = "feature_join_conf/feature_join.conf"
+        config_file_path = os.path.abspath(config_file_name)
+        write_to_file(content=config, full_file_name=config_file_path)
+        return self.get_offline_features_with_config(config_file_name)
+
+    def get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
@@ -261,12 +287,13 @@ class FeathrClient(object):
             raise RuntimeError(
                 'Feature join config should be in feature_join_conf folder.')
 
+        _FeatureRegistry.save_to_feature_config(Path("./"))
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
                                                        observation_path=feathr_feature['observationPath'],
                                                        feature_config=os.path.abspath(
-                                                           'feature_conf/features.conf'),
+                                                           'feature_conf/'),
                                                        job_output_path=feathr_feature['outputPath'],
                                                        )
 
@@ -320,6 +347,7 @@ class FeathrClient(object):
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
+        _FeatureRegistry.save_to_feature_config(Path("./"))
         if not feature_gen_conf_path.startswith('feature_gen_conf'):
             raise RuntimeError(
                 'Feature generation config should be in feature_gen_conf folder.')
@@ -327,7 +355,7 @@ class FeathrClient(object):
         # Read all features conf
         generation_config = FeatureGenerationJobParams(
             generation_config_path=os.path.abspath(feature_gen_conf_path),
-            feature_config=os.path.abspath("feature_conf/features.conf"))
+            feature_config=os.path.abspath("feature_conf/"))
 
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',

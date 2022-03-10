@@ -103,7 +103,7 @@ from  feathr import FeathrClient
 client = FeathrClient()
 # Prepare training data by joining features to the input (observation) data.
 # feature-join.conf and features.conf are detected and used automatically.
-result = client.join_offline_features()
+result = client.get_offline_features()
 result.sample(10)
 ```
 
@@ -112,11 +112,11 @@ In **my_online_model.py**:
 from  feathr import FeathrClient
 client = FeathrClient()
 # Get features for a locationId (key)
-client.online_get_features(feature_table = "agg_features", 
+client.get_online_features(feature_table = "agg_features", 
                            key = "265",
                            feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 # Batch get for multiple locationIds (keys)
-client.online_batch_get_features(feature_table = "nycTaxiDemoFeature",
+client.multi_get_online_features(feature_table = "nycTaxiDemoFeature",
                                  key = ["239", "265"],
                                  feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 

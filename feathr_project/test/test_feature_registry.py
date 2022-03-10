@@ -18,8 +18,8 @@ def test_feathr_get_features_from_registry():
         os.chdir('feathr_user_workspace')
 
         total_conf_files = glob.glob('*/*.conf', recursive=True)
-        # we should have at least 3 conf files
-        assert len(total_conf_files) == 3
+        # we should have at least the feature generation conf file
+        assert len(total_conf_files) == 1
 
         # delete all the conf files
         for file in total_conf_files:
