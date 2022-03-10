@@ -70,6 +70,7 @@ jobs:
           BLOB_KEY: ${{secrets.BLOB_KEY}}
 
         run: |
+          # run only test with databricks 
           pytest  -k 'databricks'
       - name: Synapse test
         env:
@@ -88,4 +89,5 @@ jobs:
           BLOB_KEY: ${{secrets.BLOB_KEY}}
 
         run: |
+          # skip databricks related test as we just tested; also seperate databricks and synapse test to make sure there's no write conflict
           pytest  -k 'not databricks'
