@@ -637,10 +637,6 @@ private[offline] object SourceUtils {
    * @return
    */
   def loadObservationAsDF(ss: SparkSession, conf: Configuration, inputData: InputData, failOnMissing: Boolean = true): DataFrame = {
-
-    val arrayConfig=ss.sparkContext.getConf.getAll
-    for (conf <- arrayConfig)
-      println(conf._1 +", "+ conf._2)
     if (ss.sparkContext.isLocal && inputData.inputPath.endsWith(".csv")) {
       val absolutePath = getClass.getClassLoader.getResource(inputData.inputPath)
       ss.read.format("csv").option("header", "true").load(absolutePath.getPath)
