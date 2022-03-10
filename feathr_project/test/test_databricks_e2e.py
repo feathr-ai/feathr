@@ -18,7 +18,6 @@ def test_feathr_online_store_databricks():
     with runner.isolated_filesystem():
         runner.invoke(init, [])
         os.chdir('feathr_user_workspace')
-        os.environ['SPARK_CONFIG__SPARK_CLUSTER'] = 'databricks'
         client = FeathrClient()
         job_res = client.materialize_features()
         # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
@@ -50,7 +49,6 @@ def test_feathr_get_historical_features_databricks():
     with runner.isolated_filesystem():
         runner.invoke(init, [])
         os.chdir('feathr_user_workspace')
-        os.environ['SPARK_CONFIG__SPARK_CLUSTER'] = 'databricks'
         client = FeathrClient()
 
         returned_spark_job = client.join_offline_features()
