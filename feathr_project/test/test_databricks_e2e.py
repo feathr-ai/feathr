@@ -8,8 +8,6 @@ import pandas as pd
 import tempfile
 
 
-# make sure you have run the upload feature script before running these tests
-# the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_online_store_databricks():
     """
     Test FeathrClient() online_get_features and batch_get can get data correctly.
@@ -22,7 +20,7 @@ def test_feathr_online_store_databricks():
         job_res = client.materialize_features()
         # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
         # this part with the test_feathr_online_store test case
-        client.wait_job_to_finish(timeout_sec=600)
+        client.wait_job_to_finish(timeout_sec=900)
         res = client.online_get_features('nycTaxiDemoFeature', '265', ['f_location_avg_fare', 'f_location_max_fare'])
         # just assme there are values. We don't hard code the values for now for testing
         # the correctness of the feature generation should be garunteed by feathr runtime.
@@ -41,9 +39,9 @@ def test_feathr_online_store_databricks():
         assert res['265'][1] != None
 
 
-def test_feathr_get_historical_features_databricks():
+def test_get_offline_features_databricks():
     """
-    Test FeathrClient() get_features and batch_get can get data correctly.
+    Test FeathrClient() to make sure offline features can be get successfully
     """
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -52,8 +50,8 @@ def test_feathr_get_historical_features_databricks():
         client = FeathrClient()
 
         returned_spark_job = client.join_offline_features()
-        res_url = client.wait_job_to_finish(timeout_sec=600)
-        # just assume the job is successful
+        res_url = client.wait_job_to_finish(timeout_sec=900)
+        # just assume the job is successful. if not, the test will fail
 
 
 
