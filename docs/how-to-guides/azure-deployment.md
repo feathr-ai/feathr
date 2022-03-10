@@ -29,7 +29,7 @@ In this setup, we will setup the following account:
 
 A more comprehensive setup is as below:
 
-![architecture](../../images/architecture.png)
+![architecture](../images/architecture.png)
 
 
 ## Name setup
@@ -219,7 +219,7 @@ az purview account create --location $location --account-name $purview_account_n
 
 You should also grant the service principal the `Data Curator` to your Purview collection manually. For more details, please refer to [Access control in Azure Purview documentation](https://docs.microsoft.com/en-us/azure/purview/catalog-permissions)
 
-![purview_permission_setting](../../images/purview_permission_setting.png)
+![purview_permission_setting](../images/purview_permission_setting.png)
 
 ## Upload demo data
 
