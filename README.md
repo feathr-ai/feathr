@@ -120,6 +120,11 @@ derivations: {
 }
 ```
 
+
+## Cloud Architecture
+Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
+![Architecture](./images/architecture.png)
+
 ## Roadmap
 >`Public Preview` release doesn't guarantee API stability and may introduce API changes.
 
@@ -129,6 +134,9 @@ derivations: {
   - [ ] Support streaming and online transformation
   - [ ] Support feature versioning
   - [ ] Support more data sources
+
+
+
 
 ## Community Guidelines
 Build for the community and build by the community. Check out [community guidelines](CONTRIBUTING.md).
