@@ -81,9 +81,6 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                 'Skipping file {} as it is already in the cloud', local_path_or_http_path)
             returned_path = local_path_or_http_path
         else:
-            # convert relative path to absolute path
-            if local_path_or_http_path.startswith("./"):
-                local_path_or_http_path = os.path.abspath(local_path_or_http_path)
             # else it should be a local file path
             with open(local_path_or_http_path, 'rb') as f:
                 data = f.read()
