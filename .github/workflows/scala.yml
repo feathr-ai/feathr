@@ -50,7 +50,7 @@ jobs:
       - name: Set env variable for databricks run
         run: |
           echo "SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
-      - name: Databricks test
+      - name: Run Feathr with Databricks
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
           SPARK_CONFIG__SPARK_CLUSTER: databricks
@@ -72,7 +72,7 @@ jobs:
         run: |
           # run only test with databricks 
           pytest  -k 'databricks'
-      - name: Synapse test
+      - name: Run Feathr with Azure Synapse
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
           SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0.jar"
@@ -89,5 +89,5 @@ jobs:
           BLOB_KEY: ${{secrets.BLOB_KEY}}
 
         run: |
-          # skip databricks related test as we just tested; also seperate databricks and synapse test to make sure there's no write conflict
+          # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           pytest  -k 'not databricks'
