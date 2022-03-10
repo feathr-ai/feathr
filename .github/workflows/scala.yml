@@ -47,11 +47,12 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install -e ./feathr_project/
+          echo $(pwd)
       - name: Databricks test
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
           SPARK_CONFIG__SPARK_CLUSTER: databricks
-          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: $(pwd)/target/scala-2.12/feathr-assembly-0.1.0.jar
+          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: ./target/scala-2.12/feathr-assembly-0.1.0.jar
           SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL: "https://adb-2474129336842816.16.azuredatabricks.net/"
           DATABRICKS_WORKSPACE_TOKEN_VALUE: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
           SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE: '{"run_name":"","new_cluster":{"spark_version":"9.1.x-scala2.12","node_type_id":"Standard_D3_v2","num_workers":2,"spark_conf":{}},"libraries":[{"jar":""}],"spark_jar_task":{"main_class_name":"","parameters":[""]}}'
