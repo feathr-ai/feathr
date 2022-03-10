@@ -14,7 +14,7 @@ data, using point-in-time-correct semantics to avoid data leakage, and supports 
 your features for use online in production.
 
 Follow the [quick-start-guide](docs/quickstart.md) to try it out.
-For more details, read our [documentation](docs/README.md).
+For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Defining Features with Transformation
 In **features.conf**:
