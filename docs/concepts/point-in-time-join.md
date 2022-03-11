@@ -114,7 +114,7 @@ features: [
 
 ## Advanced Point-in-time Lookup
 We plot observation dataset and feature data for a same entity key on the same timeline：
-![point-in-time-join](../../images/point-in-time-join.png)
+![point-in-time-join](../images/point-in-time-join.png)
 
 In the above example, we used `LATEST` as the aggregation type. `LATEST` means to grab the latest(closest to observation timestamp) feature data in the window. For all other window aggregation types, point-in-time correctness is also guaranteed. For example, `SUM`, we only sum the data in the window closest to the observation timestamp but not ahead of the observation timestamp.
 

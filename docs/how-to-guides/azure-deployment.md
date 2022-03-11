@@ -29,7 +29,7 @@ In this setup, we will setup the following account:
 
 A more comprehensive setup is as below:
 
-![architecture](../../images/architecture.png)
+![architecture](../images/architecture.png)
 
 
 ## Name setup
@@ -219,7 +219,7 @@ az purview account create --location $location --account-name $purview_account_n
 
 You should also grant the service principal the `Data Curator` to your Purview collection manually. For more details, please refer to [Access control in Azure Purview documentation](https://docs.microsoft.com/en-us/azure/purview/catalog-permissions)
 
-![purview_permission_setting](../../images/purview_permission_setting.png)
+![purview_permission_setting](../images/purview_permission_setting.png)
 
 ## Upload demo data
 
@@ -230,7 +230,7 @@ See more details on the raw dataset from the [TLC Trip Record Data webpage](http
 ```bash
 echo "preparing demo data"
 wget -O /tmp/green_tripdata_2020-04.csv https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv
-az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode login
+az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode account-key
 ```
 ## Deleting all resources (Optional)
 
