@@ -276,11 +276,11 @@ class FeathrClient(object):
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
-                '--join-config', self.feathr_spark_laucher.upload_to_work_dir(
+                '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     feature_join_job_params.join_config_path),
                 '--input', feature_join_job_params.observation_path,
                 '--output', feature_join_job_params.job_output_path,
-                '--feature-config', self.feathr_spark_laucher.upload_to_work_dir(
+                '--feature-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     feature_join_job_params.feature_config),
                 '--num-parts', self.output_num_parts,
                 '--s3-config', self._get_s3_config_str(),
@@ -334,10 +334,10 @@ class FeathrClient(object):
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[
-                '--generation-config', self.feathr_spark_laucher.upload_to_work_dir(
+                '--generation-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     generation_config.generation_config_path),
                 # Local Config, comma seperated file names
-                '--feature-config', self.feathr_spark_laucher.upload_to_work_dir(
+                '--feature-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     generation_config.feature_config),
                 '--redis-config', self._getRedisConfigStr(),
                 '--s3-config', self._get_s3_config_str(),
