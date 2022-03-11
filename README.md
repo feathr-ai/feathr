@@ -134,7 +134,7 @@ derivations: {
 ## Cloud Architecture
 
 Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
-![Architecture](./images/architecture.png)
+![Architecture](./docs/images/architecture.png)
 
 ## Roadmap
 
