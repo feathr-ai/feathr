@@ -1,13 +1,15 @@
-Feathr – An Enterprise-Grade, High Performance Feature Store
-===========================================
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Feathr Runtime](https://github.com/linkedin/feathr/actions/workflows/scala.yml/badge.svg)](https://github.com/linkedin/feathr/actions/workflows/scala.yml)
+
+# Feathr – An Enterprise-Grade, High Performance Feature Store
 
 ## What is Feathr?
 
 Feathr lets you:
-* **define features** based on raw data sources, including time-series data, using simple [HOCON](https://github.com/lightbend/config/blob/main/HOCON.md) configuration 
-* **get those features by their names** during model training and model inferencing,
-using simple APIs
-* **share features** across your team and company
+
+- **define features** based on raw data sources, including time-series data, using simple [HOCON](https://github.com/lightbend/config/blob/main/HOCON.md) configuration
+- **get those features by their names** during model training and model inferencing,
+  using simple APIs
+- **share features** across your team and company
 
 Feathr automatically computes your feature values and joins them to your training
 data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying
@@ -17,7 +19,9 @@ Follow the [quick-start-guide](docs/quickstart.md) to try it out.
 For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Defining Features with Transformation
+
 In **features.conf**:
+
 ```
 anchors: {                                          // Feature anchors
     trip_features: {                                // A feature anchor
@@ -32,19 +36,22 @@ anchors: {                                          // Feature anchors
 ```
 
 ## (Optional) Deploy Features to Online (Redis) Store
+
 With CLI tool: `feathr deploy`
 
 ## Accessing Features
+
 In **feature-join.conf**:
+
 ```
-// Request dataset, used to join with features 
+// Request dataset, used to join with features
 observationPath: "abfss://feathr@feathrazure.windows.net/demo_input/"
 
-// Requested features to be joined 
-features: [      
+// Requested features to be joined
+features: [
     {
         // features defined in your features.conf
-        featureList: [f_is_long_trip, f_day_of_week] 
+        featureList: [f_is_long_trip, f_day_of_week]
     }
 ]
 
@@ -53,6 +60,7 @@ outputPath: "abfss://feathr@feathrazure.windows.net/demo/demo_output/"
 ```
 
 In **my_offline_training.py**:
+
 ```python
 # Prepare training data by joining features to the input (observation) data.
 # feature-join.conf and features.conf are detected and used automatically.
@@ -62,11 +70,12 @@ result = client.join_offline_features()
 ```
 
 In **my_online_model.py**:
+
 ```python
 from  feathr import FeathrClient
 client = FeathrClient()
 # Get features for a locationId (key)
-client.online_get_features(feature_table = "agg_features", 
+client.online_get_features(feature_table = "agg_features",
                            key = "265",
                            feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 # Batch get for multiple locationIds (keys)
@@ -76,10 +85,10 @@ client.online_batch_get_features(feature_table = "agg_features",
 
 ```
 
-
 # More on Defining Features
 
 ## Defining Window Aggregation Features
+
 ```
 anchors: {
     agg_features: {                        // A feature anchor (with aggregation)
@@ -97,6 +106,7 @@ anchors: {
 ```
 
 ## Defining Named Raw Data Sources
+
 ```
 sources: {                            // Named data sources
     nyc_taxi_batch_source: {          // A data source
@@ -110,9 +120,10 @@ sources: {                            // Named data sources
 ```
 
 ## Beyond Features on Raw Data Sources - Derived Features
+
 ```
 // Features that depend on other features instead of external raw data sources
-derivations: {    
+derivations: {
     f_trip_time_distance: {    // Name of the derived feature
         definition: "f_trip_distance * f_trip_time_duration"
         type: NUMERIC
@@ -120,13 +131,14 @@ derivations: {
 }
 ```
 
-
 ## Cloud Architecture
+
 Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
 ![Architecture](./images/architecture.png)
 
 ## Roadmap
->`Public Preview` release doesn't guarantee API stability and may introduce API changes.
+
+> `Public Preview` release doesn't guarantee API stability and may introduce API changes.
 
 - [x] Private Preview release
 - [x] Public Preview release
@@ -135,10 +147,14 @@ Feathr has native integration with Azure and other cloud services, and here's th
   - [ ] Support feature versioning
   - [ ] Support more data sources
 
-
-
-
 ## Community Guidelines
+
 Build for the community and build by the community. Check out [community guidelines](CONTRIBUTING.md).
 
-Join our [slack](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ) for questions and discussions.
+## Slack Channel
+Join our [Slack Channel](https://feathrai.slack.com/) for questions and discussions.
+
+## Contributors
+<a href="https://github.com/linkedin/feathr/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=linkedin/feathr" />
+</a>
