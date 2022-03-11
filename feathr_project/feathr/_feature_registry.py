@@ -7,6 +7,7 @@ from pyapacheatlas.core import (AtlasEntity, AtlasProcess, PurviewClient, TypeCa
 from pyapacheatlas.core.typedef import (AtlasAttributeDef, EntityTypeDef, RelationshipTypeDef)
 from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
+from pathlib import Path
 
 from feathr._envvariableutil import _EnvVaraibleUtil
 
@@ -578,3 +579,42 @@ class _FeatureRegistry():
                 feature_list.append(entity["name"])
 
         return feature_list
+    
+    def get_features_from_registry(self, project_name: str, workspace_path: str):
+        """[Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
+        Args:
+            project_name (str): project name.
+            workspace_path (str): path to a workspace.
+        """
+
+        entities = self.purview_client.get_entity(qualifiedName=project_name,
+                                                    typeName="feathr_workspace")
+        # TODO - Change implementation to support traversing the workspace and construct the file, item by item 
+        # We don't support modifying features outside of registring this should be fine.
+        
+        # Read the three config files from raw hocon field
+        feature_conf_content = entities["entities"][0]["attributes"]["raw_hocon_feature_definition_config"]
+        feature_join_conf_content = entities["entities"][0]["attributes"]["raw_hocon_feature_join_config"]
+        feature_gen_conf_content = entities["entities"][0]["attributes"]["raw_hocon_feature_generation_config"]
+
+        # Define the filenames for each config
+        feature_conf_file = os.path.join(workspace_path,"feature_conf", "features.conf")
+        feature_join_file = os.path.join(workspace_path,"feature_join_conf", "feature_join.conf")
+        feature_gen_file = os.path.join(workspace_path,"feature_gen_conf", "feature_gen.conf")
+
+        # Create file and directory, if does not exist
+        os.makedirs(os.path.dirname(feature_conf_file), exist_ok=True)
+        os.makedirs(os.path.dirname(feature_join_file), exist_ok=True)
+        os.makedirs(os.path.dirname(feature_gen_file), exist_ok=True)
+
+        with open(feature_conf_file, "w") as features:
+            features.write(feature_conf_content)
+        logger.info("Writing feature configuration from feathr registry to {}", feature_conf_file)
+        
+        with open(feature_join_file, "w") as offline_config:
+            offline_config.write(feature_join_conf_content)
+        logger.info("Writing offline configuration from feathr registry to {}", feature_join_file)
+
+        with open(feature_gen_file, "w") as online_config:
+            online_config.write(feature_gen_conf_content)
+        logger.info("Writing online configuration from feathr registry to {}", feature_gen_file)
