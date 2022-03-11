@@ -28,6 +28,7 @@ setup(
         "pandas",
         "redis",
         "requests",
+        "scikit-learn",
         "pyapacheatlas",
         "pyhocon",
         "pandavro",
