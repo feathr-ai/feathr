@@ -12,8 +12,7 @@ import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.source.SourceFormatType
 import com.linkedin.feathr.offline.source.SourceFormatType.SourceFormatType
 import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JDBCUtils.{DBTABLE_CONF, DRIVER_CONF, PASSWORD_CONF, USER_CONF}
-import com.linkedin.feathr.offline.source.dataloader.jdbc.{JDBCUtils, SQLType}
+import com.linkedin.feathr.offline.source.dataloader.jdbc.JDBCUtils
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer, TimeBasedHdfsPathGenerator}
 import com.linkedin.feathr.offline.util.AclCheckUtils.getLatestPath
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
@@ -656,6 +655,7 @@ private[offline] object SourceUtils {
   def loadObservationAsDF(ss: SparkSession, conf: Configuration, inputData: InputData, failOnMissing: Boolean = true): DataFrame = {
     // TODO: Split isLocal case into Test Packages
     val format = FileFormat.getType(inputData.inputPath)
+    log.info(s"loading ${inputData.inputPath} input Path as Format: ${format}")
     format match {
       case FileFormat.PATHLIST => {
         val pathList = getPathList(inputData.sourceType, inputData.inputPath, ss, inputData.dateParam, None, failOnMissing)
@@ -672,6 +672,9 @@ private[offline] object SourceUtils {
       case FileFormat.JDBC => {
         JDBCUtils.loadDataFrame(ss, inputData.inputPath)
       }
+      case FileFormat.CSV => {
+        ss.read.format("csv").option("header", "true").load(inputData.inputPath)
+      }
       case _ => {
         if (ss.sparkContext.isLocal){
           getTestDF(ss, inputData.inputPath)
@@ -681,8 +684,6 @@ private[offline] object SourceUtils {
       }
     }
   }
-
-  // def loadSingleFileDF(ss: SparkSession, )
 
   def getLocalPath(path: String): String = {
     getClass.getClassLoader.getResource(path).getPath()

@@ -435,10 +435,16 @@ class FeathrClient(object):
         table = _EnvVaraibleUtil.get_environment_variable('JDBC_TABLE')
         user = _EnvVaraibleUtil.get_environment_variable('JDBC_USER')
         password = _EnvVaraibleUtil.get_environment_variable('JDBC_PASSWORD')
+        driver = _EnvVaraibleUtil.get_environment_variable('JDBC_DRIVER')
+        auth_flag = _EnvVaraibleUtil.get_environment_variable('JDBC_AUTH_FLAG')
+        token = _EnvVaraibleUtil.get_environment_variable('JDBC_TOKEN')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             JDBC_TABLE: {JDBC_TABLE}
             JDBC_USER: {JDBC_USER}
-            JDBC_PASSWORD: "{JDBC_PASSWORD}"
-            """.format(JDBC_TABLE=table, JDBC_USER=user, JDBC_PASSWORD=password)
+            JDBC_PASSWORD: {JDBC_PASSWORD}
+            JDBC_DRIVER: {JDBC_DRIVER}
+            JDBC_AUTH_FLAG: {JDBC_AUTH_FLAG}
+            JDBC_TOKEN: {JDBC_TOKEN}
+            """.format(JDBC_TABLE=table, JDBC_USER=user, JDBC_PASSWORD=password, JDBC_DRIVER = driver, JDBC_AUTH_FLAG = auth_flag, JDBC_TOKEN = token)
         return config_str

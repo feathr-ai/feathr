@@ -31,23 +31,22 @@ object FileFormat {
   def getType(path: String): String = {
     val p = path.toLowerCase()
     p match {
-      case p if p.startsWith("jdbc") => JDBC
       case p if p.endsWith(".csv") => CSV
       case p if p.endsWith(".parquet") => PARQUET
       case p if p.endsWith(".orc") => ORC
       case p if p.endsWith(".avro.json") => AVRO_JSON
+      case p if p.startsWith("jdbc:") => JDBC
       case _ => PATHLIST}
   }
 
   // TODO: Complete a general loadDataFrame and replace current adhoc load data frame code
   def loadDataFrame(ss: SparkSession, path: String, format: String = CSV): DataFrame = {
-    val dataLoader = format match {
-      case AVRO => new AvroJsonDataLoader(ss, path)
-      case CSV => new CsvDataLoader(ss, path)
-      case PARQUET => new ParquetDataLoader(ss, path)
+    format match {
+      case AVRO => new AvroJsonDataLoader(ss, path).loadDataFrame()
+      case CSV => ss.read.format("csv").option("header", "true").load(path)
+      case PARQUET => new ParquetDataLoader(ss, path).loadDataFrame()
       case _ => ???
     }
-    dataLoader.loadDataFrame()
   }
 
   // TODO: How can we merge below 2 functions into the general logic? They are refactored from SparkIOUtils
@@ -59,6 +58,8 @@ object FileFormat {
 
   def loadHdfsDataFrame(format: String, existingHdfsPaths: Seq[String]): DataFrame = {
     val df = format match {
+      case CSV =>
+        ss.read.format("csv").option("header", "true").load(existingHdfsPaths: _*)
       case AVRO =>
         ss.read.format(AVRO_DATASOURCE).load(existingHdfsPaths: _*)
       case ORC =>

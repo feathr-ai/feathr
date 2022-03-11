@@ -87,6 +87,10 @@ jobs:
           ADLS_KEY: ${{secrets.ADLS_KEY}}
           BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
           BLOB_KEY: ${{secrets.BLOB_KEY}}
+          JDBC_TABLE: ${{secrets.JDBC_TABLE}}
+          JDBC_USER: ${{secrets.JDBC_USER}}
+          JDBC_PASSWORD: ${{secrets.JDBC_PASSWORD}}
+          JDBC_DRIVER: ${{secrets.JDBC_DRIVER}}
 
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
