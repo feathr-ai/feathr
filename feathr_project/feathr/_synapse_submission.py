@@ -29,7 +29,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         self._datalake = _DataLakeFiler(
             datalake_dir, credential=self.credential)
 
-    def upload_to_work_dir(self, local_path_or_http_path: str):
+    def upload_or_get_cloud_path(self, local_path_or_http_path: str):
         """
         Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
         """

@@ -58,7 +58,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         self.auth_headers['Authorization'] = f'Bearer {token_value}'
         self.databricks_work_dir = databricks_work_dir
 
-    def upload_to_work_dir(self, local_path_or_http_path: str):
+    def upload_or_get_cloud_path(self, local_path_or_http_path: str):
         """
         Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
         """
@@ -107,7 +107,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
 
         submission_params = json.loads(self.config_template)
         submission_params['run_name'] = job_name
-        submission_params['libraries'][0]['jar'] = main_jar_path
+        submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         submission_params['new_cluster']['spark_conf'] = configuration
         submission_params['spark_jar_task']['parameters'] = arguments
         submission_params['spark_jar_task']['main_class_name'] = main_class_name
