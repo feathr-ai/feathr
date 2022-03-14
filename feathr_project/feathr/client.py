@@ -2,14 +2,14 @@ import logging
 import os
 from typing import List
 import redis
-from loguru import logger
 from pyhocon import ConfigFactory
 
 from feathr._envvariableutil import _EnvVaraibleUtil
+from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr._feature_registry import _FeatureRegistry
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr._databricks_submission import _FeathrDatabricksJobLauncher
-
+import base64
 
 class FeatureJoinJobParams:
     """Parameters related to feature join job.
@@ -186,7 +186,8 @@ class FeathrClient(object):
             """
         redis_key = self._construct_redis_key(feature_table, key)
         res = self.redis_clint.hmget(redis_key, *feature_names)
-        return res
+
+        return self._decode_proto(res)
 
     def online_batch_get_features(self, feature_table, keys, feature_names):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
@@ -211,7 +212,55 @@ class FeathrClient(object):
                 redis_pipeline.hmget(redis_key, *feature_names)
             pipeline_result = redis_pipeline.execute()
 
-        return dict(zip(keys, pipeline_result))
+        decoded_pipeline_result = []
+        for feature_list in pipeline_result:
+            decoded_pipeline_result.append(self._decode_proto(feature_list))
+
+        return dict(zip(keys, decoded_pipeline_result))
+
+    def _decode_proto(self, feature_list):
+        """Decode the bytes(in string form) via base64 decoder. For dense array, it will be returned as Python List.
+        For sparse array, it will be returned as tuple of index array and value array. The order of elements in the
+        arrays won't be changed.
+        """
+        typed_result = []
+        for raw_feature in feature_list:
+            if raw_feature:
+                feature_value = FeatureValue()
+                decoded = base64.b64decode(raw_feature)
+                feature_value.ParseFromString(decoded)
+                if feature_value.WhichOneof('FeatureValueOneOf') == 'booleanValue':
+                    typed_result.append(feature_value.booleanValue)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'stringValue':
+                    typed_result.append(feature_value.stringValue)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'floatValue':
+                    typed_result.append(feature_value.floatValue)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'doubleValue':
+                    typed_result.append(feature_value.doubleValue)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'intValue':
+                    typed_result.append(feature_value.intValue)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'longValue':
+                    typed_result.append(feature_value.longValue)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'stringArray':
+                    typed_result.append(feature_value.stringArray.strings)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'floatArray':
+                    typed_result.append(feature_value.floatArray.floats)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseStringArray':
+                    typed_result.append((feature_value.sparseStringArray.integers, feature_value.sparseStringArray.strings))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseBoolArray':
+                    typed_result.append((feature_value.sparseBoolArray.integers, feature_value.sparseBoolArray.booleans))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseFloatArray':
+                    typed_result.append((feature_value.sparseFloatArray.integers, feature_value.sparseFloatArray.floats))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseDoubleArray':
+                    typed_result.append((feature_value.sparseDoubleArray.integers, feature_value.sparseDoubleArray.doubles))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseLongArray':
+                    typed_result.append((feature_value.sparseLongArray.index_integers, feature_value.sparseLongArray.longs))
+                else:
+                    # fail to load the type. Maybe a new type that is not supported by this client version
+                    typed_result.append(None)
+            else:
+                typed_result.append(raw_feature)
+        return typed_result
 
     def _clean_test_data(self, feature_table):
         """

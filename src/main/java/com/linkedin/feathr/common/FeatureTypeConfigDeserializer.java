@@ -75,25 +75,25 @@ public class FeatureTypeConfigDeserializer extends JsonDeserializer<FeatureTypeC
         FeatureTypes featureType;
         TensorType tensorType = null;
         TensorCategory tensorCategory = null;
-        if (ALL_FEATURE_TYPES_STRING.contains(typeString)) {
-            featureType = FeatureTypes.valueOf(typeString);
-        } else {
-            switch (typeString) {
-                case DENSE_TENSOR_TYPE_STRING:
+        if (typeString.equals(FeatureTypes.TENSOR.toString())) {
+            switch (objectNode.get("tensorCategory").asText()) {
+                case "DENSE":
                     tensorCategory = TensorCategory.DENSE;
                     break;
-                case SPARSE_TENSOR_TYPE_STRING:
+                case "SPARSE":
                     tensorCategory = TensorCategory.SPARSE;
                     break;
-                case RAGGED_TENSOR_TYPE_STRING:
+                case "RAGGED":
                     tensorCategory = TensorCategory.RAGGED;
                     break;
                 default:
                     throw new RuntimeException(
-                            "The specified feature type is not supported: " + typeString + ". Supported types are: "
-                                    + ALL_FEATURE_TYPES + " and " + SUPPORTED_TENSOR_TYPES);
+                        "The specified feature type is not supported: " + typeString + ". Supported types are: "
+                            + ALL_FEATURE_TYPES + " and " + SUPPORTED_TENSOR_TYPES);
             }
             featureType = FeatureTypes.TENSOR;
+        } else {
+            featureType = FeatureTypes.valueOf(typeString);
         }
 
         JsonNode docNode = objectNode.get(DOC_FIELD);

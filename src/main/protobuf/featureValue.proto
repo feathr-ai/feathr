@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+// generate java: protoc -I=/absolute_path/feathr/src/main/java/com/linkedin/feathr/common/types/protoblog/ --java_out=/absolute_path/feathr/src/main/java/com/linkedin/feathr/common/types/ featureValue.prot
+// generate python: protoc -I=/absolute_path/feathr/src/main/protobuf/ --python_out=/absolute_path/feathr/feathr_project/feathr/protobuf/ featureValue.proto
+
+
+package protobuf;
+option java_package= "com.linkedin.feathr.common.types.protobuf";
+
+
+message FeatureValue {
+    oneof FeatureValueOneOf {
+        bool booleanValue = 1;
+        string stringValue = 2;
+        float floatValue = 3;
+        double doubleValue = 4;
+        int32 intValue = 5;
+        int64 longValue = 6;
+        BooleanArray booleanArray = 8;
+        StringArray stringArray = 9;
+        FloatArray floatArray = 10;
+        DoubleArray doubleArray = 11;
+        IntegerArray intArray = 12;
+        LongArray longArray = 13;
+        BytesArray byteArray = 14;
+        SparseStringArray sparseStringArray = 15;
+        SparseBoolArray sparseBoolArray = 16;
+        SparseIntegerArray sparseIntegerArray = 17;
+        SparseLongArray sparseLongArray = 18;
+        SparseDoubleArray sparseDoubleArray = 19;
+        SparseFloatArray sparseFloatArray = 20;
+    }
+}
+
+message BooleanArray {
+    repeated bool booleans=1;
+}
+
+message StringArray {
+    repeated string strings=1;
+}
+
+message DoubleArray {
+    repeated double doubles=1;
+}
+
+message FloatArray {
+    repeated float floats=1;
+}
+
+message IntegerArray {
+    repeated int32 ints=1;
+}
+
+message LongArray {
+    repeated int64 longs=1;
+}
+
+message BytesArray {
+    repeated bytes bytes_array=1;
+}
+
+
+message SparseStringArray {
+    repeated int32 integers=1;
+    repeated string strings=2;
+}
+
+message SparseBoolArray {
+    repeated int32 integers=1;
+    repeated bool booleans=2;
+}
+
+message SparseIntegerArray {
+    repeated int32 index_integers=1;
+    repeated int32 value_integers=2;
+}
+
+message SparseLongArray {
+    repeated int32 index_integers=1;
+    repeated int64 longs=2;
+}
+
+message SparseDoubleArray {
+    repeated int32 integers=1;
+    repeated double doubles=2;
+}
+
+message SparseFloatArray {
+    repeated int32 integers=1;
+    repeated float floats=2;
+}
