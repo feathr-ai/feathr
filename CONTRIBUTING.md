@@ -21,6 +21,24 @@ If you have any feature request, please create a new Github issue and the commun
 
 If you have any user feedback, please create a new Github issue and the community will collect your feedback and work on it.
 
+# Pull Request(PR) Process
+* Your PR should be created on top of your own fork.
+* It's preferred to have reviewers that are familiar with the part of code you are changing to review it.
+* We encourage everyone to review the PR if you are interested in it.
+* You need at least two reviewers that have permissions to approve your PR.
+
+
+## How to Become a Reviewer with Merge Permission
+In this section, the reviewers always means the reviewers with merge permission.
+
+We use an apprentice program here to help you become a reviewer with merge permission. If you are interested in becoming
+a reviewer, you can become an apprentice of an existing reviewer. The reviewer will mentor
+you to establish the skill set needed to become a reviewer of certain areas. When the time(typically 3-6 months) is ready,
+you are familiar with the code of certain areas, and the skill set is built, the reviewer can approve that you become a reviewer.
+
+There is a maximum number of allowed reviewers. As long as the review process can scale, the reviewer number won't be increased.
+
+If you are inactive for too long as a reviewer, your reviewer permission will be removed.
 
 # Code Of Conduct
 This code of conduct outlines our expectations for participants within the community, as well as steps to reporting unacceptable behavior. We are committed to providing a welcoming and inspiring community for all and expect our code of conduct to be honored. Anyone who violates this code of conduct may be banned from the community.
