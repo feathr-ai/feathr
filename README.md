@@ -153,8 +153,3 @@ Build for the community and build by the community. Check out [community guideli
 
 ## Slack Channel
 Join our [Slack Channel](https://feathrai.slack.com/) for questions and discussions.
-
-## Contributors
-<a href="https://github.com/linkedin/feathr/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=linkedin/feathr" />
-</a>
