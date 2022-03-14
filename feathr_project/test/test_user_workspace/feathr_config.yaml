@@ -1,0 +1,91 @@
+# DO NOT MOVE OR DELETE THIS FILE
+
+# version of API settings
+api_version: 1
+project_config:
+  project_name: "feathr_getting_started"
+  # Information that are required to be set via environment variables.
+  required_environment_variables:
+    # Redis password for your online store
+    - "REDIS_PASSWORD"
+    # Client IDs and Client Secret for the service principal. Read the getting started docs on how to get those information.
+    - "AZURE_CLIENT_ID"
+    - "AZURE_TENANT_ID"
+    - "AZURE_CLIENT_SECRET"
+
+
+offline_store:
+  # paths starts with abfss:// or abfs://
+  # ADLS_ACCOUNT and ADLS_KEY should be set in environment variable if this is set to true
+  adls:
+    adls_enabled: true
+
+  # paths starts with wasb:// or wasbs://
+  # WASB_ACCOUNT and WASB_KEY should be set in environment variable
+  wasb:
+    wasb_enabled: true
+
+  # paths starts with s3a://
+  # S3_ACCESS_KEY and S3_SECRET_KEY should be set in environment variable
+  s3:
+    s3_enabled: true
+    # S3 endpoint. If you use S3 endpoint, then you need to provide access key and secret key in the environment variable as well.
+    s3_endpoint: "s3.amazonaws.com"
+
+  # jdbc endpoint
+  jdbc:
+    jdbc_enabled: true
+    jdbc_database: "feathrtestdb"
+    jdbc_table: "feathrtesttable"
+
+# reading from streaming source is coming soon
+# streaming_source:
+#   kafka_connection_string: ""
+
+spark_config:
+  # choice for spark runtime. Currently support: azure_synapse, databricks
+  # The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.
+  spark_cluster: "azure_synapse"
+  # configure number of parts for the spark output for feature generation job
+  spark_result_output_parts: "1"
+
+  azure_synapse:
+    dev_url: "https://feathrazuretest3synapse.dev.azuresynapse.net"
+    pool_name: "spark3"
+    # workspace dir for storing all the required configuration files and the jar resources
+    workspace_dir: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started"
+    executor_size: "Small"
+    executor_num: 4
+    # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
+    # this is the default location so end users don't have to compile the runtime again.
+    feathr_runtime_location: "/Users/hnlin/IdeaProjects/feathr_githubpage/target/scala-2.12/feathr-assembly-0.1.0.jar"
+
+  databricks:
+    # workspace instance
+    workspace_instance_url: 'https://adb-6885802458123232.12.azuredatabricks.net/'
+    workspace_token_value: ""
+    # config string including run time information, spark version, machine size, etc.
+    config_template: '{"run_name":"","new_cluster":{"spark_version":"9.1.x-scala2.12","node_type_id":"Standard_D3_v2","num_workers":2,"spark_conf":{}},"libraries":[{"jar":""}],"spark_jar_task":{"main_class_name":"","parameters":[""]}}'
+    # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
+    work_dir: "dbfs:/feathr_getting_started"
+    # this is the default location so end users don't have to compile the runtime again.
+    feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar"
+
+online_store:
+  redis:
+    # Redis configs to access Redis cluster
+    host: "feathrazuretest3redis.redis.cache.windows.net"
+    port: 6380
+    ssl_enabled: True
+
+feature_registry:
+  purview:
+    # Registry configs
+    # register type system in purview during feathr client initialization. This is only required to be executed once.
+    type_system_initialization: false
+    # configure the name of the purview endpoint
+    purview_name: "feathrazuretest3-purview1"
+    # delimiter indicates that how the project/workspace name, feature names etc. are delimited. By default it will be '__'
+    # this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'
+    # the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips'
+    delimiter: "__"
