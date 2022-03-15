@@ -95,7 +95,7 @@ az purview account create --location $location --account-name $purview_account_n
 # this is completely optional. It will download some demo NYC data and upload it to the default storage account, to make the setup experience smoother
 echo "preparing data"
 curl https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv --output /tmp/green_tripdata_2020-04.csv
-az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode account-key
+az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode login
 
 # show output again
 
