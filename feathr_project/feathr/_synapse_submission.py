@@ -289,7 +289,7 @@ class _DataLakeFiler(object):
             logger.info("Skipping file {} as it's already in the cloud", src_file_path)
             returned_path = src_file_path
         else:
-            # else it should be a local file path
+            # else it should be a local file path or dir
             if os.path.isdir(src_file_path):
                 logger.info("Uploading folder {}", src_file_path)
                 dest_paths = []
