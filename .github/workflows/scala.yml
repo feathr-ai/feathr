@@ -65,7 +65,7 @@ jobs:
 
         run: |
           # run only test with databricks 
-          pytest  -k 'databricks'
+          # pytest  -k 'databricks'
       - name: Run Feathr with Azure Synapse
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project_synapse"
