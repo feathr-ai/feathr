@@ -15,6 +15,7 @@ from feathr._file_utils import write_to_file
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
+from feathr.constants import *
 
 
 class FeatureJoinJobParams:
@@ -309,7 +310,7 @@ class FeathrClient(object):
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
-            job_tags={"output_path":feature_join_job_params.job_output_path},
+            job_tags={OUTPUT_PATH_TAG:feature_join_job_params.job_output_path},
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
                 '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(

@@ -15,6 +15,7 @@ from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
 from azure.storage.filedatalake import DataLakeServiceClient
 from azure.synapse.spark import SparkClient
 from azure.synapse.spark.models import SparkBatchJob, SparkBatchJobOptions, LivyStates
+from feathr.constants import *
 
 
 class _FeathrSynapseJobLauncher(SparkJobLauncher):
@@ -133,7 +134,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         """
         tags = self._api.get_spark_batch_job(self.current_job_info.tags)
         assert tags is not None
-        return tags["output_path"]
+        return tags[OUTPUT_PATH_TAG]
 
 
 class _SynapseJobRunner(object):

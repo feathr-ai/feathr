@@ -1,0 +1,1 @@
+OUTPUT_PATH_TAG = "output_path"

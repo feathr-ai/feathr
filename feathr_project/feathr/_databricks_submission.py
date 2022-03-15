@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from feathr._abc import SparkJobLauncher
 from pathlib import Path
+from feathr.constants import *
 
 
 import requests
@@ -136,13 +137,13 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
 
         try:
             # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
-            r = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
+            result = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
                               headers=self.auth_headers, data=json.dumps(submission_params))
-            self.res_job_id = r.json()['run_id']
+            self.res_job_id = result.json()['run_id']
             # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
-            r = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
+            result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                              headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-            logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', r.json()[
+            logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', result.json()[
                         'run_page_url'])
         except:
             traceback.print_exc()
@@ -171,10 +172,10 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
     def get_status(self) -> str:
         assert self.res_job_id is not None
         # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
-        r = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
+        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                                headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
         # first try to get result state. it might not be available, and if that's the case, try to get life_cycle_state
-        res_state = r.json()['state'].get('result_state') or r.json()[
+        res_state = result.json()['state'].get('result_state') or result.json()[
             'state']['life_cycle_state']
         assert res_state is not None
         return res_state
@@ -186,8 +187,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         """
         assert self.res_job_id is not None
         # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
-        r = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
+        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                                headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-        custom_tags = r.json()['cluster_spec']['new_cluster']['custom_tags']
+        custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
         assert custom_tags is not None
-        return custom_tags["output_path"]
+        return custom_tags[OUTPUT_PATH_TAG]
