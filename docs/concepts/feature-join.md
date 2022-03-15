@@ -120,7 +120,7 @@ feathr join
 ```
 Or with Python:
 ```python
-returned_spark_job = client.join_offline_features()
+returned_spark_job = client.get_offline_features()
 df_res = client.get_job_result()
 ```
 

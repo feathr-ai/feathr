@@ -494,7 +494,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
          |featureList: [
          |  {
          |    key: DOLocationID
-         |    featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week, f_day_of_month, f_hour_of_day]
+         |    featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week]
          |  }
          |]
       """.stripMargin
