@@ -1,11 +1,11 @@
 # DO NOT MOVE OR DELETE THIS FILE
 
-
 # This file contains the configurations that are used by Feathr
-# All the configurations can be overwritten with environment variables with concatenation of `__`
+# All the configurations can be overwritten by environment variables with concatenation of `__` for different layers of this config file.
 # For example, `feathr_runtime_location` for databricks can be overwritten by setting this environment variable:
 # SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION
-# Another example would be overwriting Redis host with this config (when using shell):
+# Another example would be overwriting Redis host with this config: `ONLINE_STORE__REDIS__HOST`
+# For example if you want to override this setting in a shell environment:
 # export ONLINE_STORE__REDIS__HOST=feathrazure.redis.cache.windows.net
 
 # version of API settings
@@ -14,14 +14,15 @@ project_config:
   project_name: "feathr_getting_started"
   # Information that are required to be set via environment variables.
   required_environment_variables:
+    # the environemnt variables are required to run Feathr
     # Redis password for your online store
     - "REDIS_PASSWORD"
-    # Client IDs and Client Secret for the service principal. Read the getting started docs on how to get those information.
+    # client IDs and client Secret for the service principal. Read the getting started docs on how to get those information.
     - "AZURE_CLIENT_ID"
     - "AZURE_TENANT_ID"
     - "AZURE_CLIENT_SECRET"
   optional_environment_variables:
-    # the environemnt variables are optional, however you might need them if you want to use some of the services:
+    # the environemnt variables are optional, however you will need them if you want to use some of the services:
     - ADLS_ACCOUNT
     - ADLS_KEY
     - WASB_ACCOUNT
@@ -31,7 +32,6 @@ project_config:
     - JDBC_TABLE
     - JDBC_USER
     - JDBC_PASSWORD
-
 
 offline_store:
   # paths starts with abfss:// or abfs://
@@ -81,7 +81,7 @@ spark_config:
 
   databricks:
     # workspace instance
-    workspace_instance_url: 'https://adb-6885802458123232.12.azuredatabricks.net/'
+    workspace_instance_url: "https://adb-6885802458123232.12.azuredatabricks.net/"
     workspace_token_value: ""
     # config string including run time information, spark version, machine size, etc.
     # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
