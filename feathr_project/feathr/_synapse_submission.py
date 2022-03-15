@@ -4,6 +4,7 @@ import urllib.request
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from loguru import logger
+from pathlib import Path
 import time
 from feathr._abc import SparkJobLauncher
 
@@ -274,11 +275,11 @@ class _DataLakeFiler(object):
         """
 
         src_parse_result = urlparse(src_file_path)
-        file_name = os.path.basename(src_file_path)
-        file_client = self.dir_client.create_file(file_name)
-        # returned paths for the uploaded file
-        returned_path = self.datalake_dir + file_name
         if src_parse_result.scheme.startswith('http'):
+            file_name = os.path.basename(src_file_path)
+            file_client = self.dir_client.create_file(file_name)
+            # returned paths for the uploaded file
+            returned_path = self.datalake_dir + file_name
             with urllib.request.urlopen(src_file_path) as f:
                 data = f.read()
                 file_client.upload_data(data, overwrite=True)
@@ -289,10 +290,26 @@ class _DataLakeFiler(object):
             returned_path = src_file_path
         else:
             # else it should be a local file path
-            with open(src_file_path, 'rb') as f:
-                data = f.read()
-                file_client.upload_data(data, overwrite=True)
-                logger.info("{} is uploaded to location: {}", src_file_path, returned_path)
+            if os.path.isdir(src_file_path):
+                logger.info("Uploading folder {}", src_file_path)
+                dest_paths = []
+                for item in Path(src_file_path).glob('**/*.conf'):
+                    returned_path = self.upload_file(item.resolve())
+                    dest_paths.extend([returned_path])
+                returned_path = ','.join(dest_paths)
+            else:
+                returned_path = self.upload_file(src_file_path)
+        return returned_path
+
+    def upload_file(self, src_file_path)-> str:
+        file_name = os.path.basename(src_file_path)
+        logger.info("Uploading file {}", file_name)
+        file_client = self.dir_client.create_file(file_name)
+        returned_path = self.datalake_dir + file_name
+        with open(src_file_path, 'rb') as f:
+            data = f.read()
+            file_client.upload_data(data, overwrite=True)
+        logger.info("{} is uploaded to location: {}", src_file_path, returned_path)
         return returned_path
 
     def download_file(self, target_adls_directory: str, local_dir_cache: str):
