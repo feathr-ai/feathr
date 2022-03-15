@@ -45,13 +45,18 @@ In **my_offline_training.py**:
 from feathr import FeathrClient
 
 # Requested features to be joined 
+# Define the key for your feature
+location_id = TypedKey(key_column="DOLocationID",
+                       key_column_type=ValueType.INT32,
+                       description="location id in NYC",
+                       full_name="nyc_taxi.location_id")
 feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location_id])
 
 # Observation dataset settings
 settings = ObservationSettings(
-    observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
-    event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
-    timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
+  observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
+  event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
+  timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
 
 # Prepare training data by joining features to the input (observation) data.
 # feature-join.conf and features.conf are detected and used automatically.
@@ -80,12 +85,6 @@ client.multi_get_online_features(feature_table = "agg_features",
 
 ## Defining Window Aggregation Features
 ```python
-# Define the key for your feature
-location_id = TypedKey(key_column="DOLocationID",
-                       key_column_type=ValueType.INT32,
-                       description="location id in NYC",
-                       full_name="nyc_taxi.location_id")
-
 agg_features = [Feature(name="f_location_avg_fare",
                         key=location_id,                          # Query/join key of the feature(group)
                         feature_type=FLOAT,
