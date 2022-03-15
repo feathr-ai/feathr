@@ -63,7 +63,7 @@ az role assignment create --role "Storage Blob Data Contributor" --assignee "$sp
 # Create Synapse Cluster
 az synapse workspace create --name $synapse_workspace_name --resource-group $resoruce_group_name  --storage-account $storage_account_name --file-system $storage_file_system_name --sql-admin-login-user $synapse_sql_admin_name --sql-admin-login-password $synapse_sql_admin_password --location $location
 
-az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $synapse_workspace_name  --resource-group $resoruce_group_name --spark-version 2.4 --node-count 3 --node-size Medium --enable-auto-pause true --delay 30
+az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $synapse_workspace_name  --resource-group $resoruce_group_name --spark-version 3.1 --node-count 3 --node-size Medium --enable-auto-pause true --delay 30
 
 # depending on your preference, you can set a narrow range of IPs (like below) or a broad range of IPs to allow client access to Synapse clusters
 external_ip=$(curl -s http://whatismyip.akamai.com/)
@@ -95,7 +95,7 @@ az purview account create --location $location --account-name $purview_account_n
 # this is completely optional. It will download some demo NYC data and upload it to the default storage account, to make the setup experience smoother
 echo "preparing data"
 curl https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv --output /tmp/green_tripdata_2020-04.csv
-az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode account-key
+az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode login
 
 # show output again
 
@@ -111,7 +111,7 @@ echo "REDIS_PASSWORD: $redis_password"
 echo "REDIS_HOST: $redis_cluster_name.redis.cache.windows.net"
 echo "FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr_20220204.jar"
 echo "AZURE_PURVIEW_NAME: $purview_account_name"
-echo "Demo Data Location: abfss://$storage_file_system_name@$storage_account_name.dfs.core.windows.net/demo_data/green_tripdata_2021-01.csv"
+echo "Demo Data Location: abfss://$storage_file_system_name@$storage_account_name.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"
 
 echo "outputPath: abfss://$storage_file_system_name@$storage_account_name.dfs.core.windows.net/demo_data/output.avro"
 
