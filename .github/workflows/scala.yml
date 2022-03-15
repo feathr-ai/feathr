@@ -27,14 +27,6 @@ jobs:
         run: sbt clean && sbt test
       - name: Build JAR
         run: sbt assembly
-      - name: Azure Blob Storage Upload (Overwrite)
-        uses: fixpoint/azblob-upload-artifact@v4
-        with:
-          connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
-          name: "feathr_jar_github_action_spark3"
-          path: "target/scala-2.12/feathr-assembly-0.1.0.jar"
-          container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
-          cleanup: "true"
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -56,9 +48,10 @@ jobs:
       - name: Set env variable for databricks run
         run: |
           echo "SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
+          echo "SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
       - name: Run Feathr with Databricks
         env:
-          PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
+          PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_databricks"
           SPARK_CONFIG__SPARK_CLUSTER: databricks
           SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL: "https://adb-2474129336842816.16.azuredatabricks.net/"
           DATABRICKS_WORKSPACE_TOKEN_VALUE: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
