@@ -25,56 +25,67 @@ features at specific points in time, enabling point-in-time-correct feature comp
 training data generation.
 
 ### Simple Features
-In **features.conf**:
-```
-anchors: {       // Feature anchors
-    trip_features: {          // A feature anchor
-      source: nycTaxiBatchSource
-      key: DOLocationID
-      features: {             // Feature names in this anchor
-          f_is_long_trip: "trip_distance > 30"       // A feature by an expression
-          f_day_of_week: "dayofweek(datetime)"     // A feature with built-in function
-      }
-    }
-}
+In **feathr_worksapce** folder:
+```python
+# Define the key for your feature
+features = [
+    Feature(name="f_trip_distance",                         # Ingest feature data as-is
+            feature_type=FLOAT),      
+    Feature(name="f_is_long_trip_distance",
+            feature_type=BOOLEAN,
+            transform="cast_float(trip_distance)>30"),      # SQL-like syntax to transform raw data into feature
+    Feature(name="f_day_of_week",
+            feature_type=INT32,
+            transform="dayofweek(lpep_dropoff_datetime)")   # Provides built-in transformation
+]
+
+anchor = FeatureAnchor(name="request_features",             # Features anchored on same source
+                       source=batch_source,
+                       features=features)
 ```
 
 ### Window Aggregation Features
-```
-anchors: {
-    agg_features: {                    // A feature anchor (with aggregation)
-        source: nyc_taxi_batch_source  // Features data source
-        features: {
-            f_location_avg_fare: {     // A feature with window aggregation
-                aggregation: AVG           // Aggregation function
-                def: "cast_float(fare_amount)"  // Aggregation expression
-                window: 3d                 // Over a 3-day window
-            }
-        }
-        key: LocationID                // Query/join key of the feature(group)
-    }
-}
-        
-sources: {                            // Named data sources
-    nyc_taxi_batch_source: {          // A data source
-        location: { path: "abfss://feathr@feathrazure.windows.net/demo_data/" }
-        timeWindowParameters: {       // Time information of the data source
-            timestampColumn: "dropoff_datetime"
-            timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
-        }
-    }
-}
+```python
+# Define the key for your feature
+location_id = TypedKey(key_column="DOLocationID",
+                       key_column_type=ValueType.INT32,
+                       description="location id in NYC",
+                       full_name="nyc_taxi.location_id")
+
+agg_features = [Feature(name="f_location_avg_fare",
+                        key=location_id,                          # Query/join key of the feature(group)
+                        feature_type=FLOAT,
+                        transform=WindowAggTransformation(        # Window Aggregation transformation
+                            agg_expr="cast_float(fare_amount)",
+                            agg_func="AVG",                       # Apply average aggregation over the window
+                            window="90d")),                       # Over a 90-day window
+                ]
+
+agg_anchor = FeatureAnchor(name="aggregationFeatures",
+                           source=batch_source,
+                           features=agg_features)
 ```
 
 ### Derived Features: Beyond Features on Raw Data Sources
+```python
+# Compute a new feature(a.k.a. derived feature) on top of an existing feature
+derived_feature = DerivedFeature(name="f_trip_time_distance",
+                                 feature_type=FLOAT,
+                                 key=trip_key,
+                                 input_features=[f_trip_distance, f_trip_time_duration],
+                                 transform="f_trip_distance * f_trip_time_duration")
+
+# Another example to compute embedding similarity
+user_embedding = Feature(name="user_embedding", feature_type=DENSE_VECTOR, key=user_key)
+item_embedding = Feature(name="item_embedding", feature_type=DENSE_VECTOR, key=item_key)
+
+user_item_similarity = DerivedFeature(name="user_item_similarity",
+                                      feature_type=FLOAT,
+                                      key=[user_key, item_key],
+                                      input_features=[user_embedding, item_embedding],
+                                      transform="cosine_similarity(user_embedding, item_embedding)")
 ```
-derivations: {    // Features that depend on other features instead of external raw data sources
-  f_trip_time_distance: {    // Name of a derived feature
-    definition: "f_trip_distance * f_trip_time_duration"
-    type: NUMERIC
-  }
-}
-```
+
 ## Accessing Features from Feathr
 
 Feathr provides simple APIs for model pipelines and inferencing code to **get features by their names**.
@@ -85,26 +96,24 @@ Models may depend on a large number of features defined by multiple authors acro
 For such cases, Feathr seamlessly merges the multiple definitions into a combined join-and-compute workflow,
 providing the consumer (the ML model) with the convenient appearance that the features are coming from a single table.
 
-In **feature-join.conf**:
-```
-// Request dataset, used to join with features to become a training dataset
-observationPath: "abfss://feathr@feathrazure.windows.net/demo_input/"
-features: [      // Requested features to be joined  
-    {
-        featureList: [f_is_long_trip, f_day_of_week]
-    }
-]
-outputPath: "abfss://feathr@feathrazure.windows.net/demo/demo_output/"
-```
-
 In **my_offline_training.py**:
 ```python
-from  feathr import FeathrClient
-client = FeathrClient()
+from feathr import FeathrClient
+
+# Requested features to be joined 
+feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location_id])
+
+# Observation dataset settings
+settings = ObservationSettings(
+    observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
+    event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
+    timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
+
 # Prepare training data by joining features to the input (observation) data.
 # feature-join.conf and features.conf are detected and used automatically.
-result = client.join_offline_features()
-result.sample(10)
+feathr_client.get_offline_features(observation_settings=settings,
+                                   output_path="abfss://output.avro",
+                                   feature_query=feature_query)
 ```
 
 In **my_online_model.py**:
@@ -112,11 +121,11 @@ In **my_online_model.py**:
 from  feathr import FeathrClient
 client = FeathrClient()
 # Get features for a locationId (key)
-client.online_get_features(feature_table = "agg_features", 
+client.get_online_features(feature_table = "agg_features", 
                            key = "265",
                            feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 # Batch get for multiple locationIds (keys)
-client.online_batch_get_features(feature_table = "nycTaxiDemoFeature",
+client.multi_get_online_features(feature_table = "nycTaxiDemoFeature",
                                  key = ["239", "265"],
                                  feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 
