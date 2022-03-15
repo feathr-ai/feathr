@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - labeled
 
 jobs:
   build:
@@ -17,8 +22,8 @@ jobs:
         with:
           java-version: "8"
           distribution: "temurin"
-      - name: Run tests
-        run: sbt clean && sbt test
+      # - name: Run tests
+      #   run: sbt clean && sbt test
       - name: Build JAR
         run: sbt assembly
       - name: Set up Python 3.8
@@ -65,7 +70,7 @@ jobs:
 
         run: |
           # run only test with databricks 
-          # pytest  -k 'databricks'
+          pytest  -k 'databricks'
       - name: Run Feathr with Azure Synapse
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project_synapse"
