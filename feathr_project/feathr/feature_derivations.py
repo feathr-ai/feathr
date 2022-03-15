@@ -17,8 +17,6 @@ class DerivedFeature(FeatureBase):
         key: join key of the derived feature
         input_features: features that this derived features depends on
         transform: transformation that produces the derived feature value, based on the input_features
-        feature_alias: Rename the derived feature to `feature_alias`. Default to None.
-        key_alias: Rename the key of derived feature to `key`. Default to None.
     """
 
     def __init__(self,
@@ -26,11 +24,21 @@ class DerivedFeature(FeatureBase):
                 feature_type: FeatureType,
                 input_features: Union[FeatureBase, List[FeatureBase]],
                 transform: Union[str, RowTransformation],
-                key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
-                feature_alias:Optional[str] = None,
-                key_alias: Optional[List[str]] = None) -> None:
-        super(DerivedFeature, self).__init__(name, feature_type, key=key, transform=transform, feature_alias=feature_alias, key_alias=key_alias)
+                key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY]):
+        super(DerivedFeature, self).__init__(name, feature_type, key=key, transform=transform)
         self.input_features = input_features if isinstance(input_features, List) else [input_features]
+        self.validate_feature()
+
+    def validate_feature(self):
+        """Validate the derived feature is valid"""
+        # Validate key alias
+        input_feature_key_alias = []
+        for feature in self.input_features:
+            input_feature_key_alias.extend(feature.key_alias)
+        for key_alias in self.key_alias:
+            assert key_alias in input_feature_key_alias, "key alias {} in derived feature {} must come from " \
+                   "its input features key alias list {}".format(key_alias, self.name, input_feature_key_alias)
+
 
     def to_feature_config(self) -> str:
         tm = Template("""

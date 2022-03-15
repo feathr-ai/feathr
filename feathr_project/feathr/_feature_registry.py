@@ -602,7 +602,7 @@ class _FeatureRegistry():
         return definitions
 
     @classmethod
-    def save_to_feature_config(self, workspace_path: Optional[Path] = None):
+    def save_to_feature_config(self, workspace_path: Path):
         """Save feature definition within the workspace into HOCON feature config files"""
         repo_definitions = self._extract_features(workspace_path)
         self._save_request_feature_config(repo_definitions)

@@ -14,6 +14,7 @@ from feathr._abc import SparkJobLauncher
 import requests
 from loguru import logger
 from requests.structures import CaseInsensitiveDict
+from pathlib import Path
 
 
 class _FeathrDatabricksJobLauncher(SparkJobLauncher):
@@ -81,15 +82,33 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                 'Skipping file {} as it is already in the cloud', local_path_or_http_path)
             returned_path = local_path_or_http_path
         else:
-            # else it should be a local file path
-            with open(local_path_or_http_path, 'rb') as f:
-                data = f.read()
-                files = {'file': data}
-                # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
-                r = requests.post(url=self.workspace_instance_url+'/api/2.0/dbfs/put',
-                                  headers=self.auth_headers, files=files,  data={'overwrite': 'true', 'path': returned_path})
-                logger.debug('{} is uploaded to location: {}',
-                             local_path_or_http_path, returned_path)
+            # else it should be a local file path or dir
+            if os.path.isdir(local_path_or_http_path):
+                logger.info("Uploading folder {}", local_path_or_http_path)
+                dest_paths = []
+                for item in Path(local_path_or_http_path).glob('**/*.conf'):
+                    returned_path = self.upload_file(item.resolve())
+                    dest_paths.extend([returned_path])
+                returned_path = ','.join(dest_paths)
+            else:
+                returned_path = self.upload_file(local_path_or_http_path)
+        return returned_path
+
+    def upload_file(self, local_path_or_http_path: str) -> str:
+        """
+        Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
+        """
+        file_name = os.path.basename(local_path_or_http_path)
+        # returned paths for the uploaded file
+        returned_path = os.path.join(self.databricks_work_dir, file_name)
+        with open(local_path_or_http_path, 'rb') as f:
+            data = f.read()
+            files = {'file': data}
+            # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
+            r = requests.post(url=self.workspace_instance_url+'/api/2.0/dbfs/put',
+                              headers=self.auth_headers, files=files,  data={'overwrite': 'true', 'path': returned_path})
+            logger.debug('{} is uploaded to location: {}',
+                         local_path_or_http_path, returned_path)
         return returned_path
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):

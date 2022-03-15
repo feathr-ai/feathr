@@ -18,20 +18,17 @@ class FeatureBase(ABC):
         feature_type: the feature value type. e.g. INT32, FLOAT, etc.
         key: The key of this feature. e.g. user_id.
         transform: A transformation used to produce its feature value. e.g. amount * 10
-        feature_alias: Transformation can reference this feature by the feature_alias. Default to its feature name.
-        key_alias: An alias for the key in this feature. Default to its key column alias. Useful in derived features.
     """
     def __init__(self,
                  name: str,
                  feature_type: FeatureType,
                  transform: Optional[Union[str, Transformation]] = None,
-                 key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
-                 feature_alias: Optional[str] = None,
-                 key_alias: Optional[List[str]] = None):
+                 key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY]):
         self.name = name
         self.feature_type = feature_type
         self.key = key if isinstance(key, List) else [key]
-        self.feature_alias = feature_alias if feature_alias else name
+        # feature_alias: Rename the derived feature to `feature_alias`. Default to feature name.
+        self.feature_alias = name
         # If no transformation is specified, default to referencing the a field with the same name
         if transform is None:
             self.transform = ExpressionTransformation(name)
@@ -39,8 +36,8 @@ class FeatureBase(ABC):
             self.transform = ExpressionTransformation(transform)
         else:
             self.transform = transform
-        default_key_alias = [k.key_column_alias for k in self.key]
-        self.key_alias = key_alias if key_alias else default_key_alias
+        # An alias for the key in this feature. Default to its key column alias. Useful in derived features.
+        self.key_alias = [k.key_column_alias for k in self.key]
 
     def with_key(self, key_alias: Union[str, List[str]]):
         """Rename the feature key with the alias. This is useful in derived features that depends on
@@ -79,17 +76,13 @@ class Feature(FeatureBase):
         feature_type: the feature value type. e.g. INT32, FLOAT, etc.
         key: The key of this feature. e.g. user_id.
         transform: A row transformation used to produce its feature value. e.g. amount * 10
-        feature_alias: variable name, transformation can reference this feature by the feature_alias. Default to its feature name.
-        key_alias: An alias for the key in this feature. Default to its key column alias. Useful in complex relation features.
     """
     def __init__(self,
                 name: str,
                 feature_type: FeatureType,
                 key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
-                transform: Optional[Union[str, Transformation]] = None,
-                feature_alias: Optional[str] = None,
-                key_alias: Optional[List[str]] = None):
-        super(Feature, self).__init__(name, feature_type, transform, key, feature_alias, key_alias)
+                transform: Optional[Union[str, Transformation]] = None):
+        super(Feature, self).__init__(name, feature_type, transform, key)
 
     def to_feature_config(self) -> str:
         tm = Template("""

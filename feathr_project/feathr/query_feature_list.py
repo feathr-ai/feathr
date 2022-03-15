@@ -1,9 +1,20 @@
-from typing import Optional, List
+from typing import List, Optional, Union
+
 from jinja2 import Template
 
+from feathr.typed_key import TypedKey
+
+
 class FeatureQuery:
-    def __init__(self, feature_list: List[str], key: Optional[List[str]] = None) -> None:
+    """A FeatureQuery contains a list of features
+    Attributes:
+        feature_list: a list of feature names
+        key: key of the feature_list, all features must share the same key
+        """
+    def __init__(self, feature_list: List[str], key: Optional[Union[TypedKey, List[TypedKey]]] = None) -> None:
         self.key = key
+        if isinstance(key, TypedKey):
+            self.key = [key]
         self.feature_list = feature_list
 
     def to_config(self) -> str:
@@ -13,6 +24,6 @@ class FeatureQuery:
                 featureList: [{{feature_names}}]
             }
         """)
-        key_columns = ", ".join(k for k in self.key) if self.key else ["NOT_NEEDED"]
+        key_columns = ", ".join(k.key_column for k in self.key) if self.key else ["NOT_NEEDED"]
         feature_list = ", ".join(f for f in self.feature_list)
         return tm.render(key_columns = key_columns, feature_names = feature_list)

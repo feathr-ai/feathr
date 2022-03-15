@@ -6,15 +6,13 @@ from feathr.dtype import ValueType, FeatureType
 
 
 class TypedKey:
-    """A feature is an individual measurable property or characteristic of an 'Entity'.
-      e.g. the price is a feature of a car, and the car is an 'entity'.
+    """The key of a feature. A feature is typically keyed by some id(s). e.g. product id, user id
       Attributes:
-        key_column: The id column name(s) of this entity. e.g. 'product_id'. The value(s)
-                    of the id column(s) should identify a unique instance of the entity.
+        key_column: The id column name of this key. e.g. 'product_id'.
         key_column_type: Types of the key_column
         full_name: Unique name of the entity. Recommend using [project_name].[entity_name], e.g. foo.bar
-        description: Documentation for the entity.
-        key_column_alias: Used in relation feature. Default to the full_name with its '.' replaced with '_'.
+        description: Documentation for the key.
+        key_column_alias: Used in some advanced derived features. Default to the key_column.
     """
     def __init__(self,
                  key_column: str,
@@ -37,6 +35,9 @@ class TypedKey:
         return new_key
 
 
+# passthrough/request feature do not need keys, as they are just a transformation defined on top of the request data
+# They do not necessarily describe the value of keyed entity, e.g. dayofweek(timestamp) is transform on a request
+# field without key
 DUMMY_KEY = TypedKey(key_column="NOT_NEEDED",
                      key_column_type=ValueType.UNSPECIFIED,
                      full_name="feathr.dummy_typedkey",

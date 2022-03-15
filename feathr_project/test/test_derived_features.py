@@ -1,8 +1,9 @@
 from feathr.feature import Feature
 from feathr.transformation import ExpressionTransformation
 from feathr.feature_derivations import DerivedFeature
-from feathr.dtype import BOOLEAN, FLOAT, DENSE_VECTOR, ValueType
+from feathr.dtype import BOOLEAN, FLOAT, FLOAT_VECTOR, ValueType
 from feathr.typed_key import TypedKey
+import pytest
 
 def assert_config_equals(one, another):
     assert one.translate(str.maketrans('', '', ' \n\t\r')) == another.translate(str.maketrans('', '', ' \n\t\r'))
@@ -10,7 +11,7 @@ def assert_config_equals(one, another):
 def test_single_key_derived_feature_to_config():
     """Single key derived feature config generation should work"""
     user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="An user identifier")
-    user_embedding = Feature(name="user_embedding", feature_type=DENSE_VECTOR, key=user_key)
+    user_embedding = Feature(name="user_embedding", feature_type=FLOAT_VECTOR, key=user_key)
 
     # A derived feature
     derived_feature = DerivedFeature(name="user_embemdding_derived",
@@ -40,8 +41,8 @@ def test_multikey_derived_feature_to_config():
     user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="An user identifier")
     item_key = TypedKey(full_name="mockdata.item", key_column="item_id", key_column_type=ValueType.INT32, description="An item identifier")
     
-    user_embedding = Feature(name="user_embedding", feature_type=DENSE_VECTOR, key=user_key)
-    item_embedding = Feature(name="item_embedding", feature_type=DENSE_VECTOR, key=item_key)
+    user_embedding = Feature(name="user_embedding", feature_type=FLOAT_VECTOR, key=user_key)
+    item_embedding = Feature(name="item_embedding", feature_type=FLOAT_VECTOR, key=item_key)
 
     # A derived feature
     user_item_similarity = DerivedFeature(name="user_item_similarity",
@@ -72,7 +73,7 @@ def test_derived_feature_to_config_with_alias():
     # More complicated use case, viewer viewee aliasged user key
     # References the same key feature with different alias
     user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="An user identifier")
-    user_embedding = Feature(name="user_embedding", key=user_key, feature_type=DENSE_VECTOR)
+    user_embedding = Feature(name="user_embedding", key=user_key, feature_type=FLOAT_VECTOR)
     viewer_viewee_distance = DerivedFeature(name="viewer_viewee_distance",
                         key=[user_key.as_key("viewer"), user_key.as_key("viewee")],
                         feature_type=FLOAT,
@@ -102,7 +103,7 @@ def test_multi_key_derived_feature_to_config_with_alias():
     # References the same relation feature key alias with different alias
     # Note that in this case, it is possible that distance(a, b) != distance(b,a)
     user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="An user identifier")
-    user_embedding = Feature(name="user_embedding", key=user_key, feature_type=DENSE_VECTOR)
+    user_embedding = Feature(name="user_embedding", key=user_key, feature_type=FLOAT_VECTOR)
 
     viewer_viewee_distance = DerivedFeature(name="viewer_viewee_distance",
                         key=[user_key.as_key("viewer"), user_key.as_key("viewee")],
@@ -143,7 +144,7 @@ def test_derived_feature_on_multikey_anchored_feature_to_config():
     user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="First part of an user identifier")
     user_key2 = TypedKey(full_name="mockdata.user2", key_column="user_id2", key_column_type=ValueType.INT32, description="Second part of an user identifier")
     
-    user_embedding = Feature(name="user_embedding", feature_type=DENSE_VECTOR, key=[user_key, user_key2]) 
+    user_embedding = Feature(name="user_embedding", feature_type=FLOAT_VECTOR, key=[user_key, user_key2])
 
     # A derived feature
     user_item_derived = DerivedFeature(name="user_item_similarity",
@@ -167,4 +168,20 @@ def test_derived_feature_on_multikey_anchored_feature_to_config():
         }
     }"""
     assert_config_equals(user_item_derived.to_feature_config(), derived_feature_config)
+
+
+
+def test_multi_key_derived_feature_to_config_with_wrong_alias():
+    # References the same relation feature key alias with wrong alias
+    # Should throw exception
+    user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="An user identifier")
+    user_embedding = Feature(name="user_embedding", key=user_key, feature_type=FLOAT_VECTOR)
+
+    with pytest.raises(AssertionError):
+        viewer_viewee_distance = DerivedFeature(name="viewer_viewee_distance",
+                                    key=[user_key.as_key("non_exist_alias"), user_key.as_key("viewee")],
+                                    feature_type=FLOAT,
+                                    input_features=[user_embedding.with_key("viewer").as_feature("viewer_embedding"),
+                                                    user_embedding.with_key("viewee").as_feature("viewee_embedding")],
+                                    transform="distance(viewer_embedding, viewee_embedding)")
 

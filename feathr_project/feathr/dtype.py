@@ -101,7 +101,7 @@ class BytesFeatureType(FeatureType):
             }
         """
 
-class DenseVectorFeatureType(FeatureType):
+class FloatVectorFeatureType(FeatureType):
     def to_feature_config(self) -> str:
         return """
            type: {
@@ -126,4 +126,4 @@ FLOAT = FloatFeatureType()
 DOUBLE = DoubleFeatureType()
 STRING = StringFeatureType()
 BYTES = BytesFeatureType()
-DENSE_VECTOR = DenseVectorFeatureType()
+FLOAT_VECTOR = FloatVectorFeatureType()

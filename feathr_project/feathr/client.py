@@ -260,7 +260,16 @@ class FeathrClient(object):
 
     def get_offline_features(self,
                              observation_settings: ObservationSettings,
-                             feature_query: Union[FeatureQuery, List[FeatureQuery]]):
+                             feature_query: Union[FeatureQuery, List[FeatureQuery]],
+                             output_path: str
+                             ):
+        """
+        Get offline features for the observation dataset
+        Args:
+            observation_settings: settings of the observation data, e.g. timestamp columns, input path, etc.
+            feature_query: features that are requested to add onto the observation data
+            output_path: output path of job, i.e. the observation data with features attached.
+        """
         # produce join config
         tm = Template("""
             {{observation_settings.to_config()}}
@@ -269,9 +278,10 @@ class FeathrClient(object):
                     {{list.to_config()}}
                 {% endfor %}
             ]
+            outputPath: "{{output_path}}"
         """)
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
-        config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings)
+        config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
         config_file_name = "feature_join_conf/feature_join.conf"
         config_file_path = os.path.abspath(config_file_name)
         write_to_file(content=config, full_file_name=config_file_path)
