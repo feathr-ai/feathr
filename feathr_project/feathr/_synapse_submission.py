@@ -125,6 +125,16 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         assert job is not None
         return job.state
 
+    def get_job_result_uri(self) -> str:
+        """Get job output uri
+
+        Returns:
+            str: `output_path` field in the job tags
+        """
+        tags = self._api.get_spark_batch_job(self.current_job_info.tags)
+        assert tags is not None
+        return tags["output_path"]
+
 
 class _SynapseJobRunner(object):
     """
