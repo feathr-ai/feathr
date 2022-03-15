@@ -43,7 +43,7 @@ cd feathr_user_workspace
 ```
 
 Output:
-```
+```bash
 Creating a workspace and some default example config files and mock data ...
 Feathr initialization completed.
 ```
@@ -110,61 +110,67 @@ It is merely a function/transformation executing against request data at runtime
 For example, the day of week of the request, which is calculated by converting the request UNIX timestamp.
 
 Feature definitions:
-```
-anchors: {
-    nonAggFeatures: {
-        source: PASSTHROUGH
-        key: NOT_NEEDED
-        features: {
-            f_trip_distance: "(float)trip_distance"
+```python
+# anchored features
+# Define the key for your feature
+features = [
+    Feature(name="f_trip_distance",                         # Ingest feature data as-is
+            feature_type=FLOAT),      
+    Feature(name="f_is_long_trip_distance",
+            feature_type=BOOLEAN,
+            transform="cast_float(trip_distance)>30"),      # SQL-like syntax to transform raw data into feature
+    Feature(name="f_day_of_week",
+            feature_type=INT32,
+            transform="dayofweek(lpep_dropoff_datetime)")   # Provides built-in transformation
+]
 
-            f_is_long_trip_distance: "trip_distance>30"
+anchor = FeatureAnchor(name="request_features",             # Features anchored on same source
+                       source=batch_source,
+                       features=features)
 
-            f_trip_time_duration: "time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')"
+# aggregation feature
+# Define the key for your feature
+location_id = TypedKey(key_column="DOLocationID",
+                       key_column_type=ValueType.INT32,
+                       description="location id in NYC",
+                       full_name="nyc_taxi.location_id")
 
-            f_day_of_week: "dayofweek(lpep_dropoff_datetime)"
+agg_features = [Feature(name="f_location_avg_fare",
+                        key=location_id,                          # Query/join key of the feature(group)
+                        feature_type=FLOAT,
+                        transform=WindowAggTransformation(        # Window Aggregation transformation
+                            agg_expr="cast_float(fare_amount)",
+                            agg_func="AVG",                       # Apply average aggregation over the window
+                            window="90d")),                       # Over a 90-day window
+                ]
 
-            f_day_of_month: "dayofmonth(lpep_dropoff_datetime)"
+agg_anchor = FeatureAnchor(name="aggregationFeatures",
+                           source=batch_source,
+                           features=agg_features)
 
-            f_hour_of_day: "hourofday(lpep_dropoff_datetime)"
-        }
-    }
+# derived features
+derived_feature = DerivedFeature(name="f_trip_time_distance",
+                                 feature_type=FLOAT,
+                                 key=trip_key,
+                                 input_features=[f_trip_distance, f_trip_time_duration],
+                                 transform="f_trip_distance * f_trip_time_duration")
 
-    aggregationFeatures: {
-        source: nycTaxiBatchSource
-        key: DOLocationID
-        features: {
-            f_location_avg_fare: {
-            def: "cast_float(fare_amount)"
-            aggregation: AVG
-            window: 3d
-            }
-            f_location_max_fare: {
-                def: "cast_float(fare_amount)"
-                aggregation: MAX
-                window: 3d
-            }
-        }
-    }
-}
+# Another example to compute embedding similarity
+user_embedding = Feature(name="user_embedding", feature_type=DENSE_VECTOR, key=user_key)
+item_embedding = Feature(name="item_embedding", feature_type=DENSE_VECTOR, key=item_key)
 
-derivations: {
-    f_trip_time_distance: {
-        definition: "f_trip_distance * f_trip_time_duration"
-        type: NUMERIC
-    }
-}
+user_item_similarity = DerivedFeature(name="user_item_similarity",
+                                      feature_type=FLOAT,
+                                      key=[user_key, item_key],
+                                      input_features=[user_embedding, item_embedding],
+                                      transform="cosine_similarity(user_embedding, item_embedding)")
 
-sources: {
-    nycTaxiBatchSource: {
-        location: { path: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv" }
-        timeWindowParameters: {
-            timestampColumn: "lpep_dropoff_datetime"
-            timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
-        }
-    }
-}
-
+# And the source
+batch_source = HdfsSource(
+    name="nycTaxiBatchSource",                              # Source name to enrich your metadata
+    path="abfss://green_tripdata_2020-04.csv",              # Path to your data
+    event_timestamp_column="lpep_dropoff_datetime",         # Event timestamp for point-in-time correctness
+    timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
 ```
 
 
@@ -207,36 +213,25 @@ Create training dataset via feature join:
 ```bash
 feathr join
 ```
-Or with Python:
+Or with Python, in **my_offline_training.py**:
 ```python
-returned_spark_job = client.get_offline_features()
-df_res = client.get_job_result()
+from feathr import FeathrClient
+
+# Requested features to be joined 
+feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location_id])
+
+# Observation dataset settings
+settings = ObservationSettings(
+    observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
+    event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
+    timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
+
+# Prepare training data by joining features to the input (observation) data.
+# feature-join.conf and features.conf are detected and used automatically.
+client.get_offline_features(observation_settings=settings,
+                                   output_path="abfss://output.avro",
+                                   feature_query=feature_query)
 ```
-
-The following feature join config is used:
-```
-observationPath: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"
-
-outputPath: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro"
-
-settings: {
-    joinTimeSettings: {
-        timestampColumn: {
-            def: "lpep_dropoff_datetime"
-            format: "yyyy-MM-dd HH:mm:ss"
-        }
-    }
-}
-
-featureList: [
-    {
-        key: DOLocationID
-        featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week, f_day_of_month, f_hour_of_day]
-    }
-]
-
-```
-
 
 ## Step 6: Materialize feature value into offline/online storage
 While Feathr can compute the feature value from the feature definition on-the-fly at request time, it can also pre-compute 
