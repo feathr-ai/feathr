@@ -27,7 +27,7 @@ class ExpressionTransformation(RowTransformation):
 
     def to_feature_config(self) -> str:
         tm = Template("""
-            def: "{{expr}}"
+            "{{expr}}"
         """)
         return tm.render(expr=self.expr)
 
@@ -53,7 +53,7 @@ class WindowAggTransformation(Transformation):
 
     def to_feature_config(self) -> str:
         tm = Template("""
-            def: "{{windowAgg.def_expr}}"
+            "{{windowAgg.def_expr}}"
             window: {{windowAgg.window}}
             agg: {{windowAgg.agg_func}}
             {% if windowAgg.group_by is not none %}

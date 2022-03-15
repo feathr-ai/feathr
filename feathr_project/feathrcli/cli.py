@@ -90,7 +90,7 @@ def join(filepath):
     click.echo()
 
     client = FeathrClient()
-    client.join_offline_features(filepath)
+    client.get_offline_features_with_config(filepath)
     click.echo(click.style('Feathr feature join job submitted. Visit '
                            'https://ms.web.azuresynapse.net/en-us/monitoring/sparkapplication for detailed job '
                            'result.', fg='green'))
