@@ -4,8 +4,13 @@ from loguru import logger
 
 
 class _EnvVaraibleUtil(object):
-    @staticmethod
-    def get_environment_variable_with_default(*args):
+    def __init__(
+            self,
+            config_path
+    ):
+        self.config_path = config_path
+
+    def get_environment_variable_with_default(self, *args):
         """Gets the environment variable for the variable key.
         Args:
             *args: list of keys in feathr_config.yaml file
@@ -22,7 +27,8 @@ class _EnvVaraibleUtil(object):
                 env_keyword = "__".join(args)
                 upper_env_keyword = env_keyword.upper()
                 # make it work for lower case and upper case.
-                env_variable = os.environ.get(env_keyword, os.environ.get(upper_env_keyword))
+                env_variable = os.environ.get(
+                    env_keyword, os.environ.get(upper_env_keyword))
                 if env_variable:
                     return env_variable
                 # resolve one layer after another
@@ -45,5 +51,6 @@ class _EnvVaraibleUtil(object):
             """
         password = os.environ.get(variable_key)
         if not password:
-            logger.info(variable_key + ' is not set in the environment variables.')
+            logger.info(variable_key +
+                        ' is not set in the environment variables.')
         return password
