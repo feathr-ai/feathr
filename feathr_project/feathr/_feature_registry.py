@@ -28,17 +28,18 @@ from feathr.transformation import Transformation
 
 class _FeatureRegistry():
 
-    def __init__(self):
+    def __init__(self, config_path):
         """
         Initializes the feature registry, doing the following:
         - Use an Azure Service Principal to communicate with Azure Purview
         - Initialize an Azure Purview Client
         - Initialize the GUID tracker, project name, etc.
         """
-        self.project_name = _EnvVaraibleUtil.get_environment_variable_with_default('project_config', 'project_name')
-        self.FEATURE_REGISTRY_DELIMITER = _EnvVaraibleUtil.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
-        self.azure_purview_name = _EnvVaraibleUtil.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
-        type_system_initialization = _EnvVaraibleUtil.get_environment_variable_with_default('feature_registry', 'purview', 'type_system_initialization')
+        envutils = _EnvVaraibleUtil(config_path)
+        self.project_name = envutils.get_environment_variable_with_default('project_config', 'project_name')
+        self.FEATURE_REGISTRY_DELIMITER = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
+        self.azure_purview_name = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
+        type_system_initialization = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'type_system_initialization')
 
         self.oauth = ServicePrincipalAuthentication(
             tenant_id=_EnvVaraibleUtil.get_environment_variable(

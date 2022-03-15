@@ -3,9 +3,17 @@ import yaml
 from loguru import logger
 
 
+
 class _EnvVaraibleUtil(object):
-    @staticmethod
-    def get_environment_variable_with_default(*args):
+    def __init__(
+            self,
+            config_path
+    ):
+        self.config_path = config_path
+
+
+
+    def get_environment_variable_with_default(self, *args):
         """Gets the environment variable for the variable key.
         Args:
             *args: list of keys in feathr_config.yaml file
@@ -13,7 +21,13 @@ class _EnvVaraibleUtil(object):
             A environment variable for the variable key. If it's not set in the environment, then a default is retrieved
             from the feathr_config.yaml file with the same config key.
             """
-        with open(os.path.abspath('feathr_config.yaml'), 'r') as stream:
+
+        if not os.path.exists(os.path.abspath(self.config_path)):
+            # return if the path is not there
+            # in the calling function, the warning is already given; so here we don't give warnings to avoid noisy logs
+            return
+
+        with open(os.path.abspath(self.config_path), 'r') as stream:
             try:
                 yaml_config = yaml.safe_load(stream)
                 # concat all layers
