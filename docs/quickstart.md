@@ -209,7 +209,7 @@ feathr join
 ```
 Or with Python:
 ```python
-returned_spark_job = client.join_offline_features()
+returned_spark_job = client.get_offline_features()
 df_res = client.get_job_result()
 ```
 
@@ -272,11 +272,11 @@ features: [f_location_avg_fare, f_location_max_fare]
 
 ## Step 7: Fetching feature value for online inference
 For features that are already materialized by the previous step, their latest value can be queried via the client's
-`online_get_features` or `online_batch_get_features` API.
+`get_online_features` or `multi_get_online_features` API.
 
 ```python
-client.online_get_features("nycTaxiDemoFeature", "265", ['f_location_avg_fare', 'f_location_max_fare'])
-client.online_batch_get_features("nycTaxiDemoFeature", ["239", "265"], ['f_location_avg_fare', 'f_location_max_fare'])
+client.get_online_features("nycTaxiDemoFeature", "265", ['f_location_avg_fare', 'f_location_max_fare'])
+client.multi_get_online_features("nycTaxiDemoFeature", ["239", "265"], ['f_location_avg_fare', 'f_location_max_fare'])
 ```
 
 ## Next steps
