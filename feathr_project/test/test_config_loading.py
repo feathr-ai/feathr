@@ -1,13 +1,7 @@
 from feathrcli.cli import init
 from click.testing import CliRunner
 import os
-import glob
 from feathr.client import FeathrClient
-from feathr.transformation import ExpressionTransformation
-from feathr.feature_derivations import DerivedFeature
-from feathr.dtype import BOOLEAN, FLOAT, FLOAT_VECTOR, ValueType
-from feathr.typed_key import TypedKey
-import pytest
 
 
 def test_configuration_loading():
