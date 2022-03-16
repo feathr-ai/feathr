@@ -62,7 +62,7 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest
+          python -m pip install pytest pytest-xdist
           python -m pip install -e ./feathr_project/
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Set env variable for databricks run
@@ -90,8 +90,8 @@ jobs:
           BLOB_KEY: ${{secrets.BLOB_KEY}}
 
         run: |
-          # run only test with databricks 
-          pytest  -k 'databricks'
+          # run only test with databricks. run in 4 parallel jobs
+          pytest -n 4 -k 'databricks'
   azure_synapse_test:
       # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
       runs-on: ubuntu-latest
@@ -111,7 +111,7 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest
+          python -m pip install pytest pytest-xdist
           python -m pip install -e ./feathr_project/
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Set env variable for databricks run
@@ -140,4 +140,5 @@ jobs:
 
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
-          pytest  -k 'not databricks'
+          # run in 4 parallel jobs
+          pytest -n 4  -k 'not databricks'
