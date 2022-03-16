@@ -33,7 +33,24 @@ We use [GitHub Actions](../.github/workflows/scala.yml) to do cloud integration 
 
 The above 4 jobs will ran in parallel, and if any one of them fails, the integration test will fail.
 
+The integration test will be triggered once there are push or for new pull requests.
+
 The integration test will also skip the files in the `/docs` folder and for files that are ending with `md`.
+
+For more info on GitHub actions, refer to the documentation [here](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows). 
+
+```yaml
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
+```
 
 # Using Virtual Environment
 It's recommended to use virtual environment for Python project development.
