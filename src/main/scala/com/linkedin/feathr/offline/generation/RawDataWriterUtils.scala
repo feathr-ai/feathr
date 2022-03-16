@@ -42,8 +42,8 @@ private[offline] object RawDataWriterUtils {
     // It will generate generatedFeature/_temp_/daily/2020/08/19. So that it won't interfere with the real dataset under generatedFeature/daily/
     val tempParentPath = parentPath + "/_temp_"
     val tempDataPath = FeatureGenerationPathName.getDataPath(tempParentPath, endTimeOpt)
-    val numPartsParams = outputParts.map(numParts => Map(SparkIOUUtil.OUTPUT_PARALLELISM -> numParts.intValue().toString))
-    val parameters = Map(SparkIOUUtil.OVERWRITE_MODE -> "ALL") ++ numPartsParams.getOrElse(Map.empty[String, String])
+    val numPartsParams = outputParts.map(numParts => Map(SparkIOUtils.OUTPUT_PARALLELISM -> numParts.intValue().toString))
+    val parameters = Map(SparkIOUtils.OVERWRITE_MODE -> "ALL") ++ numPartsParams.getOrElse(Map.empty[String, String])
 
     SourceUtils.safeWriteDF(df, tempDataPath, parameters)
     val outputDF = df

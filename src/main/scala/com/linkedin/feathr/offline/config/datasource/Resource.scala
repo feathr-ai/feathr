@@ -15,7 +15,10 @@ case class AzureResource(@JsonProperty("REDIS_PASSWORD") redisPassword: String,
                          @JsonProperty("BLOB_KEY") blobKey: String,
                          @JsonProperty("JDBC_TABLE") jdbcTable: String,
                          @JsonProperty("JDBC_USER") jdbcUser: String,
-                         @JsonProperty("JDBC_PASSWORD") jdbcPassword: String)
+                         @JsonProperty("JDBC_PASSWORD") jdbcPassword: String,
+                         @JsonProperty("JDBC_DRIVER") jdbcDriver: String,
+                         @JsonProperty("JDBC_AUTH_FLAG") jdbcAuthFlag: String,
+                         @JsonProperty("JDBC_TOKEN") jdbcToken: String)
 
 case class AwsResource(@JsonProperty("S3_ENDPOINT") s3Endpoint: String,
                        @JsonProperty("S3_ACCESS_KEY") s3AccessKey: String,
