@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.config.datasource
 
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JDBCUtils
+import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import org.apache.spark.SparkConf
 
 private[feathr] class SQLResourceInfoSetter extends ResourceInfoSetter() {
@@ -22,8 +22,8 @@ private[feathr] class SQLResourceInfoSetter extends ResourceInfoSetter() {
     val password = getAuthStr(JDBC_PASSWORD, context, resource)
 
     authFlag match {
-      case JDBCUtils.TOKEN_FLAG => JDBCUtils.parseJDBCConfigs(sparkConf, table, accessToken, driver)
-      case _ => JDBCUtils.parseJDBCConfigs(sparkConf, table, user, password, driver)
+      case JdbcUtils.TOKEN_FLAG => JdbcUtils.parseJDBCConfigs(sparkConf, table, accessToken, driver)
+      case _ => JdbcUtils.parseJDBCConfigs(sparkConf, table, user, password, driver)
     }
   }
 

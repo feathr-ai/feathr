@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.source.dataloader
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataException}
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JDBCUtils
+import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
@@ -62,7 +62,7 @@ private[offline] class SparkDataLoader(ss: SparkSession, path: String) extends D
     log.info(s"Loading ${path} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
     try {
       if (path.startsWith("jdbc")){
-        JDBCUtils.loadDataFrame(ss, path)
+        JdbcUtils.loadDataFrame(ss, path)
       } else {
         SparkIOUtils.createDataFrame(path, dataIOParametersWithSplitSize)
       }

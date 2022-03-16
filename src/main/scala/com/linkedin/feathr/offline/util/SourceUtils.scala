@@ -12,7 +12,7 @@ import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.source.SourceFormatType
 import com.linkedin.feathr.offline.source.SourceFormatType.SourceFormatType
 import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JDBCUtils
+import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer, TimeBasedHdfsPathGenerator}
 import com.linkedin.feathr.offline.util.AclCheckUtils.getLatestPath
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
@@ -299,7 +299,7 @@ private[offline] object SourceUtils {
     val localPath = getLocalPath(path)
     format match {
       case FileFormat.AVRO_JSON => loadJsonFileAsAvroToDF(ss, localPath).get
-      case FileFormat.JDBC => JDBCUtils.loadDataFrame(ss, path)
+      case FileFormat.JDBC => JdbcUtils.loadDataFrame(ss, path)
       case _ => {
         getLocalMockDataPath(ss, path) match {
           case Some(mockData) =>
@@ -670,7 +670,7 @@ private[offline] object SourceUtils {
         }
       }
       case FileFormat.JDBC => {
-        JDBCUtils.loadDataFrame(ss, inputData.inputPath)
+        JdbcUtils.loadDataFrame(ss, inputData.inputPath)
       }
       case FileFormat.CSV => {
         ss.read.format("csv").option("header", "true").load(inputData.inputPath)

@@ -10,7 +10,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * Functions to get JDBCOptions from Spark Conf
  * Basic Function to load dataframe from JDBC data source (JDBC Data Loader)
  */
-object JDBCUtils {
+object JdbcUtils {
   val DRIVER_CONF = "feathr.jdbc.driver"
   val DBTABLE_CONF = "feathr.jdbc.dbtable"
   val USER_CONF = "feathr.jdbc.user"
@@ -53,8 +53,8 @@ object JDBCUtils {
   def loadDataFrame(ss: SparkSession, url: String): DataFrame ={
     val jdbcOptions = ss.conf.get(AUTH_FLAG_CONF) match {
       case TOKEN_FLAG => getJDBCOptionsWithToken(ss)
-      case _ => JDBCUtils.getJDBCOptionsWithPassword(ss)
+      case _ => JdbcUtils.getJDBCOptionsWithPassword(ss)
     }
-    SQLType.loadDataFrame(ss, url, jdbcOptions)
+    SqlType.loadDataFrame(ss, url, jdbcOptions)
   }
 }

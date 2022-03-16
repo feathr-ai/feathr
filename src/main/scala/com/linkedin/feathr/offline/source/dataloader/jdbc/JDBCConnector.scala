@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.source.dataloader.jdbc
 
 import org.apache.spark.sql._
 
-abstract class JDBCConnector(ss: SparkSession){
+abstract class JdbcConnector(ss: SparkSession){
   lazy val _ss: SparkSession = ss
   val format = "jdbc"
 

@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JDBCUtils
+import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import org.apache.avro.Schema
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -9,7 +9,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * @param ss the spark session
  * @param url input resource path
  */
-private[offline] class JDBCDataLoader(ss: SparkSession, url: String) extends DataLoader {
+private[offline] class JdbcDataLoader(ss: SparkSession, url: String) extends DataLoader {
   override def loadSchema(): Schema = {
     ???
   }
@@ -18,6 +18,6 @@ private[offline] class JDBCDataLoader(ss: SparkSession, url: String) extends Dat
    * load the source data as DataFrame
    */
   override def loadDataFrame(): DataFrame = {
-    JDBCUtils.loadDataFrame(ss, url)
+    JdbcUtils.loadDataFrame(ss, url)
   }
 }

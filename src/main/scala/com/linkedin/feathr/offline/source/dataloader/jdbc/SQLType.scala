@@ -2,15 +2,23 @@ package com.linkedin.feathr.offline.source.dataloader.jdbc
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-sealed trait SQLType
+sealed trait SqlType
 
-object SQLType {
-  case object SqlServer extends SQLType
-  case object MySql extends SQLType
-  case object Postgres extends SQLType
-  case object DefaultJDBC extends SQLType
+/**
+ * Each Sql Type represents a SQL data source
+ * When enabling new JDBC data source:
+ * 1. A new SqlType will be added.
+ * 2. Update getType tp identify this JDBC source
+ * 3. The JDBC driver needs to be checkin in SBT dependencies
+ * 4. A specific DataLoader needs to be added to specify the driver or add custom logics
+ */
+object SqlType {
+  case object SqlServer extends SqlType
+  case object MySql extends SqlType
+  case object Postgres extends SqlType
+  case object DefaultJDBC extends SqlType
 
-  def getType (url: String): SQLType = url match {
+  def getType (url: String): SqlType = url match {
     case url if url.startsWith("jdbc:sqlserver") => SqlServer
     case url if url.startsWith("jdbc:mysql") => MySql
     case url if url.startsWith("jdbc:postgresql:") => Postgres
@@ -26,5 +34,4 @@ object SQLType {
     }
     dataLoader.loadDataFrame(url, options)
   }
-
 }
