@@ -34,6 +34,8 @@ setup(
         "python-snappy",
         "pyyaml",
         "Jinja2",
+        "google>=3.0.0",
+        "google-api-python-client>=2.41.0",
         "pytest"
     ],
     entry_points={

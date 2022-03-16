@@ -2,17 +2,17 @@ import logging
 import os
 from pathlib import Path
 from typing import List, Optional, Union
-
 import redis
 from jinja2 import Template
-from loguru import logger
 from pyhocon import ConfigFactory
+import base64
 
-from feathr._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr._envvariableutil import _EnvVaraibleUtil
+from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr._feature_registry import _FeatureRegistry
 from feathr._file_utils import write_to_file
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
+from feathr._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
 from feathr.constants import *
@@ -191,7 +191,7 @@ class FeathrClient(object):
             """
         redis_key = self._construct_redis_key(feature_table, key)
         res = self.redis_clint.hmget(redis_key, *feature_names)
-        return res
+        return self._decode_proto(res)
 
     def multi_get_online_features(self, feature_table, keys, feature_names):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
@@ -216,7 +216,64 @@ class FeathrClient(object):
                 redis_pipeline.hmget(redis_key, *feature_names)
             pipeline_result = redis_pipeline.execute()
 
-        return dict(zip(keys, pipeline_result))
+        decoded_pipeline_result = []
+        for feature_list in pipeline_result:
+            decoded_pipeline_result.append(self._decode_proto(feature_list))
+
+        return dict(zip(keys, decoded_pipeline_result))
+
+    def _decode_proto(self, feature_list):
+        """Decode the bytes(in string form) via base64 decoder. For dense array, it will be returned as Python List.
+        For sparse array, it will be returned as tuple of index array and value array. The order of elements in the
+        arrays won't be changed.
+        """
+        typed_result = []
+        for raw_feature in feature_list:
+            if raw_feature:
+                feature_value = FeatureValue()
+                decoded = base64.b64decode(raw_feature)
+                feature_value.ParseFromString(decoded)
+                if feature_value.WhichOneof('FeatureValueOneOf') == 'boolean_value':
+                    typed_result.append(feature_value.boolean_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'string_value':
+                    typed_result.append(feature_value.string_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'float_value':
+                    typed_result.append(feature_value.float_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'double_value':
+                    typed_result.append(feature_value.double_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'int_value':
+                    typed_result.append(feature_value.int_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'long_value':
+                    typed_result.append(feature_value.long_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'int_array':
+                    typed_result.append(feature_value.int_array.integers)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'string_array':
+                    typed_result.append(feature_value.string_array.strings)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'float_array':
+                    typed_result.append(feature_value.float_array.floats)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'double_array':
+                    typed_result.append(feature_value.double_array.doubles)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'boolean_array':
+                    typed_result.append(feature_value.boolean_array.booleans)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_string_array':
+                    typed_result.append((feature_value.sparse_string_array.index_integers, feature_value.sparse_string_array.value_strings))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_bool_array':
+                    typed_result.append((feature_value.sparse_bool_array.index_integers, feature_value.sparse_bool_array.value_booleans))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_float_array':
+                    typed_result.append((feature_value.sparse_float_array.index_integers, feature_value.sparse_float_array.value_floats))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_double_array':
+                    typed_result.append((feature_value.sparse_double_array.index_integers, feature_value.sparse_double_array.value_doubles))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_long_array':
+                    typed_result.append((feature_value.sparse_long_array.index_integers, feature_value.sparse_long_array.value_longs))
+                else:
+                    self.logger.debug("Fail to load the feature type. Maybe a new type that is not supported by this "
+                                      "client version")
+                    self.logger.debug(f"The raw feature is {raw_feature}.")
+                    self.logger.debug(f"The loaded feature is {feature_value}")
+                    typed_result.append(None)
+            else:
+                typed_result.append(raw_feature)
+        return typed_result
 
     def _clean_test_data(self, feature_table):
         """
@@ -486,6 +543,6 @@ class FeathrClient(object):
         return config_str
 
     def get_features_from_registry(self, project_name):
-        """ Sync features from the registry given a project name """ 
-        # TODO - Add support for customized workspace path     
+        """ Sync features from the registry given a project name """
+        # TODO - Add support for customized workspace path
         self.registry.get_features_from_registry(project_name, os.path.abspath("./"))

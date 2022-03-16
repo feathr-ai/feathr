@@ -88,8 +88,8 @@ public class FeatureTypeConfigDeserializer extends JsonDeserializer<FeatureTypeC
                     break;
                 default:
                     throw new RuntimeException(
-                            "The specified feature type is not supported: " + typeString + ". Supported types are: "
-                                    + ALL_FEATURE_TYPES + " and " + SUPPORTED_TENSOR_TYPES);
+                        "The specified feature type is not supported: " + typeString + ". Supported types are: "
+                            + ALL_FEATURE_TYPES + " and " + SUPPORTED_TENSOR_TYPES);
             }
             featureType = FeatureTypes.TENSOR;
         } else {
