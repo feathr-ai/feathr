@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-// generate java: protoc -I=/absolute_path/feathr/src/main/java/com/linkedin/feathr/common/types/protoblog/ --java_out=/absolute_path/feathr/src/main/java/com/linkedin/feathr/common/types/ featureValue.prot
+// generate java: protoc -I=/absolute_path/feathr/src/main/protobuf/ --java_out=/absolute_path/feathr/src/main/java/com/linkedin/feathr/common/types/ featureValue.prot
 // generate python: protoc -I=/absolute_path/feathr/src/main/protobuf/ --python_out=/absolute_path/feathr/feathr_project/feathr/protobuf/ featureValue.proto
 
 
@@ -10,25 +10,25 @@ option java_package= "com.linkedin.feathr.common.types.protobuf";
 
 message FeatureValue {
     oneof FeatureValueOneOf {
-        bool booleanValue = 1;
-        string stringValue = 2;
-        float floatValue = 3;
-        double doubleValue = 4;
-        int32 intValue = 5;
-        int64 longValue = 6;
-        BooleanArray booleanArray = 8;
-        StringArray stringArray = 9;
-        FloatArray floatArray = 10;
-        DoubleArray doubleArray = 11;
-        IntegerArray intArray = 12;
-        LongArray longArray = 13;
-        BytesArray byteArray = 14;
-        SparseStringArray sparseStringArray = 15;
-        SparseBoolArray sparseBoolArray = 16;
-        SparseIntegerArray sparseIntegerArray = 17;
-        SparseLongArray sparseLongArray = 18;
-        SparseDoubleArray sparseDoubleArray = 19;
-        SparseFloatArray sparseFloatArray = 20;
+        bool boolean_value = 1;
+        string string_value = 2;
+        float float_value = 3;
+        double double_value = 4;
+        int32 int_value = 5;
+        int64 long_value = 6;
+        BooleanArray boolean_array = 10;
+        StringArray string_array = 11;
+        FloatArray float_array = 12;
+        DoubleArray double_array = 13;
+        IntegerArray int_array = 14;
+        LongArray long_array = 15;
+        BytesArray byte_array = 16;
+        SparseStringArray sparse_string_array = 20;
+        SparseBoolArray sparse_bool_array = 21;
+        SparseIntegerArray sparse_integer_array = 22;
+        SparseLongArray sparse_long_array = 23;
+        SparseDoubleArray sparse_double_array = 24;
+        SparseFloatArray sparse_float_array = 25;
     }
 }
 
@@ -49,7 +49,7 @@ message FloatArray {
 }
 
 message IntegerArray {
-    repeated int32 ints=1;
+    repeated int32 integers=1;
 }
 
 message LongArray {
@@ -57,18 +57,18 @@ message LongArray {
 }
 
 message BytesArray {
-    repeated bytes bytes_array=1;
+    repeated bytes bytes=1;
 }
 
 
 message SparseStringArray {
-    repeated int32 integers=1;
-    repeated string strings=2;
+    repeated int32 index_integers=1;
+    repeated string value_strings=2;
 }
 
 message SparseBoolArray {
-    repeated int32 integers=1;
-    repeated bool booleans=2;
+    repeated int32 index_integers=1;
+    repeated bool value_booleans=2;
 }
 
 message SparseIntegerArray {
@@ -78,15 +78,15 @@ message SparseIntegerArray {
 
 message SparseLongArray {
     repeated int32 index_integers=1;
-    repeated int64 longs=2;
+    repeated int64 value_longs=2;
 }
 
 message SparseDoubleArray {
-    repeated int32 integers=1;
-    repeated double doubles=2;
+    repeated int32 index_integers=1;
+    repeated double value_doubles=2;
 }
 
 message SparseFloatArray {
-    repeated int32 integers=1;
-    repeated float floats=2;
+    repeated int32 index_integers=1;
+    repeated float value_floats=2;
 }

@@ -234,34 +234,43 @@ class FeathrClient(object):
                 feature_value = FeatureValue()
                 decoded = base64.b64decode(raw_feature)
                 feature_value.ParseFromString(decoded)
-                if feature_value.WhichOneof('FeatureValueOneOf') == 'booleanValue':
-                    typed_result.append(feature_value.booleanValue)
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'stringValue':
-                    typed_result.append(feature_value.stringValue)
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'floatValue':
-                    typed_result.append(feature_value.floatValue)
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'doubleValue':
-                    typed_result.append(feature_value.doubleValue)
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'intValue':
-                    typed_result.append(feature_value.intValue)
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'longValue':
-                    typed_result.append(feature_value.longValue)
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'stringArray':
-                    typed_result.append(feature_value.stringArray.strings)
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'floatArray':
-                    typed_result.append(feature_value.floatArray.floats)
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseStringArray':
-                    typed_result.append((feature_value.sparseStringArray.integers, feature_value.sparseStringArray.strings))
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseBoolArray':
-                    typed_result.append((feature_value.sparseBoolArray.integers, feature_value.sparseBoolArray.booleans))
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseFloatArray':
-                    typed_result.append((feature_value.sparseFloatArray.integers, feature_value.sparseFloatArray.floats))
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseDoubleArray':
-                    typed_result.append((feature_value.sparseDoubleArray.integers, feature_value.sparseDoubleArray.doubles))
-                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparseLongArray':
-                    typed_result.append((feature_value.sparseLongArray.index_integers, feature_value.sparseLongArray.longs))
+                if feature_value.WhichOneof('FeatureValueOneOf') == 'boolean_value':
+                    typed_result.append(feature_value.boolean_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'string_value':
+                    typed_result.append(feature_value.string_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'float_value':
+                    typed_result.append(feature_value.float_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'double_value':
+                    typed_result.append(feature_value.double_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'int_value':
+                    typed_result.append(feature_value.int_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'long_value':
+                    typed_result.append(feature_value.long_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'int_array':
+                    typed_result.append(feature_value.int_array.integers)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'string_array':
+                    typed_result.append(feature_value.string_array.strings)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'float_array':
+                    typed_result.append(feature_value.float_array.floats)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'double_array':
+                    typed_result.append(feature_value.double_array.doubles)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'boolean_array':
+                    typed_result.append(feature_value.boolean_array.booleans)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_string_array':
+                    typed_result.append((feature_value.sparse_string_array.index_integers, feature_value.sparse_string_array.value_strings))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_bool_array':
+                    typed_result.append((feature_value.sparse_bool_array.index_integers, feature_value.sparse_bool_array.value_booleans))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_float_array':
+                    typed_result.append((feature_value.sparse_float_array.index_integers, feature_value.sparse_float_array.value_floats))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_double_array':
+                    typed_result.append((feature_value.sparse_double_array.index_integers, feature_value.sparse_double_array.value_doubles))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_long_array':
+                    typed_result.append((feature_value.sparse_long_array.index_integers, feature_value.sparse_long_array.value_longs))
                 else:
-                    # fail to load the type. Maybe a new type that is not supported by this client version
+                    self.logger.debug("Fail to load the feature type. Maybe a new type that is not supported by this "
+                                      "client version")
+                    self.logger.debug(f"The raw feature is {raw_feature}.")
+                    self.logger.debug(f"The loaded feature is {feature_value}")
                     typed_result.append(None)
             else:
                 typed_result.append(raw_feature)

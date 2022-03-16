@@ -15,273 +15,273 @@ public final class FeatureValueOuterClass {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   public interface FeatureValueOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.FeatureValue)
-      com.google.protobuf.MessageOrBuilder {
+                                         // @@protoc_insertion_point(interface_extends:protobuf.FeatureValue)
+                                             com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>bool booleanValue = 1;</code>
+     * <code>bool boolean_value = 1;</code>
      * @return Whether the booleanValue field is set.
      */
     boolean hasBooleanValue();
     /**
-     * <code>bool booleanValue = 1;</code>
+     * <code>bool boolean_value = 1;</code>
      * @return The booleanValue.
      */
     boolean getBooleanValue();
 
     /**
-     * <code>string stringValue = 2;</code>
+     * <code>string string_value = 2;</code>
      * @return Whether the stringValue field is set.
      */
     boolean hasStringValue();
     /**
-     * <code>string stringValue = 2;</code>
+     * <code>string string_value = 2;</code>
      * @return The stringValue.
      */
     java.lang.String getStringValue();
     /**
-     * <code>string stringValue = 2;</code>
+     * <code>string string_value = 2;</code>
      * @return The bytes for stringValue.
      */
     com.google.protobuf.ByteString
-        getStringValueBytes();
+    getStringValueBytes();
 
     /**
-     * <code>float floatValue = 3;</code>
+     * <code>float float_value = 3;</code>
      * @return Whether the floatValue field is set.
      */
     boolean hasFloatValue();
     /**
-     * <code>float floatValue = 3;</code>
+     * <code>float float_value = 3;</code>
      * @return The floatValue.
      */
     float getFloatValue();
 
     /**
-     * <code>double doubleValue = 4;</code>
+     * <code>double double_value = 4;</code>
      * @return Whether the doubleValue field is set.
      */
     boolean hasDoubleValue();
     /**
-     * <code>double doubleValue = 4;</code>
+     * <code>double double_value = 4;</code>
      * @return The doubleValue.
      */
     double getDoubleValue();
 
     /**
-     * <code>int32 intValue = 5;</code>
+     * <code>int32 int_value = 5;</code>
      * @return Whether the intValue field is set.
      */
     boolean hasIntValue();
     /**
-     * <code>int32 intValue = 5;</code>
+     * <code>int32 int_value = 5;</code>
      * @return The intValue.
      */
     int getIntValue();
 
     /**
-     * <code>int64 longValue = 6;</code>
+     * <code>int64 long_value = 6;</code>
      * @return Whether the longValue field is set.
      */
     boolean hasLongValue();
     /**
-     * <code>int64 longValue = 6;</code>
+     * <code>int64 long_value = 6;</code>
      * @return The longValue.
      */
     long getLongValue();
 
     /**
-     * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+     * <code>.protobuf.BooleanArray boolean_array = 10;</code>
      * @return Whether the booleanArray field is set.
      */
     boolean hasBooleanArray();
     /**
-     * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+     * <code>.protobuf.BooleanArray boolean_array = 10;</code>
      * @return The booleanArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray getBooleanArray();
     /**
-     * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+     * <code>.protobuf.BooleanArray boolean_array = 10;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArrayOrBuilder getBooleanArrayOrBuilder();
 
     /**
-     * <code>.protobuf.StringArray stringArray = 9;</code>
+     * <code>.protobuf.StringArray string_array = 11;</code>
      * @return Whether the stringArray field is set.
      */
     boolean hasStringArray();
     /**
-     * <code>.protobuf.StringArray stringArray = 9;</code>
+     * <code>.protobuf.StringArray string_array = 11;</code>
      * @return The stringArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray getStringArray();
     /**
-     * <code>.protobuf.StringArray stringArray = 9;</code>
+     * <code>.protobuf.StringArray string_array = 11;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArrayOrBuilder getStringArrayOrBuilder();
 
     /**
-     * <code>.protobuf.FloatArray floatArray = 10;</code>
+     * <code>.protobuf.FloatArray float_array = 12;</code>
      * @return Whether the floatArray field is set.
      */
     boolean hasFloatArray();
     /**
-     * <code>.protobuf.FloatArray floatArray = 10;</code>
+     * <code>.protobuf.FloatArray float_array = 12;</code>
      * @return The floatArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray getFloatArray();
     /**
-     * <code>.protobuf.FloatArray floatArray = 10;</code>
+     * <code>.protobuf.FloatArray float_array = 12;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArrayOrBuilder getFloatArrayOrBuilder();
 
     /**
-     * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+     * <code>.protobuf.DoubleArray double_array = 13;</code>
      * @return Whether the doubleArray field is set.
      */
     boolean hasDoubleArray();
     /**
-     * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+     * <code>.protobuf.DoubleArray double_array = 13;</code>
      * @return The doubleArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray getDoubleArray();
     /**
-     * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+     * <code>.protobuf.DoubleArray double_array = 13;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArrayOrBuilder getDoubleArrayOrBuilder();
 
     /**
-     * <code>.protobuf.IntegerArray intArray = 12;</code>
+     * <code>.protobuf.IntegerArray int_array = 14;</code>
      * @return Whether the intArray field is set.
      */
     boolean hasIntArray();
     /**
-     * <code>.protobuf.IntegerArray intArray = 12;</code>
+     * <code>.protobuf.IntegerArray int_array = 14;</code>
      * @return The intArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray getIntArray();
     /**
-     * <code>.protobuf.IntegerArray intArray = 12;</code>
+     * <code>.protobuf.IntegerArray int_array = 14;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArrayOrBuilder getIntArrayOrBuilder();
 
     /**
-     * <code>.protobuf.LongArray longArray = 13;</code>
+     * <code>.protobuf.LongArray long_array = 15;</code>
      * @return Whether the longArray field is set.
      */
     boolean hasLongArray();
     /**
-     * <code>.protobuf.LongArray longArray = 13;</code>
+     * <code>.protobuf.LongArray long_array = 15;</code>
      * @return The longArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray getLongArray();
     /**
-     * <code>.protobuf.LongArray longArray = 13;</code>
+     * <code>.protobuf.LongArray long_array = 15;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArrayOrBuilder getLongArrayOrBuilder();
 
     /**
-     * <code>.protobuf.BytesArray byteArray = 14;</code>
+     * <code>.protobuf.BytesArray byte_array = 16;</code>
      * @return Whether the byteArray field is set.
      */
     boolean hasByteArray();
     /**
-     * <code>.protobuf.BytesArray byteArray = 14;</code>
+     * <code>.protobuf.BytesArray byte_array = 16;</code>
      * @return The byteArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray getByteArray();
     /**
-     * <code>.protobuf.BytesArray byteArray = 14;</code>
+     * <code>.protobuf.BytesArray byte_array = 16;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArrayOrBuilder getByteArrayOrBuilder();
 
     /**
-     * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+     * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
      * @return Whether the sparseStringArray field is set.
      */
     boolean hasSparseStringArray();
     /**
-     * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+     * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
      * @return The sparseStringArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray getSparseStringArray();
     /**
-     * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+     * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArrayOrBuilder getSparseStringArrayOrBuilder();
 
     /**
-     * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+     * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
      * @return Whether the sparseBoolArray field is set.
      */
     boolean hasSparseBoolArray();
     /**
-     * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+     * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
      * @return The sparseBoolArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray getSparseBoolArray();
     /**
-     * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+     * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArrayOrBuilder getSparseBoolArrayOrBuilder();
 
     /**
-     * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+     * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
      * @return Whether the sparseIntegerArray field is set.
      */
     boolean hasSparseIntegerArray();
     /**
-     * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+     * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
      * @return The sparseIntegerArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray getSparseIntegerArray();
     /**
-     * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+     * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArrayOrBuilder getSparseIntegerArrayOrBuilder();
 
     /**
-     * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+     * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
      * @return Whether the sparseLongArray field is set.
      */
     boolean hasSparseLongArray();
     /**
-     * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+     * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
      * @return The sparseLongArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray getSparseLongArray();
     /**
-     * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+     * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArrayOrBuilder getSparseLongArrayOrBuilder();
 
     /**
-     * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+     * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
      * @return Whether the sparseDoubleArray field is set.
      */
     boolean hasSparseDoubleArray();
     /**
-     * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+     * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
      * @return The sparseDoubleArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray getSparseDoubleArray();
     /**
-     * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+     * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArrayOrBuilder getSparseDoubleArrayOrBuilder();
 
     /**
-     * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+     * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
      * @return Whether the sparseFloatArray field is set.
      */
     boolean hasSparseFloatArray();
     /**
-     * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+     * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
      * @return The sparseFloatArray.
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray getSparseFloatArray();
     /**
-     * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+     * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
      */
     com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArrayOrBuilder getSparseFloatArrayOrBuilder();
 
@@ -291,10 +291,10 @@ public final class FeatureValueOuterClass {
    * Protobuf type {@code protobuf.FeatureValue}
    */
   public static final class FeatureValue extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.FeatureValue)
-      FeatureValueOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                         com.google.protobuf.GeneratedMessageV3 implements
+                                                                                // @@protoc_insertion_point(message_implements:protobuf.FeatureValue)
+                                                                                    FeatureValueOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use FeatureValue.newBuilder() to construct.
     private FeatureValue(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -363,9 +363,9 @@ public final class FeatureValueOuterClass {
               featureValueOneOfCase_ = 6;
               break;
             }
-            case 66: {
+            case 82: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 8) {
+              if (featureValueOneOfCase_ == 10) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -374,12 +374,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 8;
+              featureValueOneOfCase_ = 10;
               break;
             }
-            case 74: {
+            case 90: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 9) {
+              if (featureValueOneOfCase_ == 11) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -388,12 +388,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 9;
+              featureValueOneOfCase_ = 11;
               break;
             }
-            case 82: {
+            case 98: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 10) {
+              if (featureValueOneOfCase_ == 12) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -402,12 +402,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 10;
+              featureValueOneOfCase_ = 12;
               break;
             }
-            case 90: {
+            case 106: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 11) {
+              if (featureValueOneOfCase_ == 13) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -416,12 +416,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 11;
+              featureValueOneOfCase_ = 13;
               break;
             }
-            case 98: {
+            case 114: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 12) {
+              if (featureValueOneOfCase_ == 14) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -430,12 +430,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 12;
+              featureValueOneOfCase_ = 14;
               break;
             }
-            case 106: {
+            case 122: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 13) {
+              if (featureValueOneOfCase_ == 15) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -444,12 +444,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 13;
+              featureValueOneOfCase_ = 15;
               break;
             }
-            case 114: {
+            case 130: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 14) {
+              if (featureValueOneOfCase_ == 16) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -458,12 +458,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 14;
+              featureValueOneOfCase_ = 16;
               break;
             }
-            case 122: {
+            case 162: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 15) {
+              if (featureValueOneOfCase_ == 20) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -472,12 +472,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 15;
+              featureValueOneOfCase_ = 20;
               break;
             }
-            case 130: {
+            case 170: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 16) {
+              if (featureValueOneOfCase_ == 21) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -486,12 +486,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 16;
+              featureValueOneOfCase_ = 21;
               break;
             }
-            case 138: {
+            case 178: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 17) {
+              if (featureValueOneOfCase_ == 22) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -500,12 +500,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 17;
+              featureValueOneOfCase_ = 22;
               break;
             }
-            case 146: {
+            case 186: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 18) {
+              if (featureValueOneOfCase_ == 23) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -514,12 +514,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 18;
+              featureValueOneOfCase_ = 23;
               break;
             }
-            case 154: {
+            case 194: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 19) {
+              if (featureValueOneOfCase_ == 24) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -528,12 +528,12 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 19;
+              featureValueOneOfCase_ = 24;
               break;
             }
-            case 162: {
+            case 202: {
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.Builder subBuilder = null;
-              if (featureValueOneOfCase_ == 20) {
+              if (featureValueOneOfCase_ == 25) {
                 subBuilder = ((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_).toBuilder();
               }
               featureValueOneOf_ =
@@ -542,7 +542,7 @@ public final class FeatureValueOuterClass {
                 subBuilder.mergeFrom((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_);
                 featureValueOneOf_ = subBuilder.buildPartial();
               }
-              featureValueOneOfCase_ = 20;
+              featureValueOneOfCase_ = 25;
               break;
             }
             default: {
@@ -565,13 +565,13 @@ public final class FeatureValueOuterClass {
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FeatureValue_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FeatureValue_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FeatureValue.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FeatureValue.Builder.class);
@@ -581,26 +581,26 @@ public final class FeatureValueOuterClass {
     private java.lang.Object featureValueOneOf_;
     public enum FeatureValueOneOfCase
         implements com.google.protobuf.Internal.EnumLite,
-            com.google.protobuf.AbstractMessage.InternalOneOfEnum {
-      BOOLEANVALUE(1),
-      STRINGVALUE(2),
-      FLOATVALUE(3),
-      DOUBLEVALUE(4),
-      INTVALUE(5),
-      LONGVALUE(6),
-      BOOLEANARRAY(8),
-      STRINGARRAY(9),
-      FLOATARRAY(10),
-      DOUBLEARRAY(11),
-      INTARRAY(12),
-      LONGARRAY(13),
-      BYTEARRAY(14),
-      SPARSESTRINGARRAY(15),
-      SPARSEBOOLARRAY(16),
-      SPARSEINTEGERARRAY(17),
-      SPARSELONGARRAY(18),
-      SPARSEDOUBLEARRAY(19),
-      SPARSEFLOATARRAY(20),
+                   com.google.protobuf.AbstractMessage.InternalOneOfEnum {
+      BOOLEAN_VALUE(1),
+      STRING_VALUE(2),
+      FLOAT_VALUE(3),
+      DOUBLE_VALUE(4),
+      INT_VALUE(5),
+      LONG_VALUE(6),
+      BOOLEAN_ARRAY(10),
+      STRING_ARRAY(11),
+      FLOAT_ARRAY(12),
+      DOUBLE_ARRAY(13),
+      INT_ARRAY(14),
+      LONG_ARRAY(15),
+      BYTE_ARRAY(16),
+      SPARSE_STRING_ARRAY(20),
+      SPARSE_BOOL_ARRAY(21),
+      SPARSE_INTEGER_ARRAY(22),
+      SPARSE_LONG_ARRAY(23),
+      SPARSE_DOUBLE_ARRAY(24),
+      SPARSE_FLOAT_ARRAY(25),
       FEATUREVALUEONEOF_NOT_SET(0);
       private final int value;
       private FeatureValueOneOfCase(int value) {
@@ -618,25 +618,25 @@ public final class FeatureValueOuterClass {
 
       public static FeatureValueOneOfCase forNumber(int value) {
         switch (value) {
-          case 1: return BOOLEANVALUE;
-          case 2: return STRINGVALUE;
-          case 3: return FLOATVALUE;
-          case 4: return DOUBLEVALUE;
-          case 5: return INTVALUE;
-          case 6: return LONGVALUE;
-          case 8: return BOOLEANARRAY;
-          case 9: return STRINGARRAY;
-          case 10: return FLOATARRAY;
-          case 11: return DOUBLEARRAY;
-          case 12: return INTARRAY;
-          case 13: return LONGARRAY;
-          case 14: return BYTEARRAY;
-          case 15: return SPARSESTRINGARRAY;
-          case 16: return SPARSEBOOLARRAY;
-          case 17: return SPARSEINTEGERARRAY;
-          case 18: return SPARSELONGARRAY;
-          case 19: return SPARSEDOUBLEARRAY;
-          case 20: return SPARSEFLOATARRAY;
+          case 1: return BOOLEAN_VALUE;
+          case 2: return STRING_VALUE;
+          case 3: return FLOAT_VALUE;
+          case 4: return DOUBLE_VALUE;
+          case 5: return INT_VALUE;
+          case 6: return LONG_VALUE;
+          case 10: return BOOLEAN_ARRAY;
+          case 11: return STRING_ARRAY;
+          case 12: return FLOAT_ARRAY;
+          case 13: return DOUBLE_ARRAY;
+          case 14: return INT_ARRAY;
+          case 15: return LONG_ARRAY;
+          case 16: return BYTE_ARRAY;
+          case 20: return SPARSE_STRING_ARRAY;
+          case 21: return SPARSE_BOOL_ARRAY;
+          case 22: return SPARSE_INTEGER_ARRAY;
+          case 23: return SPARSE_LONG_ARRAY;
+          case 24: return SPARSE_DOUBLE_ARRAY;
+          case 25: return SPARSE_FLOAT_ARRAY;
           case 0: return FEATUREVALUEONEOF_NOT_SET;
           default: return null;
         }
@@ -652,9 +652,9 @@ public final class FeatureValueOuterClass {
           featureValueOneOfCase_);
     }
 
-    public static final int BOOLEANVALUE_FIELD_NUMBER = 1;
+    public static final int BOOLEAN_VALUE_FIELD_NUMBER = 1;
     /**
-     * <code>bool booleanValue = 1;</code>
+     * <code>bool boolean_value = 1;</code>
      * @return Whether the booleanValue field is set.
      */
     @java.lang.Override
@@ -662,7 +662,7 @@ public final class FeatureValueOuterClass {
       return featureValueOneOfCase_ == 1;
     }
     /**
-     * <code>bool booleanValue = 1;</code>
+     * <code>bool boolean_value = 1;</code>
      * @return The booleanValue.
      */
     @java.lang.Override
@@ -673,16 +673,16 @@ public final class FeatureValueOuterClass {
       return false;
     }
 
-    public static final int STRINGVALUE_FIELD_NUMBER = 2;
+    public static final int STRING_VALUE_FIELD_NUMBER = 2;
     /**
-     * <code>string stringValue = 2;</code>
+     * <code>string string_value = 2;</code>
      * @return Whether the stringValue field is set.
      */
     public boolean hasStringValue() {
       return featureValueOneOfCase_ == 2;
     }
     /**
-     * <code>string stringValue = 2;</code>
+     * <code>string string_value = 2;</code>
      * @return The stringValue.
      */
     public java.lang.String getStringValue() {
@@ -693,7 +693,7 @@ public final class FeatureValueOuterClass {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (featureValueOneOfCase_ == 2) {
@@ -703,17 +703,17 @@ public final class FeatureValueOuterClass {
       }
     }
     /**
-     * <code>string stringValue = 2;</code>
+     * <code>string string_value = 2;</code>
      * @return The bytes for stringValue.
      */
     public com.google.protobuf.ByteString
-        getStringValueBytes() {
+    getStringValueBytes() {
       java.lang.Object ref = "";
       if (featureValueOneOfCase_ == 2) {
         ref = featureValueOneOf_;
       }
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         if (featureValueOneOfCase_ == 2) {
@@ -725,9 +725,9 @@ public final class FeatureValueOuterClass {
       }
     }
 
-    public static final int FLOATVALUE_FIELD_NUMBER = 3;
+    public static final int FLOAT_VALUE_FIELD_NUMBER = 3;
     /**
-     * <code>float floatValue = 3;</code>
+     * <code>float float_value = 3;</code>
      * @return Whether the floatValue field is set.
      */
     @java.lang.Override
@@ -735,7 +735,7 @@ public final class FeatureValueOuterClass {
       return featureValueOneOfCase_ == 3;
     }
     /**
-     * <code>float floatValue = 3;</code>
+     * <code>float float_value = 3;</code>
      * @return The floatValue.
      */
     @java.lang.Override
@@ -746,9 +746,9 @@ public final class FeatureValueOuterClass {
       return 0F;
     }
 
-    public static final int DOUBLEVALUE_FIELD_NUMBER = 4;
+    public static final int DOUBLE_VALUE_FIELD_NUMBER = 4;
     /**
-     * <code>double doubleValue = 4;</code>
+     * <code>double double_value = 4;</code>
      * @return Whether the doubleValue field is set.
      */
     @java.lang.Override
@@ -756,7 +756,7 @@ public final class FeatureValueOuterClass {
       return featureValueOneOfCase_ == 4;
     }
     /**
-     * <code>double doubleValue = 4;</code>
+     * <code>double double_value = 4;</code>
      * @return The doubleValue.
      */
     @java.lang.Override
@@ -767,9 +767,9 @@ public final class FeatureValueOuterClass {
       return 0D;
     }
 
-    public static final int INTVALUE_FIELD_NUMBER = 5;
+    public static final int INT_VALUE_FIELD_NUMBER = 5;
     /**
-     * <code>int32 intValue = 5;</code>
+     * <code>int32 int_value = 5;</code>
      * @return Whether the intValue field is set.
      */
     @java.lang.Override
@@ -777,7 +777,7 @@ public final class FeatureValueOuterClass {
       return featureValueOneOfCase_ == 5;
     }
     /**
-     * <code>int32 intValue = 5;</code>
+     * <code>int32 int_value = 5;</code>
      * @return The intValue.
      */
     @java.lang.Override
@@ -788,9 +788,9 @@ public final class FeatureValueOuterClass {
       return 0;
     }
 
-    public static final int LONGVALUE_FIELD_NUMBER = 6;
+    public static final int LONG_VALUE_FIELD_NUMBER = 6;
     /**
-     * <code>int64 longValue = 6;</code>
+     * <code>int64 long_value = 6;</code>
      * @return Whether the longValue field is set.
      */
     @java.lang.Override
@@ -798,7 +798,7 @@ public final class FeatureValueOuterClass {
       return featureValueOneOfCase_ == 6;
     }
     /**
-     * <code>int64 longValue = 6;</code>
+     * <code>int64 long_value = 6;</code>
      * @return The longValue.
      */
     @java.lang.Override
@@ -809,405 +809,405 @@ public final class FeatureValueOuterClass {
       return 0L;
     }
 
-    public static final int BOOLEANARRAY_FIELD_NUMBER = 8;
+    public static final int BOOLEAN_ARRAY_FIELD_NUMBER = 10;
     /**
-     * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+     * <code>.protobuf.BooleanArray boolean_array = 10;</code>
      * @return Whether the booleanArray field is set.
      */
     @java.lang.Override
     public boolean hasBooleanArray() {
-      return featureValueOneOfCase_ == 8;
+      return featureValueOneOfCase_ == 10;
     }
     /**
-     * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+     * <code>.protobuf.BooleanArray boolean_array = 10;</code>
      * @return The booleanArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray getBooleanArray() {
-      if (featureValueOneOfCase_ == 8) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 10) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+     * <code>.protobuf.BooleanArray boolean_array = 10;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArrayOrBuilder getBooleanArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 8) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 10) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.getDefaultInstance();
     }
 
-    public static final int STRINGARRAY_FIELD_NUMBER = 9;
+    public static final int STRING_ARRAY_FIELD_NUMBER = 11;
     /**
-     * <code>.protobuf.StringArray stringArray = 9;</code>
+     * <code>.protobuf.StringArray string_array = 11;</code>
      * @return Whether the stringArray field is set.
      */
     @java.lang.Override
     public boolean hasStringArray() {
-      return featureValueOneOfCase_ == 9;
+      return featureValueOneOfCase_ == 11;
     }
     /**
-     * <code>.protobuf.StringArray stringArray = 9;</code>
+     * <code>.protobuf.StringArray string_array = 11;</code>
      * @return The stringArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray getStringArray() {
-      if (featureValueOneOfCase_ == 9) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 11) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.StringArray stringArray = 9;</code>
+     * <code>.protobuf.StringArray string_array = 11;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArrayOrBuilder getStringArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 9) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 11) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.getDefaultInstance();
     }
 
-    public static final int FLOATARRAY_FIELD_NUMBER = 10;
+    public static final int FLOAT_ARRAY_FIELD_NUMBER = 12;
     /**
-     * <code>.protobuf.FloatArray floatArray = 10;</code>
+     * <code>.protobuf.FloatArray float_array = 12;</code>
      * @return Whether the floatArray field is set.
      */
     @java.lang.Override
     public boolean hasFloatArray() {
-      return featureValueOneOfCase_ == 10;
+      return featureValueOneOfCase_ == 12;
     }
     /**
-     * <code>.protobuf.FloatArray floatArray = 10;</code>
+     * <code>.protobuf.FloatArray float_array = 12;</code>
      * @return The floatArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray getFloatArray() {
-      if (featureValueOneOfCase_ == 10) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 12) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.FloatArray floatArray = 10;</code>
+     * <code>.protobuf.FloatArray float_array = 12;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArrayOrBuilder getFloatArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 10) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 12) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.getDefaultInstance();
     }
 
-    public static final int DOUBLEARRAY_FIELD_NUMBER = 11;
+    public static final int DOUBLE_ARRAY_FIELD_NUMBER = 13;
     /**
-     * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+     * <code>.protobuf.DoubleArray double_array = 13;</code>
      * @return Whether the doubleArray field is set.
      */
     @java.lang.Override
     public boolean hasDoubleArray() {
-      return featureValueOneOfCase_ == 11;
+      return featureValueOneOfCase_ == 13;
     }
     /**
-     * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+     * <code>.protobuf.DoubleArray double_array = 13;</code>
      * @return The doubleArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray getDoubleArray() {
-      if (featureValueOneOfCase_ == 11) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 13) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+     * <code>.protobuf.DoubleArray double_array = 13;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArrayOrBuilder getDoubleArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 11) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 13) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.getDefaultInstance();
     }
 
-    public static final int INTARRAY_FIELD_NUMBER = 12;
+    public static final int INT_ARRAY_FIELD_NUMBER = 14;
     /**
-     * <code>.protobuf.IntegerArray intArray = 12;</code>
+     * <code>.protobuf.IntegerArray int_array = 14;</code>
      * @return Whether the intArray field is set.
      */
     @java.lang.Override
     public boolean hasIntArray() {
-      return featureValueOneOfCase_ == 12;
+      return featureValueOneOfCase_ == 14;
     }
     /**
-     * <code>.protobuf.IntegerArray intArray = 12;</code>
+     * <code>.protobuf.IntegerArray int_array = 14;</code>
      * @return The intArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray getIntArray() {
-      if (featureValueOneOfCase_ == 12) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 14) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.IntegerArray intArray = 12;</code>
+     * <code>.protobuf.IntegerArray int_array = 14;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArrayOrBuilder getIntArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 12) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 14) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.getDefaultInstance();
     }
 
-    public static final int LONGARRAY_FIELD_NUMBER = 13;
+    public static final int LONG_ARRAY_FIELD_NUMBER = 15;
     /**
-     * <code>.protobuf.LongArray longArray = 13;</code>
+     * <code>.protobuf.LongArray long_array = 15;</code>
      * @return Whether the longArray field is set.
      */
     @java.lang.Override
     public boolean hasLongArray() {
-      return featureValueOneOfCase_ == 13;
+      return featureValueOneOfCase_ == 15;
     }
     /**
-     * <code>.protobuf.LongArray longArray = 13;</code>
+     * <code>.protobuf.LongArray long_array = 15;</code>
      * @return The longArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray getLongArray() {
-      if (featureValueOneOfCase_ == 13) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 15) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.LongArray longArray = 13;</code>
+     * <code>.protobuf.LongArray long_array = 15;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArrayOrBuilder getLongArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 13) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 15) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.getDefaultInstance();
     }
 
-    public static final int BYTEARRAY_FIELD_NUMBER = 14;
+    public static final int BYTE_ARRAY_FIELD_NUMBER = 16;
     /**
-     * <code>.protobuf.BytesArray byteArray = 14;</code>
+     * <code>.protobuf.BytesArray byte_array = 16;</code>
      * @return Whether the byteArray field is set.
      */
     @java.lang.Override
     public boolean hasByteArray() {
-      return featureValueOneOfCase_ == 14;
+      return featureValueOneOfCase_ == 16;
     }
     /**
-     * <code>.protobuf.BytesArray byteArray = 14;</code>
+     * <code>.protobuf.BytesArray byte_array = 16;</code>
      * @return The byteArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray getByteArray() {
-      if (featureValueOneOfCase_ == 14) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 16) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.BytesArray byteArray = 14;</code>
+     * <code>.protobuf.BytesArray byte_array = 16;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArrayOrBuilder getByteArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 14) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 16) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.getDefaultInstance();
     }
 
-    public static final int SPARSESTRINGARRAY_FIELD_NUMBER = 15;
+    public static final int SPARSE_STRING_ARRAY_FIELD_NUMBER = 20;
     /**
-     * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+     * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
      * @return Whether the sparseStringArray field is set.
      */
     @java.lang.Override
     public boolean hasSparseStringArray() {
-      return featureValueOneOfCase_ == 15;
+      return featureValueOneOfCase_ == 20;
     }
     /**
-     * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+     * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
      * @return The sparseStringArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray getSparseStringArray() {
-      if (featureValueOneOfCase_ == 15) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 20) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+     * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArrayOrBuilder getSparseStringArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 15) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 20) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.getDefaultInstance();
     }
 
-    public static final int SPARSEBOOLARRAY_FIELD_NUMBER = 16;
+    public static final int SPARSE_BOOL_ARRAY_FIELD_NUMBER = 21;
     /**
-     * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+     * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
      * @return Whether the sparseBoolArray field is set.
      */
     @java.lang.Override
     public boolean hasSparseBoolArray() {
-      return featureValueOneOfCase_ == 16;
+      return featureValueOneOfCase_ == 21;
     }
     /**
-     * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+     * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
      * @return The sparseBoolArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray getSparseBoolArray() {
-      if (featureValueOneOfCase_ == 16) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 21) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+     * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArrayOrBuilder getSparseBoolArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 16) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 21) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.getDefaultInstance();
     }
 
-    public static final int SPARSEINTEGERARRAY_FIELD_NUMBER = 17;
+    public static final int SPARSE_INTEGER_ARRAY_FIELD_NUMBER = 22;
     /**
-     * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+     * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
      * @return Whether the sparseIntegerArray field is set.
      */
     @java.lang.Override
     public boolean hasSparseIntegerArray() {
-      return featureValueOneOfCase_ == 17;
+      return featureValueOneOfCase_ == 22;
     }
     /**
-     * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+     * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
      * @return The sparseIntegerArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray getSparseIntegerArray() {
-      if (featureValueOneOfCase_ == 17) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 22) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+     * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArrayOrBuilder getSparseIntegerArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 17) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 22) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.getDefaultInstance();
     }
 
-    public static final int SPARSELONGARRAY_FIELD_NUMBER = 18;
+    public static final int SPARSE_LONG_ARRAY_FIELD_NUMBER = 23;
     /**
-     * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+     * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
      * @return Whether the sparseLongArray field is set.
      */
     @java.lang.Override
     public boolean hasSparseLongArray() {
-      return featureValueOneOfCase_ == 18;
+      return featureValueOneOfCase_ == 23;
     }
     /**
-     * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+     * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
      * @return The sparseLongArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray getSparseLongArray() {
-      if (featureValueOneOfCase_ == 18) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 23) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+     * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArrayOrBuilder getSparseLongArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 18) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 23) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.getDefaultInstance();
     }
 
-    public static final int SPARSEDOUBLEARRAY_FIELD_NUMBER = 19;
+    public static final int SPARSE_DOUBLE_ARRAY_FIELD_NUMBER = 24;
     /**
-     * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+     * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
      * @return Whether the sparseDoubleArray field is set.
      */
     @java.lang.Override
     public boolean hasSparseDoubleArray() {
-      return featureValueOneOfCase_ == 19;
+      return featureValueOneOfCase_ == 24;
     }
     /**
-     * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+     * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
      * @return The sparseDoubleArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray getSparseDoubleArray() {
-      if (featureValueOneOfCase_ == 19) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 24) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+     * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArrayOrBuilder getSparseDoubleArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 19) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 24) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.getDefaultInstance();
     }
 
-    public static final int SPARSEFLOATARRAY_FIELD_NUMBER = 20;
+    public static final int SPARSE_FLOAT_ARRAY_FIELD_NUMBER = 25;
     /**
-     * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+     * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
      * @return Whether the sparseFloatArray field is set.
      */
     @java.lang.Override
     public boolean hasSparseFloatArray() {
-      return featureValueOneOfCase_ == 20;
+      return featureValueOneOfCase_ == 25;
     }
     /**
-     * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+     * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
      * @return The sparseFloatArray.
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray getSparseFloatArray() {
-      if (featureValueOneOfCase_ == 20) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 25) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.getDefaultInstance();
     }
     /**
-     * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+     * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
      */
     @java.lang.Override
     public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArrayOrBuilder getSparseFloatArrayOrBuilder() {
-      if (featureValueOneOfCase_ == 20) {
-         return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_;
+      if (featureValueOneOfCase_ == 25) {
+        return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_;
       }
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.getDefaultInstance();
     }
@@ -1225,7 +1225,7 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       if (featureValueOneOfCase_ == 1) {
         output.writeBool(
             1, (boolean)((java.lang.Boolean) featureValueOneOf_));
@@ -1249,44 +1249,44 @@ public final class FeatureValueOuterClass {
         output.writeInt64(
             6, (long)((java.lang.Long) featureValueOneOf_));
       }
-      if (featureValueOneOfCase_ == 8) {
-        output.writeMessage(8, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_);
-      }
-      if (featureValueOneOfCase_ == 9) {
-        output.writeMessage(9, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_);
-      }
       if (featureValueOneOfCase_ == 10) {
-        output.writeMessage(10, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_);
+        output.writeMessage(10, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 11) {
-        output.writeMessage(11, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_);
+        output.writeMessage(11, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 12) {
-        output.writeMessage(12, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_);
+        output.writeMessage(12, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 13) {
-        output.writeMessage(13, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_);
+        output.writeMessage(13, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 14) {
-        output.writeMessage(14, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_);
+        output.writeMessage(14, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 15) {
-        output.writeMessage(15, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_);
+        output.writeMessage(15, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 16) {
-        output.writeMessage(16, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_);
-      }
-      if (featureValueOneOfCase_ == 17) {
-        output.writeMessage(17, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_);
-      }
-      if (featureValueOneOfCase_ == 18) {
-        output.writeMessage(18, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_);
-      }
-      if (featureValueOneOfCase_ == 19) {
-        output.writeMessage(19, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_);
+        output.writeMessage(16, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 20) {
-        output.writeMessage(20, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_);
+        output.writeMessage(20, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 21) {
+        output.writeMessage(21, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 22) {
+        output.writeMessage(22, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 23) {
+        output.writeMessage(23, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 24) {
+        output.writeMessage(24, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 25) {
+        output.writeMessage(25, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_);
       }
       unknownFields.writeTo(output);
     }
@@ -1299,83 +1299,83 @@ public final class FeatureValueOuterClass {
       size = 0;
       if (featureValueOneOfCase_ == 1) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(
-              1, (boolean)((java.lang.Boolean) featureValueOneOf_));
+            .computeBoolSize(
+                1, (boolean)((java.lang.Boolean) featureValueOneOf_));
       }
       if (featureValueOneOfCase_ == 2) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 3) {
         size += com.google.protobuf.CodedOutputStream
-          .computeFloatSize(
-              3, (float)((java.lang.Float) featureValueOneOf_));
+            .computeFloatSize(
+                3, (float)((java.lang.Float) featureValueOneOf_));
       }
       if (featureValueOneOfCase_ == 4) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(
-              4, (double)((java.lang.Double) featureValueOneOf_));
+            .computeDoubleSize(
+                4, (double)((java.lang.Double) featureValueOneOf_));
       }
       if (featureValueOneOfCase_ == 5) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(
-              5, (int)((java.lang.Integer) featureValueOneOf_));
+            .computeInt32Size(
+                5, (int)((java.lang.Integer) featureValueOneOf_));
       }
       if (featureValueOneOfCase_ == 6) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(
-              6, (long)((java.lang.Long) featureValueOneOf_));
-      }
-      if (featureValueOneOfCase_ == 8) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(8, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_);
-      }
-      if (featureValueOneOfCase_ == 9) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(9, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_);
+            .computeInt64Size(
+                6, (long)((java.lang.Long) featureValueOneOf_));
       }
       if (featureValueOneOfCase_ == 10) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(10, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_);
+            .computeMessageSize(10, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 11) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(11, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_);
+            .computeMessageSize(11, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 12) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(12, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_);
+            .computeMessageSize(12, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 13) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(13, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_);
+            .computeMessageSize(13, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 14) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(14, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_);
+            .computeMessageSize(14, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 15) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(15, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_);
+            .computeMessageSize(15, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 16) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(16, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_);
-      }
-      if (featureValueOneOfCase_ == 17) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(17, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_);
-      }
-      if (featureValueOneOfCase_ == 18) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(18, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_);
-      }
-      if (featureValueOneOfCase_ == 19) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(19, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_);
+            .computeMessageSize(16, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_);
       }
       if (featureValueOneOfCase_ == 20) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(20, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_);
+            .computeMessageSize(20, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 21) {
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(21, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 22) {
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(22, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 23) {
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(23, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 24) {
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(24, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_);
+      }
+      if (featureValueOneOfCase_ == 25) {
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(25, (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -1385,7 +1385,7 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FeatureValue)) {
         return super.equals(obj);
@@ -1405,12 +1405,12 @@ public final class FeatureValueOuterClass {
         case 3:
           if (java.lang.Float.floatToIntBits(getFloatValue())
               != java.lang.Float.floatToIntBits(
-                  other.getFloatValue())) return false;
+              other.getFloatValue())) return false;
           break;
         case 4:
           if (java.lang.Double.doubleToLongBits(getDoubleValue())
               != java.lang.Double.doubleToLongBits(
-                  other.getDoubleValue())) return false;
+              other.getDoubleValue())) return false;
           break;
         case 5:
           if (getIntValue()
@@ -1420,55 +1420,55 @@ public final class FeatureValueOuterClass {
           if (getLongValue()
               != other.getLongValue()) return false;
           break;
-        case 8:
+        case 10:
           if (!getBooleanArray()
               .equals(other.getBooleanArray())) return false;
           break;
-        case 9:
+        case 11:
           if (!getStringArray()
               .equals(other.getStringArray())) return false;
           break;
-        case 10:
+        case 12:
           if (!getFloatArray()
               .equals(other.getFloatArray())) return false;
           break;
-        case 11:
+        case 13:
           if (!getDoubleArray()
               .equals(other.getDoubleArray())) return false;
           break;
-        case 12:
+        case 14:
           if (!getIntArray()
               .equals(other.getIntArray())) return false;
           break;
-        case 13:
+        case 15:
           if (!getLongArray()
               .equals(other.getLongArray())) return false;
           break;
-        case 14:
+        case 16:
           if (!getByteArray()
               .equals(other.getByteArray())) return false;
           break;
-        case 15:
+        case 20:
           if (!getSparseStringArray()
               .equals(other.getSparseStringArray())) return false;
           break;
-        case 16:
+        case 21:
           if (!getSparseBoolArray()
               .equals(other.getSparseBoolArray())) return false;
           break;
-        case 17:
+        case 22:
           if (!getSparseIntegerArray()
               .equals(other.getSparseIntegerArray())) return false;
           break;
-        case 18:
+        case 23:
           if (!getSparseLongArray()
               .equals(other.getSparseLongArray())) return false;
           break;
-        case 19:
+        case 24:
           if (!getSparseDoubleArray()
               .equals(other.getSparseDoubleArray())) return false;
           break;
-        case 20:
+        case 25:
           if (!getSparseFloatArray()
               .equals(other.getSparseFloatArray())) return false;
           break;
@@ -1488,83 +1488,83 @@ public final class FeatureValueOuterClass {
       hash = (19 * hash) + getDescriptor().hashCode();
       switch (featureValueOneOfCase_) {
         case 1:
-          hash = (37 * hash) + BOOLEANVALUE_FIELD_NUMBER;
+          hash = (37 * hash) + BOOLEAN_VALUE_FIELD_NUMBER;
           hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
               getBooleanValue());
           break;
         case 2:
-          hash = (37 * hash) + STRINGVALUE_FIELD_NUMBER;
+          hash = (37 * hash) + STRING_VALUE_FIELD_NUMBER;
           hash = (53 * hash) + getStringValue().hashCode();
           break;
         case 3:
-          hash = (37 * hash) + FLOATVALUE_FIELD_NUMBER;
+          hash = (37 * hash) + FLOAT_VALUE_FIELD_NUMBER;
           hash = (53 * hash) + java.lang.Float.floatToIntBits(
               getFloatValue());
           break;
         case 4:
-          hash = (37 * hash) + DOUBLEVALUE_FIELD_NUMBER;
+          hash = (37 * hash) + DOUBLE_VALUE_FIELD_NUMBER;
           hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
               java.lang.Double.doubleToLongBits(getDoubleValue()));
           break;
         case 5:
-          hash = (37 * hash) + INTVALUE_FIELD_NUMBER;
+          hash = (37 * hash) + INT_VALUE_FIELD_NUMBER;
           hash = (53 * hash) + getIntValue();
           break;
         case 6:
-          hash = (37 * hash) + LONGVALUE_FIELD_NUMBER;
+          hash = (37 * hash) + LONG_VALUE_FIELD_NUMBER;
           hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
               getLongValue());
           break;
-        case 8:
-          hash = (37 * hash) + BOOLEANARRAY_FIELD_NUMBER;
+        case 10:
+          hash = (37 * hash) + BOOLEAN_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getBooleanArray().hashCode();
           break;
-        case 9:
-          hash = (37 * hash) + STRINGARRAY_FIELD_NUMBER;
+        case 11:
+          hash = (37 * hash) + STRING_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getStringArray().hashCode();
           break;
-        case 10:
-          hash = (37 * hash) + FLOATARRAY_FIELD_NUMBER;
+        case 12:
+          hash = (37 * hash) + FLOAT_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getFloatArray().hashCode();
           break;
-        case 11:
-          hash = (37 * hash) + DOUBLEARRAY_FIELD_NUMBER;
+        case 13:
+          hash = (37 * hash) + DOUBLE_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getDoubleArray().hashCode();
           break;
-        case 12:
-          hash = (37 * hash) + INTARRAY_FIELD_NUMBER;
+        case 14:
+          hash = (37 * hash) + INT_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getIntArray().hashCode();
           break;
-        case 13:
-          hash = (37 * hash) + LONGARRAY_FIELD_NUMBER;
+        case 15:
+          hash = (37 * hash) + LONG_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getLongArray().hashCode();
           break;
-        case 14:
-          hash = (37 * hash) + BYTEARRAY_FIELD_NUMBER;
+        case 16:
+          hash = (37 * hash) + BYTE_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getByteArray().hashCode();
           break;
-        case 15:
-          hash = (37 * hash) + SPARSESTRINGARRAY_FIELD_NUMBER;
+        case 20:
+          hash = (37 * hash) + SPARSE_STRING_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getSparseStringArray().hashCode();
           break;
-        case 16:
-          hash = (37 * hash) + SPARSEBOOLARRAY_FIELD_NUMBER;
+        case 21:
+          hash = (37 * hash) + SPARSE_BOOL_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getSparseBoolArray().hashCode();
           break;
-        case 17:
-          hash = (37 * hash) + SPARSEINTEGERARRAY_FIELD_NUMBER;
+        case 22:
+          hash = (37 * hash) + SPARSE_INTEGER_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getSparseIntegerArray().hashCode();
           break;
-        case 18:
-          hash = (37 * hash) + SPARSELONGARRAY_FIELD_NUMBER;
+        case 23:
+          hash = (37 * hash) + SPARSE_LONG_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getSparseLongArray().hashCode();
           break;
-        case 19:
-          hash = (37 * hash) + SPARSEDOUBLEARRAY_FIELD_NUMBER;
+        case 24:
+          hash = (37 * hash) + SPARSE_DOUBLE_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getSparseDoubleArray().hashCode();
           break;
-        case 20:
-          hash = (37 * hash) + SPARSEFLOATARRAY_FIELD_NUMBER;
+        case 25:
+          hash = (37 * hash) + SPARSE_FLOAT_ARRAY_FIELD_NUMBER;
           hash = (53 * hash) + getSparseFloatArray().hashCode();
           break;
         case 0:
@@ -1669,17 +1669,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.FeatureValue}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.FeatureValue)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FeatureValueOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.FeatureValue)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FeatureValueOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FeatureValue_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FeatureValue_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FeatureValue.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FeatureValue.Builder.class);
@@ -1697,7 +1697,7 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
@@ -1710,7 +1710,7 @@ public final class FeatureValueOuterClass {
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FeatureValue_descriptor;
       }
 
@@ -1749,91 +1749,91 @@ public final class FeatureValueOuterClass {
         if (featureValueOneOfCase_ == 6) {
           result.featureValueOneOf_ = featureValueOneOf_;
         }
-        if (featureValueOneOfCase_ == 8) {
+        if (featureValueOneOfCase_ == 10) {
           if (booleanArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = booleanArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 9) {
+        if (featureValueOneOfCase_ == 11) {
           if (stringArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = stringArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 10) {
+        if (featureValueOneOfCase_ == 12) {
           if (floatArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = floatArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 11) {
+        if (featureValueOneOfCase_ == 13) {
           if (doubleArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = doubleArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 12) {
+        if (featureValueOneOfCase_ == 14) {
           if (intArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = intArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 13) {
+        if (featureValueOneOfCase_ == 15) {
           if (longArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = longArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 14) {
+        if (featureValueOneOfCase_ == 16) {
           if (byteArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = byteArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 15) {
+        if (featureValueOneOfCase_ == 20) {
           if (sparseStringArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = sparseStringArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 16) {
+        if (featureValueOneOfCase_ == 21) {
           if (sparseBoolArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = sparseBoolArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 17) {
+        if (featureValueOneOfCase_ == 22) {
           if (sparseIntegerArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = sparseIntegerArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 18) {
+        if (featureValueOneOfCase_ == 23) {
           if (sparseLongArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = sparseLongArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 19) {
+        if (featureValueOneOfCase_ == 24) {
           if (sparseDoubleArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
             result.featureValueOneOf_ = sparseDoubleArrayBuilder_.build();
           }
         }
-        if (featureValueOneOfCase_ == 20) {
+        if (featureValueOneOfCase_ == 25) {
           if (sparseFloatArrayBuilder_ == null) {
             result.featureValueOneOf_ = featureValueOneOf_;
           } else {
@@ -1890,81 +1890,81 @@ public final class FeatureValueOuterClass {
       public Builder mergeFrom(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FeatureValue other) {
         if (other == com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FeatureValue.getDefaultInstance()) return this;
         switch (other.getFeatureValueOneOfCase()) {
-          case BOOLEANVALUE: {
+          case BOOLEAN_VALUE: {
             setBooleanValue(other.getBooleanValue());
             break;
           }
-          case STRINGVALUE: {
+          case STRING_VALUE: {
             featureValueOneOfCase_ = 2;
             featureValueOneOf_ = other.featureValueOneOf_;
             onChanged();
             break;
           }
-          case FLOATVALUE: {
+          case FLOAT_VALUE: {
             setFloatValue(other.getFloatValue());
             break;
           }
-          case DOUBLEVALUE: {
+          case DOUBLE_VALUE: {
             setDoubleValue(other.getDoubleValue());
             break;
           }
-          case INTVALUE: {
+          case INT_VALUE: {
             setIntValue(other.getIntValue());
             break;
           }
-          case LONGVALUE: {
+          case LONG_VALUE: {
             setLongValue(other.getLongValue());
             break;
           }
-          case BOOLEANARRAY: {
+          case BOOLEAN_ARRAY: {
             mergeBooleanArray(other.getBooleanArray());
             break;
           }
-          case STRINGARRAY: {
+          case STRING_ARRAY: {
             mergeStringArray(other.getStringArray());
             break;
           }
-          case FLOATARRAY: {
+          case FLOAT_ARRAY: {
             mergeFloatArray(other.getFloatArray());
             break;
           }
-          case DOUBLEARRAY: {
+          case DOUBLE_ARRAY: {
             mergeDoubleArray(other.getDoubleArray());
             break;
           }
-          case INTARRAY: {
+          case INT_ARRAY: {
             mergeIntArray(other.getIntArray());
             break;
           }
-          case LONGARRAY: {
+          case LONG_ARRAY: {
             mergeLongArray(other.getLongArray());
             break;
           }
-          case BYTEARRAY: {
+          case BYTE_ARRAY: {
             mergeByteArray(other.getByteArray());
             break;
           }
-          case SPARSESTRINGARRAY: {
+          case SPARSE_STRING_ARRAY: {
             mergeSparseStringArray(other.getSparseStringArray());
             break;
           }
-          case SPARSEBOOLARRAY: {
+          case SPARSE_BOOL_ARRAY: {
             mergeSparseBoolArray(other.getSparseBoolArray());
             break;
           }
-          case SPARSEINTEGERARRAY: {
+          case SPARSE_INTEGER_ARRAY: {
             mergeSparseIntegerArray(other.getSparseIntegerArray());
             break;
           }
-          case SPARSELONGARRAY: {
+          case SPARSE_LONG_ARRAY: {
             mergeSparseLongArray(other.getSparseLongArray());
             break;
           }
-          case SPARSEDOUBLEARRAY: {
+          case SPARSE_DOUBLE_ARRAY: {
             mergeSparseDoubleArray(other.getSparseDoubleArray());
             break;
           }
-          case SPARSEFLOATARRAY: {
+          case SPARSE_FLOAT_ARRAY: {
             mergeSparseFloatArray(other.getSparseFloatArray());
             break;
           }
@@ -2003,7 +2003,7 @@ public final class FeatureValueOuterClass {
       private int featureValueOneOfCase_ = 0;
       private java.lang.Object featureValueOneOf_;
       public FeatureValueOneOfCase
-          getFeatureValueOneOfCase() {
+      getFeatureValueOneOfCase() {
         return FeatureValueOneOfCase.forNumber(
             featureValueOneOfCase_);
       }
@@ -2017,14 +2017,14 @@ public final class FeatureValueOuterClass {
 
 
       /**
-       * <code>bool booleanValue = 1;</code>
+       * <code>bool boolean_value = 1;</code>
        * @return Whether the booleanValue field is set.
        */
       public boolean hasBooleanValue() {
         return featureValueOneOfCase_ == 1;
       }
       /**
-       * <code>bool booleanValue = 1;</code>
+       * <code>bool boolean_value = 1;</code>
        * @return The booleanValue.
        */
       public boolean getBooleanValue() {
@@ -2034,7 +2034,7 @@ public final class FeatureValueOuterClass {
         return false;
       }
       /**
-       * <code>bool booleanValue = 1;</code>
+       * <code>bool boolean_value = 1;</code>
        * @param value The booleanValue to set.
        * @return This builder for chaining.
        */
@@ -2045,7 +2045,7 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>bool booleanValue = 1;</code>
+       * <code>bool boolean_value = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearBooleanValue() {
@@ -2058,7 +2058,7 @@ public final class FeatureValueOuterClass {
       }
 
       /**
-       * <code>string stringValue = 2;</code>
+       * <code>string string_value = 2;</code>
        * @return Whether the stringValue field is set.
        */
       @java.lang.Override
@@ -2066,7 +2066,7 @@ public final class FeatureValueOuterClass {
         return featureValueOneOfCase_ == 2;
       }
       /**
-       * <code>string stringValue = 2;</code>
+       * <code>string string_value = 2;</code>
        * @return The stringValue.
        */
       @java.lang.Override
@@ -2088,18 +2088,18 @@ public final class FeatureValueOuterClass {
         }
       }
       /**
-       * <code>string stringValue = 2;</code>
+       * <code>string string_value = 2;</code>
        * @return The bytes for stringValue.
        */
       @java.lang.Override
       public com.google.protobuf.ByteString
-          getStringValueBytes() {
+      getStringValueBytes() {
         java.lang.Object ref = "";
         if (featureValueOneOfCase_ == 2) {
           ref = featureValueOneOf_;
         }
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           if (featureValueOneOfCase_ == 2) {
@@ -2111,22 +2111,22 @@ public final class FeatureValueOuterClass {
         }
       }
       /**
-       * <code>string stringValue = 2;</code>
+       * <code>string string_value = 2;</code>
        * @param value The stringValue to set.
        * @return This builder for chaining.
        */
       public Builder setStringValue(
           java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  featureValueOneOfCase_ = 2;
+          throw new NullPointerException();
+        }
+        featureValueOneOfCase_ = 2;
         featureValueOneOf_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string stringValue = 2;</code>
+       * <code>string string_value = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearStringValue() {
@@ -2138,16 +2138,16 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>string stringValue = 2;</code>
+       * <code>string string_value = 2;</code>
        * @param value The bytes for stringValue to set.
        * @return This builder for chaining.
        */
       public Builder setStringValueBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
+          throw new NullPointerException();
+        }
+        checkByteStringIsUtf8(value);
         featureValueOneOfCase_ = 2;
         featureValueOneOf_ = value;
         onChanged();
@@ -2155,14 +2155,14 @@ public final class FeatureValueOuterClass {
       }
 
       /**
-       * <code>float floatValue = 3;</code>
+       * <code>float float_value = 3;</code>
        * @return Whether the floatValue field is set.
        */
       public boolean hasFloatValue() {
         return featureValueOneOfCase_ == 3;
       }
       /**
-       * <code>float floatValue = 3;</code>
+       * <code>float float_value = 3;</code>
        * @return The floatValue.
        */
       public float getFloatValue() {
@@ -2172,7 +2172,7 @@ public final class FeatureValueOuterClass {
         return 0F;
       }
       /**
-       * <code>float floatValue = 3;</code>
+       * <code>float float_value = 3;</code>
        * @param value The floatValue to set.
        * @return This builder for chaining.
        */
@@ -2183,7 +2183,7 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>float floatValue = 3;</code>
+       * <code>float float_value = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearFloatValue() {
@@ -2196,14 +2196,14 @@ public final class FeatureValueOuterClass {
       }
 
       /**
-       * <code>double doubleValue = 4;</code>
+       * <code>double double_value = 4;</code>
        * @return Whether the doubleValue field is set.
        */
       public boolean hasDoubleValue() {
         return featureValueOneOfCase_ == 4;
       }
       /**
-       * <code>double doubleValue = 4;</code>
+       * <code>double double_value = 4;</code>
        * @return The doubleValue.
        */
       public double getDoubleValue() {
@@ -2213,7 +2213,7 @@ public final class FeatureValueOuterClass {
         return 0D;
       }
       /**
-       * <code>double doubleValue = 4;</code>
+       * <code>double double_value = 4;</code>
        * @param value The doubleValue to set.
        * @return This builder for chaining.
        */
@@ -2224,7 +2224,7 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>double doubleValue = 4;</code>
+       * <code>double double_value = 4;</code>
        * @return This builder for chaining.
        */
       public Builder clearDoubleValue() {
@@ -2237,14 +2237,14 @@ public final class FeatureValueOuterClass {
       }
 
       /**
-       * <code>int32 intValue = 5;</code>
+       * <code>int32 int_value = 5;</code>
        * @return Whether the intValue field is set.
        */
       public boolean hasIntValue() {
         return featureValueOneOfCase_ == 5;
       }
       /**
-       * <code>int32 intValue = 5;</code>
+       * <code>int32 int_value = 5;</code>
        * @return The intValue.
        */
       public int getIntValue() {
@@ -2254,7 +2254,7 @@ public final class FeatureValueOuterClass {
         return 0;
       }
       /**
-       * <code>int32 intValue = 5;</code>
+       * <code>int32 int_value = 5;</code>
        * @param value The intValue to set.
        * @return This builder for chaining.
        */
@@ -2265,7 +2265,7 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>int32 intValue = 5;</code>
+       * <code>int32 int_value = 5;</code>
        * @return This builder for chaining.
        */
       public Builder clearIntValue() {
@@ -2278,14 +2278,14 @@ public final class FeatureValueOuterClass {
       }
 
       /**
-       * <code>int64 longValue = 6;</code>
+       * <code>int64 long_value = 6;</code>
        * @return Whether the longValue field is set.
        */
       public boolean hasLongValue() {
         return featureValueOneOfCase_ == 6;
       }
       /**
-       * <code>int64 longValue = 6;</code>
+       * <code>int64 long_value = 6;</code>
        * @return The longValue.
        */
       public long getLongValue() {
@@ -2295,7 +2295,7 @@ public final class FeatureValueOuterClass {
         return 0L;
       }
       /**
-       * <code>int64 longValue = 6;</code>
+       * <code>int64 long_value = 6;</code>
        * @param value The longValue to set.
        * @return This builder for chaining.
        */
@@ -2306,7 +2306,7 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>int64 longValue = 6;</code>
+       * <code>int64 long_value = 6;</code>
        * @return This builder for chaining.
        */
       public Builder clearLongValue() {
@@ -2321,33 +2321,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArrayOrBuilder> booleanArrayBuilder_;
       /**
-       * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+       * <code>.protobuf.BooleanArray boolean_array = 10;</code>
        * @return Whether the booleanArray field is set.
        */
       @java.lang.Override
       public boolean hasBooleanArray() {
-        return featureValueOneOfCase_ == 8;
+        return featureValueOneOfCase_ == 10;
       }
       /**
-       * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+       * <code>.protobuf.BooleanArray boolean_array = 10;</code>
        * @return The booleanArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray getBooleanArray() {
         if (booleanArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 8) {
+          if (featureValueOneOfCase_ == 10) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 8) {
+          if (featureValueOneOfCase_ == 10) {
             return booleanArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+       * <code>.protobuf.BooleanArray boolean_array = 10;</code>
        */
       public Builder setBooleanArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray value) {
         if (booleanArrayBuilder_ == null) {
@@ -2359,11 +2359,11 @@ public final class FeatureValueOuterClass {
         } else {
           booleanArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 8;
+        featureValueOneOfCase_ = 10;
         return this;
       }
       /**
-       * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+       * <code>.protobuf.BooleanArray boolean_array = 10;</code>
        */
       public Builder setBooleanArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.Builder builderForValue) {
@@ -2373,15 +2373,15 @@ public final class FeatureValueOuterClass {
         } else {
           booleanArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 8;
+        featureValueOneOfCase_ = 10;
         return this;
       }
       /**
-       * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+       * <code>.protobuf.BooleanArray boolean_array = 10;</code>
        */
       public Builder mergeBooleanArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray value) {
         if (booleanArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 8 &&
+          if (featureValueOneOfCase_ == 10 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -2390,26 +2390,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 8) {
+          if (featureValueOneOfCase_ == 10) {
             booleanArrayBuilder_.mergeFrom(value);
           }
           booleanArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 8;
+        featureValueOneOfCase_ = 10;
         return this;
       }
       /**
-       * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+       * <code>.protobuf.BooleanArray boolean_array = 10;</code>
        */
       public Builder clearBooleanArray() {
         if (booleanArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 8) {
+          if (featureValueOneOfCase_ == 10) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 8) {
+          if (featureValueOneOfCase_ == 10) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -2418,43 +2418,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+       * <code>.protobuf.BooleanArray boolean_array = 10;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.Builder getBooleanArrayBuilder() {
         return getBooleanArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+       * <code>.protobuf.BooleanArray boolean_array = 10;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArrayOrBuilder getBooleanArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 8) && (booleanArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 10) && (booleanArrayBuilder_ != null)) {
           return booleanArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 8) {
+          if (featureValueOneOfCase_ == 10) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.BooleanArray booleanArray = 8;</code>
+       * <code>.protobuf.BooleanArray boolean_array = 10;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArrayOrBuilder> 
-          getBooleanArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArrayOrBuilder>
+      getBooleanArrayFieldBuilder() {
         if (booleanArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 8)) {
+          if (!(featureValueOneOfCase_ == 10)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.getDefaultInstance();
           }
           booleanArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 8;
+        featureValueOneOfCase_ = 10;
         onChanged();;
         return booleanArrayBuilder_;
       }
@@ -2462,33 +2462,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArrayOrBuilder> stringArrayBuilder_;
       /**
-       * <code>.protobuf.StringArray stringArray = 9;</code>
+       * <code>.protobuf.StringArray string_array = 11;</code>
        * @return Whether the stringArray field is set.
        */
       @java.lang.Override
       public boolean hasStringArray() {
-        return featureValueOneOfCase_ == 9;
+        return featureValueOneOfCase_ == 11;
       }
       /**
-       * <code>.protobuf.StringArray stringArray = 9;</code>
+       * <code>.protobuf.StringArray string_array = 11;</code>
        * @return The stringArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray getStringArray() {
         if (stringArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 9) {
+          if (featureValueOneOfCase_ == 11) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 9) {
+          if (featureValueOneOfCase_ == 11) {
             return stringArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.StringArray stringArray = 9;</code>
+       * <code>.protobuf.StringArray string_array = 11;</code>
        */
       public Builder setStringArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray value) {
         if (stringArrayBuilder_ == null) {
@@ -2500,11 +2500,11 @@ public final class FeatureValueOuterClass {
         } else {
           stringArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 9;
+        featureValueOneOfCase_ = 11;
         return this;
       }
       /**
-       * <code>.protobuf.StringArray stringArray = 9;</code>
+       * <code>.protobuf.StringArray string_array = 11;</code>
        */
       public Builder setStringArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.Builder builderForValue) {
@@ -2514,15 +2514,15 @@ public final class FeatureValueOuterClass {
         } else {
           stringArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 9;
+        featureValueOneOfCase_ = 11;
         return this;
       }
       /**
-       * <code>.protobuf.StringArray stringArray = 9;</code>
+       * <code>.protobuf.StringArray string_array = 11;</code>
        */
       public Builder mergeStringArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray value) {
         if (stringArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 9 &&
+          if (featureValueOneOfCase_ == 11 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -2531,26 +2531,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 9) {
+          if (featureValueOneOfCase_ == 11) {
             stringArrayBuilder_.mergeFrom(value);
           }
           stringArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 9;
+        featureValueOneOfCase_ = 11;
         return this;
       }
       /**
-       * <code>.protobuf.StringArray stringArray = 9;</code>
+       * <code>.protobuf.StringArray string_array = 11;</code>
        */
       public Builder clearStringArray() {
         if (stringArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 9) {
+          if (featureValueOneOfCase_ == 11) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 9) {
+          if (featureValueOneOfCase_ == 11) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -2559,43 +2559,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.StringArray stringArray = 9;</code>
+       * <code>.protobuf.StringArray string_array = 11;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.Builder getStringArrayBuilder() {
         return getStringArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.StringArray stringArray = 9;</code>
+       * <code>.protobuf.StringArray string_array = 11;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArrayOrBuilder getStringArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 9) && (stringArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 11) && (stringArrayBuilder_ != null)) {
           return stringArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 9) {
+          if (featureValueOneOfCase_ == 11) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.StringArray stringArray = 9;</code>
+       * <code>.protobuf.StringArray string_array = 11;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArrayOrBuilder> 
-          getStringArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArrayOrBuilder>
+      getStringArrayFieldBuilder() {
         if (stringArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 9)) {
+          if (!(featureValueOneOfCase_ == 11)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.getDefaultInstance();
           }
           stringArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 9;
+        featureValueOneOfCase_ = 11;
         onChanged();;
         return stringArrayBuilder_;
       }
@@ -2603,33 +2603,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArrayOrBuilder> floatArrayBuilder_;
       /**
-       * <code>.protobuf.FloatArray floatArray = 10;</code>
+       * <code>.protobuf.FloatArray float_array = 12;</code>
        * @return Whether the floatArray field is set.
        */
       @java.lang.Override
       public boolean hasFloatArray() {
-        return featureValueOneOfCase_ == 10;
+        return featureValueOneOfCase_ == 12;
       }
       /**
-       * <code>.protobuf.FloatArray floatArray = 10;</code>
+       * <code>.protobuf.FloatArray float_array = 12;</code>
        * @return The floatArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray getFloatArray() {
         if (floatArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 10) {
+          if (featureValueOneOfCase_ == 12) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 10) {
+          if (featureValueOneOfCase_ == 12) {
             return floatArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.FloatArray floatArray = 10;</code>
+       * <code>.protobuf.FloatArray float_array = 12;</code>
        */
       public Builder setFloatArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray value) {
         if (floatArrayBuilder_ == null) {
@@ -2641,11 +2641,11 @@ public final class FeatureValueOuterClass {
         } else {
           floatArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 10;
+        featureValueOneOfCase_ = 12;
         return this;
       }
       /**
-       * <code>.protobuf.FloatArray floatArray = 10;</code>
+       * <code>.protobuf.FloatArray float_array = 12;</code>
        */
       public Builder setFloatArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.Builder builderForValue) {
@@ -2655,15 +2655,15 @@ public final class FeatureValueOuterClass {
         } else {
           floatArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 10;
+        featureValueOneOfCase_ = 12;
         return this;
       }
       /**
-       * <code>.protobuf.FloatArray floatArray = 10;</code>
+       * <code>.protobuf.FloatArray float_array = 12;</code>
        */
       public Builder mergeFloatArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray value) {
         if (floatArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 10 &&
+          if (featureValueOneOfCase_ == 12 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -2672,26 +2672,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 10) {
+          if (featureValueOneOfCase_ == 12) {
             floatArrayBuilder_.mergeFrom(value);
           }
           floatArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 10;
+        featureValueOneOfCase_ = 12;
         return this;
       }
       /**
-       * <code>.protobuf.FloatArray floatArray = 10;</code>
+       * <code>.protobuf.FloatArray float_array = 12;</code>
        */
       public Builder clearFloatArray() {
         if (floatArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 10) {
+          if (featureValueOneOfCase_ == 12) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 10) {
+          if (featureValueOneOfCase_ == 12) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -2700,43 +2700,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.FloatArray floatArray = 10;</code>
+       * <code>.protobuf.FloatArray float_array = 12;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.Builder getFloatArrayBuilder() {
         return getFloatArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.FloatArray floatArray = 10;</code>
+       * <code>.protobuf.FloatArray float_array = 12;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArrayOrBuilder getFloatArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 10) && (floatArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 12) && (floatArrayBuilder_ != null)) {
           return floatArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 10) {
+          if (featureValueOneOfCase_ == 12) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.FloatArray floatArray = 10;</code>
+       * <code>.protobuf.FloatArray float_array = 12;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArrayOrBuilder> 
-          getFloatArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArrayOrBuilder>
+      getFloatArrayFieldBuilder() {
         if (floatArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 10)) {
+          if (!(featureValueOneOfCase_ == 12)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.getDefaultInstance();
           }
           floatArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 10;
+        featureValueOneOfCase_ = 12;
         onChanged();;
         return floatArrayBuilder_;
       }
@@ -2744,33 +2744,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArrayOrBuilder> doubleArrayBuilder_;
       /**
-       * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+       * <code>.protobuf.DoubleArray double_array = 13;</code>
        * @return Whether the doubleArray field is set.
        */
       @java.lang.Override
       public boolean hasDoubleArray() {
-        return featureValueOneOfCase_ == 11;
+        return featureValueOneOfCase_ == 13;
       }
       /**
-       * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+       * <code>.protobuf.DoubleArray double_array = 13;</code>
        * @return The doubleArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray getDoubleArray() {
         if (doubleArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 11) {
+          if (featureValueOneOfCase_ == 13) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 11) {
+          if (featureValueOneOfCase_ == 13) {
             return doubleArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+       * <code>.protobuf.DoubleArray double_array = 13;</code>
        */
       public Builder setDoubleArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray value) {
         if (doubleArrayBuilder_ == null) {
@@ -2782,11 +2782,11 @@ public final class FeatureValueOuterClass {
         } else {
           doubleArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 11;
+        featureValueOneOfCase_ = 13;
         return this;
       }
       /**
-       * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+       * <code>.protobuf.DoubleArray double_array = 13;</code>
        */
       public Builder setDoubleArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.Builder builderForValue) {
@@ -2796,15 +2796,15 @@ public final class FeatureValueOuterClass {
         } else {
           doubleArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 11;
+        featureValueOneOfCase_ = 13;
         return this;
       }
       /**
-       * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+       * <code>.protobuf.DoubleArray double_array = 13;</code>
        */
       public Builder mergeDoubleArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray value) {
         if (doubleArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 11 &&
+          if (featureValueOneOfCase_ == 13 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -2813,26 +2813,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 11) {
+          if (featureValueOneOfCase_ == 13) {
             doubleArrayBuilder_.mergeFrom(value);
           }
           doubleArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 11;
+        featureValueOneOfCase_ = 13;
         return this;
       }
       /**
-       * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+       * <code>.protobuf.DoubleArray double_array = 13;</code>
        */
       public Builder clearDoubleArray() {
         if (doubleArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 11) {
+          if (featureValueOneOfCase_ == 13) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 11) {
+          if (featureValueOneOfCase_ == 13) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -2841,43 +2841,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+       * <code>.protobuf.DoubleArray double_array = 13;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.Builder getDoubleArrayBuilder() {
         return getDoubleArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+       * <code>.protobuf.DoubleArray double_array = 13;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArrayOrBuilder getDoubleArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 11) && (doubleArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 13) && (doubleArrayBuilder_ != null)) {
           return doubleArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 11) {
+          if (featureValueOneOfCase_ == 13) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.DoubleArray doubleArray = 11;</code>
+       * <code>.protobuf.DoubleArray double_array = 13;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArrayOrBuilder> 
-          getDoubleArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArrayOrBuilder>
+      getDoubleArrayFieldBuilder() {
         if (doubleArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 11)) {
+          if (!(featureValueOneOfCase_ == 13)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.getDefaultInstance();
           }
           doubleArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 11;
+        featureValueOneOfCase_ = 13;
         onChanged();;
         return doubleArrayBuilder_;
       }
@@ -2885,33 +2885,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArrayOrBuilder> intArrayBuilder_;
       /**
-       * <code>.protobuf.IntegerArray intArray = 12;</code>
+       * <code>.protobuf.IntegerArray int_array = 14;</code>
        * @return Whether the intArray field is set.
        */
       @java.lang.Override
       public boolean hasIntArray() {
-        return featureValueOneOfCase_ == 12;
+        return featureValueOneOfCase_ == 14;
       }
       /**
-       * <code>.protobuf.IntegerArray intArray = 12;</code>
+       * <code>.protobuf.IntegerArray int_array = 14;</code>
        * @return The intArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray getIntArray() {
         if (intArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 12) {
+          if (featureValueOneOfCase_ == 14) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 12) {
+          if (featureValueOneOfCase_ == 14) {
             return intArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.IntegerArray intArray = 12;</code>
+       * <code>.protobuf.IntegerArray int_array = 14;</code>
        */
       public Builder setIntArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray value) {
         if (intArrayBuilder_ == null) {
@@ -2923,11 +2923,11 @@ public final class FeatureValueOuterClass {
         } else {
           intArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 12;
+        featureValueOneOfCase_ = 14;
         return this;
       }
       /**
-       * <code>.protobuf.IntegerArray intArray = 12;</code>
+       * <code>.protobuf.IntegerArray int_array = 14;</code>
        */
       public Builder setIntArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.Builder builderForValue) {
@@ -2937,15 +2937,15 @@ public final class FeatureValueOuterClass {
         } else {
           intArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 12;
+        featureValueOneOfCase_ = 14;
         return this;
       }
       /**
-       * <code>.protobuf.IntegerArray intArray = 12;</code>
+       * <code>.protobuf.IntegerArray int_array = 14;</code>
        */
       public Builder mergeIntArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray value) {
         if (intArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 12 &&
+          if (featureValueOneOfCase_ == 14 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -2954,26 +2954,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 12) {
+          if (featureValueOneOfCase_ == 14) {
             intArrayBuilder_.mergeFrom(value);
           }
           intArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 12;
+        featureValueOneOfCase_ = 14;
         return this;
       }
       /**
-       * <code>.protobuf.IntegerArray intArray = 12;</code>
+       * <code>.protobuf.IntegerArray int_array = 14;</code>
        */
       public Builder clearIntArray() {
         if (intArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 12) {
+          if (featureValueOneOfCase_ == 14) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 12) {
+          if (featureValueOneOfCase_ == 14) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -2982,43 +2982,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.IntegerArray intArray = 12;</code>
+       * <code>.protobuf.IntegerArray int_array = 14;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.Builder getIntArrayBuilder() {
         return getIntArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.IntegerArray intArray = 12;</code>
+       * <code>.protobuf.IntegerArray int_array = 14;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArrayOrBuilder getIntArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 12) && (intArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 14) && (intArrayBuilder_ != null)) {
           return intArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 12) {
+          if (featureValueOneOfCase_ == 14) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.IntegerArray intArray = 12;</code>
+       * <code>.protobuf.IntegerArray int_array = 14;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArrayOrBuilder> 
-          getIntArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArrayOrBuilder>
+      getIntArrayFieldBuilder() {
         if (intArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 12)) {
+          if (!(featureValueOneOfCase_ == 14)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.getDefaultInstance();
           }
           intArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 12;
+        featureValueOneOfCase_ = 14;
         onChanged();;
         return intArrayBuilder_;
       }
@@ -3026,33 +3026,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArrayOrBuilder> longArrayBuilder_;
       /**
-       * <code>.protobuf.LongArray longArray = 13;</code>
+       * <code>.protobuf.LongArray long_array = 15;</code>
        * @return Whether the longArray field is set.
        */
       @java.lang.Override
       public boolean hasLongArray() {
-        return featureValueOneOfCase_ == 13;
+        return featureValueOneOfCase_ == 15;
       }
       /**
-       * <code>.protobuf.LongArray longArray = 13;</code>
+       * <code>.protobuf.LongArray long_array = 15;</code>
        * @return The longArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray getLongArray() {
         if (longArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 13) {
+          if (featureValueOneOfCase_ == 15) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 13) {
+          if (featureValueOneOfCase_ == 15) {
             return longArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.LongArray longArray = 13;</code>
+       * <code>.protobuf.LongArray long_array = 15;</code>
        */
       public Builder setLongArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray value) {
         if (longArrayBuilder_ == null) {
@@ -3064,11 +3064,11 @@ public final class FeatureValueOuterClass {
         } else {
           longArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 13;
+        featureValueOneOfCase_ = 15;
         return this;
       }
       /**
-       * <code>.protobuf.LongArray longArray = 13;</code>
+       * <code>.protobuf.LongArray long_array = 15;</code>
        */
       public Builder setLongArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.Builder builderForValue) {
@@ -3078,15 +3078,15 @@ public final class FeatureValueOuterClass {
         } else {
           longArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 13;
+        featureValueOneOfCase_ = 15;
         return this;
       }
       /**
-       * <code>.protobuf.LongArray longArray = 13;</code>
+       * <code>.protobuf.LongArray long_array = 15;</code>
        */
       public Builder mergeLongArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray value) {
         if (longArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 13 &&
+          if (featureValueOneOfCase_ == 15 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -3095,26 +3095,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 13) {
+          if (featureValueOneOfCase_ == 15) {
             longArrayBuilder_.mergeFrom(value);
           }
           longArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 13;
+        featureValueOneOfCase_ = 15;
         return this;
       }
       /**
-       * <code>.protobuf.LongArray longArray = 13;</code>
+       * <code>.protobuf.LongArray long_array = 15;</code>
        */
       public Builder clearLongArray() {
         if (longArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 13) {
+          if (featureValueOneOfCase_ == 15) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 13) {
+          if (featureValueOneOfCase_ == 15) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -3123,43 +3123,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.LongArray longArray = 13;</code>
+       * <code>.protobuf.LongArray long_array = 15;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.Builder getLongArrayBuilder() {
         return getLongArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.LongArray longArray = 13;</code>
+       * <code>.protobuf.LongArray long_array = 15;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArrayOrBuilder getLongArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 13) && (longArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 15) && (longArrayBuilder_ != null)) {
           return longArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 13) {
+          if (featureValueOneOfCase_ == 15) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.LongArray longArray = 13;</code>
+       * <code>.protobuf.LongArray long_array = 15;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArrayOrBuilder> 
-          getLongArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArrayOrBuilder>
+      getLongArrayFieldBuilder() {
         if (longArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 13)) {
+          if (!(featureValueOneOfCase_ == 15)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.getDefaultInstance();
           }
           longArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 13;
+        featureValueOneOfCase_ = 15;
         onChanged();;
         return longArrayBuilder_;
       }
@@ -3167,33 +3167,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArrayOrBuilder> byteArrayBuilder_;
       /**
-       * <code>.protobuf.BytesArray byteArray = 14;</code>
+       * <code>.protobuf.BytesArray byte_array = 16;</code>
        * @return Whether the byteArray field is set.
        */
       @java.lang.Override
       public boolean hasByteArray() {
-        return featureValueOneOfCase_ == 14;
+        return featureValueOneOfCase_ == 16;
       }
       /**
-       * <code>.protobuf.BytesArray byteArray = 14;</code>
+       * <code>.protobuf.BytesArray byte_array = 16;</code>
        * @return The byteArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray getByteArray() {
         if (byteArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 14) {
+          if (featureValueOneOfCase_ == 16) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 14) {
+          if (featureValueOneOfCase_ == 16) {
             return byteArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.BytesArray byteArray = 14;</code>
+       * <code>.protobuf.BytesArray byte_array = 16;</code>
        */
       public Builder setByteArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray value) {
         if (byteArrayBuilder_ == null) {
@@ -3205,11 +3205,11 @@ public final class FeatureValueOuterClass {
         } else {
           byteArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 14;
+        featureValueOneOfCase_ = 16;
         return this;
       }
       /**
-       * <code>.protobuf.BytesArray byteArray = 14;</code>
+       * <code>.protobuf.BytesArray byte_array = 16;</code>
        */
       public Builder setByteArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.Builder builderForValue) {
@@ -3219,15 +3219,15 @@ public final class FeatureValueOuterClass {
         } else {
           byteArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 14;
+        featureValueOneOfCase_ = 16;
         return this;
       }
       /**
-       * <code>.protobuf.BytesArray byteArray = 14;</code>
+       * <code>.protobuf.BytesArray byte_array = 16;</code>
        */
       public Builder mergeByteArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray value) {
         if (byteArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 14 &&
+          if (featureValueOneOfCase_ == 16 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -3236,26 +3236,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 14) {
+          if (featureValueOneOfCase_ == 16) {
             byteArrayBuilder_.mergeFrom(value);
           }
           byteArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 14;
+        featureValueOneOfCase_ = 16;
         return this;
       }
       /**
-       * <code>.protobuf.BytesArray byteArray = 14;</code>
+       * <code>.protobuf.BytesArray byte_array = 16;</code>
        */
       public Builder clearByteArray() {
         if (byteArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 14) {
+          if (featureValueOneOfCase_ == 16) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 14) {
+          if (featureValueOneOfCase_ == 16) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -3264,43 +3264,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.BytesArray byteArray = 14;</code>
+       * <code>.protobuf.BytesArray byte_array = 16;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.Builder getByteArrayBuilder() {
         return getByteArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.BytesArray byteArray = 14;</code>
+       * <code>.protobuf.BytesArray byte_array = 16;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArrayOrBuilder getByteArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 14) && (byteArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 16) && (byteArrayBuilder_ != null)) {
           return byteArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 14) {
+          if (featureValueOneOfCase_ == 16) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.BytesArray byteArray = 14;</code>
+       * <code>.protobuf.BytesArray byte_array = 16;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArrayOrBuilder> 
-          getByteArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArrayOrBuilder>
+      getByteArrayFieldBuilder() {
         if (byteArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 14)) {
+          if (!(featureValueOneOfCase_ == 16)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.getDefaultInstance();
           }
           byteArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 14;
+        featureValueOneOfCase_ = 16;
         onChanged();;
         return byteArrayBuilder_;
       }
@@ -3308,33 +3308,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArrayOrBuilder> sparseStringArrayBuilder_;
       /**
-       * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+       * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
        * @return Whether the sparseStringArray field is set.
        */
       @java.lang.Override
       public boolean hasSparseStringArray() {
-        return featureValueOneOfCase_ == 15;
+        return featureValueOneOfCase_ == 20;
       }
       /**
-       * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+       * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
        * @return The sparseStringArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray getSparseStringArray() {
         if (sparseStringArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 15) {
+          if (featureValueOneOfCase_ == 20) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 15) {
+          if (featureValueOneOfCase_ == 20) {
             return sparseStringArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+       * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
        */
       public Builder setSparseStringArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray value) {
         if (sparseStringArrayBuilder_ == null) {
@@ -3346,11 +3346,11 @@ public final class FeatureValueOuterClass {
         } else {
           sparseStringArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 15;
+        featureValueOneOfCase_ = 20;
         return this;
       }
       /**
-       * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+       * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
        */
       public Builder setSparseStringArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.Builder builderForValue) {
@@ -3360,15 +3360,15 @@ public final class FeatureValueOuterClass {
         } else {
           sparseStringArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 15;
+        featureValueOneOfCase_ = 20;
         return this;
       }
       /**
-       * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+       * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
        */
       public Builder mergeSparseStringArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray value) {
         if (sparseStringArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 15 &&
+          if (featureValueOneOfCase_ == 20 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -3377,26 +3377,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 15) {
+          if (featureValueOneOfCase_ == 20) {
             sparseStringArrayBuilder_.mergeFrom(value);
           }
           sparseStringArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 15;
+        featureValueOneOfCase_ = 20;
         return this;
       }
       /**
-       * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+       * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
        */
       public Builder clearSparseStringArray() {
         if (sparseStringArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 15) {
+          if (featureValueOneOfCase_ == 20) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 15) {
+          if (featureValueOneOfCase_ == 20) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -3405,43 +3405,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+       * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.Builder getSparseStringArrayBuilder() {
         return getSparseStringArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+       * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArrayOrBuilder getSparseStringArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 15) && (sparseStringArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 20) && (sparseStringArrayBuilder_ != null)) {
           return sparseStringArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 15) {
+          if (featureValueOneOfCase_ == 20) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseStringArray sparseStringArray = 15;</code>
+       * <code>.protobuf.SparseStringArray sparse_string_array = 20;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArrayOrBuilder> 
-          getSparseStringArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArrayOrBuilder>
+      getSparseStringArrayFieldBuilder() {
         if (sparseStringArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 15)) {
+          if (!(featureValueOneOfCase_ == 20)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.getDefaultInstance();
           }
           sparseStringArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 15;
+        featureValueOneOfCase_ = 20;
         onChanged();;
         return sparseStringArrayBuilder_;
       }
@@ -3449,33 +3449,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArrayOrBuilder> sparseBoolArrayBuilder_;
       /**
-       * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+       * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
        * @return Whether the sparseBoolArray field is set.
        */
       @java.lang.Override
       public boolean hasSparseBoolArray() {
-        return featureValueOneOfCase_ == 16;
+        return featureValueOneOfCase_ == 21;
       }
       /**
-       * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+       * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
        * @return The sparseBoolArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray getSparseBoolArray() {
         if (sparseBoolArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 16) {
+          if (featureValueOneOfCase_ == 21) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 16) {
+          if (featureValueOneOfCase_ == 21) {
             return sparseBoolArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+       * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
        */
       public Builder setSparseBoolArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray value) {
         if (sparseBoolArrayBuilder_ == null) {
@@ -3487,11 +3487,11 @@ public final class FeatureValueOuterClass {
         } else {
           sparseBoolArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 16;
+        featureValueOneOfCase_ = 21;
         return this;
       }
       /**
-       * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+       * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
        */
       public Builder setSparseBoolArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.Builder builderForValue) {
@@ -3501,15 +3501,15 @@ public final class FeatureValueOuterClass {
         } else {
           sparseBoolArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 16;
+        featureValueOneOfCase_ = 21;
         return this;
       }
       /**
-       * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+       * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
        */
       public Builder mergeSparseBoolArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray value) {
         if (sparseBoolArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 16 &&
+          if (featureValueOneOfCase_ == 21 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -3518,26 +3518,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 16) {
+          if (featureValueOneOfCase_ == 21) {
             sparseBoolArrayBuilder_.mergeFrom(value);
           }
           sparseBoolArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 16;
+        featureValueOneOfCase_ = 21;
         return this;
       }
       /**
-       * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+       * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
        */
       public Builder clearSparseBoolArray() {
         if (sparseBoolArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 16) {
+          if (featureValueOneOfCase_ == 21) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 16) {
+          if (featureValueOneOfCase_ == 21) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -3546,43 +3546,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+       * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.Builder getSparseBoolArrayBuilder() {
         return getSparseBoolArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+       * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArrayOrBuilder getSparseBoolArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 16) && (sparseBoolArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 21) && (sparseBoolArrayBuilder_ != null)) {
           return sparseBoolArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 16) {
+          if (featureValueOneOfCase_ == 21) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseBoolArray sparseBoolArray = 16;</code>
+       * <code>.protobuf.SparseBoolArray sparse_bool_array = 21;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArrayOrBuilder> 
-          getSparseBoolArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArrayOrBuilder>
+      getSparseBoolArrayFieldBuilder() {
         if (sparseBoolArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 16)) {
+          if (!(featureValueOneOfCase_ == 21)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.getDefaultInstance();
           }
           sparseBoolArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 16;
+        featureValueOneOfCase_ = 21;
         onChanged();;
         return sparseBoolArrayBuilder_;
       }
@@ -3590,33 +3590,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArrayOrBuilder> sparseIntegerArrayBuilder_;
       /**
-       * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+       * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
        * @return Whether the sparseIntegerArray field is set.
        */
       @java.lang.Override
       public boolean hasSparseIntegerArray() {
-        return featureValueOneOfCase_ == 17;
+        return featureValueOneOfCase_ == 22;
       }
       /**
-       * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+       * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
        * @return The sparseIntegerArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray getSparseIntegerArray() {
         if (sparseIntegerArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 17) {
+          if (featureValueOneOfCase_ == 22) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 17) {
+          if (featureValueOneOfCase_ == 22) {
             return sparseIntegerArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+       * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
        */
       public Builder setSparseIntegerArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray value) {
         if (sparseIntegerArrayBuilder_ == null) {
@@ -3628,11 +3628,11 @@ public final class FeatureValueOuterClass {
         } else {
           sparseIntegerArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 17;
+        featureValueOneOfCase_ = 22;
         return this;
       }
       /**
-       * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+       * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
        */
       public Builder setSparseIntegerArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.Builder builderForValue) {
@@ -3642,15 +3642,15 @@ public final class FeatureValueOuterClass {
         } else {
           sparseIntegerArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 17;
+        featureValueOneOfCase_ = 22;
         return this;
       }
       /**
-       * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+       * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
        */
       public Builder mergeSparseIntegerArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray value) {
         if (sparseIntegerArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 17 &&
+          if (featureValueOneOfCase_ == 22 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -3659,26 +3659,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 17) {
+          if (featureValueOneOfCase_ == 22) {
             sparseIntegerArrayBuilder_.mergeFrom(value);
           }
           sparseIntegerArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 17;
+        featureValueOneOfCase_ = 22;
         return this;
       }
       /**
-       * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+       * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
        */
       public Builder clearSparseIntegerArray() {
         if (sparseIntegerArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 17) {
+          if (featureValueOneOfCase_ == 22) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 17) {
+          if (featureValueOneOfCase_ == 22) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -3687,43 +3687,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+       * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.Builder getSparseIntegerArrayBuilder() {
         return getSparseIntegerArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+       * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArrayOrBuilder getSparseIntegerArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 17) && (sparseIntegerArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 22) && (sparseIntegerArrayBuilder_ != null)) {
           return sparseIntegerArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 17) {
+          if (featureValueOneOfCase_ == 22) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseIntegerArray sparseIntegerArray = 17;</code>
+       * <code>.protobuf.SparseIntegerArray sparse_integer_array = 22;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArrayOrBuilder> 
-          getSparseIntegerArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArrayOrBuilder>
+      getSparseIntegerArrayFieldBuilder() {
         if (sparseIntegerArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 17)) {
+          if (!(featureValueOneOfCase_ == 22)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.getDefaultInstance();
           }
           sparseIntegerArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 17;
+        featureValueOneOfCase_ = 22;
         onChanged();;
         return sparseIntegerArrayBuilder_;
       }
@@ -3731,33 +3731,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArrayOrBuilder> sparseLongArrayBuilder_;
       /**
-       * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+       * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
        * @return Whether the sparseLongArray field is set.
        */
       @java.lang.Override
       public boolean hasSparseLongArray() {
-        return featureValueOneOfCase_ == 18;
+        return featureValueOneOfCase_ == 23;
       }
       /**
-       * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+       * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
        * @return The sparseLongArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray getSparseLongArray() {
         if (sparseLongArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 18) {
+          if (featureValueOneOfCase_ == 23) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 18) {
+          if (featureValueOneOfCase_ == 23) {
             return sparseLongArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+       * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
        */
       public Builder setSparseLongArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray value) {
         if (sparseLongArrayBuilder_ == null) {
@@ -3769,11 +3769,11 @@ public final class FeatureValueOuterClass {
         } else {
           sparseLongArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 18;
+        featureValueOneOfCase_ = 23;
         return this;
       }
       /**
-       * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+       * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
        */
       public Builder setSparseLongArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.Builder builderForValue) {
@@ -3783,15 +3783,15 @@ public final class FeatureValueOuterClass {
         } else {
           sparseLongArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 18;
+        featureValueOneOfCase_ = 23;
         return this;
       }
       /**
-       * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+       * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
        */
       public Builder mergeSparseLongArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray value) {
         if (sparseLongArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 18 &&
+          if (featureValueOneOfCase_ == 23 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -3800,26 +3800,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 18) {
+          if (featureValueOneOfCase_ == 23) {
             sparseLongArrayBuilder_.mergeFrom(value);
           }
           sparseLongArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 18;
+        featureValueOneOfCase_ = 23;
         return this;
       }
       /**
-       * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+       * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
        */
       public Builder clearSparseLongArray() {
         if (sparseLongArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 18) {
+          if (featureValueOneOfCase_ == 23) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 18) {
+          if (featureValueOneOfCase_ == 23) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -3828,43 +3828,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+       * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.Builder getSparseLongArrayBuilder() {
         return getSparseLongArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+       * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArrayOrBuilder getSparseLongArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 18) && (sparseLongArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 23) && (sparseLongArrayBuilder_ != null)) {
           return sparseLongArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 18) {
+          if (featureValueOneOfCase_ == 23) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseLongArray sparseLongArray = 18;</code>
+       * <code>.protobuf.SparseLongArray sparse_long_array = 23;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArrayOrBuilder> 
-          getSparseLongArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArrayOrBuilder>
+      getSparseLongArrayFieldBuilder() {
         if (sparseLongArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 18)) {
+          if (!(featureValueOneOfCase_ == 23)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.getDefaultInstance();
           }
           sparseLongArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 18;
+        featureValueOneOfCase_ = 23;
         onChanged();;
         return sparseLongArrayBuilder_;
       }
@@ -3872,33 +3872,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArrayOrBuilder> sparseDoubleArrayBuilder_;
       /**
-       * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+       * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
        * @return Whether the sparseDoubleArray field is set.
        */
       @java.lang.Override
       public boolean hasSparseDoubleArray() {
-        return featureValueOneOfCase_ == 19;
+        return featureValueOneOfCase_ == 24;
       }
       /**
-       * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+       * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
        * @return The sparseDoubleArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray getSparseDoubleArray() {
         if (sparseDoubleArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 19) {
+          if (featureValueOneOfCase_ == 24) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 19) {
+          if (featureValueOneOfCase_ == 24) {
             return sparseDoubleArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+       * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
        */
       public Builder setSparseDoubleArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray value) {
         if (sparseDoubleArrayBuilder_ == null) {
@@ -3910,11 +3910,11 @@ public final class FeatureValueOuterClass {
         } else {
           sparseDoubleArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 19;
+        featureValueOneOfCase_ = 24;
         return this;
       }
       /**
-       * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+       * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
        */
       public Builder setSparseDoubleArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.Builder builderForValue) {
@@ -3924,15 +3924,15 @@ public final class FeatureValueOuterClass {
         } else {
           sparseDoubleArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 19;
+        featureValueOneOfCase_ = 24;
         return this;
       }
       /**
-       * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+       * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
        */
       public Builder mergeSparseDoubleArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray value) {
         if (sparseDoubleArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 19 &&
+          if (featureValueOneOfCase_ == 24 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -3941,26 +3941,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 19) {
+          if (featureValueOneOfCase_ == 24) {
             sparseDoubleArrayBuilder_.mergeFrom(value);
           }
           sparseDoubleArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 19;
+        featureValueOneOfCase_ = 24;
         return this;
       }
       /**
-       * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+       * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
        */
       public Builder clearSparseDoubleArray() {
         if (sparseDoubleArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 19) {
+          if (featureValueOneOfCase_ == 24) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 19) {
+          if (featureValueOneOfCase_ == 24) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -3969,43 +3969,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+       * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.Builder getSparseDoubleArrayBuilder() {
         return getSparseDoubleArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+       * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArrayOrBuilder getSparseDoubleArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 19) && (sparseDoubleArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 24) && (sparseDoubleArrayBuilder_ != null)) {
           return sparseDoubleArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 19) {
+          if (featureValueOneOfCase_ == 24) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseDoubleArray sparseDoubleArray = 19;</code>
+       * <code>.protobuf.SparseDoubleArray sparse_double_array = 24;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArrayOrBuilder> 
-          getSparseDoubleArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArrayOrBuilder>
+      getSparseDoubleArrayFieldBuilder() {
         if (sparseDoubleArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 19)) {
+          if (!(featureValueOneOfCase_ == 24)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.getDefaultInstance();
           }
           sparseDoubleArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 19;
+        featureValueOneOfCase_ = 24;
         onChanged();;
         return sparseDoubleArrayBuilder_;
       }
@@ -4013,33 +4013,33 @@ public final class FeatureValueOuterClass {
       private com.google.protobuf.SingleFieldBuilderV3<
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArrayOrBuilder> sparseFloatArrayBuilder_;
       /**
-       * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+       * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
        * @return Whether the sparseFloatArray field is set.
        */
       @java.lang.Override
       public boolean hasSparseFloatArray() {
-        return featureValueOneOfCase_ == 20;
+        return featureValueOneOfCase_ == 25;
       }
       /**
-       * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+       * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
        * @return The sparseFloatArray.
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray getSparseFloatArray() {
         if (sparseFloatArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 20) {
+          if (featureValueOneOfCase_ == 25) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.getDefaultInstance();
         } else {
-          if (featureValueOneOfCase_ == 20) {
+          if (featureValueOneOfCase_ == 25) {
             return sparseFloatArrayBuilder_.getMessage();
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+       * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
        */
       public Builder setSparseFloatArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray value) {
         if (sparseFloatArrayBuilder_ == null) {
@@ -4051,11 +4051,11 @@ public final class FeatureValueOuterClass {
         } else {
           sparseFloatArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 20;
+        featureValueOneOfCase_ = 25;
         return this;
       }
       /**
-       * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+       * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
        */
       public Builder setSparseFloatArray(
           com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.Builder builderForValue) {
@@ -4065,15 +4065,15 @@ public final class FeatureValueOuterClass {
         } else {
           sparseFloatArrayBuilder_.setMessage(builderForValue.build());
         }
-        featureValueOneOfCase_ = 20;
+        featureValueOneOfCase_ = 25;
         return this;
       }
       /**
-       * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+       * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
        */
       public Builder mergeSparseFloatArray(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray value) {
         if (sparseFloatArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 20 &&
+          if (featureValueOneOfCase_ == 25 &&
               featureValueOneOf_ != com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.getDefaultInstance()) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.newBuilder((com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_)
                 .mergeFrom(value).buildPartial();
@@ -4082,26 +4082,26 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         } else {
-          if (featureValueOneOfCase_ == 20) {
+          if (featureValueOneOfCase_ == 25) {
             sparseFloatArrayBuilder_.mergeFrom(value);
           }
           sparseFloatArrayBuilder_.setMessage(value);
         }
-        featureValueOneOfCase_ = 20;
+        featureValueOneOfCase_ = 25;
         return this;
       }
       /**
-       * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+       * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
        */
       public Builder clearSparseFloatArray() {
         if (sparseFloatArrayBuilder_ == null) {
-          if (featureValueOneOfCase_ == 20) {
+          if (featureValueOneOfCase_ == 25) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
             onChanged();
           }
         } else {
-          if (featureValueOneOfCase_ == 20) {
+          if (featureValueOneOfCase_ == 25) {
             featureValueOneOfCase_ = 0;
             featureValueOneOf_ = null;
           }
@@ -4110,43 +4110,43 @@ public final class FeatureValueOuterClass {
         return this;
       }
       /**
-       * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+       * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
        */
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.Builder getSparseFloatArrayBuilder() {
         return getSparseFloatArrayFieldBuilder().getBuilder();
       }
       /**
-       * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+       * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
        */
       @java.lang.Override
       public com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArrayOrBuilder getSparseFloatArrayOrBuilder() {
-        if ((featureValueOneOfCase_ == 20) && (sparseFloatArrayBuilder_ != null)) {
+        if ((featureValueOneOfCase_ == 25) && (sparseFloatArrayBuilder_ != null)) {
           return sparseFloatArrayBuilder_.getMessageOrBuilder();
         } else {
-          if (featureValueOneOfCase_ == 20) {
+          if (featureValueOneOfCase_ == 25) {
             return (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_;
           }
           return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.getDefaultInstance();
         }
       }
       /**
-       * <code>.protobuf.SparseFloatArray sparseFloatArray = 20;</code>
+       * <code>.protobuf.SparseFloatArray sparse_float_array = 25;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArrayOrBuilder> 
-          getSparseFloatArrayFieldBuilder() {
+          com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArrayOrBuilder>
+      getSparseFloatArrayFieldBuilder() {
         if (sparseFloatArrayBuilder_ == null) {
-          if (!(featureValueOneOfCase_ == 20)) {
+          if (!(featureValueOneOfCase_ == 25)) {
             featureValueOneOf_ = com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.getDefaultInstance();
           }
           sparseFloatArrayBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.Builder, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArrayOrBuilder>(
-                  (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_,
-                  getParentForChildren(),
-                  isClean());
+              (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) featureValueOneOf_,
+              getParentForChildren(),
+              isClean());
           featureValueOneOf_ = null;
         }
-        featureValueOneOfCase_ = 20;
+        featureValueOneOfCase_ = 25;
         onChanged();;
         return sparseFloatArrayBuilder_;
       }
@@ -4204,8 +4204,8 @@ public final class FeatureValueOuterClass {
   }
 
   public interface BooleanArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.BooleanArray)
-      com.google.protobuf.MessageOrBuilder {
+                                         // @@protoc_insertion_point(interface_extends:protobuf.BooleanArray)
+                                             com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>repeated bool booleans = 1;</code>
@@ -4228,10 +4228,10 @@ public final class FeatureValueOuterClass {
    * Protobuf type {@code protobuf.BooleanArray}
    */
   public static final class BooleanArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.BooleanArray)
-      BooleanArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                         com.google.protobuf.GeneratedMessageV3 implements
+                                                                                // @@protoc_insertion_point(message_implements:protobuf.BooleanArray)
+                                                                                    BooleanArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use BooleanArray.newBuilder() to construct.
     private BooleanArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -4315,13 +4315,13 @@ public final class FeatureValueOuterClass {
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BooleanArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BooleanArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.Builder.class);
@@ -4335,7 +4335,7 @@ public final class FeatureValueOuterClass {
      */
     @java.lang.Override
     public java.util.List<java.lang.Boolean>
-        getBooleansList() {
+    getBooleansList() {
       return booleans_;
     }
     /**
@@ -4368,7 +4368,7 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
       if (getBooleansList().size() > 0) {
         output.writeUInt32NoTag(10);
@@ -4405,7 +4405,7 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray)) {
         return super.equals(obj);
@@ -4528,17 +4528,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.BooleanArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.BooleanArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.BooleanArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BooleanArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BooleanArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BooleanArray.Builder.class);
@@ -4556,7 +4556,7 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
@@ -4569,7 +4569,7 @@ public final class FeatureValueOuterClass {
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BooleanArray_descriptor;
       }
 
@@ -4689,16 +4689,16 @@ public final class FeatureValueOuterClass {
         if (!((bitField0_ & 0x00000001) != 0)) {
           booleans_ = mutableCopy(booleans_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
        * <code>repeated bool booleans = 1;</code>
        * @return A list containing the booleans.
        */
       public java.util.List<java.lang.Boolean>
-          getBooleansList() {
+      getBooleansList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(booleans_) : booleans_;
+            java.util.Collections.unmodifiableList(booleans_) : booleans_;
       }
       /**
        * <code>repeated bool booleans = 1;</code>
@@ -4816,15 +4816,15 @@ public final class FeatureValueOuterClass {
   }
 
   public interface StringArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.StringArray)
-      com.google.protobuf.MessageOrBuilder {
+                                        // @@protoc_insertion_point(interface_extends:protobuf.StringArray)
+                                            com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>repeated string strings = 1;</code>
      * @return A list containing the strings.
      */
     java.util.List<java.lang.String>
-        getStringsList();
+    getStringsList();
     /**
      * <code>repeated string strings = 1;</code>
      * @return The count of strings.
@@ -4842,16 +4842,16 @@ public final class FeatureValueOuterClass {
      * @return The bytes of the strings at the given index.
      */
     com.google.protobuf.ByteString
-        getStringsBytes(int index);
+    getStringsBytes(int index);
   }
   /**
    * Protobuf type {@code protobuf.StringArray}
    */
   public static final class StringArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.StringArray)
-      StringArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                        com.google.protobuf.GeneratedMessageV3 implements
+                                                                               // @@protoc_insertion_point(message_implements:protobuf.StringArray)
+                                                                                   StringArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use StringArray.newBuilder() to construct.
     private StringArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -4923,13 +4923,13 @@ public final class FeatureValueOuterClass {
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_StringArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_StringArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.Builder.class);
@@ -4942,7 +4942,7 @@ public final class FeatureValueOuterClass {
      * @return A list containing the strings.
      */
     public com.google.protobuf.ProtocolStringList
-        getStringsList() {
+    getStringsList() {
       return strings_;
     }
     /**
@@ -4966,7 +4966,7 @@ public final class FeatureValueOuterClass {
      * @return The bytes of the strings at the given index.
      */
     public com.google.protobuf.ByteString
-        getStringsBytes(int index) {
+    getStringsBytes(int index) {
       return strings_.getByteString(index);
     }
 
@@ -4983,7 +4983,7 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       for (int i = 0; i < strings_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, strings_.getRaw(i));
       }
@@ -5012,7 +5012,7 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray)) {
         return super.equals(obj);
@@ -5135,17 +5135,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.StringArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.StringArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.StringArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_StringArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_StringArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.StringArray.Builder.class);
@@ -5163,7 +5163,7 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
@@ -5176,7 +5176,7 @@ public final class FeatureValueOuterClass {
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_StringArray_descriptor;
       }
 
@@ -5296,14 +5296,14 @@ public final class FeatureValueOuterClass {
         if (!((bitField0_ & 0x00000001) != 0)) {
           strings_ = new com.google.protobuf.LazyStringArrayList(strings_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
        * <code>repeated string strings = 1;</code>
        * @return A list containing the strings.
        */
       public com.google.protobuf.ProtocolStringList
-          getStringsList() {
+      getStringsList() {
         return strings_.getUnmodifiableView();
       }
       /**
@@ -5327,7 +5327,7 @@ public final class FeatureValueOuterClass {
        * @return The bytes of the strings at the given index.
        */
       public com.google.protobuf.ByteString
-          getStringsBytes(int index) {
+      getStringsBytes(int index) {
         return strings_.getByteString(index);
       }
       /**
@@ -5339,9 +5339,9 @@ public final class FeatureValueOuterClass {
       public Builder setStrings(
           int index, java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureStringsIsMutable();
+          throw new NullPointerException();
+        }
+        ensureStringsIsMutable();
         strings_.set(index, value);
         onChanged();
         return this;
@@ -5354,9 +5354,9 @@ public final class FeatureValueOuterClass {
       public Builder addStrings(
           java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureStringsIsMutable();
+          throw new NullPointerException();
+        }
+        ensureStringsIsMutable();
         strings_.add(value);
         onChanged();
         return this;
@@ -5392,9 +5392,9 @@ public final class FeatureValueOuterClass {
       public Builder addStringsBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
+          throw new NullPointerException();
+        }
+        checkByteStringIsUtf8(value);
         ensureStringsIsMutable();
         strings_.add(value);
         onChanged();
@@ -5454,8 +5454,8 @@ public final class FeatureValueOuterClass {
   }
 
   public interface DoubleArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.DoubleArray)
-      com.google.protobuf.MessageOrBuilder {
+                                        // @@protoc_insertion_point(interface_extends:protobuf.DoubleArray)
+                                            com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>repeated double doubles = 1;</code>
@@ -5478,10 +5478,10 @@ public final class FeatureValueOuterClass {
    * Protobuf type {@code protobuf.DoubleArray}
    */
   public static final class DoubleArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.DoubleArray)
-      DoubleArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                        com.google.protobuf.GeneratedMessageV3 implements
+                                                                               // @@protoc_insertion_point(message_implements:protobuf.DoubleArray)
+                                                                                   DoubleArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use DoubleArray.newBuilder() to construct.
     private DoubleArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -5565,13 +5565,13 @@ public final class FeatureValueOuterClass {
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_DoubleArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_DoubleArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.Builder.class);
@@ -5585,7 +5585,7 @@ public final class FeatureValueOuterClass {
      */
     @java.lang.Override
     public java.util.List<java.lang.Double>
-        getDoublesList() {
+    getDoublesList() {
       return doubles_;
     }
     /**
@@ -5618,7 +5618,7 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
       if (getDoublesList().size() > 0) {
         output.writeUInt32NoTag(10);
@@ -5655,7 +5655,7 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray)) {
         return super.equals(obj);
@@ -5778,17 +5778,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.DoubleArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.DoubleArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.DoubleArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_DoubleArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_DoubleArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.DoubleArray.Builder.class);
@@ -5806,7 +5806,7 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
@@ -5819,7 +5819,7 @@ public final class FeatureValueOuterClass {
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_DoubleArray_descriptor;
       }
 
@@ -5939,16 +5939,16 @@ public final class FeatureValueOuterClass {
         if (!((bitField0_ & 0x00000001) != 0)) {
           doubles_ = mutableCopy(doubles_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
        * <code>repeated double doubles = 1;</code>
        * @return A list containing the doubles.
        */
       public java.util.List<java.lang.Double>
-          getDoublesList() {
+      getDoublesList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(doubles_) : doubles_;
+            java.util.Collections.unmodifiableList(doubles_) : doubles_;
       }
       /**
        * <code>repeated double doubles = 1;</code>
@@ -6066,8 +6066,8 @@ public final class FeatureValueOuterClass {
   }
 
   public interface FloatArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.FloatArray)
-      com.google.protobuf.MessageOrBuilder {
+                                       // @@protoc_insertion_point(interface_extends:protobuf.FloatArray)
+                                           com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>repeated float floats = 1;</code>
@@ -6090,10 +6090,10 @@ public final class FeatureValueOuterClass {
    * Protobuf type {@code protobuf.FloatArray}
    */
   public static final class FloatArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.FloatArray)
-      FloatArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                       com.google.protobuf.GeneratedMessageV3 implements
+                                                                              // @@protoc_insertion_point(message_implements:protobuf.FloatArray)
+                                                                                  FloatArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use FloatArray.newBuilder() to construct.
     private FloatArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -6177,13 +6177,13 @@ public final class FeatureValueOuterClass {
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FloatArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FloatArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.Builder.class);
@@ -6197,7 +6197,7 @@ public final class FeatureValueOuterClass {
      */
     @java.lang.Override
     public java.util.List<java.lang.Float>
-        getFloatsList() {
+    getFloatsList() {
       return floats_;
     }
     /**
@@ -6230,7 +6230,7 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
       if (getFloatsList().size() > 0) {
         output.writeUInt32NoTag(10);
@@ -6267,7 +6267,7 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray)) {
         return super.equals(obj);
@@ -6390,17 +6390,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.FloatArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.FloatArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.FloatArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FloatArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FloatArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.FloatArray.Builder.class);
@@ -6418,7 +6418,7 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
@@ -6431,7 +6431,7 @@ public final class FeatureValueOuterClass {
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_FloatArray_descriptor;
       }
 
@@ -6551,16 +6551,16 @@ public final class FeatureValueOuterClass {
         if (!((bitField0_ & 0x00000001) != 0)) {
           floats_ = mutableCopy(floats_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
        * <code>repeated float floats = 1;</code>
        * @return A list containing the floats.
        */
       public java.util.List<java.lang.Float>
-          getFloatsList() {
+      getFloatsList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(floats_) : floats_;
+            java.util.Collections.unmodifiableList(floats_) : floats_;
       }
       /**
        * <code>repeated float floats = 1;</code>
@@ -6678,40 +6678,40 @@ public final class FeatureValueOuterClass {
   }
 
   public interface IntegerArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.IntegerArray)
-      com.google.protobuf.MessageOrBuilder {
+                                         // @@protoc_insertion_point(interface_extends:protobuf.IntegerArray)
+                                             com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated int32 ints = 1;</code>
-     * @return A list containing the ints.
+     * <code>repeated int32 integers = 1;</code>
+     * @return A list containing the integers.
      */
-    java.util.List<java.lang.Integer> getIntsList();
+    java.util.List<java.lang.Integer> getIntegersList();
     /**
-     * <code>repeated int32 ints = 1;</code>
-     * @return The count of ints.
+     * <code>repeated int32 integers = 1;</code>
+     * @return The count of integers.
      */
-    int getIntsCount();
+    int getIntegersCount();
     /**
-     * <code>repeated int32 ints = 1;</code>
+     * <code>repeated int32 integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The ints at the given index.
+     * @return The integers at the given index.
      */
-    int getInts(int index);
+    int getIntegers(int index);
   }
   /**
    * Protobuf type {@code protobuf.IntegerArray}
    */
   public static final class IntegerArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.IntegerArray)
-      IntegerArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                         com.google.protobuf.GeneratedMessageV3 implements
+                                                                                // @@protoc_insertion_point(message_implements:protobuf.IntegerArray)
+                                                                                    IntegerArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use IntegerArray.newBuilder() to construct.
     private IntegerArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private IntegerArray() {
-      ints_ = emptyIntList();
+      integers_ = emptyIntList();
     }
 
     @java.lang.Override
@@ -6747,21 +6747,21 @@ public final class FeatureValueOuterClass {
               break;
             case 8: {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                ints_ = newIntList();
+                integers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
-              ints_.addInt(input.readInt32());
+              integers_.addInt(input.readInt32());
               break;
             }
             case 10: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                ints_ = newIntList();
+                integers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                ints_.addInt(input.readInt32());
+                integers_.addInt(input.readInt32());
               }
               input.popLimit(limit);
               break;
@@ -6782,52 +6782,52 @@ public final class FeatureValueOuterClass {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          ints_.makeImmutable(); // C
+          integers_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_IntegerArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_IntegerArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.Builder.class);
     }
 
-    public static final int INTS_FIELD_NUMBER = 1;
-    private com.google.protobuf.Internal.IntList ints_;
+    public static final int INTEGERS_FIELD_NUMBER = 1;
+    private com.google.protobuf.Internal.IntList integers_;
     /**
-     * <code>repeated int32 ints = 1;</code>
-     * @return A list containing the ints.
+     * <code>repeated int32 integers = 1;</code>
+     * @return A list containing the integers.
      */
     @java.lang.Override
     public java.util.List<java.lang.Integer>
-        getIntsList() {
-      return ints_;
+    getIntegersList() {
+      return integers_;
     }
     /**
-     * <code>repeated int32 ints = 1;</code>
-     * @return The count of ints.
+     * <code>repeated int32 integers = 1;</code>
+     * @return The count of integers.
      */
-    public int getIntsCount() {
-      return ints_.size();
+    public int getIntegersCount() {
+      return integers_.size();
     }
     /**
-     * <code>repeated int32 ints = 1;</code>
+     * <code>repeated int32 integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The ints at the given index.
+     * @return The integers at the given index.
      */
-    public int getInts(int index) {
-      return ints_.getInt(index);
+    public int getIntegers(int index) {
+      return integers_.getInt(index);
     }
-    private int intsMemoizedSerializedSize = -1;
+    private int integersMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
@@ -6842,14 +6842,14 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
-      if (getIntsList().size() > 0) {
+      if (getIntegersList().size() > 0) {
         output.writeUInt32NoTag(10);
-        output.writeUInt32NoTag(intsMemoizedSerializedSize);
+        output.writeUInt32NoTag(integersMemoizedSerializedSize);
       }
-      for (int i = 0; i < ints_.size(); i++) {
-        output.writeInt32NoTag(ints_.getInt(i));
+      for (int i = 0; i < integers_.size(); i++) {
+        output.writeInt32NoTag(integers_.getInt(i));
       }
       unknownFields.writeTo(output);
     }
@@ -6862,17 +6862,17 @@ public final class FeatureValueOuterClass {
       size = 0;
       {
         int dataSize = 0;
-        for (int i = 0; i < ints_.size(); i++) {
+        for (int i = 0; i < integers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(ints_.getInt(i));
+              .computeInt32SizeNoTag(integers_.getInt(i));
         }
         size += dataSize;
-        if (!getIntsList().isEmpty()) {
+        if (!getIntegersList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        intsMemoizedSerializedSize = dataSize;
+        integersMemoizedSerializedSize = dataSize;
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -6882,15 +6882,15 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray)) {
         return super.equals(obj);
       }
       com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray other = (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray) obj;
 
-      if (!getIntsList()
-          .equals(other.getIntsList())) return false;
+      if (!getIntegersList()
+          .equals(other.getIntegersList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -6902,9 +6902,9 @@ public final class FeatureValueOuterClass {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (getIntsCount() > 0) {
-        hash = (37 * hash) + INTS_FIELD_NUMBER;
-        hash = (53 * hash) + getIntsList().hashCode();
+      if (getIntegersCount() > 0) {
+        hash = (37 * hash) + INTEGERS_FIELD_NUMBER;
+        hash = (53 * hash) + getIntegersList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -7005,17 +7005,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.IntegerArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.IntegerArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.IntegerArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_IntegerArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_IntegerArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.Builder.class);
@@ -7033,20 +7033,20 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        ints_ = emptyIntList();
+        integers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_IntegerArray_descriptor;
       }
 
@@ -7069,10 +7069,10 @@ public final class FeatureValueOuterClass {
         com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray result = new com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
-          ints_.makeImmutable();
+          integers_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.ints_ = ints_;
+        result.integers_ = integers_;
         onBuilt();
         return result;
       }
@@ -7121,13 +7121,13 @@ public final class FeatureValueOuterClass {
 
       public Builder mergeFrom(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray other) {
         if (other == com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.IntegerArray.getDefaultInstance()) return this;
-        if (!other.ints_.isEmpty()) {
-          if (ints_.isEmpty()) {
-            ints_ = other.ints_;
+        if (!other.integers_.isEmpty()) {
+          if (integers_.isEmpty()) {
+            integers_ = other.integers_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureIntsIsMutable();
-            ints_.addAll(other.ints_);
+            ensureIntegersIsMutable();
+            integers_.addAll(other.integers_);
           }
           onChanged();
         }
@@ -7161,80 +7161,80 @@ public final class FeatureValueOuterClass {
       }
       private int bitField0_;
 
-      private com.google.protobuf.Internal.IntList ints_ = emptyIntList();
-      private void ensureIntsIsMutable() {
+      private com.google.protobuf.Internal.IntList integers_ = emptyIntList();
+      private void ensureIntegersIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          ints_ = mutableCopy(ints_);
+          integers_ = mutableCopy(integers_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
-       * <code>repeated int32 ints = 1;</code>
-       * @return A list containing the ints.
+       * <code>repeated int32 integers = 1;</code>
+       * @return A list containing the integers.
        */
       public java.util.List<java.lang.Integer>
-          getIntsList() {
+      getIntegersList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(ints_) : ints_;
+            java.util.Collections.unmodifiableList(integers_) : integers_;
       }
       /**
-       * <code>repeated int32 ints = 1;</code>
-       * @return The count of ints.
+       * <code>repeated int32 integers = 1;</code>
+       * @return The count of integers.
        */
-      public int getIntsCount() {
-        return ints_.size();
+      public int getIntegersCount() {
+        return integers_.size();
       }
       /**
-       * <code>repeated int32 ints = 1;</code>
+       * <code>repeated int32 integers = 1;</code>
        * @param index The index of the element to return.
-       * @return The ints at the given index.
+       * @return The integers at the given index.
        */
-      public int getInts(int index) {
-        return ints_.getInt(index);
+      public int getIntegers(int index) {
+        return integers_.getInt(index);
       }
       /**
-       * <code>repeated int32 ints = 1;</code>
+       * <code>repeated int32 integers = 1;</code>
        * @param index The index to set the value at.
-       * @param value The ints to set.
+       * @param value The integers to set.
        * @return This builder for chaining.
        */
-      public Builder setInts(
+      public Builder setIntegers(
           int index, int value) {
-        ensureIntsIsMutable();
-        ints_.setInt(index, value);
+        ensureIntegersIsMutable();
+        integers_.setInt(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 ints = 1;</code>
-       * @param value The ints to add.
+       * <code>repeated int32 integers = 1;</code>
+       * @param value The integers to add.
        * @return This builder for chaining.
        */
-      public Builder addInts(int value) {
-        ensureIntsIsMutable();
-        ints_.addInt(value);
+      public Builder addIntegers(int value) {
+        ensureIntegersIsMutable();
+        integers_.addInt(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 ints = 1;</code>
-       * @param values The ints to add.
+       * <code>repeated int32 integers = 1;</code>
+       * @param values The integers to add.
        * @return This builder for chaining.
        */
-      public Builder addAllInts(
+      public Builder addAllIntegers(
           java.lang.Iterable<? extends java.lang.Integer> values) {
-        ensureIntsIsMutable();
+        ensureIntegersIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, ints_);
+            values, integers_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 ints = 1;</code>
+       * <code>repeated int32 integers = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearInts() {
-        ints_ = emptyIntList();
+      public Builder clearIntegers() {
+        integers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
@@ -7293,8 +7293,8 @@ public final class FeatureValueOuterClass {
   }
 
   public interface LongArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.LongArray)
-      com.google.protobuf.MessageOrBuilder {
+                                      // @@protoc_insertion_point(interface_extends:protobuf.LongArray)
+                                          com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>repeated int64 longs = 1;</code>
@@ -7317,10 +7317,10 @@ public final class FeatureValueOuterClass {
    * Protobuf type {@code protobuf.LongArray}
    */
   public static final class LongArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.LongArray)
-      LongArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                      com.google.protobuf.GeneratedMessageV3 implements
+                                                                             // @@protoc_insertion_point(message_implements:protobuf.LongArray)
+                                                                                 LongArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use LongArray.newBuilder() to construct.
     private LongArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -7404,13 +7404,13 @@ public final class FeatureValueOuterClass {
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_LongArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_LongArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.Builder.class);
@@ -7424,7 +7424,7 @@ public final class FeatureValueOuterClass {
      */
     @java.lang.Override
     public java.util.List<java.lang.Long>
-        getLongsList() {
+    getLongsList() {
       return longs_;
     }
     /**
@@ -7457,7 +7457,7 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
       if (getLongsList().size() > 0) {
         output.writeUInt32NoTag(10);
@@ -7479,7 +7479,7 @@ public final class FeatureValueOuterClass {
         int dataSize = 0;
         for (int i = 0; i < longs_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt64SizeNoTag(longs_.getLong(i));
+              .computeInt64SizeNoTag(longs_.getLong(i));
         }
         size += dataSize;
         if (!getLongsList().isEmpty()) {
@@ -7497,7 +7497,7 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray)) {
         return super.equals(obj);
@@ -7620,17 +7620,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.LongArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.LongArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.LongArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_LongArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_LongArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.LongArray.Builder.class);
@@ -7648,7 +7648,7 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
@@ -7661,7 +7661,7 @@ public final class FeatureValueOuterClass {
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_LongArray_descriptor;
       }
 
@@ -7781,16 +7781,16 @@ public final class FeatureValueOuterClass {
         if (!((bitField0_ & 0x00000001) != 0)) {
           longs_ = mutableCopy(longs_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
        * <code>repeated int64 longs = 1;</code>
        * @return A list containing the longs.
        */
       public java.util.List<java.lang.Long>
-          getLongsList() {
+      getLongsList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(longs_) : longs_;
+            java.util.Collections.unmodifiableList(longs_) : longs_;
       }
       /**
        * <code>repeated int64 longs = 1;</code>
@@ -7908,40 +7908,40 @@ public final class FeatureValueOuterClass {
   }
 
   public interface BytesArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.BytesArray)
-      com.google.protobuf.MessageOrBuilder {
+                                       // @@protoc_insertion_point(interface_extends:protobuf.BytesArray)
+                                           com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated bytes bytes_array = 1;</code>
-     * @return A list containing the bytesArray.
+     * <code>repeated bytes bytes = 1;</code>
+     * @return A list containing the bytes.
      */
-    java.util.List<com.google.protobuf.ByteString> getBytesArrayList();
+    java.util.List<com.google.protobuf.ByteString> getBytesList();
     /**
-     * <code>repeated bytes bytes_array = 1;</code>
-     * @return The count of bytesArray.
+     * <code>repeated bytes bytes = 1;</code>
+     * @return The count of bytes.
      */
-    int getBytesArrayCount();
+    int getBytesCount();
     /**
-     * <code>repeated bytes bytes_array = 1;</code>
+     * <code>repeated bytes bytes = 1;</code>
      * @param index The index of the element to return.
-     * @return The bytesArray at the given index.
+     * @return The bytes at the given index.
      */
-    com.google.protobuf.ByteString getBytesArray(int index);
+    com.google.protobuf.ByteString getBytes(int index);
   }
   /**
    * Protobuf type {@code protobuf.BytesArray}
    */
   public static final class BytesArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.BytesArray)
-      BytesArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                       com.google.protobuf.GeneratedMessageV3 implements
+                                                                              // @@protoc_insertion_point(message_implements:protobuf.BytesArray)
+                                                                                  BytesArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use BytesArray.newBuilder() to construct.
     private BytesArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private BytesArray() {
-      bytesArray_ = java.util.Collections.emptyList();
+      bytes_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -7977,10 +7977,10 @@ public final class FeatureValueOuterClass {
               break;
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                bytesArray_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                bytes_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              bytesArray_.add(input.readBytes());
+              bytes_.add(input.readBytes());
               break;
             }
             default: {
@@ -7999,50 +7999,50 @@ public final class FeatureValueOuterClass {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          bytesArray_ = java.util.Collections.unmodifiableList(bytesArray_); // C
+          bytes_ = java.util.Collections.unmodifiableList(bytes_); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BytesArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BytesArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.Builder.class);
     }
 
-    public static final int BYTES_ARRAY_FIELD_NUMBER = 1;
-    private java.util.List<com.google.protobuf.ByteString> bytesArray_;
+    public static final int BYTES_FIELD_NUMBER = 1;
+    private java.util.List<com.google.protobuf.ByteString> bytes_;
     /**
-     * <code>repeated bytes bytes_array = 1;</code>
-     * @return A list containing the bytesArray.
+     * <code>repeated bytes bytes = 1;</code>
+     * @return A list containing the bytes.
      */
     @java.lang.Override
     public java.util.List<com.google.protobuf.ByteString>
-        getBytesArrayList() {
-      return bytesArray_;
+    getBytesList() {
+      return bytes_;
     }
     /**
-     * <code>repeated bytes bytes_array = 1;</code>
-     * @return The count of bytesArray.
+     * <code>repeated bytes bytes = 1;</code>
+     * @return The count of bytes.
      */
-    public int getBytesArrayCount() {
-      return bytesArray_.size();
+    public int getBytesCount() {
+      return bytes_.size();
     }
     /**
-     * <code>repeated bytes bytes_array = 1;</code>
+     * <code>repeated bytes bytes = 1;</code>
      * @param index The index of the element to return.
-     * @return The bytesArray at the given index.
+     * @return The bytes at the given index.
      */
-    public com.google.protobuf.ByteString getBytesArray(int index) {
-      return bytesArray_.get(index);
+    public com.google.protobuf.ByteString getBytes(int index) {
+      return bytes_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -8058,9 +8058,9 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      for (int i = 0; i < bytesArray_.size(); i++) {
-        output.writeBytes(1, bytesArray_.get(i));
+        throws java.io.IOException {
+      for (int i = 0; i < bytes_.size(); i++) {
+        output.writeBytes(1, bytes_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -8073,12 +8073,12 @@ public final class FeatureValueOuterClass {
       size = 0;
       {
         int dataSize = 0;
-        for (int i = 0; i < bytesArray_.size(); i++) {
+        for (int i = 0; i < bytes_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeBytesSizeNoTag(bytesArray_.get(i));
+              .computeBytesSizeNoTag(bytes_.get(i));
         }
         size += dataSize;
-        size += 1 * getBytesArrayList().size();
+        size += 1 * getBytesList().size();
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -8088,15 +8088,15 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray)) {
         return super.equals(obj);
       }
       com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray other = (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray) obj;
 
-      if (!getBytesArrayList()
-          .equals(other.getBytesArrayList())) return false;
+      if (!getBytesList()
+          .equals(other.getBytesList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -8108,9 +8108,9 @@ public final class FeatureValueOuterClass {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (getBytesArrayCount() > 0) {
-        hash = (37 * hash) + BYTES_ARRAY_FIELD_NUMBER;
-        hash = (53 * hash) + getBytesArrayList().hashCode();
+      if (getBytesCount() > 0) {
+        hash = (37 * hash) + BYTES_FIELD_NUMBER;
+        hash = (53 * hash) + getBytesList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -8211,17 +8211,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.BytesArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.BytesArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.BytesArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BytesArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BytesArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.Builder.class);
@@ -8239,20 +8239,20 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bytesArray_ = java.util.Collections.emptyList();
+        bytes_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_BytesArray_descriptor;
       }
 
@@ -8275,10 +8275,10 @@ public final class FeatureValueOuterClass {
         com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray result = new com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
-          bytesArray_ = java.util.Collections.unmodifiableList(bytesArray_);
+          bytes_ = java.util.Collections.unmodifiableList(bytes_);
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.bytesArray_ = bytesArray_;
+        result.bytes_ = bytes_;
         onBuilt();
         return result;
       }
@@ -8327,13 +8327,13 @@ public final class FeatureValueOuterClass {
 
       public Builder mergeFrom(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray other) {
         if (other == com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.BytesArray.getDefaultInstance()) return this;
-        if (!other.bytesArray_.isEmpty()) {
-          if (bytesArray_.isEmpty()) {
-            bytesArray_ = other.bytesArray_;
+        if (!other.bytes_.isEmpty()) {
+          if (bytes_.isEmpty()) {
+            bytes_ = other.bytes_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureBytesArrayIsMutable();
-            bytesArray_.addAll(other.bytesArray_);
+            ensureBytesIsMutable();
+            bytes_.addAll(other.bytes_);
           }
           onChanged();
         }
@@ -8367,86 +8367,86 @@ public final class FeatureValueOuterClass {
       }
       private int bitField0_;
 
-      private java.util.List<com.google.protobuf.ByteString> bytesArray_ = java.util.Collections.emptyList();
-      private void ensureBytesArrayIsMutable() {
+      private java.util.List<com.google.protobuf.ByteString> bytes_ = java.util.Collections.emptyList();
+      private void ensureBytesIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          bytesArray_ = new java.util.ArrayList<com.google.protobuf.ByteString>(bytesArray_);
+          bytes_ = new java.util.ArrayList<com.google.protobuf.ByteString>(bytes_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
-       * <code>repeated bytes bytes_array = 1;</code>
-       * @return A list containing the bytesArray.
+       * <code>repeated bytes bytes = 1;</code>
+       * @return A list containing the bytes.
        */
       public java.util.List<com.google.protobuf.ByteString>
-          getBytesArrayList() {
+      getBytesList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(bytesArray_) : bytesArray_;
+            java.util.Collections.unmodifiableList(bytes_) : bytes_;
       }
       /**
-       * <code>repeated bytes bytes_array = 1;</code>
-       * @return The count of bytesArray.
+       * <code>repeated bytes bytes = 1;</code>
+       * @return The count of bytes.
        */
-      public int getBytesArrayCount() {
-        return bytesArray_.size();
+      public int getBytesCount() {
+        return bytes_.size();
       }
       /**
-       * <code>repeated bytes bytes_array = 1;</code>
+       * <code>repeated bytes bytes = 1;</code>
        * @param index The index of the element to return.
-       * @return The bytesArray at the given index.
+       * @return The bytes at the given index.
        */
-      public com.google.protobuf.ByteString getBytesArray(int index) {
-        return bytesArray_.get(index);
+      public com.google.protobuf.ByteString getBytes(int index) {
+        return bytes_.get(index);
       }
       /**
-       * <code>repeated bytes bytes_array = 1;</code>
+       * <code>repeated bytes bytes = 1;</code>
        * @param index The index to set the value at.
-       * @param value The bytesArray to set.
+       * @param value The bytes to set.
        * @return This builder for chaining.
        */
-      public Builder setBytesArray(
+      public Builder setBytes(
           int index, com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureBytesArrayIsMutable();
-        bytesArray_.set(index, value);
+          throw new NullPointerException();
+        }
+        ensureBytesIsMutable();
+        bytes_.set(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bytes bytes_array = 1;</code>
-       * @param value The bytesArray to add.
+       * <code>repeated bytes bytes = 1;</code>
+       * @param value The bytes to add.
        * @return This builder for chaining.
        */
-      public Builder addBytesArray(com.google.protobuf.ByteString value) {
+      public Builder addBytes(com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureBytesArrayIsMutable();
-        bytesArray_.add(value);
+          throw new NullPointerException();
+        }
+        ensureBytesIsMutable();
+        bytes_.add(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bytes bytes_array = 1;</code>
-       * @param values The bytesArray to add.
+       * <code>repeated bytes bytes = 1;</code>
+       * @param values The bytes to add.
        * @return This builder for chaining.
        */
-      public Builder addAllBytesArray(
+      public Builder addAllBytes(
           java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
-        ensureBytesArrayIsMutable();
+        ensureBytesIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, bytesArray_);
+            values, bytes_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bytes bytes_array = 1;</code>
+       * <code>repeated bytes bytes = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearBytesArray() {
-        bytesArray_ = java.util.Collections.emptyList();
+      public Builder clearBytes() {
+        bytes_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
@@ -8505,66 +8505,66 @@ public final class FeatureValueOuterClass {
   }
 
   public interface SparseStringArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.SparseStringArray)
-      com.google.protobuf.MessageOrBuilder {
+                                              // @@protoc_insertion_point(interface_extends:protobuf.SparseStringArray)
+                                                  com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return A list containing the integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return A list containing the indexIntegers.
      */
-    java.util.List<java.lang.Integer> getIntegersList();
+    java.util.List<java.lang.Integer> getIndexIntegersList();
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return The count of integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return The count of indexIntegers.
      */
-    int getIntegersCount();
+    int getIndexIntegersCount();
     /**
-     * <code>repeated int32 integers = 1;</code>
+     * <code>repeated int32 index_integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The integers at the given index.
+     * @return The indexIntegers at the given index.
      */
-    int getIntegers(int index);
+    int getIndexIntegers(int index);
 
     /**
-     * <code>repeated string strings = 2;</code>
-     * @return A list containing the strings.
+     * <code>repeated string value_strings = 2;</code>
+     * @return A list containing the valueStrings.
      */
     java.util.List<java.lang.String>
-        getStringsList();
+    getValueStringsList();
     /**
-     * <code>repeated string strings = 2;</code>
-     * @return The count of strings.
+     * <code>repeated string value_strings = 2;</code>
+     * @return The count of valueStrings.
      */
-    int getStringsCount();
+    int getValueStringsCount();
     /**
-     * <code>repeated string strings = 2;</code>
+     * <code>repeated string value_strings = 2;</code>
      * @param index The index of the element to return.
-     * @return The strings at the given index.
+     * @return The valueStrings at the given index.
      */
-    java.lang.String getStrings(int index);
+    java.lang.String getValueStrings(int index);
     /**
-     * <code>repeated string strings = 2;</code>
+     * <code>repeated string value_strings = 2;</code>
      * @param index The index of the value to return.
-     * @return The bytes of the strings at the given index.
+     * @return The bytes of the valueStrings at the given index.
      */
     com.google.protobuf.ByteString
-        getStringsBytes(int index);
+    getValueStringsBytes(int index);
   }
   /**
    * Protobuf type {@code protobuf.SparseStringArray}
    */
   public static final class SparseStringArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.SparseStringArray)
-      SparseStringArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                              com.google.protobuf.GeneratedMessageV3 implements
+                                                                                     // @@protoc_insertion_point(message_implements:protobuf.SparseStringArray)
+                                                                                         SparseStringArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use SparseStringArray.newBuilder() to construct.
     private SparseStringArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private SparseStringArray() {
-      integers_ = emptyIntList();
-      strings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      indexIntegers_ = emptyIntList();
+      valueStrings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
 
     @java.lang.Override
@@ -8600,21 +8600,21 @@ public final class FeatureValueOuterClass {
               break;
             case 8: {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                integers_ = newIntList();
+                indexIntegers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
-              integers_.addInt(input.readInt32());
+              indexIntegers_.addInt(input.readInt32());
               break;
             }
             case 10: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                integers_ = newIntList();
+                indexIntegers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                integers_.addInt(input.readInt32());
+                indexIntegers_.addInt(input.readInt32());
               }
               input.popLimit(limit);
               break;
@@ -8622,10 +8622,10 @@ public final class FeatureValueOuterClass {
             case 18: {
               java.lang.String s = input.readStringRequireUtf8();
               if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                strings_ = new com.google.protobuf.LazyStringArrayList();
+                valueStrings_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000002;
               }
-              strings_.add(s);
+              valueStrings_.add(s);
               break;
             }
             default: {
@@ -8644,89 +8644,89 @@ public final class FeatureValueOuterClass {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          integers_.makeImmutable(); // C
+          indexIntegers_.makeImmutable(); // C
         }
         if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          strings_ = strings_.getUnmodifiableView();
+          valueStrings_ = valueStrings_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseStringArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseStringArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.Builder.class);
     }
 
-    public static final int INTEGERS_FIELD_NUMBER = 1;
-    private com.google.protobuf.Internal.IntList integers_;
+    public static final int INDEX_INTEGERS_FIELD_NUMBER = 1;
+    private com.google.protobuf.Internal.IntList indexIntegers_;
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return A list containing the integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return A list containing the indexIntegers.
      */
     @java.lang.Override
     public java.util.List<java.lang.Integer>
-        getIntegersList() {
-      return integers_;
+    getIndexIntegersList() {
+      return indexIntegers_;
     }
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return The count of integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return The count of indexIntegers.
      */
-    public int getIntegersCount() {
-      return integers_.size();
+    public int getIndexIntegersCount() {
+      return indexIntegers_.size();
     }
     /**
-     * <code>repeated int32 integers = 1;</code>
+     * <code>repeated int32 index_integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The integers at the given index.
+     * @return The indexIntegers at the given index.
      */
-    public int getIntegers(int index) {
-      return integers_.getInt(index);
+    public int getIndexIntegers(int index) {
+      return indexIntegers_.getInt(index);
     }
-    private int integersMemoizedSerializedSize = -1;
+    private int indexIntegersMemoizedSerializedSize = -1;
 
-    public static final int STRINGS_FIELD_NUMBER = 2;
-    private com.google.protobuf.LazyStringList strings_;
+    public static final int VALUE_STRINGS_FIELD_NUMBER = 2;
+    private com.google.protobuf.LazyStringList valueStrings_;
     /**
-     * <code>repeated string strings = 2;</code>
-     * @return A list containing the strings.
+     * <code>repeated string value_strings = 2;</code>
+     * @return A list containing the valueStrings.
      */
     public com.google.protobuf.ProtocolStringList
-        getStringsList() {
-      return strings_;
+    getValueStringsList() {
+      return valueStrings_;
     }
     /**
-     * <code>repeated string strings = 2;</code>
-     * @return The count of strings.
+     * <code>repeated string value_strings = 2;</code>
+     * @return The count of valueStrings.
      */
-    public int getStringsCount() {
-      return strings_.size();
+    public int getValueStringsCount() {
+      return valueStrings_.size();
     }
     /**
-     * <code>repeated string strings = 2;</code>
+     * <code>repeated string value_strings = 2;</code>
      * @param index The index of the element to return.
-     * @return The strings at the given index.
+     * @return The valueStrings at the given index.
      */
-    public java.lang.String getStrings(int index) {
-      return strings_.get(index);
+    public java.lang.String getValueStrings(int index) {
+      return valueStrings_.get(index);
     }
     /**
-     * <code>repeated string strings = 2;</code>
+     * <code>repeated string value_strings = 2;</code>
      * @param index The index of the value to return.
-     * @return The bytes of the strings at the given index.
+     * @return The bytes of the valueStrings at the given index.
      */
     public com.google.protobuf.ByteString
-        getStringsBytes(int index) {
-      return strings_.getByteString(index);
+    getValueStringsBytes(int index) {
+      return valueStrings_.getByteString(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -8742,17 +8742,17 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
-      if (getIntegersList().size() > 0) {
+      if (getIndexIntegersList().size() > 0) {
         output.writeUInt32NoTag(10);
-        output.writeUInt32NoTag(integersMemoizedSerializedSize);
+        output.writeUInt32NoTag(indexIntegersMemoizedSerializedSize);
       }
-      for (int i = 0; i < integers_.size(); i++) {
-        output.writeInt32NoTag(integers_.getInt(i));
+      for (int i = 0; i < indexIntegers_.size(); i++) {
+        output.writeInt32NoTag(indexIntegers_.getInt(i));
       }
-      for (int i = 0; i < strings_.size(); i++) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, strings_.getRaw(i));
+      for (int i = 0; i < valueStrings_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, valueStrings_.getRaw(i));
       }
       unknownFields.writeTo(output);
     }
@@ -8765,25 +8765,25 @@ public final class FeatureValueOuterClass {
       size = 0;
       {
         int dataSize = 0;
-        for (int i = 0; i < integers_.size(); i++) {
+        for (int i = 0; i < indexIntegers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(integers_.getInt(i));
+              .computeInt32SizeNoTag(indexIntegers_.getInt(i));
         }
         size += dataSize;
-        if (!getIntegersList().isEmpty()) {
+        if (!getIndexIntegersList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        integersMemoizedSerializedSize = dataSize;
+        indexIntegersMemoizedSerializedSize = dataSize;
       }
       {
         int dataSize = 0;
-        for (int i = 0; i < strings_.size(); i++) {
-          dataSize += computeStringSizeNoTag(strings_.getRaw(i));
+        for (int i = 0; i < valueStrings_.size(); i++) {
+          dataSize += computeStringSizeNoTag(valueStrings_.getRaw(i));
         }
         size += dataSize;
-        size += 1 * getStringsList().size();
+        size += 1 * getValueStringsList().size();
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -8793,17 +8793,17 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray)) {
         return super.equals(obj);
       }
       com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray other = (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray) obj;
 
-      if (!getIntegersList()
-          .equals(other.getIntegersList())) return false;
-      if (!getStringsList()
-          .equals(other.getStringsList())) return false;
+      if (!getIndexIntegersList()
+          .equals(other.getIndexIntegersList())) return false;
+      if (!getValueStringsList()
+          .equals(other.getValueStringsList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -8815,13 +8815,13 @@ public final class FeatureValueOuterClass {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (getIntegersCount() > 0) {
-        hash = (37 * hash) + INTEGERS_FIELD_NUMBER;
-        hash = (53 * hash) + getIntegersList().hashCode();
+      if (getIndexIntegersCount() > 0) {
+        hash = (37 * hash) + INDEX_INTEGERS_FIELD_NUMBER;
+        hash = (53 * hash) + getIndexIntegersList().hashCode();
       }
-      if (getStringsCount() > 0) {
-        hash = (37 * hash) + STRINGS_FIELD_NUMBER;
-        hash = (53 * hash) + getStringsList().hashCode();
+      if (getValueStringsCount() > 0) {
+        hash = (37 * hash) + VALUE_STRINGS_FIELD_NUMBER;
+        hash = (53 * hash) + getValueStringsList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -8922,17 +8922,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.SparseStringArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.SparseStringArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.SparseStringArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseStringArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseStringArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.Builder.class);
@@ -8950,22 +8950,22 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        integers_ = emptyIntList();
+        indexIntegers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
-        strings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        valueStrings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseStringArray_descriptor;
       }
 
@@ -8988,15 +8988,15 @@ public final class FeatureValueOuterClass {
         com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray result = new com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
-          integers_.makeImmutable();
+          indexIntegers_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.integers_ = integers_;
+        result.indexIntegers_ = indexIntegers_;
         if (((bitField0_ & 0x00000002) != 0)) {
-          strings_ = strings_.getUnmodifiableView();
+          valueStrings_ = valueStrings_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000002);
         }
-        result.strings_ = strings_;
+        result.valueStrings_ = valueStrings_;
         onBuilt();
         return result;
       }
@@ -9045,23 +9045,23 @@ public final class FeatureValueOuterClass {
 
       public Builder mergeFrom(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray other) {
         if (other == com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseStringArray.getDefaultInstance()) return this;
-        if (!other.integers_.isEmpty()) {
-          if (integers_.isEmpty()) {
-            integers_ = other.integers_;
+        if (!other.indexIntegers_.isEmpty()) {
+          if (indexIntegers_.isEmpty()) {
+            indexIntegers_ = other.indexIntegers_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureIntegersIsMutable();
-            integers_.addAll(other.integers_);
+            ensureIndexIntegersIsMutable();
+            indexIntegers_.addAll(other.indexIntegers_);
           }
           onChanged();
         }
-        if (!other.strings_.isEmpty()) {
-          if (strings_.isEmpty()) {
-            strings_ = other.strings_;
+        if (!other.valueStrings_.isEmpty()) {
+          if (valueStrings_.isEmpty()) {
+            valueStrings_ = other.valueStrings_;
             bitField0_ = (bitField0_ & ~0x00000002);
           } else {
-            ensureStringsIsMutable();
-            strings_.addAll(other.strings_);
+            ensureValueStringsIsMutable();
+            valueStrings_.addAll(other.valueStrings_);
           }
           onChanged();
         }
@@ -9095,191 +9095,191 @@ public final class FeatureValueOuterClass {
       }
       private int bitField0_;
 
-      private com.google.protobuf.Internal.IntList integers_ = emptyIntList();
-      private void ensureIntegersIsMutable() {
+      private com.google.protobuf.Internal.IntList indexIntegers_ = emptyIntList();
+      private void ensureIndexIntegersIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          integers_ = mutableCopy(integers_);
+          indexIntegers_ = mutableCopy(indexIntegers_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @return A list containing the integers.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @return A list containing the indexIntegers.
        */
       public java.util.List<java.lang.Integer>
-          getIntegersList() {
+      getIndexIntegersList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(integers_) : integers_;
+            java.util.Collections.unmodifiableList(indexIntegers_) : indexIntegers_;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @return The count of integers.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @return The count of indexIntegers.
        */
-      public int getIntegersCount() {
-        return integers_.size();
+      public int getIndexIntegersCount() {
+        return indexIntegers_.size();
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @param index The index of the element to return.
-       * @return The integers at the given index.
+       * @return The indexIntegers at the given index.
        */
-      public int getIntegers(int index) {
-        return integers_.getInt(index);
+      public int getIndexIntegers(int index) {
+        return indexIntegers_.getInt(index);
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @param index The index to set the value at.
-       * @param value The integers to set.
+       * @param value The indexIntegers to set.
        * @return This builder for chaining.
        */
-      public Builder setIntegers(
+      public Builder setIndexIntegers(
           int index, int value) {
-        ensureIntegersIsMutable();
-        integers_.setInt(index, value);
+        ensureIndexIntegersIsMutable();
+        indexIntegers_.setInt(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @param value The integers to add.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @param value The indexIntegers to add.
        * @return This builder for chaining.
        */
-      public Builder addIntegers(int value) {
-        ensureIntegersIsMutable();
-        integers_.addInt(value);
+      public Builder addIndexIntegers(int value) {
+        ensureIndexIntegersIsMutable();
+        indexIntegers_.addInt(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @param values The integers to add.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @param values The indexIntegers to add.
        * @return This builder for chaining.
        */
-      public Builder addAllIntegers(
+      public Builder addAllIndexIntegers(
           java.lang.Iterable<? extends java.lang.Integer> values) {
-        ensureIntegersIsMutable();
+        ensureIndexIntegersIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, integers_);
+            values, indexIntegers_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearIntegers() {
-        integers_ = emptyIntList();
+      public Builder clearIndexIntegers() {
+        indexIntegers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
 
-      private com.google.protobuf.LazyStringList strings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      private void ensureStringsIsMutable() {
+      private com.google.protobuf.LazyStringList valueStrings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureValueStringsIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          strings_ = new com.google.protobuf.LazyStringArrayList(strings_);
+          valueStrings_ = new com.google.protobuf.LazyStringArrayList(valueStrings_);
           bitField0_ |= 0x00000002;
-         }
+        }
       }
       /**
-       * <code>repeated string strings = 2;</code>
-       * @return A list containing the strings.
+       * <code>repeated string value_strings = 2;</code>
+       * @return A list containing the valueStrings.
        */
       public com.google.protobuf.ProtocolStringList
-          getStringsList() {
-        return strings_.getUnmodifiableView();
+      getValueStringsList() {
+        return valueStrings_.getUnmodifiableView();
       }
       /**
-       * <code>repeated string strings = 2;</code>
-       * @return The count of strings.
+       * <code>repeated string value_strings = 2;</code>
+       * @return The count of valueStrings.
        */
-      public int getStringsCount() {
-        return strings_.size();
+      public int getValueStringsCount() {
+        return valueStrings_.size();
       }
       /**
-       * <code>repeated string strings = 2;</code>
+       * <code>repeated string value_strings = 2;</code>
        * @param index The index of the element to return.
-       * @return The strings at the given index.
+       * @return The valueStrings at the given index.
        */
-      public java.lang.String getStrings(int index) {
-        return strings_.get(index);
+      public java.lang.String getValueStrings(int index) {
+        return valueStrings_.get(index);
       }
       /**
-       * <code>repeated string strings = 2;</code>
+       * <code>repeated string value_strings = 2;</code>
        * @param index The index of the value to return.
-       * @return The bytes of the strings at the given index.
+       * @return The bytes of the valueStrings at the given index.
        */
       public com.google.protobuf.ByteString
-          getStringsBytes(int index) {
-        return strings_.getByteString(index);
+      getValueStringsBytes(int index) {
+        return valueStrings_.getByteString(index);
       }
       /**
-       * <code>repeated string strings = 2;</code>
+       * <code>repeated string value_strings = 2;</code>
        * @param index The index to set the value at.
-       * @param value The strings to set.
+       * @param value The valueStrings to set.
        * @return This builder for chaining.
        */
-      public Builder setStrings(
+      public Builder setValueStrings(
           int index, java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureStringsIsMutable();
-        strings_.set(index, value);
+          throw new NullPointerException();
+        }
+        ensureValueStringsIsMutable();
+        valueStrings_.set(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated string strings = 2;</code>
-       * @param value The strings to add.
+       * <code>repeated string value_strings = 2;</code>
+       * @param value The valueStrings to add.
        * @return This builder for chaining.
        */
-      public Builder addStrings(
+      public Builder addValueStrings(
           java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureStringsIsMutable();
-        strings_.add(value);
+          throw new NullPointerException();
+        }
+        ensureValueStringsIsMutable();
+        valueStrings_.add(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated string strings = 2;</code>
-       * @param values The strings to add.
+       * <code>repeated string value_strings = 2;</code>
+       * @param values The valueStrings to add.
        * @return This builder for chaining.
        */
-      public Builder addAllStrings(
+      public Builder addAllValueStrings(
           java.lang.Iterable<java.lang.String> values) {
-        ensureStringsIsMutable();
+        ensureValueStringsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, strings_);
+            values, valueStrings_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated string strings = 2;</code>
+       * <code>repeated string value_strings = 2;</code>
        * @return This builder for chaining.
        */
-      public Builder clearStrings() {
-        strings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      public Builder clearValueStrings() {
+        valueStrings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated string strings = 2;</code>
-       * @param value The bytes of the strings to add.
+       * <code>repeated string value_strings = 2;</code>
+       * @param value The bytes of the valueStrings to add.
        * @return This builder for chaining.
        */
-      public Builder addStringsBytes(
+      public Builder addValueStringsBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        ensureStringsIsMutable();
-        strings_.add(value);
+          throw new NullPointerException();
+        }
+        checkByteStringIsUtf8(value);
+        ensureValueStringsIsMutable();
+        valueStrings_.add(value);
         onChanged();
         return this;
       }
@@ -9337,58 +9337,58 @@ public final class FeatureValueOuterClass {
   }
 
   public interface SparseBoolArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.SparseBoolArray)
-      com.google.protobuf.MessageOrBuilder {
+                                            // @@protoc_insertion_point(interface_extends:protobuf.SparseBoolArray)
+                                                com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return A list containing the integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return A list containing the indexIntegers.
      */
-    java.util.List<java.lang.Integer> getIntegersList();
+    java.util.List<java.lang.Integer> getIndexIntegersList();
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return The count of integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return The count of indexIntegers.
      */
-    int getIntegersCount();
+    int getIndexIntegersCount();
     /**
-     * <code>repeated int32 integers = 1;</code>
+     * <code>repeated int32 index_integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The integers at the given index.
+     * @return The indexIntegers at the given index.
      */
-    int getIntegers(int index);
+    int getIndexIntegers(int index);
 
     /**
-     * <code>repeated bool booleans = 2;</code>
-     * @return A list containing the booleans.
+     * <code>repeated bool value_booleans = 2;</code>
+     * @return A list containing the valueBooleans.
      */
-    java.util.List<java.lang.Boolean> getBooleansList();
+    java.util.List<java.lang.Boolean> getValueBooleansList();
     /**
-     * <code>repeated bool booleans = 2;</code>
-     * @return The count of booleans.
+     * <code>repeated bool value_booleans = 2;</code>
+     * @return The count of valueBooleans.
      */
-    int getBooleansCount();
+    int getValueBooleansCount();
     /**
-     * <code>repeated bool booleans = 2;</code>
+     * <code>repeated bool value_booleans = 2;</code>
      * @param index The index of the element to return.
-     * @return The booleans at the given index.
+     * @return The valueBooleans at the given index.
      */
-    boolean getBooleans(int index);
+    boolean getValueBooleans(int index);
   }
   /**
    * Protobuf type {@code protobuf.SparseBoolArray}
    */
   public static final class SparseBoolArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.SparseBoolArray)
-      SparseBoolArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                            com.google.protobuf.GeneratedMessageV3 implements
+                                                                                   // @@protoc_insertion_point(message_implements:protobuf.SparseBoolArray)
+                                                                                       SparseBoolArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use SparseBoolArray.newBuilder() to construct.
     private SparseBoolArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private SparseBoolArray() {
-      integers_ = emptyIntList();
-      booleans_ = emptyBooleanList();
+      indexIntegers_ = emptyIntList();
+      valueBooleans_ = emptyBooleanList();
     }
 
     @java.lang.Override
@@ -9424,42 +9424,42 @@ public final class FeatureValueOuterClass {
               break;
             case 8: {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                integers_ = newIntList();
+                indexIntegers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
-              integers_.addInt(input.readInt32());
+              indexIntegers_.addInt(input.readInt32());
               break;
             }
             case 10: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                integers_ = newIntList();
+                indexIntegers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                integers_.addInt(input.readInt32());
+                indexIntegers_.addInt(input.readInt32());
               }
               input.popLimit(limit);
               break;
             }
             case 16: {
               if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                booleans_ = newBooleanList();
+                valueBooleans_ = newBooleanList();
                 mutable_bitField0_ |= 0x00000002;
               }
-              booleans_.addBoolean(input.readBool());
+              valueBooleans_.addBoolean(input.readBool());
               break;
             }
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
-                booleans_ = newBooleanList();
+                valueBooleans_ = newBooleanList();
                 mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
-                booleans_.addBoolean(input.readBool());
+                valueBooleans_.addBoolean(input.readBool());
               }
               input.popLimit(limit);
               break;
@@ -9480,83 +9480,83 @@ public final class FeatureValueOuterClass {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          integers_.makeImmutable(); // C
+          indexIntegers_.makeImmutable(); // C
         }
         if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          booleans_.makeImmutable(); // C
+          valueBooleans_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseBoolArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseBoolArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.Builder.class);
     }
 
-    public static final int INTEGERS_FIELD_NUMBER = 1;
-    private com.google.protobuf.Internal.IntList integers_;
+    public static final int INDEX_INTEGERS_FIELD_NUMBER = 1;
+    private com.google.protobuf.Internal.IntList indexIntegers_;
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return A list containing the integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return A list containing the indexIntegers.
      */
     @java.lang.Override
     public java.util.List<java.lang.Integer>
-        getIntegersList() {
-      return integers_;
+    getIndexIntegersList() {
+      return indexIntegers_;
     }
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return The count of integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return The count of indexIntegers.
      */
-    public int getIntegersCount() {
-      return integers_.size();
+    public int getIndexIntegersCount() {
+      return indexIntegers_.size();
     }
     /**
-     * <code>repeated int32 integers = 1;</code>
+     * <code>repeated int32 index_integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The integers at the given index.
+     * @return The indexIntegers at the given index.
      */
-    public int getIntegers(int index) {
-      return integers_.getInt(index);
+    public int getIndexIntegers(int index) {
+      return indexIntegers_.getInt(index);
     }
-    private int integersMemoizedSerializedSize = -1;
+    private int indexIntegersMemoizedSerializedSize = -1;
 
-    public static final int BOOLEANS_FIELD_NUMBER = 2;
-    private com.google.protobuf.Internal.BooleanList booleans_;
+    public static final int VALUE_BOOLEANS_FIELD_NUMBER = 2;
+    private com.google.protobuf.Internal.BooleanList valueBooleans_;
     /**
-     * <code>repeated bool booleans = 2;</code>
-     * @return A list containing the booleans.
+     * <code>repeated bool value_booleans = 2;</code>
+     * @return A list containing the valueBooleans.
      */
     @java.lang.Override
     public java.util.List<java.lang.Boolean>
-        getBooleansList() {
-      return booleans_;
+    getValueBooleansList() {
+      return valueBooleans_;
     }
     /**
-     * <code>repeated bool booleans = 2;</code>
-     * @return The count of booleans.
+     * <code>repeated bool value_booleans = 2;</code>
+     * @return The count of valueBooleans.
      */
-    public int getBooleansCount() {
-      return booleans_.size();
+    public int getValueBooleansCount() {
+      return valueBooleans_.size();
     }
     /**
-     * <code>repeated bool booleans = 2;</code>
+     * <code>repeated bool value_booleans = 2;</code>
      * @param index The index of the element to return.
-     * @return The booleans at the given index.
+     * @return The valueBooleans at the given index.
      */
-    public boolean getBooleans(int index) {
-      return booleans_.getBoolean(index);
+    public boolean getValueBooleans(int index) {
+      return valueBooleans_.getBoolean(index);
     }
-    private int booleansMemoizedSerializedSize = -1;
+    private int valueBooleansMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
@@ -9571,21 +9571,21 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
-      if (getIntegersList().size() > 0) {
+      if (getIndexIntegersList().size() > 0) {
         output.writeUInt32NoTag(10);
-        output.writeUInt32NoTag(integersMemoizedSerializedSize);
+        output.writeUInt32NoTag(indexIntegersMemoizedSerializedSize);
       }
-      for (int i = 0; i < integers_.size(); i++) {
-        output.writeInt32NoTag(integers_.getInt(i));
+      for (int i = 0; i < indexIntegers_.size(); i++) {
+        output.writeInt32NoTag(indexIntegers_.getInt(i));
       }
-      if (getBooleansList().size() > 0) {
+      if (getValueBooleansList().size() > 0) {
         output.writeUInt32NoTag(18);
-        output.writeUInt32NoTag(booleansMemoizedSerializedSize);
+        output.writeUInt32NoTag(valueBooleansMemoizedSerializedSize);
       }
-      for (int i = 0; i < booleans_.size(); i++) {
-        output.writeBoolNoTag(booleans_.getBoolean(i));
+      for (int i = 0; i < valueBooleans_.size(); i++) {
+        output.writeBoolNoTag(valueBooleans_.getBoolean(i));
       }
       unknownFields.writeTo(output);
     }
@@ -9598,28 +9598,28 @@ public final class FeatureValueOuterClass {
       size = 0;
       {
         int dataSize = 0;
-        for (int i = 0; i < integers_.size(); i++) {
+        for (int i = 0; i < indexIntegers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(integers_.getInt(i));
+              .computeInt32SizeNoTag(indexIntegers_.getInt(i));
         }
         size += dataSize;
-        if (!getIntegersList().isEmpty()) {
+        if (!getIndexIntegersList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        integersMemoizedSerializedSize = dataSize;
+        indexIntegersMemoizedSerializedSize = dataSize;
       }
       {
         int dataSize = 0;
-        dataSize = 1 * getBooleansList().size();
+        dataSize = 1 * getValueBooleansList().size();
         size += dataSize;
-        if (!getBooleansList().isEmpty()) {
+        if (!getValueBooleansList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        booleansMemoizedSerializedSize = dataSize;
+        valueBooleansMemoizedSerializedSize = dataSize;
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -9629,17 +9629,17 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray)) {
         return super.equals(obj);
       }
       com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray other = (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray) obj;
 
-      if (!getIntegersList()
-          .equals(other.getIntegersList())) return false;
-      if (!getBooleansList()
-          .equals(other.getBooleansList())) return false;
+      if (!getIndexIntegersList()
+          .equals(other.getIndexIntegersList())) return false;
+      if (!getValueBooleansList()
+          .equals(other.getValueBooleansList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -9651,13 +9651,13 @@ public final class FeatureValueOuterClass {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (getIntegersCount() > 0) {
-        hash = (37 * hash) + INTEGERS_FIELD_NUMBER;
-        hash = (53 * hash) + getIntegersList().hashCode();
+      if (getIndexIntegersCount() > 0) {
+        hash = (37 * hash) + INDEX_INTEGERS_FIELD_NUMBER;
+        hash = (53 * hash) + getIndexIntegersList().hashCode();
       }
-      if (getBooleansCount() > 0) {
-        hash = (37 * hash) + BOOLEANS_FIELD_NUMBER;
-        hash = (53 * hash) + getBooleansList().hashCode();
+      if (getValueBooleansCount() > 0) {
+        hash = (37 * hash) + VALUE_BOOLEANS_FIELD_NUMBER;
+        hash = (53 * hash) + getValueBooleansList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -9758,17 +9758,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.SparseBoolArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.SparseBoolArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.SparseBoolArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseBoolArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseBoolArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.Builder.class);
@@ -9786,22 +9786,22 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        integers_ = emptyIntList();
+        indexIntegers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
-        booleans_ = emptyBooleanList();
+        valueBooleans_ = emptyBooleanList();
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseBoolArray_descriptor;
       }
 
@@ -9824,15 +9824,15 @@ public final class FeatureValueOuterClass {
         com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray result = new com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
-          integers_.makeImmutable();
+          indexIntegers_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.integers_ = integers_;
+        result.indexIntegers_ = indexIntegers_;
         if (((bitField0_ & 0x00000002) != 0)) {
-          booleans_.makeImmutable();
+          valueBooleans_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000002);
         }
-        result.booleans_ = booleans_;
+        result.valueBooleans_ = valueBooleans_;
         onBuilt();
         return result;
       }
@@ -9881,23 +9881,23 @@ public final class FeatureValueOuterClass {
 
       public Builder mergeFrom(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray other) {
         if (other == com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseBoolArray.getDefaultInstance()) return this;
-        if (!other.integers_.isEmpty()) {
-          if (integers_.isEmpty()) {
-            integers_ = other.integers_;
+        if (!other.indexIntegers_.isEmpty()) {
+          if (indexIntegers_.isEmpty()) {
+            indexIntegers_ = other.indexIntegers_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureIntegersIsMutable();
-            integers_.addAll(other.integers_);
+            ensureIndexIntegersIsMutable();
+            indexIntegers_.addAll(other.indexIntegers_);
           }
           onChanged();
         }
-        if (!other.booleans_.isEmpty()) {
-          if (booleans_.isEmpty()) {
-            booleans_ = other.booleans_;
+        if (!other.valueBooleans_.isEmpty()) {
+          if (valueBooleans_.isEmpty()) {
+            valueBooleans_ = other.valueBooleans_;
             bitField0_ = (bitField0_ & ~0x00000002);
           } else {
-            ensureBooleansIsMutable();
-            booleans_.addAll(other.booleans_);
+            ensureValueBooleansIsMutable();
+            valueBooleans_.addAll(other.valueBooleans_);
           }
           onChanged();
         }
@@ -9931,159 +9931,159 @@ public final class FeatureValueOuterClass {
       }
       private int bitField0_;
 
-      private com.google.protobuf.Internal.IntList integers_ = emptyIntList();
-      private void ensureIntegersIsMutable() {
+      private com.google.protobuf.Internal.IntList indexIntegers_ = emptyIntList();
+      private void ensureIndexIntegersIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          integers_ = mutableCopy(integers_);
+          indexIntegers_ = mutableCopy(indexIntegers_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @return A list containing the integers.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @return A list containing the indexIntegers.
        */
       public java.util.List<java.lang.Integer>
-          getIntegersList() {
+      getIndexIntegersList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(integers_) : integers_;
+            java.util.Collections.unmodifiableList(indexIntegers_) : indexIntegers_;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @return The count of integers.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @return The count of indexIntegers.
        */
-      public int getIntegersCount() {
-        return integers_.size();
+      public int getIndexIntegersCount() {
+        return indexIntegers_.size();
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @param index The index of the element to return.
-       * @return The integers at the given index.
+       * @return The indexIntegers at the given index.
        */
-      public int getIntegers(int index) {
-        return integers_.getInt(index);
+      public int getIndexIntegers(int index) {
+        return indexIntegers_.getInt(index);
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @param index The index to set the value at.
-       * @param value The integers to set.
+       * @param value The indexIntegers to set.
        * @return This builder for chaining.
        */
-      public Builder setIntegers(
+      public Builder setIndexIntegers(
           int index, int value) {
-        ensureIntegersIsMutable();
-        integers_.setInt(index, value);
+        ensureIndexIntegersIsMutable();
+        indexIntegers_.setInt(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @param value The integers to add.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @param value The indexIntegers to add.
        * @return This builder for chaining.
        */
-      public Builder addIntegers(int value) {
-        ensureIntegersIsMutable();
-        integers_.addInt(value);
+      public Builder addIndexIntegers(int value) {
+        ensureIndexIntegersIsMutable();
+        indexIntegers_.addInt(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @param values The integers to add.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @param values The indexIntegers to add.
        * @return This builder for chaining.
        */
-      public Builder addAllIntegers(
+      public Builder addAllIndexIntegers(
           java.lang.Iterable<? extends java.lang.Integer> values) {
-        ensureIntegersIsMutable();
+        ensureIndexIntegersIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, integers_);
+            values, indexIntegers_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearIntegers() {
-        integers_ = emptyIntList();
+      public Builder clearIndexIntegers() {
+        indexIntegers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
 
-      private com.google.protobuf.Internal.BooleanList booleans_ = emptyBooleanList();
-      private void ensureBooleansIsMutable() {
+      private com.google.protobuf.Internal.BooleanList valueBooleans_ = emptyBooleanList();
+      private void ensureValueBooleansIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          booleans_ = mutableCopy(booleans_);
+          valueBooleans_ = mutableCopy(valueBooleans_);
           bitField0_ |= 0x00000002;
-         }
+        }
       }
       /**
-       * <code>repeated bool booleans = 2;</code>
-       * @return A list containing the booleans.
+       * <code>repeated bool value_booleans = 2;</code>
+       * @return A list containing the valueBooleans.
        */
       public java.util.List<java.lang.Boolean>
-          getBooleansList() {
+      getValueBooleansList() {
         return ((bitField0_ & 0x00000002) != 0) ?
-                 java.util.Collections.unmodifiableList(booleans_) : booleans_;
+            java.util.Collections.unmodifiableList(valueBooleans_) : valueBooleans_;
       }
       /**
-       * <code>repeated bool booleans = 2;</code>
-       * @return The count of booleans.
+       * <code>repeated bool value_booleans = 2;</code>
+       * @return The count of valueBooleans.
        */
-      public int getBooleansCount() {
-        return booleans_.size();
+      public int getValueBooleansCount() {
+        return valueBooleans_.size();
       }
       /**
-       * <code>repeated bool booleans = 2;</code>
+       * <code>repeated bool value_booleans = 2;</code>
        * @param index The index of the element to return.
-       * @return The booleans at the given index.
+       * @return The valueBooleans at the given index.
        */
-      public boolean getBooleans(int index) {
-        return booleans_.getBoolean(index);
+      public boolean getValueBooleans(int index) {
+        return valueBooleans_.getBoolean(index);
       }
       /**
-       * <code>repeated bool booleans = 2;</code>
+       * <code>repeated bool value_booleans = 2;</code>
        * @param index The index to set the value at.
-       * @param value The booleans to set.
+       * @param value The valueBooleans to set.
        * @return This builder for chaining.
        */
-      public Builder setBooleans(
+      public Builder setValueBooleans(
           int index, boolean value) {
-        ensureBooleansIsMutable();
-        booleans_.setBoolean(index, value);
+        ensureValueBooleansIsMutable();
+        valueBooleans_.setBoolean(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bool booleans = 2;</code>
-       * @param value The booleans to add.
+       * <code>repeated bool value_booleans = 2;</code>
+       * @param value The valueBooleans to add.
        * @return This builder for chaining.
        */
-      public Builder addBooleans(boolean value) {
-        ensureBooleansIsMutable();
-        booleans_.addBoolean(value);
+      public Builder addValueBooleans(boolean value) {
+        ensureValueBooleansIsMutable();
+        valueBooleans_.addBoolean(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bool booleans = 2;</code>
-       * @param values The booleans to add.
+       * <code>repeated bool value_booleans = 2;</code>
+       * @param values The valueBooleans to add.
        * @return This builder for chaining.
        */
-      public Builder addAllBooleans(
+      public Builder addAllValueBooleans(
           java.lang.Iterable<? extends java.lang.Boolean> values) {
-        ensureBooleansIsMutable();
+        ensureValueBooleansIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, booleans_);
+            values, valueBooleans_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bool booleans = 2;</code>
+       * <code>repeated bool value_booleans = 2;</code>
        * @return This builder for chaining.
        */
-      public Builder clearBooleans() {
-        booleans_ = emptyBooleanList();
+      public Builder clearValueBooleans() {
+        valueBooleans_ = emptyBooleanList();
         bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
@@ -10142,8 +10142,8 @@ public final class FeatureValueOuterClass {
   }
 
   public interface SparseIntegerArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.SparseIntegerArray)
-      com.google.protobuf.MessageOrBuilder {
+                                               // @@protoc_insertion_point(interface_extends:protobuf.SparseIntegerArray)
+                                                   com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>repeated int32 index_integers = 1;</code>
@@ -10183,10 +10183,10 @@ public final class FeatureValueOuterClass {
    * Protobuf type {@code protobuf.SparseIntegerArray}
    */
   public static final class SparseIntegerArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.SparseIntegerArray)
-      SparseIntegerArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                               com.google.protobuf.GeneratedMessageV3 implements
+                                                                                      // @@protoc_insertion_point(message_implements:protobuf.SparseIntegerArray)
+                                                                                          SparseIntegerArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use SparseIntegerArray.newBuilder() to construct.
     private SparseIntegerArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -10295,13 +10295,13 @@ public final class FeatureValueOuterClass {
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseIntegerArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseIntegerArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.Builder.class);
@@ -10315,7 +10315,7 @@ public final class FeatureValueOuterClass {
      */
     @java.lang.Override
     public java.util.List<java.lang.Integer>
-        getIndexIntegersList() {
+    getIndexIntegersList() {
       return indexIntegers_;
     }
     /**
@@ -10343,7 +10343,7 @@ public final class FeatureValueOuterClass {
      */
     @java.lang.Override
     public java.util.List<java.lang.Integer>
-        getValueIntegersList() {
+    getValueIntegersList() {
       return valueIntegers_;
     }
     /**
@@ -10376,7 +10376,7 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
       if (getIndexIntegersList().size() > 0) {
         output.writeUInt32NoTag(10);
@@ -10405,7 +10405,7 @@ public final class FeatureValueOuterClass {
         int dataSize = 0;
         for (int i = 0; i < indexIntegers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(indexIntegers_.getInt(i));
+              .computeInt32SizeNoTag(indexIntegers_.getInt(i));
         }
         size += dataSize;
         if (!getIndexIntegersList().isEmpty()) {
@@ -10419,7 +10419,7 @@ public final class FeatureValueOuterClass {
         int dataSize = 0;
         for (int i = 0; i < valueIntegers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(valueIntegers_.getInt(i));
+              .computeInt32SizeNoTag(valueIntegers_.getInt(i));
         }
         size += dataSize;
         if (!getValueIntegersList().isEmpty()) {
@@ -10437,7 +10437,7 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray)) {
         return super.equals(obj);
@@ -10566,17 +10566,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.SparseIntegerArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.SparseIntegerArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.SparseIntegerArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseIntegerArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseIntegerArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseIntegerArray.Builder.class);
@@ -10594,7 +10594,7 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
@@ -10609,7 +10609,7 @@ public final class FeatureValueOuterClass {
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseIntegerArray_descriptor;
       }
 
@@ -10744,16 +10744,16 @@ public final class FeatureValueOuterClass {
         if (!((bitField0_ & 0x00000001) != 0)) {
           indexIntegers_ = mutableCopy(indexIntegers_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
        * <code>repeated int32 index_integers = 1;</code>
        * @return A list containing the indexIntegers.
        */
       public java.util.List<java.lang.Integer>
-          getIndexIntegersList() {
+      getIndexIntegersList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(indexIntegers_) : indexIntegers_;
+            java.util.Collections.unmodifiableList(indexIntegers_) : indexIntegers_;
       }
       /**
        * <code>repeated int32 index_integers = 1;</code>
@@ -10823,16 +10823,16 @@ public final class FeatureValueOuterClass {
         if (!((bitField0_ & 0x00000002) != 0)) {
           valueIntegers_ = mutableCopy(valueIntegers_);
           bitField0_ |= 0x00000002;
-         }
+        }
       }
       /**
        * <code>repeated int32 value_integers = 2;</code>
        * @return A list containing the valueIntegers.
        */
       public java.util.List<java.lang.Integer>
-          getValueIntegersList() {
+      getValueIntegersList() {
         return ((bitField0_ & 0x00000002) != 0) ?
-                 java.util.Collections.unmodifiableList(valueIntegers_) : valueIntegers_;
+            java.util.Collections.unmodifiableList(valueIntegers_) : valueIntegers_;
       }
       /**
        * <code>repeated int32 value_integers = 2;</code>
@@ -10950,8 +10950,8 @@ public final class FeatureValueOuterClass {
   }
 
   public interface SparseLongArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.SparseLongArray)
-      com.google.protobuf.MessageOrBuilder {
+                                            // @@protoc_insertion_point(interface_extends:protobuf.SparseLongArray)
+                                                com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>repeated int32 index_integers = 1;</code>
@@ -10971,37 +10971,37 @@ public final class FeatureValueOuterClass {
     int getIndexIntegers(int index);
 
     /**
-     * <code>repeated int64 longs = 2;</code>
-     * @return A list containing the longs.
+     * <code>repeated int64 value_longs = 2;</code>
+     * @return A list containing the valueLongs.
      */
-    java.util.List<java.lang.Long> getLongsList();
+    java.util.List<java.lang.Long> getValueLongsList();
     /**
-     * <code>repeated int64 longs = 2;</code>
-     * @return The count of longs.
+     * <code>repeated int64 value_longs = 2;</code>
+     * @return The count of valueLongs.
      */
-    int getLongsCount();
+    int getValueLongsCount();
     /**
-     * <code>repeated int64 longs = 2;</code>
+     * <code>repeated int64 value_longs = 2;</code>
      * @param index The index of the element to return.
-     * @return The longs at the given index.
+     * @return The valueLongs at the given index.
      */
-    long getLongs(int index);
+    long getValueLongs(int index);
   }
   /**
    * Protobuf type {@code protobuf.SparseLongArray}
    */
   public static final class SparseLongArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.SparseLongArray)
-      SparseLongArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                            com.google.protobuf.GeneratedMessageV3 implements
+                                                                                   // @@protoc_insertion_point(message_implements:protobuf.SparseLongArray)
+                                                                                       SparseLongArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use SparseLongArray.newBuilder() to construct.
     private SparseLongArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private SparseLongArray() {
       indexIntegers_ = emptyIntList();
-      longs_ = emptyLongList();
+      valueLongs_ = emptyLongList();
     }
 
     @java.lang.Override
@@ -11058,21 +11058,21 @@ public final class FeatureValueOuterClass {
             }
             case 16: {
               if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                longs_ = newLongList();
+                valueLongs_ = newLongList();
                 mutable_bitField0_ |= 0x00000002;
               }
-              longs_.addLong(input.readInt64());
+              valueLongs_.addLong(input.readInt64());
               break;
             }
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
-                longs_ = newLongList();
+                valueLongs_ = newLongList();
                 mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
-                longs_.addLong(input.readInt64());
+                valueLongs_.addLong(input.readInt64());
               }
               input.popLimit(limit);
               break;
@@ -11096,20 +11096,20 @@ public final class FeatureValueOuterClass {
           indexIntegers_.makeImmutable(); // C
         }
         if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          longs_.makeImmutable(); // C
+          valueLongs_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseLongArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseLongArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.Builder.class);
@@ -11123,7 +11123,7 @@ public final class FeatureValueOuterClass {
      */
     @java.lang.Override
     public java.util.List<java.lang.Integer>
-        getIndexIntegersList() {
+    getIndexIntegersList() {
       return indexIntegers_;
     }
     /**
@@ -11143,33 +11143,33 @@ public final class FeatureValueOuterClass {
     }
     private int indexIntegersMemoizedSerializedSize = -1;
 
-    public static final int LONGS_FIELD_NUMBER = 2;
-    private com.google.protobuf.Internal.LongList longs_;
+    public static final int VALUE_LONGS_FIELD_NUMBER = 2;
+    private com.google.protobuf.Internal.LongList valueLongs_;
     /**
-     * <code>repeated int64 longs = 2;</code>
-     * @return A list containing the longs.
+     * <code>repeated int64 value_longs = 2;</code>
+     * @return A list containing the valueLongs.
      */
     @java.lang.Override
     public java.util.List<java.lang.Long>
-        getLongsList() {
-      return longs_;
+    getValueLongsList() {
+      return valueLongs_;
     }
     /**
-     * <code>repeated int64 longs = 2;</code>
-     * @return The count of longs.
+     * <code>repeated int64 value_longs = 2;</code>
+     * @return The count of valueLongs.
      */
-    public int getLongsCount() {
-      return longs_.size();
+    public int getValueLongsCount() {
+      return valueLongs_.size();
     }
     /**
-     * <code>repeated int64 longs = 2;</code>
+     * <code>repeated int64 value_longs = 2;</code>
      * @param index The index of the element to return.
-     * @return The longs at the given index.
+     * @return The valueLongs at the given index.
      */
-    public long getLongs(int index) {
-      return longs_.getLong(index);
+    public long getValueLongs(int index) {
+      return valueLongs_.getLong(index);
     }
-    private int longsMemoizedSerializedSize = -1;
+    private int valueLongsMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
@@ -11184,7 +11184,7 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
       if (getIndexIntegersList().size() > 0) {
         output.writeUInt32NoTag(10);
@@ -11193,12 +11193,12 @@ public final class FeatureValueOuterClass {
       for (int i = 0; i < indexIntegers_.size(); i++) {
         output.writeInt32NoTag(indexIntegers_.getInt(i));
       }
-      if (getLongsList().size() > 0) {
+      if (getValueLongsList().size() > 0) {
         output.writeUInt32NoTag(18);
-        output.writeUInt32NoTag(longsMemoizedSerializedSize);
+        output.writeUInt32NoTag(valueLongsMemoizedSerializedSize);
       }
-      for (int i = 0; i < longs_.size(); i++) {
-        output.writeInt64NoTag(longs_.getLong(i));
+      for (int i = 0; i < valueLongs_.size(); i++) {
+        output.writeInt64NoTag(valueLongs_.getLong(i));
       }
       unknownFields.writeTo(output);
     }
@@ -11213,7 +11213,7 @@ public final class FeatureValueOuterClass {
         int dataSize = 0;
         for (int i = 0; i < indexIntegers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(indexIntegers_.getInt(i));
+              .computeInt32SizeNoTag(indexIntegers_.getInt(i));
         }
         size += dataSize;
         if (!getIndexIntegersList().isEmpty()) {
@@ -11225,17 +11225,17 @@ public final class FeatureValueOuterClass {
       }
       {
         int dataSize = 0;
-        for (int i = 0; i < longs_.size(); i++) {
+        for (int i = 0; i < valueLongs_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt64SizeNoTag(longs_.getLong(i));
+              .computeInt64SizeNoTag(valueLongs_.getLong(i));
         }
         size += dataSize;
-        if (!getLongsList().isEmpty()) {
+        if (!getValueLongsList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        longsMemoizedSerializedSize = dataSize;
+        valueLongsMemoizedSerializedSize = dataSize;
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -11245,7 +11245,7 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray)) {
         return super.equals(obj);
@@ -11254,8 +11254,8 @@ public final class FeatureValueOuterClass {
 
       if (!getIndexIntegersList()
           .equals(other.getIndexIntegersList())) return false;
-      if (!getLongsList()
-          .equals(other.getLongsList())) return false;
+      if (!getValueLongsList()
+          .equals(other.getValueLongsList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -11271,9 +11271,9 @@ public final class FeatureValueOuterClass {
         hash = (37 * hash) + INDEX_INTEGERS_FIELD_NUMBER;
         hash = (53 * hash) + getIndexIntegersList().hashCode();
       }
-      if (getLongsCount() > 0) {
-        hash = (37 * hash) + LONGS_FIELD_NUMBER;
-        hash = (53 * hash) + getLongsList().hashCode();
+      if (getValueLongsCount() > 0) {
+        hash = (37 * hash) + VALUE_LONGS_FIELD_NUMBER;
+        hash = (53 * hash) + getValueLongsList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -11374,17 +11374,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.SparseLongArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.SparseLongArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.SparseLongArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseLongArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseLongArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseLongArray.Builder.class);
@@ -11402,7 +11402,7 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
@@ -11410,14 +11410,14 @@ public final class FeatureValueOuterClass {
         super.clear();
         indexIntegers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
-        longs_ = emptyLongList();
+        valueLongs_ = emptyLongList();
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseLongArray_descriptor;
       }
 
@@ -11445,10 +11445,10 @@ public final class FeatureValueOuterClass {
         }
         result.indexIntegers_ = indexIntegers_;
         if (((bitField0_ & 0x00000002) != 0)) {
-          longs_.makeImmutable();
+          valueLongs_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000002);
         }
-        result.longs_ = longs_;
+        result.valueLongs_ = valueLongs_;
         onBuilt();
         return result;
       }
@@ -11507,13 +11507,13 @@ public final class FeatureValueOuterClass {
           }
           onChanged();
         }
-        if (!other.longs_.isEmpty()) {
-          if (longs_.isEmpty()) {
-            longs_ = other.longs_;
+        if (!other.valueLongs_.isEmpty()) {
+          if (valueLongs_.isEmpty()) {
+            valueLongs_ = other.valueLongs_;
             bitField0_ = (bitField0_ & ~0x00000002);
           } else {
-            ensureLongsIsMutable();
-            longs_.addAll(other.longs_);
+            ensureValueLongsIsMutable();
+            valueLongs_.addAll(other.valueLongs_);
           }
           onChanged();
         }
@@ -11552,16 +11552,16 @@ public final class FeatureValueOuterClass {
         if (!((bitField0_ & 0x00000001) != 0)) {
           indexIntegers_ = mutableCopy(indexIntegers_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
        * <code>repeated int32 index_integers = 1;</code>
        * @return A list containing the indexIntegers.
        */
       public java.util.List<java.lang.Integer>
-          getIndexIntegersList() {
+      getIndexIntegersList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(indexIntegers_) : indexIntegers_;
+            java.util.Collections.unmodifiableList(indexIntegers_) : indexIntegers_;
       }
       /**
        * <code>repeated int32 index_integers = 1;</code>
@@ -11626,80 +11626,80 @@ public final class FeatureValueOuterClass {
         return this;
       }
 
-      private com.google.protobuf.Internal.LongList longs_ = emptyLongList();
-      private void ensureLongsIsMutable() {
+      private com.google.protobuf.Internal.LongList valueLongs_ = emptyLongList();
+      private void ensureValueLongsIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          longs_ = mutableCopy(longs_);
+          valueLongs_ = mutableCopy(valueLongs_);
           bitField0_ |= 0x00000002;
-         }
+        }
       }
       /**
-       * <code>repeated int64 longs = 2;</code>
-       * @return A list containing the longs.
+       * <code>repeated int64 value_longs = 2;</code>
+       * @return A list containing the valueLongs.
        */
       public java.util.List<java.lang.Long>
-          getLongsList() {
+      getValueLongsList() {
         return ((bitField0_ & 0x00000002) != 0) ?
-                 java.util.Collections.unmodifiableList(longs_) : longs_;
+            java.util.Collections.unmodifiableList(valueLongs_) : valueLongs_;
       }
       /**
-       * <code>repeated int64 longs = 2;</code>
-       * @return The count of longs.
+       * <code>repeated int64 value_longs = 2;</code>
+       * @return The count of valueLongs.
        */
-      public int getLongsCount() {
-        return longs_.size();
+      public int getValueLongsCount() {
+        return valueLongs_.size();
       }
       /**
-       * <code>repeated int64 longs = 2;</code>
+       * <code>repeated int64 value_longs = 2;</code>
        * @param index The index of the element to return.
-       * @return The longs at the given index.
+       * @return The valueLongs at the given index.
        */
-      public long getLongs(int index) {
-        return longs_.getLong(index);
+      public long getValueLongs(int index) {
+        return valueLongs_.getLong(index);
       }
       /**
-       * <code>repeated int64 longs = 2;</code>
+       * <code>repeated int64 value_longs = 2;</code>
        * @param index The index to set the value at.
-       * @param value The longs to set.
+       * @param value The valueLongs to set.
        * @return This builder for chaining.
        */
-      public Builder setLongs(
+      public Builder setValueLongs(
           int index, long value) {
-        ensureLongsIsMutable();
-        longs_.setLong(index, value);
+        ensureValueLongsIsMutable();
+        valueLongs_.setLong(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int64 longs = 2;</code>
-       * @param value The longs to add.
+       * <code>repeated int64 value_longs = 2;</code>
+       * @param value The valueLongs to add.
        * @return This builder for chaining.
        */
-      public Builder addLongs(long value) {
-        ensureLongsIsMutable();
-        longs_.addLong(value);
+      public Builder addValueLongs(long value) {
+        ensureValueLongsIsMutable();
+        valueLongs_.addLong(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int64 longs = 2;</code>
-       * @param values The longs to add.
+       * <code>repeated int64 value_longs = 2;</code>
+       * @param values The valueLongs to add.
        * @return This builder for chaining.
        */
-      public Builder addAllLongs(
+      public Builder addAllValueLongs(
           java.lang.Iterable<? extends java.lang.Long> values) {
-        ensureLongsIsMutable();
+        ensureValueLongsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, longs_);
+            values, valueLongs_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int64 longs = 2;</code>
+       * <code>repeated int64 value_longs = 2;</code>
        * @return This builder for chaining.
        */
-      public Builder clearLongs() {
-        longs_ = emptyLongList();
+      public Builder clearValueLongs() {
+        valueLongs_ = emptyLongList();
         bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
@@ -11758,58 +11758,58 @@ public final class FeatureValueOuterClass {
   }
 
   public interface SparseDoubleArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.SparseDoubleArray)
-      com.google.protobuf.MessageOrBuilder {
+                                              // @@protoc_insertion_point(interface_extends:protobuf.SparseDoubleArray)
+                                                  com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return A list containing the integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return A list containing the indexIntegers.
      */
-    java.util.List<java.lang.Integer> getIntegersList();
+    java.util.List<java.lang.Integer> getIndexIntegersList();
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return The count of integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return The count of indexIntegers.
      */
-    int getIntegersCount();
+    int getIndexIntegersCount();
     /**
-     * <code>repeated int32 integers = 1;</code>
+     * <code>repeated int32 index_integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The integers at the given index.
+     * @return The indexIntegers at the given index.
      */
-    int getIntegers(int index);
+    int getIndexIntegers(int index);
 
     /**
-     * <code>repeated double doubles = 2;</code>
-     * @return A list containing the doubles.
+     * <code>repeated double value_doubles = 2;</code>
+     * @return A list containing the valueDoubles.
      */
-    java.util.List<java.lang.Double> getDoublesList();
+    java.util.List<java.lang.Double> getValueDoublesList();
     /**
-     * <code>repeated double doubles = 2;</code>
-     * @return The count of doubles.
+     * <code>repeated double value_doubles = 2;</code>
+     * @return The count of valueDoubles.
      */
-    int getDoublesCount();
+    int getValueDoublesCount();
     /**
-     * <code>repeated double doubles = 2;</code>
+     * <code>repeated double value_doubles = 2;</code>
      * @param index The index of the element to return.
-     * @return The doubles at the given index.
+     * @return The valueDoubles at the given index.
      */
-    double getDoubles(int index);
+    double getValueDoubles(int index);
   }
   /**
    * Protobuf type {@code protobuf.SparseDoubleArray}
    */
   public static final class SparseDoubleArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.SparseDoubleArray)
-      SparseDoubleArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                              com.google.protobuf.GeneratedMessageV3 implements
+                                                                                     // @@protoc_insertion_point(message_implements:protobuf.SparseDoubleArray)
+                                                                                         SparseDoubleArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use SparseDoubleArray.newBuilder() to construct.
     private SparseDoubleArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private SparseDoubleArray() {
-      integers_ = emptyIntList();
-      doubles_ = emptyDoubleList();
+      indexIntegers_ = emptyIntList();
+      valueDoubles_ = emptyDoubleList();
     }
 
     @java.lang.Override
@@ -11845,42 +11845,42 @@ public final class FeatureValueOuterClass {
               break;
             case 8: {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                integers_ = newIntList();
+                indexIntegers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
-              integers_.addInt(input.readInt32());
+              indexIntegers_.addInt(input.readInt32());
               break;
             }
             case 10: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                integers_ = newIntList();
+                indexIntegers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                integers_.addInt(input.readInt32());
+                indexIntegers_.addInt(input.readInt32());
               }
               input.popLimit(limit);
               break;
             }
             case 17: {
               if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                doubles_ = newDoubleList();
+                valueDoubles_ = newDoubleList();
                 mutable_bitField0_ |= 0x00000002;
               }
-              doubles_.addDouble(input.readDouble());
+              valueDoubles_.addDouble(input.readDouble());
               break;
             }
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
-                doubles_ = newDoubleList();
+                valueDoubles_ = newDoubleList();
                 mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
-                doubles_.addDouble(input.readDouble());
+                valueDoubles_.addDouble(input.readDouble());
               }
               input.popLimit(limit);
               break;
@@ -11901,83 +11901,83 @@ public final class FeatureValueOuterClass {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          integers_.makeImmutable(); // C
+          indexIntegers_.makeImmutable(); // C
         }
         if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          doubles_.makeImmutable(); // C
+          valueDoubles_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseDoubleArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseDoubleArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.Builder.class);
     }
 
-    public static final int INTEGERS_FIELD_NUMBER = 1;
-    private com.google.protobuf.Internal.IntList integers_;
+    public static final int INDEX_INTEGERS_FIELD_NUMBER = 1;
+    private com.google.protobuf.Internal.IntList indexIntegers_;
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return A list containing the integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return A list containing the indexIntegers.
      */
     @java.lang.Override
     public java.util.List<java.lang.Integer>
-        getIntegersList() {
-      return integers_;
+    getIndexIntegersList() {
+      return indexIntegers_;
     }
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return The count of integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return The count of indexIntegers.
      */
-    public int getIntegersCount() {
-      return integers_.size();
+    public int getIndexIntegersCount() {
+      return indexIntegers_.size();
     }
     /**
-     * <code>repeated int32 integers = 1;</code>
+     * <code>repeated int32 index_integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The integers at the given index.
+     * @return The indexIntegers at the given index.
      */
-    public int getIntegers(int index) {
-      return integers_.getInt(index);
+    public int getIndexIntegers(int index) {
+      return indexIntegers_.getInt(index);
     }
-    private int integersMemoizedSerializedSize = -1;
+    private int indexIntegersMemoizedSerializedSize = -1;
 
-    public static final int DOUBLES_FIELD_NUMBER = 2;
-    private com.google.protobuf.Internal.DoubleList doubles_;
+    public static final int VALUE_DOUBLES_FIELD_NUMBER = 2;
+    private com.google.protobuf.Internal.DoubleList valueDoubles_;
     /**
-     * <code>repeated double doubles = 2;</code>
-     * @return A list containing the doubles.
+     * <code>repeated double value_doubles = 2;</code>
+     * @return A list containing the valueDoubles.
      */
     @java.lang.Override
     public java.util.List<java.lang.Double>
-        getDoublesList() {
-      return doubles_;
+    getValueDoublesList() {
+      return valueDoubles_;
     }
     /**
-     * <code>repeated double doubles = 2;</code>
-     * @return The count of doubles.
+     * <code>repeated double value_doubles = 2;</code>
+     * @return The count of valueDoubles.
      */
-    public int getDoublesCount() {
-      return doubles_.size();
+    public int getValueDoublesCount() {
+      return valueDoubles_.size();
     }
     /**
-     * <code>repeated double doubles = 2;</code>
+     * <code>repeated double value_doubles = 2;</code>
      * @param index The index of the element to return.
-     * @return The doubles at the given index.
+     * @return The valueDoubles at the given index.
      */
-    public double getDoubles(int index) {
-      return doubles_.getDouble(index);
+    public double getValueDoubles(int index) {
+      return valueDoubles_.getDouble(index);
     }
-    private int doublesMemoizedSerializedSize = -1;
+    private int valueDoublesMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
@@ -11992,21 +11992,21 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
-      if (getIntegersList().size() > 0) {
+      if (getIndexIntegersList().size() > 0) {
         output.writeUInt32NoTag(10);
-        output.writeUInt32NoTag(integersMemoizedSerializedSize);
+        output.writeUInt32NoTag(indexIntegersMemoizedSerializedSize);
       }
-      for (int i = 0; i < integers_.size(); i++) {
-        output.writeInt32NoTag(integers_.getInt(i));
+      for (int i = 0; i < indexIntegers_.size(); i++) {
+        output.writeInt32NoTag(indexIntegers_.getInt(i));
       }
-      if (getDoublesList().size() > 0) {
+      if (getValueDoublesList().size() > 0) {
         output.writeUInt32NoTag(18);
-        output.writeUInt32NoTag(doublesMemoizedSerializedSize);
+        output.writeUInt32NoTag(valueDoublesMemoizedSerializedSize);
       }
-      for (int i = 0; i < doubles_.size(); i++) {
-        output.writeDoubleNoTag(doubles_.getDouble(i));
+      for (int i = 0; i < valueDoubles_.size(); i++) {
+        output.writeDoubleNoTag(valueDoubles_.getDouble(i));
       }
       unknownFields.writeTo(output);
     }
@@ -12019,28 +12019,28 @@ public final class FeatureValueOuterClass {
       size = 0;
       {
         int dataSize = 0;
-        for (int i = 0; i < integers_.size(); i++) {
+        for (int i = 0; i < indexIntegers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(integers_.getInt(i));
+              .computeInt32SizeNoTag(indexIntegers_.getInt(i));
         }
         size += dataSize;
-        if (!getIntegersList().isEmpty()) {
+        if (!getIndexIntegersList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        integersMemoizedSerializedSize = dataSize;
+        indexIntegersMemoizedSerializedSize = dataSize;
       }
       {
         int dataSize = 0;
-        dataSize = 8 * getDoublesList().size();
+        dataSize = 8 * getValueDoublesList().size();
         size += dataSize;
-        if (!getDoublesList().isEmpty()) {
+        if (!getValueDoublesList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        doublesMemoizedSerializedSize = dataSize;
+        valueDoublesMemoizedSerializedSize = dataSize;
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -12050,17 +12050,17 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray)) {
         return super.equals(obj);
       }
       com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray other = (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray) obj;
 
-      if (!getIntegersList()
-          .equals(other.getIntegersList())) return false;
-      if (!getDoublesList()
-          .equals(other.getDoublesList())) return false;
+      if (!getIndexIntegersList()
+          .equals(other.getIndexIntegersList())) return false;
+      if (!getValueDoublesList()
+          .equals(other.getValueDoublesList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -12072,13 +12072,13 @@ public final class FeatureValueOuterClass {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (getIntegersCount() > 0) {
-        hash = (37 * hash) + INTEGERS_FIELD_NUMBER;
-        hash = (53 * hash) + getIntegersList().hashCode();
+      if (getIndexIntegersCount() > 0) {
+        hash = (37 * hash) + INDEX_INTEGERS_FIELD_NUMBER;
+        hash = (53 * hash) + getIndexIntegersList().hashCode();
       }
-      if (getDoublesCount() > 0) {
-        hash = (37 * hash) + DOUBLES_FIELD_NUMBER;
-        hash = (53 * hash) + getDoublesList().hashCode();
+      if (getValueDoublesCount() > 0) {
+        hash = (37 * hash) + VALUE_DOUBLES_FIELD_NUMBER;
+        hash = (53 * hash) + getValueDoublesList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -12179,17 +12179,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.SparseDoubleArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.SparseDoubleArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.SparseDoubleArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseDoubleArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseDoubleArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.Builder.class);
@@ -12207,22 +12207,22 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        integers_ = emptyIntList();
+        indexIntegers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
-        doubles_ = emptyDoubleList();
+        valueDoubles_ = emptyDoubleList();
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseDoubleArray_descriptor;
       }
 
@@ -12245,15 +12245,15 @@ public final class FeatureValueOuterClass {
         com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray result = new com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
-          integers_.makeImmutable();
+          indexIntegers_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.integers_ = integers_;
+        result.indexIntegers_ = indexIntegers_;
         if (((bitField0_ & 0x00000002) != 0)) {
-          doubles_.makeImmutable();
+          valueDoubles_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000002);
         }
-        result.doubles_ = doubles_;
+        result.valueDoubles_ = valueDoubles_;
         onBuilt();
         return result;
       }
@@ -12302,23 +12302,23 @@ public final class FeatureValueOuterClass {
 
       public Builder mergeFrom(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray other) {
         if (other == com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseDoubleArray.getDefaultInstance()) return this;
-        if (!other.integers_.isEmpty()) {
-          if (integers_.isEmpty()) {
-            integers_ = other.integers_;
+        if (!other.indexIntegers_.isEmpty()) {
+          if (indexIntegers_.isEmpty()) {
+            indexIntegers_ = other.indexIntegers_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureIntegersIsMutable();
-            integers_.addAll(other.integers_);
+            ensureIndexIntegersIsMutable();
+            indexIntegers_.addAll(other.indexIntegers_);
           }
           onChanged();
         }
-        if (!other.doubles_.isEmpty()) {
-          if (doubles_.isEmpty()) {
-            doubles_ = other.doubles_;
+        if (!other.valueDoubles_.isEmpty()) {
+          if (valueDoubles_.isEmpty()) {
+            valueDoubles_ = other.valueDoubles_;
             bitField0_ = (bitField0_ & ~0x00000002);
           } else {
-            ensureDoublesIsMutable();
-            doubles_.addAll(other.doubles_);
+            ensureValueDoublesIsMutable();
+            valueDoubles_.addAll(other.valueDoubles_);
           }
           onChanged();
         }
@@ -12352,159 +12352,159 @@ public final class FeatureValueOuterClass {
       }
       private int bitField0_;
 
-      private com.google.protobuf.Internal.IntList integers_ = emptyIntList();
-      private void ensureIntegersIsMutable() {
+      private com.google.protobuf.Internal.IntList indexIntegers_ = emptyIntList();
+      private void ensureIndexIntegersIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          integers_ = mutableCopy(integers_);
+          indexIntegers_ = mutableCopy(indexIntegers_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @return A list containing the integers.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @return A list containing the indexIntegers.
        */
       public java.util.List<java.lang.Integer>
-          getIntegersList() {
+      getIndexIntegersList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(integers_) : integers_;
+            java.util.Collections.unmodifiableList(indexIntegers_) : indexIntegers_;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @return The count of integers.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @return The count of indexIntegers.
        */
-      public int getIntegersCount() {
-        return integers_.size();
+      public int getIndexIntegersCount() {
+        return indexIntegers_.size();
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @param index The index of the element to return.
-       * @return The integers at the given index.
+       * @return The indexIntegers at the given index.
        */
-      public int getIntegers(int index) {
-        return integers_.getInt(index);
+      public int getIndexIntegers(int index) {
+        return indexIntegers_.getInt(index);
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @param index The index to set the value at.
-       * @param value The integers to set.
+       * @param value The indexIntegers to set.
        * @return This builder for chaining.
        */
-      public Builder setIntegers(
+      public Builder setIndexIntegers(
           int index, int value) {
-        ensureIntegersIsMutable();
-        integers_.setInt(index, value);
+        ensureIndexIntegersIsMutable();
+        indexIntegers_.setInt(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @param value The integers to add.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @param value The indexIntegers to add.
        * @return This builder for chaining.
        */
-      public Builder addIntegers(int value) {
-        ensureIntegersIsMutable();
-        integers_.addInt(value);
+      public Builder addIndexIntegers(int value) {
+        ensureIndexIntegersIsMutable();
+        indexIntegers_.addInt(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @param values The integers to add.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @param values The indexIntegers to add.
        * @return This builder for chaining.
        */
-      public Builder addAllIntegers(
+      public Builder addAllIndexIntegers(
           java.lang.Iterable<? extends java.lang.Integer> values) {
-        ensureIntegersIsMutable();
+        ensureIndexIntegersIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, integers_);
+            values, indexIntegers_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearIntegers() {
-        integers_ = emptyIntList();
+      public Builder clearIndexIntegers() {
+        indexIntegers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
 
-      private com.google.protobuf.Internal.DoubleList doubles_ = emptyDoubleList();
-      private void ensureDoublesIsMutable() {
+      private com.google.protobuf.Internal.DoubleList valueDoubles_ = emptyDoubleList();
+      private void ensureValueDoublesIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          doubles_ = mutableCopy(doubles_);
+          valueDoubles_ = mutableCopy(valueDoubles_);
           bitField0_ |= 0x00000002;
-         }
+        }
       }
       /**
-       * <code>repeated double doubles = 2;</code>
-       * @return A list containing the doubles.
+       * <code>repeated double value_doubles = 2;</code>
+       * @return A list containing the valueDoubles.
        */
       public java.util.List<java.lang.Double>
-          getDoublesList() {
+      getValueDoublesList() {
         return ((bitField0_ & 0x00000002) != 0) ?
-                 java.util.Collections.unmodifiableList(doubles_) : doubles_;
+            java.util.Collections.unmodifiableList(valueDoubles_) : valueDoubles_;
       }
       /**
-       * <code>repeated double doubles = 2;</code>
-       * @return The count of doubles.
+       * <code>repeated double value_doubles = 2;</code>
+       * @return The count of valueDoubles.
        */
-      public int getDoublesCount() {
-        return doubles_.size();
+      public int getValueDoublesCount() {
+        return valueDoubles_.size();
       }
       /**
-       * <code>repeated double doubles = 2;</code>
+       * <code>repeated double value_doubles = 2;</code>
        * @param index The index of the element to return.
-       * @return The doubles at the given index.
+       * @return The valueDoubles at the given index.
        */
-      public double getDoubles(int index) {
-        return doubles_.getDouble(index);
+      public double getValueDoubles(int index) {
+        return valueDoubles_.getDouble(index);
       }
       /**
-       * <code>repeated double doubles = 2;</code>
+       * <code>repeated double value_doubles = 2;</code>
        * @param index The index to set the value at.
-       * @param value The doubles to set.
+       * @param value The valueDoubles to set.
        * @return This builder for chaining.
        */
-      public Builder setDoubles(
+      public Builder setValueDoubles(
           int index, double value) {
-        ensureDoublesIsMutable();
-        doubles_.setDouble(index, value);
+        ensureValueDoublesIsMutable();
+        valueDoubles_.setDouble(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated double doubles = 2;</code>
-       * @param value The doubles to add.
+       * <code>repeated double value_doubles = 2;</code>
+       * @param value The valueDoubles to add.
        * @return This builder for chaining.
        */
-      public Builder addDoubles(double value) {
-        ensureDoublesIsMutable();
-        doubles_.addDouble(value);
+      public Builder addValueDoubles(double value) {
+        ensureValueDoublesIsMutable();
+        valueDoubles_.addDouble(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated double doubles = 2;</code>
-       * @param values The doubles to add.
+       * <code>repeated double value_doubles = 2;</code>
+       * @param values The valueDoubles to add.
        * @return This builder for chaining.
        */
-      public Builder addAllDoubles(
+      public Builder addAllValueDoubles(
           java.lang.Iterable<? extends java.lang.Double> values) {
-        ensureDoublesIsMutable();
+        ensureValueDoublesIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, doubles_);
+            values, valueDoubles_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated double doubles = 2;</code>
+       * <code>repeated double value_doubles = 2;</code>
        * @return This builder for chaining.
        */
-      public Builder clearDoubles() {
-        doubles_ = emptyDoubleList();
+      public Builder clearValueDoubles() {
+        valueDoubles_ = emptyDoubleList();
         bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
@@ -12563,58 +12563,58 @@ public final class FeatureValueOuterClass {
   }
 
   public interface SparseFloatArrayOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:protobuf.SparseFloatArray)
-      com.google.protobuf.MessageOrBuilder {
+                                             // @@protoc_insertion_point(interface_extends:protobuf.SparseFloatArray)
+                                                 com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return A list containing the integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return A list containing the indexIntegers.
      */
-    java.util.List<java.lang.Integer> getIntegersList();
+    java.util.List<java.lang.Integer> getIndexIntegersList();
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return The count of integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return The count of indexIntegers.
      */
-    int getIntegersCount();
+    int getIndexIntegersCount();
     /**
-     * <code>repeated int32 integers = 1;</code>
+     * <code>repeated int32 index_integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The integers at the given index.
+     * @return The indexIntegers at the given index.
      */
-    int getIntegers(int index);
+    int getIndexIntegers(int index);
 
     /**
-     * <code>repeated float floats = 2;</code>
-     * @return A list containing the floats.
+     * <code>repeated float value_floats = 2;</code>
+     * @return A list containing the valueFloats.
      */
-    java.util.List<java.lang.Float> getFloatsList();
+    java.util.List<java.lang.Float> getValueFloatsList();
     /**
-     * <code>repeated float floats = 2;</code>
-     * @return The count of floats.
+     * <code>repeated float value_floats = 2;</code>
+     * @return The count of valueFloats.
      */
-    int getFloatsCount();
+    int getValueFloatsCount();
     /**
-     * <code>repeated float floats = 2;</code>
+     * <code>repeated float value_floats = 2;</code>
      * @param index The index of the element to return.
-     * @return The floats at the given index.
+     * @return The valueFloats at the given index.
      */
-    float getFloats(int index);
+    float getValueFloats(int index);
   }
   /**
    * Protobuf type {@code protobuf.SparseFloatArray}
    */
   public static final class SparseFloatArray extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:protobuf.SparseFloatArray)
-      SparseFloatArrayOrBuilder {
-  private static final long serialVersionUID = 0L;
+                                             com.google.protobuf.GeneratedMessageV3 implements
+                                                                                    // @@protoc_insertion_point(message_implements:protobuf.SparseFloatArray)
+                                                                                        SparseFloatArrayOrBuilder {
+    private static final long serialVersionUID = 0L;
     // Use SparseFloatArray.newBuilder() to construct.
     private SparseFloatArray(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private SparseFloatArray() {
-      integers_ = emptyIntList();
-      floats_ = emptyFloatList();
+      indexIntegers_ = emptyIntList();
+      valueFloats_ = emptyFloatList();
     }
 
     @java.lang.Override
@@ -12650,42 +12650,42 @@ public final class FeatureValueOuterClass {
               break;
             case 8: {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                integers_ = newIntList();
+                indexIntegers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
-              integers_.addInt(input.readInt32());
+              indexIntegers_.addInt(input.readInt32());
               break;
             }
             case 10: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                integers_ = newIntList();
+                indexIntegers_ = newIntList();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                integers_.addInt(input.readInt32());
+                indexIntegers_.addInt(input.readInt32());
               }
               input.popLimit(limit);
               break;
             }
             case 21: {
               if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                floats_ = newFloatList();
+                valueFloats_ = newFloatList();
                 mutable_bitField0_ |= 0x00000002;
               }
-              floats_.addFloat(input.readFloat());
+              valueFloats_.addFloat(input.readFloat());
               break;
             }
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
-                floats_ = newFloatList();
+                valueFloats_ = newFloatList();
                 mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
-                floats_.addFloat(input.readFloat());
+                valueFloats_.addFloat(input.readFloat());
               }
               input.popLimit(limit);
               break;
@@ -12706,83 +12706,83 @@ public final class FeatureValueOuterClass {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          integers_.makeImmutable(); // C
+          indexIntegers_.makeImmutable(); // C
         }
         if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          floats_.makeImmutable(); // C
+          valueFloats_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseFloatArray_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseFloatArray_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.Builder.class);
     }
 
-    public static final int INTEGERS_FIELD_NUMBER = 1;
-    private com.google.protobuf.Internal.IntList integers_;
+    public static final int INDEX_INTEGERS_FIELD_NUMBER = 1;
+    private com.google.protobuf.Internal.IntList indexIntegers_;
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return A list containing the integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return A list containing the indexIntegers.
      */
     @java.lang.Override
     public java.util.List<java.lang.Integer>
-        getIntegersList() {
-      return integers_;
+    getIndexIntegersList() {
+      return indexIntegers_;
     }
     /**
-     * <code>repeated int32 integers = 1;</code>
-     * @return The count of integers.
+     * <code>repeated int32 index_integers = 1;</code>
+     * @return The count of indexIntegers.
      */
-    public int getIntegersCount() {
-      return integers_.size();
+    public int getIndexIntegersCount() {
+      return indexIntegers_.size();
     }
     /**
-     * <code>repeated int32 integers = 1;</code>
+     * <code>repeated int32 index_integers = 1;</code>
      * @param index The index of the element to return.
-     * @return The integers at the given index.
+     * @return The indexIntegers at the given index.
      */
-    public int getIntegers(int index) {
-      return integers_.getInt(index);
+    public int getIndexIntegers(int index) {
+      return indexIntegers_.getInt(index);
     }
-    private int integersMemoizedSerializedSize = -1;
+    private int indexIntegersMemoizedSerializedSize = -1;
 
-    public static final int FLOATS_FIELD_NUMBER = 2;
-    private com.google.protobuf.Internal.FloatList floats_;
+    public static final int VALUE_FLOATS_FIELD_NUMBER = 2;
+    private com.google.protobuf.Internal.FloatList valueFloats_;
     /**
-     * <code>repeated float floats = 2;</code>
-     * @return A list containing the floats.
+     * <code>repeated float value_floats = 2;</code>
+     * @return A list containing the valueFloats.
      */
     @java.lang.Override
     public java.util.List<java.lang.Float>
-        getFloatsList() {
-      return floats_;
+    getValueFloatsList() {
+      return valueFloats_;
     }
     /**
-     * <code>repeated float floats = 2;</code>
-     * @return The count of floats.
+     * <code>repeated float value_floats = 2;</code>
+     * @return The count of valueFloats.
      */
-    public int getFloatsCount() {
-      return floats_.size();
+    public int getValueFloatsCount() {
+      return valueFloats_.size();
     }
     /**
-     * <code>repeated float floats = 2;</code>
+     * <code>repeated float value_floats = 2;</code>
      * @param index The index of the element to return.
-     * @return The floats at the given index.
+     * @return The valueFloats at the given index.
      */
-    public float getFloats(int index) {
-      return floats_.getFloat(index);
+    public float getValueFloats(int index) {
+      return valueFloats_.getFloat(index);
     }
-    private int floatsMemoizedSerializedSize = -1;
+    private int valueFloatsMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
@@ -12797,21 +12797,21 @@ public final class FeatureValueOuterClass {
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+        throws java.io.IOException {
       getSerializedSize();
-      if (getIntegersList().size() > 0) {
+      if (getIndexIntegersList().size() > 0) {
         output.writeUInt32NoTag(10);
-        output.writeUInt32NoTag(integersMemoizedSerializedSize);
+        output.writeUInt32NoTag(indexIntegersMemoizedSerializedSize);
       }
-      for (int i = 0; i < integers_.size(); i++) {
-        output.writeInt32NoTag(integers_.getInt(i));
+      for (int i = 0; i < indexIntegers_.size(); i++) {
+        output.writeInt32NoTag(indexIntegers_.getInt(i));
       }
-      if (getFloatsList().size() > 0) {
+      if (getValueFloatsList().size() > 0) {
         output.writeUInt32NoTag(18);
-        output.writeUInt32NoTag(floatsMemoizedSerializedSize);
+        output.writeUInt32NoTag(valueFloatsMemoizedSerializedSize);
       }
-      for (int i = 0; i < floats_.size(); i++) {
-        output.writeFloatNoTag(floats_.getFloat(i));
+      for (int i = 0; i < valueFloats_.size(); i++) {
+        output.writeFloatNoTag(valueFloats_.getFloat(i));
       }
       unknownFields.writeTo(output);
     }
@@ -12824,28 +12824,28 @@ public final class FeatureValueOuterClass {
       size = 0;
       {
         int dataSize = 0;
-        for (int i = 0; i < integers_.size(); i++) {
+        for (int i = 0; i < indexIntegers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(integers_.getInt(i));
+              .computeInt32SizeNoTag(indexIntegers_.getInt(i));
         }
         size += dataSize;
-        if (!getIntegersList().isEmpty()) {
+        if (!getIndexIntegersList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        integersMemoizedSerializedSize = dataSize;
+        indexIntegersMemoizedSerializedSize = dataSize;
       }
       {
         int dataSize = 0;
-        dataSize = 4 * getFloatsList().size();
+        dataSize = 4 * getValueFloatsList().size();
         size += dataSize;
-        if (!getFloatsList().isEmpty()) {
+        if (!getValueFloatsList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        floatsMemoizedSerializedSize = dataSize;
+        valueFloatsMemoizedSerializedSize = dataSize;
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -12855,17 +12855,17 @@ public final class FeatureValueOuterClass {
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray)) {
         return super.equals(obj);
       }
       com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray other = (com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray) obj;
 
-      if (!getIntegersList()
-          .equals(other.getIntegersList())) return false;
-      if (!getFloatsList()
-          .equals(other.getFloatsList())) return false;
+      if (!getIndexIntegersList()
+          .equals(other.getIndexIntegersList())) return false;
+      if (!getValueFloatsList()
+          .equals(other.getValueFloatsList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -12877,13 +12877,13 @@ public final class FeatureValueOuterClass {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (getIntegersCount() > 0) {
-        hash = (37 * hash) + INTEGERS_FIELD_NUMBER;
-        hash = (53 * hash) + getIntegersList().hashCode();
+      if (getIndexIntegersCount() > 0) {
+        hash = (37 * hash) + INDEX_INTEGERS_FIELD_NUMBER;
+        hash = (53 * hash) + getIndexIntegersList().hashCode();
       }
-      if (getFloatsCount() > 0) {
-        hash = (37 * hash) + FLOATS_FIELD_NUMBER;
-        hash = (53 * hash) + getFloatsList().hashCode();
+      if (getValueFloatsCount() > 0) {
+        hash = (37 * hash) + VALUE_FLOATS_FIELD_NUMBER;
+        hash = (53 * hash) + getValueFloatsList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -12984,17 +12984,17 @@ public final class FeatureValueOuterClass {
      * Protobuf type {@code protobuf.SparseFloatArray}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:protobuf.SparseFloatArray)
-        com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArrayOrBuilder {
+                                      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                                                                                              // @@protoc_insertion_point(builder_implements:protobuf.SparseFloatArray)
+                                                                                                  com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArrayOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseFloatArray_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseFloatArray_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.class, com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.Builder.class);
@@ -13012,22 +13012,22 @@ public final class FeatureValueOuterClass {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
+            .alwaysUseFieldBuilders) {
         }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        integers_ = emptyIntList();
+        indexIntegers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
-        floats_ = emptyFloatList();
+        valueFloats_ = emptyFloatList();
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.internal_static_protobuf_SparseFloatArray_descriptor;
       }
 
@@ -13050,15 +13050,15 @@ public final class FeatureValueOuterClass {
         com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray result = new com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
-          integers_.makeImmutable();
+          indexIntegers_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.integers_ = integers_;
+        result.indexIntegers_ = indexIntegers_;
         if (((bitField0_ & 0x00000002) != 0)) {
-          floats_.makeImmutable();
+          valueFloats_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000002);
         }
-        result.floats_ = floats_;
+        result.valueFloats_ = valueFloats_;
         onBuilt();
         return result;
       }
@@ -13107,23 +13107,23 @@ public final class FeatureValueOuterClass {
 
       public Builder mergeFrom(com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray other) {
         if (other == com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass.SparseFloatArray.getDefaultInstance()) return this;
-        if (!other.integers_.isEmpty()) {
-          if (integers_.isEmpty()) {
-            integers_ = other.integers_;
+        if (!other.indexIntegers_.isEmpty()) {
+          if (indexIntegers_.isEmpty()) {
+            indexIntegers_ = other.indexIntegers_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureIntegersIsMutable();
-            integers_.addAll(other.integers_);
+            ensureIndexIntegersIsMutable();
+            indexIntegers_.addAll(other.indexIntegers_);
           }
           onChanged();
         }
-        if (!other.floats_.isEmpty()) {
-          if (floats_.isEmpty()) {
-            floats_ = other.floats_;
+        if (!other.valueFloats_.isEmpty()) {
+          if (valueFloats_.isEmpty()) {
+            valueFloats_ = other.valueFloats_;
             bitField0_ = (bitField0_ & ~0x00000002);
           } else {
-            ensureFloatsIsMutable();
-            floats_.addAll(other.floats_);
+            ensureValueFloatsIsMutable();
+            valueFloats_.addAll(other.valueFloats_);
           }
           onChanged();
         }
@@ -13157,159 +13157,159 @@ public final class FeatureValueOuterClass {
       }
       private int bitField0_;
 
-      private com.google.protobuf.Internal.IntList integers_ = emptyIntList();
-      private void ensureIntegersIsMutable() {
+      private com.google.protobuf.Internal.IntList indexIntegers_ = emptyIntList();
+      private void ensureIndexIntegersIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          integers_ = mutableCopy(integers_);
+          indexIntegers_ = mutableCopy(indexIntegers_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @return A list containing the integers.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @return A list containing the indexIntegers.
        */
       public java.util.List<java.lang.Integer>
-          getIntegersList() {
+      getIndexIntegersList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(integers_) : integers_;
+            java.util.Collections.unmodifiableList(indexIntegers_) : indexIntegers_;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @return The count of integers.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @return The count of indexIntegers.
        */
-      public int getIntegersCount() {
-        return integers_.size();
+      public int getIndexIntegersCount() {
+        return indexIntegers_.size();
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @param index The index of the element to return.
-       * @return The integers at the given index.
+       * @return The indexIntegers at the given index.
        */
-      public int getIntegers(int index) {
-        return integers_.getInt(index);
+      public int getIndexIntegers(int index) {
+        return indexIntegers_.getInt(index);
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @param index The index to set the value at.
-       * @param value The integers to set.
+       * @param value The indexIntegers to set.
        * @return This builder for chaining.
        */
-      public Builder setIntegers(
+      public Builder setIndexIntegers(
           int index, int value) {
-        ensureIntegersIsMutable();
-        integers_.setInt(index, value);
+        ensureIndexIntegersIsMutable();
+        indexIntegers_.setInt(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @param value The integers to add.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @param value The indexIntegers to add.
        * @return This builder for chaining.
        */
-      public Builder addIntegers(int value) {
-        ensureIntegersIsMutable();
-        integers_.addInt(value);
+      public Builder addIndexIntegers(int value) {
+        ensureIndexIntegersIsMutable();
+        indexIntegers_.addInt(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
-       * @param values The integers to add.
+       * <code>repeated int32 index_integers = 1;</code>
+       * @param values The indexIntegers to add.
        * @return This builder for chaining.
        */
-      public Builder addAllIntegers(
+      public Builder addAllIndexIntegers(
           java.lang.Iterable<? extends java.lang.Integer> values) {
-        ensureIntegersIsMutable();
+        ensureIndexIntegersIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, integers_);
+            values, indexIntegers_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int32 integers = 1;</code>
+       * <code>repeated int32 index_integers = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearIntegers() {
-        integers_ = emptyIntList();
+      public Builder clearIndexIntegers() {
+        indexIntegers_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
 
-      private com.google.protobuf.Internal.FloatList floats_ = emptyFloatList();
-      private void ensureFloatsIsMutable() {
+      private com.google.protobuf.Internal.FloatList valueFloats_ = emptyFloatList();
+      private void ensureValueFloatsIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          floats_ = mutableCopy(floats_);
+          valueFloats_ = mutableCopy(valueFloats_);
           bitField0_ |= 0x00000002;
-         }
+        }
       }
       /**
-       * <code>repeated float floats = 2;</code>
-       * @return A list containing the floats.
+       * <code>repeated float value_floats = 2;</code>
+       * @return A list containing the valueFloats.
        */
       public java.util.List<java.lang.Float>
-          getFloatsList() {
+      getValueFloatsList() {
         return ((bitField0_ & 0x00000002) != 0) ?
-                 java.util.Collections.unmodifiableList(floats_) : floats_;
+            java.util.Collections.unmodifiableList(valueFloats_) : valueFloats_;
       }
       /**
-       * <code>repeated float floats = 2;</code>
-       * @return The count of floats.
+       * <code>repeated float value_floats = 2;</code>
+       * @return The count of valueFloats.
        */
-      public int getFloatsCount() {
-        return floats_.size();
+      public int getValueFloatsCount() {
+        return valueFloats_.size();
       }
       /**
-       * <code>repeated float floats = 2;</code>
+       * <code>repeated float value_floats = 2;</code>
        * @param index The index of the element to return.
-       * @return The floats at the given index.
+       * @return The valueFloats at the given index.
        */
-      public float getFloats(int index) {
-        return floats_.getFloat(index);
+      public float getValueFloats(int index) {
+        return valueFloats_.getFloat(index);
       }
       /**
-       * <code>repeated float floats = 2;</code>
+       * <code>repeated float value_floats = 2;</code>
        * @param index The index to set the value at.
-       * @param value The floats to set.
+       * @param value The valueFloats to set.
        * @return This builder for chaining.
        */
-      public Builder setFloats(
+      public Builder setValueFloats(
           int index, float value) {
-        ensureFloatsIsMutable();
-        floats_.setFloat(index, value);
+        ensureValueFloatsIsMutable();
+        valueFloats_.setFloat(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated float floats = 2;</code>
-       * @param value The floats to add.
+       * <code>repeated float value_floats = 2;</code>
+       * @param value The valueFloats to add.
        * @return This builder for chaining.
        */
-      public Builder addFloats(float value) {
-        ensureFloatsIsMutable();
-        floats_.addFloat(value);
+      public Builder addValueFloats(float value) {
+        ensureValueFloatsIsMutable();
+        valueFloats_.addFloat(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated float floats = 2;</code>
-       * @param values The floats to add.
+       * <code>repeated float value_floats = 2;</code>
+       * @param values The valueFloats to add.
        * @return This builder for chaining.
        */
-      public Builder addAllFloats(
+      public Builder addAllValueFloats(
           java.lang.Iterable<? extends java.lang.Float> values) {
-        ensureFloatsIsMutable();
+        ensureValueFloatsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, floats_);
+            values, valueFloats_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated float floats = 2;</code>
+       * <code>repeated float value_floats = 2;</code>
        * @return This builder for chaining.
        */
-      public Builder clearFloats() {
-        floats_ = emptyFloatList();
+      public Builder clearValueFloats() {
+        valueFloats_ = emptyFloatList();
         bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
@@ -13368,210 +13368,212 @@ public final class FeatureValueOuterClass {
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_FeatureValue_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_FeatureValue_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_FeatureValue_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_BooleanArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_BooleanArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_BooleanArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_StringArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_StringArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_StringArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_DoubleArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_DoubleArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_DoubleArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_FloatArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_FloatArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_FloatArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_IntegerArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_IntegerArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_IntegerArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_LongArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_LongArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_LongArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_BytesArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_BytesArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_BytesArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_SparseStringArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_SparseStringArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_SparseStringArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_SparseBoolArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_SparseBoolArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_SparseBoolArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_SparseIntegerArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_SparseIntegerArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_SparseIntegerArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_SparseLongArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_SparseLongArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_SparseLongArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_SparseDoubleArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_SparseDoubleArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_SparseDoubleArray_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protobuf_SparseFloatArray_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protobuf_SparseFloatArray_descriptor;
+  private static final
+  com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protobuf_SparseFloatArray_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
-      getDescriptor() {
+  getDescriptor() {
     return descriptor;
   }
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\022featureValue.proto\022\010protobuf\"\265\006\n\014Featu" +
-      "reValue\022\026\n\014booleanValue\030\001 \001(\010H\000\022\025\n\013strin" +
-      "gValue\030\002 \001(\tH\000\022\024\n\nfloatValue\030\003 \001(\002H\000\022\025\n\013" +
-      "doubleValue\030\004 \001(\001H\000\022\022\n\010intValue\030\005 \001(\005H\000\022" +
-      "\023\n\tlongValue\030\006 \001(\003H\000\022.\n\014booleanArray\030\010 \001" +
-      "(\0132\026.protobuf.BooleanArrayH\000\022,\n\013stringAr" +
-      "ray\030\t \001(\0132\025.protobuf.StringArrayH\000\022*\n\nfl" +
-      "oatArray\030\n \001(\0132\024.protobuf.FloatArrayH\000\022," +
-      "\n\013doubleArray\030\013 \001(\0132\025.protobuf.DoubleArr" +
-      "ayH\000\022*\n\010intArray\030\014 \001(\0132\026.protobuf.Intege" +
-      "rArrayH\000\022(\n\tlongArray\030\r \001(\0132\023.protobuf.L" +
-      "ongArrayH\000\022)\n\tbyteArray\030\016 \001(\0132\024.protobuf" +
-      ".BytesArrayH\000\0228\n\021sparseStringArray\030\017 \001(\013" +
-      "2\033.protobuf.SparseStringArrayH\000\0224\n\017spars" +
-      "eBoolArray\030\020 \001(\0132\031.protobuf.SparseBoolAr" +
-      "rayH\000\022:\n\022sparseIntegerArray\030\021 \001(\0132\034.prot" +
-      "obuf.SparseIntegerArrayH\000\0224\n\017sparseLongA" +
-      "rray\030\022 \001(\0132\031.protobuf.SparseLongArrayH\000\022" +
-      "8\n\021sparseDoubleArray\030\023 \001(\0132\033.protobuf.Sp" +
-      "arseDoubleArrayH\000\0226\n\020sparseFloatArray\030\024 " +
-      "\001(\0132\032.protobuf.SparseFloatArrayH\000B\023\n\021Fea" +
-      "tureValueOneOf\" \n\014BooleanArray\022\020\n\010boolea" +
-      "ns\030\001 \003(\010\"\036\n\013StringArray\022\017\n\007strings\030\001 \003(\t" +
-      "\"\036\n\013DoubleArray\022\017\n\007doubles\030\001 \003(\001\"\034\n\nFloa" +
-      "tArray\022\016\n\006floats\030\001 \003(\002\"\034\n\014IntegerArray\022\014" +
-      "\n\004ints\030\001 \003(\005\"\032\n\tLongArray\022\r\n\005longs\030\001 \003(\003" +
-      "\"!\n\nBytesArray\022\023\n\013bytes_array\030\001 \003(\014\"6\n\021S" +
-      "parseStringArray\022\020\n\010integers\030\001 \003(\005\022\017\n\007st" +
-      "rings\030\002 \003(\t\"5\n\017SparseBoolArray\022\020\n\010intege" +
-      "rs\030\001 \003(\005\022\020\n\010booleans\030\002 \003(\010\"D\n\022SparseInte" +
-      "gerArray\022\026\n\016index_integers\030\001 \003(\005\022\026\n\016valu" +
-      "e_integers\030\002 \003(\005\"8\n\017SparseLongArray\022\026\n\016i" +
-      "ndex_integers\030\001 \003(\005\022\r\n\005longs\030\002 \003(\003\"6\n\021Sp" +
-      "arseDoubleArray\022\020\n\010integers\030\001 \003(\005\022\017\n\007dou" +
-      "bles\030\002 \003(\001\"4\n\020SparseFloatArray\022\020\n\010intege" +
-      "rs\030\001 \003(\005\022\016\n\006floats\030\002 \003(\002B+\n)com.linkedin" +
-      ".feathr.common.types.protobufb\006proto3"
+        "\n\022featureValue.proto\022\010protobuf\"\316\006\n\014Featu" +
+            "reValue\022\027\n\rboolean_value\030\001 \001(\010H\000\022\026\n\014stri" +
+            "ng_value\030\002 \001(\tH\000\022\025\n\013float_value\030\003 \001(\002H\000\022" +
+            "\026\n\014double_value\030\004 \001(\001H\000\022\023\n\tint_value\030\005 \001" +
+            "(\005H\000\022\024\n\nlong_value\030\006 \001(\003H\000\022/\n\rboolean_ar" +
+            "ray\030\n \001(\0132\026.protobuf.BooleanArrayH\000\022-\n\014s" +
+            "tring_array\030\013 \001(\0132\025.protobuf.StringArray" +
+            "H\000\022+\n\013float_array\030\014 \001(\0132\024.protobuf.Float" +
+            "ArrayH\000\022-\n\014double_array\030\r \001(\0132\025.protobuf" +
+            ".DoubleArrayH\000\022+\n\tint_array\030\016 \001(\0132\026.prot" +
+            "obuf.IntegerArrayH\000\022)\n\nlong_array\030\017 \001(\0132" +
+            "\023.protobuf.LongArrayH\000\022*\n\nbyte_array\030\020 \001" +
+            "(\0132\024.protobuf.BytesArrayH\000\022:\n\023sparse_str" +
+            "ing_array\030\024 \001(\0132\033.protobuf.SparseStringA" +
+            "rrayH\000\0226\n\021sparse_bool_array\030\025 \001(\0132\031.prot" +
+            "obuf.SparseBoolArrayH\000\022<\n\024sparse_integer" +
+            "_array\030\026 \001(\0132\034.protobuf.SparseIntegerArr" +
+            "ayH\000\0226\n\021sparse_long_array\030\027 \001(\0132\031.protob" +
+            "uf.SparseLongArrayH\000\022:\n\023sparse_double_ar" +
+            "ray\030\030 \001(\0132\033.protobuf.SparseDoubleArrayH\000" +
+            "\0228\n\022sparse_float_array\030\031 \001(\0132\032.protobuf." +
+            "SparseFloatArrayH\000B\023\n\021FeatureValueOneOf\"" +
+            " \n\014BooleanArray\022\020\n\010booleans\030\001 \003(\010\"\036\n\013Str" +
+            "ingArray\022\017\n\007strings\030\001 \003(\t\"\036\n\013DoubleArray" +
+            "\022\017\n\007doubles\030\001 \003(\001\"\034\n\nFloatArray\022\016\n\006float" +
+            "s\030\001 \003(\002\" \n\014IntegerArray\022\020\n\010integers\030\001 \003(" +
+            "\005\"\032\n\tLongArray\022\r\n\005longs\030\001 \003(\003\"\033\n\nBytesAr" +
+            "ray\022\r\n\005bytes\030\001 \003(\014\"B\n\021SparseStringArray\022" +
+            "\026\n\016index_integers\030\001 \003(\005\022\025\n\rvalue_strings" +
+            "\030\002 \003(\t\"A\n\017SparseBoolArray\022\026\n\016index_integ" +
+            "ers\030\001 \003(\005\022\026\n\016value_booleans\030\002 \003(\010\"D\n\022Spa" +
+            "rseIntegerArray\022\026\n\016index_integers\030\001 \003(\005\022" +
+            "\026\n\016value_integers\030\002 \003(\005\">\n\017SparseLongArr" +
+            "ay\022\026\n\016index_integers\030\001 \003(\005\022\023\n\013value_long" +
+            "s\030\002 \003(\003\"B\n\021SparseDoubleArray\022\026\n\016index_in" +
+            "tegers\030\001 \003(\005\022\025\n\rvalue_doubles\030\002 \003(\001\"@\n\020S" +
+            "parseFloatArray\022\026\n\016index_integers\030\001 \003(\005\022" +
+            "\024\n\014value_floats\030\002 \003(\002B+\n)com.linkedin.fe" +
+            "athr.common.types.protobufb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
-      .internalBuildGeneratedFileFrom(descriptorData,
-        new com.google.protobuf.Descriptors.FileDescriptor[] {
-        });
+        .internalBuildGeneratedFileFrom(descriptorData,
+            new com.google.protobuf.Descriptors.FileDescriptor[] {
+            });
     internal_static_protobuf_FeatureValue_descriptor =
-      getDescriptor().getMessageTypes().get(0);
+        getDescriptor().getMessageTypes().get(0);
     internal_static_protobuf_FeatureValue_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_FeatureValue_descriptor,
         new java.lang.String[] { "BooleanValue", "StringValue", "FloatValue", "DoubleValue", "IntValue", "LongValue", "BooleanArray", "StringArray", "FloatArray", "DoubleArray", "IntArray", "LongArray", "ByteArray", "SparseStringArray", "SparseBoolArray", "SparseIntegerArray", "SparseLongArray", "SparseDoubleArray", "SparseFloatArray", "FeatureValueOneOf", });
     internal_static_protobuf_BooleanArray_descriptor =
-      getDescriptor().getMessageTypes().get(1);
+        getDescriptor().getMessageTypes().get(1);
     internal_static_protobuf_BooleanArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_BooleanArray_descriptor,
         new java.lang.String[] { "Booleans", });
     internal_static_protobuf_StringArray_descriptor =
-      getDescriptor().getMessageTypes().get(2);
+        getDescriptor().getMessageTypes().get(2);
     internal_static_protobuf_StringArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_StringArray_descriptor,
         new java.lang.String[] { "Strings", });
     internal_static_protobuf_DoubleArray_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+        getDescriptor().getMessageTypes().get(3);
     internal_static_protobuf_DoubleArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_DoubleArray_descriptor,
         new java.lang.String[] { "Doubles", });
     internal_static_protobuf_FloatArray_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+        getDescriptor().getMessageTypes().get(4);
     internal_static_protobuf_FloatArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_FloatArray_descriptor,
         new java.lang.String[] { "Floats", });
     internal_static_protobuf_IntegerArray_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+        getDescriptor().getMessageTypes().get(5);
     internal_static_protobuf_IntegerArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_IntegerArray_descriptor,
-        new java.lang.String[] { "Ints", });
+        new java.lang.String[] { "Integers", });
     internal_static_protobuf_LongArray_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+        getDescriptor().getMessageTypes().get(6);
     internal_static_protobuf_LongArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_LongArray_descriptor,
         new java.lang.String[] { "Longs", });
     internal_static_protobuf_BytesArray_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+        getDescriptor().getMessageTypes().get(7);
     internal_static_protobuf_BytesArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_BytesArray_descriptor,
-        new java.lang.String[] { "BytesArray", });
+        new java.lang.String[] { "Bytes", });
     internal_static_protobuf_SparseStringArray_descriptor =
-      getDescriptor().getMessageTypes().get(8);
+        getDescriptor().getMessageTypes().get(8);
     internal_static_protobuf_SparseStringArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_SparseStringArray_descriptor,
-        new java.lang.String[] { "Integers", "Strings", });
+        new java.lang.String[] { "IndexIntegers", "ValueStrings", });
     internal_static_protobuf_SparseBoolArray_descriptor =
-      getDescriptor().getMessageTypes().get(9);
+        getDescriptor().getMessageTypes().get(9);
     internal_static_protobuf_SparseBoolArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_SparseBoolArray_descriptor,
-        new java.lang.String[] { "Integers", "Booleans", });
+        new java.lang.String[] { "IndexIntegers", "ValueBooleans", });
     internal_static_protobuf_SparseIntegerArray_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+        getDescriptor().getMessageTypes().get(10);
     internal_static_protobuf_SparseIntegerArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_SparseIntegerArray_descriptor,
         new java.lang.String[] { "IndexIntegers", "ValueIntegers", });
     internal_static_protobuf_SparseLongArray_descriptor =
-      getDescriptor().getMessageTypes().get(11);
+        getDescriptor().getMessageTypes().get(11);
     internal_static_protobuf_SparseLongArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_SparseLongArray_descriptor,
-        new java.lang.String[] { "IndexIntegers", "Longs", });
+        new java.lang.String[] { "IndexIntegers", "ValueLongs", });
     internal_static_protobuf_SparseDoubleArray_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+        getDescriptor().getMessageTypes().get(12);
     internal_static_protobuf_SparseDoubleArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_SparseDoubleArray_descriptor,
-        new java.lang.String[] { "Integers", "Doubles", });
+        new java.lang.String[] { "IndexIntegers", "ValueDoubles", });
     internal_static_protobuf_SparseFloatArray_descriptor =
-      getDescriptor().getMessageTypes().get(13);
+        getDescriptor().getMessageTypes().get(13);
     internal_static_protobuf_SparseFloatArray_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protobuf_SparseFloatArray_descriptor,
-        new java.lang.String[] { "Integers", "Floats", });
+        new java.lang.String[] { "IndexIntegers", "ValueFloats", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

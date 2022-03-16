@@ -36,13 +36,19 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
             StructField("indices0", ArrayType(IntegerType, containsNull = false), nullable = false),
             StructField("values", ArrayType(FloatType, containsNull = false), nullable = false))),
           nullable = true),
+        StructField(
+          "__feathr_feature_sparse2",
+          StructType(List(
+            StructField("indices0", ArrayType(IntegerType, containsNull = false), nullable = false),
+            StructField("values", ArrayType(BooleanType, containsNull = false), nullable = false))),
+          nullable = true),
       ))
 
     val rawDf = ss.createDataFrame(
       ss.sparkContext.parallelize(
         Seq(
-          Row(1, 1.6f, 2, "g1", true, List(1, 2, 3), Row(List(1), List(1.0f)), Row(List("a"), List(1.0f))),
-          Row(2, -1.6f, -2, "g2", false, List(3, 4, 5), Row(List(2), List(-1.0f)), Row(List("a"), List(-1.0f))))),
+          Row(1, 1.6f, 2, "g1", true, List(1, 2, 3), Row(List(1), List(1.0f)), Row(List(1), List(true))),
+          Row(2, -1.6f, -2, "g2", false, List(3, 4, 5), Row(List(2), List(-1.0f)), Row(List(2), List(false))))),
       expSchema)
 
     rawDf.show()
@@ -53,13 +59,11 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
       new TaggedFeatureName("", "__feathr_feature_h") -> new FeatureInfo("__feathr_feature_h", FeatureTypes.BOOLEAN),
       new TaggedFeatureName("", "__feathr_feature_j") -> new FeatureInfo("__feathr_feature_j", FeatureTypes.TENSOR),
       new TaggedFeatureName("", "__feathr_feature_sparse1") -> new FeatureInfo("__feathr_feature_sparse1", FeatureTypes.TENSOR),
+      new TaggedFeatureName("", "__feathr_feature_sparse2") -> new FeatureInfo("__feathr_feature_sparse2", FeatureTypes.TENSOR),
     )
     val header = new Header(featureInfoMap)
 
     val encoded = pushToRedisOutputProcessor.encodeDataFrame(header, rawDf)
-    encoded.show()
-
-
 
     val encoder = RowEncoder(expSchema)
     val encodedDfSchema = encoded.schema
@@ -83,11 +87,16 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
           } else if (featureValue.hasDoubleValue) {
             featureValue.getDoubleValue
           } else if (featureValue.hasIntArray) {
-            featureValue.getIntArray.getIntsList.toArray
+            featureValue.getIntArray.getIntegersList.toArray
           } else if (featureValue.hasSparseFloatArray) {
             Row(
-              featureValue.getSparseFloatArray.getIntegersList.toArray,
-              featureValue.getSparseFloatArray.getFloatsList.toArray,
+              featureValue.getSparseFloatArray.getIndexIntegersList.toArray,
+              featureValue.getSparseFloatArray.getValueFloatsList.toArray,
+            )
+          } else if (featureValue.hasSparseBoolArray) {
+            Row(
+              featureValue.getSparseBoolArray.getIndexIntegersList.toArray,
+              featureValue.getSparseBoolArray.getValueBooleansList.toArray,
             )
           } else {
             throw new RuntimeException("can't be decoded.")
@@ -98,9 +107,42 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
       }})
     })(encoder)
 
-
-    decodedDf.show()
-
     AssertFeatureUtils.assertDataFrameEquals(decodedDf, rawDf)
+  }
+
+  /**
+   * Unsupported types will throw exception.
+   */
+  @Test(expectedExceptions = Array(classOf[RuntimeException]))
+  def testEncodeDataFrame2(): Unit = {
+    val pushToRedisOutputProcessor = new PushToRedisOutputProcessor(null)
+
+
+    val expSchema = StructType(
+      List(
+        StructField("key0", IntegerType, nullable = false),
+        StructField(
+          "__feathr_feature_sparse1",
+          StructType(List(
+            StructField("indices0", ArrayType(FloatType, containsNull = false), nullable = false),
+            StructField("values", ArrayType(FloatType, containsNull = false), nullable = false))),
+          nullable = true),
+      ))
+
+    val rawDf = ss.createDataFrame(
+      ss.sparkContext.parallelize(
+        Seq(
+          Row(1, Row(List(1.0f), List(1.0f))),
+          Row(2, Row(List(2.0f), List(2.0f))),
+        )),
+      expSchema)
+
+    val featureInfoMap = Map(
+      new TaggedFeatureName("", "__feathr_feature_sparse1") -> new FeatureInfo("__feathr_feature_sparse1", FeatureTypes.TENSOR),
+    )
+    val header = new Header(featureInfoMap)
+
+    val encoded = pushToRedisOutputProcessor.encodeDataFrame(header, rawDf)
+    encoded.show()
   }
 }

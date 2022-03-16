@@ -104,6 +104,11 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
   /**
    * Gets the function that converts the original data into protobuf data. The index of the schema is fixed so we
    * map each index to a fixed function.
+   * We are supporting:
+   * 1. scalar values
+   * 2. dense 1-dimension tensor
+   * 3. sparse 1-dimension tensor from integer to various types. Mostly support embedding use cases.
+   * (more types can be added if there are actual popular use cases)
    */
   private[feathr] def getConversionFunction(dfSchema: StructType, allFeatureCols: Set[String] = Set()): Map[Int, Any => Any] = {
     dfSchema.indices.map(index => {
@@ -151,7 +156,7 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
             (rowData: Any) => {
               val genericRow = rowData.asInstanceOf[mutable.WrappedArray[java.lang.Integer]]
               val allElements = genericRow.asJava
-              val protoStringArray = FeatureValueOuterClass.IntegerArray.newBuilder().addAllInts(allElements)
+              val protoStringArray = FeatureValueOuterClass.IntegerArray.newBuilder().addAllIntegers(allElements)
               val res = FeatureValueOuterClass.FeatureValue.newBuilder().setIntArray(protoStringArray).build()
               Base64.getEncoder.encodeToString(res.toByteArray)
             }
@@ -193,8 +198,8 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
               val indexArray = genericRow(0).asInstanceOf[mutable.WrappedArray[Integer]]
               val valueArray = genericRow(1).asInstanceOf[mutable.WrappedArray[String]]
               val protoStringArray = FeatureValueOuterClass.SparseStringArray.newBuilder()
-                .addAllIntegers(indexArray.asJava)
-                .addAllStrings(valueArray.asJava).build()
+                .addAllIndexIntegers(indexArray.asJava)
+                .addAllValueStrings(valueArray.asJava).build()
               val proto = FeatureValueOuterClass.FeatureValue.newBuilder()
                 .setSparseStringArray(protoStringArray).build()
               Base64.getEncoder.encodeToString(proto.toByteArray)
@@ -205,8 +210,8 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
               val indexArray = genericRow(0).asInstanceOf[mutable.WrappedArray[Integer]]
               val valueArray = genericRow(1).asInstanceOf[mutable.WrappedArray[java.lang.Boolean]]
               val protoBoolArray = FeatureValueOuterClass.SparseBoolArray.newBuilder()
-                .addAllIntegers(indexArray.asJava)
-                .addAllBooleans(valueArray.asJava).build()
+                .addAllIndexIntegers(indexArray.asJava)
+                .addAllValueBooleans(valueArray.asJava).build()
               val proto = FeatureValueOuterClass.FeatureValue.newBuilder()
                 .setSparseBoolArray(protoBoolArray).build()
               Base64.getEncoder.encodeToString(proto.toByteArray)
@@ -217,8 +222,8 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
               val indexArray = genericRow(0).asInstanceOf[mutable.WrappedArray[Integer]]
               val valueArray = genericRow(1).asInstanceOf[mutable.WrappedArray[java.lang.Double]]
               val protoArray = FeatureValueOuterClass.SparseDoubleArray.newBuilder()
-                .addAllIntegers(indexArray.asJava)
-                .addAllDoubles(valueArray.asJava).build()
+                .addAllIndexIntegers(indexArray.asJava)
+                .addAllValueDoubles(valueArray.asJava).build()
               val proto = FeatureValueOuterClass.FeatureValue.newBuilder()
                 .setSparseDoubleArray(protoArray).build()
               Base64.getEncoder.encodeToString(proto.toByteArray)
@@ -229,8 +234,8 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
               val indexArray = genericRow(0).asInstanceOf[mutable.WrappedArray[Integer]]
               val valueArray = genericRow(1).asInstanceOf[mutable.WrappedArray[java.lang.Float]]
               val protoArray = FeatureValueOuterClass.SparseFloatArray.newBuilder()
-                .addAllIntegers(indexArray.asJava)
-                .addAllFloats(valueArray.asJava).build()
+                .addAllIndexIntegers(indexArray.asJava)
+                .addAllValueFloats(valueArray.asJava).build()
               val proto = FeatureValueOuterClass.FeatureValue.newBuilder()
                 .setSparseFloatArray(protoArray).build()
               Base64.getEncoder.encodeToString(proto.toByteArray)
@@ -254,13 +259,13 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
               val valueArray = genericRow(1).asInstanceOf[mutable.WrappedArray[java.lang.Long]]
               val protoArray = FeatureValueOuterClass.SparseLongArray.newBuilder()
                 .addAllIndexIntegers(indexArray.asJava)
-                .addAllLongs(valueArray.asJava).build()
+                .addAllValueLongs(valueArray.asJava).build()
               val proto = FeatureValueOuterClass.FeatureValue.newBuilder()
                 .setSparseLongArray(protoArray).build()
               Base64.getEncoder.encodeToString(proto.toByteArray)
             }
           case _ =>
-            throw new RuntimeException(f"The data type(${field.dataType}) is not supported in Protobuf so it can't be encoded.")
+            throw new RuntimeException(f"The data type(${field.dataType}) is not supported in Redis push yet so it can't be encoded.")
         }
       } else {
         (rowData: Any) => rowData
