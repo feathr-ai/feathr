@@ -17,6 +17,15 @@ class Source:
         self.event_timestamp_column = event_timestamp_column
         self.timestamp_format = timestamp_format
 
+    def __eq__(self, other):
+        """A source is equal to another if name is equal."""
+        return self.name == other.name
+
+    def __hash__(self):
+        """A source can be identified with the name"""
+        return hash(self.name)
+
+
 class PassthroughSource(Source):
     """A type of 'passthrough' source, a.k.a. request feature source.
     """
@@ -26,6 +35,7 @@ class PassthroughSource(Source):
 
     def to_feature_config(self) -> str:
         return "source: " + self.name
+
 
 class HdfsSource(Source):
     """A data source(table) stored on HDFS-like file system. Data can be fetch through a POSIX style path."""
@@ -45,7 +55,8 @@ class HdfsSource(Source):
                 {% endif %}
             } 
         """)
-        msg = tm.render(source = self)
+        msg = tm.render(source=self)
         return msg
-    
+
+
 PASSTHROUGH_SOURCE = PassthroughSource()

@@ -37,7 +37,6 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
       // If any key in the keys is null, replace with special value and remove the row later
       when(casted.isNull, nullElementGuardString).otherwise(casted)
     }): _*)
-
     val encodedDf = encodeDataFrame(header, df)
 
     val tableParam = "table_name"
@@ -62,7 +61,7 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
   }
 
   private[feathr] def encodeDataFrame(header: Header, df: DataFrame): DataFrame = {
-    val allFeatureCols = header.featureInfoMap.map(x => (x._2.columnName, x._2.featureType))
+    val allFeatureCols = header.featureInfoMap.map(x => (x._2.columnName)).toSet
 
     val schema = df.schema
     val newStructType = getRedisSparkSchema(allFeatureCols, schema)
@@ -85,7 +84,7 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
    * Gets the new dataframe schema after protobuf encoding.
    */
   private[feathr] def getRedisSparkSchema(
-    allFeatureCols: Map[String, FeatureTypes] = Map(), // feature column name to feature type
+    allFeatureCols: Set[String] = Set(), // feature column name to feature type
     dfSchema: StructType
   ): StructType = {
     val newDfSchemaFields: Array[StructField] = dfSchema.indices.map {
@@ -106,7 +105,7 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
    * Gets the function that converts the original data into protobuf data. The index of the schema is fixed so we
    * map each index to a fixed function.
    */
-  private[feathr] def getConversionFunction(dfSchema: StructType, allFeatureCols: Map[String, FeatureTypes]): Map[Int, Any => Any] = {
+  private[feathr] def getConversionFunction(dfSchema: StructType, allFeatureCols: Set[String] = Set()): Map[Int, Any => Any] = {
     dfSchema.indices.map(index => {
       val field = dfSchema.fields(index)
       val fieldName = field.name

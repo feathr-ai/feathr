@@ -3,8 +3,14 @@ name: Feathr Scala Tests And Azure E2E Integration
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
 
 jobs:
   build:
@@ -47,18 +53,47 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install -e ./feathr_project/
-      - name: Test with pytest
+      - name: Set env variable for databricks run
+        run: |
+          echo "SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
+      - name: Run Feathr with Databricks
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
-          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0.jar"
-          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0.jar"
+          SPARK_CONFIG__SPARK_CLUSTER: databricks
+          SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL: "https://adb-2474129336842816.16.azuredatabricks.net/"
+          DATABRICKS_WORKSPACE_TOKEN_VALUE: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
+          SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE: '{"run_name":"","new_cluster":{"spark_version":"9.1.x-scala2.12","node_type_id":"Standard_D3_v2","num_workers":2,"spark_conf":{}},"libraries":[{"jar":""}],"spark_jar_task":{"main_class_name":"","parameters":[""]}}'
+          SPARK_CONFIG__DATABRICKS__WORK_DIR: "dbfs:/feathr_ci_project"
           REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
           AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
           AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
           AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
           S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
           S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
+          ADLS_ACCOUNT: ${{secrets.ADLS_ACCOUNT}}
+          ADLS_KEY: ${{secrets.ADLS_KEY}}
+          BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
+          BLOB_KEY: ${{secrets.BLOB_KEY}}
 
         run: |
-          cd feathr_project
-          pytest
+          # run only test with databricks 
+          pytest  -k 'databricks'
+      - name: Run Feathr with Azure Synapse
+        env:
+          PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_project"
+          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/feathr_jar_github_action_spark3/feathr-assembly-0.1.0.jar"
+          SPARK_CONFIG__SPARK_CLUSTER: azure_synapse
+          REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
+          AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
+          AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
+          AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
+          S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
+          S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
+          ADLS_ACCOUNT: ${{secrets.ADLS_ACCOUNT}}
+          ADLS_KEY: ${{secrets.ADLS_KEY}}
+          BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
+          BLOB_KEY: ${{secrets.BLOB_KEY}}
+
+        run: |
+          # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
+          pytest  -k 'not databricks'
