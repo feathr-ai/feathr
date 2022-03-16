@@ -9,12 +9,17 @@ import org.apache.spark.sql.DataFrame
 object FileFormat {
   private lazy val ss = SparkSession.builder.getOrCreate
 
+  // The each of the following are corresponding to one File format
+  // Please update when new Format is supported
   val CSV = "CSV"
+  // This type is used for local test scenario of AVRO data source
   val AVRO_JSON = "AVRO_JSON"
   val AVRO = "AVRO"
   val ORC = "ORC"
   val PARQUET = "PARQUET"
+  // Path list concept is used in SourceUtils to treat source as a list of path
   val PATHLIST = "PATHLIST"
+  // Detail JDBC Sql Type, please refer to dataloader.jdbc.SqlDbType
   val JDBC = "JDBC"
 
   private val AVRO_DATASOURCE = "com.databricks.spark.avro"

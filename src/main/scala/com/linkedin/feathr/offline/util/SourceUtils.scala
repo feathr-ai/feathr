@@ -281,7 +281,7 @@ private[offline] object SourceUtils {
    */
   def getRegularAnchorDF(ss: SparkSession, factDataSourcePath: String): DataFrame = {
     if (ss.sparkContext.isLocal){
-      getTestDF(ss, factDataSourcePath)
+      getLocalDF(ss, factDataSourcePath)
     }
     else {
       loadAsDataFrame(ss, factDataSourcePath)
@@ -294,7 +294,7 @@ private[offline] object SourceUtils {
    * @param ss    Spark Session
    * @param path  File Path
    */
-  def getTestDF(ss: SparkSession, path: String): DataFrame = {
+  def getLocalDF(ss: SparkSession, path: String): DataFrame = {
     val format = FileFormat.getType(path)
     val localPath = getLocalPath(path)
     format match {
@@ -677,7 +677,7 @@ private[offline] object SourceUtils {
       }
       case _ => {
         if (ss.sparkContext.isLocal){
-          getTestDF(ss, inputData.inputPath)
+          getLocalDF(ss, inputData.inputPath)
         } else {
           loadAsDataFrame(ss, inputData.inputPath)
         }

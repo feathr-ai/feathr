@@ -55,6 +55,6 @@ object JdbcUtils {
       case TOKEN_FLAG => getJDBCOptionsWithToken(ss)
       case _ => JdbcUtils.getJDBCOptionsWithPassword(ss)
     }
-    SqlType.loadDataFrame(ss, url, jdbcOptions)
+    SqlDbType.loadDataFrame(ss, url, jdbcOptions)
   }
 }
