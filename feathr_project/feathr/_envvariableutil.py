@@ -19,10 +19,20 @@ class _EnvVaraibleUtil(object):
             from the feathr_config.yaml file with the same config key.
             """
 
-        if not os.path.exists(os.path.abspath(self.config_path)):
-            # we don't throw out errors here, as it would be too noisy to print out logs every time this funciton is called
-            # the warning messages will be sent in the caller function
-            return None
+        # if envs exist, just return the existing env variable without reading the file
+        env_keyword = "__".join(args)
+        upper_env_keyword = env_keyword.upper()
+        # make it work for lower case and upper case.
+        env_variable = os.environ.get(
+            env_keyword, os.environ.get(upper_env_keyword))
+        if env_variable:
+            return env_variable
+
+        # if the config path doesn't exist, just return
+        try:
+            assert os.path.exists(os.path.abspath(self.config_path)) is not None
+        except:
+            logger.info("{} is not set and configuration file {} cannot be found. One of those shoudl be set." , env_keyword, self.config_path)
 
         with open(os.path.abspath(self.config_path), 'r') as stream:
             try:
@@ -30,13 +40,7 @@ class _EnvVaraibleUtil(object):
                 # concat all layers
                 # check in environment variable
                 yaml_layer = yaml_config
-                env_keyword = "__".join(args)
-                upper_env_keyword = env_keyword.upper()
-                # make it work for lower case and upper case.
-                env_variable = os.environ.get(
-                    env_keyword, os.environ.get(upper_env_keyword))
-                if env_variable:
-                    return env_variable
+                
                 # resolve one layer after another
                 for arg in args:
                     yaml_layer = yaml_layer[arg]

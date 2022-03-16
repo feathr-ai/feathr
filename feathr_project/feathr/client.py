@@ -103,10 +103,10 @@ class FeathrClient(object):
         self.spark_runtime = envutils.get_environment_variable_with_default(
             'spark_config', 'spark_cluster')
 
-        if self.spark_runtime.lower() not in {'azure_synapse', 'databricks'}:
+        if self.spark_runtime not in {'azure_synapse', 'databricks'}:
             raise RuntimeError(
                 'Only \'azure_synapse\' and \'databricks\' are currently supported.')
-        elif self.spark_runtime.lower() == 'azure_synapse':
+        elif self.spark_runtime == 'azure_synapse':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
@@ -126,7 +126,7 @@ class FeathrClient(object):
                 executors=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_num')
             )
-        elif self.spark_runtime.lower() == 'databricks':
+        elif self.spark_runtime == 'databricks':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
