@@ -145,4 +145,5 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 ## Community Guidelines
 Build for the community and build by the community. Check out [community guidelines](CONTRIBUTING.md).
 
-Join our [slack](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ) for questions and discussions.
+## Slack Channel
+Join our [slack channel](https://feathrai.slack.com) for questions and discussions.
