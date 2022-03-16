@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from feathr._abc import SparkJobLauncher
 from pathlib import Path
+from feathr.constants import *
 
 
 import requests
@@ -129,19 +130,20 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         submission_params['run_name'] = job_name
         submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         submission_params['new_cluster']['spark_conf'] = configuration
+        submission_params['new_cluster']['custom_tags'] = job_tags
         submission_params['spark_jar_task']['parameters'] = arguments
         submission_params['spark_jar_task']['main_class_name'] = main_class_name
         self.res_job_id = None
 
         try:
             # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
-            r = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
+            result = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
                               headers=self.auth_headers, data=json.dumps(submission_params))
-            self.res_job_id = r.json()['run_id']
+            self.res_job_id = result.json()['run_id']
             # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
-            r = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
+            result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                              headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-            logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', r.json()[
+            logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', result.json()[
                         'run_page_url'])
         except:
             traceback.print_exc()
@@ -169,11 +171,24 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
 
     def get_status(self) -> str:
         assert self.res_job_id is not None
-        # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
-        job = r = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
+        # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
+        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                                headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
         # first try to get result state. it might not be available, and if that's the case, try to get life_cycle_state
-        res_state = r.json()['state'].get('result_state') or r.json()[
+        res_state = result.json()['state'].get('result_state') or result.json()[
             'state']['life_cycle_state']
         assert res_state is not None
         return res_state
+    def get_job_result_uri(self) -> str:
+        """Get job output uri
+
+        Returns:
+            str: `output_path` field in the job tags
+        """
+        assert self.res_job_id is not None
+        # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
+        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
+                               headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
+        custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
+        assert custom_tags is not None
+        return custom_tags[OUTPUT_PATH_TAG]

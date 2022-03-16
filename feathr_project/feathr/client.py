@@ -15,6 +15,7 @@ from feathr._file_utils import write_to_file
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
+from feathr.constants import *
 
 
 class FeatureJoinJobParams:
@@ -67,7 +68,7 @@ class FeathrClient(object):
         client creation.
     """
 
-    def __init__(self):
+    def __init__(self, config_path = "./"):
 
         self.logger = logging.getLogger(__name__)
         # Redis key separator
@@ -79,8 +80,6 @@ class FeathrClient(object):
             'project_config', 'project_name')
         self.required_fields = _EnvVaraibleUtil.get_environment_variable_with_default(
             'project_config', 'required_environment_variables')
-
-        self._check_required_environment_variables_exist()
 
         # Redis configs
         self.redis_host = _EnvVaraibleUtil.get_environment_variable_with_default(
@@ -100,7 +99,7 @@ class FeathrClient(object):
         self.spark_runtime = _EnvVaraibleUtil.get_environment_variable_with_default(
             'spark_config', 'spark_cluster')
 
-        if self.spark_runtime not in {'azure_synapse', 'databricks'}:
+        if self.spark_runtime.lower() not in {'azure_synapse', 'databricks'}:
             raise RuntimeError(
                 'Only \'azure_synapse\' and \'databricks\' are currently supported.')
         elif self.spark_runtime.lower() == 'azure_synapse':
@@ -311,6 +310,7 @@ class FeathrClient(object):
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            job_tags={OUTPUT_PATH_TAG:feature_join_job_params.job_output_path},
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
                 '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
@@ -328,16 +328,14 @@ class FeathrClient(object):
             reference_files_path=[],
         )
 
-    def get_job_result_uri(self, feature_join_conf_path='feature_join_conf/feature_join.conf', local_folder='/tmp',
-                           block=True, timeout_sec=300):
+    def get_job_result_uri(self, local_folder='/tmp', block=True, timeout_sec=300):
         """Gets the job output URI
         """
-        feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
         if not block:
-            return feathr_feature['outputPath']
+            return self.feathr_spark_laucher.get_job_result_uri()
         # Block the API by pooling the job status and wait for complete
         if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
-            return feathr_feature['outputPath']
+            return self.feathr_spark_laucher.get_job_result_uri()
         else:
             raise RuntimeError(
                 'Spark job failed so output cannot be retrieved.')
