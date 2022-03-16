@@ -27,3 +27,6 @@ def test_configuration_loading():
         # test the loading is correct even if we are not in that folder
         assert client._FEATHR_JOB_JAR_PATH == "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar"
         
+        # this should not be error out as we will just give users prompt
+        client = FeathrClient(config_path="./feathr_config.yaml")
+        assert client is not None

@@ -81,7 +81,7 @@ spark_config:
 
   databricks:
     # workspace instance
-    workspace_instance_url: "https://adb-6885802458123232.12.azuredatabricks.net/"
+    workspace_instance_url: 'https://adb-6885802458123232.12.azuredatabricks.net/'
     workspace_token_value: ""
     # config string including run time information, spark version, machine size, etc.
     # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs

@@ -18,7 +18,13 @@ class _EnvVaraibleUtil(object):
             A environment variable for the variable key. If it's not set in the environment, then a default is retrieved
             from the feathr_config.yaml file with the same config key.
             """
-        with open(os.path.abspath('feathr_config.yaml'), 'r') as stream:
+
+        if not os.path.exists(os.path.abspath(self.config_path)):
+            # we don't throw out errors here, as it would be too noisy to print out logs every time this funciton is called
+            # the warning messages will be sent in the caller function
+            return None
+
+        with open(os.path.abspath(self.config_path), 'r') as stream:
             try:
                 yaml_config = yaml.safe_load(stream)
                 # concat all layers
