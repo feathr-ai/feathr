@@ -164,4 +164,3 @@ public class FeatureTypeConfigDeserializer extends JsonDeserializer<FeatureTypeC
         }
     }
 }
-

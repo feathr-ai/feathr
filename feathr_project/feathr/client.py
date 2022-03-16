@@ -1,15 +1,19 @@
 import logging
 import os
-from typing import List
+from pathlib import Path
+from typing import List, Optional, Union
 import redis
+from jinja2 import Template
 from pyhocon import ConfigFactory
+import base64
 
 from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr._feature_registry import _FeatureRegistry
+from feathr._file_utils import write_to_file
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr._databricks_submission import _FeathrDatabricksJobLauncher
-import base64
+
 
 class FeatureJoinJobParams:
     """Parameters related to feature join job.
@@ -97,7 +101,7 @@ class FeathrClient(object):
         if self.spark_runtime not in {'azure_synapse', 'databricks'}:
             raise RuntimeError(
                 'Only \'azure_synapse\' and \'databricks\' are currently supported.')
-        elif self.spark_runtime == 'azure_synapse':
+        elif self.spark_runtime.lower() == 'azure_synapse':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
@@ -117,7 +121,7 @@ class FeathrClient(object):
                 executors=_EnvVaraibleUtil.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_num')
             )
-        elif self.spark_runtime == 'databricks':
+        elif self.spark_runtime.lower() == 'databricks':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
@@ -150,10 +154,10 @@ class FeathrClient(object):
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
                                    f'variables are: {self.required_fields}.')
 
-    def register_features(self):
+    def register_features(self, repo_path: Optional[Path] = Path('./')):
         """Registers features based on the current workspace
         """
-        self.registry.register_features(os.path.abspath('./'))
+        self.registry.register_features(repo_path)
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -167,7 +171,7 @@ class FeathrClient(object):
         """
         return self.registry.get_registry_client()
 
-    def online_get_features(self, feature_table, key, feature_names):
+    def get_online_features(self, feature_table, key, feature_names):
         """Fetches feature value for a certain key from a online feature table.
 
         Args:
@@ -186,10 +190,9 @@ class FeathrClient(object):
             """
         redis_key = self._construct_redis_key(feature_table, key)
         res = self.redis_clint.hmget(redis_key, *feature_names)
-
         return self._decode_proto(res)
 
-    def online_batch_get_features(self, feature_table, keys, feature_names):
+    def multi_get_online_features(self, feature_table, keys, feature_names):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
 
         Args:
@@ -300,7 +303,37 @@ class FeathrClient(object):
         self.logger.info('Redis connection is successful and completed.')
         self.redis_clint = redis_clint
 
-    def join_offline_features(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
+
+    def get_offline_features(self,
+                             observation_settings: ObservationSettings,
+                             feature_query: Union[FeatureQuery, List[FeatureQuery]],
+                             output_path: str
+                             ):
+        """
+        Get offline features for the observation dataset
+        Args:
+            observation_settings: settings of the observation data, e.g. timestamp columns, input path, etc.
+            feature_query: features that are requested to add onto the observation data
+            output_path: output path of job, i.e. the observation data with features attached.
+        """
+        # produce join config
+        tm = Template("""
+            {{observation_settings.to_config()}}
+            featureList: [
+                {% for list in feature_lists %}
+                    {{list.to_config()}}
+                {% endfor %}
+            ]
+            outputPath: "{{output_path}}"
+        """)
+        feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
+        config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
+        config_file_name = "feature_join_conf/feature_join.conf"
+        config_file_path = os.path.abspath(config_file_name)
+        write_to_file(content=config, full_file_name=config_file_path)
+        return self.get_offline_features_with_config(config_file_name)
+
+    def get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
@@ -310,12 +343,13 @@ class FeathrClient(object):
             raise RuntimeError(
                 'Feature join config should be in feature_join_conf folder.')
 
+        _FeatureRegistry.save_to_feature_config(Path("./"))
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
                                                        observation_path=feathr_feature['observationPath'],
                                                        feature_config=os.path.abspath(
-                                                           'feature_conf/features.conf'),
+                                                           'feature_conf/'),
                                                        job_output_path=feathr_feature['outputPath'],
                                                        )
 
@@ -325,11 +359,11 @@ class FeathrClient(object):
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
-                '--join-config', self.feathr_spark_laucher.upload_to_work_dir(
+                '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     feature_join_job_params.join_config_path),
                 '--input', feature_join_job_params.observation_path,
                 '--output', feature_join_job_params.job_output_path,
-                '--feature-config', self.feathr_spark_laucher.upload_to_work_dir(
+                '--feature-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     feature_join_job_params.feature_config),
                 '--num-parts', self.output_num_parts,
                 '--s3-config', self._get_s3_config_str(),
@@ -369,6 +403,7 @@ class FeathrClient(object):
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
+        _FeatureRegistry.save_to_feature_config(Path("./"))
         if not feature_gen_conf_path.startswith('feature_gen_conf'):
             raise RuntimeError(
                 'Feature generation config should be in feature_gen_conf folder.')
@@ -376,17 +411,17 @@ class FeathrClient(object):
         # Read all features conf
         generation_config = FeatureGenerationJobParams(
             generation_config_path=os.path.abspath(feature_gen_conf_path),
-            feature_config=os.path.abspath("feature_conf/features.conf"))
+            feature_config=os.path.abspath("feature_conf/"))
 
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[
-                '--generation-config', self.feathr_spark_laucher.upload_to_work_dir(
+                '--generation-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     generation_config.generation_config_path),
                 # Local Config, comma seperated file names
-                '--feature-config', self.feathr_spark_laucher.upload_to_work_dir(
+                '--feature-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     generation_config.feature_config),
                 '--redis-config', self._getRedisConfigStr(),
                 '--s3-config', self._get_s3_config_str(),
@@ -491,3 +526,8 @@ class FeathrClient(object):
             JDBC_PASSWORD: "{JDBC_PASSWORD}"
             """.format(JDBC_TABLE=table, JDBC_USER=user, JDBC_PASSWORD=password)
         return config_str
+
+    def get_features_from_registry(self, project_name):
+        """ Sync features from the registry given a project name """
+        # TODO - Add support for customized workspace path
+        self.registry.get_features_from_registry(project_name, os.path.abspath("./"))

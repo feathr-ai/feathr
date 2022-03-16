@@ -37,7 +37,6 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
       // If any key in the keys is null, replace with special value and remove the row later
       when(casted.isNull, nullElementGuardString).otherwise(casted)
     }): _*)
-
     val encodedDf = encodeDataFrame(header, df)
 
     val tableParam = "table_name"

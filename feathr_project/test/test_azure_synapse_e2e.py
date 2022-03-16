@@ -1,18 +1,19 @@
+from feathr.dtype import ValueType
+from feathr.typed_key import TypedKey
 from feathrcli.cli import init
 from click.testing import CliRunner
 from feathr.client import FeathrClient
+from feathr.job_utils import get_result_df
+from feathr.query_feature_list import FeatureQuery
+from feathr.settings import ObservationSettings
 import os
-import glob
-import pandavro as pdx
-import pandas as pd
-import tempfile
 from pathlib import Path
 
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_online_store_agg_features():
     """
-    Test FeathrClient() online_get_features and batch_get can get data correctly.
+    Test FeathrClient() get_online_features and batch_get can get data correctly.
     """
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -23,7 +24,7 @@ def test_feathr_online_store_agg_features():
         # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
         # this part with the test_feathr_online_store test case
         client.wait_job_to_finish(timeout_sec=600)
-        res = client.online_get_features('nycTaxiDemoFeature', '265', ['f_location_avg_fare', 'f_location_max_fare'])
+        res = client.get_online_features('nycTaxiDemoFeature', '265', ['f_location_avg_fare', 'f_location_max_fare'])
         # just assme there are values. We don't hard code the values for now for testing
         # the correctness of the feature generation should be garunteed by feathr runtime.
         # ID 239 and 265 are available in the `DOLocationID` column in this file:
@@ -32,7 +33,7 @@ def test_feathr_online_store_agg_features():
         assert len(res) == 2
         assert res[0] != None
         assert res[1] != None
-        res = client.online_batch_get_features('nycTaxiDemoFeature',
+        res = client.multi_get_online_features('nycTaxiDemoFeature',
                                         ['239', '265'],
                                         ['f_location_avg_fare', 'f_location_max_fare'])
         assert res['239'][0] != None
@@ -92,9 +93,9 @@ def _validate_constant_feature(feature):
     assert feature[7] == ([1, 2, 3], [1, 2, 3])
 
 
-def test_feathr_get_historical_features():
+def test_feathr_get_offline_features():
     """
-    Test FeathrClient() get_features and batch_get can get data correctly.
+    Test get_offline_features() can get data correctly.
     """
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -102,19 +103,19 @@ def test_feathr_get_historical_features():
         os.chdir('feathr_user_workspace')
         client = FeathrClient()
 
-        returned_spark_job = client.join_offline_features()
-        res_url = client.get_job_result_uri(block=True, timeout_sec=600)
-        tmp_dir = tempfile.TemporaryDirectory()
-        client.feathr_spark_laucher.download_result(result_path=res_url, local_folder=tmp_dir.name)
-        dataframe_list = []
-        # assuming the result are in avro format
-        for file in glob.glob(os.path.join(tmp_dir.name, '*.avro')):
-            dataframe_list.append(pdx.read_avro(file))
-        vertical_concat_df = pd.concat(dataframe_list, axis=0)
-        tmp_dir.cleanup()
+        location_id = TypedKey(key_column="DOLocationID",
+                        key_column_type=ValueType.INT32,
+                        description="location id in NYC",
+                        full_name="nyc_taxi.location_id")
+        feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=location_id)
+        settings = ObservationSettings(
+            observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+            event_timestamp_column="lpep_dropoff_datetime",
+            timestamp_format="yyyy-MM-dd HH:mm:ss")
+        client.get_offline_features(observation_settings=settings,
+            feature_query=feature_query,
+            output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
+
+        vertical_concat_df = get_result_df(client)
         # just assume there are results. Need to think about this test and make sure it captures the result
         assert vertical_concat_df.shape[0] > 1
-
-
-
-

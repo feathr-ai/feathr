@@ -28,7 +28,6 @@ setup(
         "pandas",
         "redis",
         "requests",
-        "scikit-learn",
         "pyapacheatlas",
         "pyhocon",
         "pandavro",
@@ -36,7 +35,12 @@ setup(
         "pyyaml",
         "Jinja2",
         "google",
+<<<<<<< HEAD
         "google-api-python-client"
+=======
+        "google-api-python-client",
+        "pytest"
+>>>>>>> 37b3d6b2bc8e09ae336f4c965de4077f866afbde
     ],
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
