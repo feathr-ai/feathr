@@ -50,9 +50,9 @@ jobs:
           # overwrite corresponding environment variables to utilize feathr to upload the files 
           echo "SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
           echo "SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
+          echo "PROJECT_CONFIG__PROJECT_NAME=feathr_github_ci_project$(date +"_%H_%S")" >> $GITHUB_ENV 
       - name: Run Feathr with Databricks
         env:
-          PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_databricks"
           SPARK_CONFIG__SPARK_CLUSTER: databricks
           SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL: "https://adb-2474129336842816.16.azuredatabricks.net/"
           DATABRICKS_WORKSPACE_TOKEN_VALUE: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
@@ -74,7 +74,6 @@ jobs:
           pytest  -k 'databricks'
       - name: Run Feathr with Azure Synapse
         env:
-          PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_azure_synapse"
           SPARK_CONFIG__SPARK_CLUSTER: azure_synapse
           REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
           AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
