@@ -140,5 +140,5 @@ jobs:
 
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
-          # run in 4 parallel jobs
+          # run in 4 parallel jobs to make the time shorter
           pytest -n 4  -k 'not databricks'
