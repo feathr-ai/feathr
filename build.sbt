@@ -38,7 +38,8 @@ val localAndCloudCommonDependencies = Seq(
     "com.redislabs" %% "spark-redis" % "2.6.0",
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     "org.apache.xbean" % "xbean-asm6-shaded" % "4.10",
-    "com.google.protobuf" % "protobuf-java" % "3.19.4"
+    "com.google.protobuf" % "protobuf-java" % "3.19.4",
+    "com.github.changvvb" %% "jackson-module-caseclass" % "1.1.1"
 ) // Common deps
 
 val jdbcDrivers = Seq(
