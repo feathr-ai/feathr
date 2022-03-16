@@ -76,7 +76,7 @@ class FeathrClient(object):
         envutils = _EnvVaraibleUtil(config_path)
 
         if not os.path.exists(config_path):
-            self.logger.warning('{} does not exist, you need to set the environment variables explicitly. For all the environment variables, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml', str(config_path))
+            self.logger.warning(str(config_path), 'Configuration path does not exist, you need to set the environment variables explicitly. For all the environment variables, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
             
         # Load all configs from yaml at initialization
         # DO NOT load any configs from yaml during runtime.
