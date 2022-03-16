@@ -20,7 +20,11 @@ def test_configuration_loading():
         
         # test the loading is correct even if we are not in that folder
         assert client._FEATHR_JOB_JAR_PATH is not None
+
+        TEST_LOCATION = '/test_location'
+        
+        os.environ['SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION'] = TEST_LOCATION
         
         # this should not be error out as we will just give users prompt, though the config is not really here
-        client = FeathrClient(config_path="./feathr_config.yaml")
-        assert client is not None
+        client = FeathrClient(config_path="./feathr_user_workspace/feathr_config.yaml")
+        assert client._FEATHR_JOB_JAR_PATH == TEST_LOCATION
