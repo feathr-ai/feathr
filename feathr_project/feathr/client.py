@@ -137,7 +137,7 @@ class FeathrClient(object):
             self.feathr_spark_laucher = _FeathrDatabricksJobLauncher(
                 workspace_instance_url=envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'workspace_instance_url'),
-                token_value=envutils.get_environment_variable(
+                token_value=_EnvVaraibleUtil.get_environment_variable(
                     'DATABRICKS_WORKSPACE_TOKEN_VALUE'),
                 config_template=envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'config_template'),
@@ -247,7 +247,7 @@ class FeathrClient(object):
         """Constructs the Redis client. The host, port, credential and other parameters can be set via environment
         parameters.
         """
-        password = envutils.get_environment_variable(REDIS_PASSWORD)
+        password = _EnvVaraibleUtil.get_environment_variable(REDIS_PASSWORD)
         host = self.redis_host
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
@@ -413,7 +413,7 @@ class FeathrClient(object):
     def _getRedisConfigStr(self):
         """Construct the Redis config string. The host, port, credential and other parameters can be set via environment
         variables."""
-        password = envutils.get_environment_variable(REDIS_PASSWORD)
+        password = _EnvVaraibleUtil.get_environment_variable(REDIS_PASSWORD)
         host = self.redis_host
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
@@ -431,8 +431,8 @@ class FeathrClient(object):
         endpoint = self.s3_endpoint
         # if s3 endpoint is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
-        access_key = envutils.get_environment_variable('S3_ACCESS_KEY')
-        secret_key = envutils.get_environment_variable('S3_SECRET_KEY')
+        access_key = _EnvVaraibleUtil.get_environment_variable('S3_ACCESS_KEY')
+        secret_key = _EnvVaraibleUtil.get_environment_variable('S3_SECRET_KEY')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             S3_ENDPOINT: {S3_ENDPOINT}
@@ -444,10 +444,10 @@ class FeathrClient(object):
     def _get_adls_config_str(self):
         """Construct the ADLS config string for abfs(s). The Account, access key and other parameters can be set via
         environment variables."""
-        account = envutils.get_environment_variable('ADLS_ACCOUNT')
+        account = _EnvVaraibleUtil.get_environment_variable('ADLS_ACCOUNT')
         # if ADLS Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
-        key = envutils.get_environment_variable('ADLS_KEY')
+        key = _EnvVaraibleUtil.get_environment_variable('ADLS_KEY')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             ADLS_ACCOUNT: {ADLS_ACCOUNT}
@@ -458,10 +458,10 @@ class FeathrClient(object):
     def _get_blob_config_str(self):
         """Construct the Blob config string for wasb(s). The Account, access key and other parameters can be set via
         environment variables."""
-        account = envutils.get_environment_variable('BLOB_ACCOUNT')
+        account = _EnvVaraibleUtil.get_environment_variable('BLOB_ACCOUNT')
         # if BLOB Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
-        key = envutils.get_environment_variable('BLOB_KEY')
+        key = _EnvVaraibleUtil.get_environment_variable('BLOB_KEY')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             BLOB_ACCOUNT: {BLOB_ACCOUNT}
@@ -472,9 +472,9 @@ class FeathrClient(object):
     def _get_sql_config_str(self):
         """Construct the SQL config string for jdbc. The dbtable (query), user, password and other parameters can be set via
         environment variables."""
-        table = envutils.get_environment_variable('JDBC_TABLE')
-        user = envutils.get_environment_variable('JDBC_USER')
-        password = envutils.get_environment_variable('JDBC_PASSWORD')
+        table = _EnvVaraibleUtil.get_environment_variable('JDBC_TABLE')
+        user = _EnvVaraibleUtil.get_environment_variable('JDBC_USER')
+        password = _EnvVaraibleUtil.get_environment_variable('JDBC_PASSWORD')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             JDBC_TABLE: {JDBC_TABLE}
