@@ -39,6 +39,11 @@ Install the Feathr CLI using pip:
 pip install -U feathr
 ```
 
+Or if you want to use the latest Feathr code from GitHub:
+```bash
+pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
+```
+
 ## Step 3: Create a Feathr workspace
 
 ```bash
@@ -49,12 +54,9 @@ cd feathr_user_workspace
 
 In this created workspace, it has the following structure:
 
-- `feathr_config.yaml` contains the feature store configurations
-- `feature_conf` contains the feature definition written in Feathr feature config
-- `feature_gen_conf` contains the feature generation/materialization config
-- `feature_join_conf` contains the feature join/training dataset creation config
-- `mockdata` contains the mockdata for the demo
-- `nyc_driver_demo.ipynb` contains the demo notebook
+- `feathr_config.yaml` contains the feature store configurations template
+- `mockdata` contains some built-in mockdata
+- `nyc_driver_demo.ipynb` contains a demo notebook
 
 # Step 4: Update Feathr config
 
@@ -85,15 +87,27 @@ online_store:
 feature_registry:
 ```
 
-# Step 5: Turn on the type system initialization
+All the configurations can be overwritten by environment variables with concatenation of `__` for different layers of this config file. For example, `feathr_runtime_location` for databricks config can be overwritten by setting `SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION` environment variable. 
 
-In the above `feathr_config.yaml` file, set `type_system_initialization` to `true` to initialize the type system in Azure Purview. This is a manual step and only need to be called once (i.e. you can turn it to `false` as long as you are using the same Azure Purview endpoint).
+Another example would be overwriting Redis host with this config: `ONLINE_STORE__REDIS__HOST`.
+if you want to override this setting in a shell environment:
+```bash
+export ONLINE_STORE__REDIS__HOST=feathrazure.redis.cache.windows.net
+```
+Or set this in python:
+```python
+os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
+```
+
+# Step 5: Turn on the type system initialization for feature registry
+
+In the above `feathr_config.yaml` file, set `type_system_initialization` to `true` to initialize the type system in Azure Purview. This is a manual step and only need to be called once (i.e. you can turn it to `false` after the initialization step.
 
 # Step 6: Use the notebook as a starting point
 
 There should be a notebook called `nyc_driver_demo.ipynb` in the Feathr workspace, which you can use as a getting started template.
 
-In the notebook, first setup a few environment variables, such as REDIS_PASSWORD, AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_CLIENT_SECRET:
+In the notebook, first setup a few environment variables, such as REDIS_PASSWORD, AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_CLIENT_SECRET. You should be able to get those values from the first step.
 
 ```python
 import os
@@ -142,16 +156,16 @@ client.register_features()
 ## Step 9: Create training data using point-in-time correct feature join
 
 A training dataset usually contains entity id columns, multiple feature columns, event timestamp
-column and label/target column. <br/>
+column and label/target column. 
 
 To create a training dataset using Feathr, one needs to provide a feature join configuration file to specify
-what features and how these features should be joined to the observation data. The feature join config file mainly contains: <br/>
+what features and how these features should be joined to the observation data. The feature join config file mainly contains: 
 
 1. The path of a dataset as the 'spine' for the to-be-created training dataset. We call this input 'spine' dataset the 'observation'
-   dataset. Typically, each row of the observation data contains: <br/>
-   a) Column(s) representing entity id(s), which will be used as the join key to look up(join) feature value. <br/>
+   dataset. Typically, each row of the observation data contains: 
+   a) Column(s) representing entity id(s), which will be used as the join key to look up(join) feature value. 
    b) A column representing the event time of the row. By default, Feathr will make sure the feature values joined have
-   a timestamp earlier than it, ensuring no data leakage in the resulting training dataset. <br/>
+   a timestamp earlier than it, ensuring no data leakage in the resulting training dataset. 
    c) Other columns will be simply pass through onto the output training dataset.
 2. The key fields from the observation data, which are used to joined with the feature data.
 3. List of feature names to be joined with the observation data. The features must be defined in the feature
@@ -188,21 +202,7 @@ job_res = client.materialize_features()
 The following feature generation config is used to materialize feature value to Redis:
 
 ```
-operational: {
-  name: generateWithDefaultParams
-  endTime: 2021-01-02
-  endTimeFormat: "yyyy-MM-dd"
-  resolution: DAILY
-  output:[
-  {
-      name: REDIS
-      params: {
-        table_name: "nycTaxiDemoFeature"
-      }
-   }
-  ]
-}
-features: [f_location_avg_fare, f_location_max_fare]
+
 ```
 
 ## Step 11: Fetching feature value for online inference
