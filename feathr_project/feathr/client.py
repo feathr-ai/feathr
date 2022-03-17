@@ -68,82 +68,86 @@ class FeathrClient(object):
         client creation.
     """
 
-    def __init__(self, config_path = "./"):
+    def __init__(self, config_path = "./feathr_config.yaml"):
 
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
+        envutils = _EnvVaraibleUtil(config_path)
 
+        if not os.path.exists(config_path):
+            self.logger.warning('Configuration path does not exist, you need to set the environment variables explicitly. For all the environment variables, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
+            
         # Load all configs from yaml at initialization
         # DO NOT load any configs from yaml during runtime.
-        self.project_name = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.project_name = envutils.get_environment_variable_with_default(
             'project_config', 'project_name')
-        self.required_fields = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.required_fields = envutils.get_environment_variable_with_default(
             'project_config', 'required_environment_variables')
 
         # Redis configs
-        self.redis_host = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.redis_host = envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'host')
-        self.redis_port = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.redis_port = envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'port')
-        self.redis_ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.redis_ssl_enabled = envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'ssl_enabled')
 
         # S3 configs
-        self.s3_endpoint = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.s3_endpoint = envutils.get_environment_variable_with_default(
             'offline_store', 's3', 's3_endpoint')
 
         # spark configs
-        self.output_num_parts = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.output_num_parts = envutils.get_environment_variable_with_default(
             'spark_config', 'spark_result_output_parts')
-        self.spark_runtime = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.spark_runtime = envutils.get_environment_variable_with_default(
             'spark_config', 'spark_cluster')
 
-        if self.spark_runtime.lower() not in {'azure_synapse', 'databricks'}:
+        if self.spark_runtime not in {'azure_synapse', 'databricks'}:
             raise RuntimeError(
                 'Only \'azure_synapse\' and \'databricks\' are currently supported.')
-        elif self.spark_runtime.lower() == 'azure_synapse':
+        elif self.spark_runtime == 'azure_synapse':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
             self._FEATHR_JOB_JAR_PATH = \
-                _EnvVaraibleUtil.get_environment_variable_with_default(
+                envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'feathr_runtime_location')
 
             self.feathr_spark_laucher = _FeathrSynapseJobLauncher(
-                synapse_dev_url=_EnvVaraibleUtil.get_environment_variable_with_default(
+                synapse_dev_url=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'dev_url'),
-                pool_name=_EnvVaraibleUtil.get_environment_variable_with_default(
+                pool_name=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'pool_name'),
-                datalake_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
+                datalake_dir=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'workspace_dir'),
-                executor_size=_EnvVaraibleUtil.get_environment_variable_with_default(
+                executor_size=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_size'),
-                executors=_EnvVaraibleUtil.get_environment_variable_with_default(
+                executors=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_num')
             )
-        elif self.spark_runtime.lower() == 'databricks':
+        elif self.spark_runtime == 'databricks':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
             self._FEATHR_JOB_JAR_PATH = \
-                _EnvVaraibleUtil.get_environment_variable_with_default(
+                envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'feathr_runtime_location')
 
             self.feathr_spark_laucher = _FeathrDatabricksJobLauncher(
-                workspace_instance_url=_EnvVaraibleUtil.get_environment_variable_with_default(
+                workspace_instance_url=envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'workspace_instance_url'),
                 token_value=_EnvVaraibleUtil.get_environment_variable(
                     'DATABRICKS_WORKSPACE_TOKEN_VALUE'),
-                config_template=_EnvVaraibleUtil.get_environment_variable_with_default(
+                config_template=envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'config_template'),
-                databricks_work_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
+                databricks_work_dir=envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'work_dir')
             )
 
         self._construct_redis_client()
 
-        self.registry = _FeatureRegistry()
+        self.registry = _FeatureRegistry(config_path = config_path)
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.

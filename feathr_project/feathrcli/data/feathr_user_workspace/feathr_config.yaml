@@ -1,18 +1,37 @@
 # DO NOT MOVE OR DELETE THIS FILE
 
+# This file contains the configurations that are used by Feathr
+# All the configurations can be overwritten by environment variables with concatenation of `__` for different layers of this config file.
+# For example, `feathr_runtime_location` for databricks can be overwritten by setting this environment variable:
+# SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION
+# Another example would be overwriting Redis host with this config: `ONLINE_STORE__REDIS__HOST`
+# For example if you want to override this setting in a shell environment:
+# export ONLINE_STORE__REDIS__HOST=feathrazure.redis.cache.windows.net
+
 # version of API settings
 api_version: 1
 project_config:
   project_name: "feathr_getting_started"
   # Information that are required to be set via environment variables.
   required_environment_variables:
+    # the environemnt variables are required to run Feathr
     # Redis password for your online store
     - "REDIS_PASSWORD"
-    # Client IDs and Client Secret for the service principal. Read the getting started docs on how to get those information.
+    # Client IDs and client Secret for the service principal. Read the getting started docs on how to get those information.
     - "AZURE_CLIENT_ID"
     - "AZURE_TENANT_ID"
     - "AZURE_CLIENT_SECRET"
-
+  optional_environment_variables:
+    # the environemnt variables are optional, however you will need them if you want to use some of the services:
+    - ADLS_ACCOUNT
+    - ADLS_KEY
+    - WASB_ACCOUNT
+    - WASB_KEY
+    - S3_ACCESS_KEY
+    - S3_SECRET_KEY
+    - JDBC_TABLE
+    - JDBC_USER
+    - JDBC_PASSWORD
 
 offline_store:
   # paths starts with abfss:// or abfs://
