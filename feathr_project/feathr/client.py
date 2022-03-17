@@ -1,21 +1,26 @@
+import base64
 import logging
+import math
 import os
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional, Union
+
 import redis
 from jinja2 import Template
 from pyhocon import ConfigFactory
-import base64
 
+from feathr._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr._envvariableutil import _EnvVaraibleUtil
-from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr._feature_registry import _FeatureRegistry
 from feathr._file_utils import write_to_file
+from feathr._materialization_utils import _to_materialization_config
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
-from feathr._databricks_submission import _FeathrDatabricksJobLauncher
+from feathr.constants import *
+from feathr.materialization_settings import MaterializationSettings
+from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
-from feathr.constants import *
 
 
 class FeatureJoinJobParams:
@@ -341,9 +346,9 @@ class FeathrClient(object):
         config_file_name = "feature_join_conf/feature_join.conf"
         config_file_path = os.path.abspath(config_file_name)
         write_to_file(content=config, full_file_name=config_file_path)
-        return self.get_offline_features_with_config(config_file_name)
+        return self._get_offline_features_with_config(config_file_name)
 
-    def get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
@@ -404,8 +409,26 @@ class FeathrClient(object):
             return
         else:
             raise RuntimeError('Spark job failed.')
+    
+    def materialize_features(self, settings: MaterializationSettings):
+        """Materialize feature data
 
-    def materialize_features(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf'):
+        Args:
+            settings: Feature materialization settings
+        """
+        # produce materialization config
+         
+        for end in settings.get_backfill_cutoff_time():
+            settings.backfill_time.end = end
+            config = _to_materialization_config(settings)
+            config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
+            config_file_path = os.path.abspath(config_file_name)
+            write_to_file(content=config, full_file_name=config_file_path)
+            self._materialize_features_with_config(config_file_name)
+            if os.path.exists(config_file_path):
+                os.remove(config_file_path)
+
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf'):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 

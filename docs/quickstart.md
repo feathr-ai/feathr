@@ -236,33 +236,21 @@ client.get_offline_features(observation_settings=settings,
 ## Step 6: Materialize feature value into offline/online storage
 While Feathr can compute the feature value from the feature definition on-the-fly at request time, it can also pre-compute 
 and materialize the feature value to offline and/or online storage. <br/>
-The `deploy` command line call will materialize feature value according to the feature generation config under feature_gen_conf.
 
-```bash
-feathr deploy
-```
-Or in Python:
 ```python
-job_res = client.materialize_features()
-```
-The following feature generation config is used to materialize feature value to Redis:
+from feathr.client import FeathrClient
+from feathr.materialization_settings import (BackfillTime,
+                                             MaterializationSettings)
+from feathr.sink import RedisSink
 
-```
-operational: {
-  name: generateWithDefaultParams
-  endTime: 2021-01-02
-  endTimeFormat: "yyyy-MM-dd"
-  resolution: DAILY
-  output:[
-  {
-      name: REDIS
-      params: {
-        table_name: "nycTaxiDemoFeature"
-      }
-   }
-  ]
-}
-features: [f_location_avg_fare, f_location_max_fare]
+client = FeathrClient()
+redisSink = RedisSink(table_name="nycTaxiDemoFeature")
+# Materialize two features into a redis table.
+settings = MaterializationSettings("nycTaxiMaterializationJob",
+                                   sinks=[redisSink],
+                                   feature_names=["f_location_avg_fare", "f_location_max_fare"])
+client.materialize_features(settings)
+
 ```
 
 ## Step 7: Fetching feature value for online inference

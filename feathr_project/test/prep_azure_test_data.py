@@ -17,7 +17,7 @@ def initialize_data():
     print('Creating test data. This might override existing test data.')
     client = FeathrClient()
     # materialize feature to online store
-    client.materialize_features('feature_gen_conf/feature_gen.conf')
+    client._materialize_features_with_config('feature_gen_conf/feature_gen.conf')
     print('Test data push job has started. It will take some time to complete.')
 
 

@@ -2,7 +2,7 @@ from feathr.anchor import FeatureAnchor
 from feathr.feature import Feature
 from feathr.source import HdfsSource
 from feathr.dtype import BOOLEAN, INT32, FLOAT, ValueType
-from feathr.source import PASSTHROUGH_SOURCE
+from feathr.source import INPUT_CONTEXT
 from feathr.transformation import WindowAggTransformation
 from feathr.typed_key import TypedKey
 
@@ -18,7 +18,7 @@ def test_request_feature_anchor_to_config():
     ]
 
     anchor = FeatureAnchor(name="request_features",
-                           source=PASSTHROUGH_SOURCE,
+                           source=INPUT_CONTEXT,
                            features=features)
     expected_non_agg_feature_config = """
            request_features: {

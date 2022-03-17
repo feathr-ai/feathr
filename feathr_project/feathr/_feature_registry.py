@@ -431,17 +431,17 @@ class _FeatureRegistry():
             os.path.join(workspace_path, "feature_conf", '*.conf'))
         logger.info("Reading feature configuration from {}",
                     feature_config_paths)
-        feature_config_path = feature_config_paths[0]
-        self.feathr_feature_config = ConfigFactory.parse_file(
-            feature_config_path)
-        # print(self.feathr_feature)
-        with open(feature_config_path, "r") as f:
-            raw_hocon_feature_definition_config = f.read()
+        if len(feature_config_paths) > 0:
+            feature_config_path = feature_config_paths[0]
+            self.feathr_feature_config = ConfigFactory.parse_file(
+                feature_config_path)
+            with open(feature_config_path, "r") as f:
+                raw_hocon_feature_definition_config = f.read()
 
-        # get feature join config file
-        feature_join_paths = glob.glob(os.path.join(
-            workspace_path, "feature_join_conf", '*.conf'))
-        logger.info("Reading feature join configuration from {}",
+            # get feature join config file
+            feature_join_paths = glob.glob(os.path.join(
+                workspace_path, "feature_join_conf", '*.conf'))
+            logger.info("Reading feature join configuration from {}",
                     feature_join_paths)
         if len(feature_join_paths) > 0:
             feature_join_path = feature_join_paths[0]
