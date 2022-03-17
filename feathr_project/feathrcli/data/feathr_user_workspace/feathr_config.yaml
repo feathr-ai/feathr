@@ -17,7 +17,7 @@ project_config:
     # the environemnt variables are required to run Feathr
     # Redis password for your online store
     - "REDIS_PASSWORD"
-    # client IDs and client Secret for the service principal. Read the getting started docs on how to get those information.
+    # Client IDs and client Secret for the service principal. Read the getting started docs on how to get those information.
     - "AZURE_CLIENT_ID"
     - "AZURE_TENANT_ID"
     - "AZURE_CLIENT_SECRET"
