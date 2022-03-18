@@ -1,5 +1,6 @@
 from click.testing import CliRunner
 from feathr import FeathrClient
+from feathr import feature
 from feathr.anchor import FeatureAnchor
 from feathr.client import FeathrClient
 from feathr.dtype import BOOLEAN, FLOAT, INT32, ValueType
@@ -41,6 +42,7 @@ def define_features_for_test(config_path: str):
                 feature_type=INT32,
                 transform="dayofweek(lpep_dropoff_datetime)"),
     ]
+
 
     request_anchor = FeatureAnchor(name="request_features",
                                    source=INPUT_CONTEXT,
