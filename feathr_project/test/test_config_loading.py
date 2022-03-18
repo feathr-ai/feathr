@@ -24,6 +24,7 @@ def test_configuration_loading():
         TEST_LOCATION = '/test_location'
         
         os.environ['SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION'] = TEST_LOCATION
+        os.environ['SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION'] = TEST_LOCATION
         
         # this should not be error out as we will just give users prompt, though the config is not really here
         client = FeathrClient(config_path="./feathr_user_workspace/feathr_config.yaml")
