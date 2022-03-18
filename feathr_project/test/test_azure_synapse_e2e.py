@@ -12,7 +12,7 @@ from feathr.settings import ObservationSettings
 from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
 from feathrcli.cli import init
-from .test_utils import define_features_for_test
+from feathr_project.test.test_utils import define_features_for_test
 
 
 # make sure you have run the upload feature script before running these tests

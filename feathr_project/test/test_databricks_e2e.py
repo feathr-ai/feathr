@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+import sys
 
 from click.testing import CliRunner
 from feathr.client import FeathrClient
@@ -13,8 +14,7 @@ from feathr.settings import ObservationSettings
 from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
 from feathrcli.cli import init
-
-from .test_utils import define_features_for_test
+from feathr_project.test.test_utils import define_features_for_test
 
 
 def test_feathr_online_store_databricks():
@@ -23,6 +23,7 @@ def test_feathr_online_store_databricks():
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
+
     client = define_features_for_test(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
