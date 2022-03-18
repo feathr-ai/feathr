@@ -3,8 +3,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from click.testing import CliRunner
-from feathr.client import FeathrClient
-from feathr.dtype import ValueType
+from feathr.dtype import BOOLEAN, FLOAT, INT32, ValueType
 from feathr.job_utils import get_result_df
 from feathr.materialization_settings import (BackfillTime,
                                              MaterializationSettings)
@@ -13,6 +12,7 @@ from feathr.settings import ObservationSettings
 from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
 from feathrcli.cli import init
+from .test_utils import define_features_for_test
 
 
 # make sure you have run the upload feature script before running these tests
@@ -21,21 +21,26 @@ def test_feathr_online_store_agg_features():
     """
     Test FeathrClient() get_online_features and batch_get can get data correctly.
     """
-    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
-    os.chdir(test_workspace_dir)
-    client = FeathrClient()
-    backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    # os.chdir(test_workspace_dir)
+    client = define_features_for_test(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
     redisSink = RedisSink(table_name="nycTaxiDemoFeature")
     settings = MaterializationSettings("nycTaxiTable",
-                                   sinks=[redisSink],
-                                   feature_names=["f_location_avg_fare", "f_location_max_fare"],
-                                   backfill_time=backfill_time)
+                                       sinks=[redisSink],
+                                       feature_names=[
+                                           "f_location_avg_fare", "f_location_max_fare"],
+                                       backfill_time=backfill_time)
     client.materialize_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
     client.wait_job_to_finish(timeout_sec=600)
 
-    res = client.get_online_features('nycTaxiDemoFeature', '265', ['f_location_avg_fare', 'f_location_max_fare'])
+    res = client.get_online_features('nycTaxiDemoFeature', '265', [
+                                     'f_location_avg_fare', 'f_location_max_fare'])
     # just assme there are values. We don't hard code the values for now for testing
     # the correctness of the feature generation should be garunteed by feathr runtime.
     # ID 239 and 265 are available in the `DOLocationID` column in this file:
@@ -45,8 +50,8 @@ def test_feathr_online_store_agg_features():
     assert res[0] != None
     assert res[1] != None
     res = client.multi_get_online_features('nycTaxiDemoFeature',
-                                    ['239', '265'],
-                                    ['f_location_avg_fare', 'f_location_max_fare'])
+                                           ['239', '265'],
+                                           ['f_location_avg_fare', 'f_location_max_fare'])
     assert res['239'][0] != None
     assert res['239'][1] != None
     assert res['265'][0] != None
@@ -57,14 +62,23 @@ def test_feathr_online_store_non_agg_features():
     """
     Test FeathrClient() online_get_features and batch_get can get data correctly.
     """
-    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
-    os.chdir(test_workspace_dir)
-    client = FeathrClient()
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client = define_features_for_test(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
-    client._materialize_features_with_config("feature_gen_conf/test_feature_gen_2.conf")
-    # # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
-    # # this part with the test_feathr_online_store test case
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+    redisSink = RedisSink(table_name="nycTaxiDemoFeature")
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[redisSink],
+                                       feature_names=["f_gen_trip_distance", "f_gen_is_long_trip_distance", "f1", "f2", "f3", "f4", "f5", "f6"],
+                                       backfill_time=backfill_time)
+
+    client.materialize_features(settings)
+    # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
+    # this part with the test_feathr_online_store test case
     client.wait_job_to_finish(timeout_sec=600)
+
     res = client.get_online_features('nycTaxiDemoFeature', '111', ['f_gen_trip_distance', 'f_gen_is_long_trip_distance',
                                                                    'f1', 'f2', 'f3', 'f4', 'f5', 'f6'])
     # just assme there are values. We don't hard code the values for now for testing
@@ -105,21 +119,23 @@ def test_feathr_get_offline_features():
     runner = CliRunner()
     with runner.isolated_filesystem():
         runner.invoke(init, [])
-        os.chdir('feathr_user_workspace')
-        client = FeathrClient()
+        client = define_features_for_test(
+            "./feathr_user_workspace/feathr_config.yaml")
 
         location_id = TypedKey(key_column="DOLocationID",
-                        key_column_type=ValueType.INT32,
-                        description="location id in NYC",
-                        full_name="nyc_taxi.location_id")
-        feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=location_id)
+                               key_column_type=ValueType.INT32,
+                               description="location id in NYC",
+                               full_name="nyc_taxi.location_id")
+
+        feature_query = FeatureQuery(
+            feature_list=["f_location_avg_fare"], key=location_id)
         settings = ObservationSettings(
             observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
             event_timestamp_column="lpep_dropoff_datetime",
             timestamp_format="yyyy-MM-dd HH:mm:ss")
         client.get_offline_features(observation_settings=settings,
-            feature_query=feature_query,
-            output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
+                                    feature_query=feature_query,
+                                    output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
 
         vertical_concat_df = get_result_df(client)
         # just assume there are results. Need to think about this test and make sure it captures the result

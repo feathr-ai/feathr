@@ -1,12 +1,20 @@
 import os
-from click.testing import CliRunner
+from datetime import datetime, timedelta
 from pathlib import Path
+
+from click.testing import CliRunner
 from feathr.client import FeathrClient
-from feathr.dtype import ValueType
+from feathr.dtype import BOOLEAN, FLOAT, INT32, ValueType
+from feathr.job_utils import get_result_df
+from feathr.materialization_settings import (BackfillTime,
+                                             MaterializationSettings)
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
+from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
 from feathrcli.cli import init
+
+from .test_utils import define_features_for_test
 
 
 def test_feathr_online_store_databricks():
@@ -14,13 +22,22 @@ def test_feathr_online_store_databricks():
     Test FeathrClient() get_online_features and batch_get can get data correctly.
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
-    os.chdir(test_workspace_dir)
-    client = FeathrClient()
+    # os.chdir(test_workspace_dir)
+    client = define_features_for_test(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
-    client._materialize_features_with_config("feature_gen_conf/test_feature_gen_1.conf")
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+    redisSink = RedisSink(table_name="nycTaxiDemoFeature")
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[redisSink],
+                                       feature_names=[
+                                           "f_location_avg_fare", "f_location_max_fare"],
+                                       backfill_time=backfill_time)
+    client.materialize_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=600)
+
     res = client.get_online_features('nycTaxiDemoFeature', '265', ['f_location_avg_fare', 'f_location_max_fare'])
     # just assume there are values. We don't hard code the values for now for testing
     # the correctness of the feature generation should be garunteed by feathr runtime.
@@ -46,8 +63,9 @@ def test_get_offline_features_databricks():
     runner = CliRunner()
     with runner.isolated_filesystem():
         runner.invoke(init, [])
-        os.chdir('feathr_user_workspace')
-        client = FeathrClient()
+        client = define_features_for_test(
+            "./feathr_user_workspace/feathr_config.yaml")
+
 
         location_id = TypedKey(key_column="DOLocationID",
                         key_column_type=ValueType.INT32,
