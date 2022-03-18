@@ -1,3 +1,5 @@
+
+from abc import ABC, abstractmethod
 from typing import List, Optional
 from jinja2 import Template
 
@@ -25,8 +27,10 @@ class Source:
         """A source can be identified with the name"""
         return hash(self.name)
 
+    def to_write_config(self) -> str:
+        pass
 
-class PassthroughSource(Source):
+class InputContext(Source):
     """A type of 'passthrough' source, a.k.a. request feature source.
     """
     SOURCE_NAME = "PASSTHROUGH"
@@ -57,6 +61,5 @@ class HdfsSource(Source):
         """)
         msg = tm.render(source=self)
         return msg
-
-
-PASSTHROUGH_SOURCE = PassthroughSource()
+ 
+INPUT_CONTEXT = InputContext()

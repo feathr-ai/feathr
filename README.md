@@ -4,10 +4,9 @@ Feathr – An Enterprise-Grade, High Performance Feature Store
 ## What is Feathr?
 
 Feathr lets you:
-* **define features** based on raw data sources, including time-series data, using simple [HOCON](https://github.com/lightbend/config/blob/main/HOCON.md) configuration 
-* **get those features by their names** during model training and model inferencing,
-using simple APIs
-* **share features** across your team and company
+* **define features** based on raw data sources, including time-series data, using simple APIs.
+* **get those features by their names** during model training and model inferencing.
+* **share features** across your team and company.
 
 Feathr automatically computes your feature values and joins them to your training
 data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying
@@ -19,7 +18,6 @@ For more details, read our [documentation](https://linkedin.github.io/feathr/).
 ## Defining Features with Transformation
 In **feathr_worksapce** folder:
 ```python
-# Define the key for your feature
 features = [
     Feature(name="f_trip_distance",                         # Ingest feature data as-is
             feature_type=FLOAT),      
@@ -35,9 +33,6 @@ anchor = FeatureAnchor(name="request_features",             # Features anchored 
                        source=batch_source,
                        features=features)
 ```
-
-## (Optional) Deploy Features to Online (Redis) Store
-With CLI tool: `feathr deploy`
 
 ## Accessing Features
 In **my_offline_training.py**:
@@ -80,6 +75,24 @@ client.multi_get_online_features(feature_table = "agg_features",
 
 ```
 
+
+## Deploy Features to Online (Redis) Store
+
+```python
+from feathr.client import FeathrClient
+from feathr.materialization_settings import (BackfillTime,
+MaterializationSettings)
+from feathr.sink import RedisSink
+
+client = FeathrClient()
+redisSink = RedisSink(table_name="nycTaxiDemoFeature")
+# Materialize two features into a redis table.
+settings = MaterializationSettings("nycTaxiMaterializationJob",
+sinks=[redisSink],
+feature_names=["f_location_avg_fare", "f_location_max_fare"])
+client.materialize_features(settings)
+
+```
 
 # More on Defining Features
 

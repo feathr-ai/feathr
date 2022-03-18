@@ -17,7 +17,7 @@ def test_feathr_online_store_databricks():
     os.chdir(test_workspace_dir)
     client = FeathrClient()
 
-    client.materialize_features("feature_gen_conf/test_feature_gen_1.conf")
+    client._materialize_features_with_config("feature_gen_conf/test_feature_gen_1.conf")
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
     client.wait_job_to_finish(timeout_sec=900)

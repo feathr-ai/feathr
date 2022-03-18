@@ -90,7 +90,7 @@ def join(filepath):
     click.echo()
 
     client = FeathrClient()
-    client.get_offline_features_with_config(filepath)
+    client._get_offline_features_with_config(filepath)
     click.echo(click.style('Feathr feature join job submitted. Visit '
                            'https://ms.web.azuresynapse.net/en-us/monitoring/sparkapplication for detailed job '
                            'result.', fg='green'))
@@ -113,7 +113,7 @@ def deploy(filepath):
     click.echo()
 
     client = FeathrClient()
-    client.materialize_features(filepath)
+    client._materialize_features_with_config(filepath)
     click.echo()
     click.echo(click.style('Feathr feature deployment submitted. Visit '
                            'https://ms.web.azuresynapse.net/en-us/monitoring/sparkapplication for detailed job '
