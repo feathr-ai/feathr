@@ -14,7 +14,7 @@ from feathr.settings import ObservationSettings
 from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
 from feathrcli.cli import init
-from test.test_utils import define_features_for_test
+from test_utils import define_features_for_test
 
 
 def test_feathr_online_store_databricks():

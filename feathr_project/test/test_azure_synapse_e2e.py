@@ -12,9 +12,8 @@ from feathr.settings import ObservationSettings
 from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
 from feathrcli.cli import init
-from test.test_utils import define_features_for_test
 
-
+from test_utils import define_features_for_test
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_online_store_agg_features():
