@@ -23,6 +23,7 @@ def test_configuration_loading():
 
         TEST_LOCATION = '/test_location'
         
+        # since we test synapse and databricks runtime using the same set of configs, we need to make sure we set both variable so that pytest can pass for both runners
         os.environ['SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION'] = TEST_LOCATION
         os.environ['SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION'] = TEST_LOCATION
         
