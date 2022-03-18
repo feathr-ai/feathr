@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional, Union
+import tempfile
 
 import redis
 from jinja2 import Template
@@ -53,8 +54,6 @@ class FeatureGenerationJobParams:
         self.feature_config = feature_config
 
 
-REDIS_PASSWORD = 'REDIS_PASSWORD'
-
 
 class FeathrClient(object):
     """Feathr client.
@@ -73,12 +72,16 @@ class FeathrClient(object):
         client creation.
     """
 
-    def __init__(self, config_path = "./feathr_config.yaml"):
+    def __init__(self, config_path = "./feathr_config.yaml", local_workspace_dir = None):
 
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
         envutils = _EnvVaraibleUtil(config_path)
+        if local_workspace_dir:
+            self.local_workspace_dir = local_workspace_dir
+        else:
+            self.local_workspace_dir = tempfile.TemporaryDirectory().name
 
         if not os.path.exists(config_path):
             self.logger.warning('Configuration path does not exist, you need to set the environment variables explicitly. For all the environment variables, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
@@ -168,6 +171,13 @@ class FeathrClient(object):
         """Registers features based on the current workspace
         """
         self.registry.register_features(repo_path)
+    
+    def build_features(self, anchor_list, derived_feature_list):
+        """Registers features based on the current workspace
+        """
+        self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
+        self.anchor_list = anchor_list
+        self.derived_feature_list = derived_feature_list
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -348,9 +358,9 @@ class FeathrClient(object):
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
         config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
         config_file_name = "feature_join_conf/feature_join.conf"
-        config_file_path = os.path.abspath(config_file_name)
+        config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_name)
+        return self._get_offline_features_with_config(config_file_path)
 
     def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
         """Joins the features to your offline observation dataset based on the join config.
@@ -358,17 +368,16 @@ class FeathrClient(object):
         Args:
           feature_join_conf_path: Relative path to your feature join config file.
         """
-        if not feature_join_conf_path.startswith('feature_join_conf'):
-            raise RuntimeError(
-                'Feature join config should be in feature_join_conf folder.')
+        # if not feature_join_conf_path.startswith('feature_join_conf'):
+        #     raise RuntimeError(
+        #         'Feature join config should be in feature_join_conf folder.')
 
-        _FeatureRegistry.save_to_feature_config(Path("./"))
+        # _FeatureRegistry.save_to_feature_config(Path("./"))
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
                                                        observation_path=feathr_feature['observationPath'],
-                                                       feature_config=os.path.abspath(
-                                                           'feature_conf/'),
+                                                       feature_config=os.path.join(self.local_workspace_dir, 'feature_conf/'),
                                                        job_output_path=feathr_feature['outputPath'],
                                                        )
 
@@ -394,7 +403,7 @@ class FeathrClient(object):
             reference_files_path=[],
         )
 
-    def get_job_result_uri(self, local_folder='/tmp', block=True, timeout_sec=300):
+    def get_job_result_uri(self, block=True, timeout_sec=300):
         """Gets the job output URI
         """
         if not block:
@@ -426,9 +435,9 @@ class FeathrClient(object):
             settings.backfill_time.end = end
             config = _to_materialization_config(settings)
             config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
-            config_file_path = os.path.abspath(config_file_name)
+            config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
             write_to_file(content=config, full_file_name=config_file_path)
-            self._materialize_features_with_config(config_file_name)
+            self._materialize_features_with_config(config_file_path)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
 
@@ -439,15 +448,15 @@ class FeathrClient(object):
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
-        _FeatureRegistry.save_to_feature_config(Path("./"))
-        if not feature_gen_conf_path.startswith('feature_gen_conf'):
-            raise RuntimeError(
-                'Feature generation config should be in feature_gen_conf folder.')
+        # _FeatureRegistry.save_to_feature_config(Path("./"))
+        # if not feature_gen_conf_path.startswith('feature_gen_conf'):
+        #     raise RuntimeError(
+        #         'Feature generation config should be in feature_gen_conf folder.')
 
         # Read all features conf
         generation_config = FeatureGenerationJobParams(
             generation_config_path=os.path.abspath(feature_gen_conf_path),
-            feature_config=os.path.abspath("feature_conf/"))
+            feature_config=os.path.join(self.local_workspace_dir, "feature_conf/"))
 
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
@@ -468,19 +477,6 @@ class FeathrClient(object):
             reference_files_path=[],
         )
 
-    def get_job_result_uri(self, feature_join_conf_path='feature_join_conf/feature_join.conf', local_folder='/tmp',
-                           block=True, timeout_sec=300):
-        """Gets the job output URI
-        """
-        feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
-        if not block:
-            return feathr_feature['outputPath']
-        # Block the API by pooling the job status and wait for complete
-        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
-            return feathr_feature['outputPath']
-        else:
-            raise RuntimeError(
-                'Spark job failed so output cannot be retrieved.')
 
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
