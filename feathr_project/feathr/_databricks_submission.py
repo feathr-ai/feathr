@@ -179,6 +179,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             'state']['life_cycle_state']
         assert res_state is not None
         return res_state
+        
     def get_job_result_uri(self) -> str:
         """Get job output uri
 
