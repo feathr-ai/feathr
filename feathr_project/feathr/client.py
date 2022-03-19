@@ -22,6 +22,7 @@ from feathr.materialization_settings import MaterializationSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
+from feathr.feature_derivations import DerivedFeature
 
 
 class FeatureJoinJobParams:
@@ -172,7 +173,7 @@ class FeathrClient(object):
         """
         self.registry.register_features(repo_path)
     
-    def build_features(self, anchor_list, derived_feature_list):
+    def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
         """Registers features based on the current workspace
         """
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
