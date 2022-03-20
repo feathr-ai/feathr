@@ -66,50 +66,41 @@ As you can see, for each tracking ID, we get the latest data based on the Date c
 
 ## Using Point-in-time Lookup in Feathr
 Using the above example, you can define point-in-time lookup in this way:
-```
-anchors: {
-  ...
-  myAnchor: {
-    source: “myXSource”
-    key: “userId”
-    features: {
-      feature_X: {
-        def: “x”
-        aggregation: LATEST
-        window: 7d        // Defines the farest time range you want to lookup for. Data beyond this window won't be used.
-      }
-    }
-  }
 
-sources: {
-  “myXSource”: {
-    type: "ADLS"
-    location: { path: "/path/to/your/feature/data/daily" }
-    timeWindowParameters: {
-      timestamp: "DateX"        // field of your timestamp
-      timestamp_format: "yyyy/MM/DD"        // format of timestamp. It can be human readable format or epoch(in seconds)
-    }
-  }
-}
-```
-And your join config:
-```
-settings: {
-  joinTimeSettings: {
-    timestampColumn: {
-      def: "Date"        // timestamp field for your observation data
-      format: "MM/DD"    // teimstamp field format of your observation/label data
-    }
-  }
-}
-features: [
-  {
-    key: UserId
-    featureList: [
-      feature_X,
-    ]
-  }
+```python
+
+UserId = TypedKey(key_column="UserId",
+                       key_column_type=ValueType.INT32)
+myXSource = HdfsSource(name="myXSource",
+                          path="abfss://demosource@demosource.dfs.core.windows.net/demosource.parquet",
+                          event_timestamp_column="DateX",
+                          timestamp_format="yyyy/MM/DD")
+features = [
+    Feature(name="f_location_avg_fare",
+            key=UserId,
+            feature_type=FLOAT,
+            transform=WindowAggTransformation(agg_expr="x",
+                                              agg_func="LATEST",
+                                              window="7d")),
 ]
+point_in_time_anchor = FeatureAnchor(name="features",
+                               source=myXSource,
+                               features=features)
+```
+
+And your join config:
+
+
+```python
+feature_query = FeatureQuery(
+    feature_list=["feature_X"], key=UserId)
+settings = ObservationSettings(
+    observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+    event_timestamp_column="Date",
+    timestamp_format="MM/DD")
+client.get_offline_features(observation_settings=settings,
+                            feature_query=feature_query,
+                            output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
 ```
 
 ## Advanced Point-in-time Lookup
