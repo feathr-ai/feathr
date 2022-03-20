@@ -12,6 +12,7 @@ from feathr.settings import ObservationSettings
 from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
 from feathrcli.cli import init
+import pytest
 
 from test_utils import define_features_for_test
 # make sure you have run the upload feature script before running these tests
@@ -56,7 +57,7 @@ def test_feathr_online_store_agg_features():
     assert res['265'][0] != None
     assert res['265'][1] != None
 
-'''
+@pytest.mark.skip(reason="Add back when complex types are supported in python API")
 def test_feathr_online_store_non_agg_features():
     """
     Test FeathrClient() online_get_features and batch_get can get data correctly.
@@ -100,7 +101,7 @@ def test_feathr_online_store_non_agg_features():
     _validate_constant_feature(res['265'])
     assert res['265'][0] != None
     assert res['265'][1] != None
-'''
+
 
 def _validate_constant_feature(feature):
     assert feature[2] == [10.0, 20.0, 30.0]
