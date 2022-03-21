@@ -113,7 +113,7 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
   /**
    * Unsupported types will throw exception.
    */
-  @Test(expectedExceptions = Array(classOf[RuntimeException]))
+  @Test(expectedExceptions = Array(classOf[org.apache.spark.SparkException]))
   def testEncodeDataFrame2(): Unit = {
     val pushToRedisOutputProcessor = new PushToRedisOutputProcessor(null)
 
