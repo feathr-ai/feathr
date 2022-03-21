@@ -370,7 +370,11 @@ class FeathrClient(object):
           feature_join_conf_path: Relative path to your feature join config file.
         """
 
-        _FeatureRegistry.save_to_feature_config(self.local_workspace_dir)
+        if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
+            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+        else:
+            RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
+            
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
@@ -446,8 +450,12 @@ class FeathrClient(object):
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
-        _FeatureRegistry.save_to_feature_config(self.local_workspace_dir)
-
+        
+        # make sure those two variables exist
+        if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
+            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+        else:
+            RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
         # Read all features conf
         generation_config = FeatureGenerationJobParams(
