@@ -4,6 +4,8 @@ from pathlib import Path
 
 from click.testing import CliRunner
 from feathr.dtype import BOOLEAN, FLOAT, INT32, ValueType
+from feathr.client import FeathrClient
+from feathr.dtype import ValueType
 from feathr.job_utils import get_result_df
 from feathr.materialization_settings import (BackfillTime,
                                              MaterializationSettings)

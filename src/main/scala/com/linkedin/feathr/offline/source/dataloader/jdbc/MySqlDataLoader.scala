@@ -10,7 +10,7 @@ import org.apache.spark.sql.{DataFrameReader, SparkSession}
  */
 class MySqlDataLoader(ss: SparkSession) extends JdbcConnector(ss) {
   val MYSQL_JDBC_DRIVER = "com.mysql.jdbc.Driver"
-  override def getDFReader(jdbcOptions: Map[String, String]): DataFrameReader = {
+  override def getDFReader(jdbcOptions: Map[String, String], url: String): DataFrameReader = {
     if (jdbcOptions.contains(DRIVER_CONF)) {
       _ss.read.format(format).options(jdbcOptions)
     } else{

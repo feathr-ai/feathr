@@ -4,10 +4,7 @@ from loguru import logger
 
 
 class _EnvVaraibleUtil(object):
-    def __init__(
-            self,
-            config_path
-    ):
+    def __init__(self, config_path):
         self.config_path = config_path
 
     def get_environment_variable_with_default(self, *args):
@@ -30,7 +27,7 @@ class _EnvVaraibleUtil(object):
 
         # if the config path doesn't exist, just return
         try:
-            assert os.path.exists(os.path.abspath(self.config_path)) is not None
+            assert os.path.exists(os.path.abspath(self.config_path))
         except:
             logger.info("{} is not set and configuration file {} cannot be found. One of those shoudl be set." , env_keyword, self.config_path)
 
@@ -40,7 +37,7 @@ class _EnvVaraibleUtil(object):
                 # concat all layers
                 # check in environment variable
                 yaml_layer = yaml_config
-                
+
                 # resolve one layer after another
                 for arg in args:
                     yaml_layer = yaml_layer[arg]
