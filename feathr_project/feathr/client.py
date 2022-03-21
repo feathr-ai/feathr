@@ -79,10 +79,11 @@ class FeathrClient(object):
         # Redis key separator
         self._KEY_SEPARATOR = ':'
         envutils = _EnvVaraibleUtil(config_path)
+        self.envutils = envutils
 
         if not os.path.exists(config_path):
             self.logger.warning('Configuration path does not exist, you need to set the environment variables explicitly. For all the environment variables, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
-            
+
         # Load all configs from yaml at initialization
         # DO NOT load any configs from yaml during runtime.
         self.project_name = envutils.get_environment_variable_with_default(
@@ -390,6 +391,7 @@ class FeathrClient(object):
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
+                '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
         )
@@ -413,7 +415,7 @@ class FeathrClient(object):
             return
         else:
             raise RuntimeError('Spark job failed.')
-    
+
     def materialize_features(self, settings: MaterializationSettings):
         """Materialize feature data
 
@@ -421,7 +423,7 @@ class FeathrClient(object):
             settings: Feature materialization settings
         """
         # produce materialization config
-         
+
         for end in settings.get_backfill_cutoff_time():
             settings.backfill_time.end = end
             config = _to_materialization_config(settings)
@@ -448,7 +450,6 @@ class FeathrClient(object):
         generation_config = FeatureGenerationJobParams(
             generation_config_path=os.path.abspath(feature_gen_conf_path),
             feature_config=os.path.abspath("feature_conf/"))
-
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
@@ -463,7 +464,8 @@ class FeathrClient(object):
                 '--s3-config', self._get_s3_config_str(),
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
-                '--sql-config', self._get_sql_config_str()
+                '--sql-config', self._get_sql_config_str(),
+                '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
         )
@@ -567,6 +569,22 @@ class FeathrClient(object):
             JDBC_AUTH_FLAG: {JDBC_AUTH_FLAG}
             JDBC_TOKEN: {JDBC_TOKEN}
             """.format(JDBC_TABLE=table, JDBC_USER=user, JDBC_PASSWORD=password, JDBC_DRIVER = driver, JDBC_AUTH_FLAG = auth_flag, JDBC_TOKEN = token)
+        return config_str
+
+    def _get_snowflake_config_str(self):
+        """Construct the Snowflake config string for jdbc. The dbtable (query), user, password and other parameters can be set via
+        environment variables."""
+        sf_url = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'url')
+        sf_user = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'user')
+        sf_role = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'role')
+        sf_password = self.envutils.get_environment_variable('JDBC_SF_PASSWORD')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            JDBC_SF_URL: {JDBC_SF_URL}
+            JDBC_SF_USER: {JDBC_SF_USER}
+            JDBC_SF_ROLE: {JDBC_SF_ROLE}
+            JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
+            """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
         return config_str
 
     def get_features_from_registry(self, project_name):

@@ -51,6 +51,12 @@ offline_store:
     # S3 endpoint. If you use S3 endpoint, then you need to provide access key and secret key in the environment variable as well.
     s3_endpoint: "s3.amazonaws.com"
 
+  # snowflake endpoint
+  snowflake:
+    url: "dqllago-ol19457.snowflakecomputing.com"
+    user: "feathrintegration"
+    role: "ACCOUNTADMIN"
+
   # jdbc endpoint
   jdbc:
     jdbc_enabled: true
