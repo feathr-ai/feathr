@@ -360,6 +360,15 @@ class FeathrClient(object):
         config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
         config_file_name = "feature_join_conf/feature_join.conf"
         config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
+
+        # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features
+        # otherwise users will be confused on what are the available features
+        # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
+        if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
+            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+        else:
+            RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
+
         write_to_file(content=config, full_file_name=config_file_path)
         return self._get_offline_features_with_config(config_file_path)
 
@@ -369,13 +378,7 @@ class FeathrClient(object):
         Args:
           feature_join_conf_path: Relative path to your feature join config file.
         """
-        # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features
-        # otherwise users will be confused on what are the available features
-        # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
-        if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
-            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
-        else:
-            RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
+        
             
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
@@ -441,6 +444,16 @@ class FeathrClient(object):
             config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
             config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
             write_to_file(content=config, full_file_name=config_file_path)
+            
+            # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features in the python SDK
+            # otherwise users will be confused on what are the available features
+            # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
+            if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
+                _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+            else:
+                RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
+
+            # CLI will directly call this so the experiene won't be broken
             self._materialize_features_with_config(config_file_path)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
@@ -453,13 +466,7 @@ class FeathrClient(object):
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
         
-        # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features
-        # otherwise users will be confused on what are the available features
-        # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
-        if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
-            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
-        else:
-            RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
+        
 
         # Read all features conf
         generation_config = FeatureGenerationJobParams(
