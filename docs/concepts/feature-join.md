@@ -73,11 +73,15 @@ After you have defined the features (as described in the [Feature Definition](fe
 ### Observation data
 
 The path of a dataset as the 'spine' for the to-be-created training dataset. We call this input 'spine' dataset the 'observation' dataset. Typically, each row of the observation data contains:
-a) Column(s) representing entity id(s), which will be used as the join key to look up(join) feature value.
-b) A column representing the event time of the row. By default, Feathr will make sure the feature values joined have a timestamp earlier than it, ensuring no data leakage in the resulting training dataset.
-c) Other columns will be simply pass through onto the output training dataset.
+
+1. Column(s) representing entity id(s), which will be used as the join key to look up(join) feature value.
+
+2. A column representing the event time of the row. By default, Feathr will make sure the feature values joined have a timestamp earlier than it, ensuring no data leakage in the resulting training dataset.
+
+3. Other columns will be simply pass through onto the output training dataset.
 The key fields from the observation data, which are used to joined with the feature data.
-List of feature names to be joined with the observation data. The features must be defined in the feature definition configs.
+List of feature names to be joined with the observation data. They must be pre-defined in the Python APIs.
+
 The time information of the observation data used to compare with the feature's timestamp during the join.
 
 ### FeatureQuery

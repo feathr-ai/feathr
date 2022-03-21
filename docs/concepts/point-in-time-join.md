@@ -88,7 +88,7 @@ point_in_time_anchor = FeatureAnchor(name="features",
                                features=features)
 ```
 
-And your join config:
+And below shows the join definitions:
 
 
 ```python

@@ -25,12 +25,10 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
 See the python documentation to get the details on each input column.
 
 ## Step2: Define Anchors and Features
-`anchors` contains all the anchored features. A feature is called an anchored feature when the feature is directly 
+A feature is called an anchored feature when the feature is directly 
 extracted from the source data, rather than computed on top of other features. The latter case is called derived feature.
 
-`anchors` section is required in Feathr.
-
-Here is an sample:
+Anchors are required in Feathr. Here is an sample:
 
 ```python
 f_trip_distance = Feature(name="f_trip_distance",

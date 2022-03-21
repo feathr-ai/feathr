@@ -28,4 +28,3 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    backfill_time=backfill_time)
 client.materialize_features(settings)
 ```
-Alternatively, this can be done by using feature generation config and CLI:
