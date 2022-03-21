@@ -18,7 +18,7 @@ from feathr.typed_key import TypedKey
 from feathrcli.cli import init
 
 
-def define_features_for_test(config_path: str):
+def basic_test_set_up(config_path: str):
 
     client = FeathrClient(config_path=config_path)
     batch_source = HdfsSource(name="nycTaxiBatchSource",

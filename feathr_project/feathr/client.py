@@ -369,11 +369,8 @@ class FeathrClient(object):
         Args:
           feature_join_conf_path: Relative path to your feature join config file.
         """
-        # if not feature_join_conf_path.startswith('feature_join_conf'):
-        #     raise RuntimeError(
-        #         'Feature join config should be in feature_join_conf folder.')
 
-        # _FeatureRegistry.save_to_feature_config(Path("./"))
+        _FeatureRegistry.save_to_feature_config(self.local_workspace_dir)
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
@@ -449,10 +446,8 @@ class FeathrClient(object):
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
-        # _FeatureRegistry.save_to_feature_config(Path("./"))
-        # if not feature_gen_conf_path.startswith('feature_gen_conf'):
-        #     raise RuntimeError(
-        #         'Feature generation config should be in feature_gen_conf folder.')
+        _FeatureRegistry.save_to_feature_config(self.local_workspace_dir)
+
 
         # Read all features conf
         generation_config = FeatureGenerationJobParams(

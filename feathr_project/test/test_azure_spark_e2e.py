@@ -14,7 +14,7 @@ from feathr.typed_key import TypedKey
 from feathrcli.cli import init
 import pytest
 
-from test_utils import define_features_for_test
+from test_fixture import basic_test_set_up
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_online_store_agg_features():
@@ -24,7 +24,7 @@ def test_feathr_online_store_agg_features():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
-    client = define_features_for_test(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client = basic_test_set_up(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -64,7 +64,7 @@ def test_feathr_online_store_non_agg_features():
     """
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
-    client = define_features_for_test(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client = basic_test_set_up(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -119,7 +119,7 @@ def test_feathr_get_offline_features():
     runner = CliRunner()
     with runner.isolated_filesystem():
         runner.invoke(init, [])
-        client = define_features_for_test(
+        client = basic_test_set_up(
             "./feathr_user_workspace/feathr_config.yaml")
 
         location_id = TypedKey(key_column="DOLocationID",
