@@ -13,7 +13,6 @@ from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
 from feathrcli.cli import init
 import pytest
-import datetime
 
 from test_fixture import basic_test_set_up
 # make sure you have run the upload feature script before running these tests
@@ -24,7 +23,7 @@ def test_feathr_online_store_agg_features():
     """
 
     # use different time for testing to avoid write conflicts
-    now = datetime.datetime.now()
+    now = datetime.now()
 
     online_test_table = ''.join(['nycTaxiDemoFeatureCI','_', str(now.minute), '_', str(now.second)])
     test_workspace_dir = Path(
@@ -71,7 +70,7 @@ def test_feathr_online_store_non_agg_features():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     client = basic_test_set_up(os.path.join(test_workspace_dir, "feathr_config.yaml"))
-    now = datetime.datetime.now()
+    now = datetime.now()
     online_test_table = ''.join(['nycTaxiDemoFeatureCI','_', str(now.minute), '_', str(now.second)])
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -141,7 +140,7 @@ def test_feathr_get_offline_features():
             event_timestamp_column="lpep_dropoff_datetime",
             timestamp_format="yyyy-MM-dd HH:mm:ss")
 
-        now = datetime.datetime.now()
+        now = datetime.now()
 
         output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
         client.get_offline_features(observation_settings=settings,
