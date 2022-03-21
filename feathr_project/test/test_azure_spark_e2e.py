@@ -140,9 +140,13 @@ def test_feathr_get_offline_features():
             observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
             event_timestamp_column="lpep_dropoff_datetime",
             timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+        now = datetime.datetime.now()
+
+        output_path = ''.join('abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', now.minute, '_', now.second, ".avro")
         client.get_offline_features(observation_settings=settings,
                                     feature_query=feature_query,
-                                    output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
+                                    output_path=output_path)
 
         # assuming the job can successfully run; otherwise it will throw exception
         client.wait_job_to_finish(timeout_sec=900)
