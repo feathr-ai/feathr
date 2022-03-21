@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.config.datasource
 
+import org.apache.log4j.Logger
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -21,6 +22,8 @@ private[feathr] abstract class ResourceInfoSetter() {
   val EMPTY_STRING = ""
   val params: List[String]
 
+  @transient lazy val logger = Logger.getLogger(getClass.getName)
+
   def setup(ss: SparkSession, context: DataSourceConfig, resource: Resource): Unit = {
     setupHadoopConfig(ss, Some(context), Some(resource))
   }
@@ -37,7 +40,12 @@ private[feathr] abstract class ResourceInfoSetter() {
 
   def getAuthFromContext(str: String, context: DataSourceConfig): String = {
     context.config.map(config => {
-      if (params.contains(str)) config.getString(str) else EMPTY_STRING
+      if (config.hasPath(str)) {
+        config.getString(str)
+      } else {
+        logger.warn(f"$str doesn't exist in the config so it's not set")
+        EMPTY_STRING
+      }
     }).getOrElse(EMPTY_STRING)
   }
 

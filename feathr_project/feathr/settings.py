@@ -19,7 +19,7 @@ class ObservationSettings:
 
     def to_config(self) -> str:
         tm = Template("""
-            {% if event_timestamp_column is not none %}
+            {% if setting.event_timestamp_column is not none %}
             settings: {
                 joinTimeSettings: {
                     timestampColumn: {
@@ -28,8 +28,7 @@ class ObservationSettings:
                     }
                 }
             }
-            
-            observationPath: "{{setting.observation_path}}"
             {% endif %}
+            observationPath: "{{setting.observation_path}}"
         """)
         return tm.render(setting=self)

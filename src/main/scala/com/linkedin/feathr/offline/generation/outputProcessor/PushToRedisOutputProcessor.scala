@@ -265,7 +265,9 @@ private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig,
               Base64.getEncoder.encodeToString(proto.toByteArray)
             }
           case _ =>
-            throw new RuntimeException(f"The data type(${field.dataType}) is not supported in Redis push yet so it can't be encoded.")
+            (rowData: Any) => {
+              throw new RuntimeException(f"The data type(${field.dataType}) and data (${rowData}) is not supported in Redis push yet so it can't be encoded.")
+            }
         }
       } else {
         (rowData: Any) => rowData

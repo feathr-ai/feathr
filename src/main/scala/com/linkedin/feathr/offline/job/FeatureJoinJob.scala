@@ -193,7 +193,8 @@ object FeatureJoinJob {
       "s3-config" -> OptionParam("sc", "Authentication config for S3", "S3_CONFIG", ""),
       "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
-      "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", "")
+      "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
+      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", "")
     )
 
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))

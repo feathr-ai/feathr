@@ -2,7 +2,6 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from click.testing import CliRunner
 from feathr.client import FeathrClient
 from feathr.dtype import ValueType
 from feathr.job_utils import get_result_df
@@ -12,7 +11,6 @@ from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
 from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
-from feathrcli.cli import init
 
 
 # make sure you have run the upload feature script before running these tests
@@ -102,25 +100,24 @@ def test_feathr_get_offline_features():
     """
     Test get_offline_features() can get data correctly.
     """
-    runner = CliRunner()
-    with runner.isolated_filesystem():
-        runner.invoke(init, [])
-        os.chdir('feathr_user_workspace')
-        client = FeathrClient()
+    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
+    os.chdir(test_workspace_dir)
 
-        location_id = TypedKey(key_column="DOLocationID",
-                        key_column_type=ValueType.INT32,
-                        description="location id in NYC",
-                        full_name="nyc_taxi.location_id")
-        feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=location_id)
-        settings = ObservationSettings(
-            observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
-            event_timestamp_column="lpep_dropoff_datetime",
-            timestamp_format="yyyy-MM-dd HH:mm:ss")
-        client.get_offline_features(observation_settings=settings,
-            feature_query=feature_query,
-            output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
+    client = FeathrClient()
 
-        vertical_concat_df = get_result_df(client)
-        # just assume there are results. Need to think about this test and make sure it captures the result
-        assert vertical_concat_df.shape[0] > 1
+    location_id = TypedKey(key_column="DOLocationID",
+                           key_column_type=ValueType.INT32,
+                           description="location id in NYC",
+                           full_name="nyc_taxi.location_id")
+    feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=location_id)
+    settings = ObservationSettings(
+        observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss")
+    client.get_offline_features(observation_settings=settings,
+                                feature_query=feature_query,
+                                output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
+
+    vertical_concat_df = get_result_df(client)
+    # just assume there are results. Need to think about this test and make sure it captures the result
+    assert vertical_concat_df.shape[0] > 1
