@@ -585,20 +585,21 @@ class _FeatureRegistry():
         for derived_feature in derived_feature_list:
             if isinstance(derived_feature, DerivedFeature):                    
                 definitions.derived_features.add(derived_feature)
+                definitions.transformations.add(vars(derived_feature)["transform"])
             else:
                 RuntimeError("Object cannot be parsed. `derived_feature_list` should be a list of `DerivedFeature`.")
 
-        for obj in anchor_list:
+        for anchor in anchor_list:
             # obj is `FeatureAnchor`
-            definitions.feature_anchors.add(obj)
+            definitions.feature_anchors.add(anchor)
             # add the source section of this `FeatureAnchor` object
-            definitions.sources.add( vars(obj)['source'])
-            for feature in vars(obj)['features']:
+            definitions.sources.add(vars(anchor)['source'])
+            for feature in vars(anchor)['features']:
                 # get the transformation object from `Feature` or `DerivedFeature`
-                definitions.transformations.add(vars(feature)["transform"])
-                if isinstance(obj, Feature):
+                if isinstance(anchor, Feature):
                     # feature is of type `Feature` 
-                    definitions.features.add(obj)
+                    definitions.features.add(anchor)
+                    definitions.transformations.add(vars(feature)["transform"])
                 else:
                     RuntimeError("Object cannot be parsed.")
         
