@@ -369,7 +369,9 @@ class FeathrClient(object):
         Args:
           feature_join_conf_path: Relative path to your feature join config file.
         """
-
+        # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features
+        # otherwise users will be confused on what are the available features
+        # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
         if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
             _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
@@ -451,7 +453,9 @@ class FeathrClient(object):
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
         
-        # make sure those two variables exist
+        # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features
+        # otherwise users will be confused on what are the available features
+        # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
         if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
             _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
