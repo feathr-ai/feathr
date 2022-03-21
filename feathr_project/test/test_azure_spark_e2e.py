@@ -26,7 +26,7 @@ def test_feathr_online_store_agg_features():
     # use different time for testing to avoid write conflicts
     now = datetime.datetime.now()
 
-    online_test_table = ''.join('nycTaxiDemoFeatureCI','_', now.minute, '_', now.second)
+    online_test_table = ''.join(['nycTaxiDemoFeatureCI','_', now.minute, '_', now.second])
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
@@ -72,7 +72,7 @@ def test_feathr_online_store_non_agg_features():
         __file__).parent.resolve() / "test_user_workspace"
     client = basic_test_set_up(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     now = datetime.datetime.now()
-    online_test_table = ''.join('nycTaxiDemoFeatureCI','_', now.minute, '_', now.second)
+    online_test_table = ''.join(['nycTaxiDemoFeatureCI','_', now.minute, '_', now.second])
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
     redisSink = RedisSink(table_name=online_test_table)
@@ -143,7 +143,7 @@ def test_feathr_get_offline_features():
 
         now = datetime.datetime.now()
 
-        output_path = ''.join('abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', now.minute, '_', now.second, ".avro")
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', now.minute, '_', now.second, ".avro"])
         client.get_offline_features(observation_settings=settings,
                                     feature_query=feature_query,
                                     output_path=output_path)
