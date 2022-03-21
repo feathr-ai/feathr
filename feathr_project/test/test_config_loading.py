@@ -24,6 +24,10 @@ def test_configuration_loading():
         TEST_LOCATION = '/test_location'
         
         # since we test synapse and databricks runtime using the same set of configs, we need to make sure we set both variable so that pytest can pass for both runners
+        # Currently we use same runners for both the synapse and databricks runtime (so we don’t have to maintain two set of spark tests). 
+        # And the goal of this test is to make sure that the envs can override the yaml configs
+        # In that case, we need to set both SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION and SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION, and read the client._FEATHR_JOB_JAR_PATH variable in the code
+        # client._FEATHR_JOB_JAR_PATH will read either SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION or SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION depending on the corresponding config
         os.environ['SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION'] = TEST_LOCATION
         os.environ['SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION'] = TEST_LOCATION
         
