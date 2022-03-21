@@ -13,6 +13,7 @@ from feathr.sink import RedisSink
 from feathr.typed_key import TypedKey
 from feathrcli.cli import init
 import pytest
+import datetime
 
 from test_fixture import basic_test_set_up
 # make sure you have run the upload feature script before running these tests
@@ -21,6 +22,11 @@ def test_feathr_online_store_agg_features():
     """
     Test FeathrClient() get_online_features and batch_get can get data correctly.
     """
+
+    # use different time for testing to avoid write conflicts
+    now = datetime.datetime.now()
+
+    online_test_table = ''.join('nycTaxiDemoFeatureCI','_', now.minute, '_', now.second)
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
@@ -28,7 +34,7 @@ def test_feathr_online_store_agg_features():
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-    redisSink = RedisSink(table_name="nycTaxiDemoFeature")
+    redisSink = RedisSink(table_name="online_test_table")
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[redisSink],
                                        feature_names=[
@@ -39,7 +45,7 @@ def test_feathr_online_store_agg_features():
     # this part with the test_feathr_online_store test case
     client.wait_job_to_finish(timeout_sec=600)
 
-    res = client.get_online_features('nycTaxiDemoFeature', '265', [
+    res = client.get_online_features(online_test_table, '265', [
                                      'f_location_avg_fare', 'f_location_max_fare'])
     # just assme there are values. We don't hard code the values for now for testing
     # the correctness of the feature generation should be garunteed by feathr runtime.
@@ -49,7 +55,7 @@ def test_feathr_online_store_agg_features():
     assert len(res) == 2
     assert res[0] != None
     assert res[1] != None
-    res = client.multi_get_online_features('nycTaxiDemoFeature',
+    res = client.multi_get_online_features(online_test_table,
                                            ['239', '265'],
                                            ['f_location_avg_fare', 'f_location_max_fare'])
     assert res['239'][0] != None
@@ -65,10 +71,11 @@ def test_feathr_online_store_non_agg_features():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     client = basic_test_set_up(os.path.join(test_workspace_dir, "feathr_config.yaml"))
-
+    now = datetime.datetime.now()
+    online_test_table = ''.join('nycTaxiDemoFeatureCI','_', now.minute, '_', now.second)
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-    redisSink = RedisSink(table_name="nycTaxiDemoFeature")
+    redisSink = RedisSink(table_name=online_test_table)
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[redisSink],
                                        feature_names=["f_gen_trip_distance", "f_gen_is_long_trip_distance", "f1", "f2", "f3", "f4", "f5", "f6"],
@@ -79,7 +86,7 @@ def test_feathr_online_store_non_agg_features():
     # this part with the test_feathr_online_store test case
     client.wait_job_to_finish(timeout_sec=600)
 
-    res = client.get_online_features('nycTaxiDemoFeature', '111', ['f_gen_trip_distance', 'f_gen_is_long_trip_distance',
+    res = client.get_online_features(online_test_table, '111', ['f_gen_trip_distance', 'f_gen_is_long_trip_distance',
                                                                    'f1', 'f2', 'f3', 'f4', 'f5', 'f6'])
     # just assme there are values. We don't hard code the values for now for testing
     # the correctness of the feature generation should be garunteed by feathr runtime.
@@ -92,7 +99,7 @@ def test_feathr_online_store_non_agg_features():
     assert res[1] != None
     # assert constant features
     _validate_constant_feature(res)
-    res = client.multi_get_online_features('nycTaxiDemoFeature',
+    res = client.multi_get_online_features(online_test_table,
                                            ['239', '265'],
                                            ['f_gen_trip_distance', 'f_gen_is_long_trip_distance', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6'])
     _validate_constant_feature(res['239'])
