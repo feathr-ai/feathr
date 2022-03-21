@@ -2,10 +2,7 @@
 
 ## Generating Features to Online Store
 
-User could utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is a common practice when the feature transformation is computation intensive.
-
-Examples:
-
+User could utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is a common practice when the feature transformation is computation intensive. For example:
 ```python
 client = FeathrClient()
 redisSink = RedisSink(table_name="nycTaxiDemoFeature")
