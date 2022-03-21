@@ -25,7 +25,7 @@ def test_feathr_online_store_agg_features():
     # use different time for testing to avoid write conflicts
     now = datetime.now()
 
-    online_test_table = ''.join(['nycTaxiDemoFeatureCI','_', str(now.minute), '_', str(now.second)])
+    online_test_table = ''.join(['nycTaxiCITable','_', str(now.minute), '_', str(now.second)])
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
@@ -33,7 +33,7 @@ def test_feathr_online_store_agg_features():
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-    redisSink = RedisSink(table_name="online_test_table")
+    redisSink = RedisSink(table_name=online_test_table)
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[redisSink],
                                        feature_names=[
@@ -71,7 +71,7 @@ def test_feathr_online_store_non_agg_features():
         __file__).parent.resolve() / "test_user_workspace"
     client = basic_test_set_up(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     now = datetime.now()
-    online_test_table = ''.join(['nycTaxiDemoFeatureCI','_', str(now.minute), '_', str(now.second)])
+    online_test_table = ''.join(['nycTaxiCITable','_', str(now.minute), '_', str(now.second)])
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
     redisSink = RedisSink(table_name=online_test_table)
