@@ -572,8 +572,8 @@ class FeathrClient(object):
         return config_str
 
     def _get_snowflake_config_str(self):
-        """Construct the Snowflake config string for jdbc. The dbtable (query), user, password and other parameters can be set via
-        environment variables."""
+        """Construct the Snowflake config string for jdbc. The url, user, role and other parameters can be set via
+        yaml config. Password can be set via environment variables."""
         sf_url = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'url')
         sf_user = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'user')
         sf_role = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'role')
