@@ -43,7 +43,7 @@ class InputContext(Source):
 
 class HdfsSource(Source):
     """A data source(table) stored on HDFS-like file system. Data can be fetch through a POSIX style path."""
-    def __init__(self, name: str, path: str, event_timestamp_column: Optional[str], timestamp_format: Optional[str] = "epoch") -> None:
+    def __init__(self, name: str, path: str, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch") -> None:
         super().__init__(name, event_timestamp_column, timestamp_format)
         self.path = path
 
