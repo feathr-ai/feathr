@@ -8,6 +8,7 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
+from urllib.request import urlopen
 
 import requests
 from loguru import logger
@@ -68,7 +69,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         # returned paths for the uploaded file
         returned_path = os.path.join(self.databricks_work_dir, file_name)
         if src_parse_result.scheme.startswith('http'):
-            with urllib.request.urlopen(local_path_or_http_path) as f:
+            with urlopen(local_path_or_http_path) as f:
                 data = f.read()
                 files = {'file': data}
                 # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
