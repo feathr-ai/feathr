@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 
 from feathr._materialization_utils import _to_materialization_config
-from feathr.materialization_settings import (BackfillTime,
-                                             MaterializationSettings)
-from feathr.sink import RedisSink
+from feathr import (BackfillTime, MaterializationSettings)
+from feathr import RedisSink
 
 
 def test_feature_materialization_config():
@@ -13,7 +12,7 @@ def test_feature_materialization_config():
                                         sinks=[redisSink],
                                         feature_names=["f_location_avg_fare", "f_location_max_fare"],
                                         backfill_time=backfill_time)
-    config = _to_materialization_config(settings) 
+    config = _to_materialization_config(settings)
     expected_config = """ 
         operational: {
             name: nycTaxiTable

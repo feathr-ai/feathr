@@ -1,22 +1,11 @@
-from ctypes.wintypes import INT
-from click.testing import CliRunner
-from feathr import FeathrClient
-from feathr import feature
-from feathr.anchor import FeatureAnchor
+from feathr import FeatureAnchor
 from feathr.client import FeathrClient
-from feathr.dtype import BOOLEAN, FLOAT, INT32, STRING, ValueType
-from feathr.feature import Feature
-from feathr.feature_derivations import DerivedFeature
-from feathr.job_utils import get_result_df
-from feathr.materialization_settings import (BackfillTime,
-                                             MaterializationSettings)
-from feathr.query_feature_list import FeatureQuery
-from feathr.settings import ObservationSettings
-from feathr.sink import RedisSink
-from feathr.source import INPUT_CONTEXT, HdfsSource
-from feathr.transformation import WindowAggTransformation
-from feathr.typed_key import TypedKey
-from feathrcli.cli import init
+from feathr import BOOLEAN, FLOAT, INT32, STRING, ValueType
+from feathr import Feature
+from feathr import DerivedFeature
+from feathr import INPUT_CONTEXT, HdfsSource
+from feathr import WindowAggTransformation
+from feathr import TypedKey
 
 
 def basic_test_setup(config_path: str):
@@ -84,7 +73,7 @@ def basic_test_setup(config_path: str):
 
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
         f_trip_time_distance, f_trip_time_rounded])
-    
+
     return client
 
 
@@ -102,7 +91,7 @@ def snowflake_test_setup(config_path: str):
                           full_name="snowflake.CC_CALL_CENTER_SK")
 
     f_snowflake_call_center_division_name = Feature(name="f_snowflake_call_center_division_name",feature_type=STRING, transform="CC_DIVISION_NAME", key=call_sk_id)
-    
+
     f_snowflake_call_center_zipcode = Feature(name="f_snowflake_call_center_zipcode",feature_type=STRING, transform="CC_ZIP", key=call_sk_id)
 
 
@@ -118,5 +107,5 @@ def snowflake_test_setup(config_path: str):
 
 
     client.build_features(anchor_list=[snowflakeFeatures])
-    
+
     return client

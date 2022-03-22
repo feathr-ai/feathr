@@ -1,13 +1,13 @@
-from feathr.feature import Feature
-from feathr.transformation import ExpressionTransformation
-from feathr.feature_derivations import DerivedFeature
-from feathr.dtype import BOOLEAN, FLOAT, FLOAT_VECTOR, ValueType
-from feathr.typed_key import TypedKey
+from feathr import Feature
+from feathr import ExpressionTransformation
+from feathr import DerivedFeature
+from feathr import BOOLEAN, FLOAT, FLOAT_VECTOR, ValueType
+from feathr import TypedKey
 import pytest
 
 def assert_config_equals(one, another):
     assert one.translate(str.maketrans('', '', ' \n\t\r')) == another.translate(str.maketrans('', '', ' \n\t\r'))
-     
+
 def test_single_key_derived_feature_to_config():
     """Single key derived feature config generation should work"""
     user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="An user identifier")
@@ -40,7 +40,7 @@ def test_multikey_derived_feature_to_config():
     """Multikey derived feature config generation should work"""
     user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="An user identifier")
     item_key = TypedKey(full_name="mockdata.item", key_column="item_id", key_column_type=ValueType.INT32, description="An item identifier")
-    
+
     user_embedding = Feature(name="user_embedding", feature_type=FLOAT_VECTOR, key=user_key)
     item_embedding = Feature(name="item_embedding", feature_type=FLOAT_VECTOR, key=item_key)
 
@@ -143,7 +143,7 @@ def test_derived_feature_on_multikey_anchored_feature_to_config():
     """Multikey derived feature config generation should work"""
     user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="First part of an user identifier")
     user_key2 = TypedKey(full_name="mockdata.user2", key_column="user_id2", key_column_type=ValueType.INT32, description="Second part of an user identifier")
-    
+
     user_embedding = Feature(name="user_embedding", feature_type=FLOAT_VECTOR, key=[user_key, user_key2])
 
     # A derived feature
