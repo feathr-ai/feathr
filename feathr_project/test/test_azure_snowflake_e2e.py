@@ -58,6 +58,7 @@ def test_feathr_get_offline_features():
                           key_column_type=ValueType.INT32,
                           description="call center sk",
                           full_name="snowflake.CC_CALL_CENTER_SK")
+
     feature_query = FeatureQuery(
         feature_list=['f_snowflake_call_center_division_name', 'f_snowflake_call_center_zipcode'],
         key=call_sk_id)

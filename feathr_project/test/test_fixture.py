@@ -96,14 +96,16 @@ def snowflake_test_setup(config_path: str):
     batch_source = HdfsSource(name="snowflakeSampleBatchSource",
                               path="jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL",
                               )
+    call_sk_id = TypedKey(key_column="CC_CALL_CENTER_SK",
+                          key_column_type=ValueType.INT32,
+                          description="call center sk",
+                          full_name="snowflake.CC_CALL_CENTER_SK")
 
-    f_snowflake_call_center_division_name = Feature(name="f_snowflake_call_center_division_name",feature_type=STRING, transform="CC_DIVISION_NAME")
-    f_snowflake_call_center_zipcode = Feature(name="f_snowflake_call_center_zipcode",feature_type=STRING, transform="CC_ZIP")
+    f_snowflake_call_center_division_name = Feature(name="f_snowflake_call_center_division_name",feature_type=STRING, transform="CC_DIVISION_NAME", key=call_sk_id)
+    
+    f_snowflake_call_center_zipcode = Feature(name="f_snowflake_call_center_zipcode",feature_type=STRING, transform="CC_ZIP", key=call_sk_id)
 
-    call_center_key = TypedKey(key_column="CC_CALL_CENTER_SK",
-                            key_column_type=INT,
-                           description="call center",
-                           full_name="snowflake.call_center_key")
+
 
     features = [f_snowflake_call_center_division_name, f_snowflake_call_center_zipcode ]
 
