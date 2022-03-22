@@ -51,10 +51,8 @@ object JdbcUtils {
   }
 
   def loadDataFrame(ss: SparkSession, url: String): DataFrame ={
-    val jdbcOptions = ss.conf.get(AUTH_FLAG_CONF) match {
-      case TOKEN_FLAG => getJDBCOptionsWithToken(ss)
-      case _ => JdbcUtils.getJDBCOptionsWithPassword(ss)
-    }
-    SqlDbType.loadDataFrame(ss, url, jdbcOptions)
+    val jdbcConnector = JdbcConnectorChooser.getJdbcConnector(ss, url)
+    val jdbcOptions = jdbcConnector.extractJdbcOptions(ss, url)
+    jdbcConnector.loadDataFrame(url, jdbcOptions)
   }
 }

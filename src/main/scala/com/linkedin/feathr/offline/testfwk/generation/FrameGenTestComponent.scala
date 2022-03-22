@@ -69,6 +69,8 @@ class FeathrGenTestComponent(resourceLocation: Map[String, List[String]], extraP
       println(f"${Console.GREEN}Your source is specified as: {$sourceInConfig}${Console.RESET}")
       if (exist) {
         println(f"${Console.GREEN}Local mock source file exist: {$localTestDir}${Console.RESET}")
+      } else if (sourceInConfig.path.startsWith("jdbc:")) {
+        println(f"${Console.GREEN}Local mock source file doesn't exist try local JDBC: {$localTestDir}${Console.RESET}")
       } else {
         val errorMsg = f"${Console.RED}Error: Local mock source file doesn't exist: $localTestDir${Console.RESET}"
         println(errorMsg)

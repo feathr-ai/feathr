@@ -32,6 +32,12 @@ offline_store:
     # S3 endpoint. If you use S3 endpoint, then you need to provide access key and secret key in the environment variable as well.
     s3_endpoint: "s3.amazonaws.com"
 
+  # snowflake endpoint
+  snowflake:
+    url: "dqllago-ol19457.snowflakecomputing.com"
+    user: "feathrintegration"
+    role: "ACCOUNTADMIN"
+
   # jdbc endpoint
   jdbc:
     jdbc_enabled: true
@@ -59,9 +65,9 @@ spark_config:
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
     # this is the default location so end users don't have to compile the runtime again.
     # When there is change to engine code, then test against your local runtime build
-    # feathr_runtime_location: "../../../target/scala-2.12/feathr-assembly-0.1.0.jar"
+    feathr_runtime_location: "../../../target/scala-2.12/feathr-assembly-0.1.0.jar"
     # When no change to engine code, just test against existing cloud runtime build
-    feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar"
+    # feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar"
 
   databricks:
     # workspace instance
@@ -73,9 +79,9 @@ spark_config:
     work_dir: "dbfs:/feathr_getting_started"
     # this is the default location so end users don't have to compile the runtime again.
     # When there is change to engine code, then test against your local runtime build
-    # feathr_runtime_location: "../../../target/scala-2.12/feathr-assembly-0.1.0.jar"
+    feathr_runtime_location: "../../../target/scala-2.12/feathr-assembly-0.1.0.jar"
     # When no change to engine code, just test against existing cloud runtime build
-    feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar"
+    # feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar"
 
 online_store:
   redis:
