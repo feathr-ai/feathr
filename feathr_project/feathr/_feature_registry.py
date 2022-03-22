@@ -718,7 +718,6 @@ class _FeatureRegistry():
 
         # register feature types each time when we register features.
         self._register_feathr_feature_types()
-        self.save_to_feature_config(workspace_path)
         self._read_config_from_workspace(workspace_path)
         # Upload all entities
         # need to be all in one batch to be uploaded, otherwise the GUID reference won't work
