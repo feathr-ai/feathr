@@ -10,15 +10,15 @@ class TypedKey:
       Attributes:
         key_column: The id column name of this key. e.g. 'product_id'.
         key_column_type: Types of the key_column
-        full_name: Unique name of the entity. Recommend using [project_name].[entity_name], e.g. foo.bar
+        full_name: Unique name of the key. Recommend using [project_name].[key_name], e.g. ads.user_id
         description: Documentation for the key.
         key_column_alias: Used in some advanced derived features. Default to the key_column.
     """
     def __init__(self,
                  key_column: str,
                  key_column_type: ValueType,
-                 full_name: str,
-                 description: str,
+                 full_name: Optional[str] = None,
+                 description: Optional[str] = None,
                  key_column_alias: Optional[str] = None) -> None:
         self.key_column = key_column
         self.key_column_type = key_column_type
