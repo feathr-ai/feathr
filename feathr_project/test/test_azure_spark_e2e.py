@@ -7,8 +7,7 @@ from feathr import BOOLEAN, FLOAT, INT32, ValueType
 from feathr.client import FeathrClient
 from feathr import ValueType
 from feathr.job_utils import get_result_df
-from feathr import (BackfillTime,
-                                             MaterializationSettings)
+from feathr import (BackfillTime, MaterializationSettings)
 from feathr import FeatureQuery
 from feathr import ObservationSettings
 from feathr import RedisSink
@@ -143,8 +142,12 @@ def test_feathr_get_offline_features():
             timestamp_format="yyyy-MM-dd HH:mm:ss")
 
         now = datetime.now()
-
-        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
+        # set output folder based on different runtime
+        if client.spark_runtime == 'databricks':
+            output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
+        else:
+            output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".avro"])
+        
         client.get_offline_features(observation_settings=settings,
                                     feature_query=feature_query,
                                     output_path=output_path)
