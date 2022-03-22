@@ -1,3 +1,4 @@
+from ctypes.wintypes import INT
 from click.testing import CliRunner
 from feathr import FeathrClient
 from feathr import feature
@@ -96,10 +97,11 @@ def snowflake_test_setup(config_path: str):
                               path="jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL",
                               )
 
-    f_snowflake_call_center_division_name = Feature(name="f_snowflake_call_center_division_name",type=STRING, transform="CC_DIVISION_NAME")
-    f_snowflake_call_center_zipcode = Feature(name="f_snowflake_call_center_zipcode",type=STRING, transform="CC_ZIP")
+    f_snowflake_call_center_division_name = Feature(name="f_snowflake_call_center_division_name",feature_type=STRING, transform="CC_DIVISION_NAME")
+    f_snowflake_call_center_zipcode = Feature(name="f_snowflake_call_center_zipcode",feature_type=STRING, transform="CC_ZIP")
 
     call_center_key = TypedKey(key_column="CC_CALL_CENTER_SK",
+                            key_column_type=INT,
                            description="call center",
                            full_name="snowflake.call_center_key")
 
