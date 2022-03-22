@@ -6,8 +6,12 @@ class ObservationSettings:
     """Time settings of the observation data. Used in feature join.
     Attributes:
         observation_path: path to the observation dataset, i.e. input dataset to get with features
-        event_timestamp_column: column name of the event timestamp
-        timestamp_format: the format of the event_timestamp_column, e.g. yyyy/MM/DD.
+        event_timestamp_column (Optional[str]): The timestamp field of your record. As sliding window aggregation feature assume each record in the source data should have a timestamp column. 
+        timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are: 
+        - `epoch` (seconds since epoch), for example `1647737463`
+        - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
+        - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html). 
+            
     """
     def __init__(self,
                  observation_path: str,

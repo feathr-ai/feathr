@@ -15,7 +15,7 @@ class FeatureBase(ABC):
     Attributes:
         name: Unique name of the feature. Only alphabet, numbers, and '_' are allowed in the name.
                 It can not start with numbers. Note that '.' is NOT ALLOWED!
-        feature_type: the feature value type. e.g. INT32, FLOAT, etc.
+        feature_type: the feature value type. e.g. INT32, FLOAT, etc. feathr.dtype
         key: The key of this feature. e.g. user_id.
         transform: A transformation used to produce its feature value. e.g. amount * 10
     """
@@ -73,7 +73,7 @@ class Feature(FeatureBase):
     Attributes:
         name: Unique name of the feature. Only alphabet, numbers, and '_' are allowed in the name.
                 It can not start with numbers. Note that '.' is NOT ALLOWED!
-        feature_type: the feature value type. e.g. INT32, FLOAT, etc.
+        feature_type: the feature value type. e.g. INT32, FLOAT, etc. Should be part of `feathr.dtype`
         key: The key of this feature. e.g. user_id.
         transform: A row transformation used to produce its feature value. e.g. amount * 10
     """

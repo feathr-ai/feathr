@@ -37,10 +37,10 @@ class WindowAggTransformation(Transformation):
 
     Attributes:
         agg_expr: expression that transforms the raw value into a new value, e.g. amount * 10
-        agg_func: aggregation function. e.g. sum, count, max, min, avg.
-        window: time span of the aggregation, e.g. 3 days
-        group_by: an expression used to group by, same as 'group by' in SQL
-        filter: an expression used to filter rows, before aggregation
+        agg_func: aggregation function. Available values: `SUM`, `COUNT`, `MAX`, `MIN`, `AVG`, `MAX_POOLING`, `MIN_POOLING`, `AVG_POOLING`, `LATEST`
+        window: Time window length to apply the aggregation. support 4 type of units: d(day), h(hour), m(minute), s(second). The example value are "7d' or "5h" or "3m" or "1s"
+        group_by: Feathr expressions applied after the `agg_expr` transformation as groupby field, before aggregation, same as 'group by' in SQL
+        filter: Feathr expression applied to each row as a filter before aggregation
     """
     def __init__(self, agg_expr: str, agg_func: str, window: str, group_by: Optional[str] = None, filter: Optional[str] = None, limit: Optional[int] = None) -> None:
         super().__init__()
