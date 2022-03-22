@@ -3,7 +3,7 @@ from feathr import FeathrClient
 from feathr import feature
 from feathr.anchor import FeatureAnchor
 from feathr.client import FeathrClient
-from feathr.dtype import BOOLEAN, FLOAT, INT32, ValueType
+from feathr.dtype import BOOLEAN, FLOAT, INT32, STRING, ValueType
 from feathr.feature import Feature
 from feathr.feature_derivations import DerivedFeature
 from feathr.job_utils import get_result_df
@@ -18,7 +18,7 @@ from feathr.typed_key import TypedKey
 from feathrcli.cli import init
 
 
-def basic_test_set_up(config_path: str):
+def basic_test_setup(config_path: str):
 
     client = FeathrClient(config_path=config_path)
     batch_source = HdfsSource(name="nycTaxiBatchSource",
@@ -83,5 +83,36 @@ def basic_test_set_up(config_path: str):
 
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
         f_trip_time_distance, f_trip_time_rounded])
+    
+    return client
+
+
+
+
+def snowflake_test_setup(config_path: str):
+
+    client = FeathrClient(config_path=config_path)
+    batch_source = HdfsSource(name="snowflakeSampleBatchSource",
+                              path="jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL",
+                              )
+
+    f_snowflake_call_center_division_name = Feature(name="f_snowflake_call_center_division_name",type=STRING, transform="CC_DIVISION_NAME")
+    f_snowflake_call_center_zipcode = Feature(name="f_snowflake_call_center_zipcode",type=STRING, transform="CC_ZIP")
+
+    call_center_key = TypedKey(key_column="CC_CALL_CENTER_SK",
+                           description="call center",
+                           full_name="snowflake.call_center_key")
+
+    features = [f_snowflake_call_center_division_name, f_snowflake_call_center_zipcode ]
+
+
+    snowflakeFeatures = FeatureAnchor(name="snowflakeFeatures",
+                                   source=batch_source,
+                                   features=features)
+
+
+
+
+    client.build_features(anchor_list=[snowflakeFeatures])
     
     return client
