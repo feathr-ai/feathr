@@ -3,16 +3,16 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from click.testing import CliRunner
-from feathr.dtype import BOOLEAN, FLOAT, INT32, ValueType
+from feathr import BOOLEAN, FLOAT, INT32, ValueType
 from feathr.client import FeathrClient
-from feathr.dtype import ValueType
+from feathr import ValueType
 from feathr.job_utils import get_result_df
-from feathr.materialization_settings import (BackfillTime,
+from feathr import (BackfillTime,
                                              MaterializationSettings)
-from feathr.query_feature_list import FeatureQuery
-from feathr.settings import ObservationSettings
-from feathr.sink import RedisSink
-from feathr.typed_key import TypedKey
+from feathr import FeatureQuery
+from feathr import ObservationSettings
+from feathr import RedisSink
+from feathr import TypedKey
 from feathrcli.cli import init
 import pytest
 

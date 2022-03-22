@@ -1,4 +1,3 @@
-
 from feathr.anchor import FeatureAnchor
 from feathr.source import Source
 from feathr.feature_derivations import DerivedFeature
