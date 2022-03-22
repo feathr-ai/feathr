@@ -1,4 +1,3 @@
-from abc import abstractclassmethod
 from datetime import datetime, timedelta
 from typing import List, Optional
 from feathr.sink import Sink

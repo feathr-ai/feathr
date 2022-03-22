@@ -1,10 +1,10 @@
-from feathr.anchor import FeatureAnchor
-from feathr.feature import Feature
-from feathr.source import HdfsSource
-from feathr.dtype import BOOLEAN, INT32, FLOAT, ValueType
-from feathr.source import INPUT_CONTEXT
-from feathr.transformation import WindowAggTransformation
-from feathr.typed_key import TypedKey
+from feathr import FeatureAnchor
+from feathr import Feature
+from feathr import HdfsSource
+from feathr import BOOLEAN, INT32, FLOAT, ValueType
+from feathr import INPUT_CONTEXT
+from feathr import WindowAggTransformation
+from feathr import TypedKey
 
 def test_request_feature_anchor_to_config():
     features = [
@@ -132,7 +132,7 @@ def test_agg_anchor_to_config():
                                                          agg_func="MAX",
                                                          window="90d"))
                     ]
-    
+
     agg_anchor = FeatureAnchor(name="aggregationFeatures",
                                source=batch_source,
                                features=agg_features)
