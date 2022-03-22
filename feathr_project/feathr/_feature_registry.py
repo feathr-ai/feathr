@@ -573,6 +573,40 @@ class _FeatureRegistry():
         )
 
     @classmethod
+    def _extract_features_from_context(self, anchor_list, derived_feature_list, result_path: Path) -> RepoDefinitions:
+        """Collect feature definitions from the context instead of python files"""
+        definitions = RepoDefinitions(
+            sources=set(),
+            features=set(),
+            transformations=set(),
+            feature_anchors=set(),
+            derived_features=set()
+        )
+        for derived_feature in derived_feature_list:
+            if isinstance(derived_feature, DerivedFeature):                    
+                definitions.derived_features.add(derived_feature)
+                definitions.transformations.add(vars(derived_feature)["transform"])
+            else:
+                RuntimeError("Object cannot be parsed. `derived_feature_list` should be a list of `DerivedFeature`.")
+
+        for anchor in anchor_list:
+            # obj is `FeatureAnchor`
+            definitions.feature_anchors.add(anchor)
+            # add the source section of this `FeatureAnchor` object
+            definitions.sources.add(vars(anchor)['source'])
+            for feature in vars(anchor)['features']:
+                # get the transformation object from `Feature` or `DerivedFeature`
+                if isinstance(anchor, Feature):
+                    # feature is of type `Feature` 
+                    definitions.features.add(anchor)
+                    definitions.transformations.add(vars(feature)["transform"])
+                else:
+                    RuntimeError("Object cannot be parsed.")
+        
+        return definitions
+
+
+    @classmethod
     def _extract_features(self, workspace_path: Path) -> RepoDefinitions:
         """Collect feature definitions from the python file, convert them into feature config and save them locally"""
         os.chdir(workspace_path)
@@ -611,8 +645,16 @@ class _FeatureRegistry():
         self._save_derived_feature_config(repo_definitions)
 
     @classmethod
-    def _save_request_feature_config(self, repo_definitions: RepoDefinitions):
-        config_file_name = "feature_conf/auto_generated_request_features.conf"
+    def save_to_feature_config_from_context(self, anchor_list, derived_feature_list, local_workspace_dir: Path):
+        """Save feature definition within the workspace into HOCON feature config files from current context, rather than reading from python files"""
+        repo_definitions = self._extract_features_from_context(anchor_list, derived_feature_list, local_workspace_dir)
+        self._save_request_feature_config(repo_definitions, local_workspace_dir)
+        self._save_anchored_feature_config(repo_definitions, local_workspace_dir)
+        self._save_derived_feature_config(repo_definitions, local_workspace_dir)
+
+    @classmethod
+    def _save_request_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
+        config_file_name = "feature_conf/auto_generated_request_features.conf"        
         tm = Template("""
                     // THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
                     anchors: {
@@ -625,11 +667,11 @@ class _FeatureRegistry():
                     """)
         
         request_feature_configs = tm.render(feature_anchors=repo_definitions.feature_anchors)
-        config_file_path = os.path.abspath(config_file_name)
+        config_file_path = os.path.join(local_workspace_dir, config_file_name)
         write_to_file(content=request_feature_configs, full_file_name=config_file_path)
 
     @classmethod
-    def _save_anchored_feature_config(self, repo_definitions: RepoDefinitions):
+    def _save_anchored_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
         config_file_name = "feature_conf/auto_generated_anchored_features.conf"
         tm = Template("""
                     // THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
@@ -651,11 +693,11 @@ class _FeatureRegistry():
                     """)
         anchored_feature_configs = tm.render(feature_anchors=repo_definitions.feature_anchors,
                                              sources=repo_definitions.sources)
-        config_file_path = os.path.abspath(config_file_name)
+        config_file_path = os.path.join(local_workspace_dir, config_file_name)
         write_to_file(content=anchored_feature_configs, full_file_name=config_file_path)
 
     @classmethod
-    def _save_derived_feature_config(self, repo_definitions: RepoDefinitions):
+    def _save_derived_feature_config(self, repo_definitions: RepoDefinitions , local_workspace_dir="./"):
         config_file_name = "feature_conf/auto_generated_derived_features.conf"
         tm = Template("""
             anchors: {}
@@ -666,7 +708,7 @@ class _FeatureRegistry():
             }
         """)
         derived_feature_configs = tm.render(derived_features=repo_definitions.derived_features)
-        config_file_path = os.path.abspath(config_file_name)
+        config_file_path = os.path.join(local_workspace_dir, config_file_name)
         write_to_file(content=derived_feature_configs, full_file_name=config_file_path)
 
     def register_features(self, workspace_path: Optional[Path] = None):
