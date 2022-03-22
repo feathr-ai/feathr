@@ -39,7 +39,6 @@ class _FeatureRegistry():
         self.project_name = envutils.get_environment_variable_with_default('project_config', 'project_name')
         self.FEATURE_REGISTRY_DELIMITER = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
         self.azure_purview_name = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
-        type_system_initialization = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'type_system_initialization')
 
         self.oauth = ServicePrincipalAuthentication(
             tenant_id=_EnvVaraibleUtil.get_environment_variable(
@@ -56,8 +55,7 @@ class _FeatureRegistry():
         self.guid = GuidTracker(starting=-1000)
         self.entity_batch_queue = []
 
-        if type_system_initialization:
-            self._register_feathr_feature_types()
+        
 
     def _register_feathr_feature_types(self):
         """
@@ -717,6 +715,9 @@ class _FeatureRegistry():
         Args:
             workspace_path (str, optional): path to a workspace. Defaults to None.
         """
+
+        # register feature types each time when we register features.
+        self._register_feathr_feature_types()
         self.save_to_feature_config(workspace_path)
         self._read_config_from_workspace(workspace_path)
         # Upload all entities
