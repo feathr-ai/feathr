@@ -70,8 +70,6 @@ jobs:
           # overwrite corresponding environment variables to utilize feathr to upload the files
           echo "SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
           # use hour, minute, seconds for seperate folders so that different CI pipeline won't share the same runtime
-          echo "SPARK_CONFIG__DATABRICKS__WORK_DIR=dbfs:/feathr_ci_folder$(date +"_%H_%M_%S")" >> $GITHUB_ENV
-          echo "SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR=abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci$(date +"_%H_%M_%S")" >> $GITHUB_ENV
       - name: Run Feathr with Databricks
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_databricks"
