@@ -132,7 +132,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         Returns:
             str: `output_path` field in the job tags
         """
-        tags = self._api.get_spark_batch_job(self.current_job_info.tags)
+        tags = self._api.get_spark_batch_job(self.current_job_info.id).tags
         assert tags is not None
         return tags[OUTPUT_PATH_TAG]
 
