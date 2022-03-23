@@ -7,7 +7,7 @@ long_description = (root_path / "README.md").read_text()
 
 setup(
     name='feathr',
-    version='0.1.1',
+    version='0.2.1',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="frame_dev@linkedin.com",
