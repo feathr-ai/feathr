@@ -379,7 +379,7 @@ class FeathrClient(object):
         if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
             _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
-            RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
+            raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
         write_to_file(content=config, full_file_name=config_file_path)
         return self._get_offline_features_with_config(config_file_path)
@@ -464,7 +464,7 @@ class FeathrClient(object):
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
                 _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
             else:
-                RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
+                raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
             # CLI will directly call this so the experiene won't be broken
             self._materialize_features_with_config(config_file_path)
