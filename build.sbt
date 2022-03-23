@@ -37,9 +37,18 @@ val localAndCloudCommonDependencies = Seq(
     "com.jasonclawson" % "jackson-dataformat-hocon" % "1.1.0",
     "com.redislabs" %% "spark-redis" % "2.6.0",
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-    "org.apache.xbean" % "xbean-asm6-shaded" % "4.10"
-
+    "org.apache.xbean" % "xbean-asm6-shaded" % "4.10",
+    "com.google.protobuf" % "protobuf-java" % "3.19.4",
+    "net.snowflake" % "snowflake-jdbc" % "3.13.14",
+    "net.snowflake" % "spark-snowflake_2.12" % "2.10.0-spark_3.1",
 ) // Common deps
+
+val jdbcDrivers = Seq(
+  "com.microsoft.sqlserver" % "mssql-jdbc" % "10.2.0.jre8",
+  "mysql" % "mysql-connector-java" % "8.0.25",
+  "net.snowflake" % "snowflake-jdbc" % "3.13.14",
+  "org.postgresql" % "postgresql" % "42.3.3",
+)
 
 // For azure
 lazy val root = (project in file("."))
@@ -49,6 +58,7 @@ lazy val root = (project in file("."))
       assembly / mainClass := Some("com.linkedin.feathr.offline.job.FeatureJoinJob"),
       libraryDependencies ++= cloudProvidedDeps,
       libraryDependencies ++= localAndCloudCommonDependencies,
+      libraryDependencies ++= jdbcDrivers,
       libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % sparkVersion % "provided"
       )
@@ -79,3 +89,8 @@ assembly / assemblyMergeStrategy := {
     case PathList("META-INF",xs @ _*) => MergeStrategy.discard
     case _ => MergeStrategy.first
 }
+
+// Some systems(like Hadoop) use different versinos of protobuf(like v2) so we have to shade it.
+assemblyShadeRules in assembly := Seq(
+  ShadeRule.rename("com.google.protobuf.**" -> "shade.protobuf.@1").inAll,
+)

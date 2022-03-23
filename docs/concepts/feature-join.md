@@ -52,76 +52,37 @@ Note: In the above example, feature f_page_view_count and f_like_count are defin
 
 ## Feature join config
 
-Feature join config syntax spec:
+An example is like below:
 
-```
-
-observationPath: <path to the observation dataset>
-        
-outputPath: <path of the output dataset, i.e. observation dataset with features joined to it, a.k.a. training dataset>
-        
-// Time information of the observation data used to join with feature datsets
-settings: {
-    joinTimeSettings: {
-        timestampColumn: {
-            def: <Feathr expression that extract the timestamp from observation row>
-            format: <format of the timestamp format returned in the above def expression>
-        }
-    }
-}
-
-featureList: [
-    {
-        key: <join key of observation data>
-        featureList: <list of feature names to be joined to the observation data using the above key>
-    }
-    {
-        key: <other join key of observation data>
-        featureList: <list of feature names to be joined to the observation data using the above other key>
-    }
-]
-
-
-```
-
-Feature join config example:
-
-```
-
-observationPath: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"
-        
-outputPath: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro"
-        
-settings: {
-    joinTimeSettings: {
-        timestampColumn: {
-            def: "lpep_dropoff_datetime"
-            format: "yyyy-MM-dd HH:mm:ss"
-        }
-    }
-}
-
-featureList: [
-    {
-        key: DOLocationID
-        featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week, f_day_of_month, f_hour_of_day]
-    }
-]
-
-
-
-```
-
-
-
-Create training dataset via feature join with the above feature join config:
-```bash
-feathr join
-```
-Or with Python:
 ```python
-returned_spark_job = client.join_offline_features()
-df_res = client.get_job_result()
+feature_query = FeatureQuery(
+    feature_list=["f_location_avg_fare"], key=location_id)
+settings = ObservationSettings(
+    observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+    event_timestamp_column="lpep_dropoff_datetime",
+    timestamp_format="yyyy-MM-dd HH:mm:ss")
+client.get_offline_features(observation_settings=settings,
+                            feature_query=feature_query,
+                            output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
+
 ```
 
 
+After you have defined the features (as described in the [Feature Definition](feature-definition.md)) part, you can define how you want to join them.
+
+### Observation data
+
+The path of a dataset as the 'spine' for the to-be-created training dataset. We call this input 'spine' dataset the 'observation' dataset. Typically, each row of the observation data contains:
+
+1. Column(s) representing entity id(s), which will be used as the join key to look up(join) feature value.
+
+2. A column representing the event time of the row. By default, Feathr will make sure the feature values joined have a timestamp earlier than it, ensuring no data leakage in the resulting training dataset.
+
+3. Other columns will be simply pass through onto the output training dataset.
+The key fields from the observation data, which are used to joined with the feature data.
+List of feature names to be joined with the observation data. They must be pre-defined in the Python APIs.
+
+The time information of the observation data used to compare with the feature's timestamp during the join.
+
+### FeatureQuery
+After you have defined all the features, you probably don't want to use all of them in this particular program. In this case, instead of putting every features in this `FeatureQuery` part, you can just put a selected list of features. Note that they have to be of the same key.

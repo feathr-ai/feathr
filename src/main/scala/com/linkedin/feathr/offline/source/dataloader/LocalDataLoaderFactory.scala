@@ -39,9 +39,9 @@ private[offline] class LocalDataLoaderFactory(ss: SparkSession) extends DataLoad
     } else if (path.startsWith("jdbc")){
       LocalFeatureJoinUtils.getMockPathIfExist(path, ss.sparkContext.hadoopConfiguration, workspaceDir) match {
         case Some(mockData) => {
-          new JDBCDataLoader(ss, mockData)
+          new JdbcDataLoader(ss, mockData)
         }
-        case None => new JDBCDataLoader(ss, path)
+        case None => new JdbcDataLoader(ss, path)
       }
     } else if (getClass.getClassLoader.getResource(path + TEST_AVRO_JSON_FILE) != null) {
       new AvroJsonDataLoader(ss, path + TEST_AVRO_JSON_FILE)

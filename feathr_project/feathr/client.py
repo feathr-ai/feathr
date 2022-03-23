@@ -1,14 +1,28 @@
+import base64
 import logging
+import math
 import os
-from typing import List
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import List, Optional, Union
+import tempfile
+
 import redis
-from loguru import logger
+from jinja2 import Template
 from pyhocon import ConfigFactory
 
+from feathr._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._feature_registry import _FeatureRegistry
+from feathr._file_utils import write_to_file
+from feathr._materialization_utils import _to_materialization_config
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
-from feathr._databricks_submission import _FeathrDatabricksJobLauncher
+from feathr.constants import *
+from feathr.materialization_settings import MaterializationSettings
+from feathr.protobuf.featureValue_pb2 import FeatureValue
+from feathr.query_feature_list import FeatureQuery
+from feathr.settings import ObservationSettings
+from feathr.feature_derivations import DerivedFeature
 
 
 class FeatureJoinJobParams:
@@ -41,8 +55,6 @@ class FeatureGenerationJobParams:
         self.feature_config = feature_config
 
 
-REDIS_PASSWORD = 'REDIS_PASSWORD'
-
 
 class FeathrClient(object):
     """Feathr client.
@@ -61,84 +73,90 @@ class FeathrClient(object):
         client creation.
     """
 
-    def __init__(self):
+    def __init__(self, config_path = "./feathr_config.yaml", local_workspace_dir = None):
 
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
+        envutils = _EnvVaraibleUtil(config_path)
+        if local_workspace_dir:
+            self.local_workspace_dir = local_workspace_dir
+        else:
+            self.local_workspace_dir = tempfile.TemporaryDirectory().name
+        
+        self.envutils = envutils
+
+        if not os.path.exists(config_path):
+            self.logger.warning('Configuration path does not exist, you need to set the environment variables explicitly. For all the environment variables, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
 
         # Load all configs from yaml at initialization
         # DO NOT load any configs from yaml during runtime.
-        self.project_name = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.project_name = envutils.get_environment_variable_with_default(
             'project_config', 'project_name')
-        self.required_fields = _EnvVaraibleUtil.get_environment_variable_with_default(
-            'project_config', 'required_environment_variables')
-
-        self._check_required_environment_variables_exist()
 
         # Redis configs
-        self.redis_host = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.redis_host = envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'host')
-        self.redis_port = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.redis_port = envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'port')
-        self.redis_ssl_enabled = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.redis_ssl_enabled = envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'ssl_enabled')
 
         # S3 configs
-        self.s3_endpoint = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.s3_endpoint = envutils.get_environment_variable_with_default(
             'offline_store', 's3', 's3_endpoint')
 
         # spark configs
-        self.output_num_parts = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.output_num_parts = envutils.get_environment_variable_with_default(
             'spark_config', 'spark_result_output_parts')
-        self.spark_runtime = _EnvVaraibleUtil.get_environment_variable_with_default(
+        self.spark_runtime = envutils.get_environment_variable_with_default(
             'spark_config', 'spark_cluster')
 
         if self.spark_runtime not in {'azure_synapse', 'databricks'}:
             raise RuntimeError(
                 'Only \'azure_synapse\' and \'databricks\' are currently supported.')
-        elif self.spark_runtime.lower() == 'azure_synapse':
+        elif self.spark_runtime == 'azure_synapse':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
             self._FEATHR_JOB_JAR_PATH = \
-                _EnvVaraibleUtil.get_environment_variable_with_default(
+                envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'feathr_runtime_location')
 
             self.feathr_spark_laucher = _FeathrSynapseJobLauncher(
-                synapse_dev_url=_EnvVaraibleUtil.get_environment_variable_with_default(
+                synapse_dev_url=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'dev_url'),
-                pool_name=_EnvVaraibleUtil.get_environment_variable_with_default(
+                pool_name=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'pool_name'),
-                datalake_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
+                datalake_dir=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'workspace_dir'),
-                executor_size=_EnvVaraibleUtil.get_environment_variable_with_default(
+                executor_size=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_size'),
-                executors=_EnvVaraibleUtil.get_environment_variable_with_default(
+                executors=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_num')
             )
-        elif self.spark_runtime.lower() == 'databricks':
+        elif self.spark_runtime == 'databricks':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
             self._FEATHR_JOB_JAR_PATH = \
-                _EnvVaraibleUtil.get_environment_variable_with_default(
+                envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'feathr_runtime_location')
 
             self.feathr_spark_laucher = _FeathrDatabricksJobLauncher(
-                workspace_instance_url=_EnvVaraibleUtil.get_environment_variable_with_default(
+                workspace_instance_url=envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'workspace_instance_url'),
                 token_value=_EnvVaraibleUtil.get_environment_variable(
                     'DATABRICKS_WORKSPACE_TOKEN_VALUE'),
-                config_template=_EnvVaraibleUtil.get_environment_variable_with_default(
+                config_template=envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'config_template'),
-                databricks_work_dir=_EnvVaraibleUtil.get_environment_variable_with_default(
+                databricks_work_dir=envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'work_dir')
             )
 
         self._construct_redis_client()
 
-        self.registry = _FeatureRegistry()
+        self.registry = _FeatureRegistry(config_path = config_path)
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
@@ -153,7 +171,18 @@ class FeathrClient(object):
     def register_features(self):
         """Registers features based on the current workspace
         """
-        self.registry.register_features(os.path.abspath('./'))
+        if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
+            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+        else:
+            RuntimeError("Please call FeathrClient.build_features() first in order to register features")
+        self.registry.register_features(self.local_workspace_dir)
+    
+    def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
+        """Registers features based on the current workspace
+        """
+        self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
+        self.anchor_list = anchor_list
+        self.derived_feature_list = derived_feature_list
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -167,7 +196,7 @@ class FeathrClient(object):
         """
         return self.registry.get_registry_client()
 
-    def online_get_features(self, feature_table, key, feature_names):
+    def get_online_features(self, feature_table, key, feature_names):
         """Fetches feature value for a certain key from a online feature table.
 
         Args:
@@ -186,9 +215,9 @@ class FeathrClient(object):
             """
         redis_key = self._construct_redis_key(feature_table, key)
         res = self.redis_clint.hmget(redis_key, *feature_names)
-        return res
+        return self._decode_proto(res)
 
-    def online_batch_get_features(self, feature_table, keys, feature_names):
+    def multi_get_online_features(self, feature_table, keys, feature_names):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
 
         Args:
@@ -211,7 +240,64 @@ class FeathrClient(object):
                 redis_pipeline.hmget(redis_key, *feature_names)
             pipeline_result = redis_pipeline.execute()
 
-        return dict(zip(keys, pipeline_result))
+        decoded_pipeline_result = []
+        for feature_list in pipeline_result:
+            decoded_pipeline_result.append(self._decode_proto(feature_list))
+
+        return dict(zip(keys, decoded_pipeline_result))
+
+    def _decode_proto(self, feature_list):
+        """Decode the bytes(in string form) via base64 decoder. For dense array, it will be returned as Python List.
+        For sparse array, it will be returned as tuple of index array and value array. The order of elements in the
+        arrays won't be changed.
+        """
+        typed_result = []
+        for raw_feature in feature_list:
+            if raw_feature:
+                feature_value = FeatureValue()
+                decoded = base64.b64decode(raw_feature)
+                feature_value.ParseFromString(decoded)
+                if feature_value.WhichOneof('FeatureValueOneOf') == 'boolean_value':
+                    typed_result.append(feature_value.boolean_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'string_value':
+                    typed_result.append(feature_value.string_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'float_value':
+                    typed_result.append(feature_value.float_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'double_value':
+                    typed_result.append(feature_value.double_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'int_value':
+                    typed_result.append(feature_value.int_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'long_value':
+                    typed_result.append(feature_value.long_value)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'int_array':
+                    typed_result.append(feature_value.int_array.integers)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'string_array':
+                    typed_result.append(feature_value.string_array.strings)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'float_array':
+                    typed_result.append(feature_value.float_array.floats)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'double_array':
+                    typed_result.append(feature_value.double_array.doubles)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'boolean_array':
+                    typed_result.append(feature_value.boolean_array.booleans)
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_string_array':
+                    typed_result.append((feature_value.sparse_string_array.index_integers, feature_value.sparse_string_array.value_strings))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_bool_array':
+                    typed_result.append((feature_value.sparse_bool_array.index_integers, feature_value.sparse_bool_array.value_booleans))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_float_array':
+                    typed_result.append((feature_value.sparse_float_array.index_integers, feature_value.sparse_float_array.value_floats))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_double_array':
+                    typed_result.append((feature_value.sparse_double_array.index_integers, feature_value.sparse_double_array.value_doubles))
+                elif feature_value.WhichOneof('FeatureValueOneOf') == 'sparse_long_array':
+                    typed_result.append((feature_value.sparse_long_array.index_integers, feature_value.sparse_long_array.value_longs))
+                else:
+                    self.logger.debug("Fail to load the feature type. Maybe a new type that is not supported by this "
+                                      "client version")
+                    self.logger.debug(f"The raw feature is {raw_feature}.")
+                    self.logger.debug(f"The loaded feature is {feature_value}")
+                    typed_result.append(None)
+            else:
+                typed_result.append(raw_feature)
+        return typed_result
 
     def _clean_test_data(self, feature_table):
         """
@@ -251,22 +337,58 @@ class FeathrClient(object):
         self.logger.info('Redis connection is successful and completed.')
         self.redis_clint = redis_clint
 
-    def join_offline_features(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
+
+    def get_offline_features(self,
+                             observation_settings: ObservationSettings,
+                             feature_query: Union[FeatureQuery, List[FeatureQuery]],
+                             output_path: str
+                             ):
+        """
+        Get offline features for the observation dataset
+        Args:
+            observation_settings: settings of the observation data, e.g. timestamp columns, input path, etc.
+            feature_query: features that are requested to add onto the observation data
+            output_path: output path of job, i.e. the observation data with features attached.
+        """
+        # produce join config
+        tm = Template("""
+            {{observation_settings.to_config()}}
+            featureList: [
+                {% for list in feature_lists %}
+                    {{list.to_config()}}
+                {% endfor %}
+            ]
+            outputPath: "{{output_path}}"
+        """)
+        feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
+        config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
+        config_file_name = "feature_join_conf/feature_join.conf"
+        config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
+
+        # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features
+        # otherwise users will be confused on what are the available features
+        # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
+        if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
+            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+        else:
+            RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
+
+        write_to_file(content=config, full_file_name=config_file_path)
+        return self._get_offline_features_with_config(config_file_path)
+
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
           feature_join_conf_path: Relative path to your feature join config file.
         """
-        if not feature_join_conf_path.startswith('feature_join_conf'):
-            raise RuntimeError(
-                'Feature join config should be in feature_join_conf folder.')
-
+        
+            
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
                                                        observation_path=feathr_feature['observationPath'],
-                                                       feature_config=os.path.abspath(
-                                                           'feature_conf/features.conf'),
+                                                       feature_config=os.path.join(self.local_workspace_dir, 'feature_conf/'),
                                                        job_output_path=feathr_feature['outputPath'],
                                                        )
 
@@ -274,6 +396,7 @@ class FeathrClient(object):
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            job_tags={OUTPUT_PATH_TAG:feature_join_job_params.job_output_path},
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
                 '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
@@ -287,20 +410,19 @@ class FeathrClient(object):
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
+                '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
         )
 
-    def get_job_result_uri(self, feature_join_conf_path='feature_join_conf/feature_join.conf', local_folder='/tmp',
-                           block=True, timeout_sec=300):
+    def get_job_result_uri(self, block=True, timeout_sec=300):
         """Gets the job output URI
         """
-        feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
         if not block:
-            return feathr_feature['outputPath']
+            return self.feathr_spark_laucher.get_job_result_uri()
         # Block the API by pooling the job status and wait for complete
         if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
-            return feathr_feature['outputPath']
+            return self.feathr_spark_laucher.get_job_result_uri()
         else:
             raise RuntimeError(
                 'Spark job failed so output cannot be retrieved.')
@@ -313,21 +435,48 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def materialize_features(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf'):
+    def materialize_features(self, settings: MaterializationSettings):
+        """Materialize feature data
+
+        Args:
+            settings: Feature materialization settings
+        """
+        # produce materialization config
+
+        for end in settings.get_backfill_cutoff_time():
+            settings.backfill_time.end = end
+            config = _to_materialization_config(settings)
+            config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
+            config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
+            write_to_file(content=config, full_file_name=config_file_path)
+            
+            # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features in the python SDK
+            # otherwise users will be confused on what are the available features
+            # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
+            if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
+                _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+            else:
+                RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
+
+            # CLI will directly call this so the experiene won't be broken
+            self._materialize_features_with_config(config_file_path)
+            if os.path.exists(config_file_path):
+                os.remove(config_file_path)
+
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf'):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
-        if not feature_gen_conf_path.startswith('feature_gen_conf'):
-            raise RuntimeError(
-                'Feature generation config should be in feature_gen_conf folder.')
+        
+        
 
         # Read all features conf
         generation_config = FeatureGenerationJobParams(
             generation_config_path=os.path.abspath(feature_gen_conf_path),
-            feature_config=os.path.abspath("feature_conf/features.conf"))
+            feature_config=os.path.join(self.local_workspace_dir, "feature_conf/"))
 
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
@@ -343,24 +492,12 @@ class FeathrClient(object):
                 '--s3-config', self._get_s3_config_str(),
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
-                '--sql-config', self._get_sql_config_str()
+                '--sql-config', self._get_sql_config_str(),
+                '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
         )
 
-    def get_job_result_uri(self, feature_join_conf_path='feature_join_conf/feature_join.conf', local_folder='/tmp',
-                           block=True, timeout_sec=300):
-        """Gets the job output URI
-        """
-        feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
-        if not block:
-            return feathr_feature['outputPath']
-        # Block the API by pooling the job status and wait for complete
-        if self.feathr_spark_laucher.wait_for_completion(timeout_sec):
-            return feathr_feature['outputPath']
-        else:
-            raise RuntimeError(
-                'Spark job failed so output cannot be retrieved.')
 
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
@@ -435,10 +572,37 @@ class FeathrClient(object):
         table = _EnvVaraibleUtil.get_environment_variable('JDBC_TABLE')
         user = _EnvVaraibleUtil.get_environment_variable('JDBC_USER')
         password = _EnvVaraibleUtil.get_environment_variable('JDBC_PASSWORD')
+        driver = _EnvVaraibleUtil.get_environment_variable('JDBC_DRIVER')
+        auth_flag = _EnvVaraibleUtil.get_environment_variable('JDBC_AUTH_FLAG')
+        token = _EnvVaraibleUtil.get_environment_variable('JDBC_TOKEN')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             JDBC_TABLE: {JDBC_TABLE}
             JDBC_USER: {JDBC_USER}
-            JDBC_PASSWORD: "{JDBC_PASSWORD}"
-            """.format(JDBC_TABLE=table, JDBC_USER=user, JDBC_PASSWORD=password)
+            JDBC_PASSWORD: {JDBC_PASSWORD}
+            JDBC_DRIVER: {JDBC_DRIVER}
+            JDBC_AUTH_FLAG: {JDBC_AUTH_FLAG}
+            JDBC_TOKEN: {JDBC_TOKEN}
+            """.format(JDBC_TABLE=table, JDBC_USER=user, JDBC_PASSWORD=password, JDBC_DRIVER = driver, JDBC_AUTH_FLAG = auth_flag, JDBC_TOKEN = token)
         return config_str
+
+    def _get_snowflake_config_str(self):
+        """Construct the Snowflake config string for jdbc. The url, user, role and other parameters can be set via
+        yaml config. Password can be set via environment variables."""
+        sf_url = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'url')
+        sf_user = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'user')
+        sf_role = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'role')
+        sf_password = self.envutils.get_environment_variable('JDBC_SF_PASSWORD')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            JDBC_SF_URL: {JDBC_SF_URL}
+            JDBC_SF_USER: {JDBC_SF_USER}
+            JDBC_SF_ROLE: {JDBC_SF_ROLE}
+            JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
+            """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
+        return config_str
+
+    def get_features_from_registry(self, project_name):
+        """ Sync features from the registry given a project name """
+        # TODO - Add support for customized workspace path
+        self.registry.get_features_from_registry(project_name, os.path.abspath("./"))

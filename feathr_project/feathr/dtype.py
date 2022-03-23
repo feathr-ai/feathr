@@ -101,7 +101,7 @@ class BytesFeatureType(FeatureType):
             }
         """
 
-class DenseVectorFeatureType(FeatureType):
+class FloatVectorFeatureType(FeatureType):
     def to_feature_config(self) -> str:
         return """
            type: {
@@ -112,6 +112,41 @@ class DenseVectorFeatureType(FeatureType):
             }
         """
 
+
+class Int32VectorFeatureType(FeatureType):
+    def to_feature_config(self) -> str:
+        return """
+           type: {
+                type: TENSOR
+                tensorCategory: DENSE
+                dimensionType: [INT]
+                valType: INT
+            }
+        """
+
+
+class Int64VectorFeatureType(FeatureType):
+    def to_feature_config(self) -> str:
+        return """
+           type: {
+                type: TENSOR
+                tensorCategory: DENSE
+                dimensionType: [INT]
+                valType: LONG
+            }
+        """
+
+
+class DoubleVectorFeatureType(FeatureType):
+    def to_feature_config(self) -> str:
+        return """
+           type: {
+                type: TENSOR
+                tensorCategory: DENSE
+                dimensionType: [INT]
+                valType: DOUBLE
+            }
+        """
 # tensor dimension/axis
 class Dimension:
     def __init__(self, shape: int, dType: ValueType = ValueType.INT32):
@@ -126,3 +161,7 @@ FLOAT = FloatFeatureType()
 DOUBLE = DoubleFeatureType()
 STRING = StringFeatureType()
 BYTES = BytesFeatureType()
+FLOAT_VECTOR = FloatVectorFeatureType()
+INT32_VECTOR = Int32VectorFeatureType()
+INT64_VECTOR = Int64VectorFeatureType()
+DOUBLE_VECTOR = DoubleVectorFeatureType()

@@ -17,6 +17,7 @@ synapse_workspace_name="$resource_prefix"spark
 redis_cluster_name="$resource_prefix"redis
 purview_account_name="$resource_prefix"purview
 
+
 # detect whether az cli is installed or not
 if ! [ -x "$(command -v az)" ]; then
   echo 'Error: Azure CLI is not installed. Please follow guidance on https://aka.ms/azure-cli to install az command line' >&2
@@ -63,16 +64,36 @@ az role assignment create --role "Storage Blob Data Contributor" --assignee "$sp
 # Create Synapse Cluster
 az synapse workspace create --name $synapse_workspace_name --resource-group $resoruce_group_name  --storage-account $storage_account_name --file-system $storage_file_system_name --sql-admin-login-user $synapse_sql_admin_name --sql-admin-login-password $synapse_sql_admin_password --location $location
 
-az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $synapse_workspace_name  --resource-group $resoruce_group_name --spark-version 2.4 --node-count 3 --node-size Medium --enable-auto-pause true --delay 30
+az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $synapse_workspace_name  --resource-group $resoruce_group_name --spark-version 3.1 --node-count 3 --node-size Medium --enable-auto-pause true --delay 30
 
 # depending on your preference, you can set a narrow range of IPs (like below) or a broad range of IPs to allow client access to Synapse clusters
 external_ip=$(curl -s http://whatismyip.akamai.com/)
 echo "External IP is: ${external_ip}. Adding it to firewall rules" 
-az synapse workspace firewall-rule create --name allowCurrentIP --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
+az synapse workspace firewall-rule create --name $synapse_firewall_rule_name --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
 
-# sleep for a few seconds for the chagne to take effect
-sleep 30
-az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $service_principal_name
+echo "Waiting IP Address ${external_ip} to be added in the firewall rule." 
+az synapse workspace firewall-rule wait --rule-name $synapse_firewall_rule_name --created --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name
+
+
+ERROR=$(az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $service_principal_name 2>&1 >/dev/null)
+
+# adding this logic because sometimes the firewall rule will recognize a different IP address
+if [ -z "$ERROR" ]
+then
+      # meaning the previous command is successful
+      echo "Role added successfully"
+else  
+      # reading IP address from error
+      # error will be something like: 
+      # WARNING: Command group 'synapse' is in preview and under development. Reference and support levels: https://aka.ms/CLI_refstatus\nERROR: (ClientIpAddressNotAuthorized) Client Ip address : 167.220.102.79\nCode: ClientIpAddressNotAuthorized\nMessage: Client Ip address : 167.220.xx.xx
+      read external_ip < <(echo $ERROR | grep -o '[0-9]\+[.][0-9]\+[.][0-9]\+[.][0-9]\+')
+      echo "External IP is: ${external_ip}. Adding it to firewall rules" 
+      az synapse workspace firewall-rule create --name $synapse_firewall_rule_name --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
+
+      echo "Waiting IP Address ${external_ip} to be added in the firewall rule." 
+      az synapse workspace firewall-rule wait --rule-name $synapse_firewall_rule_name --created --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name
+      
+fi
 
 echo "Verify if the assignment is successful or not:"
 az synapse role assignment list --workspace-name $synapse_workspace_name  --assignee $service_principal_name
@@ -95,7 +116,7 @@ az purview account create --location $location --account-name $purview_account_n
 # this is completely optional. It will download some demo NYC data and upload it to the default storage account, to make the setup experience smoother
 echo "preparing data"
 curl https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv --output /tmp/green_tripdata_2020-04.csv
-az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode account-key
+az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode login
 
 # show output again
 
@@ -111,7 +132,7 @@ echo "REDIS_PASSWORD: $redis_password"
 echo "REDIS_HOST: $redis_cluster_name.redis.cache.windows.net"
 echo "FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr_20220204.jar"
 echo "AZURE_PURVIEW_NAME: $purview_account_name"
-echo "Demo Data Location: abfss://$storage_file_system_name@$storage_account_name.dfs.core.windows.net/demo_data/green_tripdata_2021-01.csv"
+echo "Demo Data Location: abfss://$storage_file_system_name@$storage_account_name.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"
 
 echo "outputPath: abfss://$storage_file_system_name@$storage_account_name.dfs.core.windows.net/demo_data/output.avro"
 

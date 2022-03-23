@@ -28,13 +28,15 @@ setup(
         "pandas",
         "redis",
         "requests",
-        "scikit-learn",
         "pyapacheatlas",
         "pyhocon",
         "pandavro",
         "python-snappy",
         "pyyaml",
-        "Jinja2"
+        "Jinja2",
+        "google>=3.0.0",
+        "google-api-python-client>=2.41.0",
+        "pytest"
     ],
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']

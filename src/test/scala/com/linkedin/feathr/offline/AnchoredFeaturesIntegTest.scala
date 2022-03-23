@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.common.configObj.configbuilder.ConfigBuilderException
 import com.linkedin.feathr.common.exception.FeathrConfigException
-import com.linkedin.feathr.offline.generation.SparkIOUUtil
+import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.dataloader.AvroJsonDataLoader
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.spark.sql.Row
@@ -140,7 +140,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
 
     // create a data source from anchorAndDerivations/nullValueSource.avro.json
     val df = new AvroJsonDataLoader(ss, "nullValueSource.avro.json").loadDataFrame()
-    SparkIOUUtil.writeDataFrame(df, mockDataFolder + "/nullValueSource")
+    SparkIOUtils.writeDataFrame(df, mockDataFolder + "/nullValueSource")
   }
 
   /**
@@ -494,7 +494,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
          |featureList: [
          |  {
          |    key: DOLocationID
-         |    featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week, f_day_of_month, f_hour_of_day]
+         |    featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week]
          |  }
          |]
       """.stripMargin

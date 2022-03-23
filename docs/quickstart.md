@@ -134,10 +134,23 @@ what features and how these features should be joined to the observation data. T
 4. The time information of the observation data used to compare with the feature's timestamp during the join.
 
 Create training dataset via feature join:
-
 ```python
-returned_spark_job = client.join_offline_features()
-df_res = client.get_job_result()
+from feathr import FeathrClient
+
+# Requested features to be joined 
+feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location_id])
+
+# Observation dataset settings
+settings = ObservationSettings(
+    observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
+    event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
+    timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
+
+# Prepare training data by joining features to the input (observation) data.
+# feature-join.conf and features.conf are detected and used automatically.
+client.get_offline_features(observation_settings=settings,
+                                   output_path="abfss://output.avro",
+                                   feature_query=feature_query)
 ```
 
 The following feature join config is used:
