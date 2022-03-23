@@ -212,7 +212,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
                               headers=self.auth_headers,  params={ 'path': result_path})
             dbfs_files = result.json()['files']
-            for file_path in tqdm(dbfs_files):
+            for file_path in tqdm(dbfs_files, desc="Downloading result files: "):
                 # each file_path would be a dict of this type: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#dbfsfileinfo
                 dbfs_file_path, dbfs_file_size, local_file_path = file_path['path'], file_path['file_size'], os.path.join(local_folder, os.path.basename(file_path['path']))
                 with open(local_file_path, 'wb') as file_obj:
