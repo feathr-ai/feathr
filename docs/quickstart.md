@@ -1,14 +1,4 @@
-# Quickstart
-
-This tutorial demonstrates the key capabilities of Feathr, including:
-
-1. Install and set up Feathr with Azure
-2. Create shareable features with Feathr feature definition configs.
-3. Create a training dataset via point-in-time feature join.
-4. Materialize feature value to online store.
-5. Fetch feature value in real-time from online store for online scoring.
-
-You can run this tutorial in Jupyter notebook locally, by following this guide.
+# Feathr Quickstart Guide
 
 ## Overview
 
@@ -25,7 +15,7 @@ The major problems Feathr solves are:
 
 First step is to provision required cloud resources if you want to use Feathr. Feathr provides a python based client to interact with cloud resources.
 
-Please follow the steps [here](./how-to-guides/azure-deployment.md) to provision required cloud resources. Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the use cases. Because of this, [azure_resource_provision.sh](./how-to-guides/azure_resource_provision.sh) is a full end to end command line to create all the required resources, and you can tailor the script as needed, while [the companion documentation](./how-to-guides/azure-deployment.md) can be used as a complete guide for using that shell script.
+Please follow the steps [here](./how-to-guides/azure-deployment.md) to provision required cloud resources. Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the use cases. Because of this, [azure_resource_provision.sh](./how-to-guides/azure_resource_provision.sh) is a full end to end command line to create all the required resources, and you can tailor the script as needed, while [the companion documentation](./how-to-guides/azure-deployment.md) can be used as a complete guide for using that shell script. You should always consider ajusting those parameters based on your specific environment.
 
 At the end of the script, it should give you some output which you will need later. For example, the Service Principal IDs, Redis endpoint, etc.
 
@@ -33,7 +23,7 @@ Please also note that at the end of this step, you need to **manually** grant yo
 
 ## Step 2: Install Feathr
 
-Install the Feathr CLI using pip:
+Install Feathr using pip:
 
 ```bash
 pip install -U feathr
@@ -46,11 +36,11 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 ## Step 3: Run the sample notebook
 
-We've provided a self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to act as the main content of this getting started guide, and use this guide more like an explanation of that demo notebook.
+We've provided a self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
 
 # Step 4: Update Feathr config
 
-In the sample notebook, you will see some settings like below. You should update those settings based on your environment, for exmaple the spark runtime.
+In the sample notebook, you will see some settings like below. You should update those settings based on your environment, for exmaple the spark runtime, synapse/databricks endpoint, etc.
 
 ```yaml
 # DO NOT MOVE OR DELETE THIS FILE
@@ -91,7 +81,9 @@ os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 
 # Step 5: Setup environment variables.
 
-In the self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb), you also have to setup a few environment variables like below. You should be able to get those values from the first step.
+In the self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
+
+These values can also be reterived by using cloud key value store, such as [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/): 
 
 ```python
 import os
@@ -101,9 +93,9 @@ os.environ['AZURE_TENANT_ID'] = ''
 os.environ['AZURE_CLIENT_SECRET'] = ''
 ```
 
-## Step 6: Create features with the Python APIs
+## Step 6: Create features with Python APIs
 
-In Feathr, a feature is viewed as a function, mapping from entity id or key, and timestamp to a feature value. There are more explanations in the sample notebook
+In Feathr, a feature is viewed as a function, mapping from entity id or key, and timestamp to a feature value. There are more explanations in the sample notebook.
 
 ## Step 7: Register feature definitions to the central registry
 
@@ -112,6 +104,7 @@ from feathr.client import FeathrClient
 
 client = FeathrClient()
 client.register_features()
+client.list_registered_features(project_name="feathr_getting_started")
 ```
 
 ## Step 9: Create training data using point-in-time correct feature join
