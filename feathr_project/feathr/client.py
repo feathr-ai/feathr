@@ -168,10 +168,14 @@ class FeathrClient(object):
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
                                    f'variables are: {self.required_fields}.')
 
-    def register_features(self, repo_path: Optional[Path] = Path('./')):
+    def register_features(self):
         """Registers features based on the current workspace
         """
-        self.registry.register_features(repo_path)
+        if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
+            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+        else:
+            RuntimeError("Please call FeathrClient.build_features() first in order to register features")
+        self.registry.register_features(self.local_workspace_dir)
     
     def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
         """Registers features based on the current workspace

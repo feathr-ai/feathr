@@ -3,6 +3,19 @@ from click.testing import CliRunner
 from feathr.client import FeathrClient
 import os
 import glob
+from test_fixture import basic_test_setup
+
+
+def test_feathr_register_features_e2e():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        runner.invoke(init, [])
+        client = basic_test_setup(
+            "./feathr_user_workspace/feathr_config.yaml")
+        client.register_features()
+        # in CI test, the project name is set by the CI pipeline so we don't know it here. Just get all the features to make sure it works
+        all_features = client.list_registered_features()
+        assert 'f_is_long_trip_distance' in all_features
 
 
 def test_feathr_get_features_from_registry():
