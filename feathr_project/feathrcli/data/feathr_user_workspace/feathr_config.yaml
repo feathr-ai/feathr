@@ -83,19 +83,18 @@ spark_config:
     executor_num: 4
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
     # this is the default location so end users don't have to compile the runtime again.
-    feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar"
+    feathr_runtime_location: "wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-LATEST.jar"
 
   databricks:
     # workspace instance
     workspace_instance_url: 'https://adb-6885802458123232.12.azuredatabricks.net/'
-    workspace_token_value: ""
     # config string including run time information, spark version, machine size, etc.
     # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
     config_template: '{"run_name":"","new_cluster":{"spark_version":"9.1.x-scala2.12","node_type_id":"Standard_D3_v2","num_workers":2,"spark_conf":{}},"libraries":[{"jar":""}],"spark_jar_task":{"main_class_name":"","parameters":[""]}}'
     # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
     work_dir: "dbfs:/feathr_getting_started"
     # this is the default location so end users don't have to compile the runtime again.
-    feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar"
+    feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-LATEST.jar"
 
 online_store:
   redis:
