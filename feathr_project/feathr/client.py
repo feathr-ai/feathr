@@ -93,8 +93,6 @@ class FeathrClient(object):
         # DO NOT load any configs from yaml during runtime.
         self.project_name = envutils.get_environment_variable_with_default(
             'project_config', 'project_name')
-        self.required_fields = envutils.get_environment_variable_with_default(
-            'project_config', 'required_environment_variables')
 
         # Redis configs
         self.redis_host = envutils.get_environment_variable_with_default(
