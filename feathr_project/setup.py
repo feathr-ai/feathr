@@ -34,6 +34,7 @@ setup(
         "python-snappy",
         "pyyaml",
         "Jinja2",
+        "tqdm",
         "google>=3.0.0",
         "google-api-python-client>=2.41.0",
         "pytest"

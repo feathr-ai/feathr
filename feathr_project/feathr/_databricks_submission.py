@@ -1,22 +1,22 @@
+import base64
 import json
 import os
-import re
 import time
 import traceback
 import urllib
-import uuid
-from importlib.resources import contents, path
-from inspect import trace
-from typing import Any, Dict, List, Optional, Tuple
-from urllib.parse import urlparse
-from feathr._abc import SparkJobLauncher
+from collections import namedtuple
 from pathlib import Path
-from feathr.constants import *
-
+from typing import Any, Dict, List, Optional, Tuple, Union
+from urllib.parse import urlparse
+from urllib.request import urlopen
 
 import requests
 from loguru import logger
 from requests.structures import CaseInsensitiveDict
+from tqdm import tqdm
+
+from feathr._abc import SparkJobLauncher
+from feathr.constants import *
 
 
 class _FeathrDatabricksJobLauncher(SparkJobLauncher):
@@ -43,7 +43,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             self,
             workspace_instance_url: str,
             token_value: str,
-            config_template: str,
+            config_template: Union[str,Dict],
             databricks_work_dir: str = 'dbfs:/feathr_jobs',
     ):
           
@@ -70,7 +70,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         # returned paths for the uploaded file
         returned_path = os.path.join(self.databricks_work_dir, file_name)
         if src_parse_result.scheme.startswith('http'):
-            with urllib.request.urlopen(local_path_or_http_path) as f:
+            with urlopen(local_path_or_http_path) as f:
                 data = f.read()
                 files = {'file': data}
                 # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
@@ -126,7 +126,15 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             configuration (Dict[str, str]): Additional configs for the spark job
         """
 
-        submission_params = json.loads(self.config_template)
+        
+        if isinstance(self.config_template, str):
+            # if the input is a string, load it directly
+            submission_params = json.loads(self.config_template)
+        else:
+            # otherwise users might have missed the quotes in the config. 
+            submission_params = self.config_template
+            logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
+        
         submission_params['run_name'] = job_name
         submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         submission_params['new_cluster']['spark_conf'] = configuration
@@ -193,3 +201,47 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
         assert custom_tags is not None
         return custom_tags[OUTPUT_PATH_TAG]
+
+    def download_result(self, result_path: str, local_folder: str):
+        """
+        Supports downloading files from the result folder. Only support paths starts with `dbfs:/` and only support downloading files in one folder (per Spark's design, everything will be in the result folder in a flat manner)
+        """
+        if not result_path.startswith('dfbs'):
+            RuntimeError('Currently only paths starting with dbfs is supported for downloading results from a databricks cluster. The path should start with \"dbfs:\" .')
+
+        try:
+            # listing all the files in a folder: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--list
+            result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
+                                headers=self.auth_headers,  params={ 'path': result_path})
+            dbfs_files = result.json()['files']
+            for file_path in tqdm(dbfs_files, desc="Downloading result files: "):
+                # each file_path would be a dict of this type: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#dbfsfileinfo
+                dbfs_file_path, dbfs_file_size, local_file_path = file_path['path'], file_path['file_size'], os.path.join(local_folder, os.path.basename(file_path['path']))
+                with open(local_file_path, 'wb') as file_obj:
+                    downloaded_size = 0
+                    # Loop until we've downloaded the whole file
+                    while downloaded_size < dbfs_file_size:
+                        chunk = self._read_single_chunk(path=dbfs_file_path, offset=downloaded_size, length=MB_BYTES)
+                        file_obj.write(base64.b64decode(chunk.data))
+                        downloaded_size += chunk.bytes_read
+            # Logging once all the download is finished.
+            logger.info('Finish downloading files from {} to {}.', result_path,local_folder)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            raise SystemExit(e)
+
+
+
+    def _read_single_chunk(self, path, offset, length=MB_BYTES):
+
+        params = {"path": path,
+                "offset": offset,
+                "length": length}
+
+        # get a single chunk of file
+        # https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--read
+        resp = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/read',  headers=self.auth_headers,  params=params)
+        FileReadInfo = namedtuple("FileReadInfo", ['bytes_read', 'data'])
+        if resp.status_code == 200:
+            return FileReadInfo(**resp.json())
+        else:
+            RuntimeError("Files cannot be downloaded.")

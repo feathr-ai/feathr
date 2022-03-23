@@ -1,20 +1,22 @@
 import os
 import re
+import time
 import urllib.request
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
-from loguru import logger
-from pathlib import Path
-import time
-from feathr._abc import SparkJobLauncher
-
 
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
                             DeviceCodeCredential, EnvironmentCredential,
                             ManagedIdentityCredential)
 from azure.storage.filedatalake import DataLakeServiceClient
 from azure.synapse.spark import SparkClient
-from azure.synapse.spark.models import SparkBatchJob, SparkBatchJobOptions, LivyStates
+from azure.synapse.spark.models import (LivyStates, SparkBatchJob,
+                                        SparkBatchJobOptions)
+from loguru import logger
+from tqdm import tqdm
+
+from feathr._abc import SparkJobLauncher
 from feathr.constants import *
 
 
@@ -342,7 +344,7 @@ class _DataLakeFiler(object):
         # need to generate list of local paths to write the files to
         local_paths = [os.path.join(local_dir_cache, file_name)
                        for file_name in adls_paths]
-        for idx, file_to_write in enumerate(adls_paths):
+        for idx, file_to_write in enumerate(tqdm(adls_paths,desc="Downloading result files: ")):
             try:
                 local_file = open(local_paths[idx], 'wb')
                 file_client = directory_client.get_file_client(file_to_write)
