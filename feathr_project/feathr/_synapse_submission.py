@@ -344,7 +344,7 @@ class _DataLakeFiler(object):
         # need to generate list of local paths to write the files to
         local_paths = [os.path.join(local_dir_cache, file_name)
                        for file_name in adls_paths]
-        for idx, file_to_write in enumerate(tqdm(adls_paths),desc="Downloading result files: "):
+        for idx, file_to_write in enumerate(tqdm(adls_paths,desc="Downloading result files: ")):
             try:
                 local_file = open(local_paths[idx], 'wb')
                 file_client = directory_client.get_file_client(file_to_write)
