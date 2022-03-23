@@ -13,7 +13,7 @@ from urllib.request import urlopen
 import requests
 from loguru import logger
 from requests.structures import CaseInsensitiveDict
-
+from tqdm import tqdm
 from feathr._abc import SparkJobLauncher
 from feathr.constants import *
 
@@ -132,6 +132,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         else:
             # otherwise users might have missed the quotes in the config. 
             submission_params = self.config_template
+            logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
         
         submission_params['run_name'] = job_name
         submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
@@ -215,16 +216,21 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                 dbfs_file_path, dbfs_file_size, local_file_path = file_path['path'], file_path['file_size'], os.path.join(local_folder, os.path.basename(file_path['path']))
                 with open(local_file_path, 'wb') as file_obj:
                     downloaded_size = 0
+                    
                     # Loop until we've downloaded the whole file
                     while downloaded_size < dbfs_file_size:
-                        chunk = self._read_single_chunk(path=dbfs_file_path, offset=downloaded_size, length=DATABRICKS_MB_BYTES)
+                        chunk = self._read_single_chunk(path=dbfs_file_path, offset=downloaded_size, length=MB_BYTES)
                         file_obj.write(base64.b64decode(chunk.data))
                         downloaded_size += chunk.bytes_read
+                        pbar = tqdm(range(dbfs_file_size))
+                        pbar.update(downloaded_size)
+                        pbar.refresh()
             
+            # Logging once all the download is finished.
             logger.info('Finish downloading files from {} to {}.', result_path,local_folder)
 
 
-    def _read_single_chunk(self, path, offset, length=DATABRICKS_MB_BYTES):
+    def _read_single_chunk(self, path, offset, length=MB_BYTES):
 
         params = {"path": path,
                 "offset": offset,

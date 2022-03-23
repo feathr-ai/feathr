@@ -6,10 +6,16 @@ from feathr import DerivedFeature
 from feathr import INPUT_CONTEXT, HdfsSource
 from feathr import WindowAggTransformation
 from feathr import TypedKey
-
+from datetime import datetime, timedelta
+import os
 
 def basic_test_setup(config_path: str):
 
+    now = datetime.now()
+    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
+    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
+    
     client = FeathrClient(config_path=config_path)
     batch_source = HdfsSource(name="nycTaxiBatchSource",
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
@@ -80,6 +86,10 @@ def basic_test_setup(config_path: str):
 
 
 def snowflake_test_setup(config_path: str):
+    now = datetime.now()
+    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
+    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob_snowflake','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci_snowflake','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
 
     client = FeathrClient(config_path=config_path)
     batch_source = HdfsSource(name="snowflakeSampleBatchSource",

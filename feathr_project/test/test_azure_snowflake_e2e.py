@@ -18,10 +18,7 @@ def test_feathr_online_store_agg_features():
     Test FeathrClient() get_online_features and batch_get can get feature data correctly.
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
-    now = datetime.now()
-    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
-    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob_snowflake_input_online/','_', str(now.minute), '_', str(now.second)]) 
-    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci_snowflake_online','_', str(now.minute), '_', str(now.second)]) 
+    
     client = snowflake_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -57,11 +54,7 @@ def test_feathr_get_offline_features():
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
     
-    now = datetime.now()
-    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
-    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob_snowflake_input/','_', str(now.minute), '_', str(now.second)]) 
-    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci_snowflake','_', str(now.minute), '_', str(now.second)]) 
-       
+
     client = snowflake_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     call_sk_id = TypedKey(key_column="CC_CALL_CENTER_SK",
                           key_column_type=ValueType.INT32,

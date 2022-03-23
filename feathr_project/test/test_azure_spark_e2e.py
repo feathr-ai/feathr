@@ -30,11 +30,7 @@ def test_feathr_online_store_agg_features():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
-    now = datetime.now()
-    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
-    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob_input_online/','_', str(now.minute), '_', str(now.second)]) 
-    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci_online','_', str(now.minute), '_', str(now.second)]) 
-    
+
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
@@ -131,10 +127,6 @@ def test_feathr_get_offline_features():
     runner = CliRunner()
     with runner.isolated_filesystem():
         runner.invoke(init, [])
-        now = datetime.now()
-        # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
-        os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob_input/','_', str(now.minute), '_', str(now.second)]) 
-        os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second)]) 
         client = basic_test_setup(
             "./feathr_user_workspace/feathr_config.yaml")
 
