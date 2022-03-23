@@ -7,6 +7,7 @@ from typing import Set
 
 
 class RepoDefinitions:
+    """A list of shareable Feathr objects defined in the project."""
     def __init__(self,
                 sources: Set[Source],
                 features: Set[Feature],

@@ -11,3 +11,5 @@ from .typed_key import *
 from .materialization_settings import (BackfillTime, MaterializationSettings)
 from .sink import RedisSink
 from .query_feature_list import FeatureQuery
+from .lookup_feature import LookupFeature
+from .aggregation import  Aggregation
