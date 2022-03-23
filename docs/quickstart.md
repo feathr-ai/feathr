@@ -44,23 +44,13 @@ Or if you want to use the latest Feathr code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## Step 3: Create a Feathr workspace
+## Step 3: Run the sample notebook
 
-```bash
-feathr init
-cd feathr_user_workspace
-
-```
-
-In this created workspace, it has the following structure:
-
-- `feathr_config.yaml` contains the feature store configurations template
-- `mockdata` contains some built-in mockdata
-- `nyc_driver_demo.ipynb` contains a demo notebook
+We've provided a self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to act as the main content of this getting started guide, and use this guide more like an explanation of that demo notebook.
 
 # Step 4: Update Feathr config
 
-Feathr relies on `feathr_config.yaml` to get all the required configurations. For example, you might want to update the Synapse workspace, the workspace directory, etc., based on your cloud environment:
+In the sample notebook, you will see some settings like below. You should update those settings based on your environment, for exmaple the spark runtime.
 
 ```yaml
 # DO NOT MOVE OR DELETE THIS FILE
@@ -99,15 +89,9 @@ Or set this in python:
 os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 ```
 
-# Step 5: Turn on the type system initialization for feature registry
+# Step 5: Setup environment variables.
 
-In the above `feathr_config.yaml` file, set `type_system_initialization` to `true` to initialize the type system in Azure Purview. This is a manual step and only need to be called once (i.e. you can turn it to `false` after the initialization step.
-
-# Step 6: Use the notebook as a starting point
-
-There should be a notebook called `nyc_driver_demo.ipynb` in the Feathr workspace, which you can use as a getting started template.
-
-In the notebook, first setup a few environment variables, such as REDIS_PASSWORD, AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_CLIENT_SECRET. You should be able to get those values from the first step.
+In the self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb), you also have to setup a few environment variables like below. You should be able to get those values from the first step.
 
 ```python
 import os
@@ -117,34 +101,11 @@ os.environ['AZURE_TENANT_ID'] = ''
 os.environ['AZURE_CLIENT_SECRET'] = ''
 ```
 
-## Step 7: Create features with the Python APIs
+## Step 6: Create features with the Python APIs
 
-In Feathr, a feature is viewed as a function, mapping from entity id or key, and timestamp to a feature value.
+In Feathr, a feature is viewed as a function, mapping from entity id or key, and timestamp to a feature value. There are more explanations in the sample notebook
 
-1. The entity key (a.k.a. entity id) identifies the subject of feature, e.g. a user id, 123.
-2. The feature name is the aspect of the entity that the feature is indicating, e.g. the age of the user.
-3. The feature value is the actual value of that aspect at a particular time, e.g. the value is 30 at year 2022.
-
-Note that, in some cases, such as features defined on top of request data, may have no entity key or timestamp.
-It is merely a function/transformation executing against request data at runtime.
-For example, the day of week of the request, which is calculated by converting the request UNIX timestamp.
-
-Feature definitions:
-
-```python
-features = [
-    Feature(name="trip_distance", feature_type=FLOAT),
-    Feature(name="f_is_long_trip_distance",
-            feature_type=BOOLEAN,
-            transform=ExpressionTransformation("trip_distance>30")),
-]
-
-anchor = FeatureAnchor(name="nonAggFeatures",
-                                batch_source=PASSTHROUGH_SOURCE,
-                                features=features)
-```
-
-## Step 8: Register feature definitions to the central registry
+## Step 7: Register feature definitions to the central registry
 
 ```python
 from feathr.client import FeathrClient
@@ -195,15 +156,6 @@ client.get_offline_features(feature_query=feature_query, observation_settings=se
 While Feathr can compute the feature value from the feature definition on-the-fly at request time, it can also pre-compute
 and materialize the feature value to offline and/or online storage. 
 
-```python
-job_res = client.materialize_features()
-```
-
-The following feature generation config is used to materialize feature value to Redis:
-
-```
-
-```
 
 ## Step 11: Fetching feature value for online inference
 
@@ -218,5 +170,5 @@ client.multi_get_online_features("nycTaxiDemoFeature", ["239", "265"], ['f_locat
 ## Next steps
 
 - Run the [demo notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to understand the workflow of Feathr.
-- Read the [Concepts](./concepts/) page to understand the Feathr abstractions.
+- Read the [Feathr Documentation Page](https://linkedin.github.io/feathr/) page to understand the Feathr abstractions.
 - Read guide to understand [how to setup Feathr on Azure](../how-to-guides/azure-deployment.md).
