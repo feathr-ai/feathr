@@ -14,6 +14,7 @@ import requests
 from loguru import logger
 from requests.structures import CaseInsensitiveDict
 from tqdm import tqdm
+
 from feathr._abc import SparkJobLauncher
 from feathr.constants import *
 
@@ -211,20 +212,17 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
                               headers=self.auth_headers,  params={ 'path': result_path})
             dbfs_files = result.json()['files']
-            for file_path in dbfs_files:
+            for file_path in tqdm(dbfs_files):
                 # each file_path would be a dict of this type: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#dbfsfileinfo
                 dbfs_file_path, dbfs_file_size, local_file_path = file_path['path'], file_path['file_size'], os.path.join(local_folder, os.path.basename(file_path['path']))
                 with open(local_file_path, 'wb') as file_obj:
                     downloaded_size = 0
-                    
                     # Loop until we've downloaded the whole file
                     while downloaded_size < dbfs_file_size:
                         chunk = self._read_single_chunk(path=dbfs_file_path, offset=downloaded_size, length=MB_BYTES)
                         file_obj.write(base64.b64decode(chunk.data))
                         downloaded_size += chunk.bytes_read
-                        pbar = tqdm(range(dbfs_file_size))
-                        pbar.update(downloaded_size)
-                        pbar.refresh()
+
             
             # Logging once all the download is finished.
             logger.info('Finish downloading files from {} to {}.', result_path,local_folder)
