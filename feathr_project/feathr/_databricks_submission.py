@@ -206,11 +206,14 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         """
         Supports downloading files from the result folder. Only support paths starts with `dbfs:/` and only support downloading files in one folder (per Spark's design, everything will be in the result folder in a flat manner)
         """
+        print(result_path,result_path.startswith('dfbs'))
         if not result_path.startswith('dfbs'):
             RuntimeError('Currently only paths starting with dbfs is supported for downloading results from a databricks cluster. The path should start with \"dbfs:\" .')
+
+        try:
             # listing all the files in a folder: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--list
             result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
-                              headers=self.auth_headers,  params={ 'path': result_path})
+                                headers=self.auth_headers,  params={ 'path': result_path})
             dbfs_files = result.json()['files']
             for file_path in tqdm(dbfs_files, desc="Downloading result files: "):
                 # each file_path would be a dict of this type: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#dbfsfileinfo
@@ -222,10 +225,11 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                         chunk = self._read_single_chunk(path=dbfs_file_path, offset=downloaded_size, length=MB_BYTES)
                         file_obj.write(base64.b64decode(chunk.data))
                         downloaded_size += chunk.bytes_read
-
-            
             # Logging once all the download is finished.
             logger.info('Finish downloading files from {} to {}.', result_path,local_folder)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            raise SystemExit(e)
+
 
 
     def _read_single_chunk(self, path, offset, length=MB_BYTES):
