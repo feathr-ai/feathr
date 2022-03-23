@@ -36,12 +36,9 @@ class _FeatureRegistry():
         - Initialize the GUID tracker, project name, etc.
         """
         envutils = _EnvVaraibleUtil(config_path)
-        self.project_name = envutils.get_environment_variable_with_default(
-            'project_config', 'project_name')
-        self.FEATURE_REGISTRY_DELIMITER = envutils.get_environment_variable_with_default(
-            'feature_registry', 'purview', 'delimiter')
-        self.azure_purview_name = envutils.get_environment_variable_with_default(
-            'feature_registry', 'purview', 'purview_name')
+        self.project_name = envutils.get_environment_variable_with_default('project_config', 'project_name')
+        self.FEATURE_REGISTRY_DELIMITER = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
+        self.azure_purview_name = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
 
         self.oauth = ServicePrincipalAuthentication(
             tenant_id=_EnvVaraibleUtil.get_environment_variable(
@@ -586,11 +583,9 @@ class _FeatureRegistry():
         for derived_feature in derived_feature_list:
             if isinstance(derived_feature, DerivedFeature):
                 definitions.derived_features.add(derived_feature)
-                definitions.transformations.add(
-                    vars(derived_feature)["transform"])
+                definitions.transformations.add(vars(derived_feature)["transform"])
             else:
-                RuntimeError(
-                    "Object cannot be parsed. `derived_feature_list` should be a list of `DerivedFeature`.")
+                RuntimeError("Object cannot be parsed. `derived_feature_list` should be a list of `DerivedFeature`.")
 
         for anchor in anchor_list:
             # obj is `FeatureAnchor`
@@ -651,12 +646,9 @@ class _FeatureRegistry():
         """Save feature definition within the workspace into HOCON feature config files from current context, rather than reading from python files"""
         repo_definitions = self._extract_features_from_context(
             anchor_list, derived_feature_list, local_workspace_dir)
-        self._save_request_feature_config(
-            repo_definitions, local_workspace_dir)
-        self._save_anchored_feature_config(
-            repo_definitions, local_workspace_dir)
-        self._save_derived_feature_config(
-            repo_definitions, local_workspace_dir)
+        self._save_request_feature_config(repo_definitions, local_workspace_dir)
+        self._save_anchored_feature_config(repo_definitions, local_workspace_dir)
+        self._save_derived_feature_config(repo_definitions, local_workspace_dir)
 
     @classmethod
     def _save_request_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
@@ -674,11 +666,9 @@ anchors: {
 """
         )
 
-        request_feature_configs = tm.render(
-            feature_anchors=repo_definitions.feature_anchors)
+        request_feature_configs = tm.render(feature_anchors=repo_definitions.feature_anchors)
         config_file_path = os.path.join(local_workspace_dir, config_file_name)
-        write_to_file(content=request_feature_configs,
-                      full_file_name=config_file_path)
+        write_to_file(content=request_feature_configs, full_file_name=config_file_path)
 
     @classmethod
     def _save_anchored_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
@@ -706,8 +696,7 @@ sources: {
         anchored_feature_configs = tm.render(feature_anchors=repo_definitions.feature_anchors,
                                              sources=repo_definitions.sources)
         config_file_path = os.path.join(local_workspace_dir, config_file_name)
-        write_to_file(content=anchored_feature_configs,
-                      full_file_name=config_file_path)
+        write_to_file(content=anchored_feature_configs, full_file_name=config_file_path)
 
     @classmethod
     def _save_derived_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
@@ -725,8 +714,7 @@ derivations: {
         derived_feature_configs = tm.render(
             derived_features=repo_definitions.derived_features)
         config_file_path = os.path.join(local_workspace_dir, config_file_name)
-        write_to_file(content=derived_feature_configs,
-                      full_file_name=config_file_path)
+        write_to_file(content=derived_feature_configs, full_file_name=config_file_path)
 
     def register_features(self, workspace_path: Optional[Path] = None):
         """Register Features for the specified workspace
@@ -799,12 +787,9 @@ derivations: {
         feature_gen_conf_content = entities["entities"][0]["attributes"]["raw_hocon_feature_generation_config"]
 
         # Define the filenames for each config
-        feature_conf_file = os.path.join(
-            workspace_path, "feature_conf", "features.conf")
-        feature_join_file = os.path.join(
-            workspace_path, "feature_join_conf", "feature_join.conf")
-        feature_gen_file = os.path.join(
-            workspace_path, "feature_gen_conf", "feature_gen.conf")
+        feature_conf_file = os.path.join(workspace_path, "feature_conf", "features.conf")
+        feature_join_file = os.path.join(workspace_path, "feature_join_conf", "feature_join.conf")
+        feature_gen_file = os.path.join(workspace_path, "feature_gen_conf", "feature_gen.conf")
 
         # Create file and directory, if does not exist
         os.makedirs(os.path.dirname(feature_conf_file), exist_ok=True)
@@ -813,15 +798,12 @@ derivations: {
 
         with open(feature_conf_file, "w") as features:
             features.write(feature_conf_content)
-        logger.info(
-            "Writing feature configuration from feathr registry to {}", feature_conf_file)
+        logger.info("Writing feature configuration from feathr registry to {}", feature_conf_file)
 
         with open(feature_join_file, "w") as offline_config:
             offline_config.write(feature_join_conf_content)
-        logger.info(
-            "Writing offline configuration from feathr registry to {}", feature_join_file)
+        logger.info("Writing offline configuration from feathr registry to {}", feature_join_file)
 
         with open(feature_gen_file, "w") as online_config:
             online_config.write(feature_gen_conf_content)
-        logger.info(
-            "Writing online configuration from feathr registry to {}", feature_gen_file)
+        logger.info("Writing online configuration from feathr registry to {}", feature_gen_file)
