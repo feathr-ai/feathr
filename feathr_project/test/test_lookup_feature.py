@@ -1,9 +1,8 @@
-from feathr.feature import Feature
-from feathr.lookup_feature import LookupFeature
-from feathr.dtype import FLOAT, FLOAT_VECTOR, ValueType, INT32_VECTOR
-from feathr.typed_key import TypedKey
-
-from feathr.aggregation import Aggregation
+from feathr import Aggregation
+from feathr import Feature
+from feathr import LookupFeature
+from feathr import FLOAT, FLOAT_VECTOR, ValueType, INT32_VECTOR
+from feathr import TypedKey
 
 def assert_config_equals(one, another):
     assert one.translate(str.maketrans('', '', ' \n\t\r')) == another.translate(str.maketrans('', '', ' \n\t\r'))

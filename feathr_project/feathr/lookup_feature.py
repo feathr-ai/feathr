@@ -10,14 +10,18 @@ from feathr.typed_key import DUMMY_KEY, TypedKey
 from feathr.aggregation import Aggregation
 
 class LookupFeature(FeatureBase):
-    """A lookup feature is a feature defined on top of two other features, i.e. using the feature value 
+    """A lookup feature is a feature defined on top of two other features, i.e. using the feature value
     of the base feature as key, to lookup the feature value from the expansion feature.
+    e.g. a lookup feature user_purchased_item_avg_price could be key-ed by user_id, and computed by:
+        base feature is user_purchased_item_ids. For a given user_id, it returns the item ids purchased by the user.
+        expansion feature is item_price. For a given item id, it returns the item price.
+        aggregation function is average of the item prices.
     Attributes:
         name: Derived feature name
         feature_type: Type of derived feature
         key: Join key of the derived feature
         base_feature: The feature value of this feature will be used as key to lookup from the expansion feature
-        expansion_feature: The feature to be lookup
+        expansion_feature: The feature to be looked up
         aggregation: Specify the aggregation for the feature values lookup from the expansion feature, in the
                      case of the base feature value needed to be converted into multiple lookup keys, 
                      e.g. feature value is an array and each value in the array is used once as a lookup key.   
