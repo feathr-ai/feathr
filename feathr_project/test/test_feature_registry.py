@@ -6,7 +6,7 @@ import glob
 from test_fixture import basic_test_setup
 
 
-def test_feathr_get_features_from_purview():
+def test_feathr_register_features_e2e():
     runner = CliRunner()
     with runner.isolated_filesystem():
         runner.invoke(init, [])
