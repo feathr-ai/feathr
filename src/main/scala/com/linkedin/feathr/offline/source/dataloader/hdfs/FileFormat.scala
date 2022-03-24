@@ -75,7 +75,7 @@ object FileFormat {
         // if we cannot detect the file type by extension, we will detect "spark.feathr.inputFormat" and use that as the option; this is a global config (i.e. affecting all the files) so customers should use it as the last resort.
         // If this is not set, throw an exception
         if (ss.conf.get("spark.feathr.inputFormat", "").nonEmpty) ss.read.format(ss.conf.get("spark.feathr.inputFormat")).load(existingHdfsPaths: _*)
-        else throw new FeathrException(s"Unsupported data format $format. Only AVRO and ORC are supported.")
+        else throw new FeathrException(s"Unsupported data format $format and 'spark.feathr.inputFormat' not set.")
     }
     df
   }
