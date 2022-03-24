@@ -45,6 +45,9 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       
   databricks_test:
+    if:
+      (github.event.action == 'labeled' && (github.event.label.name == 'lgtm' || github.event.label.name == 'approved' || github.event.label.name == 'ok-to-test')) ||
+      (github.event.action != 'labeled' && (contains(github.event.pull_request.labels.*.name, 'ok-to-test') || contains(github.event.pull_request.labels.*.name, 'approved')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -93,7 +96,10 @@ jobs:
           # run only test with databricks. run in 4 parallel jobs
           pytest 
   azure_synapse_test:
-      # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
+    # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
+      if:
+        (github.event.action == 'labeled' && (github.event.label.name == 'lgtm' || github.event.label.name == 'approved' || github.event.label.name == 'ok-to-test')) ||
+        (github.event.action != 'labeled' && (contains(github.event.pull_request.labels.*.name, 'ok-to-test') || contains(github.event.pull_request.labels.*.name, 'approved')))  
       runs-on: ubuntu-latest
       steps:
       - uses: actions/checkout@v2
