@@ -168,14 +168,22 @@ class FeathrClient(object):
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
                                    f'variables are: {self.required_fields}.')
 
-    def register_features(self):
+    def register_features(self, from_context: bool = True):
         """Registers features based on the current workspace
+
+            Args:
+            from_context: If from_context is True (default), the features will be generated from
+                the current context. Otherwise, the features will be generated from
+                configuration files.
         """
-        if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
-            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+
+        if from_context:
+            if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
+                _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+            else:
+                raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
         else:
-            RuntimeError("Please call FeathrClient.build_features() first in order to register features")
-        self.registry.register_features(self.local_workspace_dir)
+            self.registry.register_features(self.local_workspace_dir)
     
     def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
         """Registers features based on the current workspace
@@ -371,7 +379,7 @@ class FeathrClient(object):
         if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
             _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
-            RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
+            raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
         write_to_file(content=config, full_file_name=config_file_path)
         return self._get_offline_features_with_config(config_file_path)
@@ -456,7 +464,7 @@ class FeathrClient(object):
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
                 _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
             else:
-                RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
+                raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
             # CLI will directly call this so the experiene won't be broken
             self._materialize_features_with_config(config_file_path)
