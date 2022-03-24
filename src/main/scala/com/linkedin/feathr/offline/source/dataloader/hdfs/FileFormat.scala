@@ -2,7 +2,6 @@ package com.linkedin.feathr.offline.source.dataloader.hdfs
 
 import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.source.dataloader._
-import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat.ss
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
 
@@ -73,7 +72,9 @@ object FileFormat {
       case PARQUET =>
         ss.read.parquet(existingHdfsPaths: _*)
       case _ =>
-        if (ss.conf.get("spark.feathr.inputFormat").nonEmpty) ss.read.format(ss.conf.get("spark.feathr.inputFormat")).load(existingHdfsPaths: _*)
+        // if we cannot detect the file type by extension, we will detect "spark.feathr.inputFormat" and use that as the option; this is a global config (i.e. affecting all the files) so customers should use it as the last resort.
+        // If this is not set, throw an exception
+        if (ss.conf.get("spark.feathr.inputFormat", "").nonEmpty) ss.read.format(ss.conf.get("spark.feathr.inputFormat")).load(existingHdfsPaths: _*)
         else throw new FeathrException(s"Unsupported data format $format. Only AVRO and ORC are supported.")
     }
     df
