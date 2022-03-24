@@ -350,7 +350,7 @@ class FeathrClient(object):
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
                              output_path: str,
-                             spark_conf_override: Dict[str:str] = None,
+                             spark_conf_override: Dict[str,str] = None,
                              ):
         """
         Get offline features for the observation dataset
@@ -384,9 +384,9 @@ class FeathrClient(object):
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_path)
+        return self._get_offline_features_with_config(config_file_path,spark_conf_override)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', spark_conf_override: Dict[str:str] = None):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', spark_conf_override: Dict[str,str] = None):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
@@ -446,7 +446,7 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def materialize_features(self, settings: MaterializationSettings, spark_conf_override: Dict[str:str] = None):
+    def materialize_features(self, settings: MaterializationSettings, spark_conf_override: Dict[str,str] = None):
         """Materialize feature data
 
         Args:
@@ -475,7 +475,7 @@ class FeathrClient(object):
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',spark_conf_override=None):
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',spark_conf_override: Dict[str,str] = None):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
@@ -508,7 +508,7 @@ class FeathrClient(object):
                 '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
-            configuration=spark_conf_override
+            configuration=spark_conf_override,
         )
 
 

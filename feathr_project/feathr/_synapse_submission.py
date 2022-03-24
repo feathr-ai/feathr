@@ -90,7 +90,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         for file_path in reference_files_path:
             reference_file_paths.append(
                 self._datalake.upload_file_to_workdir(file_path))
-
+        
         self.current_job_info = self._api.create_spark_batch_job(job_name=job_name,
                                                                  main_file=main_jar_cloud_path,
                                                                  class_name=main_class_name,

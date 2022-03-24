@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.source.dataloader.hdfs
 
 import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.source.dataloader._
+import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat.ss
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
 
@@ -71,7 +72,9 @@ object FileFormat {
         ss.read.format(ORC_DATASOURCE).load(existingHdfsPaths: _*)
       case PARQUET =>
         ss.read.parquet(existingHdfsPaths: _*)
-      case _ => throw new FeathrException(s"Unsupported data format $format. Only AVRO and ORC are supported.")
+      case _ =>
+        if (ss.conf.get("spark.feathr.inputFormat").nonEmpty) ss.read.format(ss.conf.get("spark.feathr.inputFormat")).load(existingHdfsPaths: _*)
+        else throw new FeathrException(s"Unsupported data format $format. Only AVRO and ORC are supported.")
     }
     df
   }
