@@ -160,7 +160,7 @@ object FeatureJoinJob {
     var parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
 
     if (ss.conf.get("spark.feathr.outputFormat", "").nonEmpty) {
-      parameters = parameters + (SparkIOUtils.OUTPUT_FORMAT, ss.conf.get("spark.feathr.outputFormat"))
+      parameters = parameters + (SparkIOUtils.OUTPUT_FORMAT -> ss.conf.get("spark.feathr.outputFormat"))
     }
 
     SparkIOUtils.writeDataFrame(joinedDF, jobContext.outputPath, parameters)
