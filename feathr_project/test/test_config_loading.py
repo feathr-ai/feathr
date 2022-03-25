@@ -6,7 +6,7 @@ from feathr.client import FeathrClient
 
 def test_configuration_loading():
     """
-    Test CLI init() is working properly.
+    Test the configuration can be overwritten by envs
     """
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -21,6 +21,9 @@ def test_configuration_loading():
         # test the loading is correct even if we are not in that folder
         assert client._FEATHR_JOB_JAR_PATH is not None
 
+        # save those values and restore them later; otherwise, other tests will be affected due to it's an env
+        synapse_runtime_location = os.environ['SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION']
+        databricks_runtime_location = os.environ['SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION']
         TEST_LOCATION = '/test_location'
 
         # since we test synapse and databricks runtime using the same set of configs, we need to make sure we set both variable so that pytest can pass for both runners
@@ -34,3 +37,7 @@ def test_configuration_loading():
         # this should not be error out as we will just give users prompt, though the config is not really here
         client = FeathrClient(config_path="./feathr_user_workspace/feathr_config.yaml")
         assert client._FEATHR_JOB_JAR_PATH == TEST_LOCATION
+
+        # restore values
+        os.environ['SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION'] = synapse_runtime_location
+        os.environ['SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION'] = databricks_runtime_location 

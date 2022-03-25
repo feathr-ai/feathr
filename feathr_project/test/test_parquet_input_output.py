@@ -18,9 +18,9 @@ import pytest
 from test_fixture import basic_test_setup
 
 # test parquet file read/write without an extension name
-def test_feathr_get_offline_features():
+def test_feathr_get_offline_features_with_parquet():
     """
-    Test get_offline_features() can get data correctly.
+    Test if the program can read and write parquet files
     """
     runner = CliRunner()
     with runner.isolated_filesystem():
