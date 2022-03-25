@@ -137,6 +137,15 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         tags = self._api.get_spark_batch_job(self.current_job_info.id).tags
         assert tags is not None
         return tags[OUTPUT_PATH_TAG]
+    
+    def get_job_tags(self) -> Dict[str, str]:
+        """Get job tags
+
+        Returns:
+            Dict[str, str]: a dict of job tags
+        """
+        return self._api.get_spark_batch_job(self.current_job_info.id).tags
+
 
 
 class _SynapseJobRunner(object):

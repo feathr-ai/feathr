@@ -401,12 +401,16 @@ class FeathrClient(object):
                                                        feature_config=os.path.join(self.local_workspace_dir, 'feature_conf/'),
                                                        job_output_path=feathr_feature['outputPath'],
                                                        )
+        job_tags = {OUTPUT_PATH_TAG:feature_join_job_params.job_output_path}
+        # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
+        if OUTPUT_FORMAT in spark_conf_override:
+            job_tags[OUTPUT_FORMAT]= spark_conf_override[spark_conf_override]
 
         # submit the jars
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
-            job_tags={OUTPUT_PATH_TAG:feature_join_job_params.job_output_path},
+            job_tags=job_tags,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
                 '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
@@ -426,7 +430,7 @@ class FeathrClient(object):
             configuration=spark_conf_override
         )
 
-    def get_job_result_uri(self, block=True, timeout_sec=300):
+    def get_job_result_uri(self, block=True, timeout_sec=300) -> str:
         """Gets the job output URI
         """
         if not block:
@@ -437,6 +441,12 @@ class FeathrClient(object):
         else:
             raise RuntimeError(
                 'Spark job failed so output cannot be retrieved.')
+
+    def get_job_tags(self) -> Dict[str, str]:
+        """Gets the job tags
+        """
+        return self.feathr_spark_laucher.get_job_tags()
+
 
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
