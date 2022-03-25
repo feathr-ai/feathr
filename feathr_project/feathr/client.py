@@ -404,7 +404,7 @@ class FeathrClient(object):
         job_tags = {OUTPUT_PATH_TAG:feature_join_job_params.job_output_path}
         # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
         if OUTPUT_FORMAT in spark_conf_override:
-            job_tags[OUTPUT_FORMAT]= spark_conf_override[spark_conf_override]
+            job_tags[OUTPUT_FORMAT]= spark_conf_override[OUTPUT_FORMAT]
 
         # submit the jars
         return self.feathr_spark_laucher.submit_feathr_job(
