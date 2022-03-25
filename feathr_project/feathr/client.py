@@ -23,7 +23,7 @@ from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
 from feathr.feature_derivations import DerivedFeature
-
+from feathr.feathr_configurations import SparkExecutionConfiguration
 
 class FeatureJoinJobParams:
     """Parameters related to feature join job.
@@ -350,7 +350,7 @@ class FeathrClient(object):
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
                              output_path: str,
-                             execution_configuratons: Dict[str,str] = None,
+                             execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None,
                              ):
         """
         Get offline features for the observation dataset
@@ -456,7 +456,7 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Dict[str,str] = None):
+    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None):
         """Materialize feature data
 
         Args:

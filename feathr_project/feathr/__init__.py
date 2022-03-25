@@ -13,3 +13,4 @@ from .sink import RedisSink
 from .query_feature_list import FeatureQuery
 from .lookup_feature import LookupFeature
 from .aggregation import  Aggregation
+from .feathr_configurations import SparkExecutionConfiguration

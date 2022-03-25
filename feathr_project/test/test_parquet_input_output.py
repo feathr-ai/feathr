@@ -1,19 +1,14 @@
 import os
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import datetime
 
 from click.testing import CliRunner
 from feathr import BOOLEAN, FLOAT, INT32, ValueType
-from feathr.client import FeathrClient
 from feathr import ValueType
 from feathr.job_utils import get_result_df
-from feathr import (BackfillTime, MaterializationSettings)
-from feathr import FeatureQuery
+from feathr import FeatureQuery,SparkExecutionConfiguration
 from feathr import ObservationSettings
-from feathr import RedisSink
 from feathr import TypedKey
 from feathrcli.cli import init
-import pytest
 
 from test_fixture import basic_test_setup
 
@@ -49,7 +44,7 @@ def test_feathr_get_offline_features_with_parquet():
         client.get_offline_features(observation_settings=settings,
                                     feature_query=feature_query,
                                     output_path=output_path,
-                                    execution_configuratons={"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}
+                                    execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"})
                                     )
 
         # assuming the job can successfully run; otherwise it will throw exception
