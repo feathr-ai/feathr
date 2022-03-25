@@ -49,7 +49,7 @@ def test_feathr_get_offline_features():
         client.get_offline_features(observation_settings=settings,
                                     feature_query=feature_query,
                                     output_path=output_path,
-                                    spark_conf_override={"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}
+                                    execution_configuratons={"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}
                                     )
 
         # assuming the job can successfully run; otherwise it will throw exception

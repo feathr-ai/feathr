@@ -350,7 +350,7 @@ class FeathrClient(object):
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
                              output_path: str,
-                             spark_conf_override: Dict[str,str] = None,
+                             execution_configuratons: Dict[str,str] = None,
                              ):
         """
         Get offline features for the observation dataset
@@ -358,7 +358,7 @@ class FeathrClient(object):
             observation_settings: settings of the observation data, e.g. timestamp columns, input path, etc.
             feature_query: features that are requested to add onto the observation data
             output_path: output path of job, i.e. the observation data with features attached.
-            spark_conf_override: a dict that will be passed to spark job when the job starts up. Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
         # produce join config
         tm = Template("""
@@ -384,9 +384,9 @@ class FeathrClient(object):
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_path,spark_conf_override)
+        return self._get_offline_features_with_config(config_file_path,execution_configuratons)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', spark_conf_override: Dict[str,str] = None):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configuratons: Dict[str,str] = None):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
@@ -403,8 +403,8 @@ class FeathrClient(object):
                                                        )
         job_tags = {OUTPUT_PATH_TAG:feature_join_job_params.job_output_path}
         # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
-        if OUTPUT_FORMAT in spark_conf_override:
-            job_tags[OUTPUT_FORMAT]= spark_conf_override[OUTPUT_FORMAT]
+        if OUTPUT_FORMAT in execution_configuratons:
+            job_tags[OUTPUT_FORMAT]= execution_configuratons[OUTPUT_FORMAT]
 
         # submit the jars
         return self.feathr_spark_laucher.submit_feathr_job(
@@ -427,7 +427,7 @@ class FeathrClient(object):
                 '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
-            configuration=spark_conf_override
+            configuration=execution_configuratons
         )
 
     def get_job_result_uri(self, block=True, timeout_sec=300) -> str:
@@ -456,12 +456,12 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def materialize_features(self, settings: MaterializationSettings, spark_conf_override: Dict[str,str] = None):
+    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Dict[str,str] = None):
         """Materialize feature data
 
         Args:
             settings: Feature materialization settings
-            spark_conf_override: a dict that will be passed to spark job when the job starts up. Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
         # produce materialization config
 
@@ -481,11 +481,11 @@ class FeathrClient(object):
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
             # CLI will directly call this so the experiene won't be broken
-            self._materialize_features_with_config(config_file_path,spark_conf_override)
+            self._materialize_features_with_config(config_file_path,execution_configuratons)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',spark_conf_override: Dict[str,str] = None):
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
@@ -518,7 +518,7 @@ class FeathrClient(object):
                 '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
-            configuration=spark_conf_override,
+            configuration=execution_configuratons,
         )
 
 
