@@ -38,7 +38,7 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 We've provided a self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
 
-# Step 4: Update Feathr config
+## Step 4: Update Feathr config
 
 In the sample notebook, you will see some settings like below. You should update those settings based on your environment, for exmaple the spark runtime, synapse/databricks endpoint, etc.
 
@@ -79,7 +79,7 @@ Or set this in python:
 os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 ```
 
-# Step 5: Setup environment variables.
+## Step 5: Setup environment variables.
 
 In the self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
 
@@ -107,7 +107,7 @@ client.register_features()
 client.list_registered_features(project_name="feathr_getting_started")
 ```
 
-## Step 9: Create training data using point-in-time correct feature join
+## Step 8: Create training data using point-in-time correct feature join
 
 A training dataset usually contains entity id columns, multiple feature columns, event timestamp
 column and label/target column. 
@@ -157,13 +157,13 @@ feature_query = [FeatureQuery(feature_list=["f_location_avg_fare"], key=["DOLoca
 client.get_offline_features(feature_query=feature_query, observation_settings=settings)
 ```
 
-## Step 10: Materialize feature value into offline/online storage
+## Step 9: Materialize feature value into offline/online storage
 
 While Feathr can compute the feature value from the feature definition on-the-fly at request time, it can also pre-compute
 and materialize the feature value to offline and/or online storage. 
 
 
-## Step 11: Fetching feature value for online inference
+## Step 10: Fetching feature value for online inference
 
 For features that are already materialized by the previous step, their latest value can be queried via the client's
 `get_online_features` or `multi_get_online_features` API.
