@@ -41,7 +41,9 @@ object FileFormat {
       case p if p.endsWith(".orc") => ORC
       case p if p.endsWith(".avro.json") => AVRO_JSON
       case p if p.startsWith("jdbc:") => JDBC
-      case _ => PATHLIST}
+      case _ =>
+        if (ss.conf.get("spark.feathr.inputFormat","").nonEmpty) ss.conf.get("spark.feathr.inputFormat") else PATHLIST
+    }
   }
 
   // TODO: Complete a general loadDataFrame and replace current adhoc load data frame code
@@ -58,7 +60,10 @@ object FileFormat {
   // existingHdfsPaths may be folder or file with suffix
   // Currently only support parquet file but not folder with parquet files
   def getTypeForUnionDF(existingHdfsPaths: Seq[String], dataIOParameters: Map[String, String] = Map()): String = {
-    if (existingHdfsPaths.head.endsWith(".parquet")) PARQUET else dataIOParameters.getOrElse(DATA_FORMAT, AVRO).toUpperCase
+    // if we cannot detect the file type by extension, we will detect "spark.feathr.inputFormat" and use that as the option; this is a global config (i.e. affecting all the files) so customers should use it as the last resort.
+    // If this is not set, throw an exception
+    if (existingHdfsPaths.head.endsWith(".parquet")) PARQUET else dataIOParameters.getOrElse(DATA_FORMAT, ss.conf.get("spark.feathr.inputFormat", "")).toUpperCase
+//    if (existingHdfsPaths.head.endsWith(".parquet")) PARQUET else dataIOParameters.getOrElse(DATA_FORMAT, AVRO).toUpperCase
   }
 
   def loadHdfsDataFrame(format: String, existingHdfsPaths: Seq[String]): DataFrame = {
@@ -70,11 +75,10 @@ object FileFormat {
       case ORC =>
         ss.read.format(ORC_DATASOURCE).load(existingHdfsPaths: _*)
       case PARQUET =>
-        ss.read.parquet(existingHdfsPaths: _*)
+        ss.read.format(PARQUET).load(existingHdfsPaths: _*)
       case _ =>
-        // if we cannot detect the file type by extension, we will detect "spark.feathr.inputFormat" and use that as the option; this is a global config (i.e. affecting all the files) so customers should use it as the last resort.
-        // If this is not set, throw an exception
-        if (ss.conf.get("spark.feathr.inputFormat", "").nonEmpty) ss.read.format(ss.conf.get("spark.feathr.inputFormat")).load(existingHdfsPaths: _*)
+        // Allow dynamic config of the file format if users want to use one
+        if (ss.conf.get("spark.feathr.inputFormat").nonEmpty) ss.read.format(ss.conf.get("spark.feathr.inputFormat")).load(existingHdfsPaths: _*)
         else throw new FeathrException(s"Unsupported data format $format and 'spark.feathr.inputFormat' not set.")
     }
     df
