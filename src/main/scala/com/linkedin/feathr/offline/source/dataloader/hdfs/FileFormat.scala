@@ -60,10 +60,10 @@ object FileFormat {
   // existingHdfsPaths may be folder or file with suffix
   // Currently only support parquet file but not folder with parquet files
   def getTypeForUnionDF(existingHdfsPaths: Seq[String], dataIOParameters: Map[String, String] = Map()): String = {
-    // if we cannot detect the file type by extension, we will detect "spark.feathr.inputFormat" and use that as the option; this is a global config (i.e. affecting all the files) so customers should use it as the last resort.
-    // If this is not set, throw an exception
+    // if we cannot detect the file type by extension, we will detect "spark.feathr.inputFormat" and use that as the option;
+    // this is a global config (i.e. affecting all the inputs) so customers should use it as the last resort.
+    // If this is not set, throw an exception (in `loadHdfsDataFrame()`)
     if (existingHdfsPaths.head.endsWith(".parquet")) PARQUET else dataIOParameters.getOrElse(DATA_FORMAT, ss.conf.get("spark.feathr.inputFormat", AVRO)).toUpperCase
-//    if (existingHdfsPaths.head.endsWith(".parquet")) PARQUET else dataIOParameters.getOrElse(DATA_FORMAT, AVRO).toUpperCase
   }
 
   def loadHdfsDataFrame(format: String, existingHdfsPaths: Seq[String]): DataFrame = {
