@@ -21,23 +21,11 @@ def test_configuration_loading():
         # test the loading is correct even if we are not in that folder
         assert client._FEATHR_JOB_JAR_PATH is not None
 
-        # save those values and restore them later; otherwise, other tests will be affected due to it's an env
-        synapse_runtime_location = os.environ['SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION']
-        databricks_runtime_location = os.environ['SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION']
-        TEST_LOCATION = '/test_location'
+        SPARK_RESULT_OUTPUT_PARTS = 4
 
-        # since we test synapse and databricks runtime using the same set of configs, we need to make sure we set both variable so that pytest can pass for both runners
-        # Currently we use same runners for both the synapse and databricks runtime (so we don’t have to maintain two set of spark tests).
-        # And the goal of this test is to make sure that the envs can override the yaml configs
-        # In that case, we need to set both SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION and SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION, and read the client._FEATHR_JOB_JAR_PATH variable in the code
-        # client._FEATHR_JOB_JAR_PATH will read either SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION or SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION depending on the corresponding config
-        os.environ['SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION'] = TEST_LOCATION
-        os.environ['SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION'] = TEST_LOCATION
+        # Use a less impactful config to test, as this config might be impactful for all the tests (since it's setting the envs)
+        os.environ['SPARK_CONFIG__SPARK_RESULT_OUTPUT_PARTS'] = SPARK_RESULT_OUTPUT_PARTS
 
         # this should not be error out as we will just give users prompt, though the config is not really here
         client = FeathrClient(config_path="./feathr_user_workspace/feathr_config.yaml")
-        assert client._FEATHR_JOB_JAR_PATH == TEST_LOCATION
-
-        # restore values
-        os.environ['SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION'] = synapse_runtime_location
-        os.environ['SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION'] = databricks_runtime_location 
+        assert client._FEATHR_JOB_JAR_PATH == SPARK_RESULT_OUTPUT_PARTS
