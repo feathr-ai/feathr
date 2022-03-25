@@ -14,18 +14,18 @@ def test_configuration_loading():
         result = runner.invoke(init, [])
 
         assert result.exit_code == 0
-        assert os.path.isdir("./feathr_user_workspace")
+        assert os.path.isdir('./feathr_user_workspace')
 
-        client = FeathrClient(config_path="./feathr_user_workspace/feathr_config.yaml")
+        client = FeathrClient(config_path='./feathr_user_workspace/feathr_config.yaml')
 
         # test the loading is correct even if we are not in that folder
         assert client._FEATHR_JOB_JAR_PATH is not None
 
-        SPARK_RESULT_OUTPUT_PARTS = 4
+        SPARK_RESULT_OUTPUT_PARTS = '4'
 
         # Use a less impactful config to test, as this config might be impactful for all the tests (since it's setting the envs)
         os.environ['SPARK_CONFIG__SPARK_RESULT_OUTPUT_PARTS'] = SPARK_RESULT_OUTPUT_PARTS
 
         # this should not be error out as we will just give users prompt, though the config is not really here
-        client = FeathrClient(config_path="./feathr_user_workspace/feathr_config.yaml")
+        client = FeathrClient(config_path='./feathr_user_workspace/feathr_config.yaml')
         assert client._FEATHR_JOB_JAR_PATH == SPARK_RESULT_OUTPUT_PARTS
