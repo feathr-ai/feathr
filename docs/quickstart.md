@@ -30,6 +30,7 @@ pip install -U feathr
 ```
 
 Or if you want to use the latest Feathr code from GitHub:
+
 ```bash
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
@@ -67,14 +68,17 @@ online_store:
 feature_registry:
 ```
 
-All the configurations can be overwritten by environment variables with concatenation of `__` for different layers of this config file. For example, `feathr_runtime_location` for databricks config can be overwritten by setting `SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION` environment variable. 
+All the configurations can be overwritten by environment variables with concatenation of `__` for different layers of this config file. For example, `feathr_runtime_location` for databricks config can be overwritten by setting `SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION` environment variable.
 
 Another example would be overwriting Redis host with this config: `ONLINE_STORE__REDIS__HOST`.
 if you want to override this setting in a shell environment:
+
 ```bash
 export ONLINE_STORE__REDIS__HOST=feathrazure.redis.cache.windows.net
 ```
+
 Or set this in python:
+
 ```python
 os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 ```
@@ -83,7 +87,7 @@ os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 
 In the self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
 
-These values can also be reterived by using cloud key value store, such as [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/): 
+These values can also be reterived by using cloud key value store, such as [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/):
 
 ```python
 import os
@@ -110,16 +114,16 @@ client.list_registered_features(project_name="feathr_getting_started")
 ## Step 8: Create training data using point-in-time correct feature join
 
 A training dataset usually contains entity id columns, multiple feature columns, event timestamp
-column and label/target column. 
+column and label/target column.
 
 To create a training dataset using Feathr, one needs to provide a feature join configuration file to specify
-what features and how these features should be joined to the observation data. The feature join config file mainly contains: 
+what features and how these features should be joined to the observation data. The feature join config file mainly contains:
 
 1. The path of a dataset as the 'spine' for the to-be-created training dataset. We call this input 'spine' dataset the 'observation'
-   dataset. Typically, each row of the observation data contains: 
-   a) Column(s) representing entity id(s), which will be used as the join key to look up(join) feature value. 
+   dataset. Typically, each row of the observation data contains:
+   a) Column(s) representing entity id(s), which will be used as the join key to look up(join) feature value.
    b) A column representing the event time of the row. By default, Feathr will make sure the feature values joined have
-   a timestamp earlier than it, ensuring no data leakage in the resulting training dataset. 
+   a timestamp earlier than it, ensuring no data leakage in the resulting training dataset.
    c) Other columns will be simply pass through onto the output training dataset.
 2. The key fields from the observation data, which are used to joined with the feature data.
 3. List of feature names to be joined with the observation data. The features must be defined in the feature
@@ -127,10 +131,11 @@ what features and how these features should be joined to the observation data. T
 4. The time information of the observation data used to compare with the feature's timestamp during the join.
 
 Create training dataset via feature join:
+
 ```python
 from feathr import FeathrClient
 
-# Requested features to be joined 
+# Requested features to be joined
 feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location_id])
 
 # Observation dataset settings
@@ -160,8 +165,7 @@ client.get_offline_features(feature_query=feature_query, observation_settings=se
 ## Step 9: Materialize feature value into offline/online storage
 
 While Feathr can compute the feature value from the feature definition on-the-fly at request time, it can also pre-compute
-and materialize the feature value to offline and/or online storage. 
-
+and materialize the feature value to offline and/or online storage.
 
 ## Step 10: Fetching feature value for online inference
 
