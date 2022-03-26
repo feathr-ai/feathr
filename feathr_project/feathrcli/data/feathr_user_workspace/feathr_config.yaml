@@ -75,9 +75,11 @@ spark_config:
   spark_result_output_parts: "1"
 
   azure_synapse:
+    # dev URL to the synapse cluster. Usually it's `https://yourclustername.dev.azuresynapse.net`
     dev_url: "https://feathrazuretest3synapse.dev.azuresynapse.net"
+    # name of the sparkpool that you are going to use
     pool_name: "spark3"
-    # workspace dir for storing all the required configuration files and the jar resources
+    # workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here
     workspace_dir: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started"
     executor_size: "Small"
     executor_num: 4
@@ -91,8 +93,9 @@ spark_config:
     # config string including run time information, spark version, machine size, etc.
     # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
     config_template: '{"run_name":"","new_cluster":{"spark_version":"9.1.x-scala2.12","node_type_id":"Standard_D3_v2","num_workers":2,"spark_conf":{}},"libraries":[{"jar":""}],"spark_jar_task":{"main_class_name":"","parameters":[""]}}'
-    # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
+    # workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here
     work_dir: "dbfs:/feathr_getting_started"
+    # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with dbfs:/
     # this is the default location so end users don't have to compile the runtime again.
     feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-LATEST.jar"
 
@@ -104,13 +107,15 @@ online_store:
     ssl_enabled: True
 
 feature_registry:
+  # Registry configs if use purview
   purview:
-    # Registry configs
-    # register type system in purview during feathr client initialization. This is only required to be executed once.
-    type_system_initialization: false
     # configure the name of the purview endpoint
     purview_name: "feathrazuretest3-purview1"
     # delimiter indicates that how the project/workspace name, feature names etc. are delimited. By default it will be '__'
     # this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'
     # the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips'
     delimiter: "__"
+    # controls whether the type system will be initialized or not. Usually this is only required to be executed once.
+    type_system_initialization: false
+    
+    

@@ -1,5 +1,4 @@
-Feathr – An Enterprise-Grade, High Performance Feature Store
-===========================================
+# Feathr – An Enterprise-Grade, High Performance Feature Store
 
 ## What is Feathr?
 
@@ -8,15 +7,13 @@ Feathr lets you:
 * **get those features by their names** during model training and model inferencing.
 * **share features** across your team and company.
 
-Feathr automatically computes your feature values and joins them to your training
-data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying
-your features for use online in production.
+Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-Follow the [quick-start-guide](docs/quickstart.md) to try it out.
-For more details, read our [documentation](https://linkedin.github.io/feathr/).
+- Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
+- For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Defining Features with Transformation
-In **feathr_worksapce** folder:
+
 ```python
 features = [
     Feature(name="f_trip_distance",                         # Ingest feature data as-is
@@ -35,7 +32,6 @@ anchor = FeatureAnchor(name="request_features",             # Features anchored 
 ```
 
 ## Accessing Features
-In **my_offline_training.py**:
 ```python
 from feathr import FeathrClient
 
@@ -60,22 +56,6 @@ feathr_client.get_offline_features(observation_settings=settings,
                                    feature_query=feature_query)
 ```
 
-In **my_online_model.py**:
-```python
-from feathr import FeathrClient
-client = FeathrClient()
-# Get features for a locationId (key)
-client.get_online_features(feature_table = "agg_features",
-                           key = "265",
-                           feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
-# Batch get for multiple locationIds (keys)
-client.multi_get_online_features(feature_table = "agg_features",
-                                 key = ["239", "265"],
-                                 feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
-
-```
-
-
 ## Deploy Features to Online (Redis) Store
 
 ```python
@@ -93,6 +73,22 @@ feature_names=["f_location_avg_fare", "f_location_max_fare"])
 client.materialize_features(settings)
 
 ```
+Get features from online store:
+
+```python
+from feathr import FeathrClient
+client = FeathrClient()
+# Get features for a locationId (key)
+client.get_online_features(feature_table = "agg_features",
+                           key = "265",
+                           feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
+# Batch get for multiple locationIds (keys)
+client.multi_get_online_features(feature_table = "agg_features",
+                                 key = ["239", "265"],
+                                 feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
+```
+
+
 
 # More on Defining Features
 
@@ -147,7 +143,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 - [x] Private Preview release
 - [x] Public Preview release
-- [ ] Alpha version release
+- [ ] Future release
   - [ ] Support streaming and online transformation
   - [ ] Support feature versioning
   - [ ] Support more data sources
@@ -159,4 +155,4 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 Build for the community and build by the community. Check out [community guidelines](CONTRIBUTING.md).
 
 ## Slack Channel
-Join our [slack channel](https://feathrai.slack.com) for questions and discussions.
+Join our [slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ)).
