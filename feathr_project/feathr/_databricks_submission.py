@@ -199,8 +199,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                                headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
         custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
-        assert custom_tags is not None
-        return custom_tags[OUTPUT_PATH_TAG]
+        # in case users call this API even when there's no tags available 
+        return None if custom_tags is None else custom_tags[OUTPUT_PATH_TAG]
 
 
     def get_job_tags(self) -> Dict[str, str]:

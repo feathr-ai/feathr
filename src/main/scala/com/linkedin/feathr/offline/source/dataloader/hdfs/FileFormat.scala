@@ -42,6 +42,7 @@ object FileFormat {
       case p if p.endsWith(".avro.json") => AVRO_JSON
       case p if p.startsWith("jdbc:") => JDBC
       case _ =>
+        // if we cannot tell the file format from the file extensions, we should read from `spark.feathr.inputFormat` to get the format that's sepcified by user.
         if (ss.conf.get("spark.feathr.inputFormat","").nonEmpty) ss.conf.get("spark.feathr.inputFormat") else PATHLIST
     }
   }

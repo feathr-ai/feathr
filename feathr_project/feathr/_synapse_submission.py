@@ -135,8 +135,8 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             str: `output_path` field in the job tags
         """
         tags = self._api.get_spark_batch_job(self.current_job_info.id).tags
-        assert tags is not None
-        return tags[OUTPUT_PATH_TAG]
+        # in case users call this API even when there's no tags available 
+        return None if tags is None else tags[OUTPUT_PATH_TAG]
     
     def get_job_tags(self) -> Dict[str, str]:
         """Get job tags

@@ -18,6 +18,7 @@ setup(
     },
     packages=find_packages(),
     include_package_data=True,
+    # consider 
     install_requires=[
         'Click',
         "azure-storage-file-datalake>=12.5.0",
@@ -31,14 +32,16 @@ setup(
         "pyapacheatlas",
         "pyhocon",
         "pandavro",
-        "python-snappy",
         "pyyaml",
         "Jinja2",
         "tqdm",
         "pyarrow",
         "google>=3.0.0",
         "google-api-python-client>=2.41.0",
-        "pytest"
+    ],
+
+    tests_require = [
+        'pytest',
     ],
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
