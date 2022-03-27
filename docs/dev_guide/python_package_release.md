@@ -1,7 +1,5 @@
 # Python Project Build and Release Guide
 
-# Python Project Build Guide
-
 ## Include non-code data files
 
 - Set `include_package_data=True` in `setup.py` file
