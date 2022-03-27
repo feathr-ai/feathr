@@ -157,11 +157,8 @@ object FeatureJoinJob {
     val (joinedDF, _) = getFeathrClientAndJoinFeatures(ss, observationsDF, featureGroupings, joinConfig, jobContext, localTestConfig)
 
 
-    var parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
-    val output_format = ss.conf.get("spark.feathr.outputFormat", "")
-    if (output_format.nonEmpty) {
-      parameters = parameters + (SparkIOUtils.OUTPUT_FORMAT -> output_format)
-    }
+    val parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
+
 
     SparkIOUtils.writeDataFrame(joinedDF, jobContext.outputPath, parameters)
     (None, Some(joinedDF))
