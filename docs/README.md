@@ -164,3 +164,4 @@ Feathr has native integration with Azure and other cloud services, and here's th
 - [Local Feature Testing](how-to-guides/local-feature-testing.md)
 - [Feature Definition Troubleshooting Guide](how-to-guides/troubleshoot-feature-definition.md)
 - [Feathr Expression Language](how-to-guides/expression-language.md)
+- [Feathr Job Configuration](how-to-guides/feathr_job_configuration.md)
