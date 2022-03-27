@@ -10,6 +10,22 @@ Feathr lets you:
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
+## Installation
+
+Install Feathr using pip:
+
+```bash
+pip install -U feathr
+```
+
+Or if you want to use the latest Feathr code from GitHub:
+
+```bash
+pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
+```
+
+## Quick Start
+
 - Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
 - For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
@@ -61,10 +77,7 @@ feathr_client.get_offline_features(observation_settings=settings,
 ## Deploy Features to Online (Redis) Store
 
 ```python
-from feathr.client import FeathrClient
-from feathr.materialization_settings import (BackfillTime,
-MaterializationSettings)
-from feathr.sink import RedisSink
+from feathr import FeathrClient, BackfillTime, MaterializationSettings, RedisSink
 
 client = FeathrClient()
 redisSink = RedisSink(table_name="nycTaxiDemoFeature")
@@ -110,7 +123,7 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            features=agg_features)
 ```
 
-## Defining Named Raw Data Sources
+## Defining Named Data Sources
 
 ```python
 batch_source = HdfsSource(
@@ -143,7 +156,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ## Roadmap
 
-> `Public Preview` release doesn't guarantee API stability and may introduce API changes.
+> `Public Preview` release may introduce API changes.
 
 - [x] Private Preview release
 - [x] Public Preview release
@@ -154,8 +167,8 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ## Community Guidelines
 
-Build for the community and build by the community. Check out [community guidelines](CONTRIBUTING.md).
+Build for the community and build by the community. Check out [Community Guidelines](CONTRIBUTING.md).
 
 ## Slack Channel
 
-Join our [slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ)).
+Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ)).
