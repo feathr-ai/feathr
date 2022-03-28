@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
+from unittest import result
 
 from click.testing import CliRunner
 from feathr import (BOOLEAN, FLOAT, INT32, FeatureQuery, ObservationSettings,
@@ -8,6 +9,7 @@ from feathr import (BOOLEAN, FLOAT, INT32, FeatureQuery, ObservationSettings,
 from feathr.job_utils import get_result_df
 
 from test_fixture import basic_test_setup
+from feathr.constants import OUTPUT_FORMAT
 
 
 # test parquet file read/write without an extension name
@@ -95,5 +97,10 @@ def test_feathr_get_offline_features_with_delta_lake():
     
     # download result and just assert the returned result is not empty
     res_df = get_result_df(client)
-    assert res_df.shape[0] > 0
+    
+
+    result_format: str = client.get_job_tags().get(OUTPUT_FORMAT, "")
+    if not (client.feathr_spark_laucher == 'azure_synapse' and result_format == 'delta'):
+        # if users are using delta format in synapse, skip this check, due to issue https://github.com/delta-io/delta-rs/issues/582
+        assert res_df.shape[0] > 0
 

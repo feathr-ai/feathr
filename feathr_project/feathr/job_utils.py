@@ -25,7 +25,13 @@ def get_result_df(client: FeathrClient) -> pd.DataFrame:
         if format.lower()=="delta":
             from deltalake import DeltaTable
             delta = DeltaTable(tmp_dir.name)
-            result_df = delta.to_pyarrow_table().to_pandas()
+            if not client.feathr_spark_laucher == 'azure_synapse':
+                # don't detect for synapse result with Delta as there's a problem with underlying system
+                # Issues are trached here: https://github.com/delta-io/delta-rs/issues/582
+                result_df = delta.to_pyarrow_table().to_pandas()
+            else:
+                print("Please use Spark to read the result in the Spark cluster. Reading local results is not supported for now. Emtpy DataFrame is returned.")
+                result_df = pd.DataFrame()
     else:
         import pandavro as pdx
         for file in glob.glob(os.path.join(tmp_dir.name, '*.avro')):
