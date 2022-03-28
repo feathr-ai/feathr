@@ -151,7 +151,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 | Feature Registry             | Azure Purview                                                                                 |
 | Compute Engine               | Azure Synapse Spark Pools, Databricks                                                         |
 | Machine Learning Platform    | Azure Machine Learning, Jupyter Notebook                                                      |
-| File Format                  | Parquet, ORC, Avro, Delta, Lake                                                               |
+| File Format                  | Parquet, ORC, Avro, Delta Lake                                                                |
 
 ## Roadmap
 
