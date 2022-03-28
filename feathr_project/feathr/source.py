@@ -42,8 +42,19 @@ class InputContext(Source):
 
 
 class HdfsSource(Source):
-    """A data source(table) stored on HDFS-like file system. Data can be fetch through a POSIX style path."""
-    def __init__(self, name: str, path: str, event_timestamp_column: Optional[str], timestamp_format: Optional[str] = "epoch") -> None:
+    """A data source(table) stored on HDFS-like file system. Data can be fetch through a POSIX style path.
+
+        Args:
+            name (str): name of the source
+            path (str): The location of the source data. 
+            event_timestamp_column (Optional[str]): The timestamp field of your record. As sliding window aggregation feature assume each record in the source data should have a timestamp column. 
+            timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are: 
+            - `epoch` (seconds since epoch), for example `1647737463`
+            - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
+            - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html). 
+                
+        """
+    def __init__(self, name: str, path: str, event_timestamp_column: Optional[str]= None, timestamp_format: Optional[str] = "epoch") -> None:
         super().__init__(name, event_timestamp_column, timestamp_format)
         self.path = path
 

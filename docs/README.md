@@ -1,5 +1,4 @@
-Feathr – An Enterprise-Grade, High Performance Feature Store
-====================
+# Feathr – An Enterprise-Grade, High Performance Feature Store
 
 **What is a Feature Store?** A Feature Store is a system that lets you
 **define** and **deploy** ML features and then **access** them during model training and model inferencing.
@@ -25,12 +24,14 @@ features at specific points in time, enabling point-in-time-correct feature comp
 training data generation.
 
 ### Simple Features
+
 In **feathr_worksapce** folder:
+
 ```python
 # Define the key for your feature
 features = [
     Feature(name="f_trip_distance",                         # Ingest feature data as-is
-            feature_type=FLOAT),      
+            feature_type=FLOAT),
     Feature(name="f_is_long_trip_distance",
             feature_type=BOOLEAN,
             transform="cast_float(trip_distance)>30"),      # SQL-like syntax to transform raw data into feature
@@ -45,6 +46,7 @@ anchor = FeatureAnchor(name="request_features",             # Features anchored 
 ```
 
 ### Window Aggregation Features
+
 ```python
 # Define the key for your feature
 location_id = TypedKey(key_column="DOLocationID",
@@ -67,6 +69,7 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
 ```
 
 ### Derived Features: Beyond Features on Raw Data Sources
+
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
 derived_feature = DerivedFeature(name="f_trip_time_distance",
@@ -97,10 +100,11 @@ For such cases, Feathr seamlessly merges the multiple definitions into a combine
 providing the consumer (the ML model) with the convenient appearance that the features are coming from a single table.
 
 In **my_offline_training.py**:
+
 ```python
 from feathr import FeathrClient
 
-# Requested features to be joined 
+# Requested features to be joined
 feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location_id])
 
 # Observation dataset settings
@@ -117,11 +121,12 @@ feathr_client.get_offline_features(observation_settings=settings,
 ```
 
 In **my_online_model.py**:
+
 ```python
 from  feathr import FeathrClient
 client = FeathrClient()
 # Get features for a locationId (key)
-client.get_online_features(feature_table = "agg_features", 
+client.get_online_features(feature_table = "agg_features",
                            key = "265",
                            feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 # Batch get for multiple locationIds (keys)
@@ -130,25 +135,28 @@ client.multi_get_online_features(feature_table = "nycTaxiDemoFeature",
                                  feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 
 ```
+
 # Next Steps
+
 ## Quickstart
-* [Quickstart](quickstart.md)
+
+- [Quickstart](quickstart.md)
 
 ## Concepts
 
-* [Feature Definition](concepts/feature-definition.md)
-* [Feature Generation](concepts/feature-generation.md)
-* [Feature Join](concepts/feature-join.md)
-* [Point-in-time Correctness](concepts/point-in-time-join.md)
+- [Feature Definition](concepts/feature-definition.md)
+- [Feature Generation](concepts/feature-generation.md)
+- [Feature Join](concepts/feature-join.md)
+- [Point-in-time Correctness](concepts/point-in-time-join.md)
 
 ## How-to-guides
-* [Azure Deployment](how-to-guides/azure-deployment.md)
-* [Local Feature Testing](how-to-guides/local-feature-testing.md)
-* [Feature Definition Troubleshooting Guide](how-to-guides/troubleshoot-feature-definition.md)
-* [Feathr Expression Language](how-to-guides/expression-language.md)
 
-
+- [Azure Deployment](how-to-guides/azure-deployment.md)
+- [Local Feature Testing](how-to-guides/local-feature-testing.md)
+- [Feature Definition Troubleshooting Guide](how-to-guides/troubleshoot-feature-definition.md)
+- [Feathr Expression Language](how-to-guides/expression-language.md)
 
 ## Cloud Architecture
+
 Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
 ![Architecture](images/architecture.png)

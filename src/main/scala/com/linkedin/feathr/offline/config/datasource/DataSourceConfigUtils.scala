@@ -33,7 +33,8 @@ object DataSourceConfigUtils {
       s3ConfigStr = cmdParser.extractOptionalValue("s3-config"),
       adlsConfigStr = cmdParser.extractOptionalValue("adls-config"),
       blobConfigStr = cmdParser.extractOptionalValue("blob-config"),
-      sqlConfigStr = cmdParser.extractOptionalValue("sql-config")
+      sqlConfigStr = cmdParser.extractOptionalValue("sql-config"),
+      snowflakeConfigStr = cmdParser.extractOptionalValue("snowflake-config")
     )
   }
 
@@ -42,11 +43,13 @@ object DataSourceConfigUtils {
     ADLSResourceInfoSetter.setup(ss, configs.adlsConfig, resource)
     BlobResourceInfoSetter.setup(ss, configs.blobConfig, resource)
     S3ResourceInfoSetter.setup(ss, configs.s3Config, resource)
+    SnowflakeResourceInfoSetter.setup(ss, configs.snowflakeConfig, resource)
   }
 
   private[feathr] def setupSparkConf(sparkConf: SparkConf, configs: DataSourceConfigs): Unit ={
     val resource = featureStoreConfig.resource
     RedisResourceInfoSetter.setup(sparkConf, configs.redisConfig, resource)
-    SQLResourceInfoSetter.setup(sparkConf, configs.sqlConfig, resource)
+    // TODO Re-enable this after JDBC is supported.
+    // SQLResourceInfoSetter.setup(sparkConf, configs.sqlConfig, resource)
   }
 }

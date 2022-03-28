@@ -1,20 +1,22 @@
 import os
 import re
+import time
 import urllib.request
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
-from loguru import logger
-from pathlib import Path
-import time
-from feathr._abc import SparkJobLauncher
-
 
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
                             DeviceCodeCredential, EnvironmentCredential,
                             ManagedIdentityCredential)
 from azure.storage.filedatalake import DataLakeServiceClient
 from azure.synapse.spark import SparkClient
-from azure.synapse.spark.models import SparkBatchJob, SparkBatchJobOptions, LivyStates
+from azure.synapse.spark.models import (LivyStates, SparkBatchJob,
+                                        SparkBatchJobOptions)
+from loguru import logger
+from tqdm import tqdm
+
+from feathr._abc import SparkJobLauncher
 from feathr.constants import *
 
 
@@ -88,7 +90,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         for file_path in reference_files_path:
             reference_file_paths.append(
                 self._datalake.upload_file_to_workdir(file_path))
-
+        
         self.current_job_info = self._api.create_spark_batch_job(job_name=job_name,
                                                                  main_file=main_jar_cloud_path,
                                                                  class_name=main_class_name,
@@ -132,9 +134,18 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         Returns:
             str: `output_path` field in the job tags
         """
-        tags = self._api.get_spark_batch_job(self.current_job_info.tags)
-        assert tags is not None
-        return tags[OUTPUT_PATH_TAG]
+        tags = self._api.get_spark_batch_job(self.current_job_info.id).tags
+        # in case users call this API even when there's no tags available 
+        return None if tags is None else tags[OUTPUT_PATH_TAG]
+    
+    def get_job_tags(self) -> Dict[str, str]:
+        """Get job tags
+
+        Returns:
+            Dict[str, str]: a dict of job tags
+        """
+        return self._api.get_spark_batch_job(self.current_job_info.id).tags
+
 
 
 class _SynapseJobRunner(object):
@@ -342,7 +353,7 @@ class _DataLakeFiler(object):
         # need to generate list of local paths to write the files to
         local_paths = [os.path.join(local_dir_cache, file_name)
                        for file_name in adls_paths]
-        for idx, file_to_write in enumerate(adls_paths):
+        for idx, file_to_write in enumerate(tqdm(adls_paths,desc="Downloading result files: ")):
             try:
                 local_file = open(local_paths[idx], 'wb')
                 file_client = directory_client.get_file_client(file_to_write)

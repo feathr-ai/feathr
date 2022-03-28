@@ -1,26 +1,24 @@
-Feathr – An Enterprise-Grade, High Performance Feature Store
-===========================================
+# Feathr – An Enterprise-Grade, High Performance Feature Store
 
 ## What is Feathr?
 
 Feathr lets you:
-* **define features** based on raw data sources, including time-series data, using simple APIs.
-* **get those features by their names** during model training and model inferencing.
-* **share features** across your team and company.
 
-Feathr automatically computes your feature values and joins them to your training
-data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying
-your features for use online in production.
+- **define features** based on raw data sources, including time-series data, using simple APIs.
+- **get those features by their names** during model training and model inferencing.
+- **share features** across your team and company.
 
-Follow the [quick-start-guide](docs/quickstart.md) to try it out.
-For more details, read our [documentation](https://linkedin.github.io/feathr/).
+Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
+
+- Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
+- For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Defining Features with Transformation
-In **feathr_worksapce** folder:
+
 ```python
 features = [
     Feature(name="f_trip_distance",                         # Ingest feature data as-is
-            feature_type=FLOAT),      
+            feature_type=FLOAT),
     Feature(name="f_is_long_trip_distance",
             feature_type=BOOLEAN,
             transform="cast_float(trip_distance)>30"),      # SQL-like syntax to transform raw data into feature
@@ -35,11 +33,11 @@ anchor = FeatureAnchor(name="request_features",             # Features anchored 
 ```
 
 ## Accessing Features
-In **my_offline_training.py**:
+
 ```python
 from feathr import FeathrClient
 
-# Requested features to be joined 
+# Requested features to be joined
 # Define the key for your feature
 location_id = TypedKey(key_column="DOLocationID",
                        key_column_type=ValueType.INT32,
@@ -60,22 +58,6 @@ feathr_client.get_offline_features(observation_settings=settings,
                                    feature_query=feature_query)
 ```
 
-In **my_online_model.py**:
-```python
-from feathr import FeathrClient
-client = FeathrClient()
-# Get features for a locationId (key)
-client.get_online_features(feature_table = "agg_features",
-                           key = "265",
-                           feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
-# Batch get for multiple locationIds (keys)
-client.multi_get_online_features(feature_table = "agg_features",
-                                 key = ["239", "265"],
-                                 feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
-
-```
-
-
 ## Deploy Features to Online (Redis) Store
 
 ```python
@@ -94,9 +76,25 @@ client.materialize_features(settings)
 
 ```
 
+Get features from online store:
+
+```python
+from feathr import FeathrClient
+client = FeathrClient()
+# Get features for a locationId (key)
+client.get_online_features(feature_table = "agg_features",
+                           key = "265",
+                           feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
+# Batch get for multiple locationIds (keys)
+client.multi_get_online_features(feature_table = "agg_features",
+                                 key = ["239", "265"],
+                                 feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
+```
+
 # More on Defining Features
 
 ## Defining Window Aggregation Features
+
 ```python
 agg_features = [Feature(name="f_location_avg_fare",
                         key=location_id,                          # Query/join key of the feature(group)
@@ -113,6 +111,7 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
 ```
 
 ## Defining Named Raw Data Sources
+
 ```python
 batch_source = HdfsSource(
     name="nycTaxiBatchSource",                              # Source name to enrich your metadata
@@ -122,6 +121,7 @@ batch_source = HdfsSource(
 ```
 
 ## Beyond Features on Raw Data Sources - Derived Features
+
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
 derived_feature = DerivedFeature(name="f_trip_time_distance",
@@ -141,21 +141,21 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
 
-
 ## Roadmap
->`Public Preview` release doesn't guarantee API stability and may introduce API changes.
+
+> `Public Preview` release doesn't guarantee API stability and may introduce API changes.
 
 - [x] Private Preview release
 - [x] Public Preview release
-- [ ] Alpha version release
+- [ ] Future release
   - [ ] Support streaming and online transformation
   - [ ] Support feature versioning
   - [ ] Support more data sources
 
-
-
-
 ## Community Guidelines
+
 Build for the community and build by the community. Check out [community guidelines](CONTRIBUTING.md).
 
-Join our [slack](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ) for questions and discussions.
+## Slack Channel
+
+Join our [slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ)).

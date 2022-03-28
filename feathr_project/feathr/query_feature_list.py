@@ -9,7 +9,7 @@ class FeatureQuery:
     """A FeatureQuery contains a list of features
     Attributes:
         feature_list: a list of feature names
-        key: key of the feature_list, all features must share the same key
+        key: key of `feature_list`, all features must share the same key
         """
     def __init__(self, feature_list: List[str], key: Optional[Union[TypedKey, List[TypedKey]]] = None) -> None:
         self.key = key

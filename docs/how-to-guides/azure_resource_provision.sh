@@ -17,6 +17,7 @@ synapse_workspace_name="$resource_prefix"spark
 redis_cluster_name="$resource_prefix"redis
 purview_account_name="$resource_prefix"purview
 
+
 # detect whether az cli is installed or not
 if ! [ -x "$(command -v az)" ]; then
   echo 'Error: Azure CLI is not installed. Please follow guidance on https://aka.ms/azure-cli to install az command line' >&2
@@ -68,11 +69,31 @@ az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $sy
 # depending on your preference, you can set a narrow range of IPs (like below) or a broad range of IPs to allow client access to Synapse clusters
 external_ip=$(curl -s http://whatismyip.akamai.com/)
 echo "External IP is: ${external_ip}. Adding it to firewall rules" 
-az synapse workspace firewall-rule create --name allowCurrentIP --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
+az synapse workspace firewall-rule create --name $synapse_firewall_rule_name --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
 
-# sleep for a few seconds for the chagne to take effect
-sleep 30
-az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $service_principal_name
+echo "Waiting IP Address ${external_ip} to be added in the firewall rule." 
+az synapse workspace firewall-rule wait --rule-name $synapse_firewall_rule_name --created --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name
+
+
+ERROR=$(az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $service_principal_name 2>&1 >/dev/null)
+
+# adding this logic because sometimes the firewall rule will recognize a different IP address
+if [ -z "$ERROR" ]
+then
+      # meaning the previous command is successful
+      echo "Role added successfully"
+else  
+      # reading IP address from error
+      # error will be something like: 
+      # WARNING: Command group 'synapse' is in preview and under development. Reference and support levels: https://aka.ms/CLI_refstatus\nERROR: (ClientIpAddressNotAuthorized) Client Ip address : 167.220.102.79\nCode: ClientIpAddressNotAuthorized\nMessage: Client Ip address : 167.220.xx.xx
+      read external_ip < <(echo $ERROR | grep -o '[0-9]\+[.][0-9]\+[.][0-9]\+[.][0-9]\+')
+      echo "External IP is: ${external_ip}. Adding it to firewall rules" 
+      az synapse workspace firewall-rule create --name $synapse_firewall_rule_name --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
+
+      echo "Waiting IP Address ${external_ip} to be added in the firewall rule." 
+      az synapse workspace firewall-rule wait --rule-name $synapse_firewall_rule_name --created --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name
+      
+fi
 
 echo "Verify if the assignment is successful or not:"
 az synapse role assignment list --workspace-name $synapse_workspace_name  --assignee $service_principal_name

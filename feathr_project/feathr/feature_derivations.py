@@ -1,4 +1,3 @@
-from copy import copy, deepcopy
 from typing import List, Optional, Union
 
 from jinja2 import Template
@@ -14,7 +13,7 @@ class DerivedFeature(FeatureBase):
     Attributes:
         name: derived feature name
         feature_type: type of derived feature
-        key: join key of the derived feature
+        key: All features with corresponding keys that this derived feature depends on
         input_features: features that this derived features depends on
         transform: transformation that produces the derived feature value, based on the input_features
     """

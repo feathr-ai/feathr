@@ -7,7 +7,7 @@ long_description = (root_path / "README.md").read_text()
 
 setup(
     name='feathr',
-    version='0.1.1',
+    version='0.2.1',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="frame_dev@linkedin.com",
@@ -18,6 +18,7 @@ setup(
     },
     packages=find_packages(),
     include_package_data=True,
+    # consider 
     install_requires=[
         'Click',
         "azure-storage-file-datalake>=12.5.0",
@@ -31,12 +32,17 @@ setup(
         "pyapacheatlas",
         "pyhocon",
         "pandavro",
-        "python-snappy",
         "pyyaml",
         "Jinja2",
+        "tqdm",
+        "pyarrow",
+        "python-snappy",
         "google>=3.0.0",
         "google-api-python-client>=2.41.0",
-        "pytest"
+    ],
+
+    tests_require = [
+        'pytest',
     ],
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']

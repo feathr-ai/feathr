@@ -42,21 +42,26 @@ private[offline] object AclCheckUtils {
 
   // Check read authorization on a path string
   def checkReadAuthorization(conf: Configuration, pathName: String): Try[Unit] = {
-    val path = new Path(pathName)
-
-    if (pathName.startsWith("hdfs") || pathName.startsWith("/")) {
-      // check authorization for HDFS path
-      val fs = path.getFileSystem(conf)
-      val resolvedPathName = getLatestPath(fs, pathName)
-      val resolvedPath = new Path(resolvedPathName)
-      Try(fs.access(resolvedPath, FsAction.READ))
-    } else {
-      /*
-       * Skip relative paths
-       * 1. Relative path is only available for RawLocalFileSystem, and paths on HDFS are always absolute paths
-       * 2. Here skip authorization check for relative paths used in some unit tests not designed for current function
-       */
+    // no way to check jdbc auth yet
+    if (pathName.startsWith("jdbc:")) {
       Success(())
+    } else {
+      val path = new Path(pathName)
+
+      if (pathName.startsWith("hdfs") || pathName.startsWith("/")) {
+        // check authorization for HDFS path
+        val fs = path.getFileSystem(conf)
+        val resolvedPathName = getLatestPath(fs, pathName)
+        val resolvedPath = new Path(resolvedPathName)
+        Try(fs.access(resolvedPath, FsAction.READ))
+      } else {
+        /*
+         * Skip relative paths
+         * 1. Relative path is only available for RawLocalFileSystem, and paths on HDFS are always absolute paths
+         * 2. Here skip authorization check for relative paths used in some unit tests not designed for current function
+         */
+        Success(())
+      }
     }
   }
 

@@ -157,7 +157,12 @@ object FeatureJoinJob {
     val (joinedDF, _) = getFeathrClientAndJoinFeatures(ss, observationsDF, featureGroupings, joinConfig, jobContext, localTestConfig)
 
 
-    val parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
+    var parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
+    val output_format = ss.conf.get("spark.feathr.outputFormat", "")
+    if (output_format.nonEmpty) {
+      parameters = parameters + (SparkIOUtils.OUTPUT_FORMAT -> output_format)
+    }
+
     SparkIOUtils.writeDataFrame(joinedDF, jobContext.outputPath, parameters)
     (None, Some(joinedDF))
   }
@@ -193,7 +198,8 @@ object FeatureJoinJob {
       "s3-config" -> OptionParam("sc", "Authentication config for S3", "S3_CONFIG", ""),
       "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
-      "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", "")
+      "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
+      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", "")
     )
 
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))

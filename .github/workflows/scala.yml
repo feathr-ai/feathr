@@ -67,11 +67,9 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Set env variable
         run: |
-          # overwrite corresponding environment variables to utilize feathr to upload the files 
+          # overwrite corresponding environment variables to utilize feathr to upload the files
           echo "SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
           # use hour, minute, seconds for seperate folders so that different CI pipeline won't share the same runtime
-          echo "SPARK_CONFIG__DATABRICKS__WORK_DIR=dbfs:/feathr_ci_folder$(date +"_%H_%M_%S")" >> $GITHUB_ENV 
-          echo "SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR=abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci$(date +"_%H_%M_%S")" >> $GITHUB_ENV 
       - name: Run Feathr with Databricks
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_databricks"
@@ -89,10 +87,11 @@ jobs:
           ADLS_KEY: ${{secrets.ADLS_KEY}}
           BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
           BLOB_KEY: ${{secrets.BLOB_KEY}}
+          JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
 
         run: |
           # run only test with databricks. run in 4 parallel jobs
-          pytest -k 'databricks'
+          pytest 
   azure_synapse_test:
       # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
       runs-on: ubuntu-latest
@@ -139,8 +138,9 @@ jobs:
           JDBC_USER: ${{secrets.JDBC_USER}}
           JDBC_PASSWORD: ${{secrets.JDBC_PASSWORD}}
           JDBC_DRIVER: ${{secrets.JDBC_DRIVER}}
+          JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
 
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
-          pytest  -k 'not databricks'
+          pytest 

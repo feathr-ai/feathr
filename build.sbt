@@ -39,6 +39,8 @@ val localAndCloudCommonDependencies = Seq(
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     "org.apache.xbean" % "xbean-asm6-shaded" % "4.10",
     "com.google.protobuf" % "protobuf-java" % "3.19.4",
+    "net.snowflake" % "snowflake-jdbc" % "3.13.14",
+    "net.snowflake" % "spark-snowflake_2.12" % "2.10.0-spark_3.1",
     "com.github.changvvb" %% "jackson-module-caseclass" % "1.1.1"
 ) // Common deps
 
