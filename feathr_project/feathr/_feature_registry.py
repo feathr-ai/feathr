@@ -751,7 +751,7 @@ derivations: {
         registered features; otherwise it will only return only features under this project
         """
         entities = self.purview_client.discovery.search_entities(
-            "entityType:feathr_anchor_feature")
+            "entityType:feathr_anchor_feature or entityType:feathr_derivation")
         feature_list = []
         for entity in entities:
             # Important properties returned includes:
