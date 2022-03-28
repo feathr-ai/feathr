@@ -30,7 +30,7 @@ def get_result_df(client: FeathrClient) -> pd.DataFrame:
                 # Issues are trached here: https://github.com/delta-io/delta-rs/issues/582
                 result_df = delta.to_pyarrow_table().to_pandas()
             else:
-                print("Please use Spark to read the result in the Spark cluster. Reading local results is not supported for now. Emtpy DataFrame is returned.")
+                print("Please use Azure Synapse to read the result in the Azure Synapse cluster. Reading local results is not supported for Azure Synapse. Emtpy DataFrame is returned.")
                 result_df = pd.DataFrame()
     else:
         import pandavro as pdx
