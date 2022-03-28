@@ -5,6 +5,7 @@ import time
 import traceback
 import urllib
 from collections import namedtuple
+from os.path import basename
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
@@ -220,8 +221,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         """
         Supports downloading files from the result folder. Only support paths starts with `dbfs:/` and only support downloading files in one folder (per Spark's design, everything will be in the result folder in a flat manner)
         """
-        if not result_path.startswith('dfbs'):
-            RuntimeError('Currently only paths starting with dbfs is supported for downloading results from a databricks cluster. The path should start with \"dbfs:\" .')
+        if not result_path.startswith('dbfs'):
+            raise RuntimeError('Currently only paths starting with dbfs is supported for downloading results from a databricks cluster. The path should start with \"dbfs:\" .')
 
         try:
             # listing all the files in a folder: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--list
@@ -230,19 +231,34 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             dbfs_files = result.json()['files']
             for file_path in tqdm(dbfs_files, desc="Downloading result files: "):
                 # each file_path would be a dict of this type: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#dbfsfileinfo
-                dbfs_file_path, dbfs_file_size, local_file_path = file_path['path'], file_path['file_size'], os.path.join(local_folder, os.path.basename(file_path['path']))
-                with open(local_file_path, 'wb') as file_obj:
-                    downloaded_size = 0
-                    # Loop until we've downloaded the whole file
-                    while downloaded_size < dbfs_file_size:
-                        chunk = self._read_single_chunk(path=dbfs_file_path, offset=downloaded_size, length=MB_BYTES)
-                        file_obj.write(base64.b64decode(chunk.data))
-                        downloaded_size += chunk.bytes_read
-            # Logging once all the download is finished.
+                if not file_path['is_dir']:
+                    # if it's not a directory
+                    self._download_single_file(file_path, local_folder)
+                else:
+                    # if the result is dir
+                    # us this path as the new folder path
+                    folder_path = file_path['path']
+                    folder_name = basename(folder_path)
+                    result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
+                                headers=self.auth_headers,  params={ 'path': folder_path})
+                    dbfs_files = result.json()['files']
+                    for file_path in dbfs_files:
+                        os.makedirs(os.path.join(local_folder,folder_name), exist_ok=True)
+                        self._download_single_file(file_path, os.path.join(local_folder,folder_name))
+                # Logging once all the download is finished.
             logger.info('Finish downloading files from {} to {}.', result_path,local_folder)
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             raise SystemExit(e)
 
+    def _download_single_file(self,file_path,local_folder):
+        dbfs_file_path, dbfs_file_size, local_file_path = file_path['path'], file_path['file_size'], os.path.join(local_folder, os.path.basename(file_path['path']))
+        with open(local_file_path, 'wb') as file_obj:
+            downloaded_size = 0
+            # Loop until we've downloaded the whole file
+            while downloaded_size < dbfs_file_size:
+                chunk = self._read_single_chunk(path=dbfs_file_path, offset=downloaded_size, length=MB_BYTES)
+                file_obj.write(base64.b64decode(chunk.data))
+                downloaded_size += chunk.bytes_read
 
 
     def _read_single_chunk(self, path, offset, length=MB_BYTES):
