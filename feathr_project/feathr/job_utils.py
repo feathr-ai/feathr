@@ -25,7 +25,7 @@ def get_result_df(client: FeathrClient) -> pd.DataFrame:
         if format.lower()=="delta":
             from deltalake import DeltaTable
             delta = DeltaTable(tmp_dir.name)
-            if not client.feathr_spark_laucher == 'azure_synapse':
+            if not client.spark_runtime == 'azure_synapse':
                 # don't detect for synapse result with Delta as there's a problem with underlying system
                 # Issues are trached here: https://github.com/delta-io/delta-rs/issues/582
                 result_df = delta.to_pyarrow_table().to_pandas()
