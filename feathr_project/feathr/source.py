@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from jinja2 import Template
+from loguru import logger
 
 
 class Source:
@@ -57,7 +58,9 @@ class HdfsSource(Source):
     def __init__(self, name: str, path: str, event_timestamp_column: Optional[str]= None, timestamp_format: Optional[str] = "epoch") -> None:
         super().__init__(name, event_timestamp_column, timestamp_format)
         self.path = path
-
+        if path.startswith("http"):
+            logger.warning("Your input path starts with http, which might not work in Spark. Consider using paths starting with wasb[s]/abfs[s]/s3.")
+    
     def to_feature_config(self) -> str:
         tm = Template("""  
             {{source.name}}: {
