@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.source.accessor
 
+import com.linkedin.feathr.offline.job.SimpleApp
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
@@ -25,7 +26,12 @@ private[offline] class NonTimeBasedDataSourceAccessor(
    * @return the dataframe
    */
   override def get(): DataFrame = {
+    // Replace with preproceessed dataframe
     val df = source.pathList.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
+    println("NonTimeBasedDataSourceAccessor df33333333")
+    println("NonTimeBasedDataSourceAccessor df33333333")
+    println("NonTimeBasedDataSourceAccessor df33333333")
+    println("preproccessed df33333333")
     if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
       println()
       println()
@@ -38,6 +44,22 @@ private[offline] class NonTimeBasedDataSourceAccessor(
       println()
       println()
     }
-    df
+    println("preprocessed df")
+
+
+    val preprocessedMap = SimpleApp.preprocessedDfMap
+    println(preprocessedMap)
+    println(source.path)
+    println(preprocessedMap.contains(source.path))
+    if (preprocessedMap.contains(source.path)) {
+      println("preprocessed df")
+      val preprocessedDf = preprocessedMap(source.path)
+      preprocessedDf.show(10)
+      preprocessedDf
+    } else {
+      println("original df")
+      df
+    }
+
   }
 }

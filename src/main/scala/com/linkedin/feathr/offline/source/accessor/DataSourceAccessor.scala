@@ -22,6 +22,7 @@ private[offline] abstract class DataSourceAccessor(val source: DataSource) {
    * @return the dataframe
    */
   def get(): DataFrame
+  // TODO
 }
 
 private[offline] object DataSourceAccessor {
@@ -44,6 +45,7 @@ private[offline] object DataSourceAccessor {
       expectDatumType: Option[Class[_]],
       failOnMissingPartition: Boolean,
       addTimestampColumn: Boolean = false): DataSourceAccessor = {
+    // TODO
     val sourceType = source.sourceType
     // if no input interval, or the path is fixed or list, load whole dataset
     if (dateIntervalOpt.isEmpty || sourceType == SourceFormatType.FIXED_PATH || sourceType == SourceFormatType.LIST_PATH) {

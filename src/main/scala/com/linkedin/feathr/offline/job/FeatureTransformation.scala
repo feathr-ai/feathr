@@ -313,10 +313,20 @@ private[offline] object FeatureTransformation {
     val defaultInterval = anchorFeatureGroup.anchorsWithSameSource.head.dateParam.map(OfflineDateTimeUtils.createIntervalFromFeatureGenDateParam)
     val interval = inputDateInterval.orElse(defaultInterval)
 
+    logger.info("FeatureTransformation.scala directCalculate: ")
+    logger.info("FeatureTransformation.scala directCalculate: ")
+    logger.info("FeatureTransformation.scala directCalculate: ")
+    println("FeatureTransformation.scala directCalculate: ")
+    println("FeatureTransformation.scala directCalculate: ")
     val sourceDF = source match {
       case timeBasedDataSourceAccessor: TimeBasedDataSourceAccessor => timeBasedDataSourceAccessor.get(interval)
       case nonTimeBasedDataSourceAccessor: NonTimeBasedDataSourceAccessor => nonTimeBasedDataSourceAccessor.get()
     }
+    logger.info("sourceDF: ")
+    logger.info("sourceDF: ")
+    logger.info(sourceDF)
+    sourceDF.printSchema()
+    sourceDF.show(10)
     val withKeyColumnDF = keyExtractor.appendKeyColumns(sourceDF)
     val outputJoinKeyColumnNames = getFeatureJoinKey(keyExtractor, withKeyColumnDF)
     val filteredFactData = applyBloomFilter((keyExtractor, withKeyColumnDF), bloomFilter)
@@ -450,6 +460,10 @@ private[offline] object FeatureTransformation {
       requestedFeatureNames: Seq[FeatureName],
       bloomFilter: Option[BloomFilter],
       incrementalAggContext: Option[IncrementalAggContext] = None): Map[FeatureName, KeyedTransformedResult] = {
+    logger.info("hiiiiiiiii transformFeatures")
+    logger.info("hiiiiiiiii transformFeatures")
+    logger.info("hiiiiiiiii transformFeatures")
+    logger.info("hiiiiiiiii transformFeatures")
     val executionService = Executors.newFixedThreadPool(MAX_PARALLEL_FEATURE_GROUP)
     implicit val executionContext = ExecutionContext.fromExecutorService(executionService)
     val groupedAnchorToFeatureGroups: Map[FeatureGroupingCriteria, Map[FeatureAnchorWithSource, FeatureGroupWithSameTimeWindow]] =

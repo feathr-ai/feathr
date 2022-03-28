@@ -66,6 +66,7 @@ class FeatureBase(ABC):
     def to_feature_config(self) -> str:
         pass
 
+from typing import AnyStr, Callable
 
 class Feature(FeatureBase):
     """A feature is an individual measurable property or characteristic of an entity.
@@ -83,6 +84,7 @@ class Feature(FeatureBase):
                 key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
                 transform: Optional[Union[str, Transformation]] = None):
         super(Feature, self).__init__(name, feature_type, transform, key)
+
 
     def to_feature_config(self) -> str:
         tm = Template("""

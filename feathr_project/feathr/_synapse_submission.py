@@ -50,8 +50,8 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
 
         return self._datalake.download_file(result_path, local_folder)
 
-    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str],
-                          reference_files_path: List[str], job_tags: Dict[str, str] = None,
+    def submit_feathr_job(self, job_name: str, main_jar_path: str = None,  main_class_name: str = None, arguments: List[str] = None,
+                          python_files: List[str]= None, reference_files_path: List[str] = None, job_tags: Dict[str, str] = None,
                           configuration: Dict[str, str] = None):
         """
         Submits the feathr job
@@ -75,7 +75,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             configuration (Dict[str, str]): Additional configs for the spark job
         """
 
-        if main_jar_path.startswith('abfs'):
+        if main_jar_path is None or main_jar_path.startswith('abfs'):
             main_jar_cloud_path = main_jar_path
             logger.info(
                 'Cloud path {} is used for running the job: {}', main_jar_path, job_name)
@@ -84,7 +84,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                         main_jar_path, job_name)
             main_jar_cloud_path = self._datalake.upload_file_to_workdir(main_jar_path)
             logger.info('{} is uploaded to {} for running job: {}',
-                         main_jar_path, main_jar_cloud_path, job_name)
+                        main_jar_path, main_jar_cloud_path, job_name)
 
         reference_file_paths = []
         for file_path in reference_files_path:
@@ -94,6 +94,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         self.current_job_info = self._api.create_spark_batch_job(job_name=job_name,
                                                                  main_file=main_jar_cloud_path,
                                                                  class_name=main_class_name,
+                                                                 python_files=python_files,
                                                                  arguments=arguments,
                                                                  reference_files=reference_files_path,
                                                                  tags=job_tags,
@@ -203,7 +204,7 @@ class _SynapseJobRunner(object):
         return self.client.spark_batch.cancel_spark_batch_job(job_id)
 
     def create_spark_batch_job(self, job_name, main_file, class_name=None,
-                               arguments=None,  reference_files=None, archives=None, configuration=None, tags=None):
+                               arguments=None, python_files=None, reference_files=None, archives=None, configuration=None, tags=None):
         """
         Submit a spark job to a certain cluster
         """
@@ -223,22 +224,37 @@ class _SynapseJobRunner(object):
         #     else:
         #         updated_arguments.append(elem)
 
+        print(python_files)
+        print("configuration: ")
+        print(configuration)
+        configuration = {}
+        # configuration['spark.jars'] = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started/feathr-assembly-0.1.0.jar'
+        print("jars: ")
+        print(jars)
+        jars = ['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started/feathr-assembly-0.1.0.jar']
         spark_batch_job_options = SparkBatchJobOptions(
             tags=tags,
             name=job_name,
-            file=main_file,
+            file=python_files[0],
+            # file=python_files,
             class_name=class_name,
+            # python_files=python_files,
+            python_files = python_files[1:],
             arguments=arguments,
             jars=jars,
-            files=files,
+            # files=python_files,
+            files=reference_files,
             archives=archives,
-            configuration=configuration,
+            configuration=configuration, # TODO
             driver_memory=driver_memory,
             driver_cores=driver_cores,
             executor_memory=executor_memory,
             executor_cores=executor_cores,
             executor_count=self._executors)
+            # conf	Spark configuration properties
 
+        print("spark_batch_job_options: ")
+        print(spark_batch_job_options)
         return self.client.spark_batch.create_spark_batch_job(spark_batch_job_options, detailed=True)
 
 
@@ -278,7 +294,7 @@ class _DataLakeFiler(object):
             self.dir_client = self.file_system_client.get_directory_client('/')
 
         self.datalake_dir = datalake_dir + \
-            '/' if datalake_dir[-1] != '/' else datalake_dir
+                            '/' if datalake_dir[-1] != '/' else datalake_dir
 
     def upload_file_to_workdir(self, src_file_path: str) -> str:
         """

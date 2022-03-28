@@ -1,0 +1,388 @@
+import glob
+import os
+import tempfile
+from datetime import datetime, timedelta
+from math import sqrt
+from pathlib import Path
+
+import pandas as pd
+from click.testing import CliRunner
+from feathr import FeathrClient
+from feathr.anchor import FeatureAnchor
+from feathr.client import FeathrClient
+from feathr.dtype import BOOLEAN, FLOAT, INT32, ValueType
+from feathr.feature import Feature
+from feathr.feature_derivations import DerivedFeature
+from feathr.query_feature_list import FeatureQuery
+from feathr.settings import ObservationSettings
+from feathr.source import INPUT_CONTEXT, HdfsSource
+from feathr.transformation import WindowAggTransformation
+from feathr.typed_key import TypedKey
+import pyspark
+from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql.functions import col,sum,avg,max
+import inspect
+
+from types import FunctionType
+
+os.environ['REDIS_PASSWORD'] = 'Li7Nn63iNB0x731VTnnz2Vr29WYJHx7JlAzCaH9lbHw='
+os.environ['AZURE_CLIENT_ID'] = "b40e49c0-75c7-4959-ad25-896118cd79e8"
+os.environ['AZURE_TENANT_ID'] = '72f988bf-86f1-41af-91ab-2d7cd011db47'
+os.environ['AZURE_CLIENT_SECRET'] = 'kAB5ps6yvo_f08n-4Av~.IDwHFL_xl_63I'
+os.environ['AZURE_PURVIEW_NAME'] = 'feathrazuretest3-purview1'
+
+# This is like a managed notebook
+
+yaml_config = """
+# DO NOT MOVE OR DELETE THIS FILE
+
+# This file contains the configurations that are used by Feathr
+# All the configurations can be overwritten by environment variables with concatenation of `__` for different layers of this config file.
+# For example, `feathr_runtime_location` for databricks can be overwritten by setting this environment variable:
+# SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION
+# Another example would be overwriting Redis host with this config: `ONLINE_STORE__REDIS__HOST`
+# For example if you want to override this setting in a shell environment:
+# export ONLINE_STORE__REDIS__HOST=feathrazure.redis.cache.windows.net
+
+# version of API settings
+api_version: 1
+project_config:
+  project_name: 'hangfei_feathr_testing1'
+  # Information that are required to be set via environment variables.
+  required_environment_variables:
+    # the environemnt variables are required to run Feathr
+    # Redis password for your online store
+    - 'REDIS_PASSWORD'
+    # client IDs and client Secret for the service principal. Read the getting started docs on how to get those information.
+    - 'AZURE_CLIENT_ID'
+    - 'AZURE_TENANT_ID'
+    - 'AZURE_CLIENT_SECRET'
+  optional_environment_variables:
+    # the environemnt variables are optional, however you will need them if you want to use some of the services:
+    - ADLS_ACCOUNT
+    - ADLS_KEY
+    - WASB_ACCOUNT
+    - WASB_KEY
+    - S3_ACCESS_KEY
+    - S3_SECRET_KEY
+    - JDBC_TABLE
+    - JDBC_USER
+    - JDBC_PASSWORD
+
+offline_store:
+  # paths starts with abfss:// or abfs://
+  # ADLS_ACCOUNT and ADLS_KEY should be set in environment variable if this is set to true
+  adls:
+    adls_enabled: true
+
+  # paths starts with wasb:// or wasbs://
+  # WASB_ACCOUNT and WASB_KEY should be set in environment variable
+  wasb:
+    wasb_enabled: true
+
+  # paths starts with s3a://
+  # S3_ACCESS_KEY and S3_SECRET_KEY should be set in environment variable
+  s3:
+    s3_enabled: true
+    # S3 endpoint. If you use S3 endpoint, then you need to provide access key and secret key in the environment variable as well.
+    s3_endpoint: 's3.amazonaws.com'
+
+  # jdbc endpoint
+  jdbc:
+    jdbc_enabled: true
+    jdbc_database: 'feathrtestdb'
+    jdbc_table: 'feathrtesttable'
+  
+  # snowflake endpoint
+  snowflake:
+    url: "dqllago-ol19457.snowflakecomputing.com"
+    user: "feathrintegration"
+    role: "ACCOUNTADMIN"
+
+# reading from streaming source is coming soon
+# streaming_source:
+#   kafka_connection_string: ''
+
+spark_config:
+  # choice for spark runtime. Currently support: azure_synapse, databricks
+  # The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.
+  spark_cluster: 'azure_synapse'
+  # configure number of parts for the spark output for feature generation job
+  spark_result_output_parts: '1'
+
+  azure_synapse:
+    dev_url: 'https://feathrazuretest3synapse.dev.azuresynapse.net'
+    pool_name: 'spark3'
+    # workspace dir for storing all the required configuration files and the jar resources
+    workspace_dir: 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started'
+    executor_size: 'Small'
+    executor_num: 4
+    # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
+    # this is the default location so end users don't have to compile the runtime again.
+    # feathr_runtime_location: wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-0.1.0-SNAPSHOT.jar
+    feathr_runtime_location: ../target/scala-2.12/feathr-assembly-0.1.0.jar
+  databricks:
+    # workspace instance
+    workspace_instance_url: 'https://adb-6885802458123232.12.azuredatabricks.net/'
+    workspace_token_value: ''
+    # config string including run time information, spark version, machine size, etc.
+    # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
+    config_template: {'run_name':'','new_cluster':{'spark_version':'9.1.x-scala2.12','node_type_id':'Standard_D3_v2','num_workers':2,'spark_conf':{}},'libraries':[{'jar':''}],'spark_jar_task':{'main_class_name':'','parameters':['']}}
+    # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
+    work_dir: 'dbfs:/feathr_getting_started'
+    # this is the default location so end users don't have to compile the runtime again.
+    feathr_runtime_location: 'https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-0.1.0-SNAPSHOT.jar'
+
+online_store:
+  redis:
+    # Redis configs to access Redis cluster
+    host: 'feathrazuretest3redis.redis.cache.windows.net'
+    port: 6380
+    ssl_enabled: True
+
+feature_registry:
+  purview:
+    # Registry configs
+    # register type system in purview during feathr client initialization. This is only required to be executed once.
+    type_system_initialization: false
+    # configure the name of the purview endpoint
+    purview_name: 'feathrazuretest3-purview1'
+    # delimiter indicates that how the project/workspace name, feature names etc. are delimited. By default it will be '__'
+    # this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'
+    # the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips'
+    delimiter: '__'
+
+"""
+
+
+with open("/tmp/feathr_config.yaml", "w") as text_file:
+    text_file.write(yaml_config)
+
+def log_datetime(func):
+    '''Log the date and time of a function'''
+    print('log_datetime')
+    print('log_datetime')
+    print('log_datetime')
+    func()
+    def wrapper():
+        print(f'Function: {func.__name__}\nRun on: {datetime.today().strftime("%Y-%m-%d %H:%M:%S")}')
+        print(f'{"-"*30}')
+        func()
+    print('log_datetime')
+    print('log_datetime')
+    return wrapper
+
+
+@log_datetime
+def daily_backup():
+
+    print('Daily backup job has finished.')
+
+
+
+
+client = FeathrClient(config_path="/tmp/feathr_config.yaml")
+
+
+batch_source = HdfsSource(name="nycTaxiBatchSource",
+                          path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                          event_timestamp_column="lpep_dropoff_datetime",
+                          timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+# preprocessing
+# figure out pyfile
+# give the py func the input source data
+# return the input source data back to Frame for further processing
+f_trip_distance = Feature(name="f_trip_distance",
+                          feature_type=FLOAT, transform="trip_distance")
+f_trip_time_duration = Feature(name="f_trip_time_duration",
+                               feature_type=INT32,
+                               transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
+
+features = [
+    f_trip_distance,
+    f_trip_time_duration,
+    Feature(name="f_is_long_trip_distance",
+            feature_type=BOOLEAN,
+            transform="trip_distance333>30"),
+    Feature(name="f_day_of_week",
+            feature_type=INT32,
+            transform="dayofweek(lpep_dropoff_datetime)"),
+]
+
+request_anchor = FeatureAnchor(name="request_features",
+                               source=INPUT_CONTEXT,
+                               features=features)
+
+
+f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
+                                      feature_type=FLOAT,
+                                      input_features=[
+                                          f_trip_distance, f_trip_time_duration],
+                                      transform="f_trip_distance * f_trip_time_duration")
+
+f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded",
+                                     feature_type=INT32,
+                                     input_features=[f_trip_time_duration],
+                                     transform="f_trip_time_duration % 10")
+
+
+location_id = TypedKey(key_column="DOLocationID",
+                       key_column_type=ValueType.INT32,
+                       description="location id in NYC",
+                       full_name="nyc_taxi.location_id")
+agg_features = [Feature(name="f_location_avg_fare",
+                        key=location_id,
+                        feature_type=FLOAT,
+                        # transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                        transform=WindowAggTransformation(agg_expr="fare_amount",
+                                                          agg_func="AVG",
+                                                          window="90d")),
+                Feature(name="f_location_max_fare",
+                        key=location_id,
+                        feature_type=FLOAT,
+                        transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                                                          agg_func="MAX",
+                                                          window="90d"))
+                ]
+
+agg_anchor = FeatureAnchor(name="aggregationFeatures",
+                           source=batch_source,
+                           features=agg_features)
+
+
+client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
+    f_trip_time_distance, f_trip_time_rounded])
+
+
+
+
+# def feathr_feature(user_func):
+#     print("my_decorator_func!!!!!")
+#     # global_map.get(dataframe)
+#     location_id = TypedKey(key_column="DOLocationID",
+#                            key_column_type=ValueType.INT32,
+#                            description="location id in NYC",
+#                            full_name="nyc_taxi.location_id")
+#     print("location_id: ")
+#     print(location_id)
+#     user_func(global_df)
+#     # def wrapper_func(*args, **kwargs):
+#     #     print("wrapper_func!!!!!")
+#     #     # Do something before the function.
+#     #     func(*args, **kwargs)
+#     #     # Do something after the function.
+#     print("return wrapper_func!!!!!")
+#     return None
+#
+# @feathr_feature
+# def my_func(df: DataFrame):
+#     # give the user dataframe
+#     print("df: ")
+#     print(df)
+#     # this is executed in spark
+#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+#     df = df.filter("tolls_amount > 0.0")
+#     df.show(10)
+
+# def feathr_udf(func):
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!333333333333")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!333333333333")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!333333333333")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!")
+#     lines_setup_package1 = ["from pyspark import SparkContext, SparkConf\n"]
+#     lines_setup_package2 = ["from pyspark.sql import SparkSession\n"]
+#     lines_func_header = ['if __name__ == "__main__":\n']
+#     lines_setup_env = ["    spark = SparkSession.builder.appName('SparkByExamples.com').getOrCreate()\n"]
+#     lines_setup_env222 = ["    spark._jvm.com.linkedin.feathr.offline.job.SimpleApp.hello()\n"]
+#
+#     lines_read_data = ["    df = spark.read.option('header', 'true').csv('wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv')\n"]
+#     lines_setup_env3333 = ["    spark._jvm.com.linkedin.feathr.offline.job.SimpleApp.feathrDataframe(df._jdf)\n"]
+#     # it should have all the code in a list fashion
+#     lines = inspect.getsourcelines(func)[0]
+#
+#     lines_write_data = ["    df.write.mode('overwrite').csv('abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/UDF_output.csv')\n"]
+#     # hard code here to remove the decorator line and put the above lines in the function
+#     new_file = lines_setup_package1 + lines_setup_package2 + lines_func_header + lines_setup_env + \
+#                lines_setup_env222 + \
+#                lines_read_data + \
+#                lines_setup_env3333 + \
+#                lines[2:] + lines_write_data
+#
+#     with open("./pysparkudf.py", "w") as text_file:
+#         print("open pysparkudf file")
+#         for item in new_file:
+#             print(item)
+#             text_file.write("%s" % item)
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
+#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
+#
+#
+# @feathr_udf
+# def feathr_udf(df: DataFrame) -> DataFrame:
+#     # this is executed in spark
+#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+#     df = df.filter("tolls_amount > 0.0")
+#     df.show(10)
+
+
+def feathr_feature(user_func):
+    # TODO
+    import shutil
+    shutil.copyfile("./pyspark_client.py", "./all_in_one_pysparkudf.py")
+
+    lines = inspect.getsourcelines(user_func)[0]
+    print(lines)
+    new_file = lines
+    with open("./all_in_one_pysparkudf.py", "a") as text_file:
+        print("open pysparkudf file")
+        for item in new_file:
+            print(item)
+            text_file.write("%s" % item)
+
+
+# Use this file to read from other files
+# What if i am in managed notebook
+
+@feathr_feature
+def my_func(df: DataFrame):
+    # give the user dataframe
+    print("df: ")
+    print(df)
+    print(df.schema)
+    # this is executed in spark
+    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+    # df = df.filter("tolls_amount > 0.0")
+    df = df.withColumn("fare_amount", df.fare_amount.cast('double'))
+    df = df.withColumn("trip_distance", df.trip_distance.cast('double'))
+    print(df)
+    print(df.schema)
+    df.show(10)
+    return df
+
+feature_query = FeatureQuery(
+    feature_list=["f_is_long_trip_distance"], key=location_id)
+    # feature_list=["f_location_avg_fare"], key=location_id)
+settings = ObservationSettings(
+    observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+    event_timestamp_column="lpep_dropoff_datetime",
+    timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+client.get_offline_features(observation_settings=settings,
+                            feature_query=feature_query,
+                            output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro",
+                            # udf_files=["all_in_one_pysparkudf.py",  "./pyspark_client.py", "./pysparkudf.py", "./non_agg_features.py", "./__init__.py"]
+                            udf_files=["./pyspark_client.py", "./pysparkudf.py", "./non_agg_features.py", "./__init__.py"]
+                            )

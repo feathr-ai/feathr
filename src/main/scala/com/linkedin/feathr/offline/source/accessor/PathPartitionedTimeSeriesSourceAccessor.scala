@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.source.accessor
 
 import com.linkedin.feathr.common.DateTimeResolution.DateTimeResolution
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataException}
+import com.linkedin.feathr.offline.job.SimpleApp
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, PathInfo, TimeBasedHdfsPathGenerator}
@@ -60,6 +61,14 @@ private[offline] class PathPartitionedTimeSeriesSourceAccessor(
     val df = dataFrames.reduce((x, y) => x.fuzzyUnion(y))
 
     partitionLimiter.limitPartition(df)
+
+    println("PathPartitionedTimeSeriesSourceAccessor preprocessed df")
+
+    val preprocessedMap = SimpleApp.preprocessedDfMap
+    println(preprocessedMap)
+    val preprocessedDf = preprocessedMap("f1")
+    preprocessedDf.show(10)
+    preprocessedDf
   }
 
   /**

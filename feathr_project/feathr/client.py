@@ -83,7 +83,7 @@ class FeathrClient(object):
             self.local_workspace_dir = local_workspace_dir
         else:
             self.local_workspace_dir = tempfile.TemporaryDirectory().name
-        
+
         self.envutils = envutils
 
         if not os.path.exists(config_path):
@@ -176,7 +176,7 @@ class FeathrClient(object):
         else:
             RuntimeError("Please call FeathrClient.build_features() first in order to register features")
         self.registry.register_features(self.local_workspace_dir)
-    
+
     def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
         """Registers features based on the current workspace
         """
@@ -341,7 +341,8 @@ class FeathrClient(object):
     def get_offline_features(self,
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
-                             output_path: str
+                             output_path: str,
+                             udf_files = None,
                              ):
         """
         Get offline features for the observation dataset
@@ -374,16 +375,17 @@ class FeathrClient(object):
             RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_path)
+        return self._get_offline_features_with_config(config_file_path, udf_files=udf_files)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', udf_files=None):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
           feature_join_conf_path: Relative path to your feature join config file.
         """
-        
-            
+
+
+        cloud_udf_paths = [self.feathr_spark_laucher.upload_or_get_cloud_path(udf_local_path) for udf_local_path in udf_files ]
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
@@ -392,12 +394,31 @@ class FeathrClient(object):
                                                        job_output_path=feathr_feature['outputPath'],
                                                        )
 
+        arguments333 = [
+                      '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
+                feature_join_job_params.join_config_path),
+                      '--input', feature_join_job_params.observation_path,
+                      '--output', feature_join_job_params.job_output_path,
+                      '--feature-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
+                feature_join_job_params.feature_config),
+                      '--num-parts', self.output_num_parts,
+                      '--s3-config', self._get_s3_config_str(),
+                      '--adls-config', self._get_adls_config_str(),
+                      '--blob-config', self._get_blob_config_str(),
+                      '--sql-config', self._get_sql_config_str(),
+                      '--snowflake-config', self._get_snowflake_config_str()
+                  ]
+        print("Argument: ")
+        print(arguments333)
         # submit the jars
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            python_files = cloud_udf_paths,
+            # main_jar_path=self._FEATHR_JOB_JAR_PATH,
             job_tags={OUTPUT_PATH_TAG:feature_join_job_params.job_output_path},
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
+            # main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
                 '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     feature_join_job_params.join_config_path),
@@ -449,7 +470,7 @@ class FeathrClient(object):
             config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
             config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
             write_to_file(content=config, full_file_name=config_file_path)
-            
+
             # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features in the python SDK
             # otherwise users will be confused on what are the available features
             # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
@@ -470,8 +491,8 @@ class FeathrClient(object):
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
-        
-        
+
+
 
         # Read all features conf
         generation_config = FeatureGenerationJobParams(

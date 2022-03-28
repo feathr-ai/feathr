@@ -7,7 +7,7 @@ import com.linkedin.feathr.offline.FeatureDataFrame
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource.{getDefaultValues, getFeatureTypes}
 import com.linkedin.feathr.offline.client.DataFrameColName
-import com.linkedin.feathr.offline.job.FeatureTransformation.{FEATURE_NAME_PREFIX, pruneAndRenameColumnWithTags, transformFeatures}
+import com.linkedin.feathr.offline.job.FeatureTransformation.{FEATURE_NAME_PREFIX, logger, pruneAndRenameColumnWithTags, transformFeatures}
 import com.linkedin.feathr.offline.job.KeyedTransformedResult
 import com.linkedin.feathr.offline.join._
 import com.linkedin.feathr.offline.join.algorithms._
@@ -44,15 +44,23 @@ private[offline] class AnchoredFeatureJoinStep(
    */
   override def joinFeatures(features: Seq[ErasedEntityTaggedFeature], input: AnchorJoinStepInput)(
       implicit ctx: JoinExecutionContext): FeatureDataFrameOutput = {
+    log.info("hiiiiiiiii joinFeatures")
+    log.info("hiiiiiiiii joinFeatures")
+    println("hiiiiiiiii joinFeatures")
+    println("hiiiiiiiii joinFeatures")
     val AnchorJoinStepInput(observationDF, anchorDFMap) = input
     val allAnchoredFeatures: Map[String, FeatureAnchorWithSource] = ctx.featureGroups.allAnchoredFeatures
     val joinStages = ctx.logicalPlan.joinStages
     val enableCheckPoint = FeathrUtils.getFeathrJobParam(ctx.sparkSession, FeathrUtils.ENABLE_CHECKPOINT).toBoolean
     val joinOutput = joinStages
       .foldLeft(FeatureDataFrame(observationDF, Map.empty[String, FeatureTypeConfig]))((accFeatureDataFrame, joinStage) => {
+        log.info("hiiiiiiiii3333 joinFeatures")
+        println("hiiiiiiiii3333 joinFeatures")
         val (keyTags: Seq[Int], featureNames: Seq[String]) = joinStage
         val FeatureDataFrame(contextDF, inferredFeatureTypeMap) = accFeatureDataFrame
         // map feature name to its transformed dataframe and the join key of the dataframe
+        // TODO
+
         val groupedFeatureToDFAndJoinKeys: Map[Seq[String], Seq[KeyedTransformedResult]] =
           extractFeatureDataAndJoinKeys(keyTags, featureNames, allAnchoredFeatures, anchorDFMap)
         val tagsInfo = keyTags.map(ctx.logicalPlan.keyTagIntsToStrings).toList
@@ -121,9 +129,18 @@ private[offline] class AnchoredFeatureJoinStep(
       featureNames: Seq[String],
       allAnchoredFeatures: Map[String, FeatureAnchorWithSource],
       anchorDFMap: Map[FeatureAnchorWithSource, DataSourceAccessor])(implicit ctx: JoinExecutionContext): Map[Seq[String], Seq[KeyedTransformedResult]] = {
+    log.info("hiiiiiiiii traextractFeatureDataAndJoinKeysnsformFeatures")
+    log.info("hiiiiiiiii traextractFeatureDataAndJoinKeysnsformFeatures")
+    log.info("hiiiiiiiii traextractFeatureDataAndJoinKeysnsformFeatures")
+    println("hiiiiiiiii traextractFeatureDataAndJoinKeysnsformFeatures")
+    println("hiiiiiiiii traextractFeatureDataAndJoinKeysnsformFeatures")
+    println("hiiiiiiiii traextractFeatureDataAndJoinKeysnsformFeatures")
+    println("hiiiiiiiii traextractFeatureDataAndJoinKeysnsformFeatures")
+    // TODO
     val bloomFilter = ctx.bloomFilters.map(filters => filters(keyTags))
     val (anchoredFeatureNamesThisStage, _) = featureNames.partition(allAnchoredFeatures.contains)
     val anchoredFeaturesThisStage = featureNames.filter(allAnchoredFeatures.contains).map(allAnchoredFeatures).distinct
+    // TODO
     val anchoredDFThisStage = anchorDFMap.filterKeys(anchoredFeaturesThisStage.toSet)
     // map feature name to its transformed dataframe and the join key of the dataframe
     val featureToDFAndJoinKeys = transformFeatures(anchoredDFThisStage, anchoredFeatureNamesThisStage, bloomFilter)

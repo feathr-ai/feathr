@@ -188,6 +188,9 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan) e
         .map(featureGroups.allAnchoredFeatures),
       failOnMissingPartition)
 
+    println("anchorSourceAccessorMap: ")
+    println(anchorSourceAccessorMap)
+
     implicit val joinExecutionContext: JoinExecutionContext =
       JoinExecutionContext(ss, logicalPlan, featureGroups, bloomFilters, Some(saltedJoinFrequentItemDFs))
     // 3. Join sliding window aggregation features
