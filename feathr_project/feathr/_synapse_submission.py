@@ -351,7 +351,7 @@ class _DataLakeFiler(object):
 
         # returns the paths to all the files in the target director in ADLS
         # get all the paths that are not under a directory
-        result_paths = [basename(file_path) for file_path in self.file_system_client.get_paths(
+        result_paths = [basename(file_path.name) for file_path in self.file_system_client.get_paths(
             path=parse_result.path, recursive=False) if not file_path.is_directory]
         
         # get all the paths that are directories and download them
