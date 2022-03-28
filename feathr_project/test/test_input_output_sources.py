@@ -51,3 +51,49 @@ def test_feathr_get_offline_features_with_parquet():
     # download result and just assert the returned result is not empty
     res_df = get_result_df(client)
     assert res_df.shape[0] > 0
+
+
+
+
+# test delta lake read/write without an extension name
+def test_feathr_get_offline_features_with_delta_lake():
+    """
+    Test if the program can read and write delta lake
+    """
+
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+
+    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    location_id = TypedKey(key_column="DOLocationID",
+                            key_column_type=ValueType.INT32)
+
+    feature_query = FeatureQuery(
+        feature_list=["f_location_avg_fare"], key=location_id)
+    settings = ObservationSettings(
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/feathr_delta_table",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+    now = datetime.now()
+    # set output folder based on different runtime
+    if client.spark_runtime == 'databricks':
+        output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), "_deltalake"])
+    else:
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), "_deltalake"])
+
+    
+    client.get_offline_features(observation_settings=settings,
+                                feature_query=feature_query,
+                                output_path=output_path,
+                                execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "delta", "spark.feathr.outputFormat": "delta"})
+                                )
+
+    # assuming the job can successfully run; otherwise it will throw exception
+    client.wait_job_to_finish(timeout_sec=900)
+    
+    # download result and just assert the returned result is not empty
+    res_df = get_result_df(client)
+    assert res_df.shape[0] > 0
+
