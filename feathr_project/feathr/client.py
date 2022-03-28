@@ -180,6 +180,7 @@ class FeathrClient(object):
         if from_context:
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
                 _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+                self.registry.register_features(self.local_workspace_dir)
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
         else:
