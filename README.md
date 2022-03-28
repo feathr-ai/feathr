@@ -141,7 +141,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
 
-## Supported Format
+## Cloud Integrations
 
 | Feathr component             | Cloud Integrations                                                                            |
 | ---------------------------- | --------------------------------------------------------------------------------------------- |
