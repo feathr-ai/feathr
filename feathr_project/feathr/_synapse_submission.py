@@ -361,7 +361,7 @@ class _DataLakeFiler(object):
         # list all the files under the certain folder, and download them preserving the hierarchy
         for folder in result_folders:
             folder_name = basename(folder)
-            file_in_folder = [os.path.join(folder_name, basename(file_path)) for file_path in self.file_system_client.get_paths(
+            file_in_folder = [os.path.join(folder_name, basename(file_path.name)) for file_path in self.file_system_client.get_paths(
             path=folder, recursive=False) if not file_path.is_directory]
             local_paths = [os.path.join(local_dir_cache, file_name)
                        for file_name in file_in_folder]
