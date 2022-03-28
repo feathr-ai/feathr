@@ -100,7 +100,7 @@ def test_feathr_get_offline_features_with_delta_lake():
     
 
     result_format: str = client.get_job_tags().get(OUTPUT_FORMAT, "")
-    if not (client.feathr_spark_laucher == 'azure_synapse' and result_format == 'delta'):
+    if not (client.spark_runtime == 'azure_synapse' and result_format == 'delta'):
         # if users are using delta format in synapse, skip this check, due to issue https://github.com/delta-io/delta-rs/issues/582
         assert res_df.shape[0] > 0
 
