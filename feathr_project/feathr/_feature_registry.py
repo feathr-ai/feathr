@@ -86,7 +86,7 @@ class _FeatureRegistry():
 
             ],
             superTypes=["DataSet"],
-            serviceType="Feathr Workspace"
+            serviceType="Feathr Project"
         )
         type_feathr_sources = EntityTypeDef(
             name="feathr_source",
