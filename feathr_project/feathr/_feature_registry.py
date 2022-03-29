@@ -1,6 +1,6 @@
 import glob
 import importlib
-import os
+import os, json
 import sys
 from pathlib import Path
 from typing import List, Optional
@@ -807,3 +807,61 @@ derivations: {
         with open(feature_gen_file, "w") as online_config:
             online_config.write(feature_gen_conf_content)
         logger.info("Writing online configuration from feathr registry to {}", feature_gen_file)
+   
+    def get_feature_by_fqdn_type(self, qualifiedName, typeName):
+        """
+        Get a single feature by it's QualifiedName and Type
+        Returns the feature else throws an AtlasException with 400 error code
+        """
+        response = self.purview_client.get_entity(qualifiedName=qualifiedName, typeName=typeName)
+        entities = response.get('entities')
+        for entity in entities:
+            if entity.get('typeName') == typeName and entity.get('attributes').get('qualifiedName') == qualifiedName: 
+                return entity
+       
+    def get_feature_by_fqdn(self, qualifiedName):
+        """
+        Get feature by qualifiedName
+        Returns the feature else throws an AtlasException with 400 error code
+        """        
+        guid = self.get_feature_guid(qualifiedName)
+        return self.get_feature_by_guid(guid)
+    
+    def get_feature_by_guid(self, guid):
+        """
+        Get a single feature by it's Guid
+        Returns the feature else throws an AtlasException with 400 error code
+        """ 
+        response = self.purview_client.get_single_entity(guid=guid)
+        # return response.get('entity')
+        return response
+    
+    def get_feature_lineage(self, guid):
+        """
+        Get feature's lineage by it's Guid
+        Returns the feature else throws an AtlasException with 404 error code
+        """
+        return self.purview_client.get_entity_lineage(guid=guid)
+
+    def get_feature_guid(self, qualifiedName):
+        """
+        Get guid of a feature given its qualifiedName
+        """        
+        search_term = "qualifiedName:{0}".format(qualifiedName)
+        entities = self.purview_client.discovery.search_entities(search_term)
+        for entity in entities:
+            if entity.get('qualifiedName') == qualifiedName:
+                return entity.get('id')
+
+    def search_features(self, searchTerm):
+        """
+        Search the registry for the given query term
+        """        
+        search_term = "qualifiedName:{0}".format(searchTerm)
+        entities = self.purview_client.discovery.search_entities(search_term)
+        return entities
+    
+
+
+
+
