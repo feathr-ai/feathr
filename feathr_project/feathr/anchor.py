@@ -34,7 +34,7 @@ class FeatureAnchor:
         tm = Template("""
             {{anchor_name}}: {
                 source: {{source.name}}
-                key: [{{key_list}}]
+                key.sqlExpr: [{{key_list}}]
                 features: {
                     {% for feature in features %}
                         {{feature.to_feature_config()}}

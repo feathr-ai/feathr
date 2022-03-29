@@ -26,7 +26,7 @@ def test_single_key_derived_feature_to_config():
         inputs: {
             user_embedding: {key: [user_id], feature: user_embedding}
         }
-        definition: "if_else(user_embedding, user_embedding, [])"
+        definition.sqlExpr: "if_else(user_embedding, user_embedding, [])"
         type: {
             type: TENSOR
             tensorCategory: DENSE
@@ -58,7 +58,7 @@ def test_multikey_derived_feature_to_config():
             user_embedding: {key: [user_id], feature: user_embedding}
             item_embedding: {key: [item_id], feature: item_embedding}
         }
-        definition: "similarity(user_embedding,item_embedding)"
+        definition.sqlExpr: "similarity(user_embedding,item_embedding)"
         type: {
             type: TENSOR
             tensorCategory: DENSE
@@ -88,7 +88,7 @@ def test_derived_feature_to_config_with_alias():
             viewer_embedding: {key: [viewer], feature: user_embedding}
             viewee_embedding: {key: [viewee], feature: user_embedding}
         }
-        definition: "distance(viewer_embedding, viewee_embedding)"
+        definition.sqlExpr: "distance(viewer_embedding, viewee_embedding)"
         type: {
             type: TENSOR
             tensorCategory: DENSE
@@ -129,7 +129,7 @@ def test_multi_key_derived_feature_to_config_with_alias():
             viewer_viewee_distance: {key: [viewer, viewee], feature: viewer_viewee_distance}
             viewee_viewer_distance: {key: [viewee, viewer], feature: viewer_viewee_distance}
         }
-        definition: "viewer_viewee_distance + viewee_viewer_distance"
+        definition.sqlExpr: "viewer_viewee_distance + viewee_viewer_distance"
         type: {
             type: TENSOR
             tensorCategory: DENSE
@@ -159,7 +159,7 @@ def test_derived_feature_on_multikey_anchored_feature_to_config():
         inputs: {
             user_embedding: {key: [viewer, viewee], feature: user_embedding}
         }
-        definition: "if_else(user_embedding, user_embedding, [])"
+        definition.sqlExpr: "if_else(user_embedding, user_embedding, [])"
         type: {
             type: TENSOR
             tensorCategory: DENSE
