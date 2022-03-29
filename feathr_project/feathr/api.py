@@ -39,7 +39,7 @@ else:
 logger.setLevel(log_level)
 logger.info("starting %s", __file__)
 
-appServiceKey = os.getenv("AppServiceKey") if os.getenv("AppServiceKey") else "test"
+appServiceKey = os.getenv("AppServiceKey")
 
 config_path = '../feathrcli/data/feathr_user_workspace/feathr_config.yaml'
 # registry = _FeatureRegistry(config_path = config_path)
@@ -55,7 +55,7 @@ async def root(code):
     """
     if code != appServiceKey:
         raise HTTPException(status_code=403, detail="You are not allowed to access this resource")
-    return {"message": "To call/invoke add endpoint."}
+    return {"message": "Welcome to Feature Store APIs. Please call specific APIs for your use case"}
 
 class Features(BaseModel):
     """
@@ -111,5 +111,44 @@ def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, 
         raise HTTPException(status_code=400, detail=err.args[0])
 
 
+@app.get("/projects/{project_name}/features/lineage/{feature_name}")
+def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, response: Response):
+    """List all the already registered features. If project_name is not provided or is None, it will return all
+    the registered features; otherwise it will only return features under this project
+    """
+    if code != appServiceKey:
+        raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  
+    try:
+        registry_client = getRegistryClient()
+        logger.info("Retrieved registry client successfully")
+        response.status_code = status.HTTP_200_OK
+        guid = registry_client.get_feature_guid(feature_name)
+        if guid:
+            result = registry_client.get_feature_lineage(guid)
+            return result
+    except AtlasException as ae:
+        logger.error("Error retrieving feature: %s", ae.args[0])
+        raise HTTPException(status_code=400, detail=ae.args[0])
+    except Exception as err:
+        logger.error("Error: %s", err.args[0])
+        raise HTTPException(status_code=400, detail=err.args[0])
 
-
+@app.get("/featurestore/search")
+def get_feature_qualifiedName(code : str, query: str, response: Response):
+    """List all the already registered features. If project_name is not provided or is None, it will return all
+    the registered features; otherwise it will only return features under this project
+    """
+    if code != appServiceKey:
+        raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  
+    try:
+        registry_client = getRegistryClient()
+        logger.info("Retrieved registry client successfully")
+        response.status_code = status.HTTP_200_OK
+        result = registry_client.search_features(query)
+        return result
+    except AtlasException as ae:
+        logger.error("Error retrieving feature: %s", ae.args[0])
+        raise HTTPException(status_code=400, detail=ae.args[0])
+    except Exception as err:
+        logger.error("Error: %s", err.args[0])
+        raise HTTPException(status_code=400, detail=err.args[0])
