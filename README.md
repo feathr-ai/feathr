@@ -154,6 +154,18 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
 
+## Cloud Integrations
+
+| Feathr component             | Cloud Integrations                                                                            |
+| ---------------------------- | --------------------------------------------------------------------------------------------- |
+| Offline store – Object Store | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                                   |
+| Offline store – SQL          | Azure SQL DB, Azure Synapse Dedicated SQL Pools (formerly SQL DW), Azure SQL in VM, Snowflake |
+| Online store                 | Azure Cache for Redis                                                                         |
+| Feature Registry             | Azure Purview                                                                                 |
+| Compute Engine               | Azure Synapse Spark Pools, Databricks                                                         |
+| Machine Learning Platform    | Azure Machine Learning, Jupyter Notebook                                                      |
+| File Format                  | Parquet, ORC, Avro, Delta Lake                                                                |
+
 ## Roadmap
 
 > `Public Preview` release may introduce API changes.
