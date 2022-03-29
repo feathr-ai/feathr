@@ -1,46 +1,10 @@
-from pyspark import SparkContext, SparkConf
-from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import SparkSession
-from feathr.typed_key import TypedKey
-from feathr.dtype import BOOLEAN, FLOAT, INT32, ValueType
-# if __name__ == "__main__":
-#     # get the feature definitions from spark
-#     # use python pickle or send the whole file over
-#     # let's mock a python definition for now
-#     # then i get the source
+from client_udf_repo import *
+
 spark = SparkSession.builder.appName('SparkByExamples.com').getOrCreate()
 spark._jvm.com.linkedin.feathr.offline.job.SimpleApp.hello()
 
-# this is executed in spark
-print("1111111111111111111111111")
-print("1111111111111111111111111")
-print("1111111111111111111111111")
-print("1111111111111111111111111")
-print("1111111111111111111111111")
-print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!3334444444444444444!")
-    # df = df.filter("tolls_amount > 0.0")
-    # df.show(10)
-    # df.write.mode('overwrite').csv('abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/UDF_output.csv')
-
-# feathrClient
-# read in the dataframe into a global_map
-# pass the dataframe to the UDF
-# decorator
-
-# spark._jvm.com.linkedin.feathr.offline.job.SimpleApp.feathrDataframe(global_df._jdf)
-
-from py4j.java_collections import SetConverter, MapConverter, ListConverter
-from py4j.java_gateway import (
-    JavaGateway, CallbackServerParameters, GatewayParameters,
-    launch_gateway)
-
-def toJStringArray(arr):
-    jarr = spark._sc._gateway.new_array(spark._sc._jvm.java.lang.String, len(arr))
-    for i in range(len(arr)):
-        jarr[i] = arr[i]
-    return jarr
-
+# This is executed in Spark driver
 offline_job_arguments = ['--join-config', 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net'
                                           '/feathr_getting_started/feature_join.conf', '--input',
                          'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data'
@@ -67,100 +31,49 @@ offline_job_arguments = ['--join-config', 'abfss://feathrazuretest3fs@feathrazur
 
 
 
-# spark._jvm.com.linkedin.feathr.offline.job.SimpleApp.hello(my_java_arr)
-# spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob.mainWithList(my_list)
 
+def toJStringArray(arr):
+    jarr = spark._sc._gateway.new_array(spark._sc._jvm.java.lang.String, len(arr))
+    for i in range(len(arr)):
+        jarr[i] = arr[i]
+    return jarr
 
+def load_dataframe(source_path):
+    source_df = spark.read.option('header', 'true').csv(source_path)
+    return source_df
 
-print("return wrapper_func!!!!!")
-
-print("outside of main!!!!!")
-from non_agg_features import *
-print(features333)
-print(anchor)
-
-def feathr_feature(user_func_map):
-    from sklearn import preprocessing
-    import numpy as np
-    print("scikit learn: ")
-    X_train = np.array([[ 1., -1.,  2.],
-                        [ 2.,  0.,  0.],
-                        [ 0.,  1., -1.]])
-    scaler = preprocessing.StandardScaler().fit(X_train)
-    print(scaler)
-    print("my_decorator_func!!!!!")
-    # global_map.get(dataframe)
-    location_id = TypedKey(key_column="DOLocationID",
-                           key_column_type=ValueType.INT32,
-                           description="location id in NYC",
-                           full_name="nyc_taxi.location_id")
-    print("location_id: ")
-    print(location_id)
-
-    my_java_arr = toJStringArray(offline_job_arguments)
-    print(my_java_arr)
-    print(type(my_java_arr))
-
-    # get path
-    df_map = {}
-    for feature_name, user_func in user_func_map.items():
-        # user_func = user_func_map['f_is_long_trip_distance']
-        source_path = anchor.source.path
-        print("source_path: ")
+def submit_spark_job(user_func_map):
+    preprocessed_df_map = {}
+    for source_path, user_func in user_func_map.items():
+        print("Source_path is: ")
         print(source_path)
-        # global_df = spark.read.option('header', 'true').csv('wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv')
-        source_df = spark.read.option('header', 'true').csv(source_path)
-        print("source_df: ")
+        source_df = load_dataframe(source_path)
+        print("Corresponding DataFrame: ")
         print(source_df)
+        # preprocess the DataFrae via UDF
         preprocessed_udf = user_func(source_df)
         preprocessed_udf.show(10)
 
         print("preprocessed_udf: ")
         print(preprocessed_udf.schema)
-        # def wrapper_func(*args, **kwargs):
-        #     print("wrapper_func!!!!!")
-        #     # Do something before the function.
-        #     func(*args, **kwargs)
-        #     # Do something after the function.
-        print("return wrapper_func!!!!!")
 
-
-        print("Using my_java_arr:")
-        # spark._jvm.com.linkedin.feathr.offline.job.SimpleApp.feathrDataframe(global_df._jdf)
-        df_map = {
+        preprocessed_df_map = {
             source_path: preprocessed_udf._jdf
         }
-    print("dfMap to pass to Scala Spark: ")
-    print(df_map)
-    spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob.mainWithMap(my_java_arr, df_map)
+    print("Preprocessed DataFrame map to pass to Scala Spark is: ")
+    print(preprocessed_df_map)
+    print("Starting Scala Spark FeatureJoinJob.")
+    # Need to convert to proper Java array otherwise it won't work
+    job_param_java_array = toJStringArray(offline_job_arguments)
+    spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob.mainWithMap(job_param_java_array, df_map)
     return None
 
-# Use this file to read from other files
-# What if i am in managed notebook
+print("Preprocessing UDFs.")
 
 
+submit_spark_job(preprocessed_funcs)
 
-print("preprocessed_funcs.preprocess_func !!!!!")
-
-
-
-print("preprocessed_funcs.preprocess_func !!!!!")
-print(preprocessed_funcs)
-feathr_feature(preprocessed_funcs)
-print("end of pyspark client code")
-print("end of pyspark client code")
-print("end of pyspark client code")
-# from pysparkudf import *
-# print(feathr_feature)
-# feathr_feature(my_func)
-
-# pick a user function to execute
-
-# from pyspark import SparkFiles
-#
-# spark.sparkContext.addPyFile(SparkFiles.get("pysparkudf.py"))
-#
-
+print("Feathr Pyspark job completed.")
 
 
 

@@ -180,9 +180,49 @@ class FeathrClient(object):
     def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
         """Registers features based on the current workspace
         """
+        import shutil
+        shutil.copyfile("./client_udf_repo_template.py", "./client_udf_repo.py")
+        func_maps = {}
+        for anchor in anchor_list:
+            print(anchor.preprocessing)
+            if anchor.preprocessing:
+                self.write_udf_to_file(anchor.preprocessing, anchor.source.path)
+                func_maps[anchor.source.path] = anchor.preprocessing
+        print(func_maps)
+        self.write_mapping_to_file(func_maps)
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
+
+    def write_udf_to_file(self, user_func, source_path):
+        import inspect
+
+        print(inspect.getsourcelines(user_func))
+        lines = inspect.getsourcelines(user_func)[0] + ['\n']
+        print(lines)
+        new_file = lines
+        with open("./client_udf_repo.py", "a") as text_file:
+            print("open pysparkudf file")
+            for item in new_file:
+                print(item)
+                text_file.write("%s" % item)
+        # code functionality here
+        print("Inside inner function")
+
+    def write_mapping_to_file(self, func_maps):
+        print(func_maps)
+        new_file = []
+        new_file = new_file + ['preprocessed_funcs = {\n']
+        for key, value in func_maps.items():
+            new_file = new_file + [f'  "{key}"' + f': {value.__name__},']
+        new_file = new_file + ['\n}']
+        with open("./client_udf_repo.py", "a") as text_file:
+            print("open pysparkudf file")
+            for item in new_file:
+                print(item)
+                text_file.write("%s" % item)
+        # code functionality here
+        print("Inside inner function")
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all

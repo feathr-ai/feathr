@@ -1,29 +1,15 @@
-import glob
 import os
-import tempfile
-from datetime import datetime, timedelta
-from math import sqrt
-from pathlib import Path
-
-import pandas as pd
-from click.testing import CliRunner
-from feathr import FeathrClient
 from feathr.anchor import FeatureAnchor
 from feathr.client import FeathrClient
 from feathr.dtype import BOOLEAN, FLOAT, INT32, ValueType
 from feathr.feature import Feature
-from feathr.feature_derivations import DerivedFeature
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
 from feathr.source import INPUT_CONTEXT, HdfsSource
 from feathr.transformation import WindowAggTransformation
 from feathr.typed_key import TypedKey
-import pyspark
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import col,sum,avg,max
-import inspect
 
-from types import FunctionType
 
 os.environ['REDIS_PASSWORD'] = 'Li7Nn63iNB0x731VTnnz2Vr29WYJHx7JlAzCaH9lbHw='
 os.environ['AZURE_CLIENT_ID'] = "b40e49c0-75c7-4959-ad25-896118cd79e8"
@@ -158,28 +144,47 @@ feature_registry:
 with open("/tmp/feathr_config.yaml", "w") as text_file:
     text_file.write(yaml_config)
 
-def log_datetime(func):
-    '''Log the date and time of a function'''
-    print('log_datetime')
-    print('log_datetime')
-    print('log_datetime')
-    func()
-    def wrapper():
-        print(f'Function: {func.__name__}\nRun on: {datetime.today().strftime("%Y-%m-%d %H:%M:%S")}')
-        print(f'{"-"*30}')
-        func()
-    print('log_datetime')
-    print('log_datetime')
-    return wrapper
+def my_func(df: DataFrame):
+    # give the user dataframe
+    # user want to cast some fields to certain types
+    print("df: ")
+    print(df)
+    print(df.schema)
+    # this is executed in spark
+    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+    # df = df.filter("tolls_amount > 0.0")
+    print("cast to double in my_func UDF!")
+    print("cast to double in my_func UDF!")
+    print("cast to double in my_func UDF!")
+    print("cast to double in my_func UDF!")
+    df = df.withColumn("trip_distance", df.trip_distance.cast('double'))
+    print(df)
+    print(df.schema)
+    df.show(10)
+    return df
 
-
-@log_datetime
-def daily_backup():
-
-    print('Daily backup job has finished.')
-
-
-
+def my_func2(df: DataFrame):
+    # give the user dataframe
+    # user want to cast some fields to certain types
+    print("df: ")
+    print(df)
+    print(df.schema)
+    # this is executed in spark
+    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
+    # df = df.filter("tolls_amount > 0.0")
+    print("cast to double in my_func UDF!")
+    print("cast to double in my_func UDF!")
+    print("cast to double in my_func UDF!")
+    print("cast to double in my_func UDF!")
+    df = df.withColumn("fare_amount", df.fare_amount.cast('double'))
+    print(df)
+    print(df.schema)
+    df.show(10)
+    return df
 
 client = FeathrClient(config_path="/tmp/feathr_config.yaml")
 
@@ -189,48 +194,56 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
                           event_timestamp_column="lpep_dropoff_datetime",
                           timestamp_format="yyyy-MM-dd HH:mm:ss")
 
+location_id = TypedKey(key_column="DOLocationID",
+                       key_column_type=ValueType.INT32,
+                       description="location id in NYC",
+                       full_name="nyc_taxi.location_id")
+
 # preprocessing
 # figure out pyfile
 # give the py func the input source data
 # return the input source data back to Frame for further processing
 f_trip_distance = Feature(name="f_trip_distance",
+                          key=location_id,
                           feature_type=FLOAT, transform="trip_distance")
 f_trip_time_duration = Feature(name="f_trip_time_duration",
+                               key=location_id,
                                feature_type=INT32,
                                transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
+
+
 
 features = [
     f_trip_distance,
     f_trip_time_duration,
     Feature(name="f_is_long_trip_distance",
+            key=location_id,
             feature_type=BOOLEAN,
-            transform="trip_distance333>30"),
+            transform="trip_distance>30"),
     Feature(name="f_day_of_week",
+            key=location_id,
             feature_type=INT32,
             transform="dayofweek(lpep_dropoff_datetime)"),
 ]
 
 request_anchor = FeatureAnchor(name="request_features",
-                               source=INPUT_CONTEXT,
-                               features=features)
+                               source=batch_source,
+                               features=features,
+                               preprocessing=my_func)
 
 
-f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
-                                      feature_type=FLOAT,
-                                      input_features=[
-                                          f_trip_distance, f_trip_time_duration],
-                                      transform="f_trip_distance * f_trip_time_duration")
+# f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
+#                                       feature_type=FLOAT,
+#                                       input_features=[
+#                                           f_trip_distance, f_trip_time_duration],
+#                                       transform="f_trip_distance * f_trip_time_duration")
+#
+# f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded",
+#                                      feature_type=INT32,
+#                                      input_features=[f_trip_time_duration],
+#                                      transform="f_trip_time_duration % 10")
 
-f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded",
-                                     feature_type=INT32,
-                                     input_features=[f_trip_time_duration],
-                                     transform="f_trip_time_duration % 10")
 
-
-location_id = TypedKey(key_column="DOLocationID",
-                       key_column_type=ValueType.INT32,
-                       description="location id in NYC",
-                       full_name="nyc_taxi.location_id")
 agg_features = [Feature(name="f_location_avg_fare",
                         key=location_id,
                         feature_type=FLOAT,
@@ -248,129 +261,15 @@ agg_features = [Feature(name="f_location_avg_fare",
 
 agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            source=batch_source,
-                           features=agg_features)
+                           features=agg_features,
+                           preprocessing=my_func2)
+
+client.build_features(anchor_list=[agg_anchor, request_anchor])
+# client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
+#     f_trip_time_distance, f_trip_time_rounded])
 
 
-client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
-    f_trip_time_distance, f_trip_time_rounded])
 
-
-
-
-# def feathr_feature(user_func):
-#     print("my_decorator_func!!!!!")
-#     # global_map.get(dataframe)
-#     location_id = TypedKey(key_column="DOLocationID",
-#                            key_column_type=ValueType.INT32,
-#                            description="location id in NYC",
-#                            full_name="nyc_taxi.location_id")
-#     print("location_id: ")
-#     print(location_id)
-#     user_func(global_df)
-#     # def wrapper_func(*args, **kwargs):
-#     #     print("wrapper_func!!!!!")
-#     #     # Do something before the function.
-#     #     func(*args, **kwargs)
-#     #     # Do something after the function.
-#     print("return wrapper_func!!!!!")
-#     return None
-#
-# @feathr_feature
-# def my_func(df: DataFrame):
-#     # give the user dataframe
-#     print("df: ")
-#     print(df)
-#     # this is executed in spark
-#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-#     df = df.filter("tolls_amount > 0.0")
-#     df.show(10)
-
-# def feathr_udf(func):
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!333333333333")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!333333333333")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!333333333333")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!")
-#     lines_setup_package1 = ["from pyspark import SparkContext, SparkConf\n"]
-#     lines_setup_package2 = ["from pyspark.sql import SparkSession\n"]
-#     lines_func_header = ['if __name__ == "__main__":\n']
-#     lines_setup_env = ["    spark = SparkSession.builder.appName('SparkByExamples.com').getOrCreate()\n"]
-#     lines_setup_env222 = ["    spark._jvm.com.linkedin.feathr.offline.job.SimpleApp.hello()\n"]
-#
-#     lines_read_data = ["    df = spark.read.option('header', 'true').csv('wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv')\n"]
-#     lines_setup_env3333 = ["    spark._jvm.com.linkedin.feathr.offline.job.SimpleApp.feathrDataframe(df._jdf)\n"]
-#     # it should have all the code in a list fashion
-#     lines = inspect.getsourcelines(func)[0]
-#
-#     lines_write_data = ["    df.write.mode('overwrite').csv('abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/UDF_output.csv')\n"]
-#     # hard code here to remove the decorator line and put the above lines in the function
-#     new_file = lines_setup_package1 + lines_setup_package2 + lines_func_header + lines_setup_env + \
-#                lines_setup_env222 + \
-#                lines_read_data + \
-#                lines_setup_env3333 + \
-#                lines[2:] + lines_write_data
-#
-#     with open("./pysparkudf.py", "w") as text_file:
-#         print("open pysparkudf file")
-#         for item in new_file:
-#             print(item)
-#             text_file.write("%s" % item)
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
-#     print("hi there feathr_udf func!!!!!!!!!!!!!!!!!!!!!end")
-#
-#
-# @feathr_udf
-# def feathr_udf(df: DataFrame) -> DataFrame:
-#     # this is executed in spark
-#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-#     print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-#     df = df.filter("tolls_amount > 0.0")
-#     df.show(10)
-
-
-def feathr_feature(user_func):
-    # TODO
-    import shutil
-    shutil.copyfile("./pyspark_client.py", "./all_in_one_pysparkudf.py")
-
-    lines = inspect.getsourcelines(user_func)[0]
-    print(lines)
-    new_file = lines
-    with open("./all_in_one_pysparkudf.py", "a") as text_file:
-        print("open pysparkudf file")
-        for item in new_file:
-            print(item)
-            text_file.write("%s" % item)
-
-
-# Use this file to read from other files
-# What if i am in managed notebook
-
-@feathr_feature
-def my_func(df: DataFrame):
-    # give the user dataframe
-    print("df: ")
-    print(df)
-    print(df.schema)
-    # this is executed in spark
-    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-    print("hi @feathr_udf!!!!!!!!!!!!!!!!!!!!!")
-    # df = df.filter("tolls_amount > 0.0")
-    df = df.withColumn("fare_amount", df.fare_amount.cast('double'))
-    df = df.withColumn("trip_distance", df.trip_distance.cast('double'))
-    print(df)
-    print(df.schema)
-    df.show(10)
-    return df
 
 feature_query = FeatureQuery(
     feature_list=["f_is_long_trip_distance"], key=location_id)
@@ -383,6 +282,5 @@ settings = ObservationSettings(
 client.get_offline_features(observation_settings=settings,
                             feature_query=feature_query,
                             output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro",
-                            # udf_files=["all_in_one_pysparkudf.py",  "./pyspark_client.py", "./pysparkudf.py", "./non_agg_features.py", "./__init__.py"]
-                            udf_files=["./pyspark_client.py", "./pysparkudf.py", "./non_agg_features.py", "./__init__.py"]
+                            udf_files=["./pyspark_client.py", "./client_udf_repo.py", "./__init__.py"]
                             )

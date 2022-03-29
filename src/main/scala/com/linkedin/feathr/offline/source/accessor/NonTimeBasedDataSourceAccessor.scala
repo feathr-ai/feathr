@@ -46,20 +46,24 @@ private[offline] class NonTimeBasedDataSourceAccessor(
     }
     println("preprocessed df")
 
+    println("Origial df: ")
+    df.printSchema()
 
     val preprocessedMap = SimpleApp.preprocessedDfMap
     println(preprocessedMap)
     println(source.path)
     println(preprocessedMap.contains(source.path))
+
     if (preprocessedMap.contains(source.path)) {
       println("preprocessed df")
+      println("Preprocessed df: ")
       val preprocessedDf = preprocessedMap(source.path)
+      preprocessedDf.printSchema()
       preprocessedDf.show(10)
       preprocessedDf
     } else {
       println("original df")
       df
     }
-
   }
 }

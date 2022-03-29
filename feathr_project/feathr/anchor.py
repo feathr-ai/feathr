@@ -2,6 +2,7 @@ from typing import List, Optional
 from feathr.feature import Feature
 from feathr.source import Source
 from jinja2 import Template
+from typing import AnyStr, Callable
 
 # passthrough features do not need keys
 class FeatureAnchor:
@@ -11,17 +12,19 @@ class FeatureAnchor:
     The feature producer writes multiple anchors for a feature, exposing the same feature name for the feature
     consumer to reference it.
     Attributes:
-        name: Unique name of the anchor. 
+        name: Unique name of the anchor.
         source: data source that the features are anchored to. Should be either of `INPUT_CONTEXT` or `feathr.source.Source`
-        features: list of features within this anchor. 
+        features: list of features within this anchor.
     """
     def __init__(self,
                 name: str,
                 source: Source,
-                features: List[Feature]):
+                features: List[Feature],
+                preprocessing: Optional[Callable] = None):
         self.name = name
         self.features = features
         self.source = source
+        self.preprocessing = preprocessing
         self.validate_features()
 
     def validate_features(self):
