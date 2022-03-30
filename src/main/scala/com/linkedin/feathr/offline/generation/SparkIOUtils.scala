@@ -30,8 +30,11 @@ object SparkIOUtils {
   }
 
   def writeDataFrame( outputDF: DataFrame, path: String, parameters: Map[String, String] = Map()): DataFrame = {
-    // if the output format is set by spark configurations, we will use that as the job output format; otherwise use avro as default for backward compatibility
-    outputDF.write.mode(SaveMode.Overwrite).format(parameters.getOrElse(OUTPUT_FORMAT, "avro")).save(path)
+
+    val output_format = outputDF.sqlContext.getConf("spark.feathr.outputFormat", "avro")
+    // if the output format is set by spark configurations "spark.feathr.outputFormat"
+    // we will use that as the job output format; otherwise use avro as default for backward compatibility
+    outputDF.write.mode(SaveMode.Overwrite).format(output_format).save(path)
     outputDF
   }
 
@@ -43,5 +46,4 @@ object SparkIOUtils {
   val SPLIT_SIZE = "split.size"
   val OVERWRITE_MODE = "override.mode"
   val FILTER_EXP = "filter.exp"
-  val OUTPUT_FORMAT = "output.format"
 }
