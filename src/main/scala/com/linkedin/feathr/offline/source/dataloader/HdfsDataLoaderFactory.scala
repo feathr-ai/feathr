@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
+import com.linkedin.feathr.offline.config.datasourceprovider.location.SimplePath
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -17,6 +18,6 @@ private[offline] class HdfsDataLoaderFactory(ss: SparkSession) extends  DataLoad
    */
   override def create(path: String): DataLoader = {
     log.info(s"Creating spark data loader for path: ${path}")
-    new SparkDataLoader(ss, path)
+    new SparkDataLoader(ss, SimplePath(path))
   }
 }

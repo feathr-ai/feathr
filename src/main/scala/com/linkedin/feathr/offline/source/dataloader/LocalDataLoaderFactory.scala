@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
+import com.linkedin.feathr.offline.config.datasourceprovider.location.SimplePath
 import com.linkedin.feathr.offline.util.LocalFeatureJoinUtils
 import org.apache.spark.sql.SparkSession
 
@@ -49,7 +50,7 @@ private[offline] class LocalDataLoaderFactory(ss: SparkSession) extends DataLoad
       // check if the mock data exist or not, if it does, load the mock data
       LocalFeatureJoinUtils.getMockPathIfExist(path, ss.sparkContext.hadoopConfiguration, workspaceDir) match {
         case Some(mockData) => new JsonWithSchemaDataLoader(ss, mockData)
-        case None => new SparkDataLoader(ss, path)
+        case None => new SparkDataLoader(ss, SimplePath(path))
       }
     }
   }

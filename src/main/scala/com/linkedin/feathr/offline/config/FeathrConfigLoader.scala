@@ -13,6 +13,7 @@ import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
+import com.linkedin.feathr.offline.config.datasourceprovider.location.{InputLocation, LocationUtils, SimplePath}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWindowParams}
@@ -712,17 +713,18 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
      * 2. a placeholder with reserved string "PASSTHROUGH" for anchor defined pass-through features,
      *    since anchor defined pass-through features do not have path
      */
-    val path = if (dataSourceType == "HDFS") {
+    val path: InputLocation = if (dataSourceType == "HDFS") {
       Option(node.get("location")) match {
         case Some(field: ObjectNode) =>
-          Option(field.get("path")) match {
-            case Some(pathField: TextNode) => pathField.textValue()
-            case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Illegal setting for the path in location")
-          }
+          LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
+//          Option(field.get("path")) match {
+//            case Some(pathField: TextNode) => pathField.textValue()
+//            case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Illegal setting for the path in location")
+//          }
         case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Data location is not defined")
         case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Illegal setting for location, expected map")
       }
-    } else "PASSTHROUGH"
+    } else SimplePath("PASSTHROUGH")
 
     // time window parameters for data aggregation
     val timeWindowParameterNode = Option(node.get("timeWindowParameters")) match {

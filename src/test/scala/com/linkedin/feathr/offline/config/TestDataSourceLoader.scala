@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.FeathrJacksonScalaModule
+import com.linkedin.feathr.offline.config.datasourceprovider.location.{InputLocation, SimplePath}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import org.scalatest.FunSuite
 

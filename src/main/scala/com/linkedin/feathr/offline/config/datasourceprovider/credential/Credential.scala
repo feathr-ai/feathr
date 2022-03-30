@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.config.datasourceprovider.credential
 
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
+import com.linkedin.feathr.offline.config.datasourceprovider.SecretStorage
 
 // TODO: Dynamical sub typing, need to write a customized deserializer
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = classOf[AnonymousCredential])
@@ -13,5 +14,5 @@ import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
     new JsonSubTypes.Type(value = classOf[UserPassCredential], name = "userpass"),
   ))
 trait Credential {
-
+  def init(ss: SecretStorage, path: String, name: String)
 }

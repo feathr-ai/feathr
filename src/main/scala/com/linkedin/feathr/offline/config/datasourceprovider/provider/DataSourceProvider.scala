@@ -5,5 +5,5 @@ import com.linkedin.feathr.offline.config.datasourceprovider.credential.Credenti
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 trait DataSourceProvider {
-  def load(ss: SparkSession, credential: Credential, dateParam: Option[DateParam]): DataFrame
+  def load(ss: SparkSession): DataFrame
 }
