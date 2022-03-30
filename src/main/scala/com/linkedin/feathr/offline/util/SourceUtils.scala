@@ -7,7 +7,7 @@ import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.exception._
 import com.linkedin.feathr.common.{AnchorExtractor, DateParam}
 import com.linkedin.feathr.offline.client.InputData
-import com.linkedin.feathr.offline.config.datasourceprovider.location.{InputLocation, SimplePath}
+import com.linkedin.feathr.offline.config.location.{InputLocation, SimplePath}
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.source.SourceFormatType

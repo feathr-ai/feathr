@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.FeathrJacksonScalaModule
-import com.linkedin.feathr.offline.config.datasourceprovider.location.{InputLocation, SimplePath}
+import com.linkedin.feathr.offline.config.location.{Jdbc, LocationUtils}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import org.scalatest.FunSuite
 
@@ -30,5 +30,33 @@ class TestDataSourceLoader extends FunSuite {
     val ds = jackson.readValue(configDoc, classOf[DataSource])
     assert(ds.path=="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv")
     assert(ds.sourceType == SourceFormatType.FIXED_PATH)
+  }
+
+  test("Test Deserialize DataSource")     {
+    val jackson = LocationUtils.getMapper()
+    val configDoc =
+      """
+        |{
+        |  location: {
+        |    type: "jdbc"
+        |    url: "jdbc:sqlserver://bet-test.database.windows.net:1433;database=bet-test"
+        |    user: "bet"
+        |    password: "foo"
+        |  }
+        |  timeWindowParameters: {
+        |    timestampColumn: "lpep_dropoff_datetime"
+        |    timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
+        |  }
+        |}
+        |""".stripMargin
+    val ds = jackson.readValue(configDoc, classOf[DataSource])
+    ds.location match {
+      case Jdbc(url, dbtable, user, password, token, useToken) => {
+        assert(url == "jdbc:sqlserver://bet-test.database.windows.net:1433;database=bet-test")
+        assert(user=="bet")
+        assert(password=="foo")
+      }
+      case _ => assert(false)
+    }
   }
 }

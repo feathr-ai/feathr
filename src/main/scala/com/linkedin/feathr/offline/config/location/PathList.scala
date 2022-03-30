@@ -1,4 +1,5 @@
-package com.linkedin.feathr.offline.config.datasourceprovider.location
+package com.linkedin.feathr.offline.config.location
+
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 case class PathList(paths: Array[String]) extends InputLocation {

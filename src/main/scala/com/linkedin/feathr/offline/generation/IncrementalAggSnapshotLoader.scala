@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.generation
 
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.offline.FeatureName
-import com.linkedin.feathr.offline.config.datasourceprovider.location.SimplePath
+import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.job.FeatureGenSpec
 import com.linkedin.feathr.offline.source.dataloader.SparkDataLoader
 import com.linkedin.feathr.offline.util.IncrementalAggUtils

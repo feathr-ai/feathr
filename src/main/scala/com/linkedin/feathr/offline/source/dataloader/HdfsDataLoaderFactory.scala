@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
-import com.linkedin.feathr.offline.config.datasourceprovider.location.SimplePath
+import com.linkedin.feathr.offline.config.location.SimplePath
 import org.apache.spark.sql.SparkSession
 
 /**

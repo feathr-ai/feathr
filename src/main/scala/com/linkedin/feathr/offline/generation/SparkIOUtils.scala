@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.generation
 
-import com.linkedin.feathr.offline.config.datasourceprovider.location.{InputLocation, Jdbc, SimplePath}
+import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, SimplePath}
 import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import org.apache.avro.generic.GenericRecord

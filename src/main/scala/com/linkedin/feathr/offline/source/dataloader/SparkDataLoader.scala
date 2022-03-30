@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.source.dataloader
 
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataException}
-import com.linkedin.feathr.offline.config.datasourceprovider.location.InputLocation
+import com.linkedin.feathr.offline.config.location.InputLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils

@@ -1,4 +1,4 @@
-package com.linkedin.feathr.offline.config.datasourceprovider.location
+package com.linkedin.feathr.offline.config.location
 
 import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils

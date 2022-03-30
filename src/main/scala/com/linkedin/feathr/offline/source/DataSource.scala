@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source
 
-import com.linkedin.feathr.offline.config.datasourceprovider.location.{InputLocation, Jdbc, SimplePath}
+import com.linkedin.feathr.offline.config.location.{InputLocation, SimplePath}
 import com.linkedin.feathr.offline.source.SourceFormatType.SourceFormatType
 import com.linkedin.feathr.offline.util.{AclCheckUtils, HdfsUtils, LocalFeatureJoinUtils}
 import org.apache.hadoop.fs.Path
