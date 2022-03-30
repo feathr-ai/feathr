@@ -4,13 +4,14 @@ import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils.DBTABLE_CONF
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.eclipse.jetty.util.StringUtil
 
 @CaseClassDeserialize()
 case class Jdbc(url: String, dbtable: String, user: String = "", password: String = "", token: String = "", useToken: Boolean = false) extends InputLocation {
   override def loadDf(ss: SparkSession): DataFrame = {
     var reader = ss.read.format("jdbc")
       .option("url", url)
-    if (dbtable.isBlank) {
+    if (StringUtil.isBlank(dbtable)) {
       // Fallback to default table name
       reader = reader.option("dbtable", ss.conf.get(DBTABLE_CONF))
     } else {
@@ -19,7 +20,7 @@ case class Jdbc(url: String, dbtable: String, user: String = "", password: Strin
     if (useToken) {
       reader.option("accessToken", LocationUtils.envSubstitute(token)).load
     } else {
-      if (user.isBlank && password.isBlank) {
+      if (StringUtil.isBlank(user) && StringUtil.isBlank(password)) {
         // Fallback to global JDBC credential
         JdbcUtils.loadDataFrame(ss, url)
       } else {
