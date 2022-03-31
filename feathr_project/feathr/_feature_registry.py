@@ -5,6 +5,9 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Union
 
+from pyapacheatlas.core import PurviewClient, AtlasClassification, AtlasEntity, AtlasProcess
+
+
 from jinja2 import Template
 from loguru import logger
 from numpy import deprecate
@@ -15,7 +18,7 @@ from pyapacheatlas.core.typedef import (AtlasAttributeDef, Cardinality,
                                         EntityTypeDef, RelationshipTypeDef, AtlasRelationshipEndDef)
 from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
-
+from urllib.parse import urlparse
 from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._file_utils import write_to_file
 from feathr.anchor import FeatureAnchor
@@ -23,7 +26,7 @@ from feathr.constants import *
 from feathr.feature import Feature
 from feathr.feature_derivations import DerivedFeature
 from feathr.repo_definitions import RepoDefinitions
-from feathr.source import HdfsSource, Source
+from feathr.source import HdfsSource, InputContext, Source
 from feathr.transformation import Transformation
 
 
@@ -73,29 +76,29 @@ class _FeatureRegistry():
         # Each feature is registered under a certain Feathr project. The project should what we refer to, however for backward compatibility, the type name would be `feathr_workspace`
         type_feathr_project = EntityTypeDef(
             name=FEATHR_PROJECT,
+            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
-                AtlasAttributeDef(
-                    name="sources", typeName=ARRAY_SOURCE, cardinality=Cardinality.SET),
                 AtlasAttributeDef(
                     name="anchor_features", typeName=ARRAY_ANCHOR, cardinality=Cardinality.SET),
                 AtlasAttributeDef(
                     name="derived_features", typeName=ARRAY_DERIVED_FEATURE, cardinality=Cardinality.SET),
 
                 # Below are for backward compatibility. DO NOT USE.
-                AtlasAttributeDef(name="raw_hocon_feature_definition_config",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="raw_hocon_feature_join_config",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="raw_hocon_feature_generation_config",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(
-                    name="derivations", typeName=ARRAY_DERIVED_FEATURE, cardinality=Cardinality.SET),
+                # AtlasAttributeDef(name="raw_hocon_feature_definition_config",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="raw_hocon_feature_join_config",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="raw_hocon_feature_generation_config",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(
+                #     name="derivations", typeName=ARRAY_DERIVED_FEATURE, cardinality=Cardinality.SET),
             ],
             superTypes=["DataSet"],
-            serviceType="Feathr Project"
+
         )
         type_feathr_sources = EntityTypeDef(
             name=SOURCE,
+            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
 
                 AtlasAttributeDef(
@@ -108,57 +111,41 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SINGLE),
                 # Below are for backward compatibility. DO NOT USE.
 
-                AtlasAttributeDef(name="isTimeSeries",
-                                  typeName="boolean", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="timestamp",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="isTimeSeries",
+                #                   typeName="boolean", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="timestamp",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
 
-                AtlasAttributeDef(name="timestampColumnFormat",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="timestampColumnFormat",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
 
             ],
             superTypes=["DataSet"],
-            serviceType="Feathr Feature Source"
         )
 
         type_feathr_anchor_features = EntityTypeDef(
             name=ANCHOR_FEATURE,
+            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
 
                 AtlasAttributeDef(name="type", typeName="string",
                                   cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="key", typeName="string",
-                                  cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="key", typeName="array<map<string,string>>",
+                                  cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="transformation", typeName="string",
                                   cardinality=Cardinality.SINGLE),
 
                 # Below are for backward compatibility. DO NOT USE.
-                AtlasAttributeDef(name="def", typeName="string",
-                                  cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="aggregation",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="window", typeName="string",
-                                  cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(
-                    name="groupBy", typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(
-                    name="default", typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="def.sqlExpr",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-
-                AtlasAttributeDef(name="tensorCategory",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="dimensionType",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(
-                    name="valType", typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="tags", typeName="map<string,string>",
+                #                   cardinality=Cardinality.SINGLE),
+                
             ],
             superTypes=["DataSet"],
-            serviceType="Feathr Anchor Feature"
         )
 
         type_feathr_derived_features = EntityTypeDef(
             name=DERIVED_FEATURE,
+            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
                 AtlasAttributeDef(name="type", typeName="string",
                                   cardinality=Cardinality.SINGLE),
@@ -167,76 +154,98 @@ class _FeatureRegistry():
                 # TODO: support derived features on other derived features
                 AtlasAttributeDef(name="input_features", typeName=ARRAY_ANCHOR_FEATURE,
                                   cardinality=Cardinality.SET),
-                AtlasAttributeDef(name="key", typeName="string",
-                                  cardinality=Cardinality.SINGLE),
-
+                AtlasAttributeDef(name="key", typeName="array<map<string,string>>",
+                                  cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="transformation", typeName="string",
                                   cardinality=Cardinality.SINGLE),
 
                 # Below are for backward compatibility. DO NOT USE.
-                AtlasAttributeDef(name="definition",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="definition",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
 
-                AtlasAttributeDef(name="tensorCategory",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="dimensionType",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(
-                    name="valType", typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="tensorCategory",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="dimensionType",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(
+                #     name="valType", typeName="string", cardinality=Cardinality.SINGLE),
             ],
             superTypes=["DataSet"],
-            serviceType="Feathr Derived Feature"
+            # display it in the purview UI
+            options={"schemaElementsAttribute": ANCHOR_FEATURE}
         )
 
         type_feathr_anchors = EntityTypeDef(
             name=ANCHOR,
+            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
                 AtlasAttributeDef(
                     name="source", typeName=SOURCE, cardinality=Cardinality.SINGLE),
-
                 AtlasAttributeDef(
                     name="features", typeName=ARRAY_ANCHOR_FEATURE, cardinality=Cardinality.SET),
-                AtlasAttributeDef(name="key", typeName="string",
-                                  cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="preprocessing", typeName="string",
                                   cardinality=Cardinality.SINGLE),
 
                 # Below are for backward compatibility. DO NOT USE.
-                AtlasAttributeDef(name="extractor",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="key.sqlExpr",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="timestampColumn",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="timestampColumnFormat",
-                                  typeName="string", cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(
-                    name="location", typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="key", typeName="string",
+                #                   cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="extractor",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="key.sqlExpr",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="timestampColumn",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(name="timestampColumnFormat",
+                #                   typeName="string", cardinality=Cardinality.SINGLE),
+                # AtlasAttributeDef(
+                #     name="location", typeName="string", cardinality=Cardinality.SINGLE),
             ],
             superTypes=["DataSet"],
-            serviceType="Feathr Anchor"
+            # display it in the purview UI
+            options={"schemaElementsAttribute": ANCHOR_FEATURE}
         )
 
-        # don't define the relationship here given that we will use process to define it later
-        # We might use it later so save it here
-        # project_to_derived_feature_relationship = RelationshipTypeDef(
-        #     name=PROJECT_TO_DERIVED_FEATURE,
-        #     relationshipCategory="COMPOSITION",
-        #     # we are using SET below so should set this to True (i.e. a project can have multiple derived features)
-        #     endDef1= AtlasRelationshipEndDef(name=FEATHR_PROJECT, typeName=FEATHR_PROJECT, isContainer=True,cardinality=Cardinality.SET),
-        #     endDef2=AtlasRelationshipEndDef(name=DERIVED_FEATURE, typeName=DERIVED_FEATURE, isContainer=False,cardinality=Cardinality.SINGLE),
-        # )
-        # project_to_anchor_relationship = RelationshipTypeDef(
-        #     name=PROJECT_TO_ANCHOR,
-        #     relationshipCategory="COMPOSITION",
-        #     endDef1=AtlasRelationshipEndDef(name=FEATHR_PROJECT, typeName=FEATHR_PROJECT, isContainer=True,cardinality=Cardinality.SET),
-        #     endDef2=AtlasRelationshipEndDef(name=ANCHOR, typeName=ANCHOR, isContainer=False,cardinality=Cardinality.SINGLE),
-        # )
+        # define the relationships in the type system
+        # see more samples here: https://github.com/wjohnson/pyapacheatlas/blob/master/samples/CRUD/create_type_with_schema.py
+        project_to_derived_feature_relationship = RelationshipTypeDef(
+            name=PROJECT_TO_DERIVED_FEATURE,
+            relationshipCategory="COMPOSITION",
+            # we are using SET below so should set this to True (i.e. a project can have multiple derived features)
+            endDef1= AtlasRelationshipEndDef(name=FEATHR_PROJECT, typeName=FEATHR_PROJECT, isContainer=True,cardinality=Cardinality.SET),
+            endDef2=AtlasRelationshipEndDef(name=DERIVED_FEATURE, typeName=DERIVED_FEATURE, isContainer=False,cardinality=Cardinality.SINGLE),
+        )
+        project_to_anchor_relationship = RelationshipTypeDef(
+            name=PROJECT_TO_ANCHOR,
+            relationshipCategory="COMPOSITION",
+            endDef1=AtlasRelationshipEndDef(name=FEATHR_PROJECT, typeName=FEATHR_PROJECT, isContainer=True,cardinality=Cardinality.SET),
+            endDef2=AtlasRelationshipEndDef(name=ANCHOR, typeName=ANCHOR, isContainer=False,cardinality=Cardinality.SINGLE),
+        )
+
+        anchor_to_source_relationship = RelationshipTypeDef(
+            name=ANCHOR_TO_SOURCE,
+            relationshipCategory="COMPOSITION",
+            endDef1=AtlasRelationshipEndDef(name=ANCHOR, typeName=ANCHOR, isContainer=True,cardinality=Cardinality.SET),
+            endDef2=AtlasRelationshipEndDef(name=SOURCE, typeName=SOURCE, isContainer=False,cardinality=Cardinality.SINGLE),
+        )
+
+        anchor_to_feature_relationship = RelationshipTypeDef(
+            name=ANCHOR_TO_FEATURE,
+            relationshipCategory="COMPOSITION",
+            endDef1=AtlasRelationshipEndDef(name=ANCHOR, typeName=ANCHOR, isContainer=True,cardinality=Cardinality.SET),
+            endDef2=AtlasRelationshipEndDef(name=ANCHOR_FEATURE, typeName=ANCHOR_FEATURE, isContainer=False,cardinality=Cardinality.SINGLE),
+        )
+        #TODO: currently only supports derived feature to anchor feature. derived feature to derived feature will be supported in the future.
+        derived_feature_to_feature = RelationshipTypeDef(
+            name=DERIVED_FEATURE_TO_FEATURE,
+            relationshipCategory="COMPOSITION",
+            endDef1=AtlasRelationshipEndDef(name=DERIVED_FEATURE, typeName=DERIVED_FEATURE, isContainer=True,cardinality=Cardinality.SET),
+            endDef2=AtlasRelationshipEndDef(name=ANCHOR_FEATURE, typeName=ANCHOR_FEATURE, isContainer=False,cardinality=Cardinality.SINGLE),
+        )
 
         def_result = self.purview_client.upload_typedefs(
             entityDefs=[type_feathr_anchor_features, type_feathr_anchors,
                         type_feathr_derived_features, type_feathr_sources, type_feathr_project],
-            # relationshipDefs=[project_to_anchor_relationship, project_to_derived_feature_relationship],
+            relationshipDefs=[project_to_anchor_relationship, project_to_derived_feature_relationship,anchor_to_source_relationship,anchor_to_feature_relationship,derived_feature_to_feature],
             force_update=True)
         logger.info("Feathr Feature Type System Initialized.")
 
@@ -248,15 +257,21 @@ class _FeatureRegistry():
         anchor_feature_batch = []
         anchor_feature: Feature  # annotate type
         for anchor_feature in anchor.features:
+            key_list = []
+            for individual_key in anchor_feature.key:
+                key_dict={"key_column":individual_key.key_column, "key_column_type":individual_key.key_column_type.to_feature_config(),"full_name":individual_key.full_name, "description":individual_key.description, "key_column_alias":individual_key.key_column_alias}
+                key_list.append(key_dict)
+
             anchor_feature_entity = AtlasEntity(
                 name=anchor_feature.name,
                 qualified_name=self.project_name + self.FEATURE_REGISTRY_DELIMITER +
                 anchor.name + self.FEATURE_REGISTRY_DELIMITER + anchor_feature.name,
                 attributes={
-                    "type": anchor_feature.name,
+                    "type": anchor_feature.feature_type.to_feature_config(),
                     # TODO: need to think about this for keys
-                    "key": "TODO",
+                    "key": key_list,
                     "transformation": anchor_feature.transform.to_feature_config(),
+                    "tags":anchor_feature.registry_tags,
                 },
                 typeName=ANCHOR_FEATURE,
                 guid=self.guid.get_guid(),
@@ -272,43 +287,45 @@ class _FeatureRegistry():
         parse content of an anchor
         """
         anchors_batch = []
-        for anchor in anchor_list:
+        for anchor_entity in anchor_list:
             # First, parse all the features in this anchor
-            anchor_feature_batch = self._parse_anchor_features(anchor)
+            anchor_feature_batch = self._parse_anchor_features(anchor_entity)
             # then parse the source of that anchor
-            source = self._parse_source(anchor.source)
+            source = self._parse_source(anchor_entity.source)
 
             anchor_entity = AtlasEntity(
-                name=anchor.name,
-                qualified_name=self.project_name + self.FEATURE_REGISTRY_DELIMITER + anchor.name,
+                name=anchor_entity.name,
+                qualified_name=self.project_name + self.FEATURE_REGISTRY_DELIMITER + anchor_entity.name,
                 attributes={
                     "source": source.to_json(minimum=True),
-                    "key": "TODO",
                     "features": [s.to_json(minimum=True) for s in anchor_feature_batch],
-                    "preprocessing": "TODO",
+                    # "preprocessing": "TODO",
                 },
                 typeName=ANCHOR,
+                
                 guid=self.guid.get_guid(),
             )
+            # anchor_entity.addCustomAttribute({"abccccc":"dddddddddddddddddd"})
             # add feature lineage between anchor and feature
             for individual_feature_entity in anchor_feature_batch:
                 lineage = AtlasProcess(
-                    name=individual_feature_entity.name + " to " + anchor.name,
+                    name=individual_feature_entity.name + " to " + anchor_entity.name,
                     typeName="Process",
                     qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
-                    self.FEATURE_REGISTRY_DELIMITER + anchor.name + self.FEATURE_REGISTRY_DELIMITER +
+                    self.FEATURE_REGISTRY_DELIMITER + anchor_entity.name + self.FEATURE_REGISTRY_DELIMITER +
                     individual_feature_entity.name,
                     inputs=[individual_feature_entity],
                     outputs=[anchor_entity],
                     guid=self.guid.get_guid(),
                 )
                 self.entity_batch_queue.append(lineage)
-            # add feature lineage between anchor and source
+            
+            # add lineage between anchor and source
             anchor_source_lineage = AtlasProcess(
-                name=source.name + " to " + anchor.name,
+                name=source.name + " to " + anchor_entity.name,
                 typeName="Process",
                 qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
-                self.FEATURE_REGISTRY_DELIMITER + anchor.name + self.FEATURE_REGISTRY_DELIMITER +
+                self.FEATURE_REGISTRY_DELIMITER + anchor_entity.name + self.FEATURE_REGISTRY_DELIMITER +
                 source.name,
                 inputs=[source],
                 outputs=[anchor_entity],
@@ -316,7 +333,6 @@ class _FeatureRegistry():
             )
             self.entity_batch_queue.append(anchor_source_lineage)
 
-            self.entity_batch_queue.append(anchor_entity)
             anchors_batch.append(anchor_entity)
         return anchors_batch
 
@@ -324,13 +340,16 @@ class _FeatureRegistry():
         """
         parse the `sources` section of the feature configuration
         """
+        input_context=False
+        if isinstance(source, InputContext):
+            input_context=True
+    
         source_entity = AtlasEntity(
             name=source.name,
             qualified_name=self.project_name + self.FEATURE_REGISTRY_DELIMITER + source.name,
             attributes={
-                # TODO: add a type column to seperate different sources (s3, blob, etc.)
-                "type": "TODO",  # TODO: map the strings
-                "location": source.name,
+                "type": INPUT_CONTEXT if input_context else urlparse(source.path).scheme,
+                "location": INPUT_CONTEXT if input_context else source.path,
                 "timestamp_format": source.timestamp_format,
                 "timestampColumn": source.event_timestamp_column,
             },
@@ -341,50 +360,73 @@ class _FeatureRegistry():
         return source_entity
 
     def _parse_derived_features(self, derived_features: List[DerivedFeature]) -> List[AtlasEntity]:
-        derivations_batch = []
+        derivation_entities = []
 
         for derived_feature in derived_features:
             # get the corresponding Atlas entity by searching feature name
             input_feature_entity_list: List[AtlasEntity] = [
                 self.global_feature_entity_dict[f.name] for f in derived_feature.input_features]
-            derived_feature_entity = AtlasEntity(
+            key_list = []
+            for individual_key in derived_feature.key:
+                key_dict={"key_column":individual_key.key_column, "key_column_type":individual_key.key_column_type.to_feature_config(),"full_name":individual_key.full_name, "description":individual_key.description, "key_column_alias":individual_key.key_column_alias}
+                key_list.append(key_dict)
+            derived_feature = AtlasEntity(
                 name=derived_feature.name,
                 qualified_name=self.project_name +
                 self.FEATURE_REGISTRY_DELIMITER + derived_feature.name,
                 attributes={
                     # TODO: parse the string
                     "type": derived_feature.feature_type.to_feature_config(),
-                    "key": "TODO",
-                    "inputs": [s.to_json(minimum=True) for s in input_feature_entity_list],
+                    "key": key_list,
+                    "input_features": [f.to_json(minimum=True) for f in input_feature_entity_list],
                     "transformation": derived_feature.transform.to_feature_config(),
+                    
                 },
+                version=5,
                 typeName=DERIVED_FEATURE,
                 guid=self.guid.get_guid(),
             )
-            self.entity_batch_queue.append(derived_feature_entity)
-            derivations_batch.append(derived_feature_entity)
-        return derivations_batch
+            
+
+            for input_feature_entity in input_feature_entity_list:
+                # add lineage between anchor feature and derived feature
+                derived_feature_feature_lineage = AtlasProcess(
+                    name=input_feature_entity.name + " to " + derived_feature.name,
+                    typeName="Process",
+                    qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
+                    self.FEATURE_REGISTRY_DELIMITER + derived_feature.name + self.FEATURE_REGISTRY_DELIMITER +
+                    input_feature_entity.name,
+                    inputs=[input_feature_entity],
+                    outputs=[derived_feature],
+                    guid=self.guid.get_guid(),
+                )
+                self.entity_batch_queue.append(derived_feature_feature_lineage)
+
+
+            self.entity_batch_queue.append(derived_feature)
+            derivation_entities.append(derived_feature)
+        return derivation_entities
 
     def _parse_features_from_context(self, workspace_path: str, anchor_list, derived_feature_list):
         """
         Read feature content from python objects (which is provided in the context)
         """
         # define it here to make sure the variable is accessible
-        anchors_batch = derived_feature_batch = []
+        anchor_entities = derived_feature_entities = []
 
         # parse all the anchors
         if anchor_list:
-            anchors_batch = self._parse_anchors(anchor_list)
+            anchor_entities = self._parse_anchors(anchor_list)
 
-        attributes = {"anchors": [
-            s.to_json(minimum=True) for s in anchors_batch]}
+        attributes = {"anchor_features": [
+            s.to_json(minimum=True) for s in anchor_entities]}
         # add derived feature if it's there
         if derived_feature_list:
-            derived_feature_batch = self._parse_derived_features(
+            derived_feature_entities = self._parse_derived_features(
                 derived_feature_list)
-            attributes["derivations"] = [
-                s.to_json(minimum=True) for s in derived_feature_batch]
-
+            attributes["derived_features"] = [
+                s.to_json(minimum=True) for s in derived_feature_entities]
+        
         # define project in Atlas entity
         feathr_project_entity = AtlasEntity(
             name=self.project_name,
@@ -393,35 +435,41 @@ class _FeatureRegistry():
             typeName=FEATHR_PROJECT,
             guid=self.guid.get_guid(),
         )
-        self.entity_batch_queue.append(feathr_project_entity)
-
+        
         # add lineage from anchor to project
-        for individual_anchor in anchors_batch:
+        for individual_anchor_entity in anchor_entities:
+            individual_anchor_entity.addRelationship(**{FEATHR_PROJECT:feathr_project_entity})
+
             lineage_process = AtlasProcess(
-                name=individual_anchor.name + " to " + self.project_name,
+                name=individual_anchor_entity.name + " to " + self.project_name,
                 typeName="Process",
                 # fqdn: PROCESS+PROJECT_NAME+ANCHOR_NAME
                 qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
-                self.FEATURE_REGISTRY_DELIMITER + individual_anchor.name,
-                inputs=[individual_anchor],
+                self.FEATURE_REGISTRY_DELIMITER + individual_anchor_entity.name,
+                inputs=[individual_anchor_entity],
                 outputs=[feathr_project_entity],
                 guid=self.guid.get_guid(),
             )
             self.entity_batch_queue.append(lineage_process)
 
         # add lineage from derivation to project
-        for derived_feature in derived_feature_batch:
+        for derived_feature_entity in derived_feature_entities:
+            derived_feature_entity.addRelationship(**{FEATHR_PROJECT:feathr_project_entity})
+
             lineage_process = AtlasProcess(
-                name=derived_feature.name + " to " + self.project_name,
+                name=derived_feature_entity.name + " to " + self.project_name,
                 typeName="Process",
                 # fqdn: PROCESS+PROJECT_NAME+DERIVATION_NAME
                 qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
-                self.FEATURE_REGISTRY_DELIMITER + derived_feature.name,
-                inputs=[derived_feature],
+                self.FEATURE_REGISTRY_DELIMITER + derived_feature_entity.name,
+                inputs=[derived_feature_entity],
                 outputs=[feathr_project_entity],
                 guid=self.guid.get_guid(),
             )
             self.entity_batch_queue.append(lineage_process)
+            self.entity_batch_queue.append(feathr_project_entity)
+            self.entity_batch_queue.extend(anchor_entities)
+            self.entity_batch_queue.extend(derived_feature_entities)
 
     @classmethod
     def _get_py_files(self, path: Path) -> List[Path]:
@@ -463,7 +511,7 @@ class _FeatureRegistry():
                 definitions.transformations.add(
                     vars(derived_feature)["transform"])
             else:
-                RuntimeError(
+                raise RuntimeError(
                     "Object cannot be parsed. `derived_feature_list` should be a list of `DerivedFeature`.")
 
         for anchor in anchor_list:
@@ -644,7 +692,7 @@ derivations: {
         registered features; otherwise it will only return only features under this project
         """
         entities = self.purview_client.discovery.search_entities(
-            "entityType:feathr_anchor_feature or entityType:feathr_derivation")
+            f"entityType:{ANCHOR_FEATURE} or entityType:{DERIVED_FEATURE}")
         feature_list = []
         for entity in entities:
             # Important properties returned includes:
@@ -656,9 +704,16 @@ derivations: {
                 # project_name+delimiter
                 if entity["qualifiedName"].startswith(project_name+self.FEATURE_REGISTRY_DELIMITER):
                     feature_list.append(entity["name"])
+                    entity_res = self.purview_client.get_entity(guid=entity['id'])
+                    # print(entity_res[1]["version"])
+                    for entity_result in entity_res:
+                        print(entity_result)
+                        print(entity_res[entity_result])
+                        # exit(0)
             else:
                 # otherwise append all the entities
                 feature_list.append(entity["name"])
+                
 
         return feature_list
 
