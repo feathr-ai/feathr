@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
 from jinja2 import Template
 
@@ -16,6 +16,7 @@ class DerivedFeature(FeatureBase):
         key: All features with corresponding keys that this derived feature depends on
         input_features: features that this derived features depends on
         transform: transformation that produces the derived feature value, based on the input_features
+        registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate feature description, whether this feature is deprecated or not, last refreshed time, etc.
     """
 
     def __init__(self,
@@ -23,8 +24,10 @@ class DerivedFeature(FeatureBase):
                 feature_type: FeatureType,
                 input_features: Union[FeatureBase, List[FeatureBase]],
                 transform: Union[str, RowTransformation],
-                key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY]):
-        super(DerivedFeature, self).__init__(name, feature_type, key=key, transform=transform)
+                key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
+                registry_tags: Optional[Dict[str, str]] = None,
+                ):
+        super(DerivedFeature, self).__init__(name, feature_type, key=key, transform=transform, registry_tags=registry_tags)
         self.input_features = input_features if isinstance(input_features, List) else [input_features]
         self.validate_feature()
 

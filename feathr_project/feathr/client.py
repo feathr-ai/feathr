@@ -23,6 +23,7 @@ from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
 from feathr.feature_derivations import DerivedFeature
+from feathr.anchor import FeatureAnchor
 from feathr.feathr_configurations import SparkExecutionConfiguration
 
 class FeatureJoinJobParams:
@@ -173,20 +174,21 @@ class FeathrClient(object):
 
             Args:
             from_context: If from_context is True (default), the features will be generated from
-                the current context. Otherwise, the features will be generated from
+                the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
                 configuration files.
         """
 
         if from_context:
+            # make sure those items are in `self`
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
                 _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
-                self.registry.register_features(self.local_workspace_dir)
+                self.registry.register_features(self.local_workspace_dir, from_context=from_context, anchor_list=self.anchor_list, derived_feature_list=self.derived_feature_list)
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
         else:
-            self.registry.register_features(self.local_workspace_dir)
+            self.registry.register_features(self.local_workspace_dir, from_context=from_context)
     
-    def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
+    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: Optional[List[DerivedFeature]] = []):
         """Registers features based on the current workspace
         """
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
