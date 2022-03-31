@@ -40,9 +40,8 @@ logger.setLevel(log_level)
 logger.info("starting %s", __file__)
 
 appServiceKey = os.getenv("AppServiceKey")
+config_path = os.getenv("config_path")
 
-config_path = '../feathrcli/data/feathr_user_workspace/feathr_config.yaml'
-# registry = _FeatureRegistry(config_path = config_path)
 
 def getRegistryClient(config_path : Optional[str] = config_path):
     return _FeatureRegistry(config_path = config_path)
