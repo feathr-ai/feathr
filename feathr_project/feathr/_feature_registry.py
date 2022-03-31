@@ -134,10 +134,8 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="transformation", typeName="string",
                                   cardinality=Cardinality.SINGLE),
-
-                # Below are for backward compatibility. DO NOT USE.
-                # AtlasAttributeDef(name="tags", typeName="map<string,string>",
-                #                   cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="tags", typeName="map<string,string>",
+                                  cardinality=Cardinality.SINGLE),
                 
             ],
             superTypes=["DataSet"],
@@ -158,7 +156,8 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="transformation", typeName="string",
                                   cardinality=Cardinality.SINGLE),
-
+                AtlasAttributeDef(name="tags", typeName="map<string,string>",
+                                    cardinality=Cardinality.SINGLE),
                 # Below are for backward compatibility. DO NOT USE.
                 # AtlasAttributeDef(name="definition",
                 #                   typeName="string", cardinality=Cardinality.SINGLE),
@@ -268,7 +267,6 @@ class _FeatureRegistry():
                 anchor.name + self.FEATURE_REGISTRY_DELIMITER + anchor_feature.name,
                 attributes={
                     "type": anchor_feature.feature_type.to_feature_config(),
-                    # TODO: need to think about this for keys
                     "key": key_list,
                     "transformation": anchor_feature.transform.to_feature_config(),
                     "tags":anchor_feature.registry_tags,
@@ -375,12 +373,10 @@ class _FeatureRegistry():
                 qualified_name=self.project_name +
                 self.FEATURE_REGISTRY_DELIMITER + derived_feature.name,
                 attributes={
-                    # TODO: parse the string
                     "type": derived_feature.feature_type.to_feature_config(),
                     "key": key_list,
                     "input_features": [f.to_json(minimum=True) for f in input_feature_entity_list],
                     "transformation": derived_feature.transform.to_feature_config(),
-                    
                 },
                 version=5,
                 typeName=DERIVED_FEATURE,
@@ -704,12 +700,7 @@ derivations: {
                 # project_name+delimiter
                 if entity["qualifiedName"].startswith(project_name+self.FEATURE_REGISTRY_DELIMITER):
                     feature_list.append(entity["name"])
-                    entity_res = self.purview_client.get_entity(guid=entity['id'])
-                    # print(entity_res[1]["version"])
-                    for entity_result in entity_res:
-                        print(entity_result)
-                        print(entity_res[entity_result])
-                        # exit(0)
+
             else:
                 # otherwise append all the entities
                 feature_list.append(entity["name"])
