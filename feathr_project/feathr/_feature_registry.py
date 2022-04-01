@@ -161,7 +161,7 @@ class _FeatureRegistry():
 
     def _parse_anchor_features(self, anchor: FeatureAnchor) -> List[AtlasEntity]:
         """
-        This function will parse the anchor features inside an anchor
+        This function will parse the anchor features and sources inside an anchor
         """
 
         anchor_feature_batch = []
@@ -249,7 +249,7 @@ class _FeatureRegistry():
 
     def _parse_source(self, source: Union[Source, HdfsSource]) -> AtlasEntity:
         """
-        parse the `sources` section of the feature configuration
+        parse the input sources
         """
         input_context = False
         if isinstance(source, InputContext):
@@ -272,6 +272,14 @@ class _FeatureRegistry():
         return source_entity
 
     def _parse_derived_features(self, derived_features: List[DerivedFeature]) -> List[AtlasEntity]:
+        """parse derived feature
+
+        Args:
+            derived_features (List[DerivedFeature]): derived feature in a list fashion
+
+        Returns:
+            List[AtlasEntity]: list of parsed Atlas entities for each of the derived feature
+        """
         derivation_entities = []
 
         for derived_feature in derived_features:
@@ -644,9 +652,6 @@ derivations: {
             f"entityType:{ANCHOR_FEATURE} or entityType:{DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
         feature_list = []
         for entity in entities:
-            # Important properties returned includes:
-            # id (the guid of the entity), name, qualifiedName, @search.score,
-            # and @search.highlights
             if project_name:
                 # if project_name is a valid string, only append entities if the qualified name start with
                 # project_name+delimiter
