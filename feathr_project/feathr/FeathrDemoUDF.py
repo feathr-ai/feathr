@@ -33,7 +33,7 @@ yaml_config = """
 # version of API settings
 api_version: 1
 project_config:
-  project_name: 'hangfei_feathr_testing1'
+  project_name: 'udf_feathr_testing1'
   # Information that are required to be set via environment variables.
   required_environment_variables:
     # the environemnt variables are required to run Feathr
@@ -144,10 +144,10 @@ feature_registry:
 with open("/tmp/feathr_config.yaml", "w") as text_file:
     text_file.write(yaml_config)
 
-def my_func(df: DataFrame):
+def trip_distance_preprocessing(df: DataFrame):
     # give the user dataframe
     # user want to cast some fields to certain types
-    print("df: ")
+    print("This is my_func1: ")
     print(df)
     print(df.schema)
     # this is executed in spark
@@ -159,7 +159,14 @@ def my_func(df: DataFrame):
     print("cast to double in my_func UDF!")
     print("cast to double in my_func UDF!")
     print("cast to double in my_func UDF!")
-    df = df.withColumn("trip_distance", df.trip_distance.cast('double'))
+    # df = df.withColumn("trip_distance", df.trip_distance.cast('double'))
+    # df = df.withColumn("fare_amount", df.fare_amount.cast('string'))
+
+    df = df.withColumn("trip_distance", df.trip_distance.cast('double') - 90000)
+    df = df.withColumn("fare_amount", df.fare_amount.cast('double') - 90000)
+    # df = df.withColumn("trip_distance", df.trip_distance - 90000)
+    # df = df.withColumn("fare_amount", df.fare_amount - 90000)
+
     print(df)
     print(df.schema)
     df.show(10)
@@ -168,7 +175,7 @@ def my_func(df: DataFrame):
 def my_func2(df: DataFrame):
     # give the user dataframe
     # user want to cast some fields to certain types
-    print("df: ")
+    print("This is my_func2: ")
     print(df)
     print(df.schema)
     # this is executed in spark
@@ -180,7 +187,12 @@ def my_func2(df: DataFrame):
     print("cast to double in my_func UDF!")
     print("cast to double in my_func UDF!")
     print("cast to double in my_func UDF!")
-    df = df.withColumn("fare_amount", df.fare_amount.cast('double'))
+    # df = df.withColumn("trip_distance", df.trip_distance.cast('string'))
+    # df = df.withColumn("fare_amount", df.fare_amount.cast('double'))
+    # df = df.withColumn("trip_distance", df.trip_distance + 90000)
+    # df = df.withColumn("fare_amount", df.fare_amount + 90000)
+    df = df.withColumn("trip_distance", df.trip_distance.cast('double') + 90000)
+    df = df.withColumn("fare_amount", df.fare_amount.cast('double') + 90000)
     print(df)
     print(df.schema)
     df.show(10)
@@ -194,7 +206,7 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
                           event_timestamp_column="lpep_dropoff_datetime",
                           timestamp_format="yyyy-MM-dd HH:mm:ss")
 
-location_id = TypedKey(key_column="DOLocationID",
+location_id = TypedKey(key_column="lpep_pickup_datetime",
                        key_column_type=ValueType.INT32,
                        description="location id in NYC",
                        full_name="nyc_taxi.location_id")
@@ -203,9 +215,9 @@ location_id = TypedKey(key_column="DOLocationID",
 # figure out pyfile
 # give the py func the input source data
 # return the input source data back to Frame for further processing
-f_trip_distance = Feature(name="f_trip_distance",
+f_fare_amount = Feature(name="f_fare_amount",
                           key=location_id,
-                          feature_type=FLOAT, transform="trip_distance")
+                          feature_type=FLOAT, transform="fare_amount + 1000")
 f_trip_time_duration = Feature(name="f_trip_time_duration",
                                key=location_id,
                                feature_type=INT32,
@@ -214,12 +226,10 @@ f_trip_time_duration = Feature(name="f_trip_time_duration",
 
 
 features = [
-    f_trip_distance,
-    f_trip_time_duration,
     Feature(name="f_is_long_trip_distance",
             key=location_id,
-            feature_type=BOOLEAN,
-            transform="trip_distance>30"),
+            feature_type=FLOAT,
+            transform="trip_distance + 1000"),
     Feature(name="f_day_of_week",
             key=location_id,
             feature_type=INT32,
@@ -229,8 +239,17 @@ features = [
 request_anchor = FeatureAnchor(name="request_features",
                                source=batch_source,
                                features=features,
-                               preprocessing=my_func)
+                               preprocessing=trip_distance_preprocessing)
 
+features2222 = [
+    f_fare_amount,
+    f_trip_time_duration
+]
+
+feature_anchor2222 = FeatureAnchor(name="feature_anchor2222",
+                               source=batch_source,
+                               features=features2222,
+                               preprocessing=my_func2)
 
 # f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
 #                                       feature_type=FLOAT,
@@ -264,23 +283,33 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            features=agg_features,
                            preprocessing=my_func2)
 
-client.build_features(anchor_list=[agg_anchor, request_anchor])
+client.build_features(anchor_list=[agg_anchor, request_anchor, feature_anchor2222])
 # client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
 #     f_trip_time_distance, f_trip_time_rounded])
 
 
+# TODO
+# anchor name and requested feature name might be different?
+# {'f_location_avg_fare,f_location_max_fare': JavaObject id=o204, 'f_trip_distance,f_trip_time_duration,f_is_long_trip_distance,f_day_of_week': JavaObject id=o220}
 
 
 feature_query = FeatureQuery(
-    feature_list=["f_is_long_trip_distance"], key=location_id)
+    # This breaks. fixed
+    feature_list=["f_is_long_trip_distance", "f_fare_amount", "f_trip_time_duration"], key=location_id)
+    # this works
+    # feature_list=["f_is_long_trip_distance", "f_day_of_week", "f_fare_amount", "f_trip_time_duration"], key=location_id)
     # feature_list=["f_location_avg_fare"], key=location_id)
+
 settings = ObservationSettings(
     observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
     event_timestamp_column="lpep_dropoff_datetime",
     timestamp_format="yyyy-MM-dd HH:mm:ss")
 
+
 client.get_offline_features(observation_settings=settings,
                             feature_query=feature_query,
                             output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro",
-                            udf_files=["./pyspark_client.py", "./client_udf_repo.py", "./__init__.py"]
+                            # udf_files=["./pyspark_client.py", "./client_udf_repo.py", "./__init__.py"]
+                            # udf_files=["./client_udf_repo.py"]
+                            udf_files=[]
                             )

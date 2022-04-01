@@ -181,15 +181,31 @@ class FeathrClient(object):
         """Registers features based on the current workspace
         """
         import shutil
-        shutil.copyfile("./client_udf_repo_template.py", "./client_udf_repo.py")
+        # shutil.copyfile("./client_udf_repo_template.py", "./client_udf_repo.py")
         func_maps = {}
+        feature_names_to_func_mapping = {}
         for anchor in anchor_list:
             print(anchor.preprocessing)
             if anchor.preprocessing:
                 self.write_udf_to_file(anchor.preprocessing, anchor.source.path)
-                func_maps[anchor.source.path] = anchor.preprocessing
+
+        for anchor in anchor_list:
+            print(anchor.preprocessing)
+            if anchor.preprocessing:
+                feature_names = [feature.name for feature in anchor.features]
+                feature_names.sort()
+                string_feature_list = ','.join(feature_names)
+                # how to ensure the func name is unique?
+                # what if 2 func names conflict?
+                feature_names_to_func_mapping[string_feature_list] = anchor.preprocessing
+                func_maps[string_feature_list] = anchor.source.path
+
         print(func_maps)
         self.write_mapping_to_file(func_maps)
+
+        print(feature_names_to_func_mapping)
+
+        self.write_feature_names_to_file(feature_names_to_func_mapping)
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
@@ -198,10 +214,50 @@ class FeathrClient(object):
         import inspect
 
         print(inspect.getsourcelines(user_func))
-        lines = inspect.getsourcelines(user_func)[0] + ['\n']
+        lines = ["from pyspark.sql import SparkSession, DataFrame\n"] + inspect.getsourcelines(user_func)[0] + ['\n']
         print(lines)
         new_file = lines
-        with open("./client_udf_repo.py", "a") as text_file:
+        full_file_name = os.path.join(self.local_workspace_dir, "client_udf_repo.py")
+        print("config_file_path:::::")
+        print(full_file_name)
+
+        file_name_start = full_file_name.rfind("/")
+        if file_name_start > 0:
+            dir_name = full_file_name[:file_name_start]
+            print(dir_name)
+            Path(dir_name).mkdir(parents=True, exist_ok=True)
+
+        my_file = Path(full_file_name)
+        if my_file.is_file():
+            # file exists
+            print("file exist: ")
+            with open(full_file_name, "a") as handle:
+                print("".join(new_file), file=handle)
+        else:
+            with open(full_file_name, "w") as handle:
+                print("".join(new_file), file=handle)
+
+
+        # with open(config_file_path, "w+") as text_file:
+        #     print("open pysparkudf file")
+        #     for item in new_file:
+        #         print(item)
+        #         text_file.write("%s" % item)
+        # code functionality here
+        # TODO
+        # write feature names to func mapping
+        print("Inside inner function")
+
+    def write_feature_names_to_file(self, func_maps):
+        print(func_maps)
+        new_file = []
+        new_file = new_file + ['feature_names_funcs = {\n']
+        for key, value in func_maps.items():
+            new_file = new_file + [f'  "{key}"' + f': {value.__name__},']
+        new_file = new_file + ['\n}'] + ['\n'] + ['\n']
+
+        full_file_name = os.path.join(self.local_workspace_dir, "client_udf_repo.py")
+        with open(full_file_name, "a") as text_file:
             print("open pysparkudf file")
             for item in new_file:
                 print(item)
@@ -214,9 +270,11 @@ class FeathrClient(object):
         new_file = []
         new_file = new_file + ['preprocessed_funcs = {\n']
         for key, value in func_maps.items():
-            new_file = new_file + [f'  "{key}"' + f': {value.__name__},']
-        new_file = new_file + ['\n}']
-        with open("./client_udf_repo.py", "a") as text_file:
+            new_file = new_file + [f'  "{key}"' + f': "{value}",']
+            # new_file = new_file + [f'  "{key}"' + f': {value.__name__},']
+        new_file = new_file + ['\n}'] + ['\n'] + ['\n']
+        full_file_name = os.path.join(self.local_workspace_dir, "client_udf_repo.py")
+        with open(full_file_name, "a") as text_file:
             print("open pysparkudf file")
             for item in new_file:
                 print(item)
@@ -391,6 +449,31 @@ class FeathrClient(object):
             feature_query: features that are requested to add onto the observation data
             output_path: output path of job, i.e. the observation data with features attached.
         """
+        print("get_offline_features: ")
+        print("get_offline_features: ")
+        print("get_offline_features: ")
+        from pathlib import Path
+
+
+        # TODO: doesn't work in notebook
+        abs_path = str(Path(Path(__file__).parent / 'pyspark_client.py').absolute())
+        # my_file = Path("./pyspark_client.py")
+        # abs_path = os.path.abspath("./pyspark_client.py")
+        print("abs_path: ")
+        print(abs_path)
+        # print("my_file: ")
+        # print(my_file)
+        # if my_file.is_file():
+        #     # file exists
+        #     print("file exist: ")
+        udf_files = [abs_path] + udf_files
+        client_udf_repo = os.path.join(self.local_workspace_dir, "client_udf_repo.py")
+        print("client_udf_repo: ")
+        print(client_udf_repo)
+
+        udf_files = udf_files + [client_udf_repo]
+        print("udf_files: ")
+        print(udf_files)
         # produce join config
         tm = Template("""
             {{observation_settings.to_config()}}

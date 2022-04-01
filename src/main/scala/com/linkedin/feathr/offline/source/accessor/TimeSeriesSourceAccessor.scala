@@ -44,12 +44,6 @@ private[offline] class TimeSeriesSourceAccessor(
       df
     }
 
-    println("TimeSeriesSourceAccessor preprocessed df")
-
-    val preprocessedMap = SimpleApp.preprocessedDfMap
-    println(preprocessedMap)
-    val preprocessedDf = preprocessedMap("f1")
-    preprocessedDf.show(10)
-    preprocessedDf
+    df
   }
 }

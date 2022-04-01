@@ -11,13 +11,13 @@ import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.SourceFormatType
 import com.linkedin.feathr.offline.util.SourceUtils.getPathList
 import com.linkedin.feathr.offline.util._
+import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import org.apache.avro.generic.GenericRecord
 import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.hadoop.conf.Configuration
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.JavaConverters.mapAsScalaMapConverter
@@ -257,7 +257,85 @@ object FeatureJoinJob {
    */
   def parseJoinConfig(joinConfString: String): FeatureJoinConfig = FeatureJoinConfig.parseJoinConfig(joinConfString)
 
-  def mainWithMap(args: Array[String], dfMap: java.util.Map[String, DataFrame]) {
+  def loadDataframe(args: Array[String], featureNameFuncMap: java.util.Map[String, String]): java.util.Map[String, DataFrame] = {
+    logger.info("FeatureJoinJob args are: " + args)
+    println("Feature join job: args")
+    println(args.mkString(","))
+    println("Feature join job: loadDataframe")
+    println(featureNameFuncMap)
+    val jobContext = parseInputArgument(args)
+
+    val sparkConf = new SparkConf().registerKryoClasses(Array(classOf[GenericRecord]))
+
+    val sparkSessionBuilder = SparkSession
+      .builder()
+      .config(sparkConf)
+      .appName(getClass.getName)
+      .enableHiveSupport()
+
+    val sparkSession = sparkSessionBuilder.getOrCreate()
+    val hadoopConf = sparkSession.sparkContext.hadoopConfiguration
+
+    DataSourceConfigUtils.setupHadoopConf(sparkSession, jobContext.dataSourceConfigs)
+
+    FeathrUdfRegistry.registerUdf(sparkSession)
+    HdfsUtils.deletePath(jobContext.jobJoinContext.outputPath, recursive = true, hadoopConf)
+
+    val joinConfig = FeatureJoinConfig.parseJoinConfig(hdfsFileReader(sparkSession, jobContext.joinConfig))
+    print("join config is, ",joinConfig)
+    // check read authorization for observation data, and write authorization for output path
+    checkAuthorization(sparkSession, hadoopConf, jobContext)
+
+    val enableDebugLog = FeathrUtils
+      .getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.ENABLE_DEBUG_OUTPUT)
+      .toBoolean
+    if (enableDebugLog) {
+      Logger.getRootLogger.setLevel(Level.DEBUG)
+    }
+
+    val failOnMissing = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
+
+    val localTestConfig:Option[LocalTestConfig] = None
+    val feathrClient = localTestConfig match {
+      case None =>
+        FeathrClient.builder(sparkSession)
+          .addFeatureDefPath(jobContext.jobJoinContext.feathrFeatureConfig)
+          .addLocalOverrideDefPath(jobContext.jobJoinContext.feathrLocalConfig)
+          .build()
+      case Some(localTestConfig) =>
+        FeathrClient.builder(sparkSession)
+          .addFeatureDef(localTestConfig.featureConfig)
+          .addLocalOverrideDef(localTestConfig.localConfig)
+          .build()
+    }
+
+    println("getFeathrClientAndJoinFeatures333: ")
+    val anchorToDataSourceMapper = new AnchorToDataSourceMapper()
+    val anchorsWithSource = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(
+      sparkSession,
+      feathrClient.allAnchoredFeatures.values.toSeq,
+      failOnMissing)
+    println("anchorsWithSource: ")
+    println(anchorsWithSource)
+
+    // using sorted feature names as the anchor identifier
+    // TODO: only return the feature anchor that needs preprocessing
+    // TODO: anchor with same source grouping here?
+    val resultDataFrameMap = anchorsWithSource
+      .filter(x => {
+        featureNameFuncMap.containsKey(x._1.featureAnchor.features.toSeq.sorted.mkString(","))
+      })
+      .map(x => {
+        (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get())
+      })
+    println("resultDataFrameMap: ")
+    println(resultDataFrameMap)
+    import collection.JavaConverters._
+    // pyspark only understand Java map
+    resultDataFrameMap.asJava
+  }
+
+  def mainWithMap(args: Array[String], dfMap: java.util.Map[String, DataFrame], featureNameFuncMap: java.util.Map[String, String]) {
     logger.info("FeatureJoinJob args are: " + args)
     println("Feature join job: main1111111")
     println("Feature join job: main1111111")
@@ -269,6 +347,10 @@ object FeatureJoinJob {
     println("dfMap join job: main")
     println(dfMap)
     SimpleApp.preprocessedDfMap = dfMap.asScala.toMap
+    // TODO
+    SimpleApp.globalFuncMap = featureNameFuncMap.asScala.toMap
+    println("globalFuncMap")
+    println(SimpleApp.globalFuncMap)
     val jobContext = parseInputArgument(args)
 
     val sparkConf = new SparkConf().registerKryoClasses(Array(classOf[GenericRecord]))
