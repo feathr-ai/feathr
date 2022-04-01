@@ -32,7 +32,6 @@ private[offline] class AnchorToDataSourceMapper {
       ss: SparkSession,
       requiredFeatureAnchors: Seq[FeatureAnchorWithSource],
       failOnMissingPartition: Boolean): Map[FeatureAnchorWithSource, DataSourceAccessor] = {
-    // TODO
     // get a Map from each source to a list of all anchors based on this source
     val sourceToAnchor = requiredFeatureAnchors
       .map(anchor => (anchor.source, anchor))
@@ -95,7 +94,6 @@ private[offline] class AnchorToDataSourceMapper {
 
     val timeInterval = OfflineDateTimeUtils.getFactDataTimeRange(adjustedObsTimeRange, window, timeDelays)
     val needCreateTimestampColumn = SlidingWindowFeatureUtils.needCreateTimestampColumnFromPartition(factDataSource)
-    // TODO: load preprocessing for SWA
     val timeSeriesSource =
       DataSourceAccessor(
         ss,

@@ -215,45 +215,29 @@ class _SynapseJobRunner(object):
         executor_cores = self.EXECUTOR_SIZE[self._executor_size]['Cores']
         executor_memory = self.EXECUTOR_SIZE[self._executor_size]['Memory']
 
-        # Adding spaces between brackets. This is to workaround this known YARN issue (when running Spark on YARN):
-        # https://issues.apache.org/jira/browse/SPARK-17814?focusedCommentId=15567964&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-15567964
-        # updated_arguments = []
-        # for elem in arguments:
-        #     if type(elem) == str:
-        #         updated_arguments.append(elem.replace("}", " }"))
-        #     else:
-        #         updated_arguments.append(elem)
+        # need to put the jar in as dependencies for pyspark job
+        jars = jars + [main_file]
 
-        print(python_files)
-        print("configuration: ")
-        print(configuration)
-        configuration = {}
-        # configuration['spark.jars'] = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started/feathr-assembly-0.1.0.jar'
-        print("jars: ")
-        print(jars)
-        jars = ['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started/feathr-assembly-0.1.0.jar']
+        # If file=ain_file, then it's using only Scala Spark
+        # If file=python_files[0], then it's using Pyspark
+        spark_execution_file = python_files[0] if python_files else main_file
+
         spark_batch_job_options = SparkBatchJobOptions(
             tags=tags,
             name=job_name,
-            file=python_files[0],
-            # file=python_files,
+            file=spark_execution_file,
             class_name=class_name,
-            # python_files=python_files,
-            python_files = python_files[1:],
+            python_files=python_files[1:],
             arguments=arguments,
             jars=jars,
-            # files=python_files,
-            files=reference_files,
+            files=files,
             archives=archives,
-            configuration=configuration, # TODO
+            configuration=configuration,
             driver_memory=driver_memory,
             driver_cores=driver_cores,
             executor_memory=executor_memory,
             executor_cores=executor_cores,
             executor_count=self._executors)
-            # conf	Spark configuration properties
-
-        print("spark_batch_job_options: ")
         print(spark_batch_job_options)
         return self.client.spark_batch.create_spark_batch_job(spark_batch_job_options, detailed=True)
 

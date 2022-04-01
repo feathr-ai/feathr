@@ -7,7 +7,7 @@ import com.linkedin.feathr.offline.FeatureDataFrame
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource.{getDefaultValues, getFeatureTypes}
 import com.linkedin.feathr.offline.client.DataFrameColName
-import com.linkedin.feathr.offline.job.FeatureTransformation.{FEATURE_NAME_PREFIX, logger, pruneAndRenameColumnWithTags, transformFeatures}
+import com.linkedin.feathr.offline.job.FeatureTransformation.{FEATURE_NAME_PREFIX, pruneAndRenameColumnWithTags, transformFeatures}
 import com.linkedin.feathr.offline.job.KeyedTransformedResult
 import com.linkedin.feathr.offline.join._
 import com.linkedin.feathr.offline.join.algorithms._
@@ -53,7 +53,6 @@ private[offline] class AnchoredFeatureJoinStep(
         val (keyTags: Seq[Int], featureNames: Seq[String]) = joinStage
         val FeatureDataFrame(contextDF, inferredFeatureTypeMap) = accFeatureDataFrame
         // map feature name to its transformed dataframe and the join key of the dataframe
-
         val groupedFeatureToDFAndJoinKeys: Map[Seq[String], Seq[KeyedTransformedResult]] =
           extractFeatureDataAndJoinKeys(keyTags, featureNames, allAnchoredFeatures, anchorDFMap)
         val tagsInfo = keyTags.map(ctx.logicalPlan.keyTagIntsToStrings).toList

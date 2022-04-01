@@ -184,6 +184,7 @@ class FeathrClient(object):
         # shutil.copyfile("./client_udf_repo_template.py", "./client_udf_repo.py")
         func_maps = {}
         feature_names_to_func_mapping = {}
+        features_with_preprocessing = []
         for anchor in anchor_list:
             print(anchor.preprocessing)
             if anchor.preprocessing:
@@ -193,6 +194,7 @@ class FeathrClient(object):
             print(anchor.preprocessing)
             if anchor.preprocessing:
                 feature_names = [feature.name for feature in anchor.features]
+                features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
                 string_feature_list = ','.join(feature_names)
                 # how to ensure the func name is unique?
@@ -204,6 +206,17 @@ class FeathrClient(object):
         self.write_mapping_to_file(func_maps)
 
         print(feature_names_to_func_mapping)
+
+        import pickle
+        # open a file, where you ant to store the data
+        file = open('pyspark_metadata', 'wb')
+
+        # dump information to that file
+        pickle.dump(features_with_preprocessing, file)
+
+        # close the file
+        file.close()
+
 
         self.write_feature_names_to_file(feature_names_to_func_mapping)
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
@@ -453,27 +466,22 @@ class FeathrClient(object):
         print("get_offline_features: ")
         print("get_offline_features: ")
         from pathlib import Path
+        # TODO: how do i know if i should start pyspark or scala spark?
+        import pickle
+
+        # open a file, where you stored the pickled data
+        file = open('pyspark_metadata', 'rb')
+
+        # dump information to that file
+        features_with_preprocessing = pickle.load(file)
+
+        # close the file
+        file.close()
+
+        print('Showing the pickled data:')
+        print(features_with_preprocessing)
 
 
-        # TODO: doesn't work in notebook
-        abs_path = str(Path(Path(__file__).parent / 'pyspark_client.py').absolute())
-        # my_file = Path("./pyspark_client.py")
-        # abs_path = os.path.abspath("./pyspark_client.py")
-        print("abs_path: ")
-        print(abs_path)
-        # print("my_file: ")
-        # print(my_file)
-        # if my_file.is_file():
-        #     # file exists
-        #     print("file exist: ")
-        udf_files = [abs_path] + udf_files
-        client_udf_repo = os.path.join(self.local_workspace_dir, "client_udf_repo.py")
-        print("client_udf_repo: ")
-        print(client_udf_repo)
-
-        udf_files = udf_files + [client_udf_repo]
-        print("udf_files: ")
-        print(udf_files)
         # produce join config
         tm = Template("""
             {{observation_settings.to_config()}}
@@ -485,6 +493,36 @@ class FeathrClient(object):
             outputPath: "{{output_path}}"
         """)
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
+        print("feature_queries: ")
+        has_py_udf_preprocessing = False
+        for feature_query333 in feature_queries:
+            print(feature_query333.feature_list)
+            for feature_name in feature_query333.feature_list:
+                if feature_name in features_with_preprocessing:
+                    print("hiiiiiiiiii")
+                    has_py_udf_preprocessing = True
+        udf_files = []
+        if has_py_udf_preprocessing:
+            # TODO: doesn't work in notebook
+            abs_path = str(Path(Path(__file__).parent / 'pyspark_client.py').absolute())
+            # my_file = Path("./pyspark_client.py")
+            # abs_path = os.path.abspath("./pyspark_client.py")
+            print("abs_path: ")
+            print(abs_path)
+            # print("my_file: ")
+            # print(my_file)
+            # if my_file.is_file():
+            #     # file exists
+            #     print("file exist: ")
+            udf_files = [abs_path] + udf_files
+            client_udf_repo = os.path.join(self.local_workspace_dir, "client_udf_repo.py")
+            print("client_udf_repo: ")
+            print(client_udf_repo)
+
+            udf_files = udf_files + [client_udf_repo]
+            print("udf_files: ")
+            print(udf_files)
+
         config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
         config_file_name = "feature_join_conf/feature_join.conf"
         config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
@@ -517,31 +555,14 @@ class FeathrClient(object):
                                                        job_output_path=feathr_feature['outputPath'],
                                                        )
 
-        arguments333 = [
-                      '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
-                feature_join_job_params.join_config_path),
-                      '--input', feature_join_job_params.observation_path,
-                      '--output', feature_join_job_params.job_output_path,
-                      '--feature-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
-                feature_join_job_params.feature_config),
-                      '--num-parts', self.output_num_parts,
-                      '--s3-config', self._get_s3_config_str(),
-                      '--adls-config', self._get_adls_config_str(),
-                      '--blob-config', self._get_blob_config_str(),
-                      '--sql-config', self._get_sql_config_str(),
-                      '--snowflake-config', self._get_snowflake_config_str()
-                  ]
-        print("Argument: ")
-        print(arguments333)
         # submit the jars
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
-            python_files = cloud_udf_paths,
-            # main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            python_files=cloud_udf_paths,
+            # TODO
             job_tags={OUTPUT_PATH_TAG:feature_join_job_params.job_output_path},
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
-            # main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
                 '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     feature_join_job_params.join_config_path),

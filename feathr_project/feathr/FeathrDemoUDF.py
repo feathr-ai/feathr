@@ -33,7 +33,7 @@ yaml_config = """
 # version of API settings
 api_version: 1
 project_config:
-  project_name: 'udf_feathr_testing1'
+  project_name: 'Hangfei_udf_feathr_testing1'
   # Information that are required to be set via environment variables.
   required_environment_variables:
     # the environemnt variables are required to run Feathr
