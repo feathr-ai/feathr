@@ -19,7 +19,7 @@ def test_feathr_register_features_e2e():
         assert 'f_trip_time_rounded' in all_features # make sure derived features are there
         assert 'f_location_avg_fare' in all_features # make sure aggregated features are there
 
-@pytest.mark.skip(reason="Add back get_features is supported in feature registry")
+@pytest.mark.skip(reason="Add back get_features is not supported in feature registry for now and needs further discussion")
 def test_feathr_get_features_from_registry():
     """
     Test FeathrClient() sync features and get all the conf files from registry
