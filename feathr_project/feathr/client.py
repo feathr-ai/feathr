@@ -74,8 +74,18 @@ class FeathrClient(object):
         client creation.
     """
 
-    def __init__(self, config_path = "./feathr_config.yaml", local_workspace_dir = None):
+    def __init__(self, config_path = "./feathr_config.yaml", local_workspace_dir = None, project_name_override = None, project_registry_tag={}):
+        """initialize Feathr Client
 
+        Args:
+            config_path (str, optional): Configuration path for configurations, including spark configurations, offline store/online store names, etc. Defaults to "./feathr_config.yaml".
+            local_workspace_dir (_type_, optional): workspace directory for storing all the generated contents. Defaults to None.
+            project_name_override (_type_, optional): override the project name. Defaults to None.
+            project_registry_tag (dict, optional): adding tags for project in Feathr registry . Defaults to {}.
+
+        Raises:
+            RuntimeError: _description_
+        """
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
@@ -92,7 +102,7 @@ class FeathrClient(object):
 
         # Load all configs from yaml at initialization
         # DO NOT load any configs from yaml during runtime.
-        self.project_name = envutils.get_environment_variable_with_default(
+        self.project_name = project_name_override if project_name_override else envutils.get_environment_variable_with_default(
             'project_config', 'project_name')
 
         # Redis configs
@@ -157,7 +167,14 @@ class FeathrClient(object):
 
         self._construct_redis_client()
 
-        self.registry = _FeatureRegistry(config_path = config_path)
+
+        # initialize registry
+        self.registry_delimiter = envutils.get_environment_variable_with_default(
+            'feature_registry', 'purview', 'delimiter')
+        self.azure_purview_name = envutils.get_environment_variable_with_default(
+            'feature_registry', 'purview', 'purview_name')
+        # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
+        self.registry = _FeatureRegistry(self.project_name, self.azure_purview_name, self.registry_delimiter, project_registry_tag)
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
@@ -201,11 +218,11 @@ class FeathrClient(object):
         """
         return self.registry.list_registered_features(project_name)
 
-    def get_registry_client(self):
+    def _get_registry_client(self):
         """
         Returns registry client in case users want to perform more advanced operations
         """
-        return self.registry.get_registry_client()
+        return self.registry._get_registry_client()
 
     def get_online_features(self, feature_table, key, feature_names):
         """Fetches feature value for a certain key from a online feature table.

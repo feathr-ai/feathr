@@ -3,6 +3,7 @@ import importlib
 import os
 import sys
 from pathlib import Path
+from tracemalloc import stop
 from typing import List, Optional, Tuple, Union, Dict
 from feathr.typed_key import TypedKey
 
@@ -32,21 +33,17 @@ from feathr.transformation import Transformation
 
 
 class _FeatureRegistry():
-
-    def __init__(self, config_path):
+    def __init__(self, project_name: str, azure_purview_name: str, registry_delimiter: str, project_tags: Dict[str, str]):
         """
         Initializes the feature registry, doing the following:
         - Use an Azure Service Principal to communicate with Azure Purview
         - Initialize an Azure Purview Client
         - Initialize the GUID tracker, project name, etc.
         """
-        envutils = _EnvVaraibleUtil(config_path)
-        self.project_name = envutils.get_environment_variable_with_default(
-            'project_config', 'project_name')
-        self.FEATURE_REGISTRY_DELIMITER = envutils.get_environment_variable_with_default(
-            'feature_registry', 'purview', 'delimiter')
-        self.azure_purview_name = envutils.get_environment_variable_with_default(
-            'feature_registry', 'purview', 'purview_name')
+        self.project_name = project_name
+        self.registry_delimiter = registry_delimiter
+        self.azure_purview_name = azure_purview_name
+        self.project_tags = project_tags
 
         # only initialize all the purview client etc. when the name is set. This will enable more pluggable reigstry in the future.
         if self.azure_purview_name:
@@ -58,7 +55,7 @@ class _FeatureRegistry():
                 client_secret=_EnvVaraibleUtil.get_environment_variable(
                     "AZURE_CLIENT_SECRET")
             )
-            self.purview_client = PurviewClient(
+            self.registry_client = PurviewClient(
                 account_name=self.azure_purview_name,
                 authentication=self.oauth
             )
@@ -77,19 +74,19 @@ class _FeatureRegistry():
         # Each feature is registered under a certain Feathr project. The project should what we refer to, however for backward compatibility, the type name would be `feathr_workspace`
         type_feathr_project = EntityTypeDef(
             name=FEATHR_PROJECT,
-            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
                 AtlasAttributeDef(
                     name="anchor_features", typeName=ARRAY_ANCHOR, cardinality=Cardinality.SET),
                 AtlasAttributeDef(
                     name="derived_features", typeName=ARRAY_DERIVED_FEATURE, cardinality=Cardinality.SET),
+                AtlasAttributeDef(name="tags", typeName="map<string,string>",
+                                  cardinality=Cardinality.SINGLE),
             ],
             superTypes=["DataSet"],
 
         )
         type_feathr_sources = EntityTypeDef(
             name=SOURCE,
-            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
 
                 AtlasAttributeDef(
@@ -108,7 +105,6 @@ class _FeatureRegistry():
 
         type_feathr_anchor_features = EntityTypeDef(
             name=ANCHOR_FEATURE,
-            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
                 AtlasAttributeDef(name="type", typeName="string",
                                   cardinality=Cardinality.SINGLE),
@@ -124,7 +120,6 @@ class _FeatureRegistry():
 
         type_feathr_derived_features = EntityTypeDef(
             name=DERIVED_FEATURE,
-            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
                 AtlasAttributeDef(name="type", typeName="string",
                                   cardinality=Cardinality.SINGLE),
@@ -138,14 +133,13 @@ class _FeatureRegistry():
                 AtlasAttributeDef(name="transformation", typeName="string",
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
-                                    cardinality=Cardinality.SINGLE),
+                                  cardinality=Cardinality.SINGLE),
             ],
             superTypes=["DataSet"],
         )
 
         type_feathr_anchors = EntityTypeDef(
             name=ANCHOR,
-            typeVersion=REGISTRY_VERSION,
             attributeDefs=[
                 AtlasAttributeDef(
                     name="source", typeName=SOURCE, cardinality=Cardinality.SINGLE),
@@ -159,7 +153,7 @@ class _FeatureRegistry():
             superTypes=["DataSet"],
         )
 
-        def_result = self.purview_client.upload_typedefs(
+        def_result = self.registry_client.upload_typedefs(
             entityDefs=[type_feathr_anchor_features, type_feathr_anchors,
                         type_feathr_derived_features, type_feathr_sources, type_feathr_project],
             force_update=True)
@@ -171,22 +165,25 @@ class _FeatureRegistry():
         """
 
         anchor_feature_batch = []
-        anchor_feature: Feature  # annotate type
+        # annotate type
+        anchor_feature: Feature
+
         for anchor_feature in anchor.features:
             key_list = []
             for individual_key in anchor_feature.key:
-                key_dict={"key_column":individual_key.key_column, "key_column_type":individual_key.key_column_type.value,"full_name":individual_key.full_name, "description":individual_key.description, "key_column_alias":individual_key.key_column_alias}
+                key_dict = {"key_column": individual_key.key_column, "key_column_type": individual_key.key_column_type.value,
+                            "full_name": individual_key.full_name, "description": individual_key.description, "key_column_alias": individual_key.key_column_alias}
                 key_list.append(key_dict)
 
             anchor_feature_entity = AtlasEntity(
                 name=anchor_feature.name,
-                qualified_name=self.project_name + self.FEATURE_REGISTRY_DELIMITER +
-                anchor.name + self.FEATURE_REGISTRY_DELIMITER + anchor_feature.name,
+                qualified_name=self.project_name + self.registry_delimiter +
+                anchor.name + self.registry_delimiter + anchor_feature.name,
                 attributes={
                     "type": anchor_feature.feature_type.to_feature_config(),
                     "key": key_list,
                     "transformation": anchor_feature.transform.to_feature_config(),
-                    "tags":anchor_feature.registry_tags,
+                    "tags": anchor_feature.registry_tags,
                 },
                 typeName=ANCHOR_FEATURE,
                 guid=self.guid.get_guid(),
@@ -210,7 +207,7 @@ class _FeatureRegistry():
 
             anchor_entity = AtlasEntity(
                 name=anchor.name,
-                qualified_name=self.project_name + self.FEATURE_REGISTRY_DELIMITER + anchor.name,
+                qualified_name=self.project_name + self.registry_delimiter + anchor.name,
                 attributes={
                     "source": source_entity.to_json(minimum=True),
                     "features": [s.to_json(minimum=True) for s in anchor_feature_entities],
@@ -225,21 +222,21 @@ class _FeatureRegistry():
                 lineage = AtlasProcess(
                     name=anchor_feature_entity.name + " to " + anchor.name,
                     typeName="Process",
-                    qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
-                    self.FEATURE_REGISTRY_DELIMITER + anchor.name + self.FEATURE_REGISTRY_DELIMITER +
+                    qualified_name=self.registry_delimiter + "PROCESS" + self.registry_delimiter + self.project_name +
+                    self.registry_delimiter + anchor.name + self.registry_delimiter +
                     anchor_feature_entity.name,
                     inputs=[anchor_feature_entity],
                     outputs=[anchor_entity],
                     guid=self.guid.get_guid(),
                 )
                 self.entity_batch_queue.append(lineage)
-            
+
             # add lineage between anchor and source
             anchor_source_lineage = AtlasProcess(
                 name=source_entity.name + " to " + anchor.name,
                 typeName="Process",
-                qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
-                self.FEATURE_REGISTRY_DELIMITER + anchor.name + self.FEATURE_REGISTRY_DELIMITER +
+                qualified_name=self.registry_delimiter + "PROCESS" + self.registry_delimiter + self.project_name +
+                self.registry_delimiter + anchor.name + self.registry_delimiter +
                 source_entity.name,
                 inputs=[source_entity],
                 outputs=[anchor_entity],
@@ -254,13 +251,13 @@ class _FeatureRegistry():
         """
         parse the `sources` section of the feature configuration
         """
-        input_context=False
+        input_context = False
         if isinstance(source, InputContext):
-            input_context=True
-    
+            input_context = True
+
         source_entity = AtlasEntity(
             name=source.name,
-            qualified_name=self.project_name + self.FEATURE_REGISTRY_DELIMITER + source.name,
+            qualified_name=self.project_name + self.registry_delimiter + source.name,
             attributes={
                 "type": INPUT_CONTEXT if input_context else urlparse(source.path).scheme,
                 "path": INPUT_CONTEXT if input_context else source.path,
@@ -283,30 +280,32 @@ class _FeatureRegistry():
                 self.global_feature_entity_dict[f.name] for f in derived_feature.input_features]
             key_list = []
             for individual_key in derived_feature.key:
-                key_dict={"key_column":individual_key.key_column, "key_column_type":individual_key.key_column_type.value,"full_name":individual_key.full_name, "description":individual_key.description, "key_column_alias":individual_key.key_column_alias}
+                key_dict = {"key_column": individual_key.key_column, "key_column_type": individual_key.key_column_type.value,
+                            "full_name": individual_key.full_name, "description": individual_key.description, "key_column_alias": individual_key.key_column_alias}
                 key_list.append(key_dict)
             derived_feature_entity = AtlasEntity(
                 name=derived_feature.name,
                 qualified_name=self.project_name +
-                self.FEATURE_REGISTRY_DELIMITER + derived_feature.name,
+                self.registry_delimiter + derived_feature.name,
                 attributes={
                     "type": derived_feature.feature_type.to_feature_config(),
                     "key": key_list,
                     "input_features": [f.to_json(minimum=True) for f in input_feature_entity_list],
                     "transformation": derived_feature.transform.to_feature_config(),
+                    "tags": derived_feature.registry_tags
                 },
                 version=5,
                 typeName=DERIVED_FEATURE,
                 guid=self.guid.get_guid(),
             )
-            
+
             for input_feature_entity in input_feature_entity_list:
                 # add lineage between anchor feature and derived feature
                 derived_feature_feature_lineage = AtlasProcess(
                     name=input_feature_entity.name + " to " + derived_feature.name,
                     typeName="Process",
-                    qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
-                    self.FEATURE_REGISTRY_DELIMITER + derived_feature.name + self.FEATURE_REGISTRY_DELIMITER +
+                    qualified_name=self.registry_delimiter + "PROCESS" + self.registry_delimiter + self.project_name +
+                    self.registry_delimiter + derived_feature.name + self.registry_delimiter +
                     input_feature_entity.name,
                     inputs=[input_feature_entity],
                     outputs=[derived_feature_entity],
@@ -330,14 +329,14 @@ class _FeatureRegistry():
             anchor_entities = self._parse_anchors(anchor_list)
 
         attributes = {"anchor_features": [
-            s.to_json(minimum=True) for s in anchor_entities]}
+            s.to_json(minimum=True) for s in anchor_entities], "tags": self.project_tags}
         # add derived feature if it's there
         if derived_feature_list:
             derived_feature_entities = self._parse_derived_features(
                 derived_feature_list)
             attributes["derived_features"] = [
                 s.to_json(minimum=True) for s in derived_feature_entities]
-        
+
         # define project in Atlas entity
         feathr_project_entity = AtlasEntity(
             name=self.project_name,
@@ -346,7 +345,7 @@ class _FeatureRegistry():
             typeName=FEATHR_PROJECT,
             guid=self.guid.get_guid(),
         )
-        
+
         # add lineage from anchor to project
         for individual_anchor_entity in anchor_entities:
 
@@ -354,8 +353,8 @@ class _FeatureRegistry():
                 name=individual_anchor_entity.name + " to " + self.project_name,
                 typeName="Process",
                 # fqdn: PROCESS+PROJECT_NAME+ANCHOR_NAME
-                qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
-                self.FEATURE_REGISTRY_DELIMITER + individual_anchor_entity.name,
+                qualified_name=self.registry_delimiter + "PROCESS" + self.registry_delimiter + self.project_name +
+                self.registry_delimiter + individual_anchor_entity.name,
                 inputs=[individual_anchor_entity],
                 outputs=[feathr_project_entity],
                 guid=self.guid.get_guid(),
@@ -368,8 +367,8 @@ class _FeatureRegistry():
                 name=derived_feature_entity.name + " to " + self.project_name,
                 typeName="Process",
                 # fqdn: PROCESS+PROJECT_NAME+DERIVATION_NAME
-                qualified_name=self.FEATURE_REGISTRY_DELIMITER + "PROCESS" + self.FEATURE_REGISTRY_DELIMITER + self.project_name +
-                self.FEATURE_REGISTRY_DELIMITER + derived_feature_entity.name,
+                qualified_name=self.registry_delimiter + "PROCESS" + self.registry_delimiter + self.project_name +
+                self.registry_delimiter + derived_feature_entity.name,
                 inputs=[derived_feature_entity],
                 outputs=[feathr_project_entity],
                 guid=self.guid.get_guid(),
@@ -571,7 +570,7 @@ derivations: {
             workspace_path, anchor_list, derived_feature_list)
         # Upload all entities
         # need to be all in one batch to be uploaded, otherwise the GUID reference won't work
-        results = self.purview_client.upload_entities(
+        results = self.registry_client.upload_entities(
             batch=self.entity_batch_queue)
         if results:
             webinterface_path = "https://web.purview.azure.com/resource/" + self.azure_purview_name + \
@@ -582,33 +581,67 @@ derivations: {
         logger.info(
             "Finished registering features. See {} to access the Purview web interface", webinterface_path)
 
-    def _delete_feathr_entitiy_by_id(self,guid:Union[str,List[str]]):
+    def _purge_feathr_registry(self):
         """
-        Delete all the corresonding entity for feathr registry.
+        Delete all the feathr related entities and type definitions in feathr registry. For internal use only
+        """
+        self._delete_all_feathr_entitties()
+        self._delete_all_feathr_types()
+
+
+    def _delete_all_feathr_types(self):
+        """
+        Delete all the corresonding type definitions for feathr registry. For internal use only
+        """
+        typedefs = self.registry_client.get_all_typedefs()
+
+        relationshipdef_list=[]
+        for relationshipdef in typedefs['relationshipDefs']:
+            if "feathr" in relationshipdef['name']:
+                relationshipdef_list.append(relationshipdef)
+        self.registry_client.delete_typedefs(relationshipDefs=relationshipdef_list)
+        
+
+        entitydef_list=[]
+        for typedef in typedefs['entityDefs']:
+            if "feathr" in typedef['name']:
+                entitydef_list.append(typedef )
+        self.registry_client.delete_typedefs(entityDefs=entitydef_list)
+
+        logger.info("Deleted all the Feathr related definitions.")
+
+    def _delete_all_feathr_entitties(self):
+        """
+        Delete all the corresonding entity for feathr registry. For internal use only
 
         :param guid: The guid or guids you want to remove.
-        :type guid: Union(str,list(str))
-        :return:
-            An EntityMutationResponse containing guidAssignments,
-            mutatedEntities, and partialUpdatedEntities (list).
-        :rtype: dict(str, Union(dict,list))
         """
-        self.purview_client.delete_entity(guid=guid)
+        entities = self.registry_client.discovery.search_entities(
+            "feathr*", limit=20)
 
+        # [print(entity) for entity in entities]
+        guid_list = [entity["id"] for entity in entities]
 
-    def get_registry_client(self):
+        # should not be large than this, otherwise the backend might throw out error
+        batch_delte_size = 15
+        for i in range(0, len(guid_list), batch_delte_size):
+            self.registry_client.delete_entity(
+                guid=guid_list[i:i+batch_delte_size])
+            logger.info("{} feathr entities deleted", batch_delte_size)
+
+    def _get_registry_client(self):
         """
         Return a client object and users can operate more on it (like doing search)
         """
-        return self.purview_client
+        return self.registry_client
 
     def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0,) -> List[str]:
         """
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
         """
-        entities = self.purview_client.discovery.search_entities(
-            f"entityType:{ANCHOR_FEATURE} or entityType:{DERIVED_FEATURE}", limit=limit,starting_offset=starting_offset)
+        entities = self.registry_client.discovery.search_entities(
+            f"entityType:{ANCHOR_FEATURE} or entityType:{DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
         feature_list = []
         for entity in entities:
             # Important properties returned includes:
@@ -618,8 +651,8 @@ derivations: {
                 # if project_name is a valid string, only append entities if the qualified name start with
                 # project_name+delimiter
                 qualified_name: str = entity["qualifiedName"]
-                 # split the name based on delimiter
-                result = qualified_name.split(self.FEATURE_REGISTRY_DELIMITER)
+                # split the name based on delimiter
+                result = qualified_name.split(self.registry_delimiter)
                 if result[0].casefold() == project_name:
                     feature_list.append(entity["name"])
             else:
@@ -628,24 +661,28 @@ derivations: {
 
         return feature_list
 
-    def _list_registered_entities_with_details(self, project_name: str = None, entity_type: Union[str, List[str]]=None, limit=50,starting_offset=0,) -> List[Dict]:
+    def _list_registered_entities_with_details(self, project_name: str = None, entity_type: Union[str, List[str]] = None, limit=50, starting_offset=0,) -> List[Dict]:
         """
         List all the already registered entities. entity_type should be one of: SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT, or a list of those values
         limit: a maximum 1000 will be enforced at the underlying API
 
         returns a list of the result entities.
         """
-        entity_type_list = [entity_type] if isinstance(entity_type, str) else entity_type
+        entity_type_list = [entity_type] if isinstance(
+            entity_type, str) else entity_type
 
         for i in entity_type_list:
             if i not in {SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT}:
-                raise RuntimeError(f'only SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT are supported when listing the registered entities, {entity_type} is not one of them.')
-        
+                raise RuntimeError(
+                    f'only SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT are supported when listing the registered entities, {entity_type} is not one of them.')
+
         # the search grammar is less documented in Atlas/Purview
-        search_string="".join([f" or entityType:{e}" for e in entity_type_list])
+        search_string = "".join(
+            [f" or entityType:{e}" for e in entity_type_list])
         # remvoe the first additional " or "
         search_string = search_string[4:]
-        result_entities = self.purview_client.discovery.search_entities(search_string, limit=limit, starting_offset=starting_offset)
+        result_entities = self.registry_client.discovery.search_entities(
+            search_string, limit=limit, starting_offset=starting_offset)
         # Important properties returned includes:
         # id (the guid of the entity), name, qualifiedName, @search.score,
         # and @search.highlights
@@ -656,11 +693,12 @@ derivations: {
                 # project_name+delimiter
                 qualified_name: str = entity["qualifiedName"]
                 # split the name based on delimiter
-                result = qualified_name.split(self.FEATURE_REGISTRY_DELIMITER)
+                result = qualified_name.split(self.registry_delimiter)
                 if result[0].casefold() == project_name:
                     guid_list.append(entity["id"])
             else:
                 # otherwise append all the entities
                 guid_list.append(entity["id"])
-        entity_res = [] if guid_list is None else self.purview_client.get_entity(guid=guid_list)["entities"]
+        entity_res = [] if guid_list is None else self.registry_client.get_entity(
+            guid=guid_list)["entities"]
         return entity_res
