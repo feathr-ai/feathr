@@ -32,6 +32,7 @@ class FeatureAnchor:
         """Validate that anchor is non-empty and all its features share the same key"""
         assert len(self.features) > 0
         for feature in self.features:
+            print(feature.key_alias, self.features[0].key_alias)
             assert feature.key_alias == self.features[0].key_alias
 
     def to_feature_config(self) -> str:

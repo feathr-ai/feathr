@@ -637,8 +637,3 @@ class FeathrClient(object):
             JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
             """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
         return config_str
-
-    def get_features_from_registry(self, project_name):
-        """ Sync features from the registry given a project name """
-        # TODO - Add support for customized workspace path
-        self.registry.get_features_from_registry(project_name, os.path.abspath("./"))

@@ -16,10 +16,7 @@ class ValueType(enum.Enum):
     DOUBLE = 5
     STRING = 6
     BYTES = 7
-    
-    @abstractmethod
-    def to_feature_config(self) -> str:
-       pass
+
 
 class FeatureType(ABC):
     """Base class for all feature types"""
