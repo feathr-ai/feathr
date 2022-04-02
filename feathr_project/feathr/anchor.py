@@ -1,8 +1,10 @@
 from typing import List, Optional
 from feathr.feature import Feature
 from feathr.source import Source
+from feathr.typed_key import DUMMY_KEY
 from jinja2 import Template
 from typing import AnyStr, Callable
+from feathr.source import INPUT_CONTEXT
 
 # passthrough features do not need keys
 class FeatureAnchor:
@@ -30,8 +32,16 @@ class FeatureAnchor:
     def validate_features(self):
         """Validate that anchor is non-empty and all its features share the same key"""
         assert len(self.features) > 0
+        if self.source != INPUT_CONTEXT:
+            for feature in self.features:
+                if feature.key == [DUMMY_KEY]:
+                    raise RuntimeError(f"For Non INPUT_CONTEXT(PASSTHROUGH) anchors, key of feature {feature.name} "
+                                       f"should be explicitly specified and DUMMY_KEY should not be used.")
         for feature in self.features:
             assert feature.key_alias == self.features[0].key_alias
+        if self.source == INPUT_CONTEXT and self.preprocessing:
+            raise RuntimeError(f"INPUT_CONTEXT(PASSTHROUGH) anchor doesn't support preprocessing. Please remove the "
+                               f"preprocessing from the anchor definition.")
 
     def to_feature_config(self) -> str:
         tm = Template("""

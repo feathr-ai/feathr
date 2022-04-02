@@ -6,6 +6,15 @@ import sys
 print("Feathr Pyspark job started.")
 spark = SparkSession.builder.appName('FeathrPyspark').getOrCreate()
 
+# global_df = spark.read.option('header', 'true').csv('wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv')
+# print("global_df:")
+# global_df.show(10)
+# from pyspark.sql.functions import col,sum,avg,max
+# global_df.withColumn("CopiedColumn", col("tolls_amount") * -1)
+# global_df.withColumn("fare_amount_new", col("fare_amount") + 100)
+
+
+
 def toJStringArray(arr):
     jarr = spark._sc._gateway.new_array(spark._sc._jvm.java.lang.String, len(arr))
     for i in range(len(arr)):
@@ -41,6 +50,7 @@ def submit_spark_job(feature_names_funcs):
         py_df = DataFrame(scala_dataframe, sql_ctx)
         print("Corresponding py_df: ")
         print(py_df)
+        py_df.show(10)
         # Preprocess the DataFrame via UDF
         user_func = feature_names_funcs[feature_names]
         preprocessed_udf = user_func(py_df)

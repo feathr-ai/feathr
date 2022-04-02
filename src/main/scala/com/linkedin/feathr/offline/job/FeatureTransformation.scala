@@ -315,44 +315,17 @@ private[offline] object FeatureTransformation {
     val defaultInterval = anchorFeatureGroup.anchorsWithSameSource.head.dateParam.map(OfflineDateTimeUtils.createIntervalFromFeatureGenDateParam)
     val interval = inputDateInterval.orElse(defaultInterval)
 
-    logger.info("FeatureTransformation.scala directCalculate: ")
-    logger.info("FeatureTransformation.scala directCalculate: ")
-    logger.info("FeatureTransformation.scala directCalculate: ")
-    println("FeatureTransformation.scala directCalculate333: ")
-    println("FeatureTransformation.scala directCalculate333: ")
-    println(anchorFeatureGroup)
-    println("directCalculate preprocessedDf: ")
-    println(preprocessedDf)
-    // simpleApp.get(anchorFeatureGroup)
-    // TODO
+    // If there are preprocessed DataFrame by users' Pyspark UDFs, just use the preprocessed DataFrame.
     val sourceDF: DataFrame = preprocessedDf match {
       case Some(existDf) => existDf
       case None => {
-        val sourceDF333 = source match {
+        source match {
           case timeBasedDataSourceAccessor: TimeBasedDataSourceAccessor => timeBasedDataSourceAccessor.get(interval)
           case nonTimeBasedDataSourceAccessor: NonTimeBasedDataSourceAccessor => nonTimeBasedDataSourceAccessor.get()
         }
-        sourceDF333
       }
     }
-//    val sourceDF: DataFrame = if (preprocessedDf.isDefined) {
-//      preprocessedDf.get
-//    } else {
-//      case timeBasedDataSourceAccessor: TimeBasedDataSourceAccessor => timeBasedDataSourceAccessor.get(interval)
-//      case nonTimeBasedDataSourceAccessor: NonTimeBasedDataSourceAccessor => nonTimeBasedDataSourceAccessor.get()
-//      case _ => throw new RuntimeException("")
-//    }
-//    val sourceDF = preprocessedDf.get
 
-//    val sourceDF = source match {
-//      case timeBasedDataSourceAccessor: TimeBasedDataSourceAccessor => timeBasedDataSourceAccessor.get(interval)
-//      case nonTimeBasedDataSourceAccessor: NonTimeBasedDataSourceAccessor => nonTimeBasedDataSourceAccessor.get()
-//    }
-    logger.info("sourceDF: ")
-    logger.info("sourceDF: ")
-    logger.info(sourceDF)
-    sourceDF.printSchema()
-    sourceDF.show(10)
     val withKeyColumnDF = keyExtractor.appendKeyColumns(sourceDF)
     val outputJoinKeyColumnNames = getFeatureJoinKey(keyExtractor, withKeyColumnDF)
     val filteredFactData = applyBloomFilter((keyExtractor, withKeyColumnDF), bloomFilter)
@@ -454,10 +427,7 @@ private[offline] object FeatureTransformation {
    * Group features based on 4 factors. Only if features have the same source key extractor, time window, source
    * and filters, can they be grouped into same dataframe for downstream processing.
    */
-  // TODO: use what key uniqueness preprocessing?
-  // TODO: if two anchor have same preprocessing functions?
-  // TODO:
-  private[offline] case class FeatureGroupingCriteria(sourceKeyExtry: String, timeWindowId: String, source: DataSourceAccessor, filter: String, preprocessing: String = "")
+  private[offline] case class FeatureGroupingCriteria(sourceKeyExtry: String, timeWindowId: String, source: DataSourceAccessor, filter: String, preprocessingUniqueness: String = "")
   /**
     * Case class to define tuple of feature anchor + grouping criteria + extractor class
     */
@@ -489,10 +459,6 @@ private[offline] object FeatureTransformation {
       requestedFeatureNames: Seq[FeatureName],
       bloomFilter: Option[BloomFilter],
       incrementalAggContext: Option[IncrementalAggContext] = None): Map[FeatureName, KeyedTransformedResult] = {
-    logger.info("hiiiiiiiii transformFeatures")
-    logger.info("hiiiiiiiii transformFeatures")
-    logger.info("hiiiiiiiii transformFeatures")
-    logger.info("hiiiiiiiii transformFeatures")
     val executionService = Executors.newFixedThreadPool(MAX_PARALLEL_FEATURE_GROUP)
     implicit val executionContext = ExecutionContext.fromExecutorService(executionService)
     val groupedAnchorToFeatureGroups: Map[FeatureGroupingCriteria, Map[FeatureAnchorWithSource, FeatureGroupWithSameTimeWindow]] =
@@ -509,9 +475,6 @@ private[offline] object FeatureTransformation {
           val keyExtractor = anchorsWithSameSource.head._1.featureAnchor.sourceKeyExtractor
           val featureAnchorWithSource = anchorsWithSameSource.keys.toSeq
           val selectedFeatures = anchorsWithSameSource.flatMap(_._2.featureNames).toSeq
-
-          val featureMkString = selectedFeatures.mkString(",")
-          val preprocessedDf = SimpleApp.preprocessedDfMap.get(featureMkString)
 
           val sourceDF = featureGroupingFactors.source
           val transformedResults: Seq[KeyedTransformedResult] = transformMultiAnchorsOnSingleDataFrame(sourceDF,
@@ -809,7 +772,6 @@ private[offline] object FeatureTransformation {
   private[offline] def groupFeatures(
       anchorToSourceDFThisStage: Map[FeatureAnchorWithSource, DataSourceAccessor],
       requestedFeatureNames: Set[FeatureName]): Map[FeatureGroupingCriteria, Map[FeatureAnchorWithSource, FeatureGroupWithSameTimeWindow]] = {
-    // TODO
     // Build a map of Anchor(with Source) to group of features that are defined in the anchor and share the same time window
     val anchorToFeatureGroups = anchorToSourceDFThisStage
       .flatMap(anchorWithSourceDF => {
@@ -866,37 +828,17 @@ private[offline] object FeatureTransformation {
          * Note: within each FeatureGroupingCriteria, we should group by and merge extractors of the same class.
          */
         // TODO: put anchor preprocessing functiosn to it
-        // func name
-        // what if when we have preprocessing for same sources, just not group?
-        // but how do i find the right anchors here and map to their respective anchors
-        val mapssss = Map("anchor_name" -> "func_string")
-        // using feature names here to get the anchor of interest
-        // map("func" -> list(feature_names))
-        // if it's in the map, we know it should be unique
-//        val globalFuncMap = Map(
-//          "f1,f2" -> "func_name1",
-//          "f3,f4" -> "func_name2",
-//        )
-        val globalFuncMap = SimpleApp.preprocessedDfMap
-        println("grouping anchors: ")
-        println("globalFuncMap: ")
-        println("grouping: ")
-        println(globalFuncMap)
-        anchorWithSourceDF.featureAnchor.features
-        // feature names uniquelly identify a anchor
-        val initial = anchorWithSourceDF.featureAnchor.features.toList
-        // if this anchor feature mkstring exist in the globalFuncMap, then it has preprocess function.
-        // it should be computed on its own
-        // no need to group right now(in the future, we can group same preprocessing but not right now)
-        val sorted = initial.sortWith((s: String, t: String) => s.charAt(0).toLower < t.charAt(0).toLower)
-//        val anchorPreprocessingFuncName = globalFuncMap.getOrElse(sorted.mkString(","), "")
-        val sortedMkString = sorted.mkString(",")
-        println("sortedMkString:")
-        println(sortedMkString)
-        val featureNames = if (globalFuncMap.contains(sortedMkString)) sortedMkString else ""
-        println("if (globalFuncMap.contains(sorted.mkString(\",\"))) sorted else \"\": ")
-        println("featureNames: ")
-        println(featureNames)
+        // preprocessedDfMap is in the form of feature list of an anchor separated by comma to their preprocessed DataFrame.
+        // We use feature list to denote if the anchor has corresponding preprocessing UDF.
+        // For example, an anchor have f1, f2, f3, then corresponding preprocessedDfMap is Map("f1,f2,f3"-> df1)
+        // (Anchor name is not chosen since it may be duplicated and not unique and stable.)
+        // If this anchor has preprocessing UDF, then we need to make its FeatureGroupingCriteria unique so it won't be
+        // merged by different anchor of same source. Otherwise our preprocessing UDF may impact anchors that dont'
+        // need preprocessing.
+        val preprocessedDfMap = PreprocessedDataFrameContainer.preprocessedDfMap
+        val featuresInAnchor = anchorWithSourceDF.featureAnchor.features.toList
+        val sortedMkString = featuresInAnchor.sorted.mkString(",")
+        val featureNames = if (preprocessedDfMap.contains(sortedMkString)) sortedMkString else ""
         featureGroupWithSameTimeWindow.featureNames
           .map(
             f =>
@@ -936,24 +878,19 @@ private[offline] object FeatureTransformation {
       allRequestedFeatures: Seq[String],
       incrementalAggContext: Option[IncrementalAggContext]): Seq[KeyedTransformedResult] = {
 
-    // TODO: group anchors with same preprocessing
     // based on source and feature definition, divide features into direct transform and incremental
     // transform groups
     val (directTransformAnchorGroup, incrementalTransformAnchorGroup) =
       groupAggregationFeatures(source, AnchorFeatureGroups(anchorsWithSameSource, allRequestedFeatures), incrementalAggContext)
 
-    // sort first
-    // TODO Fixed.
+    // Obtain the preprocessed DataFrame by Pyspark for this anchor to replace the origin source DataFrame.
+    // At this point, we have make the anchors that have preprocessing UDF unique so it will be only one anchor if
+    // the anchor has preprocessing UDF.
+    // Then we use the feature names separated by comma as the key to get the preprocessed DataFrame from Pyspark.
     val allAnchorsFeatures = anchorsWithSameSource.flatMap(_.featureAnchor.features).sorted
     val featureMkString = allAnchorsFeatures.sorted.mkString(",")
-    val preprocessedDf = SimpleApp.preprocessedDfMap.get(featureMkString)
+    val preprocessedDf = PreprocessedDataFrameContainer.preprocessedDfMap.get(featureMkString)
 
-    println("featureMkString333: ")
-    println(featureMkString)
-    println("SimpleApp.preprocessedDfMap: ")
-    println(SimpleApp.preprocessedDfMap)
-    println("preprocessedDf44444: ")
-    println(preprocessedDf)
     val directTransformedResult =
       directTransformAnchorGroup.map(anchorGroup => Seq(directCalculate(anchorGroup, source, keyExtractor, bloomFilter, None, preprocessedDf)))
 
@@ -1104,7 +1041,6 @@ private[offline] object FeatureTransformation {
     // If so, even though the incremental aggregation succeeds, the  result is incorrect.
     // And the incorrect result will be propagated to all subsequent incremental aggregation because the incorrect result will be used as the snapshot.
 
-    // TODO
     val newDeltaSourceAgg = directCalculate(featureAnchorWithSource, source, keyExtractor, bloomFilter, Some(dateParam))
     // if the new delta window size is smaller than the request feature window, need to use the pre-aggregated results,
     if (newDeltaWindowSize < aggWindow) {

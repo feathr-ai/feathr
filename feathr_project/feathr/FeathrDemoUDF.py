@@ -198,6 +198,21 @@ def my_func2(df: DataFrame):
     df.show(10)
     return df
 
+from pyspark.sql import DataFrame
+def feathr_udf_add_toll_amount(df: DataFrame) -> DataFrame:
+    from pyspark.sql.functions import col,sum,avg,max
+    # df = df.filter("tolls_amount > 0.0")
+    df = df.withColumn("CopiedColumn", col("tolls_amount") * -1)
+    df = df.withColumn("fare_amount_new", col("fare_amount") + 100)
+    return df
+
+def feathr_udf_day_calc(df: DataFrame) -> DataFrame:
+    from pyspark.sql.functions import col,sum,avg,max,dayofweek,dayofmonth, dayofyear
+    # df = df.filter("tolls_amount > 0.0")
+    df = df.withColumn("f_day_of_week", dayofweek("lpep_dropoff_datetime"))
+    df = df.withColumn("f_day_of_year", dayofyear("lpep_dropoff_datetime"))
+    return df
+
 client = FeathrClient(config_path="/tmp/feathr_config.yaml")
 
 
@@ -216,8 +231,8 @@ location_id = TypedKey(key_column="lpep_pickup_datetime",
 # give the py func the input source data
 # return the input source data back to Frame for further processing
 f_fare_amount = Feature(name="f_fare_amount",
-                          key=location_id,
-                          feature_type=FLOAT, transform="fare_amount + 1000")
+                        key=location_id,
+                        feature_type=FLOAT, transform="fare_amount + 1000")
 f_trip_time_duration = Feature(name="f_trip_time_duration",
                                key=location_id,
                                feature_type=INT32,
@@ -229,7 +244,8 @@ features = [
     Feature(name="f_is_long_trip_distance",
             key=location_id,
             feature_type=FLOAT,
-            transform="trip_distance + 1000"),
+            # transform="trip_distance + 1000"),
+            transform="fare_amount_new"),
     Feature(name="f_day_of_week",
             key=location_id,
             feature_type=INT32,
@@ -239,7 +255,8 @@ features = [
 request_anchor = FeatureAnchor(name="request_features",
                                source=batch_source,
                                features=features,
-                               preprocessing=trip_distance_preprocessing)
+                               # preprocessing=trip_distance_preprocessing)
+                               preprocessing=feathr_udf_add_toll_amount)
 
 features2222 = [
     f_fare_amount,
@@ -247,9 +264,9 @@ features2222 = [
 ]
 
 feature_anchor2222 = FeatureAnchor(name="feature_anchor2222",
-                               source=batch_source,
-                               features=features2222,
-                               preprocessing=my_func2)
+                                   source=batch_source,
+                                   features=features2222,
+                                   preprocessing=my_func2)
 
 # f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
 #                                       feature_type=FLOAT,
@@ -283,6 +300,9 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            features=agg_features,
                            preprocessing=my_func2)
 
+
+
+
 client.build_features(anchor_list=[agg_anchor, request_anchor, feature_anchor2222])
 # client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
 #     f_trip_time_distance, f_trip_time_rounded])
@@ -296,9 +316,9 @@ client.build_features(anchor_list=[agg_anchor, request_anchor, feature_anchor222
 feature_query = FeatureQuery(
     # This breaks. fixed
     feature_list=["f_is_long_trip_distance", "f_fare_amount", "f_trip_time_duration"], key=location_id)
-    # this works
-    # feature_list=["f_is_long_trip_distance", "f_day_of_week", "f_fare_amount", "f_trip_time_duration"], key=location_id)
-    # feature_list=["f_location_avg_fare"], key=location_id)
+# this works
+# feature_list=["f_is_long_trip_distance", "f_day_of_week", "f_fare_amount", "f_trip_time_duration"], key=location_id)
+# feature_list=["f_location_avg_fare"], key=location_id)
 
 settings = ObservationSettings(
     observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",

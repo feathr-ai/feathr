@@ -157,13 +157,6 @@ object FeatureJoinJob {
 
     val (joinedDF, _) = getFeathrClientAndJoinFeatures(ss, observationsDF, featureGroupings, joinConfig, jobContext, localTestConfig)
 
-    println("joinedDF111111111: ")
-    println("joinedDF111111111: ")
-    println("joinedDF111111111: ")
-    println("joinedDF111111111: ")
-    println(joinConfig.featureGroupings)
-    println("joinedDF: ")
-    println("joinedDF: ")
     println("joinedDF: ")
     joinedDF.show(10)
     val parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
@@ -336,9 +329,9 @@ object FeatureJoinJob {
   }
 
   def mainWithMap(args: Array[String], dfMap: java.util.Map[String, DataFrame], featureNameFuncMap: java.util.Map[String, String]) {
-    SimpleApp.preprocessedDfMap = dfMap.asScala.toMap
+    PreprocessedDataFrameContainer.preprocessedDfMap = dfMap.asScala.toMap
     // TODO
-    SimpleApp.globalFuncMap = featureNameFuncMap.asScala.toMap
+    PreprocessedDataFrameContainer.globalFuncMap = featureNameFuncMap.asScala.toMap
     main(args)
   }
 
