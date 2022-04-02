@@ -130,8 +130,8 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
    *         mapping from the feature name to the column name in the dataframe.
    */
   private[offline] def doJoinObsAndFeatures(joinConfig: FeatureJoinConfig, jobContext: JoinJobContext, obsData: DataFrame): (DataFrame, Header) = {
-    log.info("3333All anchored feature names (sorted):\n\t" + stringifyFeatureNames(allAnchoredFeatures.keySet))
-    log.info("33333All derived feature names (sorted):\n\t" + stringifyFeatureNames(allDerivedFeatures.keySet))
+    log.info("All anchored feature names (sorted):\n\t" + stringifyFeatureNames(allAnchoredFeatures.keySet))
+    log.info("All derived feature names (sorted):\n\t" + stringifyFeatureNames(allDerivedFeatures.keySet))
     prepareExecuteEnv()
     val enableCheckPoint = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.ENABLE_CHECKPOINT).toBoolean
     val checkpointDir = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.CHECKPOINT_OUTPUT_PATH)
@@ -147,9 +147,9 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
 
     val featureGroupings = joinConfig.featureGroupings
 
-    log.info(s"333Join job context: ${jobContext})")
+    log.info(s"Join job context: ${jobContext})")
     log.info(s"joinConfig: ${joinConfig}")
-    log.info(s"333featureGroupings passed in: ${featureGroupings}")
+    log.info(s"featureGroupings passed in: ${featureGroupings}")
 
     val rowBloomFilterThreshold = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.ROW_BLOOMFILTER_MAX_THRESHOLD).toInt
     val joinFeatures = featureGroupings.values.flatten.toSeq.distinct
