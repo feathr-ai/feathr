@@ -680,7 +680,6 @@ private[offline] object SourceUtils {
         if (ss.sparkContext.isLocal){
           getLocalDF(ss, inputData.inputPath)
         } else {
-          // TODO: InputData needs to be changed to use InputLocation instead of path string
           loadAsDataFrame(ss, SimplePath(inputData.inputPath))
         }
       }

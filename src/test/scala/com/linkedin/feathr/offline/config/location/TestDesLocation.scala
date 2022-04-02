@@ -8,7 +8,10 @@ import com.linkedin.feathr.common.FeathrJacksonScalaModule
 import com.linkedin.feathr.offline.config.DataSourceLoader
 import com.linkedin.feathr.offline.config.location.LocationUtils.envSubstitute
 import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, SimplePath}
+import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.DataSource
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite
 
 class TestDesLocation extends FunSuite {
@@ -20,8 +23,9 @@ class TestDesLocation extends FunSuite {
 
   test("envSubstitute") {
     scala.util.Properties.setProp("PROP1", "foo")
-    val s = "xyz${PROP1}abc"
-    assert(envSubstitute(s) == "xyzfooabc")
+    assert(envSubstitute("${PROP1}") == "foo")
+    assert(envSubstitute("${PROP1}abc") == "fooabc")
+    assert(envSubstitute("xyz${PROP1}abc") == "xyzfooabc")
   }
 
   test("Deserialize Location") {
@@ -34,7 +38,6 @@ class TestDesLocation extends FunSuite {
         }
         case _ => assert(false)
       }
-
     }
 
     {
@@ -42,19 +45,59 @@ class TestDesLocation extends FunSuite {
         """
           |{
           | type: "jdbc"
-          | url: "jdbc:sqlserver://bet-test.database.windows.net:1433;database=bet-test"
-          | user: "bet"
+          | url: "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase"
+          | user: "bar"
           | password: "foo"
           |}""".stripMargin
       val ds = jackson.readValue(configDoc, classOf[InputLocation])
       ds match {
-        case Jdbc(url, dbtable, user, password, token, useToken) => {
-          assert(url == "jdbc:sqlserver://bet-test.database.windows.net:1433;database=bet-test")
-          assert(user == "bet")
+        case Jdbc(url, dbtable, user, password, token, useToken, _) => {
+          assert(url == "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase")
+          assert(user == "bar")
           assert(password == "foo")
         }
         case _ => assert(false)
       }
     }
+  }
+
+  test("Deserialize PathList") {
+    val configDoc =
+      """
+        |{
+        | type: "pathlist"
+        | paths: ["abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"]
+        |}""".stripMargin
+    val ds = jackson.readValue(configDoc, classOf[InputLocation])
+    ds match {
+      case PathList(pathList) => {
+        assert(pathList == List("abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"))
+      }
+      case _ => assert(false)
+    }
+  }
+
+  test("Test load Sqlite") {
+    val path = s"${System.getProperty("user.dir")}/src/test/resources/mockdata/sqlite/test.db"
+    val configDoc =
+      s"""
+        |{
+        | type: "jdbc"
+        | url: "jdbc:sqlite:${path}"
+        | dbtable: "table1"
+        | anonymous: true
+        |}""".stripMargin
+    val ds = jackson.readValue(configDoc, classOf[InputLocation])
+
+    val _ = SparkSession.builder().config("spark.master", "local").appName("Sqlite test").getOrCreate()
+
+    val df = SparkIOUtils.createDataFrame(ds)
+    val rows = df.head(3)
+    assert(rows(0).getLong(0) == 1)
+    assert(rows(1).getLong(0) == 2)
+    assert(rows(2).getLong(0) == 3)
+    assert(rows(0).getString(1) == "r1c2")
+    assert(rows(1).getString(1) == "r2c2")
+    assert(rows(2).getString(1) == "r3c2")
   }
 }

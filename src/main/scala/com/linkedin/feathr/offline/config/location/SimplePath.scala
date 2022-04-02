@@ -1,18 +1,18 @@
 package com.linkedin.feathr.offline.config.location
 
 import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
+import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.dataloader.SparkDataLoader
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.codehaus.jackson.annotate.JsonProperty
 
 @CaseClassDeserialize()
-case class SimplePath(@JsonProperty("path") path: String = "") extends InputLocation {
-  override def loadDf(ss: SparkSession): DataFrame = {
-    val loader = new SparkDataLoader(ss, this)
-    loader.loadDataFrame()
+case class SimplePath(@JsonProperty("path") path: String) extends InputLocation {
+  override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String] = Map()): DataFrame = {
+    SparkIOUtils.createUnionDataFrame(getPathList, dataIOParameters)
   }
 
   override def getPath: String = path
 
-  override def getPathList: Array[String] = Array(path)
+  override def getPathList: List[String] = List(path)
 }

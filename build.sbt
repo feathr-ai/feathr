@@ -42,6 +42,7 @@ val localAndCloudCommonDependencies = Seq(
     "net.snowflake" % "snowflake-jdbc" % "3.13.14",
     "net.snowflake" % "spark-snowflake_2.12" % "2.10.0-spark_3.1",
     "org.apache.commons" % "commons-lang3" % "3.12.0",
+    "org.xerial" % "sqlite-jdbc" % "3.36.0.3",
     "com.github.changvvb" %% "jackson-module-caseclass" % "1.1.1"
 ) // Common deps
 

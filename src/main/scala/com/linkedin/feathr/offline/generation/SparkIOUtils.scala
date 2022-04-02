@@ -16,17 +16,8 @@ object SparkIOUtils {
     FileFormat.loadHdfsDataFrame(format, existingHdfsPaths)
   }
 
-//  def createDataFrame(path: String, dataIOParams: Map[String, String]): DataFrame = {
-//    createUnionDataFrame(Seq(path), dataIOParams)
-//  }
-//
   def createDataFrame(location: InputLocation, dataIOParams: Map[String, String] = Map()): DataFrame = {
-    location match {
-      case SimplePath(path) => createUnionDataFrame(Seq(path), dataIOParams)
-      // TODO:
-      case Jdbc(url, dbtable, user, password, token, useToken) => JdbcUtils.loadDataFrame(SparkSession.builder.getOrCreate, url)
-    }
-//    createUnionDataFrame(Seq(path), dataIOParams)
+    location.loadDf(SparkSession.builder.getOrCreate, dataIOParams)
   }
 
   def writeDataFrame( outputDF: DataFrame, path: String, parameters: Map[String, String] = Map()): DataFrame = {

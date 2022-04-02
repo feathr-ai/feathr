@@ -20,6 +20,13 @@ object JdbcUtils {
   val TOKEN_FLAG = "token"
   val TOKEN_CONF = "feathr.jdbc.token"
 
+  def getJDBCOptionsWithoutAuth(ss: SparkSession): Map[String, String] = {
+    Map[String, String]{
+      "dbtable" -> ss.conf.get(DBTABLE_CONF)
+      "driver" -> ss.conf.getOption(DRIVER_CONF).getOrElse("")
+    }
+  }
+
   def getJDBCOptionsWithPassword(ss: SparkSession): Map[String, String] = {
     Map[String, String]{
       "dbtable" -> ss.conf.get(DBTABLE_CONF)

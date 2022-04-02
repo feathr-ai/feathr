@@ -717,10 +717,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       Option(node.get("location")) match {
         case Some(field: ObjectNode) =>
           LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
-//          Option(field.get("path")) match {
-//            case Some(pathField: TextNode) => pathField.textValue()
-//            case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Illegal setting for the path in location")
-//          }
         case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Data location is not defined")
         case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Illegal setting for location, expected map")
       }
