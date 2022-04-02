@@ -873,12 +873,11 @@ private[offline] object FeatureTransformation {
         // using feature names here to get the anchor of interest
         // map("func" -> list(feature_names))
         // if it's in the map, we know it should be unique
-        SimpleApp.globalFuncMap
 //        val globalFuncMap = Map(
 //          "f1,f2" -> "func_name1",
 //          "f3,f4" -> "func_name2",
 //        )
-        val globalFuncMap = SimpleApp.globalFuncMap
+        val globalFuncMap = SimpleApp.preprocessedDfMap
         println("grouping anchors: ")
         println("globalFuncMap: ")
         println("grouping: ")

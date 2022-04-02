@@ -1,6 +1,5 @@
 package com.linkedin.feathr.offline.source.accessor
 
-import com.linkedin.feathr.offline.job.SimpleApp
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
@@ -26,9 +25,7 @@ private[offline] class NonTimeBasedDataSourceAccessor(
    * @return the dataframe
    */
   override def get(): DataFrame = {
-    // Replace with preproceessed dataframe
     val df = source.pathList.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
-
     if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
       println()
       println()
@@ -41,7 +38,6 @@ private[offline] class NonTimeBasedDataSourceAccessor(
       println()
       println()
     }
-
     df
   }
 }

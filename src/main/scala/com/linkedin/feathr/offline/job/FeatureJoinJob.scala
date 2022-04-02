@@ -336,48 +336,14 @@ object FeatureJoinJob {
   }
 
   def mainWithMap(args: Array[String], dfMap: java.util.Map[String, DataFrame], featureNameFuncMap: java.util.Map[String, String]) {
-    logger.info("FeatureJoinJob args are: " + args)
-    println("Feature join job: main1111111")
-    println("Feature join job: main1111111")
-    println("Feature join job: main1111111")
-    println("Feature join job: main1111111")
-    println("Feature join job: main1111111")
-    println("Feature join job: main")
-    println("Feature join job: main")
-    println("dfMap join job: main")
-    println(dfMap)
     SimpleApp.preprocessedDfMap = dfMap.asScala.toMap
     // TODO
     SimpleApp.globalFuncMap = featureNameFuncMap.asScala.toMap
-    println("globalFuncMap")
-    println(SimpleApp.globalFuncMap)
-    val jobContext = parseInputArgument(args)
-
-    val sparkConf = new SparkConf().registerKryoClasses(Array(classOf[GenericRecord]))
-    // sparkConf.set("spark.kryo.registrator", "org.apache.spark.serializer.AvroGenericArrayKryoRegistrator")
-
-    val sparkSessionBuilder = SparkSession
-      .builder()
-      .config(sparkConf)
-      .appName(getClass.getName)
-      .enableHiveSupport()
-
-    val sparkSession = sparkSessionBuilder.getOrCreate()
-    val conf = sparkSession.sparkContext.hadoopConfiguration
-
-    DataSourceConfigUtils.setupHadoopConf(sparkSession, jobContext.dataSourceConfigs)
-
-    FeathrUdfRegistry.registerUdf(sparkSession)
-    HdfsUtils.deletePath(jobContext.jobJoinContext.outputPath, recursive = true, conf)
-
-    run(sparkSession, conf, jobContext)
+    main(args)
   }
 
   def main(args: Array[String]) {
     logger.info("FeatureJoinJob args are: " + args)
-    println("Feature join job: main")
-    println("Feature join job: main")
-    println("Feature join job: main")
     val jobContext = parseInputArgument(args)
 
     val sparkConf = new SparkConf().registerKryoClasses(Array(classOf[GenericRecord]))

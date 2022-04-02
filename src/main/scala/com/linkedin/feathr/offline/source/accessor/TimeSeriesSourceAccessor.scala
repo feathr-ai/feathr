@@ -2,7 +2,6 @@ package com.linkedin.feathr.offline.source.accessor
 
 import com.linkedin.feathr.common.DateTimeResolution.DateTimeResolution
 import com.linkedin.feathr.offline.generation.SparkIOUtils
-import com.linkedin.feathr.offline.job.SimpleApp
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.SparkDataLoader
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
@@ -43,7 +42,5 @@ private[offline] class TimeSeriesSourceAccessor(
     } else {
       df
     }
-
-    df
   }
 }
