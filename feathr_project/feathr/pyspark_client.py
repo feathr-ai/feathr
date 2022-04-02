@@ -14,7 +14,7 @@ def toJStringArray(arr):
 
 
 # this runs in the spark cluster driver
-def submit_spark_job(user_func_map):
+def submit_spark_job(feature_names_funcs):
     # Prepare job parameters
     # sys.argv has all the arguments passed by submit job.
     # In pyspark job, the first param is the python file.
@@ -23,12 +23,13 @@ def submit_spark_job(user_func_map):
 
     print("submit_spark_job: feature_names_funcs: ")
     print(feature_names_funcs)
-    print("submit_spark_job: user_func_map: ")
-    print(user_func_map)
+    print("submit_spark_job: user_func_map feature nams to source data: ")
+    print(preprocessed_funcs)
 
     print("submit_spark_job: Load DataFrame from Scala engine.")
     preprocessed_df_map = {}
-    dataframeFromSpark = spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob.loadDataframe(job_param_java_array, user_func_map)
+    dataframeFromSpark = spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob.loadDataframe(job_param_java_array, set(feature_names_funcs.keys()))
+    # dataframeFromSpark = spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob.loadDataframe(job_param_java_array, preprocessed_funcs)
     print("submit_spark_job: dataframeFromSpark: ")
     print(dataframeFromSpark)
     sql_ctx = SQLContext(spark)
@@ -48,14 +49,14 @@ def submit_spark_job(user_func_map):
 
     print("submit_spark_job: running Feature job with preprocessed DataFrames:")
     print(new_preprocessed_df_map)
-    print(user_func_map)
+    print(feature_names_funcs)
 
-    spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob.mainWithMap(job_param_java_array, new_preprocessed_df_map, user_func_map)
+    spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob.mainWithMap(job_param_java_array, new_preprocessed_df_map, preprocessed_funcs)
     return None
 
 
 print("pyspark_client.py: Preprocessing via UDFs and submit Spark job.")
-submit_spark_job(preprocessed_funcs)
+submit_spark_job(feature_names_funcs)
 
 print("Feathr Pyspark job completed.")
 

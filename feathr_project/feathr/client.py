@@ -1,8 +1,6 @@
 import base64
 import logging
-import math
 import os
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional, Union
 import tempfile
@@ -16,6 +14,7 @@ from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._feature_registry import _FeatureRegistry
 from feathr._file_utils import write_to_file
 from feathr._materialization_utils import _to_materialization_config
+from feathr._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
 from feathr.materialization_settings import MaterializationSettings
@@ -180,50 +179,42 @@ class FeathrClient(object):
     def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
         """Registers features based on the current workspace
         """
-        import shutil
-        # shutil.copyfile("./client_udf_repo_template.py", "./client_udf_repo.py")
+        preprocessingPyudfManager = _PreprocessingPyudfManager()
+        preprocessingPyudfManager.build_anchor_preprocessing_metadata(anchor_list, self.local_workspace_dir)
+        self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
+        self.anchor_list = anchor_list
+        self.derived_feature_list = derived_feature_list
+
+    def build_anchor_preprocessing_metadata(self, anchor_list):
         func_maps = {}
         feature_names_to_func_mapping = {}
+        # Features that have preprocessing UDFs defined in list form
         features_with_preprocessing = []
         for anchor in anchor_list:
-            print(anchor.preprocessing)
             if anchor.preprocessing:
-                self.write_udf_to_file(anchor.preprocessing, anchor.source.path)
-
-        for anchor in anchor_list:
-            print(anchor.preprocessing)
-            if anchor.preprocessing:
+                self.write_udf_to_file(anchor.preprocessing)
                 feature_names = [feature.name for feature in anchor.features]
                 features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
                 string_feature_list = ','.join(feature_names)
-                # how to ensure the func name is unique?
+                # TODO: how to ensure the func name is unique?
                 # what if 2 func names conflict?
                 feature_names_to_func_mapping[string_feature_list] = anchor.preprocessing
                 func_maps[string_feature_list] = anchor.source.path
 
         print(func_maps)
         self.write_mapping_to_file(func_maps)
+        self.write_feature_names_to_file(feature_names_to_func_mapping)
 
-        print(feature_names_to_func_mapping)
-
-        import pickle
-        # open a file, where you ant to store the data
+        # Save necessary preprocessing-related metadata locally in your workspace
+        # Typically it's used as a metadata for join/gen job to figure out if there is preprocessing UDF
+        # exist for the features requested
         file = open('pyspark_metadata', 'wb')
-
-        # dump information to that file
         pickle.dump(features_with_preprocessing, file)
-
-        # close the file
         file.close()
 
 
-        self.write_feature_names_to_file(feature_names_to_func_mapping)
-        self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
-        self.anchor_list = anchor_list
-        self.derived_feature_list = derived_feature_list
-
-    def write_udf_to_file(self, user_func, source_path):
+    def write_udf_to_file(self, user_func):
         import inspect
 
         print(inspect.getsourcelines(user_func))
@@ -250,15 +241,6 @@ class FeathrClient(object):
             with open(full_file_name, "w") as handle:
                 print("".join(new_file), file=handle)
 
-
-        # with open(config_file_path, "w+") as text_file:
-        #     print("open pysparkudf file")
-        #     for item in new_file:
-        #         print(item)
-        #         text_file.write("%s" % item)
-        # code functionality here
-        # TODO
-        # write feature names to func mapping
         print("Inside inner function")
 
     def write_feature_names_to_file(self, func_maps):
@@ -462,25 +444,10 @@ class FeathrClient(object):
             feature_query: features that are requested to add onto the observation data
             output_path: output path of job, i.e. the observation data with features attached.
         """
-        print("get_offline_features: ")
-        print("get_offline_features: ")
-        print("get_offline_features: ")
-        from pathlib import Path
-        # TODO: how do i know if i should start pyspark or scala spark?
-        import pickle
+        feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
 
-        # open a file, where you stored the pickled data
-        file = open('pyspark_metadata', 'rb')
-
-        # dump information to that file
-        features_with_preprocessing = pickle.load(file)
-
-        # close the file
-        file.close()
-
-        print('Showing the pickled data:')
-        print(features_with_preprocessing)
-
+        preprocessing_pyudf_manager = _PreprocessingPyudfManager()
+        udf_files = preprocessing_pyudf_manager.prepare_pyspark_udf_files(feature_queries, self.local_workspace_dir)
 
         # produce join config
         tm = Template("""
@@ -492,37 +459,6 @@ class FeathrClient(object):
             ]
             outputPath: "{{output_path}}"
         """)
-        feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
-        print("feature_queries: ")
-        has_py_udf_preprocessing = False
-        for feature_query333 in feature_queries:
-            print(feature_query333.feature_list)
-            for feature_name in feature_query333.feature_list:
-                if feature_name in features_with_preprocessing:
-                    print("hiiiiiiiiii")
-                    has_py_udf_preprocessing = True
-        udf_files = []
-        if has_py_udf_preprocessing:
-            # TODO: doesn't work in notebook
-            abs_path = str(Path(Path(__file__).parent / 'pyspark_client.py').absolute())
-            # my_file = Path("./pyspark_client.py")
-            # abs_path = os.path.abspath("./pyspark_client.py")
-            print("abs_path: ")
-            print(abs_path)
-            # print("my_file: ")
-            # print(my_file)
-            # if my_file.is_file():
-            #     # file exists
-            #     print("file exist: ")
-            udf_files = [abs_path] + udf_files
-            client_udf_repo = os.path.join(self.local_workspace_dir, "client_udf_repo.py")
-            print("client_udf_repo: ")
-            print(client_udf_repo)
-
-            udf_files = udf_files + [client_udf_repo]
-            print("udf_files: ")
-            print(udf_files)
-
         config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
         config_file_name = "feature_join_conf/feature_join.conf"
         config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
@@ -533,7 +469,7 @@ class FeathrClient(object):
         if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
             _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
-            RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
+            raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
         write_to_file(content=config, full_file_name=config_file_path)
         return self._get_offline_features_with_config(config_file_path, udf_files=udf_files)

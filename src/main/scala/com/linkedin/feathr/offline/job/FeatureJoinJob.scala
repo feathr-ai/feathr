@@ -257,7 +257,7 @@ object FeatureJoinJob {
    */
   def parseJoinConfig(joinConfString: String): FeatureJoinConfig = FeatureJoinConfig.parseJoinConfig(joinConfString)
 
-  def loadDataframe(args: Array[String], featureNameFuncMap: java.util.Map[String, String]): java.util.Map[String, DataFrame] = {
+  def loadDataframe(args: Array[String], featureNameFuncMap: java.util.Set[String]): java.util.Map[String, DataFrame] = {
     logger.info("FeatureJoinJob args are: " + args)
     println("Feature join job: args")
     println(args.mkString(","))
@@ -323,7 +323,7 @@ object FeatureJoinJob {
     // TODO: anchor with same source grouping here?
     val resultDataFrameMap = anchorsWithSource
       .filter(x => {
-        featureNameFuncMap.containsKey(x._1.featureAnchor.features.toSeq.sorted.mkString(","))
+        featureNameFuncMap.contains(x._1.featureAnchor.features.toSeq.sorted.mkString(","))
       })
       .map(x => {
         (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get())
