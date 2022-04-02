@@ -267,7 +267,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       joinConfigAsString = """
                              | features: {
                              |   key: a_id
-                             |   featureList: ["f1", "f2", "f3", "f4", "f5", "f6"]
+                             |   featureList: ["featureWithNull"]
                              | }
       """.stripMargin,
       featureDefAsString = """
@@ -276,24 +276,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
                              |    source: "anchorAndDerivations/nullValueSource.avro.json"
                              |    key: "mId"
                              |    features: {
-                             |      f1: "isPresent(value) ? toNumeric(value) : 0"
-                             |      f2: "isPresent(value) ? toNumeric(value) : 0"
-                             |    }
-                             |  }
-                             |  anchor2: {
-                             |    source: "anchorAndDerivations/nullValueSource.avro.json"
-                             |    key: "mId"
-                             |    features: {
-                             |      f3: "isPresent(value) ? toNumeric(value) : 0"
-                             |      f4: "isPresent(value) ? toNumeric(value) : 0"
-                             |    }
-                             |  }
-                             |  anchor3: {
-                             |    source: "anchorAndDerivations/nullValueSource.avro.json"
-                             |    key: "mId"
-                             |    features: {
-                             |      f5: "isPresent(value) ? toNumeric(value) : 0"
-                             |      f6: "isPresent(value) ? toNumeric(value) : 0"
+                             |      featureWithNull: "isPresent(value) ? toNumeric(value) : 0"
                              |    }
                              |  }
                              |}
