@@ -12,9 +12,9 @@ on:
       - 'docs/**'
       - '**/README.md'
 
-env:
-  # use hour, minute, seconds for seperate folders so that different CI pipeline won't share the same runtime
-  CI_SPARK_RUNTIME_FOLDER: feathr_jar_github_action_$(date +"%H_%M_%S")
+# env:
+#   # use hour, minute, seconds for seperate folders so that different CI pipeline won't share the same runtime
+#   CI_SPARK_RUNTIME_FOLDER: feathr_jar_github_action_$(date +"%H_%M_%S")
 
 jobs:
   sbt_test:
@@ -70,6 +70,7 @@ jobs:
           python -m pip install pytest pytest-xdist databricks-cli
           python -m pip install -e ./feathr_project/
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          echo ${{ env.CI_SPARK_RUNTIME_FOLDER}}
       - name: Set env variable and upload jars
         run: |
           # overwrite corresponding environment variables to utilize feathr to upload the files
