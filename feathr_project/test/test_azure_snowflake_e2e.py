@@ -82,6 +82,6 @@ def test_feathr_get_offline_features():
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=900)
 
-    res = get_result_df(client)
+    res = get_result_df(client) 
     # just assume there are results.
     assert res.shape[0] > 1
