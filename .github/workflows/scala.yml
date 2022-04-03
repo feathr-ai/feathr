@@ -59,7 +59,7 @@ jobs:
       - name: Build JAR
         run: |
           sbt assembly
-          echo 'CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")' >> $GITHUB_ENV
+          echo 'CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_xiaoyzhu_$(date +"%H_%M_%S")' >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -72,14 +72,11 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           echo ${{ env.CI_SPARK_RUNTIME_FOLDER}}
       - name: Set env variable and upload jars
+        env:
+          DATABRICKS_HOST: "https://adb-2474129336842816.16.azuredatabricks.net/"
+          DATABRICKS_TOKEN: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
         run: |
           # overwrite corresponding environment variables to utilize feathr to upload the files
-          databricks configure --token << EOF
-          https://adb-2474129336842816.16.azuredatabricks.net/
-          ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
-          EOF
-          echo ${{ env.CI_SPARK_RUNTIME_FOLDER}}
-          # CI_SPARK_RUNTIME_FOLDER: feathr_jar_github_action_$(date +"%H_%M_%S")
           databricks fs cp ./target/scala-2.12/feathr-assembly-0.1.0.jar dbfs:/${{ env.CI_SPARK_RUNTIME_FOLDER}} --overwrite
       - name: Run Feathr with Databricks
         env:
@@ -168,3 +165,5 @@ jobs:
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
           pytest 
+
+
