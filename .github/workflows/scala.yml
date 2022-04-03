@@ -12,6 +12,8 @@ on:
       - 'docs/**'
       - '**/README.md'
 
+env:
+  CI_SPARK_RUNTIME_FOLDER: feathr_jar_github_action_$(date +"_%H_%M_%S")
 jobs:
 
   sbt_test:
@@ -113,7 +115,7 @@ jobs:
         uses: fixpoint/azblob-upload-artifact@v4
         with:
           connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
-          name: "feathr_jar_github_action_spark3"
+          name: "$CI_SPARK_RUNTIME_FOLDER"
           path: "target/scala-2.12/feathr-assembly-0.1.0.jar"
           container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
           cleanup: "true"
@@ -148,7 +150,7 @@ jobs:
           JDBC_PASSWORD: ${{secrets.JDBC_PASSWORD}}
           JDBC_DRIVER: ${{secrets.JDBC_DRIVER}}
           JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}
-          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/${{CI_SPARK_RUNTIME_FOLDER}}/feathr-assembly-0.1.0.jar"
+          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/$CI_SPARK_RUNTIME_FOLDER/feathr-assembly-0.1.0.jar"
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
