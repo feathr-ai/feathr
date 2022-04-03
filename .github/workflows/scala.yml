@@ -13,9 +13,10 @@ on:
       - '**/README.md'
 
 env:
+  # use hour, minute, seconds for seperate folders so that different CI pipeline won't share the same runtime
   CI_SPARK_RUNTIME_FOLDER: feathr_jar_github_action_$(date +"_%H_%M_%S")
-jobs:
 
+jobs:
   sbt_test:
     runs-on: ubuntu-latest
     steps:
@@ -64,14 +65,17 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest pytest-xdist
+          python -m pip install pytest pytest-xdist databricks-cli
           python -m pip install -e ./feathr_project/
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Set env variable
+      - name: Set env variable and upload jars
         run: |
           # overwrite corresponding environment variables to utilize feathr to upload the files
-          echo "SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
-          # use hour, minute, seconds for seperate folders so that different CI pipeline won't share the same runtime
+          databricks configure --token << EOF
+          https://adb-2474129336842816.16.azuredatabricks.net/
+          ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
+          EOF
+          databricks fs cp ./target/scala-2.12/feathr-assembly-0.1.0.jar dbfs:/$CI_SPARK_RUNTIME_FOLDER --overwrite
       - name: Run Feathr with Databricks
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_databricks"
@@ -90,6 +94,7 @@ jobs:
           BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
           BLOB_KEY: ${{secrets.BLOB_KEY}}
           JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
+          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: dbfs:/$CI_SPARK_RUNTIME_FOLDER
 
         run: |
           # run only test with databricks. run in 4 parallel jobs
