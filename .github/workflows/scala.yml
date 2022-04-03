@@ -40,6 +40,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install flake8
           echo $CI_SPARK_RUNTIME_FOLDER
+          echo env.CI_SPARK_RUNTIME_FOLDER
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
