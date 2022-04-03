@@ -25,6 +25,8 @@ def submit_spark_job(feature_names_funcs):
     print(feature_names_funcs)
     print("submit_spark_job: user_func_map feature nams to source data: ")
     print(preprocessed_funcs)
+    print("set(feature_names_funcs.keys()): ")
+    print(set(feature_names_funcs.keys()))
 
     print("submit_spark_job: Load DataFrame from Scala engine.")
     py4j_featureJoinJob = spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob

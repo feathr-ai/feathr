@@ -382,15 +382,13 @@ class FeathrClient(object):
         write_to_file(content=config, full_file_name=config_file_path)
         return self._get_offline_features_with_config(config_file_path, udf_files=udf_files)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', udf_files=None):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', udf_files=[]):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
           feature_join_conf_path: Relative path to your feature join config file.
         """
-
-
-        cloud_udf_paths = [self.feathr_spark_laucher.upload_or_get_cloud_path(udf_local_path) for udf_local_path in udf_files ]
+        cloud_udf_paths = [self.feathr_spark_laucher.upload_or_get_cloud_path(udf_local_path) for udf_local_path in udf_files]
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
@@ -404,7 +402,6 @@ class FeathrClient(object):
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             python_files=cloud_udf_paths,
-            # TODO
             job_tags={OUTPUT_PATH_TAG:feature_join_job_params.job_output_path},
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[

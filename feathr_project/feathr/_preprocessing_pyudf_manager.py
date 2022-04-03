@@ -15,8 +15,11 @@ class _PreprocessingPyudfManager(object):
         feature_names_to_func_mapping = {}
         # Features that have preprocessing UDFs defined in list form
         features_with_preprocessing = []
+        needPreprocessing = False
         for anchor in anchor_list:
             if anchor.preprocessing:
+                needPreprocessing = True
+
                 self.persist_pyspark_udf_to_file(anchor.preprocessing, local_workspace_dir)
                 feature_names = [feature.name for feature in anchor.features]
                 features_with_preprocessing = features_with_preprocessing + feature_names
@@ -27,13 +30,17 @@ class _PreprocessingPyudfManager(object):
                 feature_names_to_func_mapping[string_feature_list] = anchor.preprocessing
                 func_maps[string_feature_list] = anchor.source.path
 
+        if not needPreprocessing:
+            return
+
         self.write_feature_names_to_source_path_to_file(func_maps, local_workspace_dir)
         self.write_feature_names_to_udf_name_file(feature_names_to_func_mapping, local_workspace_dir)
 
         # Save necessary preprocessing-related metadata locally in your workspace
         # Typically it's used as a metadata for join/gen job to figure out if there is preprocessing UDF
         # exist for the features requested
-        file = open(FEATHR_PYSPARK_METADATA, 'wb')
+        feathr_pyspark_metadata_abs_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_METADATA)
+        file = open(feathr_pyspark_metadata_abs_path, 'wb')
         pickle.dump(features_with_preprocessing, file)
         file.close()
 
@@ -54,7 +61,6 @@ class _PreprocessingPyudfManager(object):
             dir_name = client_udf_repo_path[:file_name_start]
             Path(dir_name).mkdir(parents=True, exist_ok=True)
 
-        print(lines)
         if Path(client_udf_repo_path).is_file():
             with open(client_udf_repo_path, "a") as handle:
                 print("".join(lines), file=handle)
@@ -101,10 +107,22 @@ preprocessed_funcs = {
             print(new_file, file=text_file)
 
     def prepare_pyspark_udf_files(self, feature_queries: List[FeatureQuery], local_workspace_dir):
+        py_udf_files = []
+
         # Load pyspark_metadata which stores what features contains preprocessing UDFs
-        pyspark_metadata_file = open(FEATHR_PYSPARK_METADATA, 'rb')
+        feathr_pyspark_metadata_abs_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_METADATA)
+        print(feathr_pyspark_metadata_abs_path)
+        if not Path(feathr_pyspark_metadata_abs_path).is_file():
+            print("not file")
+            return py_udf_files
+        pyspark_metadata_file = open(feathr_pyspark_metadata_abs_path, 'rb')
         features_with_preprocessing = pickle.load(pyspark_metadata_file)
         pyspark_metadata_file.close()
+        # if there is not features that needs preprocessing, just return.
+
+
+        if not features_with_preprocessing:
+            return py_udf_files
 
         # Figure out if we need to preprocessing via UDFs for requested features.
         # Only if the requested features contain preprocessing logic, we will load Pyspark. Otherwise just use Scala
@@ -116,7 +134,6 @@ preprocessed_funcs = {
                     has_py_udf_preprocessing = True
 
         # Locate and collect all the python files that needs to be uploaded
-        py_udf_files = []
         if has_py_udf_preprocessing:
             # pyspark_client should be first in the file since the Spark driver will execute the first file
             pyspark_client_abs_path = str(Path(Path(__file__).parent / 'pyspark_client.py').absolute())
