@@ -4,7 +4,7 @@ from feathr.client import FeathrClient
 import os
 import glob
 from test_fixture import basic_test_setup
-
+import pytest
 
 def test_feathr_register_features_e2e():
     runner = CliRunner()
@@ -17,7 +17,7 @@ def test_feathr_register_features_e2e():
         all_features = client.list_registered_features()
         assert 'f_is_long_trip_distance' in all_features
 
-
+@pytest.mark.skip(reason="Add back get_features is not supported in feature registry for now and needs further discussion")
 def test_feathr_get_features_from_registry():
     """
     Test FeathrClient() sync features and get all the conf files from registry
