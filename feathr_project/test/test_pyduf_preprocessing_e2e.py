@@ -1,4 +1,4 @@
-giimport os
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from pyspark.sql.functions import col,sum,avg,max

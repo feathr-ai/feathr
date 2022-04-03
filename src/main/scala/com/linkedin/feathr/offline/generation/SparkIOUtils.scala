@@ -18,8 +18,12 @@ object SparkIOUtils {
     createUnionDataFrame(Seq(path), dataIOParams)
   }
 
-  def writeDataFrame(outputDF: DataFrame, path: String, parameters: Map[String, String] = Map()): DataFrame = {
-    outputDF.write.mode(SaveMode.Overwrite).format("avro").save(path)
+  def writeDataFrame( outputDF: DataFrame, path: String, parameters: Map[String, String] = Map()): DataFrame = {
+
+    val output_format = outputDF.sqlContext.getConf("spark.feathr.outputFormat", "avro")
+    // if the output format is set by spark configurations "spark.feathr.outputFormat"
+    // we will use that as the job output format; otherwise use avro as default for backward compatibility
+    outputDF.write.mode(SaveMode.Overwrite).format(output_format).save(path)
     outputDF
   }
 

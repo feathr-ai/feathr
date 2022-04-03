@@ -55,8 +55,6 @@ class _FeatureRegistry():
         self.guid = GuidTracker(starting=-1000)
         self.entity_batch_queue = []
 
-        
-
     def _register_feathr_feature_types(self):
         """
         Register the feathr types if we haven't done so. Note that this only needs to be called once per provisioning
@@ -88,7 +86,7 @@ class _FeatureRegistry():
 
             ],
             superTypes=["DataSet"],
-            serviceType="Feathr Workspace"
+            serviceType="Feathr Project"
         )
         type_feathr_sources = EntityTypeDef(
             name="feathr_source",
@@ -431,22 +429,23 @@ class _FeatureRegistry():
         logger.info("Reading feature configuration from {}",
                     feature_config_paths)
         if len(feature_config_paths) > 0:
-            feature_config_path = feature_config_paths[0]
-            self.feathr_feature_config = ConfigFactory.parse_file(
-                feature_config_path)
-            with open(feature_config_path, "r") as f:
-                raw_hocon_feature_definition_config = f.read()
+            for feature_config_path in feature_config_paths:
+                with open(feature_config_path, 'r') as feature_config_file:
+                    raw_hocon_feature_definition_config += feature_config_file.read()
+            self.feathr_feature_config = ConfigFactory.parse_string(
+                raw_hocon_feature_definition_config)
 
             # get feature join config file
             feature_join_paths = glob.glob(os.path.join(
                 workspace_path, "feature_join_conf", '*.conf'))
             logger.info("Reading feature join configuration from {}",
-                    feature_join_paths)
+                        feature_join_paths)
         if len(feature_join_paths) > 0:
-            feature_join_path = feature_join_paths[0]
-            self.feathr_feature_join = ConfigFactory.parse_file(feature_join_path)
-            with open(feature_join_path, "r") as f:
-                raw_hocon_feature_join_config = f.read()
+            for feature_join_path in feature_join_paths:
+                with open(feature_join_path, "r") as feature_join_file:
+                    raw_hocon_feature_join_config += feature_join_file.read()
+            self.feathr_feature_join = ConfigFactory.parse_string(
+                raw_hocon_feature_join_config)
 
         # get feature generation config file
         feature_generation_paths = glob.glob(
@@ -454,11 +453,11 @@ class _FeatureRegistry():
         logger.info("Reading feature generation configuration from {}",
                     feature_generation_paths)
         if len(feature_generation_paths) > 0:
-            feature_generation_path = feature_generation_paths[0]
-            self.feathr_feature_generation = ConfigFactory.parse_file(
-                feature_generation_path)
-            with open(feature_generation_path, "r") as f:
-                raw_hocon_feature_generation_config = f.read()
+            for feature_generation_path in feature_generation_paths:
+                with open(feature_generation_path, "r") as f:
+                    raw_hocon_feature_generation_config += f.read()
+            self.feathr_feature_generation = ConfigFactory.parse_string(
+                raw_hocon_feature_generation_config)
 
         feathr_anchors = self.feathr_feature_config.get("anchors", "")
         feathr_sources = self.feathr_feature_config.get("sources", "")
@@ -559,7 +558,8 @@ class _FeatureRegistry():
     @classmethod
     def _convert_to_module_path(self, path: Path, workspace_path: Path) -> str:
         """Convert a Python file path to its module path so that we can import it later"""
-        prefix = os.path.commonprefix([path.resolve(), workspace_path.resolve()])
+        prefix = os.path.commonprefix(
+            [path.resolve(), workspace_path.resolve()])
         resolved_path = str(path.resolve())
         module_path = resolved_path[len(prefix): -len(".py")]
         # Convert features under nested folder to module name
@@ -581,7 +581,7 @@ class _FeatureRegistry():
             derived_features=set()
         )
         for derived_feature in derived_feature_list:
-            if isinstance(derived_feature, DerivedFeature):                    
+            if isinstance(derived_feature, DerivedFeature):
                 definitions.derived_features.add(derived_feature)
                 definitions.transformations.add(vars(derived_feature)["transform"])
             else:
@@ -594,15 +594,14 @@ class _FeatureRegistry():
             definitions.sources.add(vars(anchor)['source'])
             for feature in vars(anchor)['features']:
                 # get the transformation object from `Feature` or `DerivedFeature`
-                if isinstance(anchor, Feature):
-                    # feature is of type `Feature` 
-                    definitions.features.add(anchor)
+                if isinstance(feature, Feature):
+                    # feature is of type `Feature`
+                    definitions.features.add(feature)
                     definitions.transformations.add(vars(feature)["transform"])
                 else:
-                    RuntimeError("Object cannot be parsed.")
-        
-        return definitions
+                    raise RuntimeError("Object cannot be parsed.")
 
+        return definitions
 
     @classmethod
     def _extract_features(self, workspace_path: Path) -> RepoDefinitions:
@@ -645,25 +644,28 @@ class _FeatureRegistry():
     @classmethod
     def save_to_feature_config_from_context(self, anchor_list, derived_feature_list, local_workspace_dir: Path):
         """Save feature definition within the workspace into HOCON feature config files from current context, rather than reading from python files"""
-        repo_definitions = self._extract_features_from_context(anchor_list, derived_feature_list, local_workspace_dir)
+        repo_definitions = self._extract_features_from_context(
+            anchor_list, derived_feature_list, local_workspace_dir)
         self._save_request_feature_config(repo_definitions, local_workspace_dir)
         self._save_anchored_feature_config(repo_definitions, local_workspace_dir)
         self._save_derived_feature_config(repo_definitions, local_workspace_dir)
 
     @classmethod
     def _save_request_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
-        config_file_name = "feature_conf/auto_generated_request_features.conf"        
-        tm = Template("""
-                    // THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
-                    anchors: {
-                        {% for anchor in feature_anchors %}
-                            {% if anchor.source.name == "PASSTHROUGH" %}
-                                {{anchor.to_feature_config()}}
-                            {% endif %}
-                        {% endfor %}
-                    }
-                    """)
-        
+        config_file_name = "feature_conf/auto_generated_request_features.conf"
+        tm = Template(
+            """
+// THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
+anchors: {
+    {% for anchor in feature_anchors %}
+        {% if anchor.source.name == "PASSTHROUGH" %}
+            {{anchor.to_feature_config()}}
+        {% endif %}
+    {% endfor %}
+}
+"""
+        )
+
         request_feature_configs = tm.render(feature_anchors=repo_definitions.feature_anchors)
         config_file_path = os.path.join(local_workspace_dir, config_file_name)
         write_to_file(content=request_feature_configs, full_file_name=config_file_path)
@@ -671,41 +673,46 @@ class _FeatureRegistry():
     @classmethod
     def _save_anchored_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
         config_file_name = "feature_conf/auto_generated_anchored_features.conf"
-        tm = Template("""
-                    // THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
-                    anchors: {
-                        {% for anchor in feature_anchors %}
-                            {% if not anchor.source.name == "PASSTHROUGH" %}
-                                {{anchor.to_feature_config()}}
-                            {% endif %}
-                        {% endfor %}
-                    }
-                    
-                    sources: {
-                        {% for source in sources%}
-                            {% if not source.name == "PASSTHROUGH" %}
-                                {{source.to_feature_config()}}
-                            {% endif %}
-                        {% endfor %}
-                    }
-                    """)
+        tm = Template(
+            """
+// THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
+anchors: {
+    {% for anchor in feature_anchors %}
+        {% if not anchor.source.name == "PASSTHROUGH" %}
+            {{anchor.to_feature_config()}}
+        {% endif %}
+    {% endfor %}
+}
+
+sources: {
+    {% for source in sources%}
+        {% if not source.name == "PASSTHROUGH" %}
+            {{source.to_feature_config()}}
+        {% endif %}
+    {% endfor %}
+}
+"""
+        )
         anchored_feature_configs = tm.render(feature_anchors=repo_definitions.feature_anchors,
                                              sources=repo_definitions.sources)
         config_file_path = os.path.join(local_workspace_dir, config_file_name)
         write_to_file(content=anchored_feature_configs, full_file_name=config_file_path)
 
     @classmethod
-    def _save_derived_feature_config(self, repo_definitions: RepoDefinitions , local_workspace_dir="./"):
+    def _save_derived_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
         config_file_name = "feature_conf/auto_generated_derived_features.conf"
-        tm = Template("""
-            anchors: {}
-            derivations: {
-                {% for derived_feature in derived_features %}
-                    {{derived_feature.to_feature_config()}}
-                {% endfor %}
-            }
-        """)
-        derived_feature_configs = tm.render(derived_features=repo_definitions.derived_features)
+        tm = Template(
+            """
+anchors: {}
+derivations: {
+    {% for derived_feature in derived_features %}
+        {{derived_feature.to_feature_config()}}
+    {% endfor %}
+}
+"""
+        )
+        derived_feature_configs = tm.render(
+            derived_features=repo_definitions.derived_features)
         config_file_path = os.path.join(local_workspace_dir, config_file_name)
         write_to_file(content=derived_feature_configs, full_file_name=config_file_path)
 
@@ -744,7 +751,7 @@ class _FeatureRegistry():
         registered features; otherwise it will only return only features under this project
         """
         entities = self.purview_client.discovery.search_entities(
-            "entityType:feathr_anchor_feature")
+            "entityType:feathr_anchor_feature or entityType:feathr_derivation")
         feature_list = []
         for entity in entities:
             # Important properties returned includes:
@@ -761,7 +768,7 @@ class _FeatureRegistry():
                 feature_list.append(entity["name"])
 
         return feature_list
-    
+
     def get_features_from_registry(self, project_name: str, workspace_path: str):
         """[Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
         Args:
@@ -770,19 +777,19 @@ class _FeatureRegistry():
         """
 
         entities = self.purview_client.get_entity(qualifiedName=project_name,
-                                                    typeName="feathr_workspace")
-        # TODO - Change implementation to support traversing the workspace and construct the file, item by item 
+                                                  typeName="feathr_workspace")
+        # TODO - Change implementation to support traversing the workspace and construct the file, item by item
         # We don't support modifying features outside of registring this should be fine.
-        
+
         # Read the three config files from raw hocon field
         feature_conf_content = entities["entities"][0]["attributes"]["raw_hocon_feature_definition_config"]
         feature_join_conf_content = entities["entities"][0]["attributes"]["raw_hocon_feature_join_config"]
         feature_gen_conf_content = entities["entities"][0]["attributes"]["raw_hocon_feature_generation_config"]
 
         # Define the filenames for each config
-        feature_conf_file = os.path.join(workspace_path,"feature_conf", "features.conf")
-        feature_join_file = os.path.join(workspace_path,"feature_join_conf", "feature_join.conf")
-        feature_gen_file = os.path.join(workspace_path,"feature_gen_conf", "feature_gen.conf")
+        feature_conf_file = os.path.join(workspace_path, "feature_conf", "features.conf")
+        feature_join_file = os.path.join(workspace_path, "feature_join_conf", "feature_join.conf")
+        feature_gen_file = os.path.join(workspace_path, "feature_gen_conf", "feature_gen.conf")
 
         # Create file and directory, if does not exist
         os.makedirs(os.path.dirname(feature_conf_file), exist_ok=True)
@@ -792,7 +799,7 @@ class _FeatureRegistry():
         with open(feature_conf_file, "w") as features:
             features.write(feature_conf_content)
         logger.info("Writing feature configuration from feathr registry to {}", feature_conf_file)
-        
+
         with open(feature_join_file, "w") as offline_config:
             offline_config.write(feature_join_conf_content)
         logger.info("Writing offline configuration from feathr registry to {}", feature_join_file)
