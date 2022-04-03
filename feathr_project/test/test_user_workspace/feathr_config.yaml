@@ -78,7 +78,7 @@ spark_config:
     dev_url: 'https://feathrazuretest3synapse.dev.azuresynapse.net'
     pool_name: 'spark3'
     # workspace dir for storing all the required configuration files and the jar resources
-    workspace_dir: 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started'
+    workspace_dir: 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_test_workspace'
     executor_size: 'Small'
     executor_num: 4
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://

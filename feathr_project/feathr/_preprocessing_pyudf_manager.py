@@ -48,7 +48,9 @@ class _PreprocessingPyudfManager(object):
         # Some basic imports will be provided
         udf_source_code = inspect.getsourcelines(user_func)[0]
         lines = []
-        provided_imports = ["from pyspark.sql import SparkSession, DataFrame\n"]
+        # Feathr provided imports for pyspark UDFs all go here
+        provided_imports = ["from pyspark.sql import SparkSession, DataFrame\n"] + \
+                           ['from pyspark.sql.functions import *\n']
         lines = lines + provided_imports
         lines = lines + udf_source_code
         lines.append('\n')
