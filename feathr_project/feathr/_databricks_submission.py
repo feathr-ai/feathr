@@ -228,6 +228,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # listing all the files in a folder: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--list
             result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
                                 headers=self.auth_headers,  params={ 'path': result_path})
+            # see here for response structure: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--response-structure-2
             dbfs_files = result.json()['files']
             for file_path in tqdm(dbfs_files, desc="Downloading result files: "):
                 # each file_path would be a dict of this type: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#dbfsfileinfo
@@ -274,4 +275,4 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         if resp.status_code == 200:
             return FileReadInfo(**resp.json())
         else:
-            RuntimeError("Files cannot be downloaded.")
+            raise RuntimeError("Files cannot be downloaded.")

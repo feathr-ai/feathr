@@ -337,7 +337,8 @@ class _DataLakeFiler(object):
 
     def download_file(self, target_adls_directory: str, local_dir_cache: str):
         """
-        Download file to a local cache. Supporting download a folder and the content in its subfolder
+        Download file to a local cache. Supporting download a folder and the content in its subfolder.
+        Note that the code will just download the content in the root folder, and the folder in the next level (rather than recursively for all layers of folders)
 
         Args:
             target_adls_directory (str): target ADLS directory

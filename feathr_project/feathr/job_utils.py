@@ -2,7 +2,7 @@ from feathr.client import FeathrClient
 import os
 import glob
 from feathr.constants import OUTPUT_FORMAT
-
+from loguru import logger
 import pandas as pd
 import tempfile
 
@@ -17,12 +17,12 @@ def get_result_df(client: FeathrClient) -> pd.DataFrame:
     # by default the result are in avro format
     if format:
         # helper function for only parquet and avro
-        if format.lower()=="parquet":
+        if format.casefold()=="parquet":
             files =  glob.glob(os.path.join(tmp_dir.name, '*.parquet'))
             from pyarrow.parquet import ParquetDataset
             ds = ParquetDataset(files)
             result_df = ds.read().to_pandas()
-        if format.lower()=="delta":
+        if format.casefold()=="delta":
             from deltalake import DeltaTable
             delta = DeltaTable(tmp_dir.name)
             if not client.spark_runtime == 'azure_synapse':
@@ -30,7 +30,7 @@ def get_result_df(client: FeathrClient) -> pd.DataFrame:
                 # Issues are trached here: https://github.com/delta-io/delta-rs/issues/582
                 result_df = delta.to_pyarrow_table().to_pandas()
             else:
-                print("Please use Azure Synapse to read the result in the Azure Synapse cluster. Reading local results is not supported for Azure Synapse. Emtpy DataFrame is returned.")
+                logger.info("Please use Azure Synapse to read the result in the Azure Synapse cluster. Reading local results is not supported for Azure Synapse. Emtpy DataFrame is returned.")
                 result_df = pd.DataFrame()
     else:
         import pandavro as pdx
