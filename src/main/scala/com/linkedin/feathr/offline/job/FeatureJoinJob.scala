@@ -158,6 +158,8 @@ object FeatureJoinJob {
 
 
     val parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
+
+
     SparkIOUtils.writeDataFrame(joinedDF, jobContext.outputPath, parameters)
     (None, Some(joinedDF))
   }

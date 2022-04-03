@@ -2,7 +2,7 @@
 
 Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. Because of this, users are expected to:
 
-1. Use this document as a detailed explanation of [Azure resource provisioning script](./azure_resource_provision.sh).  **DO NOT** run that script directly given the complexity of cloud environment setup. Instead, follow the steps in this documentation so you can always go back and check your step in case of some failures.
+1. Use this document as a detailed explanation of [Azure resource provisioning script](./azure_resource_provision.sh). **DO NOT** run that script directly given the complexity of cloud environment setup. Instead, follow the steps in this documentation so you can always go back and check your step in case of some failures.
 2. We provide an [Azure resource provisioning script](./azure_resource_provision.sh) which can be used to automate the process
 3. Make sure you have sufficient permission for creating resources or add roles.
 4. Tailor this script based on the IT setup in your specific environment.
@@ -31,8 +31,8 @@ A more comprehensive setup is as below:
 
 ![architecture](../images/architecture.png)
 
-
 ## Name setup
+
 Put in the name and password you want to use in the sections below. You can get the subscription ID and the location from your IT admins, and set all the other names based on your preference.
 
 Note: please keep the `resource_prefix` short, since some of the Azure resources need the full name to be less than 24 characters. It's recommended that to keep `resource_prefix` less than 15 characters.
@@ -49,6 +49,7 @@ synapse_sparkpool_name="spark31"
 ## Login to Azure and set the corresponding subscription you want to work on
 
 Please make sure you have the latest Azure CLI installed. You can do so by executing:
+
 ```bash
 az upgrade --all true --yes
 ```
@@ -73,6 +74,7 @@ fi
 ```
 
 # Setup all the resource names
+
 Setup all the resource names which will be used later.
 
 ```bash
@@ -86,6 +88,7 @@ purview_account_name="$resource_prefix-purview"
 ```
 
 And then set the current subscription ID:
+
 ```bash
 az account set -s $subscription_id
 ```
@@ -232,6 +235,7 @@ echo "preparing demo data"
 wget -O /tmp/green_tripdata_2020-04.csv https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv
 az storage fs file upload --account-name $storage_account_name --file-system $storage_file_system_name --path demo_data/green_tripdata_2020-04.csv --source /tmp/green_tripdata_2020-04.csv --auth-mode account-key
 ```
+
 ## Deleting all resources (Optional)
 
 You can optionally delete all the resources based on the policy of your organization, like below:

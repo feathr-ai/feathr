@@ -4,7 +4,7 @@ import math
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 import tempfile
 
 import redis
@@ -23,7 +23,7 @@ from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
 from feathr.feature_derivations import DerivedFeature
-
+from feathr.feathr_configurations import SparkExecutionConfiguration
 
 class FeatureJoinJobParams:
     """Parameters related to feature join job.
@@ -180,6 +180,7 @@ class FeathrClient(object):
         if from_context:
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
                 _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+                self.registry.register_features(self.local_workspace_dir)
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
         else:
@@ -349,7 +350,8 @@ class FeathrClient(object):
     def get_offline_features(self,
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
-                             output_path: str
+                             output_path: str,
+                             execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None,
                              ):
         """
         Get offline features for the observation dataset
@@ -357,6 +359,7 @@ class FeathrClient(object):
             observation_settings: settings of the observation data, e.g. timestamp columns, input path, etc.
             feature_query: features that are requested to add onto the observation data
             output_path: output path of job, i.e. the observation data with features attached.
+            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
         # produce join config
         tm = Template("""
@@ -382,9 +385,9 @@ class FeathrClient(object):
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_path)
+        return self._get_offline_features_with_config(config_file_path,execution_configuratons)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf'):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configuratons: Dict[str,str] = None):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
@@ -399,12 +402,21 @@ class FeathrClient(object):
                                                        feature_config=os.path.join(self.local_workspace_dir, 'feature_conf/'),
                                                        job_output_path=feathr_feature['outputPath'],
                                                        )
-
+        job_tags = {OUTPUT_PATH_TAG:feature_join_job_params.job_output_path}
+        # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
+        if execution_configuratons is not None and OUTPUT_FORMAT in execution_configuratons:
+            job_tags[OUTPUT_FORMAT]= execution_configuratons[OUTPUT_FORMAT]
+        '''
+        - Job tags are for job metadata and it's not passed to the actual spark job (i.e. not visible to spark job), more like a platform related thing that Feathr want to add (currently job tags only have job output URL and job output format, ). They are carried over with the job and is visible to every Feathr client. Think this more like some customized metadata for the job which would be weird to be put in the spark job itself.
+        - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to 
+        - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
+        Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
+        '''
         # submit the jars
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
-            job_tags={OUTPUT_PATH_TAG:feature_join_job_params.job_output_path},
+            job_tags=job_tags,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
                 '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
@@ -421,9 +433,10 @@ class FeathrClient(object):
                 '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
+            configuration=execution_configuratons
         )
 
-    def get_job_result_uri(self, block=True, timeout_sec=300):
+    def get_job_result_uri(self, block=True, timeout_sec=300) -> str:
         """Gets the job output URI
         """
         if not block:
@@ -435,6 +448,12 @@ class FeathrClient(object):
             raise RuntimeError(
                 'Spark job failed so output cannot be retrieved.')
 
+    def get_job_tags(self) -> Dict[str, str]:
+        """Gets the job tags
+        """
+        return self.feathr_spark_laucher.get_job_tags()
+
+
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
         """
@@ -443,11 +462,12 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def materialize_features(self, settings: MaterializationSettings):
+    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None):
         """Materialize feature data
 
         Args:
             settings: Feature materialization settings
+            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
         # produce materialization config
 
@@ -467,11 +487,11 @@ class FeathrClient(object):
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
             # CLI will directly call this so the experiene won't be broken
-            self._materialize_features_with_config(config_file_path)
+            self._materialize_features_with_config(config_file_path,execution_configuratons)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf'):
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
@@ -485,7 +505,12 @@ class FeathrClient(object):
         generation_config = FeatureGenerationJobParams(
             generation_config_path=os.path.abspath(feature_gen_conf_path),
             feature_config=os.path.join(self.local_workspace_dir, "feature_conf/"))
-
+        '''
+        - Job tags are for job metadata and it's not passed to the actual spark job (i.e. not visible to spark job), more like a platform related thing that Feathr want to add (currently job tags only have job output URL and job output format, ). They are carried over with the job and is visible to every Feathr client. Think this more like some customized metadata for the job which would be weird to be put in the spark job itself.
+        - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to 
+        - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
+        Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
+        '''
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
@@ -504,6 +529,7 @@ class FeathrClient(object):
                 '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
+            configuration=execution_configuratons,
         )
 
 
