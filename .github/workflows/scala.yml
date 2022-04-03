@@ -111,11 +111,9 @@ jobs:
           python-version: 3.8
       - name: Azure Blob Storage Upload (Overwrite)
         uses: fixpoint/azblob-upload-artifact@v4
-        run: |
-          echo "CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_$(date +"_%H_%M_%S")" >> $GITHUB_ENV
         with:
           connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
-          name: "CI_SPARK_RUNTIME_FOLDER"
+          name: "feathr_jar_github_action_spark3"
           path: "target/scala-2.12/feathr-assembly-0.1.0.jar"
           container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
           cleanup: "true"
