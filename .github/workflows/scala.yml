@@ -39,8 +39,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install flake8
-          echo $CI_SPARK_RUNTIME_FOLDER
-          echo $env.CI_SPARK_RUNTIME_FOLDER
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
@@ -59,7 +57,9 @@ jobs:
           java-version: "8"
           distribution: "temurin"
       - name: Build JAR
-        run: sbt assembly
+        run: |
+          sbt assembly
+          echo 'CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")' >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -77,7 +77,9 @@ jobs:
           https://adb-2474129336842816.16.azuredatabricks.net/
           ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
           EOF
-          databricks fs cp ./target/scala-2.12/feathr-assembly-0.1.0.jar dbfs:/$CI_SPARK_RUNTIME_FOLDER --overwrite
+          echo ${{ env.CI_SPARK_RUNTIME_FOLDER}}
+          # CI_SPARK_RUNTIME_FOLDER: feathr_jar_github_action_$(date +"%H_%M_%S")
+          databricks fs cp ./target/scala-2.12/feathr-assembly-0.1.0.jar dbfs:/${{ env.CI_SPARK_RUNTIME_FOLDER}} --overwrite
       - name: Run Feathr with Databricks
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_databricks"
@@ -96,7 +98,7 @@ jobs:
           BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
           BLOB_KEY: ${{secrets.BLOB_KEY}}
           JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
-          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: dbfs:/$CI_SPARK_RUNTIME_FOLDER
+          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: dbfs:/${{ env.CI_SPARK_RUNTIME_FOLDER}}
 
         run: |
           # run only test with databricks. run in 4 parallel jobs
@@ -113,7 +115,9 @@ jobs:
           java-version: "8"
           distribution: "temurin"
       - name: Build JAR
-        run: sbt assembly
+        run: |
+          sbt assembly
+          echo 'CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")' >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -122,7 +126,7 @@ jobs:
         uses: fixpoint/azblob-upload-artifact@v4
         with:
           connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
-          name: "$CI_SPARK_RUNTIME_FOLDER"
+          name: ${{ env.CI_SPARK_RUNTIME_FOLDER}}
           path: "target/scala-2.12/feathr-assembly-0.1.0.jar"
           container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
           cleanup: "true"
@@ -157,7 +161,7 @@ jobs:
           JDBC_PASSWORD: ${{secrets.JDBC_PASSWORD}}
           JDBC_DRIVER: ${{secrets.JDBC_DRIVER}}
           JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
-          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/$CI_SPARK_RUNTIME_FOLDER/feathr-assembly-0.1.0.jar"
+          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/${{ env.CI_SPARK_RUNTIME_FOLDER}}/feathr-assembly-0.1.0.jar"
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
