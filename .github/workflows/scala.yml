@@ -138,7 +138,6 @@ jobs:
           python -m pip install pytest pytest-xdist
           python -m pip install -e ./feathr_project/
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          ${{ env.CI_SPARK_RUNTIME_FOLDER}}
       - name: Set env variable
         run: |
           # overwrite corresponding environment variables to utilize feathr to upload the files 
