@@ -59,7 +59,7 @@ jobs:
       - name: Build JAR
         run: |
           sbt assembly
-          echo "CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_xiaoyzhu_$(date +"%H_%M_%S")" >> $GITHUB_ENV
+          echo "CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
