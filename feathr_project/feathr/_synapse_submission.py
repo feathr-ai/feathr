@@ -165,7 +165,7 @@ class _SynapseJobRunner(object):
 
         self._executor_size = executor_size
         self._executors = executors
-        self.EXECUTOR_SIZE = {'Small': {'Cores': 4, 'Memory': '28g'}, 'Medium': {'Cores': 8, 'Memory': '56g'},
+        self.EXECUTOR_SIZE_MAP = {'Small': {'Cores': 4, 'Memory': '28g'}, 'Medium': {'Cores': 8, 'Memory': '56g'},
                               'Large': {'Cores': 16, 'Memory': '112g'}}
 
     def _categorized_files(self, reference_files: List[str]):
@@ -218,10 +218,10 @@ class _SynapseJobRunner(object):
         """
 
         files, jars = self._categorized_files(reference_files)
-        driver_cores = self.EXECUTOR_SIZE[self._executor_size]['Cores']
-        driver_memory = self.EXECUTOR_SIZE[self._executor_size]['Memory']
-        executor_cores = self.EXECUTOR_SIZE[self._executor_size]['Cores']
-        executor_memory = self.EXECUTOR_SIZE[self._executor_size]['Memory']
+        driver_cores = self.EXECUTOR_SIZE_MAP[self._executor_size]['Cores']
+        driver_memory = self.EXECUTOR_SIZE_MAP[self._executor_size]['Memory']
+        executor_cores = self.EXECUTOR_SIZE_MAP[self._executor_size]['Cores']
+        executor_memory = self.EXECUTOR_SIZE_MAP[self._executor_size]['Memory']
 
         # Adding spaces between brackets. This is to workaround this known YARN issue (when running Spark on YARN):
         # https://issues.apache.org/jira/browse/SPARK-17814?focusedCommentId=15567964&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-15567964
