@@ -59,7 +59,7 @@ jobs:
       - name: Build JAR
         run: |
           sbt assembly
-          echo 'CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_xiaoyzhu_$(date +"%H_%M_%S")' >> $GITHUB_ENV
+          echo "CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_xiaoyzhu_$(date +"%H_%M_%S")" >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -116,7 +116,6 @@ jobs:
         run: |
           sbt assembly
           echo "CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
-          echo $${{ env.CI_SPARK_RUNTIME_FOLDER}}
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -135,12 +134,6 @@ jobs:
           python -m pip install pytest pytest-xdist
           python -m pip install -e ./feathr_project/
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Set env variable
-        run: |
-          # overwrite corresponding environment variables to utilize feathr to upload the files 
-          # echo "SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION=$(readlink -f ./target/scala-2.12/feathr-assembly-0.1.0.jar)" >> $GITHUB_ENV
-          # use hour, minute, seconds for seperate folders so that different CI pipeline won't share the same runtime
-          # echo "PROJECT_CONFIG__PROJECT_NAME=feathr_github_ci_project$(date +"_%H_%M_%S")" >> $GITHUB_ENV 
       - name: Run Feathr with Azure Synapse
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_synapse"
