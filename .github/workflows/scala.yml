@@ -55,7 +55,9 @@ jobs:
       - name: Build JAR
         run: |
           sbt assembly
-          echo "CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
+          echo "CI_SPARK_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
+          echo "CI_SPARK_JAR_NAME=$(ls target/scala-2.12/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
+          echo "CI_SPARK_JAR_FULL_NAME_PATH=$(ls target/scala-2.12/*.jar)" >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -66,14 +68,14 @@ jobs:
           python -m pip install pytest pytest-xdist databricks-cli
           python -m pip install -e ./feathr_project/
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          echo ${{ env.CI_SPARK_RUNTIME_FOLDER}}
       - name: Set env variable and upload jars
         env:
           DATABRICKS_HOST: "https://adb-2474129336842816.16.azuredatabricks.net/"
           DATABRICKS_TOKEN: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
         run: |
           # overwrite corresponding environment variables to utilize feathr to upload the files
-          databricks fs cp ./target/scala-2.12/feathr-assembly-0.1.0.jar dbfs:/${{ env.CI_SPARK_RUNTIME_FOLDER}} --overwrite
+          # assuming there will be only one jar in the target folder
+          databricks fs cp ${{ env.CI_SPARK_JAR_FULL_NAME_PATH}} dbfs:/${{ env.CI_SPARK_JAR_FOLDER}} --overwrite
       - name: Run Feathr with Databricks
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_databricks"
@@ -92,7 +94,7 @@ jobs:
           BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
           BLOB_KEY: ${{secrets.BLOB_KEY}}
           JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
-          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: dbfs:/${{ env.CI_SPARK_RUNTIME_FOLDER}}
+          SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: dbfs:/${{ env.CI_SPARK_JAR_FOLDER}}/${{ env.CI_SPARK_JAR_NAME}}
 
         run: |
           # run only test with databricks. run in 4 parallel jobs
@@ -111,7 +113,10 @@ jobs:
       - name: Build JAR
         run: |
           sbt assembly
-          echo "CI_SPARK_RUNTIME_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
+          echo "CI_SPARK_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
+          echo "CI_SPARK_JAR_NAME=$(ls target/scala-2.12/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
+          echo "CI_SPARK_JAR_FULL_NAME_PATH=$(ls target/scala-2.12/*.jar)" >> $GITHUB_ENV
+          $(ls target/scala-2.12/*.jar)
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -120,8 +125,8 @@ jobs:
         uses: fixpoint/azblob-upload-artifact@v4
         with:
           connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
-          name: ${{ env.CI_SPARK_RUNTIME_FOLDER}}
-          path: "target/scala-2.12/feathr-assembly-0.1.0.jar"
+          name: ${{ env.CI_SPARK_JAR_FOLDER}}
+          path: ${{ env.CI_SPARK_JAR_FULL_NAME_PATH}}
           container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
           cleanup: "true"
       - name: Install Feathr Package
@@ -149,7 +154,7 @@ jobs:
           JDBC_PASSWORD: ${{secrets.JDBC_PASSWORD}}
           JDBC_DRIVER: ${{secrets.JDBC_DRIVER}}
           JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
-          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/${{ env.CI_SPARK_RUNTIME_FOLDER}}/feathr-assembly-0.1.0.jar"
+          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/${{ env.CI_SPARK_JAR_FOLDER}}/${{ env.CI_SPARK_JAR_NAME}}"
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
