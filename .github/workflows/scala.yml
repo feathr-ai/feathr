@@ -115,6 +115,7 @@ jobs:
           distribution: "temurin"
       - name: Build JAR
         run: |
+          sbt assembly
           # remote folder for CI upload
           echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
           # get local jar name without paths so version change won't affect it
