@@ -12,10 +12,6 @@ on:
       - 'docs/**'
       - '**/README.md'
 
-# env:
-#   # use hour, minute, seconds for seperate folders so that different CI pipeline won't share the same runtime
-#   CI_SPARK_RUNTIME_FOLDER: feathr_jar_github_action_$(date +"%H_%M_%S")
-
 jobs:
   sbt_test:
     runs-on: ubuntu-latest
