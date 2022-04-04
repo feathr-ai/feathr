@@ -78,7 +78,7 @@ jobs:
         run: |
           # overwrite corresponding environment variables to utilize feathr to upload the files
           # assuming there will be only one jar in the target folder
-          databricks fs cp ${{ env.FEATHR_LOCAL_JAR_FULL_NAME_PATH}} dbfs:/${{ env.CI_SPARK_REMOTE_JAR_FOLDER}} --overwrite
+          databricks fs cp ${{ env.FEATHR_LOCAL_JAR_FULL_NAME_PATH}} dbfs:/${{ env.CI_SPARK_REMOTE_JAR_FOLDER}}/${{ env.FEATHR_LOCAL_JAR_NAME}} --overwrite
       - name: Run Feathr with Databricks
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_databricks"
