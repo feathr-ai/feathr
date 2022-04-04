@@ -30,7 +30,14 @@ Since there are many cloud integration testing jobs that could be run in paralle
         output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/snowflake_output','_', str(now.minute), '_', str(now.second), ".avro"])
     ```  
 
+## Optimizing Parallel Runs
 
+Since Feathr is using cloud resources to do CI testing, we have those optimizations in place:
+
+- set `pytest -n 4` to run 4 tests in parallel
+- Use pre-exist spark pools to reduce the setup time. All the spark jobs are running on "instance pools" that has certain idle compute instances so the setup time will be short. For example, for Databricks:
+
+`"instance_pool_id":"0403-214809-inlet434-pool-l9dj3kwz"`
 
 
 ## More on GitHub Actions
