@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.source.dataloader
 
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataException}
+import com.linkedin.feathr.offline.config.location.InputLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
@@ -14,7 +15,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * @param ss the spark session
  * @param path input data path
  */
-private[offline] class SparkDataLoader(ss: SparkSession, path: String) extends DataLoader {
+private[offline] class SparkDataLoader(ss: SparkSession, location: InputLocation) extends DataLoader {
 
   /**
    * get the schema of the source. It's only used in the deprecated DataSource.getDataSetAndSchema
@@ -23,19 +24,19 @@ private[offline] class SparkDataLoader(ss: SparkSession, path: String) extends D
   override def loadSchema(): Schema = {
     val conf = ss.sparkContext.hadoopConfiguration
     val fs = FileSystem.get(conf)
-    val status = fs.listStatus(new Path(path))
+    val status = fs.listStatus(new Path(location.getPath))
 
     // paths of all the avro files in the directory
     val avroFiles = status.filter(_.getPath.getName.endsWith(".avro"))
 
     // return null if directory doesn't contain any avro file.
     if (avroFiles.length == 0) {
-      throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Load the Avro schema for Avro data set in HDFS but no avro files found in $path.")
+      throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Load the Avro schema for Avro data set in HDFS but no avro files found in ${location.getPath}.")
     }
 
     // get the first avro file in the directory
     val dataFileName = avroFiles(0).getPath.getName
-    val dataFilePath = new Path(path, dataFileName).toString
+    val dataFilePath = new Path(location.getPath, dataFileName).toString
 
     // Get the schema of the avro GenericRecord
     getSchemaFromAvroDataFile(dataFilePath, new JobConf(conf))
@@ -59,16 +60,16 @@ private[offline] class SparkDataLoader(ss: SparkSession, path: String) extends D
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParametersWithSplitSize = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize) ++ dataIOParameters
-    log.info(s"Loading ${path} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
+    log.info(s"Loading ${location.getPath} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
     try {
-      if (path.startsWith("jdbc")){
-        JdbcUtils.loadDataFrame(ss, path)
+      if (location.getPath.startsWith("jdbc")){
+        JdbcUtils.loadDataFrame(ss, location.getPath)
       } else {
-        SparkIOUtils.createDataFrame(path, dataIOParametersWithSplitSize)
+        SparkIOUtils.createDataFrame(location, dataIOParametersWithSplitSize)
       }
     } catch {
       case _: Throwable =>
-        ss.read.format("csv").option("header", "true").load(path)
+        ss.read.format("csv").option("header", "true").load(location.getPath)
     }
   }
 }
