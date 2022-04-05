@@ -37,6 +37,7 @@ setup(
         "tqdm",
         "pyarrow",
         "python-snappy",
+        "deltalake",
         "google>=3.0.0",
         "google-api-python-client>=2.41.0",
     ],
