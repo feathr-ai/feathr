@@ -1,34 +1,23 @@
 # Feathr – An Enterprise-Grade, High Performance Feature Store
 
-**What is a Feature Store?** A Feature Store is a system that lets you
-**define** and **deploy** ML features and then **access** them during model training and model inferencing.
-The Feature Store is an essential component of a machine learning CI/CD platform, and is a prerequisite for being able
-to deploy and serve ML models at scale – especially for applications that make predictions about **entities** like
-users, documents, or ads.
+## What is Feathr?
 
-**What is Feathr?** Feathr is a Feature Store that supports **time-aware feature computation**.
-Feathr lets you **define features** based on raw data sources, using simple configuration.
-Feathr then lets you **get those features by their names** during model training and model inferencing,
-using simple APIs. Feathr automates the process of computing your features and joining them to your training
-data, following point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying
-your features for use online in production.
+Feathr lets you:
 
-## Defining Features in Feathr
+- **define features** based on raw data sources, including time-series data, using simple APIs.
+- **get those features by their names** during model training and model inferencing.
+- **share features** across your team and company.
 
-Feathr enables defining features based on various data sources, including time-series data.
-Feathr supports aggregations, transformations, time windowing, and a rich set of types including
-vectors and tensors, making it easy to define many kinds of useful features based on your underlying data.
+Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-Feathr feature definitions can be replayed automatically over historical time-series data to compute
-features at specific points in time, enabling point-in-time-correct feature computation during
-training data generation.
+## Quick Start
 
-### Simple Features
+- Follow the [quick start Jupyter Notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./quickstart.md) containing a bit more explanation on the notebook.
+- For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
-In **feathr_worksapce** folder:
+## Defining Features with Transformation
 
 ```python
-# Define the key for your feature
 features = [
     Feature(name="f_trip_distance",                         # Ingest feature data as-is
             feature_type=FLOAT),
@@ -45,15 +34,67 @@ anchor = FeatureAnchor(name="request_features",             # Features anchored 
                        features=features)
 ```
 
-### Window Aggregation Features
+## Accessing Features
 
 ```python
+from feathr import FeathrClient
+
+# Requested features to be joined
 # Define the key for your feature
 location_id = TypedKey(key_column="DOLocationID",
                        key_column_type=ValueType.INT32,
                        description="location id in NYC",
                        full_name="nyc_taxi.location_id")
+feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location_id])
 
+# Observation dataset settings
+settings = ObservationSettings(
+  observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
+  event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
+  timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
+
+# Prepare training data by joining features to the input (observation) data.
+# feature-join.conf and features.conf are detected and used automatically.
+feathr_client.get_offline_features(observation_settings=settings,
+                                   output_path="abfss://output.avro",
+                                   feature_query=feature_query)
+```
+
+## Deploy Features to Online (Redis) Store
+
+```python
+from feathr import FeathrClient, BackfillTime, MaterializationSettings, RedisSink
+
+client = FeathrClient()
+redisSink = RedisSink(table_name="nycTaxiDemoFeature")
+# Materialize two features into a redis table.
+settings = MaterializationSettings("nycTaxiMaterializationJob",
+sinks=[redisSink],
+feature_names=["f_location_avg_fare", "f_location_max_fare"])
+client.materialize_features(settings)
+
+```
+
+Get features from online store:
+
+```python
+from feathr import FeathrClient
+client = FeathrClient()
+# Get features for a locationId (key)
+client.get_online_features(feature_table = "agg_features",
+                           key = "265",
+                           feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
+# Batch get for multiple locationIds (keys)
+client.multi_get_online_features(feature_table = "agg_features",
+                                 key = ["239", "265"],
+                                 feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
+```
+
+# More on Defining Features
+
+## Defining Window Aggregation Features
+
+```python
 agg_features = [Feature(name="f_location_avg_fare",
                         key=location_id,                          # Query/join key of the feature(group)
                         feature_type=FLOAT,
@@ -68,7 +109,17 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            features=agg_features)
 ```
 
-### Derived Features: Beyond Features on Raw Data Sources
+## Defining Named Data Sources
+
+```python
+batch_source = HdfsSource(
+    name="nycTaxiBatchSource",                              # Source name to enrich your metadata
+    path="abfss://green_tripdata_2020-04.csv",              # Path to your data
+    event_timestamp_column="lpep_dropoff_datetime",         # Event timestamp for point-in-time correctness
+    timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
+```
+
+## Beyond Features on Raw Data Sources - Derived Features
 
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
@@ -89,52 +140,10 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
 
-## Accessing Features from Feathr
+## Cloud Architecture
 
-Feathr provides simple APIs for model pipelines and inferencing code to **get features by their names**.
-Feathr automates the process of joining various data sources, point-in-time-correct computation for
-training data generation, and pre-materializing feature data sets for online access.
-
-Models may depend on a large number of features defined by multiple authors across a team or organization.
-For such cases, Feathr seamlessly merges the multiple definitions into a combined join-and-compute workflow,
-providing the consumer (the ML model) with the convenient appearance that the features are coming from a single table.
-
-In **my_offline_training.py**:
-
-```python
-from feathr import FeathrClient
-
-# Requested features to be joined
-feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location_id])
-
-# Observation dataset settings
-settings = ObservationSettings(
-    observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
-    event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
-    timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
-
-# Prepare training data by joining features to the input (observation) data.
-# feature-join.conf and features.conf are detected and used automatically.
-feathr_client.get_offline_features(observation_settings=settings,
-                                   output_path="abfss://output.avro",
-                                   feature_query=feature_query)
-```
-
-In **my_online_model.py**:
-
-```python
-from  feathr import FeathrClient
-client = FeathrClient()
-# Get features for a locationId (key)
-client.get_online_features(feature_table = "agg_features",
-                           key = "265",
-                           feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
-# Batch get for multiple locationIds (keys)
-client.multi_get_online_features(feature_table = "nycTaxiDemoFeature",
-                                 key = ["239", "265"],
-                                 feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
-
-```
+Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
+![Architecture](images/architecture.png)
 
 # Next Steps
 
@@ -155,8 +164,4 @@ client.multi_get_online_features(feature_table = "nycTaxiDemoFeature",
 - [Local Feature Testing](how-to-guides/local-feature-testing.md)
 - [Feature Definition Troubleshooting Guide](how-to-guides/troubleshoot-feature-definition.md)
 - [Feathr Expression Language](how-to-guides/expression-language.md)
-
-## Cloud Architecture
-
-Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
-![Architecture](images/architecture.png)
+- [Feathr Job Configuration](how-to-guides/feathr_job_configuration.md)
