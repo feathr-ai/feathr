@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Getting Historical Features in Feathr
-parent: Concepts
+parent: Feathr Concepts
 ---
 
 # Feature Join

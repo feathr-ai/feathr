@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Point-in-time Join in Feathr
-parent: Concepts
+parent: Feathr Concepts
 ---
 
 # Point-in-time Correctness

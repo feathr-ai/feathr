@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feathr Feature Generation
-parent: Concepts
+parent: Feathr Concepts
 ---
 
 # Feature Generation

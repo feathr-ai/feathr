@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feathr Feature Definition
-parent: Concepts
+parent: Feathr Concepts
 ---
 
 # Feature Definition
