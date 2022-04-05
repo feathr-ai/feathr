@@ -1,3 +1,11 @@
+---
+layout: default
+title: Home
+nav_order: 1
+description: "Feathr – An Enterprise-Grade, High Performance Feature Store"
+permalink: /
+---
+
 # Feathr – An Enterprise-Grade, High Performance Feature Store
 
 ## What is Feathr?

@@ -1,3 +1,9 @@
+---
+layout: default
+title: Feathr Quick Start Guide
+nav_order: 2
+---
+
 # Feathr Quickstart Guide
 
 ## Overview
