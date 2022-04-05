@@ -1,21 +1,21 @@
 # Feathr Concepts Guide for Beginners
 
-In this guide, we will cover the high level concepts for Feathr. Don't treat this as a user manual, but treat this as blogpost to cover the thinkings.
+In this guide, we will cover the high level concepts for Feathr. Don't treat this as a user manual, but treat this as blogpost to cover the highlevel thinkings for Feathr beginners.
 
-## What are Observation data, Feature Join, Feature Query, Keys, in Feathr's context?
+## What are `Observation` data, Feature Join, Feature Query, Keys, in Feathr's context?
 In order to fully utilize Feathr's power, we need to understand the object models that Feathr is expecting. 
 
-In Feathr, always think that there's some "Observation" dataset which is the central dataset that you will be using. This dataset usually have labels in it, but it's also fine that an observation data doesn't have a label.
+In Feathr, always think that there is some `Observation` dataset which is the central dataset that you will be using. This dataset usually have labels in it, but it's also fine that an `observation` data doesn't have a label.
 
-For example, the observation dataset can be user click streams, credit card transactions, etc.
+For example, the `observation` dataset can be user click streams, credit card transactions, etc.
 
-Then you will need addtional data (or feature) to augment this "observation" dataset. For example, you want to augment the user click stream data by adding some historical features, such as the total amount that the user spent in the last one week. This additional dataset is usually in a different storage, say in your historical database, or data lake.
+Then you will need addtional data (or feature) to augment this `observation` dataset. For example, you want to augment the user click stream data by adding some historical features, such as the total amount that the user spent in the last one week. This additional dataset is usually in a different storage, say in your historical database, or data lake.
 
-In this case, how would we "link" the "observation" dataset, and the "additional dataset"? This is called "Feature Join" in Feature Store, but basically it's joining two tables.
+In this case, how would we "link" the `observation` dataset, and the "additional dataset"? This is called "Feature Join" in Feature Store, but basically think this process as joining two tables.
 
-Since this is a Join process, we need to specify which key(s) that the join would happen. Those keys are usually some IDs, but can be others as well. In the above example, if we want to augment the user click stream data with purchase history, we will use the user ID as key. Other cases might be we want to get the historical blood pressure history for a patient, so patient ID will be used as key in that case.
+Since this is a Join process, we need to specify which `key(s)` that the join would happen. Those `keys` are usually some IDs, but can be others as well. In the above example, if we want to augment the user click stream data with user purchase history, we will use the user ID as key, so that the `click_stream` table and the `historical_buying` table can be joined together. Other cases might be we want to get the historical blood pressure history for a patient, so patient ID will be used as key in that case.
 
-Since the additional features are from different sources, we want to define a `Anchor` to process it further. Think `Anchor` as a `Feature View`, where it sits on top of the raw data source and have some possible transformations. `Anchor` also has preprocess capabilities, where you can process the raw data from its source with customized PySpark functions.
+Since the additional features are from different sources, we want to define an `Anchor` to process it further. Think `Anchor` as a `Feature View`, where it sits on top of the raw data source and have some possible preprocessing capabilities (where you can process the raw data from its source with customized PySpark functions)
 
 That's why you will see something like:
 
@@ -48,7 +48,9 @@ request_anchor = FeatureAnchor(name="request_features",
                                features=features)
 ```
 
-In the above code, we have a datasource that is an HDFS style source, indicating where we will get data from. We also define a few features on top of those source data, for example we can simply do renaming (`f_trip_distance` is a rename of `trip_distance`), pre-processing, etc. 
+- In the above code, we have a datasource that is an HDFS style source, indicating where we will get data from. 
+- We also define a few features on top of those source data, for example we can simply do renaming (`f_trip_distance` is a rename of `trip_distance`), pre-processing, etc. 
+- we then "assemble" the features and sources into an `FeatureAnchor`, so that it can be built and registered later. Again, think `FeatureAnchor` as a "View"
 
 ## Motivation on Derived Feature
 
@@ -62,7 +64,7 @@ f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
                                       transform="f_trip_distance * f_trip_time_duration")
 ```
 
-## What if I want to get features from "Observation" data?
+## What if I want to get features from "`Observation`" data?
 
 There are a lot of use cases where users want to calculate features based on input features as well. Users can simply 
 
@@ -76,7 +78,7 @@ Additional datathat have additional features, which you want to augment the cent
 
 ## Feature Joins to get all the historical dataset/get offline dataset
 
-we need to specify a key in feature join, and for each feature query, the key needs to be the same, because each feature join is like augmenting the "observation" dataset by additional feature from other tables once more.
+we need to specify a key in feature join, and for each feature query, the key needs to be the same, because each feature join is like augmenting the "`observation`" dataset by additional feature from other tables once more.
 
 
 ## Point in time joins and aggregations
