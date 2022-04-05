@@ -8,7 +8,7 @@ collections:
     permalink: "./dev_guide"
     output: true
   how-to-guides:
-    permalink: "/docs/how-to-guides"
+    permalink: "/how-to-guides"
     output: true
     
 just_the_docs:
