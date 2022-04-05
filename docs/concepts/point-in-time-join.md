@@ -1,3 +1,9 @@
+---
+layout: default
+title: Point-in-time Join in Feathr
+parent: Concepts
+---
+
 # Point-in-time Correctness
 If your feature doesn't change over time in your modeling, like an adult's height, then point-in-time is not an issue. In reality, most features change over time, and you should care about point-in-time correctness. Like a person's salary, a person's purchases on the website. They all change over time. We call those features time-series features. For time-series features, point-in-time correctness is critical.
 
