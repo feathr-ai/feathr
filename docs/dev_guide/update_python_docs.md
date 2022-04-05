@@ -1,3 +1,8 @@
+---
+layout: default
+title: Developer Guide for updating python SDK docs
+parent: Feathr Developer Guides
+---
 # Developer Guide for updating python SDK docs
 
 ## Install Dependencis
