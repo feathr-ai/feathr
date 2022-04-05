@@ -1,12 +1,3 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js"></script>
-<script>
-   mermaid.initialize({
-       startOnLoad:true,
-       theme: 'default'
-   });
-   window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
-</script>
-
 ---
 layout: default
 title: Cloud Integration Test/CI Pipeline
