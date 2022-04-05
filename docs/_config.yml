@@ -1,1 +1,19 @@
 remote_theme: just-the-docs/just-the-docs
+
+collections:
+  concepts:
+    permalink: "/:collection/:path/"
+    output: true
+  dev_guide:
+    permalink: "/:collection/:path/"
+    output: true
+  how-to-guides:
+    permalink: "/:collection/:path/"
+    output: true
+    
+just_the_docs:
+  collections:
+    concepts:
+      name: Documentation
+    how-to-guides:
+      name: Tutorials
