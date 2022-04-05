@@ -3,24 +3,14 @@ from __future__ import annotations
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Response,status
-from numpy import typename
-from rsa import verify
-from app.apis.project_api.project_api import get_feature_by_name, get_feature_lineage_by_name, list_features
+from app.backends.purview_backend.purview_backend import PurviewBackend
 
 from app.core.configs import *
-from app.apis.project_api import *
 from app.core.error_handling import verifyCode
 from app.models.features import Features
-router = APIRouter()
 
-@router.get("/")
-async def root(code):
-    """
-    Root endpoint
-    """
-    verifyCode(code)
-    
-    return {"message": "Welcome to Feature Store APIs. Please call specific APIs for your use case"}
+router = APIRouter()
+backend = PurviewBackend()
 
 @router.get("/projects/{project_name}/features", response_model=Features)
 def list_registered_features(code, project_name: str, response: Response):
@@ -30,7 +20,7 @@ def list_registered_features(code, project_name: str, response: Response):
     verifyCode(code)
     
     response.status_code = status.HTTP_200_OK
-    result = list_features(project_name)
+    result = backend.ListFeatures(project_name)
     return {"features" : result}
     
 
@@ -42,7 +32,7 @@ def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, 
     verifyCode(code)
 
     response.status_code = status.HTTP_200_OK
-    result = get_feature_by_name(feature_name,type_name=type_name)
+    result = backend.RetrieveFeature(project_name,feature_name,type_name)
     
     return result
     
@@ -55,6 +45,6 @@ def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, 
     verifyCode(code)
 
     response.status_code = status.HTTP_200_OK
-    result = get_feature_lineage_by_name(feature_name)
+    result = backend.RetrieveFeatureLineage(project_name,feature_name)
     return result
     

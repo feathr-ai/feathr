@@ -1,14 +1,15 @@
 from pyexpat import features
 from telnetlib import STATUS
 from fastapi import APIRouter, FastAPI, Request, Response
+from app.backends.purview_backend.purview_backend import PurviewBackend
 from app.core.configs import *
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from fastapi.responses import PlainTextResponse
 from app.core.error_code import ErrorCode
+from app.core.error_handling import verifyCode
 from app.core.feathr_api_exception import FeathrApiException
-from app.routes import featurestore,projects
 from pyapacheatlas.core import (AtlasException)
-
+from app.routes import recommendation,feature
 app = FastAPI()
 
 if app_insights_connection_string:
@@ -22,11 +23,19 @@ logger.info("starting %s", __file__)
 
 api_router = APIRouter()
 
-api_router.include_router(featurestore.router)
-api_router.include_router(projects.router)
+api_router.include_router(recommendation.router)
+api_router.include_router(feature.router)
 
 app.include_router(api_router,prefix = API_Version)
 
+@app.get("/")
+async def root(code):
+    """
+    Root endpoint
+    """
+    verifyCode(code)
+    
+    return {"message": "Welcome to Feature Store APIs. Please call specific APIs for your use case"}
 
 async def catch_exceptions_middleware(request: Request, call_next):
     try:
@@ -45,4 +54,5 @@ async def catch_exceptions_middleware(request: Request, call_next):
         else:
             logger.error("Error: %s", exc.args[0])
             return PlainTextResponse("Error: " + exc.args[0], status_code=500)
+
 app.middleware('http')(catch_exceptions_middleware)
