@@ -2,13 +2,13 @@ remote_theme: just-the-docs/just-the-docs
 
 collections:
   concepts:
-    permalink: "./concepts"
+    permalink: "/docs/concepts"
     output: true
   dev_guide:
     permalink: "./dev_guide"
     output: true
   how-to-guides:
-    permalink: "./how-to-guides"
+    permalink: "/docs/how-to-guides"
     output: true
     
 just_the_docs:
