@@ -33,7 +33,7 @@ private[offline] class TimeSeriesSourceAccessor(
     val interval = timeIntervalOpt.map(sourceTimeInterval.intersection).getOrElse(sourceTimeInterval)
     val dateRange = OfflineDateTimeUtils.dateRange(interval, dateTimeResolution)
     val jobConf = new JobConf(ss.sparkContext.hadoopConfiguration)
-    val df = new SparkDataLoader(ss, source.path).loadDataFrame(Map(SparkIOUtils.FILTER_EXP -> dateRange), jobConf)
+    val df = new SparkDataLoader(ss, source.location).loadDataFrame(Map(SparkIOUtils.FILTER_EXP -> dateRange), jobConf)
     if (addTimestampColumn) {
       log.info(s"added timestamp column to source ${source.path}.")
       df.withColumn(

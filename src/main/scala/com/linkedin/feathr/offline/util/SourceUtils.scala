@@ -7,6 +7,7 @@ import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.exception._
 import com.linkedin.feathr.common.{AnchorExtractor, DateParam}
 import com.linkedin.feathr.offline.client.InputData
+import com.linkedin.feathr.offline.config.location.{InputLocation, SimplePath}
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.source.SourceFormatType
@@ -284,7 +285,7 @@ private[offline] object SourceUtils {
       getLocalDF(ss, factDataSourcePath)
     }
     else {
-      loadAsDataFrame(ss, factDataSourcePath)
+      loadAsDataFrame(ss, SimplePath(factDataSourcePath))
     }
   }
 
@@ -304,7 +305,7 @@ private[offline] object SourceUtils {
         getLocalMockDataPath(ss, path) match {
           case Some(mockData) =>
             loadSeparateJsonFileAsAvroToDF(ss, mockData).getOrElse(throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Cannot load mock data path ${mockData}"))
-          case None => loadAsDataFrame(ss, localPath)
+          case None => loadAsDataFrame(ss, SimplePath(localPath))
         }
       }
     }
@@ -378,7 +379,7 @@ private[offline] object SourceUtils {
       } else {
         // Load a single folder
         log.info(s"Loading HDFS path ${factDataSourcePath} as DataFrame for sliding window aggregation, using parameters ${dataIOParameters}")
-        SparkIOUtils.createDataFrame(factDataSourcePath, dataIOParameters)
+        SparkIOUtils.createDataFrame(SimplePath(factDataSourcePath), dataIOParameters)
       }
   }
 
@@ -637,12 +638,12 @@ private[offline] object SourceUtils {
    * @param inputPath
    * @return
    */
-  def loadAsDataFrame(ss: SparkSession, inputPath: String): DataFrame = {
+  def loadAsDataFrame(ss: SparkSession, location: InputLocation): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParameters = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize)
-    log.info(s"Loading ${inputPath} as DataFrame, using parameters ${dataIOParameters}")
-    SparkIOUtils.createDataFrame(inputPath, dataIOParameters)
+    log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParameters}")
+    SparkIOUtils.createDataFrame(location, dataIOParameters)
   }
 
   /**
@@ -679,7 +680,7 @@ private[offline] object SourceUtils {
         if (ss.sparkContext.isLocal){
           getLocalDF(ss, inputData.inputPath)
         } else {
-          loadAsDataFrame(ss, inputData.inputPath)
+          loadAsDataFrame(ss, SimplePath(inputData.inputPath))
         }
       }
     }
