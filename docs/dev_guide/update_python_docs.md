@@ -1,6 +1,4 @@
-# Developer Guide for
-
-This is only for develoeprs. Users should access the documentation via https://readthedocs.com/.
+# Developer Guide for updating python SDK docs
 
 ## Install Dependencis
 

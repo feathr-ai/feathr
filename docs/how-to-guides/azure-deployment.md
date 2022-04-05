@@ -1,3 +1,10 @@
+---
+layout: default
+title: Azure Resource Provisioning
+parent: Feathr How-to Guides
+---
+
+
 # Azure Resource Provisioning
 
 Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. Because of this, users are expected to:
