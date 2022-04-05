@@ -3,7 +3,7 @@ layout: default
 title: Home
 nav_order: 1
 description: "Feathr – An Enterprise-Grade, High Performance Feature Store"
-permalink: /
+permalink: docs/README.md
 ---
 
 # Feathr – An Enterprise-Grade, High Performance Feature Store
