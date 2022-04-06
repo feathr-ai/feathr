@@ -9,7 +9,7 @@ from feathr.typed_key import TypedKey
 
 from pyapacheatlas.core import PurviewClient, AtlasClassification, AtlasEntity, AtlasProcess
 
-
+from graphlib import TopologicalSorter
 from jinja2 import Template
 from loguru import logger
 from numpy import deprecate
@@ -124,9 +124,9 @@ class _FeatureRegistry():
                 AtlasAttributeDef(name="type", typeName="string",
                                   cardinality=Cardinality.SINGLE),
 
-                # currently only registering derived features on anchor features.
-                # TODO: support derived features on other derived features
-                AtlasAttributeDef(name="input_features", typeName=ARRAY_ANCHOR_FEATURE,
+                AtlasAttributeDef(name="input_anchor_features", typeName=ARRAY_ANCHOR_FEATURE,
+                                  cardinality=Cardinality.SET),
+                AtlasAttributeDef(name="input_derived_features", typeName=ARRAY_DERIVED_FEATURE,
                                   cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="key", typeName="array<map<string,string>>",
                                   cardinality=Cardinality.SET),
@@ -271,19 +271,49 @@ class _FeatureRegistry():
         self.entity_batch_queue.append(source_entity)
         return source_entity
 
+    def _add_all_derived_features(self, derived_features: List[DerivedFeature], ts:TopologicalSorter ) -> List[DerivedFeature]:
+        """iterate thru all the dependencies of the derived feature and return a derived feature list in a topological sorted way (the result list only has derived features, without their anchor features)
+
+        Args:
+            derived_features (List[DerivedFeature]): input derive feature list
+            ts (TopologicalSorter): a topological sorter by python
+
+        Returns:
+            List[DerivedFeature]: return a derived feature list in a topological sorted way (the result list only has derived features, without their anchor features)
+        """
+        # return if the list is empty
+        if derived_feature is None:
+            return
+
+        for derived_feature in derived_features:
+            for input_feature in derived_feature.input_features:
+                if isinstance(input_feature) == DerivedFeature:
+                    # `input_feature` is predecessor of `derived_feature`
+                    ts.add(derived_feature, input_feature)
+                    self._add_all_derived_features(input_feature.input_features, ts)
+
+
     def _parse_derived_features(self, derived_features: List[DerivedFeature]) -> List[AtlasEntity]:
         """parse derived feature
 
         Args:
-            derived_features (List[DerivedFeature]): derived feature in a list fashion
+            derived_features (List[DerivedFeature]): derived feature in a list fashion. This function will handle the derived feature dependencies using topological sort to ensure that the corresponding features can be parsed correctly
 
         Returns:
             List[AtlasEntity]: list of parsed Atlas entities for each of the derived feature
         """
         derivation_entities = []
+        ts = TopologicalSorter()
 
-        for derived_feature in derived_features:
+        self._add_all_derived_features(derived_features, ts)
+        # topo sort the derived features to make sure that we can correctly refer to them later in the registry
+        toposorted_derived_feature_list: List[DerivedFeature] = list(ts.static_order())
+        
+
+        for derived_feature in toposorted_derived_feature_list:
+            
             # get the corresponding Atlas entity by searching feature name
+            # Since this list is topo sorted, so you can always find the corresponding name
             input_feature_entity_list: List[AtlasEntity] = [
                 self.global_feature_entity_dict[f.name] for f in derived_feature.input_features]
             key_list = []
@@ -298,7 +328,8 @@ class _FeatureRegistry():
                 attributes={
                     "type": derived_feature.feature_type.to_feature_config(),
                     "key": key_list,
-                    "input_features": [f.to_json(minimum=True) for f in input_feature_entity_list],
+                    "input_anchor_features": [f.to_json(minimum=True) for f in input_feature_entity_list if isinstance(f)==FeatureAnchor],
+                    "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if isinstance(f)==DerivedFeature],
                     "transformation": derived_feature.transform.to_feature_config(),
                     "tags": derived_feature.registry_tags
                 },
@@ -306,6 +337,9 @@ class _FeatureRegistry():
                 typeName=DERIVED_FEATURE,
                 guid=self.guid.get_guid(),
             )
+
+            # Add the feature entity in the global dict so that it can be referenced further. 
+            self.global_feature_entity_dict[derived_feature.name] = derived_feature_entity
 
             for input_feature_entity in input_feature_entity_list:
                 # add lineage between anchor feature and derived feature
