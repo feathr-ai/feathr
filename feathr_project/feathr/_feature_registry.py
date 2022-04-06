@@ -282,15 +282,17 @@ class _FeatureRegistry():
             List[DerivedFeature]: return a derived feature list in a topological sorted way (the result list only has derived features, without their anchor features)
         """
         # return if the list is empty
-        if derived_feature is None:
+        if derived_features is None:
             return
 
         for derived_feature in derived_features:
-            for input_feature in derived_feature.input_features:
-                if isinstance(input_feature) == DerivedFeature:
-                    # `input_feature` is predecessor of `derived_feature`
-                    ts.add(derived_feature, input_feature)
-                    self._add_all_derived_features(input_feature.input_features, ts)
+            # make sure the input is derived feature
+            if isinstance(derived_feature, DerivedFeature):
+                for input_feature in derived_feature.input_features:
+                    if isinstance(input_feature, DerivedFeature):
+                        # `input_feature` is predecessor of `derived_feature`
+                        ts.add(derived_feature, input_feature)
+                        self._add_all_derived_features(input_feature.input_features, ts)
 
 
     def _parse_derived_features(self, derived_features: List[DerivedFeature]) -> List[AtlasEntity]:
@@ -328,8 +330,8 @@ class _FeatureRegistry():
                 attributes={
                     "type": derived_feature.feature_type.to_feature_config(),
                     "key": key_list,
-                    "input_anchor_features": [f.to_json(minimum=True) for f in input_feature_entity_list if isinstance(f)==FeatureAnchor],
-                    "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if isinstance(f)==DerivedFeature],
+                    "input_anchor_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==ANCHOR_FEATURE],
+                    "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==DERIVED_FEATURE],
                     "transformation": derived_feature.transform.to_feature_config(),
                     "tags": derived_feature.registry_tags
                 },
