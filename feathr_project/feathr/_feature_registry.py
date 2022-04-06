@@ -30,6 +30,7 @@ from feathr.feature_derivations import DerivedFeature
 from feathr.repo_definitions import RepoDefinitions
 from feathr.source import HdfsSource, InputContext, Source
 from feathr.transformation import Transformation
+from feathr.transformation import ExpressionTransformation, Transformation,WindowAggTransformation
 
 
 class _FeatureRegistry():
@@ -110,7 +111,7 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="key", typeName="array<map<string,string>>",
                                   cardinality=Cardinality.SET),
-                AtlasAttributeDef(name="transformation", typeName="string",
+                AtlasAttributeDef(name="transformation", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
@@ -130,7 +131,7 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="key", typeName="array<map<string,string>>",
                                   cardinality=Cardinality.SET),
-                AtlasAttributeDef(name="transformation", typeName="string",
+                AtlasAttributeDef(name="transformation", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
@@ -175,6 +176,20 @@ class _FeatureRegistry():
                             "full_name": individual_key.full_name, "description": individual_key.description, "key_column_alias": individual_key.key_column_alias}
                 key_list.append(key_dict)
 
+            # define a dict to save all the transformation schema
+            transform_dict = {}
+            if isinstance(anchor_feature.transform, ExpressionTransformation):
+                transform_dict = {"transform_expr": anchor_feature.transform.expr}
+            elif isinstance(anchor_feature.transform, WindowAggTransformation):
+                transform_dict = {
+                    "def_expr": anchor_feature.transform.def_expr,
+                    "agg_func": anchor_feature.transform.agg_func,
+                    "window": anchor_feature.transform.window,
+                    "group_by": anchor_feature.transform.group_by,
+                    "filter": anchor_feature.transform.filter,
+                    "limit": anchor_feature.transform.limit,
+                }
+
             anchor_feature_entity = AtlasEntity(
                 name=anchor_feature.name,
                 qualified_name=self.project_name + self.registry_delimiter +
@@ -182,7 +197,7 @@ class _FeatureRegistry():
                 attributes={
                     "type": anchor_feature.feature_type.to_feature_config(),
                     "key": key_list,
-                    "transformation": anchor_feature.transform.to_feature_config(),
+                    "transformation": transform_dict,
                     "tags": anchor_feature.registry_tags,
                 },
                 typeName=ANCHOR_FEATURE,
@@ -323,6 +338,21 @@ class _FeatureRegistry():
                 key_dict = {"key_column": individual_key.key_column, "key_column_type": individual_key.key_column_type.value,
                             "full_name": individual_key.full_name, "description": individual_key.description, "key_column_alias": individual_key.key_column_alias}
                 key_list.append(key_dict)
+
+            # define a dict to save all the transformation schema
+            transform_dict = {}
+            if isinstance(derived_feature.transform, ExpressionTransformation):
+                transform_dict = {"transform_expr": derived_feature.transform.expr}
+            elif isinstance(derived_feature.transform, WindowAggTransformation):
+                transform_dict = {
+                    "def_expr": derived_feature.transform.def_expr,
+                    "agg_func": derived_feature.transform.agg_func,
+                    "window": derived_feature.transform.window,
+                    "group_by": derived_feature.transform.group_by,
+                    "filter": derived_feature.transform.filter,
+                    "limit": derived_feature.transform.limit,
+                }
+            
             derived_feature_entity = AtlasEntity(
                 name=derived_feature.name,
                 qualified_name=self.project_name +
@@ -332,7 +362,7 @@ class _FeatureRegistry():
                     "key": key_list,
                     "input_anchor_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==ANCHOR_FEATURE],
                     "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==DERIVED_FEATURE],
-                    "transformation": derived_feature.transform.to_feature_config(),
+                    "transformation": transform_dict,
                     "tags": derived_feature.registry_tags
                 },
                 version=5,
