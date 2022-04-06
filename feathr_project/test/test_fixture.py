@@ -193,8 +193,10 @@ def registry_test_setup(config_path: str):
                                source=batch_source,
                                features=agg_features)
     
+    derived_feature_list = [
+                        f_trip_time_distance, f_trip_time_rounded, f_trip_time_rounded_plus]
+    random.shuffle(derived_feature_list)
     # shuffule the order to make sure they can be parsed correctly
-    client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=random.shuffle([
-        f_trip_time_distance, f_trip_time_rounded, f_trip_time_rounded_plus]))
+    client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
 
     return client
