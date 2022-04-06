@@ -271,7 +271,7 @@ class _FeatureRegistry():
         self.entity_batch_queue.append(source_entity)
         return source_entity
 
-    def _add_all_derived_features(self, derived_features: List[DerivedFeature], ts:TopologicalSorter ) -> List[DerivedFeature]:
+    def _add_all_derived_features(self, derived_features: List[DerivedFeature], ts:TopologicalSorter ) -> None:
         """iterate thru all the dependencies of the derived feature and return a derived feature list in a topological sorted way (the result list only has derived features, without their anchor features)
 
         Args:
@@ -279,7 +279,7 @@ class _FeatureRegistry():
             ts (TopologicalSorter): a topological sorter by python
 
         Returns:
-            List[DerivedFeature]: return a derived feature list in a topological sorted way (the result list only has derived features, without their anchor features)
+            None. The topo sorter will maitain a static topo sorted order.
         """
         # return if the list is empty
         if derived_features is None:
