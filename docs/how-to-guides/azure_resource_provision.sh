@@ -16,7 +16,7 @@ storage_file_system_name="$resource_prefix"fs
 synapse_workspace_name="$resource_prefix"spark
 redis_cluster_name="$resource_prefix"redis
 purview_account_name="$resource_prefix"purview
-
+synapse_firewall_rule_name="$resource_prefix"firewall
 
 # detect whether az cli is installed or not
 if ! [ -x "$(command -v az)" ]; then
