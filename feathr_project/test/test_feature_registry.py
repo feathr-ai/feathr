@@ -3,18 +3,22 @@ from click.testing import CliRunner
 from feathr.client import FeathrClient
 import os
 import glob
-from test_fixture import basic_test_setup
+from test_fixture import basic_test_setup,registry_test_setup
+import time
 import pytest
 
 def test_feathr_register_features_e2e():
     runner = CliRunner()
     with runner.isolated_filesystem():
         runner.invoke(init, [])
-        client = basic_test_setup(
+        client = registry_test_setup(
             "./feathr_user_workspace/feathr_config.yaml")
         client.register_features()
-        # in CI test, the project name is set by the CI pipeline so we don't know it here. Just get all the features to make sure it works
-        all_features = client.list_registered_features()
+        # Allow purview to process a bit
+        time.sleep(5)
+        # in CI test, the project name is set by the CI pipeline so we read it here
+        project_name = os.environ["PROJECT_CONFIG__PROJECT_NAME"]
+        all_features = client.list_registered_features(project_name=project_name)
         assert 'f_is_long_trip_distance' in all_features # test regular ones
         assert 'f_trip_time_rounded' in all_features # make sure derived features are there
         assert 'f_location_avg_fare' in all_features # make sure aggregated features are there
