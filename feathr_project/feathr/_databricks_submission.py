@@ -199,7 +199,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                               headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
         custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
-        # in case users call this API even when there's no tags available 
+        # in case users call this API even when there's no tags available
         return None if custom_tags is None else custom_tags[OUTPUT_PATH_TAG]
 
 
@@ -227,6 +227,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # listing all the files in a folder: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--list
             result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
                                   headers=self.auth_headers,  params={ 'path': result_path})
+            # see here for response structure: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--response-structure-2
             dbfs_files = result.json()['files']
             for file_path in tqdm(dbfs_files, desc="Downloading result files: "):
                 # each file_path would be a dict of this type: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#dbfsfileinfo
