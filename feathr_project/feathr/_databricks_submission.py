@@ -226,7 +226,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         try:
             # listing all the files in a folder: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--list
             result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
-                                  headers=self.auth_headers,  params={ 'path': result_path})
+                                headers=self.auth_headers,  params={ 'path': result_path})
             # see here for response structure: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--response-structure-2
             dbfs_files = result.json()['files']
             for file_path in tqdm(dbfs_files, desc="Downloading result files: "):
