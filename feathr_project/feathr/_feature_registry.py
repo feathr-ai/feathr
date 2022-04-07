@@ -25,7 +25,7 @@ from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._file_utils import write_to_file
 from feathr.anchor import FeatureAnchor
 from feathr.constants import *
-from feathr.feature import Feature
+from feathr.feature import Feature, FeatureType
 from feathr.feature_derivations import DerivedFeature
 from feathr.repo_definitions import RepoDefinitions
 from feathr.source import HdfsSource, InputContext, Source
@@ -56,7 +56,7 @@ class _FeatureRegistry():
                 client_secret=_EnvVaraibleUtil.get_environment_variable(
                     "AZURE_CLIENT_SECRET")
             )
-            self.registry_client = PurviewClient(
+            self.purview_client = PurviewClient(
                 account_name=self.azure_purview_name,
                 authentication=self.oauth
             )
@@ -154,7 +154,7 @@ class _FeatureRegistry():
             superTypes=["DataSet"],
         )
 
-        def_result = self.registry_client.upload_typedefs(
+        def_result = self.purview_client.upload_typedefs(
             entityDefs=[type_feathr_anchor_features, type_feathr_anchors,
                         type_feathr_derived_features, type_feathr_sources, type_feathr_project],
             force_update=True)
@@ -644,7 +644,7 @@ derivations: {
             workspace_path, anchor_list, derived_feature_list)
         # Upload all entities
         # need to be all in one batch to be uploaded, otherwise the GUID reference won't work
-        results = self.registry_client.upload_entities(
+        results = self.purview_client.upload_entities(
             batch=self.entity_batch_queue)
         if results:
             webinterface_path = "https://web.purview.azure.com/resource/" + self.azure_purview_name + \
@@ -667,20 +667,20 @@ derivations: {
         """
         Delete all the corresonding type definitions for feathr registry. For internal use only
         """
-        typedefs = self.registry_client.get_all_typedefs()
+        typedefs = self.purview_client.get_all_typedefs()
 
         relationshipdef_list=[]
         for relationshipdef in typedefs['relationshipDefs']:
             if "feathr" in relationshipdef['name']:
                 relationshipdef_list.append(relationshipdef)
-        self.registry_client.delete_typedefs(relationshipDefs=relationshipdef_list)
+        self.purview_client.delete_typedefs(relationshipDefs=relationshipdef_list)
         
 
         entitydef_list=[]
         for typedef in typedefs['entityDefs']:
             if "feathr" in typedef['name']:
                 entitydef_list.append(typedef )
-        self.registry_client.delete_typedefs(entityDefs=entitydef_list)
+        self.purview_client.delete_typedefs(entityDefs=entitydef_list)
 
         logger.info("Deleted all the Feathr related definitions.")
 
@@ -690,7 +690,7 @@ derivations: {
 
         :param guid: The guid or guids you want to remove.
         """
-        entities = self.registry_client.discovery.search_entities(
+        entities = self.purview_client.discovery.search_entities(
             "feathr*", limit=20)
 
         # [print(entity) for entity in entities]
@@ -699,7 +699,7 @@ derivations: {
         # should not be large than this, otherwise the backend might throw out error
         batch_delte_size = 15
         for i in range(0, len(guid_list), batch_delte_size):
-            self.registry_client.delete_entity(
+            self.purview_client.delete_entity(
                 guid=guid_list[i:i+batch_delte_size])
             logger.info("{} feathr entities deleted", batch_delte_size)
 
@@ -707,14 +707,14 @@ derivations: {
         """
         Return a client object and users can operate more on it (like doing search)
         """
-        return self.registry_client
+        return self.purview_client
 
     def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0,) -> List[str]:
         """
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
         """
-        entities = self.registry_client.discovery.search_entities(
+        entities = self.purview_client.discovery.search_entities(
             f"entityType:{ANCHOR_FEATURE} or entityType:{DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
         feature_list = []
         for entity in entities:
@@ -752,7 +752,7 @@ derivations: {
             [f" or entityType:{e}" for e in entity_type_list])
         # remvoe the first additional " or "
         search_string = search_string[4:]
-        result_entities = self.registry_client.discovery.search_entities(
+        result_entities = self.purview_client.discovery.search_entities(
             search_string, limit=limit, starting_offset=starting_offset)
         # Important properties returned includes:
         # id (the guid of the entity), name, qualifiedName, @search.score,
@@ -770,6 +770,90 @@ derivations: {
             else:
                 # otherwise append all the entities
                 guid_list.append(entity["id"])
-        entity_res = [] if guid_list is None else self.registry_client.get_entity(
+        entity_res = [] if guid_list is None else self.purview_client.get_entity(
             guid=guid_list)["entities"]
         return entity_res
+
+
+
+    def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
+        """[Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
+        Args:
+            project_name (str): project name.
+        """
+
+        entities = self._list_registered_entities_with_details(project_name=project_name, entity_type=FEATHR_PROJECT)
+        if not entities:
+            # if the result is empty
+            return (None, None)
+        project_entity = entities[0] # there's only one available
+        anchor_guid = [anchor_entity["guid"] for anchor_entity in project_entity["attributes"]["anchor_features"]]
+        derived_feature_guid = [derived_feature_entity["guid"] for derived_feature_entity in project_entity["attributes"]["derived_features"]]
+
+        anchor_result = self.purview_client.get_entity(guid=anchor_guid)["entities"]
+        anchor_list = []
+        for anchor_entity in anchor_result:
+            feature_guid = [e["guid"] for e in anchor_entity["attributes"]["features"]]
+            anchor_list.append(FeatureAnchor(name=anchor_entity["attributes"]["name"],
+                                source=self._get_source_by_guid(anchor_entity["attributes"]["source"]["guid"]),
+                                features=self._get_features_by_guid(feature_guid),
+                                registry_tags=anchor_entity["attributes"]["tags"]))
+
+        derived_feature_result = self.purview_client.get_entity(guid=derived_feature_guid)["entities"]
+        derived_feature_list = []
+        for derived_feature_entity in derived_feature_result:
+            key_from_entity=derived_feature_entity["attributes"]["tags"]
+            feature_guid = [e["guid"] for e in derived_feature_entity["attributes"]["input_features"]]
+            derived_feature_list.append(DerivedFeature(name=derived_feature_entity["attributes"]["name"],
+                                feature_type=None,
+                                transform=None,
+                                key=key_from_entity,
+                                input_features=self._get_features_by_guid(feature_guid),
+                                registry_tags=derived_feature_entity["attributes"]["tags"]))
+        return (anchor_list, derived_feature_list)
+    
+    def _get_source_by_guid(self, guid) -> Source:
+        # TODO: currently return HDFS source by default. For JDBC source, it's currently implemented using HDFS Source so we should split in the future
+        source_entity = self.purview_client.get_entity(guid=guid)["entities"][0]
+        return HdfsSource(name=source_entity["attributes"]["name"],
+                event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
+                timestamp_format=source_entity["attributes"]["timestamp_format"],
+                path=source_entity["attributes"]["path"],
+                registry_tags=source_entity["attributes"]["tags"]
+                )
+
+    def _get_features_by_guid(self, guid) -> List[FeatureAnchor]:
+        feature_entities = self.purview_client.get_entity(guid=guid)["entities"]
+        feature_list=[]
+        key_list = []
+        for feature_entity in feature_entities:
+            for key in feature_entity["attributes"]["key"]:
+                key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
+            
+            # after get keys, put them in features
+            feature_list.append(Feature(name=feature_entity["attributes"]["name"],
+                    feature_type=self._get_features_type_by_hocon(feature_entity["attributes"]),
+                    transform=None,
+                    key=key_list,
+                    registry_tags=feature_entity["attributes"]["tags"],
+            
+            ))
+        return feature_list
+
+    def _get_features_type_by_hocon(self, feature_type_str) -> FeatureType:
+        feature_entities = self.purview_client.get_entity(guid=guid)["entities"]
+        feature_list=[]
+        key_list = []
+        for feature_entity in feature_entities:
+            for key in feature_entity["attributes"]["key"]:
+                key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
+            
+            # after get keys, put them in features
+            feature_list.append(Feature(name=feature_entity["attributes"]["name"],
+                    feature_type=None,
+                    transform=None,
+                    key=key_list,
+                    registry_tags=feature_entity["attributes"]["tags"],
+            
+            ))
+        return feature_list
