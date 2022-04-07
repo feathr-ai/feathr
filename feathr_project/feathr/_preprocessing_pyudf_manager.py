@@ -108,7 +108,8 @@ preprocessed_funcs = {
         with open(full_file_name, "a") as text_file:
             print(new_file, file=text_file)
 
-    def prepare_pyspark_udf_files(self, feature_queries: List[FeatureQuery], local_workspace_dir):
+    # def prepare_pyspark_udf_files(self, feature_queries: List[FeatureQuery], local_workspace_dir):
+    def prepare_pyspark_udf_files(self, feature_names: List[str], local_workspace_dir):
         py_udf_files = []
 
         # Load pyspark_metadata which stores what features contains preprocessing UDFs
@@ -130,10 +131,9 @@ preprocessed_funcs = {
         # Only if the requested features contain preprocessing logic, we will load Pyspark. Otherwise just use Scala
         # spark.
         has_py_udf_preprocessing = False
-        for feature_query in feature_queries:
-            for feature_name in feature_query.feature_list:
-                if feature_name in features_with_preprocessing:
-                    has_py_udf_preprocessing = True
+        for feature_name in feature_names:
+            if feature_name in features_with_preprocessing:
+                has_py_udf_preprocessing = True
 
         # Locate and collect all the python files that needs to be uploaded
         if has_py_udf_preprocessing:

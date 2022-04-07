@@ -364,9 +364,12 @@ class FeathrClient(object):
             execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
-
+        feature_names = []
+        for feature_query in feature_queries:
+            for feature_name in feature_query.feature_list:
+                feature_names.append(feature_name)
         preprocessing_pyudf_manager = _PreprocessingPyudfManager()
-        udf_files = preprocessing_pyudf_manager.prepare_pyspark_udf_files(feature_queries, self.local_workspace_dir)
+        udf_files = preprocessing_pyudf_manager.prepare_pyspark_udf_files(feature_names, self.local_workspace_dir)
 
         # produce join config
         tm = Template("""
@@ -491,20 +494,21 @@ class FeathrClient(object):
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
+            preprocessing_pyudf_manager = _PreprocessingPyudfManager()
+            udf_files = preprocessing_pyudf_manager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
             # CLI will directly call this so the experiene won't be broken
-            self._materialize_features_with_config(config_file_path,execution_configuratons)
+            self._materialize_features_with_config(config_file_path, execution_configuratons, udf_files)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None):
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
-
-
+        cloud_udf_paths = [self.feathr_spark_laucher.upload_or_get_cloud_path(udf_local_path) for udf_local_path in udf_files]
 
         # Read all features conf
         generation_config = FeatureGenerationJobParams(
@@ -519,6 +523,7 @@ class FeathrClient(object):
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            python_files=cloud_udf_paths,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[
                 '--generation-config', self.feathr_spark_laucher.upload_or_get_cloud_path(

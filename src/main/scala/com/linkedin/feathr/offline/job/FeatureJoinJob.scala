@@ -266,7 +266,7 @@ object FeatureJoinJob {
    *         for this anchor source. For example, anchor1 -> f1, f2, anchor2 -> f3, f4. Then the result is
    *         Map("f1,f2" -> df1, "f3,f4" -> df2).
    */
-  def loadDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String]): java.util.Map[String, DataFrame] = {
+  def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String]): java.util.Map[String, DataFrame] = {
     logger.info("FeatureJoinJob args are: " + args)
     println("Feature join job: loadDataframe")
     println(featureNamesInAnchorSet)
@@ -302,7 +302,7 @@ object FeatureJoinJob {
     dataFrameMapForPreprocessing.asJava
   }
 
-  def mainWithMap(args: Array[String], preprocessedDfMap: java.util.Map[String, DataFrame]) {
+  def mainWithPreprocessedDataFrame(args: Array[String], preprocessedDfMap: java.util.Map[String, DataFrame]) {
     // Set the preprocessed DataFrame here for future usage.
     PreprocessedDataFrameContainer.preprocessedDfMap = preprocessedDfMap.asScala.toMap
 

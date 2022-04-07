@@ -19,6 +19,30 @@ def submit_spark_job(feature_names_funcs):
     # sys.argv has all the arguments passed by submit job.
     # In pyspark job, the first param is the python file.
     # For example: ['pyspark_client.py', '--join-config', 'abfss://...', ...]
+    has_gen_config = False
+    has_join_config = False
+    if '--generation-config' in sys.argv:
+        has_gen_config = True
+    if '--join-config' in sys.argv:
+        has_join_config = True
+    # for param in sys.argv:
+    #     if param == '--generation-config':
+    #         has_gen_config = True
+    #     if param == '--join-config':
+    #         has_join_config = True
+    py4j_feature_job = None
+    if has_gen_config and has_join_config:
+        raise RuntimeError("Both FeatureGenConfig and FeatureJoinConfig are provided. "
+                           "Only one of them should be provided.")
+    elif has_gen_config:
+        py4j_feature_job = spark._jvm.com.linkedin.feathr.offline.job.FeatureGenJob
+        print("FeatureGenConfig is provided. Executing FeatureGenJob.")
+    elif has_join_config:
+        py4j_feature_job = spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob
+        print("FeatureJoinConfig is provided. Executing FeatureJoinJob.")
+    else:
+        raise RuntimeError("None of FeatureGenConfig and FeatureJoinConfig are provided. "
+                           "Only one of them should be provided.")
     job_param_java_array = toJStringArray(sys.argv)
 
     print("submit_spark_job: feature_names_funcs: ")
@@ -29,8 +53,8 @@ def submit_spark_job(feature_names_funcs):
     print(set(feature_names_funcs.keys()))
 
     print("submit_spark_job: Load DataFrame from Scala engine.")
-    py4j_featureJoinJob = spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob
-    dataframeFromSpark = py4j_featureJoinJob.loadDataframe(job_param_java_array, set(feature_names_funcs.keys()))
+
+    dataframeFromSpark = py4j_feature_job.loadSourceDataframe(job_param_java_array, set(feature_names_funcs.keys()))
     print("Submit_spark_job: dataframeFromSpark: ")
     print(dataframeFromSpark)
 
@@ -54,7 +78,7 @@ def submit_spark_job(feature_names_funcs):
     print("Preprocessed DataFrames are: ")
     print(new_preprocessed_df_map)
 
-    py4j_featureJoinJob.mainWithMap(job_param_java_array, new_preprocessed_df_map)
+    py4j_feature_job.mainWithPreprocessedDataFrame(job_param_java_array, new_preprocessed_df_map)
     return None
 
 

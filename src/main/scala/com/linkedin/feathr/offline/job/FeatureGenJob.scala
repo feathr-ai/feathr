@@ -6,13 +6,14 @@ import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeathrConfigLoader
 import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
 import com.linkedin.feathr.offline.job.FeatureJoinJob._
-import com.linkedin.feathr.offline.util.{CmdLineParser, OptionParam, SparkFeaturizedDataset}
+import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
+import com.linkedin.feathr.offline.util.{CmdLineParser, FeathrUtils, OptionParam, SparkFeaturizedDataset}
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import org.apache.avro.generic.GenericRecord
 import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.JavaConverters._
 
@@ -174,9 +175,57 @@ object FeatureGenJob {
     withParamsOverrideConfig.root().render()
   }
 
+  /**
+   * Load the DataFrames for sources that needs preprocessing by Pyspark.
+   * @param args Same arguments for the main job.
+   * @param featureNamesInAnchorSet A set of feature names of an anchor sorted and joined by comma. For example,
+   *                                anchor1 -> f1, f2, anchor2 -> f3, f4. Then the set is ("f1,f2", "f3,f4")
+   * @return A Java map whose key is Feature names of an anchor sorted and joined by comma and value is the DataFrame
+   *         for this anchor source. For example, anchor1 -> f1, f2, anchor2 -> f3, f4. Then the result is
+   *         Map("f1,f2" -> df1, "f3,f4" -> df2).
+   */
+  def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String]): java.util.Map[String, DataFrame] = {
+    logger.info("FeatureJoinJob args are: " + args)
+    println("Feature join job: loadDataframe")
+    println(featureNamesInAnchorSet)
+    val feathrJoinPreparationInfo = prepareSparkSession(args)
+    val sparkSession = feathrJoinPreparationInfo.sparkSession
+    val featureDefs = feathrJoinPreparationInfo.featureDefs
+    val jobContext = feathrJoinPreparationInfo.jobContext
 
-  private[feathr] def process(params: Array[String]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
-    val (applicationConfigPath, featureDefs, jobContext, dataSourceConfigs) = parseInputArguments(params)
+  val featureConfig = featureDefs.feathrFeatureDefPaths.map(path => hdfsFileReader(sparkSession, path))
+      val localFeatureConfig = featureDefs.feathrLocalFeatureDefPath.map(path => hdfsFileReader(sparkSession, path))
+      val (featureConfigWithOverride, localFeatureConfigWithOverride) = overrideFeatureDefs(featureConfig, localFeatureConfig, jobContext)
+
+    val feathrClient =
+      FeathrClient.builder(sparkSession)
+        .addFeatureDef(featureConfig)
+        .addLocalOverrideDef(localFeatureConfigWithOverride)
+        .build()
+    val allAnchoredFeatures = feathrClient.allAnchoredFeatures
+
+    // Using AnchorToDataSourceMapper to load DataFrame for preprocessing
+    val failOnMissing = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
+    val anchorToDataSourceMapper = new AnchorToDataSourceMapper()
+    val anchorsWithSource = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(
+      sparkSession,
+      allAnchoredFeatures.values.toSeq,
+      failOnMissing)
+
+    // Only load DataFrames for anchors that have preprocessing UDF
+    // So we filter out anchors that doesn't have preprocessing UDFs
+    // We use feature names sorted and merged as the key to find the anchor
+    // For example, f1, f2 belongs to anchor. Then Map("f1,f2"-> anchor)
+    val dataFrameMapForPreprocessing = anchorsWithSource
+      .filter(x => featureNamesInAnchorSet.contains(x._1.featureAnchor.features.toSeq.sorted.mkString(",")))
+      .map(x => (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get()))
+
+    // Pyspark only understand Java map so we need to convert Scala map back to Java map.
+    dataFrameMapForPreprocessing.asJava
+  }
+
+  def prepareSparkSession(args: Array[String]): FeathrGenPreparationInfo = {
+    val (applicationConfigPath, featureDefs, jobContext, dataSourceConfigs) = parseInputArguments(args)
     val sparkConf = new SparkConf().registerKryoClasses(Array(classOf[GenericRecord]))
     DataSourceConfigUtils.setupSparkConf(sparkConf, dataSourceConfigs)
     val sparkSessionBuilder = SparkSession
@@ -187,10 +236,26 @@ object FeatureGenJob {
 
     val ss = sparkSessionBuilder.getOrCreate()
     DataSourceConfigUtils.setupHadoopConf(ss, dataSourceConfigs)
-    run(ss, applicationConfigPath, featureDefs, jobContext)
+
+    FeathrGenPreparationInfo(ss, applicationConfigPath, featureDefs, jobContext)
+  }
+
+  private[feathr] def process(params: Array[String]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+    val feathrGenPreparationInfo = prepareSparkSession(params)
+    run(feathrGenPreparationInfo.sparkSession, feathrGenPreparationInfo.applicationConfigPath,
+      feathrGenPreparationInfo.featureDefs, feathrGenPreparationInfo.jobContext)
+  }
+
+  def mainWithPreprocessedDataFrame(args: Array[String], preprocessedDfMap: java.util.Map[String, DataFrame]) {
+    // Set the preprocessed DataFrame here for future usage.
+    PreprocessedDataFrameContainer.preprocessedDfMap = preprocessedDfMap.asScala.toMap
+
+    main(args)
   }
 
   def main(args: Array[String]): Unit = {
     process(args)
   }
 }
+
+case class FeathrGenPreparationInfo(sparkSession: SparkSession, applicationConfigPath: String, featureDefs: FeatureDefinitionsInput, jobContext: FeatureGenJobContext)
