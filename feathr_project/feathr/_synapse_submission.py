@@ -5,6 +5,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
+from os.path import basename
 
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
                             DeviceCodeCredential, EnvironmentCredential,
@@ -298,7 +299,7 @@ class _DataLakeFiler(object):
 
         src_parse_result = urlparse(src_file_path)
         if src_parse_result.scheme.startswith('http'):
-            file_name = os.path.basename(src_file_path)
+            file_name = basename(src_file_path)
             file_client = self.dir_client.create_file(file_name)
             # returned paths for the uploaded file
             returned_path = self.datalake_dir + file_name
@@ -324,7 +325,7 @@ class _DataLakeFiler(object):
         return returned_path
 
     def upload_file(self, src_file_path)-> str:
-        file_name = os.path.basename(src_file_path)
+        file_name = basename(src_file_path)
         logger.info("Uploading file {}", file_name)
         file_client = self.dir_client.create_file(file_name)
         returned_path = self.datalake_dir + file_name
@@ -336,7 +337,8 @@ class _DataLakeFiler(object):
 
     def download_file(self, target_adls_directory: str, local_dir_cache: str):
         """
-        Download file to a local cache
+        Download file to a local cache. Supporting download a folder and the content in its subfolder.
+        Note that the code will just download the content in the root folder, and the folder in the next level (rather than recursively for all layers of folders)
 
         Args:
             target_adls_directory (str): target ADLS directory
@@ -347,14 +349,40 @@ class _DataLakeFiler(object):
         parse_result = urlparse(target_adls_directory)
         directory_client = self.file_system_client.get_directory_client(
             parse_result.path)
+
         # returns the paths to all the files in the target director in ADLS
-        adls_paths = [file_path.name.split("/")[-1] for file_path in self.file_system_client.get_paths(
-            path=parse_result.path) if not file_path.is_directory][1:]
-        # need to generate list of local paths to write the files to
+        # get all the paths that are not under a directory
+        result_paths = [basename(file_path.name) for file_path in self.file_system_client.get_paths(
+            path=parse_result.path, recursive=False) if not file_path.is_directory]
+        
+        # get all the paths that are directories and download them
+        result_folders = [file_path.name for file_path in self.file_system_client.get_paths(
+            path=parse_result.path) if file_path.is_directory]
+
+        # list all the files under the certain folder, and download them preserving the hierarchy
+        for folder in result_folders:
+            folder_name = basename(folder)
+            file_in_folder = [os.path.join(folder_name, basename(file_path.name)) for file_path in self.file_system_client.get_paths(
+            path=folder, recursive=False) if not file_path.is_directory]
+            local_paths = [os.path.join(local_dir_cache, file_name)
+                       for file_name in file_in_folder]
+            self._download_file_list(local_paths, file_in_folder, directory_client)
+
+        # download files that are in the result folder
         local_paths = [os.path.join(local_dir_cache, file_name)
-                       for file_name in adls_paths]
-        for idx, file_to_write in enumerate(tqdm(adls_paths,desc="Downloading result files: ")):
+                       for file_name in result_paths]
+        self._download_file_list(local_paths, result_paths, directory_client)
+
+        logger.info('Finish downloading files from {} to {}.',
+                    target_adls_directory,local_dir_cache)
+    
+    def _download_file_list(self, local_paths: List[str], result_paths, directory_client):
+        '''
+        Download filelist to local
+        '''
+        for idx, file_to_write in enumerate(tqdm(result_paths,desc="Downloading result files: ")):
             try:
+                os.makedirs(os.path.dirname(local_paths[idx]), exist_ok=True)
                 local_file = open(local_paths[idx], 'wb')
                 file_client = directory_client.get_file_client(file_to_write)
                 download = file_client.download_file()
@@ -363,5 +391,3 @@ class _DataLakeFiler(object):
                 local_file.close()
             except Exception as e:
                 logger.error(e)
-        logger.info('Finish downloading files from {} to {}.',
-                    target_adls_directory,local_dir_cache)
