@@ -1,6 +1,6 @@
 import glob
 import importlib
-import os, json
+import os
 import sys
 from pathlib import Path
 from typing import List, Optional
@@ -8,15 +8,12 @@ from typing import List, Optional
 from jinja2 import Template
 from loguru import logger
 from pyapacheatlas.auth import ServicePrincipalAuthentication
-from pyapacheatlas.core import (AtlasEntity, AtlasProcess, PurviewClient,
-                                TypeCategory)
+from pyapacheatlas.core import (AtlasEntity, AtlasProcess, PurviewClient)
 from pyapacheatlas.core.typedef import (AtlasAttributeDef, EntityTypeDef,
                                         RelationshipTypeDef)
 from pyapacheatlas.core.util import GuidTracker
-from pyexpat import features
 from pyhocon import ConfigFactory
 
-from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._file_utils import write_to_file
 from feathr.anchor import FeatureAnchor
 from feathr.feature import Feature
@@ -27,31 +24,43 @@ from feathr.transformation import Transformation
 
 
 class _FeatureRegistry():
-
-    def __init__(self, config_path):
+    
+    def __init__(self, config_path: Optional[str] ):
         """
         Initializes the feature registry, doing the following:
         - Use an Azure Service Principal to communicate with Azure Purview
         - Initialize an Azure Purview Client
         - Initialize the GUID tracker, project name, etc.
         """
-        envutils = _EnvVaraibleUtil(config_path)
-        self.project_name = envutils.get_environment_variable_with_default('project_config', 'project_name')
-        self.FEATURE_REGISTRY_DELIMITER = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
-        self.azure_purview_name = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
-
-        self.oauth = ServicePrincipalAuthentication(
-            tenant_id=_EnvVaraibleUtil.get_environment_variable(
-                "AZURE_TENANT_ID"),
-            client_id=_EnvVaraibleUtil.get_environment_variable(
-                "AZURE_CLIENT_ID"),
-            client_secret=_EnvVaraibleUtil.get_environment_variable(
-                "AZURE_CLIENT_SECRET")
-        )
+        # Read from the config file
+        if config_path is not None:
+            from feathr._envvariableutil import _EnvVaraibleUtil
+            envutils = _EnvVaraibleUtil(config_path)
+            self.project_name = envutils.get_environment_variable_with_default('project_config', 'project_name')
+            self.FEATURE_REGISTRY_DELIMITER = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
+            self.azure_purview_name = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
+            self.oauth = ServicePrincipalAuthentication(
+                tenant_id=_EnvVaraibleUtil.get_environment_variable(
+                    "AZURE_TENANT_ID"),
+                client_id=_EnvVaraibleUtil.get_environment_variable(
+                    "AZURE_CLIENT_ID"),
+                client_secret=_EnvVaraibleUtil.get_environment_variable(
+                    "AZURE_CLIENT_SECRET")
+            )
+        else:
+            self.project_name = os.getenv('project_name')
+            self.FEATURE_REGISTRY_DELIMITER = os.getenv('delimiter', '__')
+            self.azure_purview_name = os.getenv('purview_name')
+            self.oauth = ServicePrincipalAuthentication(
+                tenant_id=os.getenv("AZURE_TENANT_ID"),
+                client_id=os.getenv("AZURE_CLIENT_ID"),
+                client_secret=os.getenv("AZURE_CLIENT_SECRET")
+            )
+        
         self.purview_client = PurviewClient(
-            account_name=self.azure_purview_name,
-            authentication=self.oauth
-        )
+                account_name=self.azure_purview_name,
+                authentication=self.oauth
+            )   
         self.guid = GuidTracker(starting=-1000)
         self.entity_batch_queue = []
 
@@ -739,6 +748,7 @@ derivations: {
         logger.info(
             "Finished registering features. See {} to access the Purview web interface", webinterface_path)
 
+    @classmethod
     def get_registry_client(self):
         """
         Return a client object and users can operate more on it (like doing search)

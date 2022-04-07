@@ -40,11 +40,10 @@ logger.setLevel(log_level)
 logger.info("starting %s", __file__)
 
 appServiceKey = os.getenv("AppServiceKey")
-config_path = os.getenv("config_path")
 
 
-def getRegistryClient(config_path : Optional[str] = config_path):
-    return _FeatureRegistry(config_path = config_path)
+def getRegistry():
+    return _FeatureRegistry(config_path=None)
 
 
 @app.get("/")
@@ -72,10 +71,10 @@ def list_registered_features(code, project_name: str, response: Response):
     if code != appServiceKey:
         raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  
     try:
-        registry_client = getRegistryClient()
+        registry = getRegistry()
         logger.info("Retrieved registry client successfully")
         response.status_code = status.HTTP_200_OK
-        result = registry_client.list_registered_features(project_name)
+        result = registry.list_registered_features(project_name)
         return {"features" : result}
     except AtlasException as ae:
         logger.error("Error retrieving feature: %s", ae.args[0])
@@ -83,7 +82,6 @@ def list_registered_features(code, project_name: str, response: Response):
     except Exception as err:
         logger.error("Error: %s", err.args[0])
         raise HTTPException(status_code=400, detail="Error: " + err.args[0])
-
 
 @app.get("/projects/{project_name}/features/{feature_name}")
 def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, response: Response, type_name: Optional[str] = None):
@@ -93,14 +91,14 @@ def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, 
     if code != appServiceKey:
         raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  
     try:
-        registry_client = getRegistryClient()
+        registry = getRegistry()
         logger.info("Retrieved registry client successfully")
         response.status_code = status.HTTP_200_OK
         result = None
         if type_name: # Type is provided
-            result = registry_client.get_feature_by_fqdn_type(feature_name, type_name)
+            result = registry.get_feature_by_fqdn_type(feature_name, type_name)
         else:
-            result = registry_client.get_feature_by_fqdn(feature_name)
+            result = registry.get_feature_by_fqdn(feature_name)
         return result
     except AtlasException as ae:
         logger.error("Error retrieving feature: %s", ae.args[0])
@@ -108,7 +106,6 @@ def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, 
     except Exception as err:
         logger.error("Error: %s", err.args[0])
         raise HTTPException(status_code=400, detail=err.args[0])
-
 
 @app.get("/projects/{project_name}/features/lineage/{feature_name}")
 def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, response: Response):
@@ -118,12 +115,12 @@ def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, 
     if code != appServiceKey:
         raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  
     try:
-        registry_client = getRegistryClient()
+        registry = getRegistry()
         logger.info("Retrieved registry client successfully")
         response.status_code = status.HTTP_200_OK
-        guid = registry_client.get_feature_guid(feature_name)
+        guid = registry.get_feature_guid(feature_name)
         if guid:
-            result = registry_client.get_feature_lineage(guid)
+            result = registry.get_feature_lineage(guid)
             return result
     except AtlasException as ae:
         logger.error("Error retrieving feature: %s", ae.args[0])
@@ -140,10 +137,52 @@ def get_feature_qualifiedName(code : str, query: str, response: Response):
     if code != appServiceKey:
         raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  
     try:
-        registry_client = getRegistryClient()
+        registry = getRegistry()
         logger.info("Retrieved registry client successfully")
         response.status_code = status.HTTP_200_OK
-        result = registry_client.search_features(query)
+        result = registry.search_features(query)
+        return result
+    except AtlasException as ae:
+        logger.error("Error retrieving feature: %s", ae.args[0])
+        raise HTTPException(status_code=400, detail=ae.args[0])
+    except Exception as err:
+        logger.error("Error: %s", err.args[0])
+        raise HTTPException(status_code=400, detail=err.args[0])
+
+@app.get("/projects/{project_name}/sources/{source_name}")
+def get_source_by_qualifiedName(code : str, project_name: str, source_name: str, response: Response):
+    """List all the already registered features. If project_name is not provided or is None, it will return all
+    the registered features; otherwise it will only return features under this project
+    """
+    if code != appServiceKey:
+        raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  
+    try:
+        registry = getRegistry()
+        logger.info("Retrieved registry client successfully")
+        response.status_code = status.HTTP_200_OK
+        type_name = "feathr_feature_source"
+        result = registry.get_feature_by_fqdn_type(source_name, type_name)
+        return result
+    except AtlasException as ae:
+        logger.error("Error retrieving feature: %s", ae.args[0])
+        raise HTTPException(status_code=400, detail=ae.args[0])
+    except Exception as err:
+        logger.error("Error: %s", err.args[0])
+        raise HTTPException(status_code=400, detail=err.args[0])
+
+@app.get("/projects/{project_name}/anchors/{anchor_name}")
+def get_anchor_by_qualifiedName(code : str, project_name: str, anchor_name: str, response: Response):
+    """List all the already registered features. If project_name is not provided or is None, it will return all
+    the registered features; otherwise it will only return features under this project
+    """
+    if code != appServiceKey:
+        raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  
+    try:
+        registry = getRegistry()
+        logger.info("Retrieved registry client successfully")
+        response.status_code = status.HTTP_200_OK
+        type_name = "feathr_anchor_feature"
+        result = registry.get_feature_by_fqdn_type(anchor_name, type_name)
         return result
     except AtlasException as ae:
         logger.error("Error retrieving feature: %s", ae.args[0])
