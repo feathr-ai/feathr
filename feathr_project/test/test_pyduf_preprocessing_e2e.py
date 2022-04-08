@@ -24,20 +24,13 @@ def trip_distance_preprocessing(df: DataFrame):
 
     return df
 
-def my_func2(df: DataFrame):
-    df = df.withColumn("trip_distance", df.trip_distance.cast('double') - 90000)
-    df = df.withColumn("fare_amount", df.fare_amount.cast('double') - 90000)
+def add_new_dropoff_column(df: DataFrame):
+    df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
     return df
 
-def feathr_udf_add_toll_amount(df: DataFrame) -> DataFrame:
-    df = df.withColumn("CopiedColumn", col("tolls_amount") * -1)
+def add_new_fare_amount(df: DataFrame) -> DataFrame:
     df = df.withColumn("fare_amount_new", col("fare_amount") + 1000000)
 
-    return df
-
-def snowflake_preprocessing(df: DataFrame) -> DataFrame:
-    df = df.withColumn("NEW_CC_DIVISION_NAME", concat(col("CC_DIVISION_NAME"), lit("0000"), col("CC_DIVISION_NAME")))
-    df = df.withColumn("NEW_CC_ZIP", concat(col("CC_ZIP"), lit("____"), col("CC_ZIP")))
     return df
 
 def feathr_udf_day_calc(df: DataFrame) -> DataFrame:
@@ -46,10 +39,10 @@ def feathr_udf_day_calc(df: DataFrame) -> DataFrame:
     return df
 
 
-# @pytest.mark.skip(reason="no way of currently testing this")
-def test_feathr_anchor_feature_gen():
+@pytest.mark.skip(reason="...")
+def test_online_feature_with_offline_preprocessing():
     """
-    Test get_offline_features() can get data correctly.
+    Test feature gen with preprocessing
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
 
@@ -57,6 +50,7 @@ def test_feathr_anchor_feature_gen():
 
     batch_source = HdfsSource(name="nycTaxiBatchSource",
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              preprocessing=add_new_fare_amount,
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
@@ -69,7 +63,6 @@ def test_feathr_anchor_feature_gen():
         Feature(name="f_is_long_trip_distance",
                 key=pickup_time_as_id,
                 feature_type=FLOAT,
-                # transform="trip_distance + 1000"),
                 transform="fare_amount_new"),
         Feature(name="f_day_of_week",
                 key=pickup_time_as_id,
@@ -80,13 +73,12 @@ def test_feathr_anchor_feature_gen():
     regular_anchor = FeatureAnchor(name="request_features",
                                    source=batch_source,
                                    features=features,
-                                   # preprocessing=trip_distance_preprocessing)
-                                   preprocessing=feathr_udf_add_toll_amount)
+                                   )
 
     client.build_features(anchor_list=[regular_anchor])
 
     now = datetime.now()
-    online_test_table = ''.join(['nycTaxiCITable','_', str(now.minute), '_', str(now.second)])
+    online_test_table = ''.join(['nycTaxiCITable', '_', str(now.minute), '_', str(now.second)])
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -108,8 +100,8 @@ def test_feathr_anchor_feature_gen():
     assert res == [1000006.0, 3]
 
 
-# @pytest.mark.skip(reason="no way of currently testing this")
-def test_feathr_swa_feature_gen():
+@pytest.mark.skip(reason="...")
+def test_feature_swa_feature_gen_with_preprocessing():
     """
     Test SWA feature gen with preprocessing.
     """
@@ -118,7 +110,8 @@ def test_feathr_swa_feature_gen():
 
     batch_source = HdfsSource(name="nycTaxiBatchSource",
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
-                              event_timestamp_column="lpep_dropoff_datetime",
+                              preprocessing=add_new_dropoff_column,
+                              event_timestamp_column="new_lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
     location_id = TypedKey(key_column="DOLocationID",
@@ -143,8 +136,7 @@ def test_feathr_swa_feature_gen():
 
     agg_anchor = FeatureAnchor(name="aggregationFeatures",
                                source=batch_source,
-                               features=agg_features,
-                               preprocessing=my_func2)
+                               features=agg_features)
 
     client.build_features(anchor_list=[agg_anchor])
 
@@ -167,12 +159,12 @@ def test_feathr_swa_feature_gen():
     client.wait_job_to_finish(timeout_sec=600)
 
     res = client.get_online_features(online_test_table, '265', ['f_location_avg_fare', 'f_location_max_fare'])
-    assert res == [-89957.5, -89957.5]
+    assert res == [41.60617446899414, 97.23999786376953]
 
-# @pytest.mark.skip(reason="no way of currently testing this")
-def test_feathr_get_offline_features():
+# @pytest.mark.skip(reason="...")
+def test_feathr_get_offline_features_hdfs_source():
     """
-    Test get_offline_features() can get data correctly.
+    Test get offline features for blob storage
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
 
@@ -180,8 +172,16 @@ def test_feathr_get_offline_features():
 
     batch_source = HdfsSource(name="nycTaxiBatchSource",
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              preprocessing=add_new_dropoff_column,
+                              event_timestamp_column="new_lpep_dropoff_datetime",
+                              timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+    batch_source2 = HdfsSource(name="nycTaxiBatchSource",
+                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              preprocessing=add_new_fare_amount,
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
+
 
     location_id = TypedKey(key_column="DOLocationID",
                            key_column_type=ValueType.INT32,
@@ -192,15 +192,13 @@ def test_feathr_get_offline_features():
     agg_features = [Feature(name="f_location_avg_fare",
                             key=location_id,
                             feature_type=FLOAT,
-                            # transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
-                            transform=WindowAggTransformation(agg_expr="fare_amount",
-                                                              agg_func="AVG",
+                            transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                                                              agg_func="SUM",
                                                               window="90d")),
                     Feature(name="f_location_max_fare",
                             key=location_id,
                             feature_type=FLOAT,
-                            # transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
-                            transform=WindowAggTransformation(agg_expr="fare_amount",
+                            transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
                                                               agg_func="MAX",
                                                               window="90d"))
                     ]
@@ -208,7 +206,7 @@ def test_feathr_get_offline_features():
     agg_anchor = FeatureAnchor(name="aggregationFeatures",
                                source=batch_source,
                                features=agg_features,
-                               preprocessing=my_func2)
+                               )
 
     pickup_time_as_id = TypedKey(key_column="lpep_pickup_datetime",
                                  key_column_type=ValueType.INT32,
@@ -219,7 +217,6 @@ def test_feathr_get_offline_features():
         Feature(name="f_is_long_trip_distance",
                 key=pickup_time_as_id,
                 feature_type=FLOAT,
-                # transform="trip_distance + 1000"),
                 transform="fare_amount_new"),
         Feature(name="f_day_of_week",
                 key=pickup_time_as_id,
@@ -228,10 +225,9 @@ def test_feathr_get_offline_features():
     ]
 
     request_anchor = FeatureAnchor(name="request_features",
-                                   source=batch_source,
+                                   source=batch_source2,
                                    features=features,
-                                   # preprocessing=trip_distance_preprocessing)
-                                   preprocessing=feathr_udf_add_toll_amount)
+                                   )
 
     client.build_features(anchor_list=[agg_anchor, request_anchor])
 
@@ -265,7 +261,14 @@ def test_feathr_get_offline_features():
     res_df = get_result_df(client)
     assert res_df.shape[0] > 0
 
-# @pytest.mark.skip(reason="no way of currently testing this")
+
+def snowflake_preprocessing(df: DataFrame) -> DataFrame:
+    df = df.withColumn("NEW_CC_DIVISION_NAME", concat(col("CC_DIVISION_NAME"), lit("0000"), col("CC_DIVISION_NAME")))
+    df = df.withColumn("NEW_CC_ZIP", concat(col("CC_ZIP"), lit("____"), col("CC_ZIP")))
+    return df
+
+
+@pytest.mark.skip(reason="...")
 def test_feathr_get_offline_features_from_snowflake():
     """
     Test get_offline_features() can get feature data from Snowflake source correctly.
@@ -276,6 +279,7 @@ def test_feathr_get_offline_features_from_snowflake():
                               path="jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration"
                                    "&sfWarehouse=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA"
                                    "&sfSchema=TPCDS_SF10TCL",
+                              preprocessing=snowflake_preprocessing,
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
@@ -288,7 +292,6 @@ def test_feathr_get_offline_features_from_snowflake():
         Feature(name="f_snowflake_call_center_division_name_with_preprocessing",
                 key=call_sk_id,
                 feature_type=STRING,
-                # transform="trip_distance + 1000"),
                 transform="NEW_CC_DIVISION_NAME"),
         Feature(name="f_snowflake_call_center_zipcode_with_preprocessing",
                 key=call_sk_id,
@@ -299,8 +302,7 @@ def test_feathr_get_offline_features_from_snowflake():
     feature_anchor = FeatureAnchor(name="snowflake_features",
                                    source=batch_source,
                                    features=features,
-                                   # preprocessing=trip_distance_preprocessing)
-                                   preprocessing=snowflake_preprocessing)
+                                   )
     client.build_features(anchor_list=[feature_anchor])
 
     feature_query = FeatureQuery(

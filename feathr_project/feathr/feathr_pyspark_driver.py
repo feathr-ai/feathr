@@ -47,8 +47,6 @@ def submit_spark_job(feature_names_funcs):
 
     print("submit_spark_job: feature_names_funcs: ")
     print(feature_names_funcs)
-    print("submit_spark_job: user_func_map feature nams to source data: ")
-    print(preprocessed_funcs)
     print("set(feature_names_funcs.keys()): ")
     print(set(feature_names_funcs.keys()))
 
@@ -86,6 +84,4 @@ print("pyspark_client.py: Preprocessing via UDFs and submit Spark job.")
 submit_spark_job(feature_names_funcs)
 
 print("pyspark_client.py: Feathr Pyspark job completed.")
-
-
 
