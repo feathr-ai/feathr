@@ -55,7 +55,7 @@ class WindowAggTransformation(Transformation):
         tm = Template("""
             "{{windowAgg.def_expr}}"
             window: {{windowAgg.window}}
-            aggregation: {{windowAgg.agg_func}}
+            agg: {{windowAgg.agg_func}}
             {% if windowAgg.group_by is not none %}
                 groupBy: {{windowAgg.group_by}}
             {% endif %}
