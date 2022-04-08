@@ -137,25 +137,38 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
 
         submission_params['run_name'] = job_name
-        submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         submission_params['new_cluster']['spark_conf'] = configuration
         submission_params['new_cluster']['custom_tags'] = job_tags
-        submission_params['spark_jar_task']['parameters'] = arguments
-        submission_params['spark_jar_task']['main_class_name'] = main_class_name
-        self.res_job_id = None
-
+        # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
+        submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
+        # see here for the submission parameter definition https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--request-structure-6
+        if python_files:
+            # this is a pyspark job. definition here: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--sparkpythontask
+            param_and_file_dict = {"parameters": arguments, "python_file":self.upload_or_get_cloud_path(python_files[0])}
+            submission_params.setdefault('spark_python_task',param_and_file_dict)
+        else:
+            # this is a scala spark job
+            submission_params['spark_jar_task']['parameters'] = arguments
+            submission_params['spark_jar_task']['main_class_name'] = main_class_name
+        
+        
+        # For Job runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit
+        result = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
+                                headers=self.auth_headers, data=json.dumps(submission_params))
+        
         try:
-            # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
-            result = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
-                                   headers=self.auth_headers, data=json.dumps(submission_params))
+            # see if we can parse the returned result
             self.res_job_id = result.json()['run_id']
-            # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
-            result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
-                                  headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-            logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', result.json()[
-                'run_page_url'])
         except:
-            traceback.print_exc()
+            logger.error("submitting to Databricks cluster failed. Message returned from Databricks: {}", result.json())
+            exit(1)
+
+        # For Job runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit
+        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
+                                headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
+        logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', result.json()[
+            'run_page_url'])
+
         # return ID as the submission result
         return self.res_job_id
 
