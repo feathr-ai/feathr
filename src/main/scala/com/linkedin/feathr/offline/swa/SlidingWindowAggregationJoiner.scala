@@ -9,6 +9,7 @@ import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.exception.FeathrIllegalStateException
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameContainer
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
@@ -105,7 +106,20 @@ private[offline] class SlidingWindowAggregationJoiner(
     val windowAggSourceToAnchor = windowAggAnchors
     // same source with different key extractor might generate different views, e.g, key extractor may 'explode' the dataframe
     // which would result in more rows, so we need to group by source and keyExtractor
-      .map(anchor => ((anchor.source, anchor.featureAnchor.sourceKeyExtractor.toString()), anchor))
+      .map(anchor => {
+        // preprocessedDfMap is in the form of feature list of an anchor separated by comma to their preprocessed DataFrame.
+        // We use feature list to denote if the anchor has corresponding preprocessing UDF.
+        // For example, an anchor have f1, f2, f3, then corresponding preprocessedDfMap is Map("f1,f2,f3"-> df1)
+        // (Anchor name is not chosen since it may be duplicated and not unique and stable.)
+        // If this anchor has preprocessing UDF, then we need to make its FeatureGroupingCriteria unique so it won't be
+        // merged by different anchor of same source. Otherwise our preprocessing UDF may impact anchors that dont'
+        // need preprocessing.
+        val preprocessedDfMap = PreprocessedDataFrameContainer.preprocessedDfMap
+        val featuresInAnchor = anchor.featureAnchor.features.toList
+        val sortedMkString = featuresInAnchor.sorted.mkString(",")
+        val featureNames = if (preprocessedDfMap.contains(sortedMkString)) sortedMkString else ""
+        ((anchor.source, anchor.featureAnchor.sourceKeyExtractor.toString(), featureNames), anchor)
+      })
       .groupBy(_._1)
       .map({
         case (source, grouped) => (source, grouped.map(_._2))
@@ -121,7 +135,13 @@ private[offline] class SlidingWindowAggregationJoiner(
           .map(SlidingWindowFeatureUtils.getMaxWindowDurationInAnchor(_, windowAggFeatureNames))
           .max
         log.info(s"Selected max window duration $maxDurationPerSource across all anchors for source ${sourceWithKeyExtractor._1.path}")
-        val sourceDF =
+
+        // use preprocessed DataFrame if it exist. Otherwise use the original source DataFrame.
+        // there are might be duplicates: Vector(f_location_avg_fare, f_location_max_fare, f_location_avg_fare, f_location_max_fare)
+        val res = anchors.flatMap(x => x.featureAnchor.features)
+        val featureNames = res.toSet.toSeq.sorted.mkString(",")
+        val preprocessedDf = PreprocessedDataFrameContainer.preprocessedDfMap.get(featureNames)
+        val originalSourceDf =
           anchorToDataSourceMapper
             .getWindowAggAnchorDFMapForJoin(
               ss,
@@ -130,6 +150,13 @@ private[offline] class SlidingWindowAggregationJoiner(
               maxDurationPerSource,
               featuresToDelayImmutableMap.values.toArray,
               failOnMissingPartition)
+
+        originalSourceDf.show(10)
+        val sourceDF: DataFrame = preprocessedDf match {
+          case Some(existDf) => existDf
+          case None => originalSourceDf
+        }
+
         // all the anchors here have same key sourcekey extractor, so we just use the first one to generate key column and share
         val withKeyDF = anchors.head.featureAnchor.sourceKeyExtractor match {
           // the lateral view parameter in sliding window aggregation feature is handled differently in feature join and feature generation

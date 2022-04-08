@@ -75,8 +75,8 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             job_tags (str): tags of the job, for exmaple you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
         """
-
-        if main_jar_path is None or main_jar_path.startswith('abfs'):
+        assert main_jar_path, 'main_jar_path should not be none but it is none.'
+        if main_jar_path.startswith('abfs'):
             main_jar_cloud_path = main_jar_path
             logger.info(
                 'Cloud path {} is used for running the job: {}', main_jar_path, job_name)
@@ -91,7 +91,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         for file_path in reference_files_path:
             reference_file_paths.append(
                 self._datalake.upload_file_to_workdir(file_path))
-        
+
         self.current_job_info = self._api.create_spark_batch_job(job_name=job_name,
                                                                  main_file=main_jar_cloud_path,
                                                                  class_name=main_class_name,
@@ -137,9 +137,9 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             str: `output_path` field in the job tags
         """
         tags = self._api.get_spark_batch_job(self.current_job_info.id).tags
-        # in case users call this API even when there's no tags available 
+        # in case users call this API even when there's no tags available
         return None if tags is None else tags[OUTPUT_PATH_TAG]
-    
+
     def get_job_tags(self) -> Dict[str, str]:
         """Get job tags
 
@@ -248,7 +248,7 @@ class _SynapseJobRunner(object):
             executor_memory=executor_memory,
             executor_cores=executor_cores,
             executor_count=self._executors)
-        print(spark_batch_job_options)
+
         return self.client.spark_batch.create_spark_batch_job(spark_batch_job_options, detailed=True)
 
 
@@ -354,7 +354,7 @@ class _DataLakeFiler(object):
         # get all the paths that are not under a directory
         result_paths = [basename(file_path.name) for file_path in self.file_system_client.get_paths(
             path=parse_result.path, recursive=False) if not file_path.is_directory]
-        
+
         # get all the paths that are directories and download them
         result_folders = [file_path.name for file_path in self.file_system_client.get_paths(
             path=parse_result.path) if file_path.is_directory]
@@ -375,7 +375,7 @@ class _DataLakeFiler(object):
 
         logger.info('Finish downloading files from {} to {}.',
                     target_adls_directory,local_dir_cache)
-    
+
     def _download_file_list(self, local_paths: List[str], result_paths, directory_client):
         '''
         Download filelist to local

@@ -58,9 +58,9 @@ class _PreprocessingPyudfManager(object):
         file.close()
 
     def persist_pyspark_udf_to_file(self, user_func, local_workspace_dir):
-        # Some basic imports will be provided
         udf_source_code = inspect.getsourcelines(user_func)[0]
         lines = []
+        # Some basic imports will be provided
         lines = lines + PROVIDED_IMPORTS
         lines = lines + udf_source_code
         lines.append('\n')
@@ -99,7 +99,6 @@ feature_names_funcs = {
         with open(full_file_name, "a") as text_file:
             print(new_file, file=text_file)
 
-    # def prepare_pyspark_udf_files(self, feature_queries: List[FeatureQuery], local_workspace_dir):
     def prepare_pyspark_udf_files(self, feature_names: List[str], local_workspace_dir):
         py_udf_files = []
 

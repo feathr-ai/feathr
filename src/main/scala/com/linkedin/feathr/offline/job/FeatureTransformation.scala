@@ -827,7 +827,6 @@ private[offline] object FeatureTransformation {
          *
          * Note: within each FeatureGroupingCriteria, we should group by and merge extractors of the same class.
          */
-        // TODO: put anchor preprocessing functiosn to it
         // preprocessedDfMap is in the form of feature list of an anchor separated by comma to their preprocessed DataFrame.
         // We use feature list to denote if the anchor has corresponding preprocessing UDF.
         // For example, an anchor have f1, f2, f3, then corresponding preprocessedDfMap is Map("f1,f2,f3"-> df1)

@@ -7,7 +7,9 @@ print("Feathr Pyspark job started.")
 spark = SparkSession.builder.appName('FeathrPyspark').getOrCreate()
 
 
-def toJStringArray(arr):
+def to_java_string_array(arr):
+    """Convert a Python string list to a Java String array.
+    """
     jarr = spark._sc._gateway.new_array(spark._sc._jvm.java.lang.String, len(arr))
     for i in range(len(arr)):
         jarr[i] = arr[i]
@@ -15,6 +17,14 @@ def toJStringArray(arr):
 
 
 def submit_spark_job(feature_names_funcs):
+    """Submit the Pyspark job to the cluster. This should be used when there is Python UDF preprocessing for soruces.
+    It loads the source DataFrame from Scala spark. Then preprocess the DataFrame with Python UDF in Pyspark. Later,
+    the real Scala FeatureJoinJob or FeatureGenJob is executed with preprocessed DataFrames overriding the original
+    source DataFrames.
+
+        Args:
+            feature_names_funcs: Map of feature names concatenated to preprocessing UDF function.
+    """
     # Prepare job parameters
     # sys.argv has all the arguments passed by submit job.
     # In pyspark job, the first param is the python file.
@@ -25,11 +35,7 @@ def submit_spark_job(feature_names_funcs):
         has_gen_config = True
     if '--join-config' in sys.argv:
         has_join_config = True
-    # for param in sys.argv:
-    #     if param == '--generation-config':
-    #         has_gen_config = True
-    #     if param == '--join-config':
-    #         has_join_config = True
+
     py4j_feature_job = None
     if has_gen_config and has_join_config:
         raise RuntimeError("Both FeatureGenConfig and FeatureJoinConfig are provided. "
@@ -42,8 +48,8 @@ def submit_spark_job(feature_names_funcs):
         print("FeatureJoinConfig is provided. Executing FeatureJoinJob.")
     else:
         raise RuntimeError("None of FeatureGenConfig and FeatureJoinConfig are provided. "
-                           "Only one of them should be provided.")
-    job_param_java_array = toJStringArray(sys.argv)
+                           "One of them should be provided.")
+    job_param_java_array = to_java_string_array(sys.argv)
 
     print("submit_spark_job: feature_names_funcs: ")
     print(feature_names_funcs)
