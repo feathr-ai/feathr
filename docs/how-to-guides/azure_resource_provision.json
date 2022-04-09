@@ -63,13 +63,13 @@
     "sqlPoolName": "[toLower(concat(variables('workspaceName'),'pool'))]",
     "workspaceName": "[toLower(concat(variables('synapseName'),'syws'))]",
     "dlsName": "[toLower(concat(variables('synapseName'), 'dls'))]",
-    "dlsFsName": "[toLower(concat(variables('dlsName'),'fs1'))]",
+    "dlsFsName": "[toLower(concat(variables('dlsName'),'fs'))]",
     "purviewName": "[concat(parameters('resourcePrefix'),'purview' )]"
   },
   "resources": [
     {
       "type": "Microsoft.KeyVault/vaults",
-      "apiVersion": "2021-04-01-preview",
+      "apiVersion": "2021-10-01",
       "name": "[variables('keyVaultName')]",
       "location": "[variables('location')]",
       "properties": {
@@ -85,7 +85,7 @@
         {
           "type": "Microsoft.KeyVault/vaults/secrets",
           "name": "[concat(variables('keyVaultName'), '/FEATHR-OFFLINE-STORE-CONN')]",
-          "apiVersion": "2019-09-01",
+          "apiVersion": "2021-10-01",
           "location": "[resourceGroup().location]",
           "properties": {
             "value": "[concat('mssql+pyodbc://',parameters('administratorLogin'),':',parameters('administratorLoginPassword'),'@', variables('workspaceName'),'.database.windows.net:1433/', variables('sqlPoolName'), '?driver=ODBC+Driver+17+for+SQL+Server&autocommit=True')]"
@@ -114,7 +114,7 @@
         {
           "type": "Microsoft.KeyVault/vaults/secrets",
           "name": "[concat(variables('keyVaultName'), '/FEATHR-ONLINE-STORE-CONN')]",
-          "apiVersion": "2019-09-01",
+          "apiVersion": "2021-10-01",
           "location": "[resourceGroup().location]",
           "properties": {
             "value": "[concat(variables('redisCacheName'),'.redis.cache.windows.net:6380,password=', listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey, ',ssl=True')]"
@@ -129,25 +129,15 @@
       "name": "[variables('dlsName')]",
       "location": "[variables('location')]",
       "sku": {
-        "name": "Standard_LRS"
+        "name": "Standard_LRS",
+        "tier": "Standard"
       },
       "kind": "StorageV2",
       "properties": {
         "accessTier": "Hot",
         "supportsHttpsTrafficOnly": true,
         "isHnsEnabled": true
-      },
-      "resources": [
-        {
-          "name": "[concat('default/', variables('dlsFsName'))]",
-          "type": "blobServices/containers",
-          "apiVersion": "2021-08-01",
-          "dependsOn": ["[variables('dlsName')]"],
-          "properties": {
-            "publicAccess": "None"
-          }
-        }
-      ]
+      }
     },
 
     {
@@ -170,7 +160,7 @@
 
     {
       "type": "Microsoft.Synapse/workspaces",
-      "apiVersion": "2019-06-01-preview",
+      "apiVersion": "2021-06-01",
       "name": "[variables('workspaceName')]",
       "location": "[variables('location')]",
       "identity": {
@@ -190,7 +180,7 @@
         {
           "condition": "[equals(parameters('allowAllConnections'),'true')]",
           "type": "firewallrules",
-          "apiVersion": "2019-06-01-preview",
+          "apiVersion": "2021-06-01",
           "name": "allowAll",
           "location": "[variables('location')]",
           "dependsOn": ["[variables('workspaceName')]"],
@@ -201,7 +191,7 @@
         },
         {
           "type": "firewallrules",
-          "apiVersion": "2019-06-01-preview",
+          "apiVersion": "2021-06-01",
           "name": "AllowAllWindowsAzureIps",
           "location": "[variables('location')]",
           "dependsOn": ["[variables('workspaceName')]"],
@@ -212,7 +202,7 @@
         },
         {
           "type": "managedIdentitySqlControlSettings",
-          "apiVersion": "2019-06-01-preview",
+          "apiVersion": "2021-06-01",
           "name": "default",
           "location": "[variables('location')]",
           "dependsOn": ["[variables('workspaceName')]"],
@@ -226,7 +216,7 @@
     },
     {
       "type": "Microsoft.Synapse/workspaces/sqlPools",
-      "apiVersion": "2019-06-01-preview",
+      "apiVersion": "2021-06-01",
       "name": "[concat(variables('workspaceName'), '/', variables('sqlPoolName'))]",
       "location": "[variables('location')]",
       "sku": {
