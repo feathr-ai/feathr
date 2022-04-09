@@ -220,8 +220,14 @@
                     "delayInMinutes": 30,
                     "enabled": true
                 },
+                "autoScale": {
+                    "enabled": true,
+                    "minNodeCount": 1,
+                    "maxNodeCount": 3
+                },
                 "sparkVersion": "3.1",
                 "nodeCount": 3,
+                "nodeSizeFamily": "MemoryOptimized",
                 "nodeSize": "Medium"
             }
         },
