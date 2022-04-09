@@ -37,12 +37,18 @@ You only need two steps:
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 
-## Quick Start
+## Running Feathr Examples
 
-- Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook. We recommend using **Visual Studio Code**, or **Azure Machine Learning Service** to run the above notebook, since those environments will help you login and reterive necessary credentials.
-- For more details, read our [documentation](https://linkedin.github.io/feathr/).
+- Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook. 
+- We recommend using **Visual Studio Code**, or **Azure Machine Learning Service** to run the above notebook, since those environments will help you login and reterive necessary credentials.
 
-## Defining Features with Transformation
+## Documentation
+
+For more details, read our [documentation](https://linkedin.github.io/feathr/).
+
+
+## Feathr Capabilities
+### Defining Features with Transformation
 
 ```python
 features = [
@@ -61,7 +67,7 @@ anchor = FeatureAnchor(name="request_features",             # Features anchored 
                        features=features)
 ```
 
-## Accessing Features
+### Accessing Features
 
 ```python
 from feathr import FeathrClient
@@ -87,7 +93,7 @@ feathr_client.get_offline_features(observation_settings=settings,
                                    feature_query=feature_query)
 ```
 
-## Deploy Features to Online (Redis) Store
+### Deploy Features to Online (Redis) Store
 
 ```python
 from feathr import FeathrClient, BackfillTime, MaterializationSettings, RedisSink
@@ -117,9 +123,7 @@ client.multi_get_online_features(feature_table = "agg_features",
                                  feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 ```
 
-# More on Defining Features
-
-## Defining Window Aggregation Features
+### Defining Window Aggregation Features
 
 ```python
 agg_features = [Feature(name="f_location_avg_fare",
@@ -136,7 +140,7 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            features=agg_features)
 ```
 
-## Defining Named Data Sources
+### Defining Named Data Sources
 
 ```python
 batch_source = HdfsSource(
@@ -146,7 +150,7 @@ batch_source = HdfsSource(
     timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
 ```
 
-## Beyond Features on Raw Data Sources - Derived Features
+### Beyond Features on Raw Data Sources - Derived Features
 
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
