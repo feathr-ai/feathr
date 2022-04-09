@@ -30,7 +30,7 @@ from feathr.transformation import Transformation
 
 class _FeatureRegistry():
 
-    def __init__(self, config_path):
+    def __init__(self, config_path=None, credential=None):
         """
         Initializes the feature registry, doing the following:
         - Use an Azure Service Principal to communicate with Azure Purview
@@ -43,7 +43,8 @@ class _FeatureRegistry():
         self.azure_purview_name = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
 
         # Might need to consolidate all the credential management
-        self.oauth = AzCredentialWrapper(credential=DefaultAzureCredential(exclude_interactive_browser_credential=False))
+        self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False) if credential is None else credential
+        self.oauth = AzCredentialWrapper(credential=self.credential)
         self.purview_client = PurviewClient(
             account_name=self.azure_purview_name,
             authentication=self.oauth

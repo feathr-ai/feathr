@@ -32,20 +32,19 @@
         "location": "[resourceGroup().location]",
         "tenantId": "[subscription().tenantId]",
         "redisCacheName": "[concat(parameters('resourcePrefix'),'redis' )]",
-        "synapseName": "[concat(parameters('resourcePrefix'), 'sy')]",
         "keyVaultName": "[concat(parameters('resourcePrefix'),'kv')]",
         "keyVault": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "redisCache": "[resourceId('Microsoft.Cache/redis', variables('redisCacheName'))]",
         "sparkPoolName": "spark31",
-        "workspaceName": "[toLower(concat(variables('synapseName'),'syws'))]",
-        "dlsName": "[toLower(concat(variables('synapseName'), 'dls'))]",
-        "dlsFsName": "[toLower(concat(variables('dlsName'),'fs'))]",
+        "workspaceName": "[toLower(concat(parameters('resourcePrefix'),'syws'))]",
+        "dlsName": "[toLower(concat(parameters('resourcePrefix'), 'dls'))]",
+        "dlsFsName": "[toLower(concat(parameters('resourcePrefix'),'fs'))]",
         "dlsAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('dlsName'))]",
         "purviewName": "[concat(parameters('resourcePrefix'),'purview' )]",
         "roleDefinitionIdForBlobContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
-        "roleDefinitionIdForKeyVaultSecretsOfficer": "b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+        "roleDefinitionIdForKeyVaultSecretsUser": "4633458b-17de-408a-b874-0445c86b69e6",
         "roleAssignmentNameForBlobContributor": "[guid(parameters('principalId'), variables('roleDefinitionIdForBlobContributor'), resourceGroup().id)]",
-        "roleAssignmentNameForKeyVaultSecretsOfficer": "[guid(parameters('principalId'), variables('roleDefinitionIdForKeyVaultSecretsOfficer'), resourceGroup().id)]"
+        "roleAssignmentNameForKeyVaultSecretsUser": "[guid(parameters('principalId'), variables('roleDefinitionIdForKeyVaultSecretsUser'), resourceGroup().id)]"
     },
     "resources": [
         {
@@ -250,9 +249,9 @@
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-10-01-preview",
-            "name": "[variables('roleAssignmentNameForKeyVaultSecretsOfficer')]",
+            "name": "[variables('roleAssignmentNameForKeyVaultSecretsUser')]",
             "properties": {
-                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForKeyVaultSecretsOfficer'))]",
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForKeyVaultSecretsUser'))]",
                 "principalId": "[parameters('principalId')]",
                 "scope": "[resourceGroup().id]"
             },
