@@ -24,7 +24,7 @@ Or if you want to use the latest Feathr code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## Deoploy Feathr on Azure
+## Setup Feathr on Azure Resources
 
 You only need two steps:
 1. Get the principal ID of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if you are asked to choose one), and write down that value (will be something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
@@ -108,7 +108,7 @@ client.materialize_features(settings)
 
 ```
 
-Get features from online store:
+And get features from online store:
 
 ```python
 from feathr import FeathrClient
