@@ -24,6 +24,9 @@ Or if you want to use the latest Feathr code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
+## Deoploy Feathr on Azure
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+
 ## Quick Start
 
 - Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
