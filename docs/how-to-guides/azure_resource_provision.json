@@ -9,7 +9,14 @@
             "metadata": {
                 "description": "Resource prefix for all the resource provisioned"
             },
-            "defaultValue": "feathronazure"
+            "minLength": 3,
+            "maxLength": 15
+        },
+        "principalId": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the principal ID assigned to the role. You can find it by logging into 'https://shell.azure.com/bash' and run 'az ad signed-in-user show --query objectId -o tsv'"
+            }
         },
         "allowAllConnections": {
             "type": "string",
@@ -29,11 +36,16 @@
         "keyVaultName": "[concat(parameters('resourcePrefix'),'kv')]",
         "keyVault": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "redisCache": "[resourceId('Microsoft.Cache/redis', variables('redisCacheName'))]",
-        "sparkPoolName": "[toLower(concat(variables('workspaceName'),'spark'))]",
+        "sparkPoolName": "spark31",
         "workspaceName": "[toLower(concat(variables('synapseName'),'syws'))]",
         "dlsName": "[toLower(concat(variables('synapseName'), 'dls'))]",
         "dlsFsName": "[toLower(concat(variables('dlsName'),'fs'))]",
-        "purviewName": "[concat(parameters('resourcePrefix'),'purview' )]"
+        "dlsAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('dlsName'))]",
+        "purviewName": "[concat(parameters('resourcePrefix'),'purview' )]",
+        "roleDefinitionIdForBlobContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+        "roleDefinitionIdForKeyVaultSecretsOfficer": "b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+        "roleAssignmentNameForBlobContributor": "[guid(parameters('principalId'), variables('roleDefinitionIdForBlobContributor'), resourceGroup().id)]",
+        "roleAssignmentNameForKeyVaultSecretsOfficer": "[guid(parameters('principalId'), variables('roleDefinitionIdForKeyVaultSecretsOfficer'), resourceGroup().id)]"
     },
     "resources": [
         {
@@ -48,8 +60,24 @@
                     "family": "A"
                 },
                 "accessPolicies": [],
-                "enableSoftDelete": true
-            }
+                "enableSoftDelete": true,
+                "enableRbacAuthorization": true
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.KeyVault/vaults/secrets",
+                    "name": "[concat(variables('keyVaultName'), '/FEATHR-PREFIX')]",
+                    "apiVersion": "2021-10-01",
+                    "location": "[resourceGroup().location]",
+                    "properties": {
+                        "value": "[parameters('resourcePrefix')]"
+                    },
+                    "dependsOn": [
+                        "[variables('keyVault')]"
+                    ]
+                }
+
+            ]
         },
 
         {
@@ -196,7 +224,38 @@
                 "nodeCount": 3,
                 "nodeSize": "Medium"
             }
+        },
+
+
+
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-10-01-preview",
+            "name": "[variables('roleAssignmentNameForBlobContributor')]",
+            "properties": {
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForBlobContributor'))]",
+                "principalId": "[parameters('principalId')]",
+                "scope": "[resourceGroup().id]"
+            },
+            "dependsOn": [
+                "[variables('dlsAccount')]"
+            ]
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-10-01-preview",
+            "name": "[variables('roleAssignmentNameForKeyVaultSecretsOfficer')]",
+            "properties": {
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForKeyVaultSecretsOfficer'))]",
+                "principalId": "[parameters('principalId')]",
+                "scope": "[resourceGroup().id]"
+            },
+            "dependsOn": [
+                "[variables('keyVault')]"
+            ]
         }
+
+
     ],
     "outputs": {}
 }
