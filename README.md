@@ -28,9 +28,12 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 You only need two steps:
 1. Get the principal ID of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if you are asked to choose one), and write down that value (will be something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
+
+
 [![Launch Cloud Shell](https://shell.azure.com/images/launchcloudshell.png "Launch Cloud Shell")](https://shell.azure.com/bash)
 
 2. Click the button below to deploy a minimal set of Feathr resources. Note that you should have "Owner" access in your subscription to perform some of the actions, and if you don't, please ask your IT admin to use [this quick start guide](./docs/how-to-guides/azure-deployment.md) to provision a service principal for you to use.
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 
