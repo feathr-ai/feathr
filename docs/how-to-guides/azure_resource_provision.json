@@ -137,7 +137,18 @@
         "accessTier": "Hot",
         "supportsHttpsTrafficOnly": true,
         "isHnsEnabled": true
-      }
+      },
+      "resources": [
+        {
+          "name": "[concat('default/', variables('dlsFsName'))]",
+          "type": "blobServices/containers",
+          "apiVersion": "2021-08-01",
+          "dependsOn": ["[variables('dlsName')]"],
+          "properties": {
+            "publicAccess": "None"
+          }
+        }
+      ]
     },
 
     {
