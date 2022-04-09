@@ -27,7 +27,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
     """
     def __init__(self, synapse_dev_url: str, pool_name: str, datalake_dir: str, executor_size: str, executors: int):
         # use DeviceCodeCredential if EnvironmentCredential is not available
-        self.credential = DefaultAzureCredential()
+        self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
         # use the same credential for authentication to avoid further login.
         self._api = _SynapseJobRunner(
             synapse_dev_url, pool_name, executor_size=executor_size, executors=executors, credential=self.credential)

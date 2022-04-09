@@ -8,6 +8,8 @@ from typing import List, Optional
 from jinja2 import Template
 from loguru import logger
 from pyapacheatlas.auth import ServicePrincipalAuthentication
+from pyapacheatlas.auth.azcredential import AzCredentialWrapper
+from azure.identity import DefaultAzureCredential
 from pyapacheatlas.core import (AtlasEntity, AtlasProcess, PurviewClient,
                                 TypeCategory)
 from pyapacheatlas.core.typedef import (AtlasAttributeDef, EntityTypeDef,
@@ -40,14 +42,8 @@ class _FeatureRegistry():
         self.FEATURE_REGISTRY_DELIMITER = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
         self.azure_purview_name = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
 
-        self.oauth = ServicePrincipalAuthentication(
-            tenant_id=_EnvVaraibleUtil.get_environment_variable(
-                "AZURE_TENANT_ID"),
-            client_id=_EnvVaraibleUtil.get_environment_variable(
-                "AZURE_CLIENT_ID"),
-            client_secret=_EnvVaraibleUtil.get_environment_variable(
-                "AZURE_CLIENT_SECRET")
-        )
+        # Might need to consolidate all the credential management
+        self.oauth = AzCredentialWrapper(credential=DefaultAzureCredential(exclude_interactive_browser_credential=False))
         self.purview_client = PurviewClient(
             account_name=self.azure_purview_name,
             authentication=self.oauth
