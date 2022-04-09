@@ -2,12 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "administratorLoginPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "The administrator password of the SQL logical server."
-            }
-        },
+
 
         "resourcePrefix": {
             "type": "string",
@@ -16,25 +11,6 @@
             },
             "defaultValue": "feathronazure"
         },
-        "sku": {
-            "type": "string",
-            "defaultValue": "DW100c",
-            "allowedValues": [
-                "DW100c",
-                "DW200c",
-                "DW300c",
-                "DW400c",
-                "DW500c",
-                "DW1000c",
-                "DW1500c",
-                "DW2000c",
-                "DW2500c",
-                "DW3000c"
-            ],
-            "metadata": {
-                "description": "Select the SKU of the SQL pool."
-            }
-        },
         "allowAllConnections": {
             "type": "string",
             "allowedValues": [ "true", "false" ],
@@ -42,13 +18,6 @@
             "metadata": {
                 "description": "Specifies whether to allow client IPs to connect to Synapse"
             }
-        },
-        "administratorLogin": {
-            "type": "string",
-            "metadata": {
-                "description": "The administrator username of the SQL logical server."
-            },
-            "defaultValue": "azureuser"
         }
     },
     "functions": [],
@@ -60,7 +29,6 @@
         "keyVaultName": "[concat(parameters('resourcePrefix'),'kv')]",
         "keyVault": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "redisCache": "[resourceId('Microsoft.Cache/redis', variables('redisCacheName'))]",
-        "sqlPoolName": "[toLower(concat(variables('workspaceName'),'pool'))]",
         "sparkPoolName": "[toLower(concat(variables('workspaceName'),'spark'))]",
         "workspaceName": "[toLower(concat(variables('synapseName'),'syws'))]",
         "dlsName": "[toLower(concat(variables('synapseName'), 'dls'))]",
@@ -81,19 +49,7 @@
                 },
                 "accessPolicies": [],
                 "enableSoftDelete": true
-            },
-            "resources": [
-                {
-                    "type": "Microsoft.KeyVault/vaults/secrets",
-                    "name": "[concat(variables('keyVaultName'), '/FEATHR-OFFLINE-STORE-CONN')]",
-                    "apiVersion": "2021-10-01",
-                    "location": "[resourceGroup().location]",
-                    "properties": {
-                        "value": "[concat('mssql+pyodbc://',parameters('administratorLogin'),':',parameters('administratorLoginPassword'),'@', variables('workspaceName'),'.database.windows.net:1433/', variables('sqlPoolName'), '?driver=ODBC+Driver+17+for+SQL+Server&autocommit=True')]"
-                    },
-                    "dependsOn": [ "[variables('keyVault')]" ]
-                }
-            ]
+            }
         },
 
         {
@@ -185,8 +141,6 @@
                     "accountUrl": "[reference(variables('dlsName')).primaryEndpoints.dfs]",
                     "filesystem": "[variables('dlsFsName')]"
                 },
-                "sqlAdministratorLogin": "[parameters('administratorLogin')]",
-                "sqlAdministratorLoginPassword": "[parameters('administratorLoginPassword')]",
                 "managedVirtualNetwork": "default"
             },
             "resources": [
@@ -226,20 +180,6 @@
                     }
                 }
             ]
-        },
-        {
-            "type": "Microsoft.Synapse/workspaces/sqlPools",
-            "apiVersion": "2021-06-01",
-            "name": "[concat(variables('workspaceName'), '/', variables('sqlPoolName'))]",
-            "location": "[variables('location')]",
-            "sku": {
-                "name": "[parameters('sku')]"
-            },
-            "dependsOn": [ "[variables('workspaceName')]" ],
-            "properties": {
-                "createMode": "Default",
-                "collation": "SQL_Latin1_General_CP1_CI_AS"
-            }
         },
         {
             "type": "Microsoft.Synapse/workspaces/bigDataPools",
