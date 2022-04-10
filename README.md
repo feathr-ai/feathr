@@ -33,7 +33,7 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
 [![Launch Cloud Shell](https://shell.azure.com/images/launchcloudshell.png "Launch Cloud Shell")](https://shell.azure.com/bash)
 
-2. Click the button below to deploy a minimal set of Feathr resources. Note that you should have "Owner" access in your subscription to perform some of the actions, and if you don't, please ask your IT admin to use [this quick start guide](./docs/how-to-guides/azure-deployment.md) to provision a service principal for you to use.
+2. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions, and if you don't, please ask your IT admin to use [this quick start guide](./docs/how-to-guides/azure-deployment.md) to provision a service principal for you to use.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 

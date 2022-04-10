@@ -59,27 +59,27 @@ class FeatureGenerationJobParams:
 
 
 class FeathrClient(object):
+    """Feathr client.
+
+    The client is used to create training dataset, materialize features, register features, and fetch features from
+    the online storage.
+
+    For offline storage and compute engine, Azure ADLS, AWS S3 and Azure Synapse are supported.
+
+    For online storage, currently only Redis is supported.
+    The users of this client is responsible for set up all the necessary information needed to start a Redis client via
+    environment variable or a Spark cluster. Host address, port and password are needed to start the Redis client.
+
+    Args:
+        config_path (str, optional): config path. See [Feathr Config Template](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
+        local_workspace_dir (_type_, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
+        credential (_type_, optional): credential to access cloud resources, and most likely to be DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function.
+
+    Raises:
+        RuntimeError: Fail to create the client since necessary environment variables are not set for Redis
+        client creation.
+    """
     def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None):
-        """Feathr client.
-
-        The client is used to create training dataset, materialize features, register features, and fetch features from
-        the online storage.
-
-        For offline storage and compute engine, Azure ADLS, AWS S3 and Azure Synapse are supported.
-
-        For online storage, currently only Redis is supported.
-        The users of this client is responsible for set up all the necessary information needed to start a Redis client via
-        environment variable or a Spark cluster. Host address, port and password are needed to start the Redis client.
-
-        Args:
-            config_path (str, optional): config path. See [Feathr Config Template](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
-            local_workspace_dir (_type_, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
-            credential (_type_, optional): credential to access cloud resources, and most likely to be DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function.
-
-        Raises:
-            RuntimeError: Fail to create the client since necessary environment variables are not set for Redis
-            client creation.
-        """
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
