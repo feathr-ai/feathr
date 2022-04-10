@@ -188,6 +188,22 @@ class FeathrClient(object):
     def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
         """Registers features based on the current workspace
         """
+        # Run necessary validations
+        # anchor name and source name should be unique
+        anchor_names = {}
+        source_names = {}
+        for anchor in anchor_list:
+            if anchor.name in anchor_names:
+                raise RuntimeError(f"Anchor name should be unique but there are duplicate anchor names in your anchor "
+                                   f"definitions. Anchor name of {anchor} is already defined in {anchor_names[anchor.name]}")
+            else:
+                anchor_names[anchor.name] = anchor
+            if anchor.source.name in source_names:
+                raise RuntimeError(f"Source name should be unique but there are duplicate source names in your source "
+                                   f"definitions. Source name of {anchor.source} is already defined in {source_names[anchor.source.name]}")
+            else:
+                source_names[anchor.source.name] = anchor.source
+
         preprocessingPyudfManager = _PreprocessingPyudfManager()
         preprocessingPyudfManager.build_anchor_preprocessing_metadata(anchor_list, self.local_workspace_dir)
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)

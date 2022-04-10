@@ -54,3 +54,6 @@ class FeatureAnchor:
                         key_list = key_list,
                         features = self.features,
                         source = self.source)
+
+    def __str__(self):
+        return self.to_feature_config()

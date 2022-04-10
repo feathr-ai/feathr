@@ -3,9 +3,11 @@ package com.linkedin.feathr.offline
 import com.linkedin.feathr.common.configObj.configbuilder.ConfigBuilderException
 import com.linkedin.feathr.common.exception.FeathrConfigException
 import com.linkedin.feathr.offline.generation.SparkIOUtils
-import com.linkedin.feathr.offline.source.dataloader.AvroJsonDataLoader
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameContainer
+import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
 import org.testng.Assert.assertTrue
 import org.testng.annotations.{BeforeClass, Test}
@@ -499,6 +501,130 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
          |]
       """.stripMargin
 
+    val df = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, "/driver_data/green_tripdata_2021-01.csv")
+    df.data.show()
+  }
+
+  @Test
+  def testPassthroughFeaturesWithSWAWithPreprocessing(): Unit = {
+    val featureDefAsString =
+      """
+        |anchors: {
+        |  nonAggFeatures: {
+        |    source: PASSTHROUGH
+        |    key: NOT_NEEDED
+        |    features: {
+        |
+        |      f_trip_distance: "(float)trip_distance"
+        |
+        |      f_is_long_trip_distance: "trip_distance>30"
+        |
+        |      f_trip_time_duration: "time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')"
+        |
+        |      f_day_of_week: "dayofweek(lpep_dropoff_datetime)"
+        |
+        |      f_day_of_month: "dayofmonth(lpep_dropoff_datetime)"
+        |
+        |      f_hour_of_day: "hourofday(lpep_dropoff_datetime)"
+        |    }
+        |  }
+        |
+        |  aggregationFeatures: {
+        |    source: nycTaxiBatchSource
+        |    key: DOLocationID
+        |    features: {
+        |      f_location_avg_fare: {
+        |        def: "float(fare_amount)"
+        |        aggregation: AVG
+        |        window: 3d
+        |      }
+        |      f_location_max_fare: {
+        |        def: "float(fare_amount)"
+        |        aggregation: MAX
+        |        window: 3d
+        |      }
+        |    }
+        |  }
+        |  aggregationFeatures333: {
+        |    source: nycTaxiBatchSource_with_new_dropoff
+        |    key: DOLocationID
+        |    features: {
+        |      f_location_avg_fare22: {
+        |        def: "float(fare_amount)"
+        |        aggregation: AVG
+        |        window: 3d
+        |      }
+        |      f_location_max_fare33: {
+        |        def: "float(fare_amount)"
+        |        aggregation: MAX
+        |        window: 3d
+        |      }
+        |    }
+        |  }
+        |}
+        |
+        |derivations: {
+        |   f_trip_time_distance: {
+        |     definition: "f_trip_distance * f_trip_time_duration"
+        |     type: NUMERIC
+        |   }
+        |}
+        |sources: {
+        |  nycTaxiBatchSource: {
+        |    location: { path: "/driver_data/green_tripdata_2021-01.csv" }
+        |    timeWindowParameters: {
+        |      timestampColumn: "new_lpep_dropoff_datetime"
+        |      timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
+        |    }
+        |  }
+        |  nycTaxiBatchSource_with_new_dropoff: {
+        |    location: { path: "/driver_data/green_tripdata_2021-01.csv" }
+        |    timeWindowParameters: {
+        |      timestampColumn: "new_lpep_pickup_datetime"
+        |      timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
+        |    }
+        |  }
+        |  nycTaxiBatchSource3: {
+        |    location: { path: "/driver_data/copy_green_tripdata_2021-01.csv" }
+        |    timeWindowParameters: {
+        |      timestampColumn: "new_lpep_dropoff_datetime"
+        |      timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
+        |    }
+        |  }
+        |}
+        |
+      """.stripMargin
+
+    val joinConfigAsString =
+      s"""
+         |settings: {
+         | joinTimeSettings: {
+         |    timestampColumn: {
+         |     def: "lpep_dropoff_datetime"
+         |     format: "yyyy-MM-dd HH:mm:ss"
+         |    }
+         |  }
+         |}
+         |
+         |featureList: [
+         |  {
+         |    key: DOLocationID
+         |    featureList: [f_location_avg_fare22, f_location_max_fare33, f_location_avg_fare, f_location_max_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week]
+         |  }
+         |]
+      """.stripMargin
+
+    val df1 = new CsvDataLoader(ss, "src/test/resources/mockdata//driver_data/green_tripdata_2021-01.csv")
+      .loadDataFrame()
+      .withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
+      .withColumn("new_fare_amount", col("fare_amount") + 1000000)
+    val df2 = new CsvDataLoader(ss, "src/test/resources/mockdata//driver_data/green_tripdata_2021-01.csv")
+      .loadDataFrame()
+      .withColumn("new_improvement_surcharge", col("improvement_surcharge") + 1000000)
+      .withColumn("new_tip_amount", col("tip_amount") + 1000000)
+      .withColumn("new_lpep_pickup_datetime", col("lpep_pickup_datetime"))
+
+    PreprocessedDataFrameContainer.preprocessedDfMap = Map("f_location_avg_fare,f_location_max_fare" -> df1, "f_location_avg_fare22,f_location_max_fare33" -> df2)
     val df = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, "/driver_data/green_tripdata_2021-01.csv")
     df.data.show()
   }

@@ -13,7 +13,6 @@ from feathr.typed_key import TypedKey
 from feathr.transformation import WindowAggTransformation
 from pyspark.sql import SparkSession, DataFrame
 from test_fixture import basic_test_setup
-import pytest
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import RedisSink
 from test_fixture import snowflake_test_setup
@@ -30,7 +29,7 @@ def add_new_dropoff_and_fare_amount_column(df: DataFrame):
     return df
 
 def add_new_fare_amount(df: DataFrame) -> DataFrame:
-    df = df.withColumn("fare_amount_new", col("fare_amount") + 1000000)
+    df = df.withColumn("fare_amount_new", col("fare_amount") + 8000000)
 
     return df
 
@@ -41,22 +40,25 @@ def add_new_surcharge_amount_and_pickup_column(df: DataFrame) -> DataFrame:
 
     return df
 
+def add_old_lpep_dropoff_datetime(df: DataFrame) -> DataFrame:
+    df = df.withColumn("old_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
+
+    return df
+
 def feathr_udf_day_calc(df: DataFrame) -> DataFrame:
     df = df.withColumn("f_day_of_week", dayofweek("lpep_dropoff_datetime"))
     df = df.withColumn("f_day_of_year", dayofyear("lpep_dropoff_datetime"))
     return df
 
-
-@pytest.mark.skip(reason="...")
-def test_online_feature_with_offline_preprocessing():
+def test_non_swa_feature_gen_with_offline_preprocessing():
     """
-    Test feature gen with preprocessing
+    Test non-SWA feature gen with preprocessing
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
 
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
-    batch_source = HdfsSource(name="nycTaxiBatchSource",
+    batch_source = HdfsSource(name="nycTaxiBatchSource_add_new_fare_amount",
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
                               preprocessing=add_new_fare_amount,
                               event_timestamp_column="lpep_dropoff_datetime",
@@ -78,7 +80,7 @@ def test_online_feature_with_offline_preprocessing():
                 transform="dayofweek(lpep_dropoff_datetime)"),
     ]
 
-    regular_anchor = FeatureAnchor(name="request_features",
+    regular_anchor = FeatureAnchor(name="request_features_add_new_fare_amount",
                                    source=batch_source,
                                    features=features,
                                    )
@@ -105,10 +107,9 @@ def test_online_feature_with_offline_preprocessing():
 
     res = client.get_online_features(online_test_table, '2020-04-01 07:21:51', [
         'f_is_long_trip_distance', 'f_day_of_week'])
-    assert res == [1000006.0, 3]
+    assert res == [8000006.0, 4]
 
 
-@pytest.mark.skip(reason="...")
 def test_feature_swa_feature_gen_with_preprocessing():
     """
     Test SWA feature gen with preprocessing.
@@ -167,9 +168,9 @@ def test_feature_swa_feature_gen_with_preprocessing():
     client.wait_job_to_finish(timeout_sec=600)
 
     res = client.get_online_features(online_test_table, '265', ['f_location_avg_fare', 'f_location_max_fare'])
-    assert res == [41.60617446899414, 97.23999786376953]
+    assert res == [1000041.625, 1000100.0]
 
-@pytest.mark.skip(reason="...")
+
 def test_feathr_get_offline_features_hdfs_source():
     """
     Test get offline features for blob storage
@@ -178,21 +179,14 @@ def test_feathr_get_offline_features_hdfs_source():
 
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
-    batch_source1 = HdfsSource(name="nycTaxiBatchSource",
+    batch_source1 = HdfsSource(name="nycTaxiBatchSource_add_new_dropoff_and_fare_amount_column",
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
                               preprocessing=add_new_dropoff_and_fare_amount_column,
                               event_timestamp_column="new_lpep_dropoff_datetime",
                               # event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
-    batch_source1 = HdfsSource(name="nycTaxiBatchSource",
-                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
-                               preprocessing=add_new_dropoff_and_fare_amount_column,
-                               event_timestamp_column="new_lpep_dropoff_datetime",
-                               # event_timestamp_column="lpep_dropoff_datetime",
-                               timestamp_format="yyyy-MM-dd HH:mm:ss")
-
-    batch_source2 = HdfsSource(name="nycTaxiBatchSource",
+    batch_source2 = HdfsSource(name="nycTaxiBatchSource_add_new_fare_amount",
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
                               preprocessing=add_new_fare_amount,
                               event_timestamp_column="lpep_dropoff_datetime",
@@ -240,7 +234,7 @@ def test_feathr_get_offline_features_hdfs_source():
                 transform="dayofweek(lpep_dropoff_datetime)"),
     ]
 
-    regular_anchor = FeatureAnchor(name="request_features",
+    regular_anchor = FeatureAnchor(name="regular_anchor",
                                    source=batch_source2,
                                    features=features,
                                    )
@@ -277,15 +271,16 @@ def test_feathr_get_offline_features_hdfs_source():
     res_df = get_result_df(client)
     assert res_df.shape[0] > 0
 
+
 def test_get_offline_feature_two_swa_with_diff_preprocessing():
     """
-    Test get offline features for two SWA anchors with different preprocessing.
+    Test get offline features for two SWA anchors with different preprocessing and different sources.
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
 
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
-    swa_source_1 = HdfsSource(name="nycTaxiBatchSource",
+    swa_source_1 = HdfsSource(name="nycTaxiBatchSource1",
                                path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
                                preprocessing=add_new_dropoff_and_fare_amount_column,
                                event_timestamp_column="new_lpep_dropoff_datetime",
@@ -311,13 +306,13 @@ def test_get_offline_feature_two_swa_with_diff_preprocessing():
                                                               window="90d"))
                     ]
 
-    agg_anchor1 = FeatureAnchor(name="aggregationFeatures",
+    agg_anchor1 = FeatureAnchor(name="aggregationFeatures1",
                                source=swa_source_1,
                                features=agg_features1,
                                )
 
 
-    swa_source_2 = HdfsSource(name="nycTaxiBatchSource",
+    swa_source_2 = HdfsSource(name="nycTaxiBatchSource2",
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
                               preprocessing=add_new_surcharge_amount_and_pickup_column,
                               event_timestamp_column="new_lpep_pickup_datetime",
@@ -336,17 +331,37 @@ def test_get_offline_feature_two_swa_with_diff_preprocessing():
                                                                agg_func="SUM",
                                                                window="90d"))
                      ]
-    agg_anchor2 = FeatureAnchor(name="aggregationFeatures",
+    agg_anchor2 = FeatureAnchor(name="aggregationFeatures2",
                                source=swa_source_2,
                                features=agg_features2,
                                )
 
-    client.build_features(anchor_list=[agg_anchor1, agg_anchor2])
+    swa_source_3 = HdfsSource(name="nycTaxiBatchSource3",
+                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04_old.csv",
+                              preprocessing=add_old_lpep_dropoff_datetime,
+                              event_timestamp_column="old_lpep_dropoff_datetime",
+                              timestamp_format="yyyy-MM-dd HH:mm:ss")
 
-    feature_query = [FeatureQuery(
-        feature_list=["f_location_new_tip_amount", "f_location_max_improvement_surcharge"], key=location_id),
+    agg_features3 = [Feature(name="f_location_old_tip_amount",
+                             key=location_id,
+                             feature_type=FLOAT,
+                             transform=WindowAggTransformation(agg_expr="cast_double(old_tip_amount)",
+                                                               agg_func="SUM",
+                                                               window="90d"))
+                     ]
+    agg_anchor3 = FeatureAnchor(name="aggregationFeatures3",
+                                source=swa_source_3,
+                                features=agg_features3,
+                                )
+
+    client.build_features(anchor_list=[agg_anchor1, agg_anchor2, agg_anchor3])
+
+    feature_query = [
+        FeatureQuery(feature_list=["f_location_new_tip_amount", "f_location_max_improvement_surcharge"], key=location_id),
         FeatureQuery(
-            feature_list=["f_location_avg_fare", "f_location_max_fare"], key=location_id)
+            feature_list=["f_location_avg_fare", "f_location_max_fare"], key=location_id),
+        FeatureQuery(
+            feature_list=["f_location_old_tip_amount"], key=location_id)
     ]
 
     settings = ObservationSettings(
@@ -361,20 +376,15 @@ def test_get_offline_feature_two_swa_with_diff_preprocessing():
     else:
         output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
 
-
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path)
 
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=900)
-
-    # download result and just assert the returned result is not empty
     res_df = get_result_df(client)
 
-    assert res_df['f_location_new_tip_amount'] == 1
-    assert res_df['f_location_new_tip_amount'].head(1) == 1
-    assert res_df['f_location_max_improvement_surcharge'] == 2
+    # download result and just assert the returned result is not empty
     assert res_df.shape[0] > 0
 
 
@@ -384,7 +394,6 @@ def snowflake_preprocessing(df: DataFrame) -> DataFrame:
     return df
 
 
-@pytest.mark.skip(reason="...")
 def test_feathr_get_offline_features_from_snowflake():
     """
     Test get_offline_features() can get feature data from Snowflake source correctly.

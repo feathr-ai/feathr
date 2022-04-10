@@ -13,8 +13,9 @@ FEATHR_PYSPARK_METADATA = 'generated_feathr_pyspark_metadata'
 FEATHR_CLIENT_UDF_FILE_NAME = 'client_udf_repo.py'
 # Pyspark driver code that is executed by the Pyspark driver
 FEATHR_PYSPARK_DRIVER_FILE_NAME = 'feathr_pyspark_driver.py'
+FEATHR_PYSPARK_DRIVER_TEMPLATE_FILE_NAME = 'feathr_pyspark_driver_template.py'
 # Feathr provided imports for pyspark UDFs all go here
-PROVIDED_IMPORTS = ['from pyspark.sql import SparkSession, DataFrame\n'] + \
+PROVIDED_IMPORTS = ['\nfrom pyspark.sql import SparkSession, DataFrame\n'] + \
                    ['from pyspark.sql.functions import *\n']
 
 
@@ -125,10 +126,26 @@ feature_names_funcs = {
         # Locate and collect all the python files that needs to be uploaded
         if has_py_udf_preprocessing:
             # pyspark_client should be first in the file since the Spark driver will execute the first file
-            pyspark_client_abs_path = str(Path(Path(__file__).parent / FEATHR_PYSPARK_DRIVER_FILE_NAME).absolute())
-            py_udf_files = [pyspark_client_abs_path] + py_udf_files
+            # pyspark_driver_abs_path = str(Path(Path(__file__).parent / FEATHR_PYSPARK_DRIVER_FILE_NAME).absolute())
+            pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)
+            pyspark_driver_template_abs_path = str(Path(Path(__file__).parent / FEATHR_PYSPARK_DRIVER_TEMPLATE_FILE_NAME).absolute())
+            client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
+            # write pyspark_driver_template_abs_path and then client_udf_repo_path
+            filenames = [pyspark_driver_template_abs_path, client_udf_repo_path]
+            with open(pyspark_driver_path, 'w') as outfile:
+                for fname in filenames:
+                    with open(fname) as infile:
+                        for line in infile:
+                            outfile.write(line)
+            lines = [
+                '\n',
+                'print("pyspark_client.py: Preprocessing via UDFs and submit Spark job.")\n',
+                'submit_spark_job(feature_names_funcs)\n',
+                'print("pyspark_client.py: Feathr Pyspark job completed.")\n',
+                '\n',
+            ]
+            with open(pyspark_driver_path, "a") as handle:
+                print("".join(lines), file=handle)
 
-            # UDFs are persisted into the temporary client_udf_repo.py
-            client_udf_repo_abs_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
-            py_udf_files.append(client_udf_repo_abs_path)
+            py_udf_files = [pyspark_driver_path]
         return py_udf_files

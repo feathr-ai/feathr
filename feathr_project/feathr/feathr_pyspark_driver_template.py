@@ -1,6 +1,7 @@
+
 from pyspark.sql import SparkSession, DataFrame, SQLContext
-from client_udf_repo import *
 import sys
+from pyspark.sql.functions import *
 
 # This is executed in Spark driver
 print("Feathr Pyspark job started.")
@@ -84,10 +85,4 @@ def submit_spark_job(feature_names_funcs):
 
     py4j_feature_job.mainWithPreprocessedDataFrame(job_param_java_array, new_preprocessed_df_map)
     return None
-
-
-print("pyspark_client.py: Preprocessing via UDFs and submit Spark job.")
-submit_spark_job(feature_names_funcs)
-
-print("pyspark_client.py: Feathr Pyspark job completed.")
 

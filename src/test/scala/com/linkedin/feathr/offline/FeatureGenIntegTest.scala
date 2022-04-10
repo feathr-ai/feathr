@@ -2,9 +2,12 @@ package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.AssertFeatureUtils._
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameContainer
+import com.linkedin.feathr.offline.source.dataloader.CsvDataLoader
 import com.linkedin.feathr.offline.util.{FeathrTestUtils, FeatureGenConstants}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
 import org.testng.Assert.{assertEquals, assertNotNull}
 import org.testng.annotations.Test
@@ -274,6 +277,99 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     val res = localFeatureGenerate(applicationConfig, featureDefConfig)
     res.head._2.data.show(100)
   }
+
+  /**
+   * Test with non SWA feature with preprocessing and an application config writing to an output directory.
+   */
+  @Test(enabled = false)
+  def testFeatureGenWithApplicationConfigPreprocessing(): Unit = {
+    val applicationConfig =
+      s"""
+         | operational: {
+         |  name: generateWithDefaultParams
+         |  endTime: 2021-01-02
+         |  endTimeFormat: "yyyy-MM-dd"
+         |  resolution: DAILY
+         |  output:[
+         |  {
+         |      name: REDIS
+         |      params: {
+         |        table_name: "nycFeatures"
+         |      }
+         |   }
+         |  ]
+         |}
+         |features: [f_trip_distance, f_location_max_fare]
+      """.stripMargin
+    val featureDefConfig =
+      """
+        |anchors: {
+        |  nonAggFeatures: {
+        |    source: nycTaxiBatchSource
+        |    key: DOLocationID
+        |    features: {
+        |
+        |      f_trip_distance: "(float)new_fare_amount"
+        |
+        |      f_is_long_trip_distance: "trip_distance>30"
+
+        |    }
+        |  }
+        |
+        |  aggregationFeatures: {
+        |    source: nycTaxiBatchSource
+        |    key: DOLocationID
+        |    features: {
+        |      f_location_avg_fare: {
+        |        def: "float(fare_amount)"
+        |        aggregation: AVG
+        |        window: 3d
+        |      }
+        |      f_location_max_fare: {
+        |        def: "float(fare_amount)"
+        |        aggregation: MAX
+        |        window: 3d
+        |      }
+        |    }
+        |  }
+        |}
+        |
+        |derivations: {
+        |   f_trip_time_distance: {
+        |     definition: "f_trip_distance * f_trip_time_duration"
+        |     type: NUMERIC
+        |   }
+        |}
+        |sources: {
+        |  nycTaxiBatchSource: {
+        |    location: { path: "/driver_data/green_tripdata_2021-01.csv" }
+        |    timeWindowParameters: {
+        |      timestampColumn: "lpep_dropoff_datetime"
+        |      timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
+        |    }
+        |  }
+        |}
+        |""".stripMargin
+
+    val df1 = new CsvDataLoader(ss, "src/test/resources/mockdata//driver_data/green_tripdata_2021-01.csv")
+      .loadDataFrame()
+      .withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
+      .withColumn("new_fare_amount", col("fare_amount") + 1000000)
+    val df2 = new CsvDataLoader(ss, "src/test/resources/mockdata//driver_data/green_tripdata_2021-01.csv")
+      .loadDataFrame()
+      .withColumn("new_improvement_surcharge", col("improvement_surcharge") + 1000000)
+      .withColumn("new_tip_amount", col("tip_amount") + 1000000)
+      .withColumn("new_lpep_pickup_datetime", col("lpep_pickup_datetime"))
+    println("df1:")
+    df1.show(10)
+    println("df2:")
+    df2.show(10)
+    PreprocessedDataFrameContainer.preprocessedDfMap = Map("f_is_long_trip_distance,f_trip_distance" -> df1, "f_location_avg_fare,f_location_max_fare" -> df2)
+
+    val res = localFeatureGenerate(applicationConfig, featureDefConfig)
+    res.head._2.data.show(100)
+  }
+
 
   /**
    * test sliding window aggregation feature using key extractor in multiple anchors with different extractors

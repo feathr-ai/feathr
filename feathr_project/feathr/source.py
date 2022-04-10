@@ -29,6 +29,10 @@ class Source:
     def to_write_config(self) -> str:
         pass
 
+    def __str__(self):
+        return self.to_feature_config()
+
+
 class InputContext(Source):
     """A type of 'passthrough' source, a.k.a. request feature source.
     """
@@ -73,5 +77,8 @@ class HdfsSource(Source):
         """)
         msg = tm.render(source=self)
         return msg
+
+    def __str__(self):
+        return str(self.preprocessing) + '\n' + self.to_feature_config()
 
 INPUT_CONTEXT = InputContext()

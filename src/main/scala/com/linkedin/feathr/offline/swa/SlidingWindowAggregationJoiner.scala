@@ -151,7 +151,6 @@ private[offline] class SlidingWindowAggregationJoiner(
               featuresToDelayImmutableMap.values.toArray,
               failOnMissingPartition)
 
-        originalSourceDf.show(10)
         val sourceDF: DataFrame = preprocessedDf match {
           case Some(existDf) => existDf
           case None => originalSourceDf

@@ -886,7 +886,9 @@ private[offline] object FeatureTransformation {
     // At this point, we have make the anchors that have preprocessing UDF unique so it will be only one anchor if
     // the anchor has preprocessing UDF.
     // Then we use the feature names separated by comma as the key to get the preprocessed DataFrame from Pyspark.
-    val allAnchorsFeatures = anchorsWithSameSource.flatMap(_.featureAnchor.features).sorted
+    // If there are multiple features in an anchor, there will be multiple anchors in ths anchorsWithSameSource
+    // so we need to merge the duplicates via set, for example [f1, f1, f2, f2] => [f1, f2]
+    val allAnchorsFeatures = anchorsWithSameSource.flatMap(_.featureAnchor.features).toSet.toList.sorted
     val featureMkString = allAnchorsFeatures.sorted.mkString(",")
     val preprocessedDf = PreprocessedDataFrameContainer.preprocessedDfMap.get(featureMkString)
 
