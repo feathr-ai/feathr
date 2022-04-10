@@ -73,6 +73,8 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Set env variable and upload jars
         env:
+          # set this for databricks CLI
+          DATABRICKS_HOST: ${{secrets.DATABRICKS_HOST}}
           DATABRICKS_TOKEN: ${{secrets.DATABRICKS_WORKSPACE_TOKEN_VALUE}}
         run: |
           # overwrite corresponding environment variables to utilize feathr to upload the files
