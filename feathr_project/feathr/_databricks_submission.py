@@ -150,12 +150,12 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # this is a scala spark job
             submission_params['spark_jar_task']['parameters'] = arguments
             submission_params['spark_jar_task']['main_class_name'] = main_class_name
-        
-        
+
+
         # For Job runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit
         result = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
                                 headers=self.auth_headers, data=json.dumps(submission_params))
-        
+
         try:
             # see if we can parse the returned result
             self.res_job_id = result.json()['run_id']
@@ -172,7 +172,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         # return ID as the submission result
         return self.res_job_id
 
-    def wait_for_completion(self, timeout_seconds: Optional[int] = 500) -> bool:
+    def wait_for_completion(self, timeout_seconds: Optional[int] = 1200) -> bool:
         """ Returns true if the job completed successfully
         """
         start_time = time.time()
