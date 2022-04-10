@@ -4,9 +4,10 @@ import { Layout } from 'antd';
 import Header from '../components/header/header';
 import SideMenu from '../components/sidemenu/siteMenu';
 import Home from '../pages/home/home';
-import NewFeature from '../pages/feature/newFeature';
 import { QueryClient, QueryClientProvider } from "react-query";
-import ExistingFeature from '../pages/feature/existingFeature';
+import NewFeature from "../pages/feature/newFeature";
+import EditFeature from "../pages/feature/editFeature";
+
 
 type Props = {};
 const { Footer } = Layout;
@@ -24,7 +25,7 @@ const Routes: React.FC<Props> = () => {
               <Suspense fallback={ <div /> }>
                 <Route exact={ true } path="/" component={ withRouter(Home) } />
                 <Route exact={ true } path="/new-feature" component={ withRouter(NewFeature) } />
-                <Route exact={ true } path="/feature/:id" component={ withRouter(ExistingFeature) } />
+                <Route exact={ true } path="/feature/:id" component={ withRouter(EditFeature) } />
                 {/* {publicRoutes} */ }
                 {/* <Route component={NotFound} /> */ }
               </Suspense>

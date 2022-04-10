@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Table } from 'antd';
 import { Resizable } from 'react-resizable';
 
-const ResizeableTitle = (props: { [x: string]: any; onResize: any; width: any; }) => {
+const ResizableTitle = (props: { [x: string]: any; onResize: any; width: any; }) => {
   const { onResize, width, ...restProps } = props;
   if (!width) {
     return <th { ...restProps } />
@@ -22,7 +22,7 @@ class TableResize extends PureComponent<any, any> {
 
   components = {
     header: {
-      cell: ResizeableTitle,
+      cell: ResizableTitle,
       userSelect: "none"
     },
   };

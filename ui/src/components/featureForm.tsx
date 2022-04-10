@@ -7,29 +7,25 @@ import { IFeature } from "../models/feature";
 
 type FeatureFormProps = {
   isDisabled: boolean;
-  existingFeature?: IFeature;
+  feature?: IFeature;
 };
 
-const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, existingFeature }) => {
+const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, feature }) => {
   const [fireRedirect, setRedirect] = useState<boolean>(false);
-  const [creatLoading, setCreateLoading] = useState<boolean>(false);
+  const [createLoading, setCreateLoading] = useState<boolean>(false);
   const [form] = Form.useForm();
 
-  const renderExisting = () => {
-    form.setFieldsValue(existingFeature);
-  }
-
   useEffect(() => {
-    if (existingFeature !== undefined) {
-      renderExisting();
+    if (feature !== undefined) {
+      form.setFieldsValue(feature);
     }
   }, []);
 
-  const onFinish = async (feature: IFeature) => {
+  const onClickSave = async () => {
     setCreateLoading(true);
-
-    if (existingFeature?.id !== undefined) {
-      const resp = await updateFeature(feature, existingFeature.id);
+    const feature: IFeature = form.getFieldsValue();
+    if (feature?.id !== undefined) {
+      const resp = await updateFeature(feature, feature.id);
       if (resp.status === 200) {
         message.success("Feature is updated successfully");
         setRedirect(true);
@@ -45,17 +41,7 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, existingFeature }
         message.error(`${ resp.data }`, 8)
       }
     }
-
     setCreateLoading(false);
-  }
-
-  const onClickSave = () => {
-    submitFeature();
-  }
-
-  const submitFeature = () => {
-    const tmpFeature: IFeature = form.getFieldsValue();
-    onFinish(tmpFeature);
   }
 
   const styling: CSSProperties = { width: "92%" }
@@ -67,7 +53,6 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, existingFeature }
         labelCol={ { span: 4 } }
         wrapperCol={ { span: 24 } }
         layout="horizontal"
-        // onFinish={onFinish}
         initialValues={ { remember: true } }
       >
         <Space direction="vertical" size="large" style={ styling }>
@@ -95,7 +80,7 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, existingFeature }
           <Button type="primary" htmlType="button" title="submit and go back to list"
                   style={ { float: 'inline-start' } }
                   onClick={ onClickSave }
-                  loading={ creatLoading }
+                  loading={ createLoading }
                   disabled={ isDisabled }
           >
             Submit
@@ -108,4 +93,5 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, existingFeature }
     </>
   );
 };
+
 export default FeatureForm

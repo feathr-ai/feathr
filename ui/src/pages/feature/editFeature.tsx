@@ -16,7 +16,7 @@ type IdParams = {
   id: string;
 }
 
-const ExistingFeature: React.FC<Props> = () => {
+const EditFeature: React.FC<Props> = () => {
   const [editMode, setEditMode] = useState<boolean>(false);
 
   const { id } = useParams<IdParams>();
@@ -33,11 +33,11 @@ const ExistingFeature: React.FC<Props> = () => {
     setEditMode(true);
   };
 
-  const onCancelEditClicked = () => {
+  const onClickCancelEdit = () => {
     setEditMode(false);
   }
 
-  function showConfirm() {
+  const showConfirm = () => {
     confirm({
       title: 'Are you sure you want to delete this feature?',
       icon: <ExclamationCircleOutlined />,
@@ -69,7 +69,7 @@ const ExistingFeature: React.FC<Props> = () => {
   const renderCancelEdit = () => {
     return (
       <Space>
-        <Button type="primary" onClick={ onCancelEditClicked }>
+        <Button type="primary" onClick={ onClickCancelEdit }>
           Cancel Editing
         </Button>
       </Space>
@@ -81,7 +81,7 @@ const ExistingFeature: React.FC<Props> = () => {
       <div>
         { editMode && renderCancelEdit() }
         { !editMode && renderCommandButtons() }
-        <FeatureForm isDisabled={ !editMode } existingFeature={ feature } />
+        <FeatureForm isDisabled={ !editMode } feature={ feature } />
       </div>
     )
   }
@@ -142,4 +142,4 @@ const ExistingFeature: React.FC<Props> = () => {
   );
 };
 
-export default ExistingFeature;
+export default EditFeature;

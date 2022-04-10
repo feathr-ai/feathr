@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, PageHeader } from 'antd';
-import './styles.less';
+import './header.less';
 
 type Props = {};
 

@@ -1,21 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Link, useHistory } from 'react-router-dom';
 import { Button, Dropdown, Input, Menu, message, Popconfirm, Select, Tabs, Tag, Tooltip } from 'antd';
-import { deleteFeature, fetchFeatures } from '../api';
 import { DownOutlined } from '@ant-design/icons';
-import 'antd/dist/antd.min.css';
-import { Link } from 'react-router-dom';
-import TableResize from './resizeableTable';
+import TableResize from './resizableTable';
 import { IFeature } from "../models/feature";
+import { deleteFeature, fetchFeatures } from '../api';
 
 const { TabPane } = Tabs;
 
-const FeatureTable: React.FC = () => {
+const FeatureList: React.FC = () => {
+  const history = useHistory();
+  const navigateTo = useCallback((location) => history.push(location), [history]);
   const projectOptions = [
     { label: <Tag color={ "green" }>NYC Taxi</Tag>, value: 0 }
   ];
-  const renderOpenNewTab = (uri: string) => {
-    window.open(uri);
-  }
   const columns = [
     {
       title: <div style={ { userSelect: "none" } }>Name</div>,
@@ -24,7 +22,7 @@ const FeatureTable: React.FC = () => {
       render: (name: string, row: IFeature) => {
         return (
           <a onClick={ () => {
-            renderOpenNewTab(`/feature/${ row.id }`)
+            navigateTo(`/feature/${ row.id }`)
           } }>{ name }</a>
         )
       },
@@ -84,7 +82,7 @@ const FeatureTable: React.FC = () => {
       render: (name: string, row: IFeature) => {
         return (
           <a onClick={ () => {
-            renderOpenNewTab(`/feature/${ row.id }`)
+            navigateTo(`/feature/${ row.id }`)
           } }>{ name }</a>
         )
       },
@@ -123,7 +121,7 @@ const FeatureTable: React.FC = () => {
             <Menu>
               <Menu.Item key="edit">
                 <a onClick={ () => {
-                  renderOpenNewTab(`/feature/${ row.id }`)
+                  navigateTo(`/feature/${ row.id }`)
                 } }>Edit</a>
               </Menu.Item>
               <Menu.Item key="delete">
@@ -207,9 +205,8 @@ const FeatureTable: React.FC = () => {
     } else {
       message.error("Failed to delete feature with id {id}");
     }
-    // force page reload after deletion
     setLoading(false);
-    window.location.reload();
+    fetchData();
   }
 
   return (
@@ -235,4 +232,4 @@ const FeatureTable: React.FC = () => {
   );
 }
 
-export default FeatureTable;
+export default FeatureList;

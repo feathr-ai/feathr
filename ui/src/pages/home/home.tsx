@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Card, Space } from 'antd';
 import './home.less';
 import { useHistory } from 'react-router';
-import FeatureTable from "../../components/featureTable";
+import FeatureList from "../../components/featureList";
 
 type Props = {};
 
@@ -22,7 +22,7 @@ const Home: React.FC<Props> = () => {
               + Create Feature
             </Button>
           </Space>
-          <FeatureTable />
+          <FeatureList />
         </Card>
       </div>
     </>
