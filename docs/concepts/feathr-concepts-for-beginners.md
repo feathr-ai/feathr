@@ -4,6 +4,9 @@ In this guide, we will cover the high level concepts for Feathr. Don't treat thi
 
 ## What are `Observation` data, and why does Feathr need `key(s)`, `Anchor`, `Source`?
 
+An illustration of the concepts that we are going to talk about is like this:
+![Feature Join Process](../images/observation_data.png)
+
 In order to fully utilize Feathr's power, we need to understand the object models that Feathr is expecting.
 
 In Feathr, always think that there is some `Observation` dataset which is the central dataset that you will be using. This dataset usually have labels in it, but it's also fine that an `observation` data doesn't have a label. In the latter case, an observation data will usually have two columns: a timestamp column and a column containing IDs.
@@ -81,11 +84,25 @@ client.get_offline_features(observation_settings=settings,
                             output_path=output_path)
 ```
 
-An illustration of the above process is like this:
-![Feature Join Process](../images/observation_data.png)
+
 ## What is "materialization" in Feathr?
 
-You are very likely to train a machine learning model 
+You are very likely to train a machine learning model with the features that you just queried. After you have trained a machine learning model, say a fraud detection model, you are likely to put the machine learning model into an online envrionment and do online inference. 
+
+In that case, you will need to retrieve the features (for example the user historical spending) in real time, since the fraud detection model is very time sensitive. Usually some key-value store is used for that scenario (for example Redis), and Feathr will help you to materialize features in the online environment for faster inference. That is why you will see something like below, where you specify Redis as the online storage you want to use, and retrieve features from online envrionment from there:
+
+
+```python
+redisSink = RedisSink(table_name="nycTaxiDemoFeature")
+# Materialize two features into a redis table.
+settings = MaterializationSettings("nycTaxiMaterializationJob",
+sinks=[redisSink],
+feature_names=["f_location_avg_fare", "f_location_max_fare"])
+client.materialize_features(settings)
+client.get_online_features(feature_table = "agg_features",
+                           key = "265",
+                           feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
+```
 
 ## Point in time joins and aggregations
 
