@@ -36,7 +36,7 @@ setup(
         "Jinja2",
         "tqdm",
         "pyarrow",
-        "pyspark>=3.1.2"
+        "pyspark>=3.1.2",
         "python-snappy",
         "deltalake",
         "google>=3.0.0",
