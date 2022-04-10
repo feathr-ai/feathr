@@ -32,8 +32,8 @@ class FeatureAnchor:
         if self.source != INPUT_CONTEXT:
             for feature in self.features:
                 if feature.key == [DUMMY_KEY]:
-                    raise RuntimeError(f"For Non INPUT_CONTEXT(PASSTHROUGH) anchors, key of feature {feature.name} "
-                                       f"should be explicitly specified and DUMMY_KEY should not be used.")
+                    raise RuntimeError(f"For anchors of non-INPUT_CONTEXT source, key of feature {feature.name} "
+                                       f"should be explicitly specified and not left blank.")
         for feature in self.features:
             assert feature.key_alias == self.features[0].key_alias
 
