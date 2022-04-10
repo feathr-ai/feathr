@@ -30,13 +30,11 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
 1. Get the principal ID of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if you are asked to choose one), and write down that value (will be something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
 
-
 [![Launch Cloud Shell](https://shell.azure.com/images/launchcloudshell.png "Launch Cloud Shell")](https://shell.azure.com/bash)
 
 2. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions, and if you don't, please ask your IT admin to use [this quick start guide](./docs/how-to-guides/azure-deployment.md) to provision a service principal for you to use.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
-
 
 3. Run the Feathr Jupyter Notebook by clicking the button below. The only thing you need to fill in the Jupyter Notebook is the resource prefix you provided in the second step.
 
@@ -44,15 +42,15 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
 ## Running Feathr Examples
 
-- Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook. 
+- Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
 - We recommend using **Visual Studio Code**, or **Azure Machine Learning Service** to run the above notebook, since those environments will help you login and reterive necessary credentials.
 
 ## Documentation
 
 For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
-
 ## Feathr Capabilities
+
 ### Defining Features with Transformation
 
 ```python
@@ -75,8 +73,6 @@ anchor = FeatureAnchor(name="request_features",             # Features anchored 
 ### Accessing Features
 
 ```python
-from feathr import FeathrClient
-
 # Requested features to be joined
 # Define the key for your feature
 location_id = TypedKey(key_column="DOLocationID",
@@ -101,8 +97,6 @@ feathr_client.get_offline_features(observation_settings=settings,
 ### Deploy Features to Online (Redis) Store
 
 ```python
-from feathr import FeathrClient, BackfillTime, MaterializationSettings, RedisSink
-
 client = FeathrClient()
 redisSink = RedisSink(table_name="nycTaxiDemoFeature")
 # Materialize two features into a redis table.
@@ -110,14 +104,11 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
 sinks=[redisSink],
 feature_names=["f_location_avg_fare", "f_location_max_fare"])
 client.materialize_features(settings)
-
 ```
 
 And get features from online store:
 
 ```python
-from feathr import FeathrClient
-client = FeathrClient()
 # Get features for a locationId (key)
 client.get_online_features(feature_table = "agg_features",
                            key = "265",
@@ -178,15 +169,15 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ## Cloud Integrations
 
-| Feathr component             | Cloud Integrations                                                                            |
-| ---------------------------- | --------------------------------------------------------------------------------------------- |
-| Offline store – Object Store | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                                   |
-| Offline store – SQL          | Azure SQL DB, Azure Synapse Dedicated SQL Pools (formerly SQL DW), Azure SQL in VM, Snowflake |
-| Online store                 | Azure Cache for Redis                                                                         |
-| Feature Registry             | Azure Purview                                                                                 |
-| Compute Engine               | Azure Synapse Spark Pools, Databricks                                                         |
-| Machine Learning Platform    | Azure Machine Learning, Jupyter Notebook                                                      |
-| File Format                  | Parquet, ORC, Avro, Delta Lake                                                                |
+| Feathr component             | Cloud Integrations                                                          |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| Offline store – Object Store | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
+| Offline store – SQL          | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
+| Online store                 | Azure Cache for Redis                                                       |
+| Feature Registry             | Azure Purview                                                               |
+| Compute Engine               | Azure Synapse Spark Pools, Databricks                                       |
+| Machine Learning Platform    | Azure Machine Learning, Jupyter Notebook                                    |
+| File Format                  | Parquet, ORC, Avro, Delta Lake                                              |
 
 ## Roadmap
 
