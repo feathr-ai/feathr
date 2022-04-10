@@ -24,7 +24,7 @@ Or if you want to use the latest Feathr code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## Running Feathr with only a few clicks
+## Running Feathr with 3 Simple Steps
 
 Feathr has native cloud integration and getting started with Feathr is very straightforward. You only need three steps:
 
@@ -38,7 +38,7 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 
-3. Run the Jupyter Notebook by clicking the button below. The only thing you need to fill in is the resource prefix you provided in the second step.
+3. Run the Feathr Jupyter Notebook by clicking the button below. The only thing you need to fill in the Jupyter Notebook is the resource prefix you provided in the second step.
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb)
 
