@@ -4,8 +4,6 @@ In this guide, we will cover the high level concepts for Feathr. Don't treat thi
 
 ## What are `Observation` data, and why does Feathr need `key(s)`, `Anchor`, `Source`?
 
-An illustration of the concepts that we are going to talk about is like this:
-![Feature Join Process](../images/observation_data.png)
 
 In order to fully utilize Feathr's power, we need to understand the object models that Feathr is expecting.
 
@@ -103,33 +101,12 @@ client.get_online_features(feature_table = "agg_features",
                            key = "265",
                            feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 ```
+## Illustration
 
+An illustration of the concepts that we are going to talk about is like this:
+![Feature Join Process](../images/observation_data.png)
 ## Point in time joins and aggregations
 
-Assuming users are already familar with the "regular" joins, for example inner join or outer join, and in many of the use cases, we care about time, that is why in Feathr we provide a capability called Point in time Join (and with other time based aggregations).
+Assuming users are already familar with the "regular" joins, for example inner join or outer join, and in many of the use cases, we care about time, that is why in Feathr we provide a capability called Point in time Join (and with other time based aggregations). That is also a reason why we focus very much on time and need end users to specify the timestamp column.
 
 For more details on how to utilize Feathr to perform point-in-time joins, refer to the [Point in Time Join Guide](../concepts/point-in-time-join.md)
-
-- Talk why do we need a timestamp column and point in time join.
-
-## others
-
-Talk about feathr object model
-
-- projects, anchors, relationships, feature tables, etc.
-
-```mermaid
-stateDiagram-v2
-    FeathrProject --> Anchor_2
-    FeathrProject -->  Anchor_1
-    FeathrProject --> DerivedFeature1
-    FeathrProject --> DerivedFeature2
-    Anchor_2 --> Source_1
-    Anchor_2 --> AnchorFeature_1
-    Anchor_2 --> AnchorFeature_2
-    Anchor_1 --> Source_2
-    Anchor_1 --> AnchorFeature_3
-    Anchor_1 --> AnchorFeature_4
-    AnchorFeature_4 --> DerivedFeature1
-    AnchorFeature_3 --> DerivedFeature1
-```
