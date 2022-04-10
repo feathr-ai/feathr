@@ -322,9 +322,15 @@ private[offline] object SlidingWindowFeatureUtils {
 
         // For anchors that have preprocessing, we should not merge them. We simply use feature names of this anchor
         // as a unique identifier to differentiate them.
-        val sortedMkString = anchor.featureAnchor.features.toList.sorted.mkString(",")
-        val preprocessedDfMap = PreprocessedDataFrameContainer.preprocessedDfMap
-        val featureNames = if (preprocessedDfMap.contains(sortedMkString)) sortedMkString else ""
+        val featureNames = PreprocessedDataFrameContainer.preprocessedDfMap.nonEmpty match {
+          case true => {
+            val sortedMkString = anchor.featureAnchor.features.toList.sorted.mkString(",")
+            val preprocessedDfMap = PreprocessedDataFrameContainer.preprocessedDfMap
+            val featureNames = if (preprocessedDfMap.contains(sortedMkString)) sortedMkString else ""
+            featureNames
+          }
+          case false => ""
+        }
 
         (anchor.featureAnchor.sourceKeyExtractor.toString(), featureNames, anchor.featureAnchor.lateralViewParams, anchor.source)
       }.values.toSeq
