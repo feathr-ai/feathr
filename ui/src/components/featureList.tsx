@@ -12,7 +12,7 @@ const FeatureList: React.FC = () => {
   const history = useHistory();
   const navigateTo = useCallback((location) => history.push(location), [history]);
   const projectOptions = [
-    { label: <Tag color={ "green" }>NYC Taxi</Tag>, value: 0 }
+    { label: <Tag color={ "green" }>NYC Taxi</Tag>, value: "nyc" }
   ];
   const columns = [
     {
@@ -21,6 +21,7 @@ const FeatureList: React.FC = () => {
       key: 'name',
       render: (name: string, row: IFeature) => {
         return (
+          // eslint-disable-next-line jsx-a11y/anchor-is-valid
           <a onClick={ () => {
             navigateTo(`/feature/${ row.id }`)
           } }>{ name }</a>
@@ -81,6 +82,7 @@ const FeatureList: React.FC = () => {
       align: 'center' as 'center',
       render: (name: string, row: IFeature) => {
         return (
+          // eslint-disable-next-line jsx-a11y/anchor-is-valid
           <a onClick={ () => {
             navigateTo(`/feature/${ row.id }`)
           } }>{ name }</a>
@@ -120,6 +122,7 @@ const FeatureList: React.FC = () => {
           return (
             <Menu>
               <Menu.Item key="edit">
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */ }
                 <a onClick={ () => {
                   navigateTo(`/feature/${ row.id }`)
                 } }>Edit</a>
@@ -148,42 +151,31 @@ const FeatureList: React.FC = () => {
   const limit = 10;
   const defaultPage = 1;
   let [page, setPage] = useState(1);
-  let [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   let [tableData, setTableData] = useState<IFeature[]>();
   let [tabValue, setTab] = useState<string>("my");
   let [query, setQuery] = useState<string>("");
 
+  useEffect(() => {
+    console.log('useEffect in FeatureList fired');
+    fetchData();
+  }, [])
+
   const fetchData = async () => {
     setLoading(true);
     const result = await fetchFeatures(page, limit, query);
     setPage(page);
-    setTotal(total = 10);
     setTableData(tableData = result);
     setLoading(false);
   }
 
-  const onPageChange = useCallback(
-    async (currentPage) => {
-      setPage(page = currentPage === undefined ? page : currentPage);
-      fetchData();
-    },
-    [],
-  )
-
-  const onTabChange = useCallback(
-    (currentTab) => {
+  const onTabChange = useCallback((currentTab) => {
       setTab(tabValue = currentTab);
       fetchData(); // TODO: Load correct data when tab change fires
     },
     [],
   )
 
-  useEffect(
-    () => {
-      onPageChange(page)
-    }, []
-  )
 
   const onKeywordChange = useCallback(
     (value) => {

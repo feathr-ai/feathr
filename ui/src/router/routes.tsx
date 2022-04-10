@@ -8,7 +8,6 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import NewFeature from "../pages/feature/newFeature";
 import EditFeature from "../pages/feature/editFeature";
 
-
 type Props = {};
 const { Footer } = Layout;
 const queryClient = new QueryClient();

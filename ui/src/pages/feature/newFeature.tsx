@@ -8,7 +8,7 @@ const NewFeature: React.FC<Props> = () => {
   return (
     <div style={ { "margin": "2%" } }>
       <Card title="Create Feature">
-        <FeatureForm isDisabled={ false } />
+        <FeatureForm isNew={ true } editMode={ true } />
       </Card>
     </div>
   );

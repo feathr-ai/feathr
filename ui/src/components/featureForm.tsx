@@ -6,16 +6,19 @@ import { UpCircleOutlined } from '@ant-design/icons'
 import { IFeature } from "../models/feature";
 
 type FeatureFormProps = {
-  isDisabled: boolean;
+  isNew: boolean;
+  editMode: boolean;
   feature?: IFeature;
 };
 
-const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, feature }) => {
+const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) => {
   const [fireRedirect, setRedirect] = useState<boolean>(false);
   const [createLoading, setCreateLoading] = useState<boolean>(false);
+
   const [form] = Form.useForm();
 
   useEffect(() => {
+    console.log('useEffect in FeatureForm fired');
     if (feature !== undefined) {
       form.setFieldsValue(feature);
     }
@@ -23,19 +26,19 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, feature }) => {
 
   const onClickSave = async () => {
     setCreateLoading(true);
-    const feature: IFeature = form.getFieldsValue();
-    if (feature?.id !== undefined) {
-      const resp = await updateFeature(feature, feature.id);
-      if (resp.status === 200) {
-        message.success("Feature is updated successfully");
+    const featureToSave: IFeature = form.getFieldsValue();
+    if (isNew) {
+      const resp = await createFeature(featureToSave);
+      if (resp.status === 201) {
+        message.success("New feature created");
         setRedirect(true);
       } else {
         message.error(`${ resp.data }`, 8)
       }
-    } else {
-      const resp = await createFeature(feature);
-      if (resp.status === 201) {
-        message.success("New feature created");
+    } else if (feature?.id !== undefined) {
+      const resp = await updateFeature(featureToSave, feature.id);
+      if (resp.status === 200) {
+        message.success("Feature is updated successfully");
         setRedirect(true);
       } else {
         message.error(`${ resp.data }`, 8)
@@ -58,22 +61,22 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, feature }) => {
         <Space direction="vertical" size="large" style={ styling }>
           <h3>Feature Information</h3>
           <Form.Item name="name" label="Name" rules={ [{ required: true, message: 'Name is required' }] }>
-            <Input disabled={ isDisabled } />
+            <Input disabled={ !editMode } />
           </Form.Item>
           <Form.Item name="description" label="Description">
-            <Input disabled={ isDisabled } />
+            <Input disabled={ !editMode } />
           </Form.Item>
           <Form.Item name="status" label="Status">
-            <Input disabled={ isDisabled } />
+            <Input disabled={ !editMode } />
           </Form.Item>
           <Form.Item name="featureType" label="Feature Type">
-            <Input disabled={ isDisabled } />
+            <Input disabled={ !editMode } />
           </Form.Item>
           <Form.Item name="dataSource" label="Data Source">
-            <Input disabled={ isDisabled } />
+            <Input disabled={ !editMode } />
           </Form.Item>
           <Form.Item name="owners" label="Owners">
-            <Input disabled={ isDisabled } />
+            <Input disabled={ !editMode } />
           </Form.Item>
         </Space>
         <Form.Item wrapperCol={ { offset: 11 } }>
@@ -81,7 +84,7 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isDisabled, feature }) => {
                   style={ { float: 'inline-start' } }
                   onClick={ onClickSave }
                   loading={ createLoading }
-                  disabled={ isDisabled }
+                  disabled={ !editMode }
           >
             Submit
           </Button>

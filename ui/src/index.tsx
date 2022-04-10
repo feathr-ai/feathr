@@ -4,6 +4,10 @@ import Routes from './router/routes';
 import 'antd/dist/antd.min.css';
 import './index.less';
 
-ReactDOM.render(<Routes />, document.getElementById('root'));
+ReactDOM.render(
+  <React.StrictMode>
+    <Routes />
+  </React.StrictMode>,
+  document.getElementById('root'));
 
 

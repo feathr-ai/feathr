@@ -81,7 +81,7 @@ const EditFeature: React.FC<Props> = () => {
       <div>
         { editMode && renderCancelEdit() }
         { !editMode && renderCommandButtons() }
-        <FeatureForm isDisabled={ !editMode } feature={ feature } />
+        <FeatureForm isNew={ false } editMode={ editMode } feature={ feature } />
       </div>
     )
   }
