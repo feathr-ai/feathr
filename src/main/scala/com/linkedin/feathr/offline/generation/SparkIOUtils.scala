@@ -1,10 +1,12 @@
 package com.linkedin.feathr.offline.generation
 
+import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, SimplePath}
 import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
+import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SaveMode}
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 object SparkIOUtils {
   def createUnionDataFrame(existingHdfsPaths: Seq[String], dataIOParameters: Map[String, String] = Map()): DataFrame = {
@@ -14,8 +16,8 @@ object SparkIOUtils {
     FileFormat.loadHdfsDataFrame(format, existingHdfsPaths)
   }
 
-  def createDataFrame(path: String, dataIOParams: Map[String, String] = Map()): DataFrame = {
-    createUnionDataFrame(Seq(path), dataIOParams)
+  def createDataFrame(location: InputLocation, dataIOParams: Map[String, String] = Map()): DataFrame = {
+    location.loadDf(SparkSession.builder.getOrCreate, dataIOParams)
   }
 
   def writeDataFrame( outputDF: DataFrame, path: String, parameters: Map[String, String] = Map()): DataFrame = {
