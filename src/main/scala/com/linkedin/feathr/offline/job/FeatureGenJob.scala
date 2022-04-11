@@ -186,12 +186,12 @@ object FeatureGenJob {
    */
   def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String]): java.util.Map[String, DataFrame] = {
     logger.info("FeatureJoinJob args are: " + args)
-    println("Feature join job: loadDataframe")
-    println(featureNamesInAnchorSet)
-    val feathrJoinPreparationInfo = prepareSparkSession(args)
-    val sparkSession = feathrJoinPreparationInfo.sparkSession
-    val featureDefs = feathrJoinPreparationInfo.featureDefs
-    val jobContext = feathrJoinPreparationInfo.jobContext
+    logger.info("Feature join job: loadDataframe")
+    logger.info(featureNamesInAnchorSet)
+    val feathrGenPreparationInfo = prepareSparkSession(args)
+    val sparkSession = feathrGenPreparationInfo.sparkSession
+    val featureDefs = feathrGenPreparationInfo.featureDefs
+    val jobContext = feathrGenPreparationInfo.jobContext
 
   val featureConfig = featureDefs.feathrFeatureDefPaths.map(path => hdfsFileReader(sparkSession, path))
       val localFeatureConfig = featureDefs.feathrLocalFeatureDefPath.map(path => hdfsFileReader(sparkSession, path))
@@ -248,7 +248,7 @@ object FeatureGenJob {
 
   def mainWithPreprocessedDataFrame(args: Array[String], preprocessedDfMap: java.util.Map[String, DataFrame]) {
     // Set the preprocessed DataFrame here for future usage.
-    PreprocessedDataFrameContainer.preprocessedDfMap = preprocessedDfMap.asScala.toMap
+    PreprocessedDataFrameManager.preprocessedDfMap = preprocessedDfMap.asScala.toMap
 
     main(args)
   }

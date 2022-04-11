@@ -7,7 +7,7 @@ import com.linkedin.feathr.offline.FeatureDataFrame
 import com.linkedin.feathr.offline.anchored.anchorExtractor.TimeWindowConfigurableAnchorExtractor
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.config._
-import com.linkedin.feathr.offline.job.PreprocessedDataFrameContainer
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.{DataSource, TimeWindowParams}
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
@@ -322,12 +322,9 @@ private[offline] object SlidingWindowFeatureUtils {
 
         // For anchors that have preprocessing, we should not merge them. We simply use feature names of this anchor
         // as a unique identifier to differentiate them.
-        val featureNames = PreprocessedDataFrameContainer.preprocessedDfMap.nonEmpty match {
+        val featureNames = PreprocessedDataFrameManager.preprocessedDfMap.nonEmpty match {
           case true => {
-            val sortedMkString = anchor.featureAnchor.features.toList.sorted.mkString(",")
-            val preprocessedDfMap = PreprocessedDataFrameContainer.preprocessedDfMap
-            val featureNames = if (preprocessedDfMap.contains(sortedMkString)) sortedMkString else ""
-            featureNames
+            PreprocessedDataFrameManager.getPreprocessingUniquenessForAnchor(anchor)
           }
           case false => ""
         }

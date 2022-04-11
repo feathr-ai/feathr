@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline
 import com.linkedin.feathr.common.configObj.configbuilder.ConfigBuilderException
 import com.linkedin.feathr.common.exception.FeathrConfigException
 import com.linkedin.feathr.offline.generation.SparkIOUtils
-import com.linkedin.feathr.offline.job.PreprocessedDataFrameContainer
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.spark.sql.Row
@@ -506,7 +506,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
   }
 
   @Test
-  def testPassthroughFeaturesWithSWAWithPreprocessing(): Unit = {
+  def tesSWAWithPreprocessing(): Unit = {
     val featureDefAsString =
       """
         |anchors: {
@@ -624,7 +624,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       .withColumn("new_tip_amount", col("tip_amount") + 1000000)
       .withColumn("new_lpep_pickup_datetime", col("lpep_pickup_datetime"))
 
-    PreprocessedDataFrameContainer.preprocessedDfMap = Map("f_location_avg_fare,f_location_max_fare" -> df1, "f_location_avg_fare22,f_location_max_fare33" -> df2)
+    PreprocessedDataFrameManager.preprocessedDfMap = Map("f_location_avg_fare,f_location_max_fare" -> df1, "f_location_avg_fare22,f_location_max_fare33" -> df2)
     val df = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, "/driver_data/green_tripdata_2021-01.csv")
     df.data.show()
   }

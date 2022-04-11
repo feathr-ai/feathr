@@ -144,7 +144,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         # see here for the submission parameter definition https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--request-structure-6
         if python_files:
             # this is a pyspark job. definition here: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--sparkpythontask
-            param_and_file_dict = {"parameters": arguments, "python_file":self.upload_or_get_cloud_path(python_files[0])}
+            # the first file is the pyspark driver code. we only need the driver code to execute pyspark
+            param_and_file_dict = {"parameters": arguments, "python_file": self.upload_or_get_cloud_path(python_files[0])}
             submission_params.setdefault('spark_python_task',param_and_file_dict)
         else:
             # this is a scala spark job
@@ -172,7 +173,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         # return ID as the submission result
         return self.res_job_id
 
-    def wait_for_completion(self, timeout_seconds: Optional[int] = 1200) -> bool:
+    def wait_for_completion(self, timeout_seconds: Optional[int] = 600) -> bool:
         """ Returns true if the job completed successfully
         """
         start_time = time.time()

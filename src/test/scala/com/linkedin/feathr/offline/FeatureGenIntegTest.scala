@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.AssertFeatureUtils._
-import com.linkedin.feathr.offline.job.PreprocessedDataFrameContainer
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.dataloader.CsvDataLoader
 import com.linkedin.feathr.offline.util.{FeathrTestUtils, FeatureGenConstants}
 import org.apache.spark.sql.Row
@@ -364,7 +364,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     df1.show(10)
     println("df2:")
     df2.show(10)
-    PreprocessedDataFrameContainer.preprocessedDfMap = Map("f_is_long_trip_distance,f_trip_distance" -> df1, "f_location_avg_fare,f_location_max_fare" -> df2)
+    PreprocessedDataFrameManager.preprocessedDfMap = Map("f_is_long_trip_distance,f_trip_distance" -> df1, "f_location_avg_fare,f_location_max_fare" -> df2)
 
     val res = localFeatureGenerate(applicationConfig, featureDefConfig)
     res.head._2.data.show(100)

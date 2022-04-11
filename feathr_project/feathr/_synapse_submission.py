@@ -75,7 +75,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             job_tags (str): tags of the job, for exmaple you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
         """
-        assert main_jar_path, 'main_jar_path should not be none but it is none.'
+        assert main_jar_path, 'main_jar_path should not be none or empty but it is none or empty.'
         if main_jar_path.startswith('abfs'):
             main_jar_cloud_path = main_jar_path
             logger.info(
@@ -228,7 +228,7 @@ class _SynapseJobRunner(object):
         # need to put the jar in as dependencies for pyspark job
         jars = jars + [main_file]
 
-        # If file=ain_file, then it's using only Scala Spark
+        # If file=main_file, then it's using only Scala Spark
         # If file=python_files[0], then it's using Pyspark
         spark_execution_file = python_files[0] if python_files else main_file
 

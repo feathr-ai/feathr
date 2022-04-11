@@ -268,8 +268,8 @@ object FeatureJoinJob {
    */
   def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String]): java.util.Map[String, DataFrame] = {
     logger.info("FeatureJoinJob args are: " + args)
-    println("Feature join job: loadDataframe")
-    println(featureNamesInAnchorSet)
+    logger.info("Feature join job: loadDataframe")
+    logger.info(featureNamesInAnchorSet)
     val feathrJoinPreparationInfo = prepareSparkSession(args)
     val sparkSession = feathrJoinPreparationInfo.sparkSession
     val hadoopConf = feathrJoinPreparationInfo.hadoopConf
@@ -304,7 +304,7 @@ object FeatureJoinJob {
 
   def mainWithPreprocessedDataFrame(args: Array[String], preprocessedDfMap: java.util.Map[String, DataFrame]) {
     // Set the preprocessed DataFrame here for future usage.
-    PreprocessedDataFrameContainer.preprocessedDfMap = preprocessedDfMap.asScala.toMap
+    PreprocessedDataFrameManager.preprocessedDfMap = preprocessedDfMap.asScala.toMap
 
     main(args)
   }

@@ -205,7 +205,7 @@ class FeathrClient(object):
                 source_names[anchor.source.name] = anchor.source
 
         preprocessingPyudfManager = _PreprocessingPyudfManager()
-        preprocessingPyudfManager.build_anchor_preprocessing_metadata(anchor_list, self.local_workspace_dir)
+        _PreprocessingPyudfManager.build_anchor_preprocessing_metadata(anchor_list, self.local_workspace_dir)
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
@@ -384,8 +384,8 @@ class FeathrClient(object):
         for feature_query in feature_queries:
             for feature_name in feature_query.feature_list:
                 feature_names.append(feature_name)
-        preprocessing_pyudf_manager = _PreprocessingPyudfManager()
-        udf_files = preprocessing_pyudf_manager.prepare_pyspark_udf_files(feature_names, self.local_workspace_dir)
+
+        udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(feature_names, self.local_workspace_dir)
 
         # produce join config
         tm = Template("""
@@ -510,8 +510,7 @@ class FeathrClient(object):
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
-            preprocessing_pyudf_manager = _PreprocessingPyudfManager()
-            udf_files = preprocessing_pyudf_manager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
+            udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
             # CLI will directly call this so the experiene won't be broken
             self._materialize_features_with_config(config_file_path, execution_configuratons, udf_files)
             if os.path.exists(config_file_path):

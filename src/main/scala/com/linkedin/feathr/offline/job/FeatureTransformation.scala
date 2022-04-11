@@ -301,6 +301,8 @@ private[offline] object FeatureTransformation {
    * @param keyExtractor key extractor of the anchors, all anchors should share same key extractor
    * @param bloomFilter bloomfilter to apply on source view
    * @param inputDateInterval the date parameters passed to the source
+   * @param preprocessedDf the preprocessed DataFrame for this anchorFeatureGroup. It will replace the DataFrame loaded
+   *                       by the source if it exists.
    * @return a TransformedResultWithKey which contains the dataframe and other info such as feature column, keys
    */
   def directCalculate(
@@ -426,6 +428,8 @@ private[offline] object FeatureTransformation {
   /**
    * Group features based on 4 factors. Only if features have the same source key extractor, time window, source
    * and filters, can they be grouped into same dataframe for downstream processing.
+   * @param preprocessingUniqueness When there is a preprocessing logic, the anchor should be unique as well. It's similar
+   *                                to sourceKeyExtractor.
    */
   private[offline] case class FeatureGroupingCriteria(sourceKeyExtry: String, timeWindowId: String, source: DataSourceAccessor, filter: String, preprocessingUniqueness: String = "")
   /**
@@ -834,7 +838,7 @@ private[offline] object FeatureTransformation {
         // If this anchor has preprocessing UDF, then we need to make its FeatureGroupingCriteria unique so it won't be
         // merged by different anchor of same source. Otherwise our preprocessing UDF may impact anchors that dont'
         // need preprocessing.
-        val preprocessedDfMap = PreprocessedDataFrameContainer.preprocessedDfMap
+        val preprocessedDfMap = PreprocessedDataFrameManager.preprocessedDfMap
         val featuresInAnchor = anchorWithSourceDF.featureAnchor.features.toList
         val sortedMkString = featuresInAnchor.sorted.mkString(",")
         val featureNames = if (preprocessedDfMap.contains(sortedMkString)) sortedMkString else ""
@@ -882,15 +886,7 @@ private[offline] object FeatureTransformation {
     val (directTransformAnchorGroup, incrementalTransformAnchorGroup) =
       groupAggregationFeatures(source, AnchorFeatureGroups(anchorsWithSameSource, allRequestedFeatures), incrementalAggContext)
 
-    // Obtain the preprocessed DataFrame by Pyspark for this anchor to replace the origin source DataFrame.
-    // At this point, we have make the anchors that have preprocessing UDF unique so it will be only one anchor if
-    // the anchor has preprocessing UDF.
-    // Then we use the feature names separated by comma as the key to get the preprocessed DataFrame from Pyspark.
-    // If there are multiple features in an anchor, there will be multiple anchors in ths anchorsWithSameSource
-    // so we need to merge the duplicates via set, for example [f1, f1, f2, f2] => [f1, f2]
-    val allAnchorsFeatures = anchorsWithSameSource.flatMap(_.featureAnchor.features).toSet.toList.sorted
-    val featureMkString = allAnchorsFeatures.sorted.mkString(",")
-    val preprocessedDf = PreprocessedDataFrameContainer.preprocessedDfMap.get(featureMkString)
+    val preprocessedDf = PreprocessedDataFrameManager.getPreprocessedDataframe(anchorsWithSameSource)
 
     val directTransformedResult =
       directTransformAnchorGroup.map(anchorGroup => Seq(directCalculate(anchorGroup, source, keyExtractor, bloomFilter, None, preprocessedDf)))

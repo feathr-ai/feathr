@@ -70,13 +70,9 @@ def submit_spark_job(feature_names_funcs):
         print(scala_dataframe)
         # Need to convert java DataFrame into python DataFrame
         py_df = DataFrame(scala_dataframe, sql_ctx)
-        print("Corresponding py_df: ")
-        print(py_df)
-        py_df.show(10)
         # Preprocess the DataFrame via UDF
         user_func = feature_names_funcs[feature_names]
         preprocessed_udf = user_func(py_df)
-        preprocessed_udf.show(10)
         new_preprocessed_df_map[feature_names] = preprocessed_udf._jdf
 
     print("submit_spark_job: running Feature job with preprocessed DataFrames:")
