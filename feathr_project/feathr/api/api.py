@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from azure.core.credentials import AzureKeyCredential
 from azure.core.exceptions import HttpResponseError, ServiceRequestError, ResourceNotFoundError
-from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr._feature_registry import _FeatureRegistry
 from feathr._file_utils import write_to_file
@@ -151,8 +150,8 @@ def get_feature_qualifiedName(code : str, query: str, response: Response):
 
 @app.get("/projects/{project_name}/sources/{source_name}")
 def get_source_by_qualifiedName(code : str, project_name: str, source_name: str, response: Response):
-    """List all the already registered features. If project_name is not provided or is None, it will return all
-    the registered features; otherwise it will only return features under this project
+    """List all the sources. If project_name is not provided or is None, it will return all
+    the sources; otherwise it will only return sources under this project
     """
     if code != appServiceKey:
         raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  
@@ -172,8 +171,8 @@ def get_source_by_qualifiedName(code : str, project_name: str, source_name: str,
 
 @app.get("/projects/{project_name}/anchors/{anchor_name}")
 def get_anchor_by_qualifiedName(code : str, project_name: str, anchor_name: str, response: Response):
-    """List all the already registered features. If project_name is not provided or is None, it will return all
-    the registered features; otherwise it will only return features under this project
+    """List all the anchors. If project_name is not provided or is None, it will return all
+    the anchors; otherwise it will only return anchors under this project
     """
     if code != appServiceKey:
         raise HTTPException(status_code=403, detail="You are not allowed to access this resource")  

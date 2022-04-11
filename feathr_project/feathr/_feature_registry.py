@@ -843,7 +843,6 @@ derivations: {
         Returns the feature else throws an AtlasException with 400 error code
         """ 
         response = self.purview_client.get_single_entity(guid=guid)
-        # return response.get('entity')
         return response
     
     def get_feature_lineage(self, guid):
