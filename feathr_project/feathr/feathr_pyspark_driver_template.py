@@ -2,11 +2,10 @@
 from pyspark.sql import SparkSession, DataFrame, SQLContext
 import sys
 from pyspark.sql.functions import *
-import logging
 
 # This is executed in Spark driver
-logger = logging.getLogger("feathr_pyspark_driver")
-logger.info("Feathr Pyspark job started.")
+# The logger doesn't work in Pyspark so we just use print
+print("Feathr Pyspark job started.")
 spark = SparkSession.builder.appName('FeathrPyspark').getOrCreate()
 
 
@@ -46,25 +45,25 @@ def submit_spark_job(feature_names_funcs):
                            "Only one of them should be provided.")
     elif has_gen_config:
         py4j_feature_job = spark._jvm.com.linkedin.feathr.offline.job.FeatureGenJob
-        logger.info("FeatureGenConfig is provided. Executing FeatureGenJob.")
+        print("FeatureGenConfig is provided. Executing FeatureGenJob.")
     elif has_join_config:
         py4j_feature_job = spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob
-        logger.info("FeatureJoinConfig is provided. Executing FeatureJoinJob.")
+        print("FeatureJoinConfig is provided. Executing FeatureJoinJob.")
     else:
         raise RuntimeError("None of FeatureGenConfig and FeatureJoinConfig are provided. "
                            "One of them should be provided.")
     job_param_java_array = to_java_string_array(sys.argv)
 
-    logger.info("submit_spark_job: feature_names_funcs: ")
-    logger.info(feature_names_funcs)
-    logger.info("set(feature_names_funcs.keys()): ")
-    logger.info(set(feature_names_funcs.keys()))
+    print("submit_spark_job: feature_names_funcs: ")
+    print(feature_names_funcs)
+    print("set(feature_names_funcs.keys()): ")
+    print(set(feature_names_funcs.keys()))
 
-    logger.info("submit_spark_job: Load DataFrame from Scala engine.")
+    print("submit_spark_job: Load DataFrame from Scala engine.")
 
     dataframeFromSpark = py4j_feature_job.loadSourceDataframe(job_param_java_array, set(feature_names_funcs.keys()))
-    logger.info("Submit_spark_job: dataframeFromSpark: ")
-    logger.info(dataframeFromSpark)
+    print("Submit_spark_job: dataframeFromSpark: ")
+    print(dataframeFromSpark)
 
     sql_ctx = SQLContext(spark)
     new_preprocessed_df_map = {}
@@ -76,9 +75,9 @@ def submit_spark_job(feature_names_funcs):
         preprocessed_udf = user_func(py_df)
         new_preprocessed_df_map[feature_names] = preprocessed_udf._jdf
 
-    logger.info("submit_spark_job: running Feature job with preprocessed DataFrames:")
-    logger.info("Preprocessed DataFrames are: ")
-    logger.info(new_preprocessed_df_map)
+    print("submit_spark_job: running Feature job with preprocessed DataFrames:")
+    print("Preprocessed DataFrames are: ")
+    print(new_preprocessed_df_map)
 
     py4j_feature_job.mainWithPreprocessedDataFrame(job_param_java_array, new_preprocessed_df_map)
     return None
