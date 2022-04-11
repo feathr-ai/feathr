@@ -20,7 +20,6 @@ from pyapacheatlas.core.typedef import (AtlasAttributeDef,
                                         EntityTypeDef, RelationshipTypeDef)
 from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
-from sklearn import preprocessing
 
 from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._file_utils import write_to_file
