@@ -703,7 +703,7 @@ derivations: {
         """
         return self.purview_client
 
-    def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0,) -> List[str]:
+    def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0) -> List[str]:
         """
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
