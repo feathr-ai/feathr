@@ -10,11 +10,13 @@ Feathr lets you:
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
+For more details, read our [documentation](https://linkedin.github.io/feathr/).
+
 ## Running Feathr on Azure with 3 Simple Steps
 
 Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
 
-1. Get the principal ID of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
+1. Get the Principal ID of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step.
 
 [Launch Cloud Shell](https://shell.azure.com/bash)
 
@@ -39,10 +41,6 @@ Or use the latest code from GitHub:
 ```bash
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
-
-## Documentation
-
-For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Feathr Highlights
 
@@ -116,7 +114,7 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
 ## Running Feathr Examples
 
 Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
-
+ 
 ## Cloud Integrations
 
 | Feathr component             | Cloud Integrations                                                          |
