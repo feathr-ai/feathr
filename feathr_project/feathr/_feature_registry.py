@@ -98,6 +98,8 @@ class _FeatureRegistry():
                                   typeName="string", cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="type", typeName="string",
                                   cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="preprocessing", typeName="string",
+                                  cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
             ],
@@ -146,8 +148,6 @@ class _FeatureRegistry():
                     name="source", typeName=SOURCE, cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(
                     name="features", typeName=ARRAY_ANCHOR_FEATURE, cardinality=Cardinality.SET),
-                AtlasAttributeDef(name="preprocessing", typeName="string",
-                                  cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
             ],
@@ -326,9 +326,7 @@ class _FeatureRegistry():
         # topo sort the derived features to make sure that we can correctly refer to them later in the registry
         toposorted_derived_feature_list: List[DerivedFeature] = list(ts.static_order())
         
-
         for derived_feature in toposorted_derived_feature_list:
-            
             # get the corresponding Atlas entity by searching feature name
             # Since this list is topo sorted, so you can always find the corresponding name
             input_feature_entity_list: List[AtlasEntity] = [
@@ -365,7 +363,6 @@ class _FeatureRegistry():
                     "transformation": transform_dict,
                     "tags": derived_feature.registry_tags
                 },
-                version=5,
                 typeName=DERIVED_FEATURE,
                 guid=self.guid.get_guid(),
             )
@@ -554,12 +551,9 @@ class _FeatureRegistry():
         """Save feature definition within the workspace into HOCON feature config files from current context, rather than reading from python files"""
         repo_definitions = self._extract_features_from_context(
             anchor_list, derived_feature_list, local_workspace_dir)
-        self._save_request_feature_config(
-            repo_definitions, local_workspace_dir)
-        self._save_anchored_feature_config(
-            repo_definitions, local_workspace_dir)
-        self._save_derived_feature_config(
-            repo_definitions, local_workspace_dir)
+        self._save_request_feature_config(repo_definitions, local_workspace_dir)
+        self._save_anchored_feature_config(repo_definitions, local_workspace_dir)
+        self._save_derived_feature_config(repo_definitions, local_workspace_dir)
 
     @classmethod
     def _save_request_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
@@ -773,87 +767,3 @@ derivations: {
         entity_res = [] if guid_list is None else self.purview_client.get_entity(
             guid=guid_list)["entities"]
         return entity_res
-
-
-
-    def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
-        """[Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
-        Args:
-            project_name (str): project name.
-        """
-
-        entities = self._list_registered_entities_with_details(project_name=project_name, entity_type=FEATHR_PROJECT)
-        if not entities:
-            # if the result is empty
-            return (None, None)
-        project_entity = entities[0] # there's only one available
-        anchor_guid = [anchor_entity["guid"] for anchor_entity in project_entity["attributes"]["anchor_features"]]
-        derived_feature_guid = [derived_feature_entity["guid"] for derived_feature_entity in project_entity["attributes"]["derived_features"]]
-
-        anchor_result = self.purview_client.get_entity(guid=anchor_guid)["entities"]
-        anchor_list = []
-        for anchor_entity in anchor_result:
-            feature_guid = [e["guid"] for e in anchor_entity["attributes"]["features"]]
-            anchor_list.append(FeatureAnchor(name=anchor_entity["attributes"]["name"],
-                                source=self._get_source_by_guid(anchor_entity["attributes"]["source"]["guid"]),
-                                features=self._get_features_by_guid(feature_guid),
-                                registry_tags=anchor_entity["attributes"]["tags"]))
-
-        derived_feature_result = self.purview_client.get_entity(guid=derived_feature_guid)["entities"]
-        derived_feature_list = []
-        for derived_feature_entity in derived_feature_result:
-            key_from_entity=derived_feature_entity["attributes"]["tags"]
-            feature_guid = [e["guid"] for e in derived_feature_entity["attributes"]["input_features"]]
-            derived_feature_list.append(DerivedFeature(name=derived_feature_entity["attributes"]["name"],
-                                feature_type=None,
-                                transform=None,
-                                key=key_from_entity,
-                                input_features=self._get_features_by_guid(feature_guid),
-                                registry_tags=derived_feature_entity["attributes"]["tags"]))
-        return (anchor_list, derived_feature_list)
-    
-    def _get_source_by_guid(self, guid) -> Source:
-        # TODO: currently return HDFS source by default. For JDBC source, it's currently implemented using HDFS Source so we should split in the future
-        source_entity = self.purview_client.get_entity(guid=guid)["entities"][0]
-        return HdfsSource(name=source_entity["attributes"]["name"],
-                event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
-                timestamp_format=source_entity["attributes"]["timestamp_format"],
-                path=source_entity["attributes"]["path"],
-                registry_tags=source_entity["attributes"]["tags"]
-                )
-
-    def _get_features_by_guid(self, guid) -> List[FeatureAnchor]:
-        feature_entities = self.purview_client.get_entity(guid=guid)["entities"]
-        feature_list=[]
-        key_list = []
-        for feature_entity in feature_entities:
-            for key in feature_entity["attributes"]["key"]:
-                key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
-            
-            # after get keys, put them in features
-            feature_list.append(Feature(name=feature_entity["attributes"]["name"],
-                    feature_type=self._get_features_type_by_hocon(feature_entity["attributes"]),
-                    transform=None,
-                    key=key_list,
-                    registry_tags=feature_entity["attributes"]["tags"],
-            
-            ))
-        return feature_list
-
-    def _get_features_type_by_hocon(self, feature_type_str) -> FeatureType:
-        feature_entities = self.purview_client.get_entity(guid=guid)["entities"]
-        feature_list=[]
-        key_list = []
-        for feature_entity in feature_entities:
-            for key in feature_entity["attributes"]["key"]:
-                key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
-            
-            # after get keys, put them in features
-            feature_list.append(Feature(name=feature_entity["attributes"]["name"],
-                    feature_type=None,
-                    transform=None,
-                    key=key_list,
-                    registry_tags=feature_entity["attributes"]["tags"],
-            
-            ))
-        return feature_list
