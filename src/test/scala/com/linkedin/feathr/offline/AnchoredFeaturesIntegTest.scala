@@ -661,5 +661,6 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     def cmpFunc(row: Row): String = row.get(0).toString
     FeathrTestUtils.assertDataFrameApproximatelyEquals(filteredDf, expectedDf, cmpFunc)
     df.data.show()
+    PreprocessedDataFrameManager.preprocessedDfMap = Map()
   }
 }

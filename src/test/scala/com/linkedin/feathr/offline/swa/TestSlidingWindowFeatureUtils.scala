@@ -450,5 +450,6 @@ class TestSlidingWindowFeatureUtils extends TestFeathr {
       ).toMap
     val groups = SlidingWindowFeatureUtils.getSWAAnchorGroups(windowAggAnchorDFThisStage)
     assertTrue(groups.size == 2)
+    PreprocessedDataFrameManager.preprocessedDfMap = Map()
   }
 }

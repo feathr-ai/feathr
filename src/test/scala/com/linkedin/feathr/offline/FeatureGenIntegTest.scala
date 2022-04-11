@@ -368,6 +368,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
 
     val res = localFeatureGenerate(applicationConfig, featureDefConfig)
     res.head._2.data.show(100)
+    PreprocessedDataFrameManager.preprocessedDfMap = Map()
   }
 
 
