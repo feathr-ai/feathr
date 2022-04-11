@@ -1,8 +1,7 @@
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Callable, List, Optional
 from jinja2 import Template
-
 
 class Source:
     """External data source for feature. Typically a 'table'.
@@ -13,7 +12,7 @@ class Source:
     """
     def __init__(self,
                  name: str,
-                 event_timestamp_column: Optional[str], 
+                 event_timestamp_column: Optional[str],
                  timestamp_format: Optional[str] = "epoch") -> None:
         self.name = name
         self.event_timestamp_column = event_timestamp_column
@@ -29,6 +28,10 @@ class Source:
 
     def to_write_config(self) -> str:
         pass
+
+    def __str__(self):
+        return self.to_feature_config()
+
 
 class InputContext(Source):
     """A type of 'passthrough' source, a.k.a. request feature source.
@@ -46,17 +49,19 @@ class HdfsSource(Source):
 
         Args:
             name (str): name of the source
-            path (str): The location of the source data. 
-            event_timestamp_column (Optional[str]): The timestamp field of your record. As sliding window aggregation feature assume each record in the source data should have a timestamp column. 
-            timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are: 
+            path (str): The location of the source data.
+            preprocessing (Optional[Callable]): A preprocessing python function that transforms the source data for further feature transformation.
+            event_timestamp_column (Optional[str]): The timestamp field of your record. As sliding window aggregation feature assume each record in the source data should have a timestamp column.
+            timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are:
             - `epoch` (seconds since epoch), for example `1647737463`
             - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
-            - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html). 
-                
+            - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+
         """
-    def __init__(self, name: str, path: str, event_timestamp_column: Optional[str]= None, timestamp_format: Optional[str] = "epoch") -> None:
+    def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str]= None, timestamp_format: Optional[str] = "epoch") -> None:
         super().__init__(name, event_timestamp_column, timestamp_format)
         self.path = path
+        self.preprocessing = preprocessing
 
     def to_feature_config(self) -> str:
         tm = Template("""  
@@ -72,5 +77,8 @@ class HdfsSource(Source):
         """)
         msg = tm.render(source=self)
         return msg
- 
+
+    def __str__(self):
+        return str(self.preprocessing) + '\n' + self.to_feature_config()
+
 INPUT_CONTEXT = InputContext()

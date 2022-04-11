@@ -9,7 +9,7 @@ import tempfile
 
 def get_result_df(client: FeathrClient) -> pd.DataFrame:
     """Download the job result dataset from cloud as a Pandas dataframe."""
-    res_url = client.get_job_result_uri(block=True, timeout_sec=600)
+    res_url = client.get_job_result_uri(block=True, timeout_sec=1200)
     format: str = client.get_job_tags().get(OUTPUT_FORMAT, "")
     tmp_dir = tempfile.TemporaryDirectory()
     client.feathr_spark_laucher.download_result(result_path=res_url, local_folder=tmp_dir.name)
