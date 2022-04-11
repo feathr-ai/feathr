@@ -1,26 +1,27 @@
 import glob
 import importlib
+import inspect
 import os
 import sys
+from graphlib import TopologicalSorter
 from pathlib import Path
 from tracemalloc import stop
-from typing import List, Optional, Tuple, Union, Dict
-from feathr.typed_key import TypedKey
+from typing import Dict, List, Optional, Tuple, Union
+from urllib.parse import urlparse
 
-from pyapacheatlas.core import PurviewClient, AtlasClassification, AtlasEntity, AtlasProcess
-
-from graphlib import TopologicalSorter
 from jinja2 import Template
 from loguru import logger
 from numpy import deprecate
 from pyapacheatlas.auth import ServicePrincipalAuthentication
-from pyapacheatlas.core import (AtlasEntity, AtlasProcess, PurviewClient,
-                                TypeCategory)
-from pyapacheatlas.core.typedef import (AtlasAttributeDef, Cardinality,
-                                        EntityTypeDef, RelationshipTypeDef, AtlasRelationshipEndDef)
+from pyapacheatlas.core import (AtlasClassification, AtlasEntity, AtlasProcess,
+                                PurviewClient, TypeCategory)
+from pyapacheatlas.core.typedef import (AtlasAttributeDef,
+                                        AtlasRelationshipEndDef, Cardinality,
+                                        EntityTypeDef, RelationshipTypeDef)
 from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
-from urllib.parse import urlparse
+from sklearn import preprocessing
+
 from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._file_utils import write_to_file
 from feathr.anchor import FeatureAnchor
@@ -29,8 +30,9 @@ from feathr.feature import Feature, FeatureType
 from feathr.feature_derivations import DerivedFeature
 from feathr.repo_definitions import RepoDefinitions
 from feathr.source import HdfsSource, InputContext, Source
-from feathr.transformation import Transformation
-from feathr.transformation import ExpressionTransformation, Transformation,WindowAggTransformation
+from feathr.transformation import (ExpressionTransformation, Transformation,
+                                   WindowAggTransformation)
+from feathr.typed_key import TypedKey
 
 
 class _FeatureRegistry():
@@ -227,7 +229,6 @@ class _FeatureRegistry():
                     "source": source_entity.to_json(minimum=True),
                     "features": [s.to_json(minimum=True) for s in anchor_feature_entities],
                     "tags": anchor.registry_tags
-                    # "preprocessing": "TODO",
                 },
                 typeName=ANCHOR,
                 guid=self.guid.get_guid(),
@@ -279,6 +280,7 @@ class _FeatureRegistry():
                 "timestamp_format": source.timestamp_format,
                 "event_timestamp_column": source.event_timestamp_column,
                 "tags": source.registry_tags,
+                "preprocessing": None if source.preprocessing is None else inspect.getsource(source.preprocessing) # store the UDF as a string
             },
             typeName=SOURCE,
             guid=self.guid.get_guid(),

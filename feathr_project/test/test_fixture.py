@@ -1,14 +1,13 @@
-from feathr import FeatureAnchor
-from feathr.client import FeathrClient
-from feathr import BOOLEAN, FLOAT, INT32, STRING, ValueType
-from feathr import Feature
-from feathr import DerivedFeature
-from feathr import INPUT_CONTEXT, HdfsSource
-from feathr import WindowAggTransformation
-from feathr import TypedKey
-from datetime import datetime, timedelta
-import random
 import os
+import random
+from datetime import datetime, timedelta
+
+from feathr import (BOOLEAN, FLOAT, INPUT_CONTEXT, INT32, STRING,
+                    DerivedFeature, Feature, FeatureAnchor, HdfsSource,
+                    TypedKey, ValueType, WindowAggTransformation)
+from feathr.client import FeathrClient
+from pyspark.sql import DataFrame
+
 
 def basic_test_setup(config_path: str):
 
@@ -129,10 +128,18 @@ def registry_test_setup(config_path: str):
 
 
     client = FeathrClient(config_path=config_path)
+
+    def add_new_dropoff_and_fare_amount_column(df: DataFrame):
+        df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
+        df = df.withColumn("new_fare_amount", col("fare_amount") + 1000000)
+        return df
+
     batch_source = HdfsSource(name="nycTaxiBatchSource",
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
-                              timestamp_format="yyyy-MM-dd HH:mm:ss")
+                              timestamp_format="yyyy-MM-dd HH:mm:ss",
+                              preprocessing=add_new_dropoff_and_fare_amount_column
+                              )
 
     f_trip_distance = Feature(name="f_trip_distance",
                               feature_type=FLOAT, transform="trip_distance")
