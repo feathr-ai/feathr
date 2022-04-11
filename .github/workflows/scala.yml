@@ -12,10 +12,7 @@ on:
       - 'docs/**'
       - '**/README.md'
   pull_request_target:
-    types:
-      - opened
-      - synchronize
-      - labeled
+    types: [labeled]
     paths-ignore:
       - 'docs/**'
       - '**/README.md'
