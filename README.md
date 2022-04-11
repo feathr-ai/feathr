@@ -4,9 +4,9 @@
 
 Feathr lets you:
 
-- **define features** based on raw data sources, including time-series data, using simple APIs.
-- **get those features by their names** during model training and model inferencing.
-- **share features** across your team and company.
+- **Define features** based on raw data sources, including time-series data, using simple APIs.
+- **Get those features by their names** during model training and model inferencing.
+- **Share features** across your team and company.
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
