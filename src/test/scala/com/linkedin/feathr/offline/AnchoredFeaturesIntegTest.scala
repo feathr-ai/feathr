@@ -549,13 +549,13 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
         |    source: nycTaxiBatchSource_with_new_dropoff
         |    key: DOLocationID
         |    features: {
-        |      f_location_avg_fare22: {
-        |        def: "float(fare_amount)"
+        |      f_location_avg_new_tip_amount: {
+        |        def: "float(new_tip_amount)"
         |        aggregation: AVG
         |        window: 3d
         |      }
-        |      f_location_max_fare33: {
-        |        def: "float(fare_amount)"
+        |      f_location_max_new_improvement_surcharge: {
+        |        def: "float(new_improvement_surcharge)"
         |        aggregation: MAX
         |        window: 3d
         |      }
@@ -609,7 +609,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
          |featureList: [
          |  {
          |    key: DOLocationID
-         |    featureList: [f_location_avg_fare22, f_location_max_fare33, f_location_avg_fare, f_location_max_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week]
+         |    featureList: [f_location_avg_new_tip_amount, f_location_max_new_improvement_surcharge, f_location_avg_fare, f_location_max_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week]
          |  }
          |]
       """.stripMargin
@@ -624,8 +624,42 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       .withColumn("new_tip_amount", col("tip_amount") + 1000000)
       .withColumn("new_lpep_pickup_datetime", col("lpep_pickup_datetime"))
 
-    PreprocessedDataFrameManager.preprocessedDfMap = Map("f_location_avg_fare,f_location_max_fare" -> df1, "f_location_avg_fare22,f_location_max_fare33" -> df2)
+    PreprocessedDataFrameManager.preprocessedDfMap = Map("f_location_avg_fare,f_location_max_fare" -> df1, "f_location_avg_new_tip_amount,f_location_max_new_improvement_surcharge" -> df2)
     val df = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, "/driver_data/green_tripdata_2021-01.csv")
+
+    val selectedColumns = Seq("DOLocationID", "f_location_avg_new_tip_amount")
+    val filteredDf = df.data.select(selectedColumns.head, selectedColumns.tail: _*)
+
+    val expectedDf = ss.createDataFrame(
+      ss.sparkContext.parallelize(
+        Seq(
+          Row(
+            // DOLocationID
+            "239",
+            // f_location_avg_new_tip_amount
+            1000002.8f),
+          Row(
+            // DOLocationID
+            "151",
+            // f_location_avg_new_tip_amount
+            1000000.0f),
+          Row(
+            // DOLocationID
+            "42",
+            // f_location_avg_new_tip_amount
+            1000001.0f),
+          Row(
+            // DOLocationID
+            "75",
+            // f_location_avg_new_tip_amount
+            1000000.0f),
+        )),
+      StructType(
+        List(
+          StructField("DOLocationID", StringType, true),
+          StructField("f_location_avg_new_tip_amount", FloatType, true))))
+    def cmpFunc(row: Row): String = row.get(0).toString
+    FeathrTestUtils.assertDataFrameApproximatelyEquals(filteredDf, expectedDf, cmpFunc)
     df.data.show()
   }
 }
