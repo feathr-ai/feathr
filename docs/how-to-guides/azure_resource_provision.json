@@ -7,7 +7,7 @@
         "resourcePrefix": {
             "type": "string",
             "metadata": {
-                "description": "Resource prefix for all the resource provisioned"
+                "description": "Resource prefix for all the resource provisioned. This should be an alphanumeric string."
             },
             "minLength": 3,
             "maxLength": 15
