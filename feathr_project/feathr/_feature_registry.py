@@ -626,11 +626,17 @@ derivations: {
                       full_file_name=config_file_path)
 
     def register_features(self, workspace_path: Optional[Path] = None, from_context: bool = True, anchor_list=[], derived_feature_list=[]):
-        """Register Features for the specified workspace
+        """Register Features for the specified workspace. 
 
         Args:
             workspace_path (str, optional): path to a workspace. Defaults to None.
+            from_context: whether the feature is from context (i.e. end users has to callFeathrClient.build_features()) or the feature is from a pre-built config file. Currently Feathr only supports register features from context.
+            anchor_list: The anchor list after feature build
+            derived_feature_list: the derived feature list after feature build
         """
+
+        if not from_context:
+            raise RuntimeError("Currently Feathr only supports registering features from context (i.e. you must call FeathrClient.build_features() before calling this function).")
 
         # register feature types each time when we register features.
         self._register_feathr_feature_types()
