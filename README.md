@@ -26,23 +26,19 @@ Feathr has native cloud integration. To use Feathr on Azure, you only need three
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb)
 
-## Feathr Installation
+## Installing Feathr Client Locally
 
-Install Feathr using pip:
+If you are not using the above Jupyter Notebook and want to install Feathr client locally, use this:
 
 ```bash
 pip install -U feathr
 ```
 
-Or if you want to use the latest Feathr code from GitHub:
+Or use the latest code from GitHub:
 
 ```bash
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
-
-## Running Feathr Examples
-
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
 
 ## Documentation
 
@@ -116,6 +112,10 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            source=batch_source,
                            features=agg_features)
 ```
+
+## Running Feathr Examples
+
+Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
 
 ## Cloud Integrations
 
