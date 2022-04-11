@@ -10,11 +10,11 @@ Feathr lets you:
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-## Running Feathr with 3 Simple Steps
+## Running Feathr on Azure with 3 Simple Steps
 
-Feathr has native cloud integration and getting started with Feathr is very straightforward. You only need three steps:
+Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
 
-1. Get the principal ID of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if you are asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
+1. Get the principal ID of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
 
 [Launch Cloud Shell](https://shell.azure.com/bash)
 
@@ -42,8 +42,7 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 ## Running Feathr Examples
 
-- Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
-- We recommend using **Visual Studio Code**, or **Azure Machine Learning Service** to run the above notebook, since those environments will help you login and reterive necessary credentials.
+Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
 
 ## Documentation
 
@@ -51,11 +50,11 @@ For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Feathr Highlights
 
-For more capabilities on Feathr, please refer to [Feathr Capabilities](./docs/concepts/feathr-capabilities.md)
+Below are the highlighted capabilities for Feathr. For more capabilities on Feathr, please refer to [Feathr Capabilities](./docs/concepts/feathr-capabilities.md)
 
 ### Rich UDF Support
 
-Highly customizable UDFs with native PySpark and Spark SQL to lower learning curve for data scientists:
+Feathr has highly customizable UDFs with native PySpark and Spark SQL integration to lower learning curve for data scientists:
 
 ```python
 def add_new_dropoff_and_fare_amount_column(df: DataFrame):
