@@ -50,7 +50,7 @@ For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Feathr Highlights
 
-Below are the highlighted capabilities for Feathr. For more capabilities on Feathr, please refer to [Feathr Capabilities](./docs/concepts/feathr-capabilities.md)
+Below are the highlighted capabilities for Feathr. For more capabilities on Feathr, please refer to [Feathr Capabilities](./docs/concepts/feathr-capabilities.md).
 
 ### Rich UDF Support
 
@@ -86,7 +86,7 @@ derived_feature = DerivedFeature(name="f_trip_time_distance",
 Feathr has rich type system including support for embeddings for advanced ML/DL scenarios
 
 ```python
-# Another example to compute embedding similarity
+# Feathr has ML Native Type system. Below is an example to compute embedding similarity
 user_embedding = Feature(name="user_embedding", feature_type=DENSE_VECTOR, key=user_key)
 item_embedding = Feature(name="item_embedding", feature_type=DENSE_VECTOR, key=item_key)
 
