@@ -97,7 +97,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
 
-### Rich Support for Point-in-time Joins and Aggregations
+### Scalable Point-in-time Joins and Aggregations
 
 Feathr has performant built-in operators designed for feature store, including point in time joins, time-aware sliding window aggregation, look up features, all with point-in-time correctness.
 
