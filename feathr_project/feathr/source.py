@@ -72,5 +72,45 @@ class HdfsSource(Source):
         """)
         msg = tm.render(source=self)
         return msg
- 
+
+class JdbcSource(Source):
+    def __init__(self, name: str, url: str = "", dbtable: Optional[str] = None, query: Optional[str] = None, auth: Optional[str] = None) -> None:
+        super().__init__(name, None, None)
+        self.url = url
+        if dbtable is not None:
+            self.dbtable = dbtable
+        if query is not None:
+            self.query = query
+        if auth is not None:
+            self.auth = auth.upper()
+            if self.auth not in ["USERPASS", "TOKEN"]:
+                raise ValueError("auth must be None or one of following values: ['userpass', 'token']")
+
+    def to_feature_config(self) -> str:
+        tm = Template("""  
+            {{source.name}}: {
+                location: {
+                    url: "{{source.url}}"
+                    {% if source.dbtable is defined %}
+                    dbtable: "{{source.dbtable}}"
+                    {% endif %}
+                    {% if source.query is defined %}
+                    query: "{{source.query}}"
+                    {% endif %}
+                    {% if source.auth is defined %}
+                        {% if source.auth == "USERPASS" %}
+                    user: "${{ "{" }}{{source.name}}_USER{{ "}" }}"
+                    password: "${{ "{" }}{{source.name}}_PASSWORD{{ "}" }}"
+                        {% else %}
+                    token: "${{ "{" }}{{source.name}}_TOKEN{{ "}" }}"
+                        {% endif %}
+                    {% else %}
+                    anonymous: true
+                    {% endif %}
+                }
+            } 
+        """)
+        msg = tm.render(source=self)
+        return msg
+
 INPUT_CONTEXT = InputContext()

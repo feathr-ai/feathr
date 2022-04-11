@@ -1,6 +1,7 @@
 from feathr import FeatureAnchor
 from feathr import Feature
 from feathr import HdfsSource
+from feathr.source import JdbcSource
 from feathr import BOOLEAN, INT32, FLOAT, ValueType
 from feathr import INPUT_CONTEXT
 from feathr import WindowAggTransformation
@@ -168,3 +169,50 @@ def test_agg_anchor_to_config():
             }
         """
     assert ''.join(agg_anchor.to_feature_config().split()) == ''.join(expected_agg_feature_config.split())
+    
+def test_jdbc_source_to_config():
+    batch_source = JdbcSource(name="nycTaxiBatchSource",
+                              url="jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase",
+                              dbtable="table1")
+
+    expected_agg_feature_config = """
+        nycTaxiBatchSource: {
+            location: {
+                url: "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase"
+                dbtable: "table1"
+                anonymous: true
+            }
+        }
+        """
+    assert ''.join(batch_source.to_feature_config().split()) == ''.join(expected_agg_feature_config.split())
+
+    batch_source = JdbcSource(name="nycTaxiBatchSource",
+                              url="jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase",
+                              dbtable="table1",
+                              auth="userpass")
+    expected_agg_feature_config = """
+        nycTaxiBatchSource: {
+            location: {
+                url: "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase"
+                dbtable: "table1"
+                user: "${nycTaxiBatchSource_USER}"
+                password: "${nycTaxiBatchSource_PASSWORD}"
+            }
+        }
+        """
+    assert ''.join(batch_source.to_feature_config().split()) == ''.join(expected_agg_feature_config.split())
+
+    batch_source = JdbcSource(name="nycTaxiBatchSource",
+                              url="jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase",
+                              dbtable="table1",
+                              auth="token")
+    expected_agg_feature_config = """
+        nycTaxiBatchSource: {
+            location: {
+                url: "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase"
+                dbtable: "table1"
+                token: "${nycTaxiBatchSource_TOKEN}"
+            }
+        }
+        """
+    assert ''.join(batch_source.to_feature_config().split()) == ''.join(expected_agg_feature_config.split())
