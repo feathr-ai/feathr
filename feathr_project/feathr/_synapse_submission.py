@@ -25,9 +25,9 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
     """
     Submits spark jobs to a Synapse spark cluster.
     """
-    def __init__(self, synapse_dev_url: str, pool_name: str, datalake_dir: str, executor_size: str, executors: int):
+    def __init__(self, synapse_dev_url: str, pool_name: str, datalake_dir: str, executor_size: str, executors: int, credential = None):
         # use DeviceCodeCredential if EnvironmentCredential is not available
-        self.credential = DefaultAzureCredential()
+        self.credential = credential
         # use the same credential for authentication to avoid further login.
         self._api = _SynapseJobRunner(
             synapse_dev_url, pool_name, executor_size=executor_size, executors=executors, credential=self.credential)
@@ -269,7 +269,7 @@ class _DataLakeFiler(object):
         assert len(datalake_path_split) >= 3
 
         if credential is None:
-            credential = DefaultAzureCredential()
+            raise RuntimeError("Invalid credential provided.")
 
         account_url = "https://" + datalake_path_split[2]
 
