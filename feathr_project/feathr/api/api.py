@@ -26,6 +26,7 @@ log_level = os.getenv("logLevel", "INFO")
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
+# Set the application insights connection string to enable the logger to write to Application Insight's directly
 app_insights_connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
 formatter = logging.Formatter("[%(asctime)s] [%(name)s:%(lineno)s - %(funcName)5s()] %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
@@ -38,6 +39,12 @@ else:
 logger.setLevel(log_level)
 logger.info("starting %s", __file__)
 
+"""
+This is to enable Authentication for API and not keep it wide open.
+You can set the AppServiceKey variable as environment variable
+and make sure to pass the variable as query parameter when you access the API.
+eg - <apiserver>/projects/<project_name>/features?code=<your_api_code>
+"""
 appServiceKey = os.getenv("AppServiceKey")
 
 
