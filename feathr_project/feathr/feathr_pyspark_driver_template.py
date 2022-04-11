@@ -2,9 +2,11 @@
 from pyspark.sql import SparkSession, DataFrame, SQLContext
 import sys
 from pyspark.sql.functions import *
+import logging
 
 # This is executed in Spark driver
-print("Feathr Pyspark job started.")
+logger = logging.getLogger("feathr_pyspark_driver")
+logger.info("Feathr Pyspark job started.")
 spark = SparkSession.builder.appName('FeathrPyspark').getOrCreate()
 
 
@@ -18,13 +20,14 @@ def to_java_string_array(arr):
 
 
 def submit_spark_job(feature_names_funcs):
-    """Submit the Pyspark job to the cluster. This should be used when there is Python UDF preprocessing for soruces.
+    """Submit the Pyspark job to the cluster. This should be used when there is Python UDF preprocessing for sources.
     It loads the source DataFrame from Scala spark. Then preprocess the DataFrame with Python UDF in Pyspark. Later,
-    the real Scala FeatureJoinJob or FeatureGenJob is executed with preprocessed DataFrames overriding the original
+    the real Scala FeatureJoinJob or FeatureGenJob is executed with preprocessed DataFrames instead of the original
     source DataFrames.
 
         Args:
             feature_names_funcs: Map of feature names concatenated to preprocessing UDF function.
+            For example {"f1,f2": df1, "f3,f4": df2} (the feature names in the key will be sorted)
     """
     # Prepare job parameters
     # sys.argv has all the arguments passed by submit job.
@@ -43,31 +46,29 @@ def submit_spark_job(feature_names_funcs):
                            "Only one of them should be provided.")
     elif has_gen_config:
         py4j_feature_job = spark._jvm.com.linkedin.feathr.offline.job.FeatureGenJob
-        print("FeatureGenConfig is provided. Executing FeatureGenJob.")
+        logger.info("FeatureGenConfig is provided. Executing FeatureGenJob.")
     elif has_join_config:
         py4j_feature_job = spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob
-        print("FeatureJoinConfig is provided. Executing FeatureJoinJob.")
+        logger.info("FeatureJoinConfig is provided. Executing FeatureJoinJob.")
     else:
         raise RuntimeError("None of FeatureGenConfig and FeatureJoinConfig are provided. "
                            "One of them should be provided.")
     job_param_java_array = to_java_string_array(sys.argv)
 
-    print("submit_spark_job: feature_names_funcs: ")
-    print(feature_names_funcs)
-    print("set(feature_names_funcs.keys()): ")
-    print(set(feature_names_funcs.keys()))
+    logger.info("submit_spark_job: feature_names_funcs: ")
+    logger.info(feature_names_funcs)
+    logger.info("set(feature_names_funcs.keys()): ")
+    logger.info(set(feature_names_funcs.keys()))
 
-    print("submit_spark_job: Load DataFrame from Scala engine.")
+    logger.info("submit_spark_job: Load DataFrame from Scala engine.")
 
     dataframeFromSpark = py4j_feature_job.loadSourceDataframe(job_param_java_array, set(feature_names_funcs.keys()))
-    print("Submit_spark_job: dataframeFromSpark: ")
-    print(dataframeFromSpark)
+    logger.info("Submit_spark_job: dataframeFromSpark: ")
+    logger.info(dataframeFromSpark)
 
     sql_ctx = SQLContext(spark)
     new_preprocessed_df_map = {}
     for feature_names, scala_dataframe in dataframeFromSpark.items():
-        print(feature_names)
-        print(scala_dataframe)
         # Need to convert java DataFrame into python DataFrame
         py_df = DataFrame(scala_dataframe, sql_ctx)
         # Preprocess the DataFrame via UDF
@@ -75,9 +76,9 @@ def submit_spark_job(feature_names_funcs):
         preprocessed_udf = user_func(py_df)
         new_preprocessed_df_map[feature_names] = preprocessed_udf._jdf
 
-    print("submit_spark_job: running Feature job with preprocessed DataFrames:")
-    print("Preprocessed DataFrames are: ")
-    print(new_preprocessed_df_map)
+    logger.info("submit_spark_job: running Feature job with preprocessed DataFrames:")
+    logger.info("Preprocessed DataFrames are: ")
+    logger.info(new_preprocessed_df_map)
 
     py4j_feature_job.mainWithPreprocessedDataFrame(job_param_java_array, new_preprocessed_df_map)
     return None
