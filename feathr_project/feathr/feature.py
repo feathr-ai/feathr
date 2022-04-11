@@ -84,6 +84,7 @@ class Feature(FeatureBase):
                 transform: Optional[Union[str, Transformation]] = None):
         super(Feature, self).__init__(name, feature_type, transform, key)
 
+
     def to_feature_config(self) -> str:
         tm = Template("""
             {{feature.name}}: {
