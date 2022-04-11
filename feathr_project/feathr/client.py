@@ -1,8 +1,6 @@
 import base64
 import logging
-import math
 import os
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional, Union, Dict
 import tempfile
@@ -16,6 +14,7 @@ from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._feature_registry import _FeatureRegistry
 from feathr._file_utils import write_to_file
 from feathr._materialization_utils import _to_materialization_config
+from feathr._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
 from feathr.materialization_settings import MaterializationSettings
@@ -94,7 +93,7 @@ class FeathrClient(object):
             self.local_workspace_dir = local_workspace_dir
         else:
             self.local_workspace_dir = tempfile.TemporaryDirectory().name
-        
+
         self.envutils = envutils
 
         if not os.path.exists(config_path):
@@ -208,6 +207,24 @@ class FeathrClient(object):
     def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: Optional[List[DerivedFeature]] = []):
         """Registers features based on the current workspace
         """
+        # Run necessary validations
+        # anchor name and source name should be unique
+        anchor_names = {}
+        source_names = {}
+        for anchor in anchor_list:
+            if anchor.name in anchor_names:
+                raise RuntimeError(f"Anchor name should be unique but there are duplicate anchor names in your anchor "
+                                   f"definitions. Anchor name of {anchor} is already defined in {anchor_names[anchor.name]}")
+            else:
+                anchor_names[anchor.name] = anchor
+            if anchor.source.name in source_names:
+                raise RuntimeError(f"Source name should be unique but there are duplicate source names in your source "
+                                   f"definitions. Source name of {anchor.source} is already defined in {source_names[anchor.source.name]}")
+            else:
+                source_names[anchor.source.name] = anchor.source
+
+        preprocessingPyudfManager = _PreprocessingPyudfManager()
+        _PreprocessingPyudfManager.build_anchor_preprocessing_metadata(anchor_list, self.local_workspace_dir)
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
@@ -371,6 +388,7 @@ class FeathrClient(object):
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
                              output_path: str,
                              execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None,
+                             udf_files = None,
                              ):
         """
         Get offline features for the observation dataset
@@ -380,6 +398,14 @@ class FeathrClient(object):
             output_path: output path of job, i.e. the observation data with features attached.
             execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
+        feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
+        feature_names = []
+        for feature_query in feature_queries:
+            for feature_name in feature_query.feature_list:
+                feature_names.append(feature_name)
+
+        udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(feature_names, self.local_workspace_dir)
+
         # produce join config
         tm = Template("""
             {{observation_settings.to_config()}}
@@ -390,7 +416,6 @@ class FeathrClient(object):
             ]
             outputPath: "{{output_path}}"
         """)
-        feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
         config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
         config_file_name = "feature_join_conf/feature_join.conf"
         config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
@@ -404,16 +429,15 @@ class FeathrClient(object):
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_path,execution_configuratons)
+        return self._get_offline_features_with_config(config_file_path, execution_configuratons, udf_files=udf_files)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configuratons: Dict[str,str] = None):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configuratons: Dict[str,str] = None, udf_files=[]):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
           feature_join_conf_path: Relative path to your feature join config file.
         """
-        
-            
+        cloud_udf_paths = [self.feathr_spark_laucher.upload_or_get_cloud_path(udf_local_path) for udf_local_path in udf_files]
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
@@ -435,6 +459,7 @@ class FeathrClient(object):
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            python_files=cloud_udf_paths,
             job_tags=job_tags,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
@@ -472,7 +497,6 @@ class FeathrClient(object):
         """
         return self.feathr_spark_laucher.get_job_tags()
 
-
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
         """
@@ -496,7 +520,7 @@ class FeathrClient(object):
             config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
             config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
             write_to_file(content=config, full_file_name=config_file_path)
-            
+
             # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features in the python SDK
             # otherwise users will be confused on what are the available features
             # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
@@ -505,20 +529,20 @@ class FeathrClient(object):
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
+            udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
             # CLI will directly call this so the experiene won't be broken
-            self._materialize_features_with_config(config_file_path,execution_configuratons)
+            self._materialize_features_with_config(config_file_path, execution_configuratons, udf_files)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None):
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
-        
-        
+        cloud_udf_paths = [self.feathr_spark_laucher.upload_or_get_cloud_path(udf_local_path) for udf_local_path in udf_files]
 
         # Read all features conf
         generation_config = FeatureGenerationJobParams(
@@ -533,6 +557,7 @@ class FeathrClient(object):
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            python_files=cloud_udf_paths,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[
                 '--generation-config', self.feathr_spark_laucher.upload_or_get_cloud_path(

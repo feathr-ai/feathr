@@ -5,7 +5,7 @@ from typing import List, Optional, Union, Dict
 from jinja2 import Template
 
 from feathr.dtype import FeatureType
-from feathr.transformation import ExpressionTransformation, Transformation
+from feathr.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
 from feathr.typed_key import DUMMY_KEY, TypedKey
 
 
@@ -91,10 +91,11 @@ class Feature(FeatureBase):
                 ):
         super(Feature, self).__init__(name, feature_type, transform, key, registry_tags)
 
+
     def to_feature_config(self) -> str:
         tm = Template("""
             {{feature.name}}: {
-                def:{{feature.transform.to_feature_config()}}
+                {{feature.transform.to_feature_config()}}
                 {{feature.feature_type.to_feature_config()}} 
             }
         """)
