@@ -8,7 +8,7 @@ Please do not file reports on Github for security issues. Please review the guid
 
 # Contribution Process
 
-The Feathr community welcome everyone, and encourage a friendly and positive environment.
+The Feathr community welcomes everyone, and encourage a friendly and positive environment.
 
 **Contributions of various forms are welcome!**
 
