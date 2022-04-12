@@ -89,8 +89,9 @@ class HdfsSource(Source):
 
 
 class JdbcSource(Source):
-    def __init__(self, name: str, url: str = "", dbtable: Optional[str] = None, query: Optional[str] = None, auth: Optional[str] = None) -> None:
-        super().__init__(name, None, None)
+    def __init__(self, name: str, url: str = "", dbtable: Optional[str] = None, query: Optional[str] = None, auth: Optional[str] = None, preprocessing: Optional[Callable] = None                 ,event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch",registry_tags: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, event_timestamp_column, timestamp_format, registry_tags)
+        self.preprocessing = preprocessing
         self.url = url
         if dbtable is not None:
             self.dbtable = dbtable
@@ -113,6 +114,7 @@ class JdbcSource(Source):
         tm = Template("""  
             {{source.name}}: {
                 location: {
+                    type: "jdbc"
                     url: "{{source.url}}"
                     {% if source.dbtable is defined %}
                     dbtable: "{{source.dbtable}}"
@@ -132,6 +134,12 @@ class JdbcSource(Source):
                     anonymous: true
                     {% endif %}
                 }
+                {% if source.event_timestamp_column is defined %}
+                    timeWindowParameters: {
+                        timestampColumn: "{{source.event_timestamp_column}}"
+                        timestampColumnFormat: "{{source.timestamp_format}}"
+                    }
+                {% endif %}
             } 
         """)
         msg = tm.render(source=self)
