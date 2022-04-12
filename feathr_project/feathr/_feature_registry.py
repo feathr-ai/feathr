@@ -269,6 +269,12 @@ class _FeatureRegistry():
         input_context = False
         if isinstance(source, InputContext):
             input_context = True
+        
+        # only set preprocessing if it's available in the object and is not None
+        if 'preprocessing' in dir(source) and source.preprocessing is not None:
+            preprocessing_func = inspect.getsource(source.preprocessing)
+        else:
+            preprocessing_func = None
 
         source_entity = AtlasEntity(
             name=source.name,
@@ -279,7 +285,7 @@ class _FeatureRegistry():
                 "timestamp_format": source.timestamp_format,
                 "event_timestamp_column": source.event_timestamp_column,
                 "tags": source.registry_tags,
-                "preprocessing": None if source.preprocessing is None else inspect.getsource(source.preprocessing) # store the UDF as a string
+                "preprocessing": preprocessing_func  # store the UDF as a string
             },
             typeName=SOURCE,
             guid=self.guid.get_guid(),
