@@ -18,7 +18,7 @@ setup(
     },
     packages=find_packages(),
     include_package_data=True,
-    # consider 
+    # consider
     install_requires=[
         'Click',
         "azure-storage-file-datalake>=12.5.0",
@@ -36,13 +36,15 @@ setup(
         "Jinja2",
         "tqdm",
         "pyarrow",
+        "pyspark>=3.1.2",
         "python-snappy",
         "deltalake",
         "google>=3.0.0",
+        "graphlib_backport",
         "google-api-python-client>=2.41.0",
+        "azure-keyvault-secrets",
     ],
-
-    tests_require = [
+    tests_require=[
         'pytest',
     ],
     entry_points={
