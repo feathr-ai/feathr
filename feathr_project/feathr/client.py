@@ -245,6 +245,12 @@ class FeathrClient(object):
         """
         return self.registry._get_registry_client()
 
+    def _purge_feathr_registry(self):
+        """
+        Purge registry information. This is for registry upgrade only and you will lose all your registered entities. PROCEED WITH CAUTION.
+        """
+        return self.registry._purge_feathr_registry()
+
     def get_online_features(self, feature_table, key, feature_names):
         """Fetches feature value for a certain key from a online feature table.
 
