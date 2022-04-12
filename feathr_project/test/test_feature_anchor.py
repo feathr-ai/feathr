@@ -211,6 +211,7 @@ def test_jdbc_source_to_config():
             location: {
                 url: "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase"
                 dbtable: "table1"
+                useToken:true
                 token: "${nycTaxiBatchSource_TOKEN}"
             }
         }

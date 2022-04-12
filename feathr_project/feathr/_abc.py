@@ -19,7 +19,7 @@ class SparkJobLauncher(ABC):
     @abstractmethod
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str],
                           reference_files_path: List[str], job_tags: Dict[str, str] = None,
-                          configuration: Dict[str, str] = None):
+                          configuration: Dict[str, str] = None, properties: Dict[str, str] = None):
         """
         Submits the feathr job
 
@@ -30,6 +30,7 @@ class SparkJobLauncher(ABC):
             arguments (str): all the arugments you want to pass into the spark job
             job_tags (str): tags of the job, for exmaple you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
+            properties (Dict[str, str]): Additional System Properties for the spark job
         """
         pass
     @abstractmethod

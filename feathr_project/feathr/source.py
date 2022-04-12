@@ -86,6 +86,14 @@ class JdbcSource(Source):
             if self.auth not in ["USERPASS", "TOKEN"]:
                 raise ValueError("auth must be None or one of following values: ['userpass', 'token']")
 
+    def get_required_properties(self):
+        if not hasattr(self, "auth"):
+            return []
+        if self.auth == "USERPASS":
+            return ["%s_USER" % self.name, "%s_PASSWORD" % self.name]
+        elif self.auth == "TOKEN":
+            return ["%s_TOKEN" % self.name]
+
     def to_feature_config(self) -> str:
         tm = Template("""  
             {{source.name}}: {
@@ -102,6 +110,7 @@ class JdbcSource(Source):
                     user: "${{ "{" }}{{source.name}}_USER{{ "}" }}"
                     password: "${{ "{" }}{{source.name}}_PASSWORD{{ "}" }}"
                         {% else %}
+                    useToken: true
                     token: "${{ "{" }}{{source.name}}_TOKEN{{ "}" }}"
                         {% endif %}
                     {% else %}

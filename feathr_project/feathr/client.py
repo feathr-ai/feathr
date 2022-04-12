@@ -1,4 +1,5 @@
 import base64
+import json
 import logging
 import math
 import os
@@ -6,6 +7,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional, Union, Dict
 import tempfile
+from click import argument
+from numpy import append
 
 import redis
 from jinja2 import Template
@@ -163,7 +166,10 @@ class FeathrClient(object):
 
         Some required information has to be set via environment variables so the client can work.
         """
-        for required_field in self.required_fields:
+        props = []
+        if hasattr(self, "system_properties"):
+            props = self.system_properties
+        for required_field in (self.required_fields + props):
             if required_field not in os.environ:
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
                                    f'variables are: {self.required_fields}.')
@@ -192,6 +198,14 @@ class FeathrClient(object):
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
+
+        # Check if data source used by every anchor requires additional system properties to be set
+        props = []
+        for anchor in self.anchor_list:
+            if hasattr(anchor.source, "get_required_properties"):
+                props.extend(anchor.source.get_required_properties())
+        if len(props)>0:
+            self.system_properties = props
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -430,10 +444,11 @@ class FeathrClient(object):
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str()
+                '--snowflake-config', self._get_snowflake_config_str(),
             ],
             reference_files_path=[],
-            configuration=execution_configuratons
+            configuration=execution_configuratons,
+            system_properties=self._get_system_properties()
         )
 
     def get_job_result_uri(self, block=True, timeout_sec=300) -> str:
@@ -530,6 +545,7 @@ class FeathrClient(object):
             ],
             reference_files_path=[],
             configuration=execution_configuratons,
+            system_properties=self._get_system_properties()
         )
 
 
@@ -635,6 +651,15 @@ class FeathrClient(object):
             JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
             """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
         return config_str
+
+    def _get_system_properties(self):
+        """Go through all data sources and fill all required system properties"""
+        prop_and_value = {}
+        if hasattr(self, "system_properties"):
+            for prop in self.system_properties:
+                prop_and_value[prop] = self.envutils.get_environment_variable_with_default(prop)
+            return prop_and_value
+        return None
 
     def get_features_from_registry(self, project_name):
         """ Sync features from the registry given a project name """

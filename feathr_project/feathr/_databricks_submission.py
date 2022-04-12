@@ -114,7 +114,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                          local_path_or_http_path, returned_path)
         return returned_path
 
-    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
+    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None, properties: Dict[str, str] = None):
         """
         submit the feathr job to databricks
         Refer to the databricks doc for more details on the meaning of the parameters:
@@ -125,8 +125,11 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             arguments (str): all the arugments you want to pass into the spark job
             job_tags (str): tags of the job, for exmaple you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
+            properties (Dict[str, str]): Additional System Properties for the spark job
         """
 
+        if properties is not None:
+            arguments.append("--system-properties=%s" % json.dumps(properties))
         
         if isinstance(self.config_template, str):
             # if the input is a string, load it directly

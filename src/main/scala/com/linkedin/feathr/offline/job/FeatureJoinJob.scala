@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.job
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.linkedin.feathr.common
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrDataOutputException, FeathrInputDataException}
 import com.linkedin.feathr.common.{Header, JoiningFeatureParams}
@@ -196,8 +197,14 @@ object FeatureJoinJob {
       "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
       "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
-      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", "")
+      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", ""),
+      "system-properties" -> OptionParam("sps", "Additional System Properties", "SYSTEM_PROPERTIES_CONFIG", "")
     )
+
+    // Set system properties passed via arguments
+    val sps = cmdParser.extractOptionalValue("system-properties").getOrElse("{}")
+    val props = (new ObjectMapper()).readValue(sps, classOf[Map[String, String]])
+    props.foreach(e => scala.util.Properties.setProp(e._1, e._2))
 
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
 
