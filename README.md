@@ -200,9 +200,10 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 - [x] Private Preview release
 - [x] Public Preview release
 - [ ] Future release
-  - [ ] Support streaming and online transformation
+  - [x] Support streaming
+  - [x] Support common data sources
+  - [ ] Support online transformation
   - [ ] Support feature versioning
-  - [ ] Support more data sources
 
 ## Community Guidelines
 

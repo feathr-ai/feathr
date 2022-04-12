@@ -1,4 +1,3 @@
-
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
 ThisBuild / version          := "0.1.0"
@@ -18,6 +17,7 @@ val localAndCloudDiffDependencies = Seq(
     "org.apache.hadoop" % "hadoop-common" % "2.7.2",
     "org.apache.avro" % "avro" % "1.8.2",
     "org.apache.xbean" % "xbean-asm6-shaded" % "4.10",
+    "org.apache.spark" % "spark-sql-kafka-0-10_2.12" % "3.1.2"
 )
 
 val cloudProvidedDeps = localAndCloudDiffDependencies.map(x => x % "provided")
@@ -35,7 +35,7 @@ val localAndCloudCommonDependencies = Seq(
     "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.6.5",
     "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.4.4",
     "com.jasonclawson" % "jackson-dataformat-hocon" % "1.1.0",
-    "com.redislabs" %% "spark-redis" % "2.6.0",
+    "com.redislabs" %% "spark-redis" % "3.0.0",
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     "org.apache.xbean" % "xbean-asm6-shaded" % "4.10",
     "com.google.protobuf" % "protobuf-java" % "3.19.4",

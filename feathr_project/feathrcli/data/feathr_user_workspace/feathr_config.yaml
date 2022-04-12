@@ -63,9 +63,9 @@ offline_store:
     jdbc_database: "feathrtestdb"
     jdbc_table: "feathrtesttable"
 
-# reading from streaming source is coming soon
-# streaming_source:
-#   kafka_connection_string: ""
+  # reading from streaming source
+  kafka:
+    kafka_endpoint: 'sb://feathrazureci.servicebus.windows.net/'
 
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks

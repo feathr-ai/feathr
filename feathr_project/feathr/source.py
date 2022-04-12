@@ -3,6 +3,28 @@ from abc import ABC, abstractmethod
 from typing import Callable, Dict, List, Optional
 
 from jinja2 import Template
+import json
+
+
+class SourceSchema(ABC):
+    pass
+
+
+class AvroJsonSchema(SourceSchema):
+    """Avro schema written in Json"""
+    def __init__(self, schemaStr:str):
+        self.schemaStr = schemaStr
+
+    def to_feature_config(self):
+        tm = Template("""
+        schema: {
+            type = "avro"
+            avroJson:{{avroJson}}
+        }
+        """)
+        avroJson = json.dumps(self.schemaStr)
+        msg = tm.render(schema=self, avroJson=avroJson)
+        return msg
 
 
 class Source:
@@ -15,7 +37,7 @@ class Source:
     """
     def __init__(self,
                  name: str,
-                 event_timestamp_column: Optional[str], 
+                 event_timestamp_column: Optional[str] = "0",
                  timestamp_format: Optional[str] = "epoch",
                  registry_tags: Optional[Dict[str, str]] = None,
                  ) -> None:
@@ -86,5 +108,36 @@ class HdfsSource(Source):
 
     def __str__(self):
         return str(self.preprocessing) + '\n' + self.to_feature_config()
+
+
+class KafkaConfig:
+    def __init__(self, brokers: List[str], topics: List[str], schema: SourceSchema):
+        self.brokers = brokers
+        self.topics = topics
+        self.schema = schema
+
+
+class KafKaSource(Source):
+    """A kafka source object. Used in streaming feature ingestion."""
+    def __init__(self, name: str, kafkaConfig: KafkaConfig):
+            super().__init__(name)
+            self.config = kafkaConfig
+
+    def to_feature_config(self) -> str:
+        tm = Template("""
+{{source.name}}: {
+    type: KAFKA
+    config: {
+        brokers: [{{brokers}}]
+        topics: [{{topics}}]
+        {{source.config.schema.to_feature_config()}}
+    }
+}
+        """)
+        brokers = '"'+'","'.join(self.config.brokers)+'"'
+        topics = ','.join(self.config.topics)
+        msg = tm.render(source=self, brokers=brokers, topics=topics)
+        return msg
+
 
 INPUT_CONTEXT = InputContext()

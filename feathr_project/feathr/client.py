@@ -117,6 +117,10 @@ class FeathrClient(object):
         self.s3_endpoint = envutils.get_environment_variable_with_default(
             'offline_store', 's3', 's3_endpoint')
 
+        # Kafka configs
+        self.kafka_endpoint = envutils.get_environment_variable_with_default(
+            'offline_store', 'kafka', 'kafka_endpoint')
+
         # spark configs
         self.output_num_parts = envutils.get_environment_variable_with_default(
             'spark_config', 'spark_result_output_parts')
@@ -576,7 +580,8 @@ class FeathrClient(object):
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str()
+                '--snowflake-config', self._get_snowflake_config_str(),
+                '--kafka-config', self._get_kafka_config_str()
             ],
             reference_files_path=[],
             configuration=execution_configuratons,
@@ -684,4 +689,25 @@ class FeathrClient(object):
             JDBC_SF_ROLE: {JDBC_SF_ROLE}
             JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
             """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
+        return config_str
+
+    def _get_kafka_config_str(self):
+        """Construct the Kafka config string. The endpoint, access key, secret key, and other parameters can be set via
+        environment variables."""
+        kafka_endpoint = self.kafka_endpoint
+        # if kafka endpoint is set in the feathr_config, then we need other environment variables
+        # keys can't be only accessed through environment
+        access_key_name = _EnvVaraibleUtil.get_environment_variable('KAFKA_SHARED_ACCESS_KEY_NAME')
+        access_key = _EnvVaraibleUtil.get_environment_variable('KAFKA_SHARED_ACCESS_KEY')
+        username = _EnvVaraibleUtil.get_environment_variable('KAFKA_USERNAME')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            ENDPOINT: "{ENDPOINT}"
+            SHARED_ACCESS_KEY_NAME: "{SHARED_ACCESS_KEY_NAME}"
+            SHARED_ACCESS_KEY: "{SHARED_ACCESS_KEY}"
+            USERNAME:"{USERNAME}"
+            """.format(ENDPOINT=kafka_endpoint,
+                       SHARED_ACCESS_KEY_NAME=access_key_name,
+                       SHARED_ACCESS_KEY=access_key,
+                       USERNAME=username)
         return config_str

@@ -2,11 +2,11 @@ package com.linkedin.feathr.offline.generation
 
 import com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass
 import com.linkedin.feathr.common.{FeatureInfo, FeatureTypes, Header, TaggedFeatureName}
-import com.linkedin.feathr.offline.generation.outputProcessor.PushToRedisOutputProcessor
+import com.linkedin.feathr.offline.generation.outputProcessor.RedisOutputUtils
 import com.linkedin.feathr.offline.{AssertFeatureUtils, TestFeathr}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
-import org.apache.spark.sql.types.{ArrayType, BooleanType, FloatType, IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.types._
 import org.scalatest.mockito.MockitoSugar
 import org.testng.annotations.Test
 
@@ -19,7 +19,6 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
    */
   @Test
   def testEncodeDataFrame(): Unit = {
-    val pushToRedisOutputProcessor = new PushToRedisOutputProcessor(null)
 
 
     val expSchema = StructType(
@@ -63,7 +62,8 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
     )
     val header = new Header(featureInfoMap)
 
-    val encoded = pushToRedisOutputProcessor.encodeDataFrame(header, rawDf)
+    val allFeatureCols: Set[String] = header.featureInfoMap.map(x => (x._2.columnName)).toSet
+    val encoded = RedisOutputUtils.encodeDataFrame(allFeatureCols, rawDf)
 
     val encoder = RowEncoder(expSchema)
     val encodedDfSchema = encoded.schema
@@ -115,8 +115,6 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
    */
   @Test(expectedExceptions = Array(classOf[org.apache.spark.SparkException]))
   def testEncodeDataFrame2(): Unit = {
-    val pushToRedisOutputProcessor = new PushToRedisOutputProcessor(null)
-
 
     val expSchema = StructType(
       List(
@@ -142,7 +140,8 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
     )
     val header = new Header(featureInfoMap)
 
-    val encoded = pushToRedisOutputProcessor.encodeDataFrame(header, rawDf)
+    val allFeatureCols: Set[String] = header.featureInfoMap.map(x => (x._2.columnName)).toSet
+    val encoded = RedisOutputUtils.encodeDataFrame(allFeatureCols, rawDf)
     encoded.show()
   }
 }

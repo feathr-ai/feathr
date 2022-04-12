@@ -29,7 +29,7 @@ class _EnvVaraibleUtil(object):
         try:
             assert os.path.exists(os.path.abspath(self.config_path))
         except:
-            logger.info("{} is not set and configuration file {} cannot be found. One of those shoudl be set." , env_keyword, self.config_path)
+            logger.info("{} is not set and configuration file {} cannot be found. One of those should be set." , env_keyword, self.config_path)
 
         with open(os.path.abspath(self.config_path), 'r') as stream:
             try:
