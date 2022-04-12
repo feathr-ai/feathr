@@ -1,6 +1,6 @@
 # Feathr UI
 
-This is feathr web ui frontend code
+This is Feathr web ui frontend code
 
 ## Build and run locally
 
