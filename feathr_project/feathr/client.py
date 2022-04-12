@@ -1,11 +1,13 @@
 import base64
 import logging
 import os
-from pathlib import Path
-from typing import List, Optional, Union, Dict
 import tempfile
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 import redis
+from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from pyhocon import ConfigFactory
 
@@ -17,6 +19,8 @@ from feathr._materialization_utils import _to_materialization_config
 from feathr._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
+from feathr.feathr_configurations import SparkExecutionConfiguration
+from feathr.feature_derivations import DerivedFeature
 from feathr.materialization_settings import MaterializationSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.query_feature_list import FeatureQuery
@@ -24,6 +28,7 @@ from feathr.settings import ObservationSettings
 from feathr.feature_derivations import DerivedFeature
 from feathr.anchor import FeatureAnchor
 from feathr.feathr_configurations import SparkExecutionConfiguration
+
 
 class FeatureJoinJobParams:
     """Parameters related to feature join job.
@@ -68,23 +73,18 @@ class FeathrClient(object):
     The users of this client is responsible for set up all the necessary information needed to start a Redis client via
     environment variable or a Spark cluster. Host address, port and password are needed to start the Redis client.
 
+    Args:
+        config_path (str, optional): config path. See [Feathr Config Template](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
+        local_workspace_dir (_type_, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
+        credential (_type_, optional): credential to access cloud resources, and most likely to be DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function.
+        project_name_override (_type_, optional): override the project name. Defaults to None.
+        project_registry_tag (dict, optional): adding tags for project in Feathr registry . Defaults to {}.
+
     Raises:
         RuntimeError: Fail to create the client since necessary environment variables are not set for Redis
         client creation.
     """
-
-    def __init__(self, config_path = "./feathr_config.yaml", local_workspace_dir = None, project_name_override = None, project_registry_tag={}):
-        """initialize Feathr Client
-
-        Args:
-            config_path (str, optional): Configuration path for configurations, including spark configurations, offline store/online store names, etc. Defaults to "./feathr_config.yaml".
-            local_workspace_dir (_type_, optional): workspace directory for storing all the generated contents. Defaults to None.
-            project_name_override (_type_, optional): override the project name. Defaults to None.
-            project_registry_tag (dict, optional): adding tags for project in Feathr registry . Defaults to {}.
-
-        Raises:
-            RuntimeError: _description_
-        """
+    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_name_override = None, project_registry_tag={}):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
@@ -122,6 +122,7 @@ class FeathrClient(object):
         self.spark_runtime = envutils.get_environment_variable_with_default(
             'spark_config', 'spark_cluster')
 
+        self.credential = credential
         if self.spark_runtime not in {'azure_synapse', 'databricks'}:
             raise RuntimeError(
                 'Only \'azure_synapse\' and \'databricks\' are currently supported.')
@@ -132,6 +133,9 @@ class FeathrClient(object):
             self._FEATHR_JOB_JAR_PATH = \
                 envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'feathr_runtime_location')
+            
+            if self.credential is None:
+                self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
 
             self.feathr_spark_laucher = _FeathrSynapseJobLauncher(
                 synapse_dev_url=envutils.get_environment_variable_with_default(
@@ -143,7 +147,8 @@ class FeathrClient(object):
                 executor_size=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_size'),
                 executors=envutils.get_environment_variable_with_default(
-                    'spark_config', 'azure_synapse', 'executor_num')
+                    'spark_config', 'azure_synapse', 'executor_num'),
+                credential=self.credential
             )
         elif self.spark_runtime == 'databricks':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
@@ -173,7 +178,7 @@ class FeathrClient(object):
         self.azure_purview_name = envutils.get_environment_variable_with_default(
             'feature_registry', 'purview', 'purview_name')
         # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
-        self.registry = _FeatureRegistry(self.project_name, self.azure_purview_name, self.registry_delimiter, project_registry_tag)
+        self.registry = _FeatureRegistry(self.project_name, self.azure_purview_name, self.registry_delimiter, project_registry_tag, config_path = config_path, credential=self.credential)
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.

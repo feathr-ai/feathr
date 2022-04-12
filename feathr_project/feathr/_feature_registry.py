@@ -9,10 +9,12 @@ from tracemalloc import stop
 from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
+from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from loguru import logger
 from numpy import deprecate
 from pyapacheatlas.auth import ServicePrincipalAuthentication
+from pyapacheatlas.auth.azcredential import AzCredentialWrapper
 from pyapacheatlas.core import (AtlasClassification, AtlasEntity, AtlasProcess,
                                 PurviewClient, TypeCategory)
 from pyapacheatlas.core.typedef import (AtlasAttributeDef,
@@ -35,33 +37,24 @@ from feathr.typed_key import TypedKey
 
 
 class _FeatureRegistry():
-    def __init__(self, project_name: str, azure_purview_name: str, registry_delimiter: str, project_tags: Dict[str, str]):
-        """
-        Initializes the feature registry, doing the following:
-        - Use an Azure Service Principal to communicate with Azure Purview
-        - Initialize an Azure Purview Client
-        - Initialize the GUID tracker, project name, etc.
-        """
+    """
+    Initializes the feature registry, doing the following:
+    - Use an Azure Service Principal to communicate with Azure Purview
+    - Initialize an Azure Purview Client
+    - Initialize the GUID tracker, project name, etc.
+    """
+    def __init__(self, project_name: str, azure_purview_name: str, registry_delimiter: str, project_tags: Dict[str, str], credential=None, config_path=None,):
         self.project_name = project_name
         self.registry_delimiter = registry_delimiter
         self.azure_purview_name = azure_purview_name
         self.project_tags = project_tags
 
-        # only initialize all the purview client etc. when the name is set. This will enable more pluggable reigstry in the future.
-        if self.azure_purview_name:
-            self.oauth = ServicePrincipalAuthentication(
-                tenant_id=_EnvVaraibleUtil.get_environment_variable(
-                    "AZURE_TENANT_ID"),
-                client_id=_EnvVaraibleUtil.get_environment_variable(
-                    "AZURE_CLIENT_ID"),
-                client_secret=_EnvVaraibleUtil.get_environment_variable(
-                    "AZURE_CLIENT_SECRET")
-            )
-            self.purview_client = PurviewClient(
-                account_name=self.azure_purview_name,
-                authentication=self.oauth
-            )
-
+        self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False) if credential is None else credential
+        self.oauth = AzCredentialWrapper(credential=self.credential)
+        self.purview_client = PurviewClient(
+            account_name=self.azure_purview_name,
+            authentication=self.oauth
+        )
         self.guid = GuidTracker(starting=-1000)
         self.entity_batch_queue = []
         # for searching in derived features

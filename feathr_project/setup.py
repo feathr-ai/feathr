@@ -42,6 +42,7 @@ setup(
         "google>=3.0.0",
         "graphlib_backport",
         "google-api-python-client>=2.41.0",
+        "azure-keyvault-secrets",
     ],
     tests_require=[
         'pytest',
