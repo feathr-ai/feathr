@@ -173,14 +173,20 @@ def test_agg_anchor_to_config():
 def test_jdbc_source_to_config():
     batch_source = JdbcSource(name="nycTaxiBatchSource",
                               url="jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase",
-                              dbtable="table1")
+                              dbtable="table1",
+                              event_timestamp_column="c1")
 
     expected_agg_feature_config = """
         nycTaxiBatchSource: {
             location: {
+                type: "jdbc"
                 url: "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase"
                 dbtable: "table1"
                 anonymous: true
+            }
+            timeWindowParameters: {
+                timestampColumn: "c1"
+                timestampColumnFormat: "epoch"
             }
         }
         """
@@ -189,15 +195,21 @@ def test_jdbc_source_to_config():
     batch_source = JdbcSource(name="nycTaxiBatchSource",
                               url="jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase",
                               dbtable="table1",
-                              auth="userpass")
+                              auth="userpass",
+                              event_timestamp_column="c1")
     expected_agg_feature_config = """
         nycTaxiBatchSource: {
             location: {
+                type: "jdbc"
                 url: "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase"
                 dbtable: "table1"
                 user: "${nycTaxiBatchSource_USER}"
                 password: "${nycTaxiBatchSource_PASSWORD}"
             }
+            timeWindowParameters: {
+                timestampColumn: "c1"
+                timestampColumnFormat: "epoch"
+            }
         }
         """
     assert ''.join(batch_source.to_feature_config().split()) == ''.join(expected_agg_feature_config.split())
@@ -205,14 +217,20 @@ def test_jdbc_source_to_config():
     batch_source = JdbcSource(name="nycTaxiBatchSource",
                               url="jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase",
                               dbtable="table1",
-                              auth="token")
+                              auth="token",
+                              event_timestamp_column="c1")
     expected_agg_feature_config = """
         nycTaxiBatchSource: {
             location: {
+                type: "jdbc"
                 url: "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase"
                 dbtable: "table1"
                 useToken:true
                 token: "${nycTaxiBatchSource_TOKEN}"
+            }
+            timeWindowParameters: {
+                timestampColumn: "c1"
+                timestampColumnFormat: "epoch"
             }
         }
         """
