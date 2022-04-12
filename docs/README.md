@@ -119,6 +119,29 @@ batch_source = HdfsSource(
     timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
 ```
 
+## Defining Preprocessing on Source
+If you need some complex transformation that can be done with provided transformations, you can use source preprocessing
+to achieve your goal.
+
+The preprocessing takes in the DataFrame loaded by the source and then return a preprocessed DataFrame by the preprocessing
+function. The preprocessing function can't refer to other functions or dependencies that are not provided in the Spark cluster.
+
+```python
+def my_preprocessing(df: DataFrame) -> DataFrame:
+    df = df.withColumn("new_improvement_surcharge", col("improvement_surcharge") + 1000000)
+    df = df.withColumn("new_tip_amount", col("tip_amount") + 1000000)
+    df = df.withColumn("new_lpep_pickup_datetime", col("lpep_pickup_datetime"))
+
+    return df
+
+batch_source = HdfsSource(
+    name="nycTaxiBatchSource",                              # Source name to enrich your metadata
+    path="abfss://green_tripdata_2020-04.csv",              # Path to your data
+    preprocessing=my_preprocessing,
+    event_timestamp_column="lpep_dropoff_datetime",         # Event timestamp for point-in-time correctness
+    timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
+```
+
 ## Beyond Features on Raw Data Sources - Derived Features
 
 ```python
