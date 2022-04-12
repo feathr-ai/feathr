@@ -7,3 +7,12 @@ export interface IFeature {
   dataSource: string;
   owners: string;
 }
+
+export interface IDataSource {
+  id?: string;
+  name: string;
+  type: string;
+  event_timestamp_column: string;
+  path: string;
+}
+

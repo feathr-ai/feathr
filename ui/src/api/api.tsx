@@ -1,7 +1,19 @@
 import Axios from "axios";
-import { IFeature } from "../models/feature";
+import { IDataSource, IFeature } from "../models/feature";
 
 const API_ENDPOINT = "https://feathr-dev-api.azurewebsites.net";
+
+export const fetchDataSources = async () => {
+  const result : Array<IDataSource> = [
+    {
+      name: "nycTaxiBatchSourcePurview",
+      type: "wasbs",
+      event_timestamp_column: "lpep_dropoff_datetime",
+      path: "wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/feathr_delta_table"
+    }
+  ];
+  return result;
+};
 
 export const fetchFeatures = async (page: number, limit: number, keyword: string) => {
   return Axios.get<IFeature[]>(`${ API_ENDPOINT }/features`,

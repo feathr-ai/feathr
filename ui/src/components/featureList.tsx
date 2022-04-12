@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { Button, Dropdown, Input, Menu, message, Popconfirm, Select, Tabs, Tag, Tooltip } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
-import TableResize from './resizableTable';
+import TableResize from './resizableTable/resizableTable';
 import { IFeature } from "../models/feature";
 import { deleteFeature, fetchFeatures } from '../api';
 
@@ -157,7 +157,6 @@ const FeatureList: React.FC = () => {
   let [query, setQuery] = useState<string>("");
 
   useEffect(() => {
-    console.log('useEffect in FeatureList fired');
     fetchData();
   }, [])
 
@@ -179,7 +178,6 @@ const FeatureList: React.FC = () => {
 
   const onKeywordChange = useCallback(
     (value) => {
-      console.log('keyword change callback')
       setQuery(query = value);
     }, []
   )

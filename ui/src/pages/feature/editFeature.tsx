@@ -43,7 +43,7 @@ const EditFeature: React.FC<Props> = () => {
       icon: <ExclamationCircleOutlined />,
       async onOk() {
         await deleteFeature(id);
-        history.push('/');
+        history.push('/features');
       },
       onCancel() {
         console.log('Cancel clicked');

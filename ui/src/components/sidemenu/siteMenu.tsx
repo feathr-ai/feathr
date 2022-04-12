@@ -20,14 +20,14 @@ const SideMenu = withRouter(({ history }) => {
         defaultOpenKeys={ ['/'] }
         selectedKeys={ [history.location.pathname] }
       >
-        <Menu.Item key="/features" icon={ <AlertOutlined /> }>
-          <Link to="/">Features</Link>
-        </Menu.Item>
         <Menu.Item key="/data-sources" icon={ <AlertOutlined /> }>
-          <Link to="/">Data Sources</Link>
+          <Link to="/dataSources">Data Sources</Link>
         </Menu.Item>
-        <Menu.Item key="/feature-jobs" icon={ <AlertOutlined /> }>
-          <Link to="/">Feature Jobs</Link>
+        <Menu.Item key="/features" icon={ <AlertOutlined /> }>
+          <Link to="/features">Features</Link>
+        </Menu.Item>
+        <Menu.Item key="/jobs" icon={ <AlertOutlined /> }>
+          <Link to="/">Jobs</Link>
         </Menu.Item>
       </Menu>
     </Sider>

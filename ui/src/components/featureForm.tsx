@@ -18,7 +18,6 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
   const [form] = Form.useForm();
 
   useEffect(() => {
-    console.log('useEffect in FeatureForm fired');
     if (feature !== undefined) {
       form.setFieldsValue(feature);
     }
@@ -92,7 +91,7 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
         <BackTop style={ { marginBottom: '5%', marginRight: '20px' } }><UpCircleOutlined
           style={ { fontSize: '400%', color: '#3F51B5' } } /></BackTop>
       </Form>
-      { fireRedirect && (<Redirect to={ '/' }></Redirect>) }
+      { fireRedirect && (<Redirect to={ '/features' }></Redirect>) }
     </>
   );
 };

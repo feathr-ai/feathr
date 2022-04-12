@@ -3,10 +3,11 @@ import { BrowserRouter, Route, Switch, withRouter } from 'react-router-dom';
 import { Layout } from 'antd';
 import Header from '../components/header/header';
 import SideMenu from '../components/sidemenu/siteMenu';
-import Home from '../pages/home/home';
 import { QueryClient, QueryClientProvider } from "react-query";
+import Features from "../pages/feature/features";
 import NewFeature from "../pages/feature/newFeature";
 import EditFeature from "../pages/feature/editFeature";
+import DataSources from "../pages/dataSource/dataSources";
 
 type Props = {};
 const { Footer } = Layout;
@@ -22,7 +23,8 @@ const Routes: React.FC<Props> = () => {
             <Header />
             <Switch>
               <Suspense fallback={ <div /> }>
-                <Route exact={ true } path="/" component={ withRouter(Home) } />
+                <Route exact={ true } path="/dataSources" component={ withRouter(DataSources) } />
+                <Route exact={ true } path="/features" component={ withRouter(Features) } />
                 <Route exact={ true } path="/new-feature" component={ withRouter(NewFeature) } />
                 <Route exact={ true } path="/feature/:id" component={ withRouter(EditFeature) } />
                 {/* {publicRoutes} */ }

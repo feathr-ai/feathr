@@ -1,12 +1,11 @@
 import React from 'react';
 import { Button, Card, Space } from 'antd';
-import './home.less';
 import { useHistory } from 'react-router';
 import FeatureList from "../../components/featureList";
 
 type Props = {};
 
-const Home: React.FC<Props> = () => {
+const Features: React.FC<Props> = () => {
   const history = useHistory();
   const onCreateFeatureClick = () => {
     history.push('/new-feature');
@@ -29,4 +28,4 @@ const Home: React.FC<Props> = () => {
   );
 };
 
-export default Home;
+export default Features;
