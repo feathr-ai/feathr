@@ -206,14 +206,14 @@ object FeatureJoinJob {
       "system-properties" -> OptionParam("sps", "Additional System Properties", "SYSTEM_PROPERTIES_CONFIG", "")
     )
 
+    val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
+
+    val cmdParser = new CmdLineParser(args, params, extraOptions)
+
     // Set system properties passed via arguments
     val sps = cmdParser.extractOptionalValue("system-properties").getOrElse("{}")
     val props = (new ObjectMapper()).readValue(sps, classOf[Map[String, String]])
     props.foreach(e => scala.util.Properties.setProp(e._1, e._2))
-
-    val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
-
-    val cmdParser = new CmdLineParser(args, params, extraOptions)
 
     val joinConfig = cmdParser.extractRequiredValue("join-config")
 
