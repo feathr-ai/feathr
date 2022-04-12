@@ -839,7 +839,7 @@ derivations: {
     
     def get_feature_by_guid(self, guid):
         """
-        Get a single feature by it's Guid
+        Get a single feature by it's GUID
         Returns the feature else throws an AtlasException with 400 error code
         """ 
         response = self.purview_client.get_single_entity(guid=guid)
@@ -847,8 +847,8 @@ derivations: {
     
     def get_feature_lineage(self, guid):
         """
-        Get feature's lineage by it's Guid
-        Returns the feature else throws an AtlasException with 404 error code
+        Get feature's lineage by it's GUID
+        Returns the feature else throws an AtlasException with 400 error code
         """
         return self.purview_client.get_entity_lineage(guid=guid)
 
@@ -865,6 +865,8 @@ derivations: {
     def search_features(self, searchTerm):
         """
         Search the registry for the given query term
+        For a ride hailing company few examples could be - "taxi", "passenger", "fare" etc.
+        It's a keyword search on the registry metadata
         """        
         search_term = "qualifiedName:{0}".format(searchTerm)
         entities = self.purview_client.discovery.search_entities(search_term)

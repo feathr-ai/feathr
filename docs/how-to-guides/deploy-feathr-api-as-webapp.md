@@ -9,7 +9,7 @@ The API currently supports following functionality
 
 ## Build and run locally
 ### Install
-
+__NOTE:__ You can run the following command in your local python environment or in your Azure Virtual machine.
 You can install dependencies through the requirements file
 ```bash
 $ pip install -r requirements.txt
