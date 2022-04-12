@@ -6,25 +6,21 @@ REDIS_PASSWORD = 'REDIS_PASSWORD'
 # 1MB = 1024*1024
 MB_BYTES = 1048576
 
-# For use in registry
-REGISTRY_VERSION="v4"
-SOURCE=f'feathr_source_{REGISTRY_VERSION}'
-FEATHR_PROJECT=f'feathr_workspace_{REGISTRY_VERSION}'
-DERIVED_FEATURE=f'feathr_derived_feature_{REGISTRY_VERSION}'
-ANCHOR=f'feathr_anchor_{REGISTRY_VERSION}'
-ANCHOR_FEATURE=f'feathr_anchor_feature_{REGISTRY_VERSION}'
-
-ARRAY_SOURCE=f"array<feathr_source_{REGISTRY_VERSION}>"
-ARRAY_ANCHOR=f"array<feathr_anchor_{REGISTRY_VERSION}>"
-ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_{REGISTRY_VERSION}>"
-ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_{REGISTRY_VERSION}>"
-
-# below are not used, for backward compatibility only
-PROJECT_TO_DERIVED_FEATURE=f"feathr_project_to_derived_feature_relationship_{REGISTRY_VERSION}"
-PROJECT_TO_ANCHOR=f"feathr_project_to_anchor_relationship_{REGISTRY_VERSION}"
-ANCHOR_TO_SOURCE=f"feathr_anchor_to_source_relationship_{REGISTRY_VERSION}"
-ANCHOR_TO_FEATURE=f"feathr_anchor_to_feature_relationship_{REGISTRY_VERSION}"
-DERIVED_FEATURE_TO_FEATURE=f"feathr_derived_feature_to_feature_relationship_{REGISTRY_VERSION}"
-
-
 INPUT_CONTEXT="PASSTHROUGH"
+
+# For use in registry. 
+# For type definition, think it's like a schema of a table. 
+# This version field is mainly to smooth possible future upgrades, 
+# for example, backward incompatible changes should be introduced in v2, to make sure that features registered with v1 schema can still be used
+REGISTRY_TYPEDEF_VERSION="v1"
+
+TYPEDEF_SOURCE=f'feathr_source_{REGISTRY_TYPEDEF_VERSION}'
+TYPEDEF_FEATHR_PROJECT=f'feathr_workspace_{REGISTRY_TYPEDEF_VERSION}'
+TYPEDEF_DERIVED_FEATURE=f'feathr_derived_feature_{REGISTRY_TYPEDEF_VERSION}'
+TYPEDEF_ANCHOR=f'feathr_anchor_{REGISTRY_TYPEDEF_VERSION}'
+TYPEDEF_ANCHOR_FEATURE=f'feathr_anchor_feature_{REGISTRY_TYPEDEF_VERSION}'
+
+TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_{REGISTRY_TYPEDEF_VERSION}>"
+TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_{REGISTRY_TYPEDEF_VERSION}>"
+TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_{REGISTRY_TYPEDEF_VERSION}>"
+

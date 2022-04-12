@@ -202,8 +202,11 @@ def registry_test_setup(config_path: str):
     
     derived_feature_list = [
                         f_trip_time_distance, f_trip_time_rounded, f_trip_time_rounded_plus]
-    random.shuffle(derived_feature_list)
+    
     # shuffule the order to make sure they can be parsed correctly
+    # Those input derived features can be in arbitrary order, but in order to parse the right dependencies, we need to reorder them internally in a certain order. 
+    # This shuffle is to make sure that each time we have random shuffle for the input and make sure the internal sorting algorithm works (we are using topological sort).
+    random.shuffle(derived_feature_list)
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
 
     return client

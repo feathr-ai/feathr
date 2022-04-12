@@ -16,7 +16,7 @@ class FeatureAnchor:
         name: Unique name of the anchor.
         source: data source that the features are anchored to. Should be either of `INPUT_CONTEXT` or `feathr.source.Source`
         features: list of features within this anchor. 
-        registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate anchor description, whether this anchor is deprecated or not, etc.
+        registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate whether this anchor is deprecated or not, etc.
     """
     def __init__(self,
                 name: str,

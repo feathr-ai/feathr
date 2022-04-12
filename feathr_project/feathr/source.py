@@ -11,7 +11,7 @@ class Source:
          name: name of the source
          event_timestamp_column: column name of the event timestamp
          timestamp_format: the format of the event_timestamp_column, e.g. yyyy/MM/DD.
-         registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate source description, whether this source is deprecated or not, last refreshed time, etc.
+         registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate whether this source is deprecated or not.
     """
     def __init__(self,
                  name: str,
@@ -62,7 +62,7 @@ class HdfsSource(Source):
             - `epoch` (seconds since epoch), for example `1647737463`
             - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
             - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html). 
-            registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate feature description, whether this feature is deprecated or not, last refreshed time, etc.
+            registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate whether this source is deprecated or not.
         """
     def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str]= None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
         super().__init__(name, event_timestamp_column, timestamp_format, registry_tags=registry_tags)

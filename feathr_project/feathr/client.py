@@ -75,16 +75,15 @@ class FeathrClient(object):
 
     Args:
         config_path (str, optional): config path. See [Feathr Config Template](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
-        local_workspace_dir (_type_, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
-        credential (_type_, optional): credential to access cloud resources, and most likely to be DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function.
-        project_name_override (_type_, optional): override the project name. Defaults to None.
-        project_registry_tag (dict, optional): adding tags for project in Feathr registry . Defaults to {}.
+        local_workspace_dir (str, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
+        credential (optional): credential to access cloud resources,  most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
+        project_registry_tag (Dict[str, str]): adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
 
     Raises:
         RuntimeError: Fail to create the client since necessary environment variables are not set for Redis
         client creation.
     """
-    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_name_override = None, project_registry_tag={}):
+    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_registry_tag: Dict[str, str]=None):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
@@ -101,7 +100,7 @@ class FeathrClient(object):
 
         # Load all configs from yaml at initialization
         # DO NOT load any configs from yaml during runtime.
-        self.project_name = project_name_override if project_name_override else envutils.get_environment_variable_with_default(
+        self.project_name = envutils.get_environment_variable_with_default(
             'project_config', 'project_name')
 
         # Redis configs
@@ -209,7 +208,7 @@ class FeathrClient(object):
         else:
             self.registry.register_features(self.local_workspace_dir, from_context=from_context)
     
-    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: Optional[List[DerivedFeature]] = []):
+    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
         """Registers features based on the current workspace
         """
         # Run necessary validations

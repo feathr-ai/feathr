@@ -39,11 +39,11 @@ from feathr.typed_key import TypedKey
 class _FeatureRegistry():
     """
     Initializes the feature registry, doing the following:
-    - Use an Azure Service Principal to communicate with Azure Purview
+    - Use an DefaultAzureCredential() to communicate with Azure Purview
     - Initialize an Azure Purview Client
     - Initialize the GUID tracker, project name, etc.
     """
-    def __init__(self, project_name: str, azure_purview_name: str, registry_delimiter: str, project_tags: Dict[str, str], credential=None, config_path=None,):
+    def __init__(self, project_name: str, azure_purview_name: str, registry_delimiter: str, project_tags: Dict[str, str] = None, credential=None, config_path=None,):
         self.project_name = project_name
         self.registry_delimiter = registry_delimiter
         self.azure_purview_name = azure_purview_name
@@ -57,7 +57,8 @@ class _FeatureRegistry():
         )
         self.guid = GuidTracker(starting=-1000)
         self.entity_batch_queue = []
-        # for searching in derived features
+
+        # for searching in derived features by name
         self.global_feature_entity_dict = {}
 
     def _register_feathr_feature_types(self):
@@ -68,12 +69,12 @@ class _FeatureRegistry():
 
         # Each feature is registered under a certain Feathr project. The project should what we refer to, however for backward compatibility, the type name would be `feathr_workspace`
         type_feathr_project = EntityTypeDef(
-            name=FEATHR_PROJECT,
+            name=TYPEDEF_FEATHR_PROJECT,
             attributeDefs=[
                 AtlasAttributeDef(
-                    name="anchor_features", typeName=ARRAY_ANCHOR, cardinality=Cardinality.SET),
+                    name="anchor_features", typeName=TYPEDEF_ARRAY_ANCHOR, cardinality=Cardinality.SET),
                 AtlasAttributeDef(
-                    name="derived_features", typeName=ARRAY_DERIVED_FEATURE, cardinality=Cardinality.SET),
+                    name="derived_features", typeName=TYPEDEF_ARRAY_DERIVED_FEATURE, cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
             ],
@@ -81,7 +82,7 @@ class _FeatureRegistry():
 
         )
         type_feathr_sources = EntityTypeDef(
-            name=SOURCE,
+            name=TYPEDEF_SOURCE,
             attributeDefs=[
 
                 AtlasAttributeDef(
@@ -101,7 +102,7 @@ class _FeatureRegistry():
         )
 
         type_feathr_anchor_features = EntityTypeDef(
-            name=ANCHOR_FEATURE,
+            name=TYPEDEF_ANCHOR_FEATURE,
             attributeDefs=[
                 AtlasAttributeDef(name="type", typeName="string",
                                   cardinality=Cardinality.SINGLE),
@@ -116,14 +117,14 @@ class _FeatureRegistry():
         )
 
         type_feathr_derived_features = EntityTypeDef(
-            name=DERIVED_FEATURE,
+            name=TYPEDEF_DERIVED_FEATURE,
             attributeDefs=[
                 AtlasAttributeDef(name="type", typeName="string",
                                   cardinality=Cardinality.SINGLE),
 
-                AtlasAttributeDef(name="input_anchor_features", typeName=ARRAY_ANCHOR_FEATURE,
+                AtlasAttributeDef(name="input_anchor_features", typeName=TYPEDEF_ARRAY_ANCHOR_FEATURE,
                                   cardinality=Cardinality.SET),
-                AtlasAttributeDef(name="input_derived_features", typeName=ARRAY_DERIVED_FEATURE,
+                AtlasAttributeDef(name="input_derived_features", typeName=TYPEDEF_ARRAY_DERIVED_FEATURE,
                                   cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="key", typeName="array<map<string,string>>",
                                   cardinality=Cardinality.SET),
@@ -136,12 +137,12 @@ class _FeatureRegistry():
         )
 
         type_feathr_anchors = EntityTypeDef(
-            name=ANCHOR,
+            name=TYPEDEF_ANCHOR,
             attributeDefs=[
                 AtlasAttributeDef(
-                    name="source", typeName=SOURCE, cardinality=Cardinality.SINGLE),
+                    name="source", typeName=TYPEDEF_SOURCE, cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(
-                    name="features", typeName=ARRAY_ANCHOR_FEATURE, cardinality=Cardinality.SET),
+                    name="features", typeName=TYPEDEF_ARRAY_ANCHOR_FEATURE, cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
             ],
@@ -194,7 +195,7 @@ class _FeatureRegistry():
                     "transformation": transform_dict,
                     "tags": anchor_feature.registry_tags,
                 },
-                typeName=ANCHOR_FEATURE,
+                typeName=TYPEDEF_ANCHOR_FEATURE,
                 guid=self.guid.get_guid(),
             )
             self.entity_batch_queue.append(anchor_feature_entity)
@@ -222,7 +223,7 @@ class _FeatureRegistry():
                     "features": [s.to_json(minimum=True) for s in anchor_feature_entities],
                     "tags": anchor.registry_tags
                 },
-                typeName=ANCHOR,
+                typeName=TYPEDEF_ANCHOR,
                 guid=self.guid.get_guid(),
             )
             # add feature lineage between anchor and feature
@@ -280,7 +281,7 @@ class _FeatureRegistry():
                 "tags": source.registry_tags,
                 "preprocessing": preprocessing_func  # store the UDF as a string
             },
-            typeName=SOURCE,
+            typeName=TYPEDEF_SOURCE,
             guid=self.guid.get_guid(),
         )
         self.entity_batch_queue.append(source_entity)
@@ -358,12 +359,12 @@ class _FeatureRegistry():
                 attributes={
                     "type": derived_feature.feature_type.to_feature_config(),
                     "key": key_list,
-                    "input_anchor_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==ANCHOR_FEATURE],
-                    "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==DERIVED_FEATURE],
+                    "input_anchor_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==TYPEDEF_ANCHOR_FEATURE],
+                    "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==TYPEDEF_DERIVED_FEATURE],
                     "transformation": transform_dict,
                     "tags": derived_feature.registry_tags
                 },
-                typeName=DERIVED_FEATURE,
+                typeName=TYPEDEF_DERIVED_FEATURE,
                 guid=self.guid.get_guid(),
             )
 
@@ -399,21 +400,21 @@ class _FeatureRegistry():
         if anchor_list:
             anchor_entities = self._parse_anchors(anchor_list)
 
-        attributes = {"anchor_features": [
+        project_attributes = {"anchor_features": [
             s.to_json(minimum=True) for s in anchor_entities], "tags": self.project_tags}
         # add derived feature if it's there
         if derived_feature_list:
             derived_feature_entities = self._parse_derived_features(
                 derived_feature_list)
-            attributes["derived_features"] = [
+            project_attributes["derived_features"] = [
                 s.to_json(minimum=True) for s in derived_feature_entities]
 
         # define project in Atlas entity
         feathr_project_entity = AtlasEntity(
             name=self.project_name,
             qualified_name=self.project_name,
-            attributes=attributes,
-            typeName=FEATHR_PROJECT,
+            attributes=project_attributes,
+            typeName=TYPEDEF_FEATHR_PROJECT,
             guid=self.guid.get_guid(),
         )
 
@@ -715,7 +716,7 @@ derivations: {
         registered features; otherwise it will only return only features under this project
         """
         entities = self.purview_client.discovery.search_entities(
-            f"entityType:{ANCHOR_FEATURE} or entityType:{DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
+            f"entityType:{TYPEDEF_ANCHOR_FEATURE} or entityType:{TYPEDEF_DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
         feature_list = []
         for entity in entities:
             if project_name:
@@ -743,7 +744,7 @@ derivations: {
             entity_type, str) else entity_type
 
         for i in entity_type_list:
-            if i not in {SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT}:
+            if i not in {TYPEDEF_SOURCE, TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT}:
                 raise RuntimeError(
                     f'only SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT are supported when listing the registered entities, {entity_type} is not one of them.')
 
