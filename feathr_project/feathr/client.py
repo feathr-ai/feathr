@@ -25,6 +25,9 @@ from feathr.materialization_settings import MaterializationSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
+from feathr.feature_derivations import DerivedFeature
+from feathr.anchor import FeatureAnchor
+from feathr.feathr_configurations import SparkExecutionConfiguration
 
 
 class FeatureJoinJobParams:
@@ -72,14 +75,15 @@ class FeathrClient(object):
 
     Args:
         config_path (str, optional): config path. See [Feathr Config Template](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
-        local_workspace_dir (_type_, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
-        credential (_type_, optional): credential to access cloud resources, and most likely to be DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function.
+        local_workspace_dir (str, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
+        credential (optional): credential to access cloud resources,  most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
+        project_registry_tag (Dict[str, str]): adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
 
     Raises:
         RuntimeError: Fail to create the client since necessary environment variables are not set for Redis
         client creation.
     """
-    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None):
+    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_registry_tag: Dict[str, str]=None):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
@@ -166,7 +170,14 @@ class FeathrClient(object):
 
         self._construct_redis_client()
 
-        self.registry = _FeatureRegistry(config_path = config_path, credential=self.credential)
+
+        # initialize registry
+        self.registry_delimiter = envutils.get_environment_variable_with_default(
+            'feature_registry', 'purview', 'delimiter')
+        self.azure_purview_name = envutils.get_environment_variable_with_default(
+            'feature_registry', 'purview', 'purview_name')
+        # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
+        self.registry = _FeatureRegistry(self.project_name, self.azure_purview_name, self.registry_delimiter, project_registry_tag, config_path = config_path, credential=self.credential)
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
@@ -183,20 +194,21 @@ class FeathrClient(object):
 
             Args:
             from_context: If from_context is True (default), the features will be generated from
-                the current context. Otherwise, the features will be generated from
+                the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
                 configuration files.
         """
 
         if from_context:
+            # make sure those items are in `self`
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
                 _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
-                self.registry.register_features(self.local_workspace_dir)
+                self.registry.register_features(self.local_workspace_dir, from_context=from_context, anchor_list=self.anchor_list, derived_feature_list=self.derived_feature_list)
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
         else:
-            self.registry.register_features(self.local_workspace_dir)
-
-    def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
+            self.registry.register_features(self.local_workspace_dir, from_context=from_context)
+    
+    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
         """Registers features based on the current workspace
         """
         # Run necessary validations
@@ -227,11 +239,11 @@ class FeathrClient(object):
         """
         return self.registry.list_registered_features(project_name)
 
-    def get_registry_client(self):
+    def _get_registry_client(self):
         """
         Returns registry client in case users want to perform more advanced operations
         """
-        return self.registry.get_registry_client()
+        return self.registry._get_registry_client()
 
     def get_online_features(self, feature_table, key, feature_names):
         """Fetches feature value for a certain key from a online feature table.
@@ -671,8 +683,3 @@ class FeathrClient(object):
             JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
             """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
         return config_str
-
-    def get_features_from_registry(self, project_name):
-        """ Sync features from the registry given a project name """
-        # TODO - Add support for customized workspace path
-        self.registry.get_features_from_registry(project_name, os.path.abspath("./"))

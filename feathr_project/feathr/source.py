@@ -1,7 +1,9 @@
 
 from abc import ABC, abstractmethod
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
+
 from jinja2 import Template
+
 
 class Source:
     """External data source for feature. Typically a 'table'.
@@ -9,14 +11,18 @@ class Source:
          name: name of the source
          event_timestamp_column: column name of the event timestamp
          timestamp_format: the format of the event_timestamp_column, e.g. yyyy/MM/DD.
+         registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
     """
     def __init__(self,
                  name: str,
-                 event_timestamp_column: Optional[str],
-                 timestamp_format: Optional[str] = "epoch") -> None:
+                 event_timestamp_column: Optional[str], 
+                 timestamp_format: Optional[str] = "epoch",
+                 registry_tags: Optional[Dict[str, str]] = None,
+                 ) -> None:
         self.name = name
         self.event_timestamp_column = event_timestamp_column
         self.timestamp_format = timestamp_format
+        self.registry_tags = registry_tags
 
     def __eq__(self, other):
         """A source is equal to another if name is equal."""
@@ -55,11 +61,11 @@ class HdfsSource(Source):
             timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are:
             - `epoch` (seconds since epoch), for example `1647737463`
             - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
-            - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
-
+            - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html). 
+            registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
         """
-    def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str]= None, timestamp_format: Optional[str] = "epoch") -> None:
-        super().__init__(name, event_timestamp_column, timestamp_format)
+    def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str]= None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, event_timestamp_column, timestamp_format, registry_tags=registry_tags)
         self.path = path
         self.preprocessing = preprocessing
 

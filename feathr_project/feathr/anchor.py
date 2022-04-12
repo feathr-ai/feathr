@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from feathr.feature import Feature
 from feathr.source import Source
 from feathr.typed_key import DUMMY_KEY
@@ -15,15 +15,19 @@ class FeatureAnchor:
     Attributes:
         name: Unique name of the anchor.
         source: data source that the features are anchored to. Should be either of `INPUT_CONTEXT` or `feathr.source.Source`
-        features: list of features within this anchor.
+        features: list of features within this anchor. 
+        registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this anchor is deprecated, etc.
     """
     def __init__(self,
                 name: str,
                 source: Source,
-                features: List[Feature]):
+                features: List[Feature],
+                registry_tags: Optional[Dict[str, str]] = None,
+                ):
         self.name = name
         self.features = features
         self.source = source
+        self.registry_tags=registry_tags
         self.validate_features()
 
     def validate_features(self):
