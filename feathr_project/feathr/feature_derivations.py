@@ -54,7 +54,7 @@ class DerivedFeature(FeatureBase):
                         }
                     {% endfor %}
                 }
-                definition.sqlExpr: {{derived_feature.transform.to_feature_config(False)}}
+                definition: {{derived_feature.transform.to_feature_config(False)}}
                 {{derived_feature.feature_type.to_feature_config()}}
             }
         """)
