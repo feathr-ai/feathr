@@ -127,7 +127,7 @@ def snowflake_test_setup(config_path: str):
 def registry_test_setup(config_path: str):
 
 
-    client = FeathrClient(config_path=config_path)
+    client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
 
     def add_new_dropoff_and_fare_amount_column(df: DataFrame):
         df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
@@ -138,11 +138,14 @@ def registry_test_setup(config_path: str):
                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss",
-                              preprocessing=add_new_dropoff_and_fare_amount_column
+                              preprocessing=add_new_dropoff_and_fare_amount_column,
+                              registry_tags={"for_test_purpose":"true"}
                               )
 
     f_trip_distance = Feature(name="f_trip_distance",
-                              feature_type=FLOAT, transform="trip_distance")
+                              feature_type=FLOAT, transform="trip_distance",
+                              registry_tags={"for_test_purpose":"true"}
+                              )
     f_trip_time_duration = Feature(name="f_trip_time_duration",
                                    feature_type=INT32,
                                    transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
@@ -161,7 +164,9 @@ def registry_test_setup(config_path: str):
 
     request_anchor = FeatureAnchor(name="request_features",
                                    source=INPUT_CONTEXT,
-                                   features=features)
+                                   features=features,
+                                   registry_tags={"for_test_purpose":"true"}
+                                   )
 
     f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
                                           feature_type=FLOAT,

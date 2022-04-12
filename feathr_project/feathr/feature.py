@@ -18,7 +18,7 @@ class FeatureBase(ABC):
         feature_type: the feature value type. e.g. INT32, FLOAT, etc. feathr.dtype
         key: The key of this feature. e.g. user_id.
         transform: A transformation used to produce its feature value. e.g. amount * 10
-        registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate whether this feature is deprecated or not.
+        registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this feature is deprecated, etc.
     """
     def __init__(self,
                  name: str,
@@ -80,7 +80,7 @@ class Feature(FeatureBase):
         feature_type: the feature value type. e.g. INT32, FLOAT, etc. Should be part of `feathr.dtype`
         key: The key of this feature. e.g. user_id.
         transform: A row transformation used to produce its feature value. e.g. amount * 10
-        registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate whether this feature is deprecated or not.
+        registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this feature is deprecated, etc.
     """
     def __init__(self,
                 name: str,

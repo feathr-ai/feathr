@@ -16,7 +16,7 @@ class DerivedFeature(FeatureBase):
         key: All features with corresponding keys that this derived feature depends on
         input_features: features that this derived features depends on
         transform: transformation that produces the derived feature value, based on the input_features
-        registry_tags: A dict of (str, str) that you can pass to feature registry for customization. For example, you can use `registry_tags` to indicate feature description, whether this feature is deprecated or not, last refreshed time, etc.
+        registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can For example, you can use {"deprecated": "true"} to indicate this feature is deprecated, etc.
     """
 
     def __init__(self,

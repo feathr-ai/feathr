@@ -15,7 +15,7 @@ def test_feathr_register_features_e2e():
 
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
-    client = registry_test_setup(os.path.join(test_workspace_dir, "./feathr_user_workspace/feathr_config.yaml"))
+    client = registry_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     client.register_features()
     # Allow purview to process a bit
     time.sleep(5)
