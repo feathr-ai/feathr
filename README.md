@@ -10,7 +10,7 @@ Feathr lets you:
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-For more details, read our [documentation](https://linkedin.github.io/feathr/). We also have two blogposts talking about [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
+For more details, read our [documentation](https://linkedin.github.io/feathr/). We also have two blog posts talking about [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
 
 ## Running Feathr on Azure with 3 Simple Steps
 
