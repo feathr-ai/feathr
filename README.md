@@ -22,7 +22,7 @@ Feathr has native cloud integration. To use Feathr on Azure, you only need three
 
 2. Click the button below to deploy a minimal set of Feathr resources for demo purpose. You will need to fill in the `Principal ID` and `Resource Prefix`. You will need "Owner" permission of the selected subscription.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 3. Run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
 
