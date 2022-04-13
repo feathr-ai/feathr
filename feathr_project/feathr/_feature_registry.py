@@ -446,9 +446,10 @@ class _FeatureRegistry():
                 guid=self.guid.get_guid(),
             )
             self.entity_batch_queue.append(lineage_process)
-            self.entity_batch_queue.append(feathr_project_entity)
-            self.entity_batch_queue.extend(anchor_entities)
-            self.entity_batch_queue.extend(derived_feature_entities)
+            
+        self.entity_batch_queue.append(feathr_project_entity)
+        self.entity_batch_queue.extend(anchor_entities)
+        self.entity_batch_queue.extend(derived_feature_entities)
 
     @classmethod
     def _get_py_files(self, path: Path) -> List[Path]:
