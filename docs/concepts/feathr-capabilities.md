@@ -1,29 +1,9 @@
----
-layout: default
-title: Home
-nav_order: 1
-description: "Feathr – An Enterprise-Grade, High Performance Feature Store"
-permalink: /
----
 
-# Feathr – An Enterprise-Grade, High Performance Feature Store
+# Feathr Capabilities
 
-## What is Feathr?
+Feathr is a scalable platform and below are some of the capabilities that Feathr has:
 
-Feathr lets you:
-
-- **define features** based on raw data sources, including time-series data, using simple APIs.
-- **get those features by their names** during model training and model inferencing.
-- **share features** across your team and company.
-
-Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
-
-## Quick Start
-
-- Follow the [quick start Jupyter Notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./quickstart.md) containing a bit more explanation on the notebook.
-- For more details, read our [documentation](https://linkedin.github.io/feathr/).
-
-## Defining Features with Transformation
+### Defining Features with Transformation
 
 ```python
 features = [
@@ -42,11 +22,9 @@ anchor = FeatureAnchor(name="request_features",             # Features anchored 
                        features=features)
 ```
 
-## Accessing Features
+### Accessing Features
 
 ```python
-from feathr import FeathrClient
-
 # Requested features to be joined
 # Define the key for your feature
 location_id = TypedKey(key_column="DOLocationID",
@@ -68,11 +46,9 @@ feathr_client.get_offline_features(observation_settings=settings,
                                    feature_query=feature_query)
 ```
 
-## Deploy Features to Online (Redis) Store
+### Deploy Features to Online (Redis) Store
 
 ```python
-from feathr import FeathrClient, BackfillTime, MaterializationSettings, RedisSink
-
 client = FeathrClient()
 redisSink = RedisSink(table_name="nycTaxiDemoFeature")
 # Materialize two features into a redis table.
@@ -80,14 +56,11 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
 sinks=[redisSink],
 feature_names=["f_location_avg_fare", "f_location_max_fare"])
 client.materialize_features(settings)
-
 ```
 
-Get features from online store:
+And get features from online store:
 
 ```python
-from feathr import FeathrClient
-client = FeathrClient()
 # Get features for a locationId (key)
 client.get_online_features(feature_table = "agg_features",
                            key = "265",
@@ -98,9 +71,7 @@ client.multi_get_online_features(feature_table = "agg_features",
                                  feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 ```
 
-# More on Defining Features
-
-## Defining Window Aggregation Features
+### Defining Window Aggregation Features
 
 ```python
 agg_features = [Feature(name="f_location_avg_fare",
@@ -117,7 +88,7 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            features=agg_features)
 ```
 
-## Defining Named Data Sources
+### Defining Named Data Sources
 
 ```python
 batch_source = HdfsSource(
@@ -127,30 +98,7 @@ batch_source = HdfsSource(
     timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
 ```
 
-## Defining Preprocessing on Source
-If you need some complex transformation that can be done with provided transformations, you can use source preprocessing
-to achieve your goal.
-
-The preprocessing takes in the DataFrame loaded by the source and then return a preprocessed DataFrame by the preprocessing
-function. The preprocessing function can't refer to other functions or dependencies that are not provided in the Spark cluster.
-
-```python
-def my_preprocessing(df: DataFrame) -> DataFrame:
-    df = df.withColumn("new_improvement_surcharge", col("improvement_surcharge") + 1000000)
-    df = df.withColumn("new_tip_amount", col("tip_amount") + 1000000)
-    df = df.withColumn("new_lpep_pickup_datetime", col("lpep_pickup_datetime"))
-
-    return df
-
-batch_source = HdfsSource(
-    name="nycTaxiBatchSource",                              # Source name to enrich your metadata
-    path="abfss://green_tripdata_2020-04.csv",              # Path to your data
-    preprocessing=my_preprocessing,
-    event_timestamp_column="lpep_dropoff_datetime",         # Event timestamp for point-in-time correctness
-    timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
-```
-
-## Beyond Features on Raw Data Sources - Derived Features
+### Beyond Features on Raw Data Sources - Derived Features
 
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
@@ -170,29 +118,3 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       input_features=[user_embedding, item_embedding],
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
-
-## Cloud Architecture
-
-Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
-![Architecture](images/architecture.png)
-
-# Next Steps
-
-## Quickstart
-
-- [Quickstart](quickstart.md)
-
-## Concepts
-
-- [Feature Definition](concepts/feature-definition.md)
-- [Feature Generation](concepts/feature-generation.md)
-- [Feature Join](concepts/feature-join.md)
-- [Point-in-time Correctness](concepts/point-in-time-join.md)
-
-## How-to-guides
-
-- [Azure Deployment](how-to-guides/azure-deployment.md)
-- [Local Feature Testing](how-to-guides/local-feature-testing.md)
-- [Feature Definition Troubleshooting Guide](how-to-guides/troubleshoot-feature-definition.md)
-- [Feathr Expression Language](how-to-guides/expression-language.md)
-- [Feathr Job Configuration](how-to-guides/feathr_job_configuration.md)

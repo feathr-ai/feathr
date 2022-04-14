@@ -26,7 +26,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         For example, user can control whether to use a new cluster to run the job or not, specify the cluster ID, running frequency, node size, workder no., whether to send out failed notification email, etc.
         This runner will only fill in necessary arguments in the JSON template.
 
-        This class will read from the provided configs string, and do the following steps. 
+        This class will read from the provided configs string, and do the following steps.
         This default template can be overwritten by users, but users need to make sure the template is compatible with the default template. Specifically:
         1. it's a SparkJarTask (rather than other types of jobs, say NotebookTask or others). See https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit for more details
         2. Use the Feathr Jar to run the job (hence will add an entry in `libraries` section)
@@ -39,7 +39,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             token_value (str): see here on how to get tokens: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/authentication
             config_template (str): config template for databricks cluster. See https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit for more details.
             databricks_work_dir (_type_, optional): databricks_work_dir must start with dbfs:/. Defaults to 'dbfs:/feathr_jobs'.
-        """  
+        """
     def __init__(
             self,
             workspace_instance_url: str,
@@ -47,7 +47,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             config_template: Union[str,Dict],
             databricks_work_dir: str = 'dbfs:/feathr_jobs',
     ):
-          
+
 
         # Below we will use Databricks job APIs (as well as many other APIs) to submit jobs or transfer files
         # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
@@ -114,7 +114,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                          local_path_or_http_path, returned_path)
         return returned_path
 
-    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
+    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
         """
         submit the feathr job to databricks
         Refer to the databricks doc for more details on the meaning of the parameters:
@@ -127,39 +127,53 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             configuration (Dict[str, str]): Additional configs for the spark job
         """
 
-        
+
         if isinstance(self.config_template, str):
             # if the input is a string, load it directly
             submission_params = json.loads(self.config_template)
         else:
-            # otherwise users might have missed the quotes in the config. 
+            # otherwise users might have missed the quotes in the config.
             submission_params = self.config_template
             logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
-        
+
         submission_params['run_name'] = job_name
-        submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         submission_params['new_cluster']['spark_conf'] = configuration
         submission_params['new_cluster']['custom_tags'] = job_tags
-        submission_params['spark_jar_task']['parameters'] = arguments
-        submission_params['spark_jar_task']['main_class_name'] = main_class_name
-        self.res_job_id = None
+        # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
+        submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
+        # see here for the submission parameter definition https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--request-structure-6
+        if python_files:
+            # this is a pyspark job. definition here: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--sparkpythontask
+            # the first file is the pyspark driver code. we only need the driver code to execute pyspark
+            param_and_file_dict = {"parameters": arguments, "python_file": self.upload_or_get_cloud_path(python_files[0])}
+            submission_params.setdefault('spark_python_task',param_and_file_dict)
+        else:
+            # this is a scala spark job
+            submission_params['spark_jar_task']['parameters'] = arguments
+            submission_params['spark_jar_task']['main_class_name'] = main_class_name
+
+
+        # For Job runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit
+        result = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
+                                headers=self.auth_headers, data=json.dumps(submission_params))
 
         try:
-            # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
-            result = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
-                              headers=self.auth_headers, data=json.dumps(submission_params))
+            # see if we can parse the returned result
             self.res_job_id = result.json()['run_id']
-            # For Job APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
-            result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
-                             headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-            logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', result.json()[
-                        'run_page_url'])
         except:
-            traceback.print_exc()
+            logger.error("submitting to Databricks cluster failed. Message returned from Databricks: {}", result.json())
+            exit(1)
+
+        # For Job runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit
+        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
+                                headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
+        logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', result.json()[
+            'run_page_url'])
+
         # return ID as the submission result
         return self.res_job_id
 
-    def wait_for_completion(self, timeout_seconds: Optional[int] = 500) -> bool:
+    def wait_for_completion(self, timeout_seconds: Optional[int] = 600) -> bool:
         """ Returns true if the job completed successfully
         """
         start_time = time.time()
@@ -182,13 +196,13 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         assert self.res_job_id is not None
         # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
         result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
-                               headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
+                              headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
         # first try to get result state. it might not be available, and if that's the case, try to get life_cycle_state
         res_state = result.json()['state'].get('result_state') or result.json()[
             'state']['life_cycle_state']
         assert res_state is not None
         return res_state
-        
+
     def get_job_result_uri(self) -> str:
         """Get job output uri
 
@@ -198,9 +212,9 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         assert self.res_job_id is not None
         # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
         result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
-                               headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
+                              headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
         custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
-        # in case users call this API even when there's no tags available 
+        # in case users call this API even when there's no tags available
         return None if custom_tags is None else custom_tags[OUTPUT_PATH_TAG]
 
 
@@ -265,8 +279,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
     def _read_single_chunk(self, path, offset, length=MB_BYTES):
 
         params = {"path": path,
-                "offset": offset,
-                "length": length}
+                  "offset": offset,
+                  "length": length}
 
         # get a single chunk of file
         # https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--read

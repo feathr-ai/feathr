@@ -159,14 +159,14 @@ def test_feathr_get_offline_features():
         else:
             output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
 
-        
+
         client.get_offline_features(observation_settings=settings,
                                     feature_query=feature_query,
                                     output_path=output_path)
 
         # assuming the job can successfully run; otherwise it will throw exception
         client.wait_job_to_finish(timeout_sec=900)
-        
+
         # download result and just assert the returned result is not empty
         res_df = get_result_df(client)
         assert res_df.shape[0] > 0

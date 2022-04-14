@@ -1,7 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from feathr.feature import Feature
 from feathr.source import Source
+from feathr.typed_key import DUMMY_KEY
 from jinja2 import Template
+from feathr.source import INPUT_CONTEXT
 
 # passthrough features do not need keys
 class FeatureAnchor:
@@ -11,22 +13,31 @@ class FeatureAnchor:
     The feature producer writes multiple anchors for a feature, exposing the same feature name for the feature
     consumer to reference it.
     Attributes:
-        name: Unique name of the anchor. 
+        name: Unique name of the anchor.
         source: data source that the features are anchored to. Should be either of `INPUT_CONTEXT` or `feathr.source.Source`
         features: list of features within this anchor. 
+        registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this anchor is deprecated, etc.
     """
     def __init__(self,
                 name: str,
                 source: Source,
-                features: List[Feature]):
+                features: List[Feature],
+                registry_tags: Optional[Dict[str, str]] = None,
+                ):
         self.name = name
         self.features = features
         self.source = source
+        self.registry_tags=registry_tags
         self.validate_features()
 
     def validate_features(self):
         """Validate that anchor is non-empty and all its features share the same key"""
         assert len(self.features) > 0
+        if self.source != INPUT_CONTEXT:
+            for feature in self.features:
+                if feature.key == [DUMMY_KEY]:
+                    raise RuntimeError(f"For anchors of non-INPUT_CONTEXT source, key of feature {feature.name} "
+                                       f"should be explicitly specified and not left blank.")
         for feature in self.features:
             assert feature.key_alias == self.features[0].key_alias
 
@@ -34,7 +45,7 @@ class FeatureAnchor:
         tm = Template("""
             {{anchor_name}}: {
                 source: {{source.name}}
-                key: [{{key_list}}]
+                key.sqlExpr: [{{key_list}}]
                 features: {
                     {% for feature in features %}
                         {{feature.to_feature_config()}}
@@ -47,3 +58,6 @@ class FeatureAnchor:
                         key_list = key_list,
                         features = self.features,
                         source = self.source)
+
+    def __str__(self):
+        return self.to_feature_config()
