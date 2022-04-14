@@ -6,19 +6,37 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from os.path import basename
+from enum import Enum
 
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
                             DeviceCodeCredential, EnvironmentCredential,
                             ManagedIdentityCredential)
 from azure.storage.filedatalake import DataLakeServiceClient
 from azure.synapse.spark import SparkClient
-from azure.synapse.spark.models import (LivyStates, SparkBatchJob,
-                                        SparkBatchJobOptions)
+from azure.synapse.spark.models import SparkBatchJobOptions
 from loguru import logger
 from tqdm import tqdm
 
 from feathr._abc import SparkJobLauncher
 from feathr.constants import *
+
+class LivyStates(Enum):
+    """ Copy LivyStates over to relax the dependency for azure-synapse-spark pacakge.
+    Definition is here:
+    https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/synapse/azure-synapse-spark/azure/synapse/spark/models/_spark_client_enums.py#L38
+    """
+
+    NOT_STARTED = "not_started"
+    STARTING = "starting"
+    IDLE = "idle"
+    BUSY = "busy"
+    SHUTTING_DOWN = "shutting_down"
+    ERROR = "error"
+    DEAD = "dead"
+    KILLED = "killed"
+    SUCCESS = "success"
+    RUNNING = "running"
+    RECOVERING = "recovering"
 
 
 class _FeathrSynapseJobLauncher(SparkJobLauncher):
