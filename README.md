@@ -10,7 +10,7 @@ Feathr lets you:
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-For more details, read our [documentation](https://linkedin.github.io/feathr/).
+For more details, read our [documentation](https://linkedin.github.io/feathr/). We also have two blog posts talking about [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
 
 ## Running Feathr on Azure with 3 Simple Steps
 
@@ -210,4 +210,4 @@ Build for the community and build by the community. Check out [Community Guideli
 
 ## Slack Channel
 
-Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ)).
+Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-17lugq6e8-Qu3KJXDA25tZqlFsmM94Dg)).
