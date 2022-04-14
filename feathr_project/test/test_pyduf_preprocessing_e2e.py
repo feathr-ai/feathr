@@ -59,7 +59,7 @@ def test_non_swa_feature_gen_with_offline_preprocessing():
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     batch_source = HdfsSource(name="nycTaxiBatchSource_add_new_fare_amount",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               preprocessing=add_new_fare_amount,
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
@@ -118,7 +118,7 @@ def test_feature_swa_feature_gen_with_preprocessing():
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     batch_source = HdfsSource(name="nycTaxiBatchSource",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               preprocessing=add_new_dropoff_and_fare_amount_column,
                               event_timestamp_column="new_lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
@@ -180,14 +180,14 @@ def test_feathr_get_offline_features_hdfs_source():
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     batch_source1 = HdfsSource(name="nycTaxiBatchSource_add_new_dropoff_and_fare_amount_column",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               preprocessing=add_new_dropoff_and_fare_amount_column,
                               event_timestamp_column="new_lpep_dropoff_datetime",
                               # event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
     batch_source2 = HdfsSource(name="nycTaxiBatchSource_add_new_fare_amount",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               preprocessing=add_new_fare_amount,
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
@@ -248,7 +248,7 @@ def test_feathr_get_offline_features_hdfs_source():
     ]
 
     settings = ObservationSettings(
-        observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
         event_timestamp_column="lpep_dropoff_datetime",
         timestamp_format="yyyy-MM-dd HH:mm:ss")
 
@@ -281,7 +281,7 @@ def test_get_offline_feature_two_swa_with_diff_preprocessing():
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     swa_source_1 = HdfsSource(name="nycTaxiBatchSource1",
-                               path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                               path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                                preprocessing=add_new_dropoff_and_fare_amount_column,
                                event_timestamp_column="new_lpep_dropoff_datetime",
                                timestamp_format="yyyy-MM-dd HH:mm:ss")
@@ -313,7 +313,7 @@ def test_get_offline_feature_two_swa_with_diff_preprocessing():
 
 
     swa_source_2 = HdfsSource(name="nycTaxiBatchSource2",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               preprocessing=add_new_surcharge_amount_and_pickup_column,
                               event_timestamp_column="new_lpep_pickup_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
@@ -365,7 +365,7 @@ def test_get_offline_feature_two_swa_with_diff_preprocessing():
     ]
 
     settings = ObservationSettings(
-        observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
         event_timestamp_column="lpep_dropoff_datetime",
         timestamp_format="yyyy-MM-dd HH:mm:ss")
 
