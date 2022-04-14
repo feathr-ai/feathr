@@ -337,7 +337,7 @@ def test_get_offline_feature_two_swa_with_diff_preprocessing():
                                )
 
     swa_source_3 = HdfsSource(name="nycTaxiBatchSource3",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04_old.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_old.csv",
                               preprocessing=add_old_lpep_dropoff_datetime,
                               event_timestamp_column="old_lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
