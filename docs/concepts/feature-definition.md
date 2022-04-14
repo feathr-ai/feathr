@@ -1,3 +1,9 @@
+---
+layout: default
+title: Feathr Feature Definition
+parent: Feathr Concepts
+---
+
 # Feature Definition
 
 ## Prerequisite

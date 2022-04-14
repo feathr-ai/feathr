@@ -1,3 +1,9 @@
+---
+layout: default
+title: Feathr Pull Request(PR) Guideline
+parent: Feathr Developer Guides
+---
+
 # Feathr Pull Request(PR) Guideline
 
 # PR Description

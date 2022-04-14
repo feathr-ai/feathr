@@ -1,3 +1,8 @@
+---
+layout: default
+title: Cloud Integration Test/CI Pipeline
+parent: Feathr Developer Guides
+---
 # Cloud Integration Test/CI Pipeline
 
 We use [GitHub Actions](../.github/workflows/scala.yml) to do cloud integration test. Currently the integration test has 4 jobs:

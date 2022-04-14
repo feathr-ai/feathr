@@ -1,6 +1,9 @@
-# Developer Guide for
-
-This is only for develoeprs. Users should access the documentation via https://readthedocs.com/.
+---
+layout: default
+title: Developer Guide for updating python SDK docs
+parent: Feathr Developer Guides
+---
+# Developer Guide for updating python SDK docs
 
 ## Install Dependencis
 
