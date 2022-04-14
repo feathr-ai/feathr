@@ -4,7 +4,7 @@ import { IDataSource, IFeature } from "../models/feature";
 const API_ENDPOINT = "https://feathr-dev-api.azurewebsites.net";
 
 export const fetchDataSources = async () => {
-  const result : Array<IDataSource> = [
+  const result: Array<IDataSource> = [
     {
       name: "nycTaxiBatchSourcePurview",
       type: "wasbs",

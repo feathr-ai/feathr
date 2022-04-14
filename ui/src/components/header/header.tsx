@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Button, PageHeader } from 'antd';
+import { useAccount, useMsal } from "@azure/msal-react";
 import './header.less';
 
 type Props = {};
 
 const Header: React.FC<Props> = () => {
+  const { accounts, instance } = useMsal();
+  const account = useAccount(accounts[0] || {});
   const [name, setName] = useState("");
 
   useEffect(() => {
-    setName("Demo User");
-  }, []);
+    if (account && account.name) {
+      setName(account.name.split(" ")[0]);
+    }
+  }, [account]);
 
   const onClickLogout = () => {
+    instance.logoutRedirect();
   }
 
   return (

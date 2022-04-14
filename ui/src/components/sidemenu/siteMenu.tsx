@@ -10,7 +10,7 @@ const SideMenu = withRouter(({ history }) => {
   return (
     <Sider>
       <div style={ { fontSize: 'medium', color: 'white', margin: '10px', paddingLeft: '15px' } }>
-        Feature Store Demo
+        Azure Feature Store
       </div>
 
       <Menu
