@@ -11,7 +11,7 @@
 # version of API settings
 api_version: 1
 project_config:
-  project_name: 'project_feathr_integration_test'
+  project_name: 'project_feathr_integration_test_fork'
   # Information that are required to be set via environment variables.
   required_environment_variables:
     # the environemnt variables are required to run Feathr
@@ -48,7 +48,7 @@ offline_store:
   # paths starts with s3a://
   # S3_ACCESS_KEY and S3_SECRET_KEY should be set in environment variable
   s3:
-    s3_enabled: true
+    s3_enabled: false
     # S3 endpoint. If you use S3 endpoint, then you need to provide access key and secret key in the environment variable as well.
     s3_endpoint: 's3.amazonaws.com'
 
@@ -72,10 +72,10 @@ spark_config:
   spark_result_output_parts: '1'
 
   azure_synapse:
-    dev_url: 'https://feathrazuretest3synapse.dev.azuresynapse.net'
-    pool_name: 'spark3'
+    dev_url: 'https://xchfeathrtest4spark.dev.azuresynapse.net'
+    pool_name: 'spark31'
     # workspace dir for storing all the required configuration files and the jar resources
-    workspace_dir: 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_test_workspace'
+    workspace_dir: 'abfss://xchfeathrtest4fs@xchfeathrtest4sto.dfs.core.windows.net/feathr_test_workspace'
     executor_size: 'Small'
     executor_num: 4
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
@@ -97,7 +97,7 @@ spark_config:
 online_store:
   redis:
     # Redis configs to access Redis cluster
-    host: 'feathrazuretest3redis.redis.cache.windows.net'
+    host: 'xchfeathrtest4redis.redis.cache.windows.net'
     port: 6380
     ssl_enabled: True
 
@@ -107,7 +107,7 @@ feature_registry:
     # register type system in purview during feathr client initialization. This is only required to be executed once.
     type_system_initialization: false
     # configure the name of the purview endpoint
-    purview_name: 'feathrazuretest3-purview1'
+    purview_name: 'xchfeathrtest4purview'
     # delimiter indicates that how the project/workspace name, feature names etc. are delimited. By default it will be '__'
     # this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'
     # the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips'
