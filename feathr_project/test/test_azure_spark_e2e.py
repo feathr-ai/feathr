@@ -120,6 +120,16 @@ def _validate_constant_feature(feature):
     assert feature[7] == ([1, 2, 3], [1, 2, 3])
 
 
+def test_dbfs_path():
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    if client.spark_runtime.casefold() == "databricks":
+        # expect this raise an error since the result path is not in dbfs: format
+        with pytest.raises(RuntimeError):
+            client.feathr_spark_laucher.download_result(result_path="wasb://res_url", local_folder="/tmp")
+
+
 def test_feathr_get_offline_features():
     """
     Test get_offline_features() can get data correctly.
@@ -149,14 +159,14 @@ def test_feathr_get_offline_features():
         else:
             output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
 
-        
+
         client.get_offline_features(observation_settings=settings,
                                     feature_query=feature_query,
                                     output_path=output_path)
 
         # assuming the job can successfully run; otherwise it will throw exception
         client.wait_job_to_finish(timeout_sec=900)
-        
+
         # download result and just assert the returned result is not empty
         res_df = get_result_df(client)
         assert res_df.shape[0] > 0

@@ -1,5 +1,5 @@
 from copy import copy, deepcopy
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
 from jinja2 import Template
 
@@ -33,8 +33,10 @@ class LookupFeature(FeatureBase):
                 base_feature: FeatureBase,
                 expansion_feature: FeatureBase,
                 aggregation: Aggregation,
-                key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY]):
-        super(LookupFeature, self).__init__(name, feature_type, key=key)
+                key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
+                registry_tags: Optional[Dict[str, str]] = None,
+                ):
+        super(LookupFeature, self).__init__(name, feature_type, key=key, registry_tags=registry_tags)
         self.base_feature = base_feature
         self.expansion_feature = expansion_feature
         self.aggregation = aggregation

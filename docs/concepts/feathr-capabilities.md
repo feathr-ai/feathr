@@ -1,48 +1,7 @@
-# Feathr – An Enterprise-Grade, High Performance Feature Store
 
-## What is Feathr?
+# Feathr Capabilities
 
-Feathr lets you:
-
-- **Define features** based on raw data sources, including time-series data, using simple APIs.
-- **Get those features by their names** during model training and model inferencing.
-- **Share features** across your team and company.
-
-Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
-
-For more details, read our [documentation](https://linkedin.github.io/feathr/).
-
-## Running Feathr on Azure with 3 Simple Steps
-
-Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
-
-1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
-
-[Launch Cloud Shell](https://shell.azure.com/bash)
-
-2. Click the button below to deploy a minimal set of Feathr resources for demo purpose. You will need to fill in the `Principal ID` and `Resource Prefix`. You will need "Owner" permission of the selected subscription.
-
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
-
-3. Run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb)
-
-## Installing Feathr Client Locally
-
-If you are not using the above Jupyter Notebook and want to install Feathr client locally, use this:
-
-```bash
-pip install -U feathr
-```
-
-Or use the latest code from GitHub:
-
-```bash
-pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
-```
-
-## Feathr Highlights
+Feathr is a scalable platform and below are some of the capabilities that Feathr has:
 
 ### Defining Features with Transformation
 
@@ -61,23 +20,6 @@ features = [
 anchor = FeatureAnchor(name="request_features",             # Features anchored on same source
                        source=batch_source,
                        features=features)
-```
-
-### Rich UDF Support
-
-Feathr has highly customizable UDFs with native PySpark and Spark SQL integration to lower learning curve for data scientists:
-
-```python
-def add_new_dropoff_and_fare_amount_column(df: DataFrame):
-    df = df.withColumn("f_day_of_week", dayofweek("lpep_dropoff_datetime"))
-    df = df.withColumn("fare_amount_cents", df.fare_amount.cast('double') * 100)
-    return df
-
-batch_source = HdfsSource(name="nycTaxiBatchSource",
-                        path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
-                        preprocessing=add_new_dropoff_and_fare_amount_column,
-                        event_timestamp_column="new_lpep_dropoff_datetime",
-                        timestamp_format="yyyy-MM-dd HH:mm:ss")
 ```
 
 ### Accessing Features
@@ -176,38 +118,3 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       input_features=[user_embedding, item_embedding],
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
-
-## Running Feathr Examples
-
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
-
-## Cloud Integrations
-
-| Feathr component             | Cloud Integrations                                                          |
-| ---------------------------- | --------------------------------------------------------------------------- |
-| Offline store – Object Store | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
-| Offline store – SQL          | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
-| Online store                 | Azure Cache for Redis                                                       |
-| Feature Registry             | Azure Purview                                                               |
-| Compute Engine               | Azure Synapse Spark Pools, Databricks                                       |
-| Machine Learning Platform    | Azure Machine Learning, Jupyter Notebook                                    |
-| File Format                  | Parquet, ORC, Avro, Delta Lake                                              |
-
-## Roadmap
-
-> `Public Preview` release may introduce API changes.
-
-- [x] Private Preview release
-- [x] Public Preview release
-- [ ] Future release
-  - [ ] Support streaming and online transformation
-  - [ ] Support feature versioning
-  - [ ] Support more data sources
-
-## Community Guidelines
-
-Build for the community and build by the community. Check out [Community Guidelines](CONTRIBUTING.md).
-
-## Slack Channel
-
-Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ)).
