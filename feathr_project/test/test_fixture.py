@@ -1,13 +1,13 @@
-from feathr import FeatureAnchor
-from feathr.client import FeathrClient
-from feathr import BOOLEAN, FLOAT, INT32, STRING, ValueType
-from feathr import Feature
-from feathr import DerivedFeature
-from feathr import INPUT_CONTEXT, HdfsSource
-from feathr import WindowAggTransformation
-from feathr import TypedKey
-from datetime import datetime, timedelta
 import os
+import random
+from datetime import datetime, timedelta
+
+from feathr import (BOOLEAN, FLOAT, INPUT_CONTEXT, INT32, STRING,
+                    DerivedFeature, Feature, FeatureAnchor, HdfsSource,
+                    TypedKey, ValueType, WindowAggTransformation)
+from feathr.client import FeathrClient
+from pyspark.sql import DataFrame
+
 
 def basic_test_setup(config_path: str):
 
@@ -117,5 +117,101 @@ def snowflake_test_setup(config_path: str):
 
 
     client.build_features(anchor_list=[snowflakeFeatures])
+
+    return client
+
+
+
+
+
+def registry_test_setup(config_path: str):
+
+
+    client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
+
+    def add_new_dropoff_and_fare_amount_column(df: DataFrame):
+        df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
+        df = df.withColumn("new_fare_amount", col("fare_amount") + 1000000)
+        return df
+
+    batch_source = HdfsSource(name="nycTaxiBatchSource",
+                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              event_timestamp_column="lpep_dropoff_datetime",
+                              timestamp_format="yyyy-MM-dd HH:mm:ss",
+                              preprocessing=add_new_dropoff_and_fare_amount_column,
+                              registry_tags={"for_test_purpose":"true"}
+                              )
+
+    f_trip_distance = Feature(name="f_trip_distance",
+                              feature_type=FLOAT, transform="trip_distance",
+                              registry_tags={"for_test_purpose":"true"}
+                              )
+    f_trip_time_duration = Feature(name="f_trip_time_duration",
+                                   feature_type=INT32,
+                                   transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
+
+    features = [
+        f_trip_distance,
+        f_trip_time_duration,
+        Feature(name="f_is_long_trip_distance",
+                feature_type=BOOLEAN,
+                transform="cast_float(trip_distance)>30"),
+        Feature(name="f_day_of_week",
+                feature_type=INT32,
+                transform="dayofweek(lpep_dropoff_datetime)"),
+    ]
+
+
+    request_anchor = FeatureAnchor(name="request_features",
+                                   source=INPUT_CONTEXT,
+                                   features=features,
+                                   registry_tags={"for_test_purpose":"true"}
+                                   )
+
+    f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
+                                          feature_type=FLOAT,
+                                          input_features=[
+                                              f_trip_distance, f_trip_time_duration],
+                                          transform="f_trip_distance * f_trip_time_duration")
+
+    f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded",
+                                         feature_type=INT32,
+                                         input_features=[f_trip_time_duration],
+                                         transform="f_trip_time_duration % 10")
+    f_trip_time_rounded_plus = DerivedFeature(name="f_trip_time_rounded_plus",
+                                         feature_type=INT32,
+                                         input_features=[f_trip_time_rounded],
+                                         transform="f_trip_time_rounded + 100")
+
+    location_id = TypedKey(key_column="DOLocationID",
+                           key_column_type=ValueType.INT32,
+                           description="location id in NYC",
+                           full_name="nyc_taxi.location_id")
+    agg_features = [Feature(name="f_location_avg_fare",
+                            key=location_id,
+                            feature_type=FLOAT,
+                            transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                                                              agg_func="AVG",
+                                                              window="90d")),
+                    Feature(name="f_location_max_fare",
+                            key=location_id,
+                            feature_type=FLOAT,
+                            transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                                                              agg_func="MAX",
+                                                              window="90d"))
+                    ]
+
+    agg_anchor = FeatureAnchor(name="aggregationFeatures",
+                               source=batch_source,
+                               features=agg_features)
+    
+    derived_feature_list = [
+                        f_trip_time_distance, f_trip_time_rounded, f_trip_time_rounded_plus]
+    
+    # shuffule the order to make sure they can be parsed correctly
+    # Those input derived features can be in arbitrary order, but in order to parse the right dependencies, we need to reorder them internally in a certain order. 
+    # This shuffle is to make sure that each time we have random shuffle for the input and make sure the internal sorting algorithm works (we are using topological sort).
+    random.shuffle(derived_feature_list)
+    client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
 
     return client

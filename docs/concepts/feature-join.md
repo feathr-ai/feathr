@@ -1,3 +1,9 @@
+---
+layout: default
+title: Getting Historical Features in Feathr
+parent: Feathr Concepts
+---
+
 # Feature Join
 ## Intuitions of Frame Join
 Observation dataset has 2 records as below, and we want to use it as the 'spine' dataset, joining two 

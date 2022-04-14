@@ -7,7 +7,7 @@ from jinja2 import Template
 class Transformation(ABC):
     """Base class for all transformations that produce feature values."""
     @abstractmethod
-    def to_feature_config(self) -> str:
+    def to_feature_config(self, with_def_field_name: Optional[bool] = True) -> str:
         pass
 
 
@@ -25,11 +25,15 @@ class ExpressionTransformation(RowTransformation):
         super().__init__()
         self.expr = expr
 
-    def to_feature_config(self) -> str:
+    def to_feature_config(self, with_def_field_name: Optional[bool] = True) -> str:
         tm = Template("""
-            "{{expr}}"
+{% if with_def_field_name %}
+def.sqlExpr: "{{expr}}"
+{% else %}
+"{{expr}}"
+{% endif %}
         """)
-        return tm.render(expr=self.expr)
+        return tm.render(expr=self.expr, with_def_field_name=with_def_field_name)
 
 
 class WindowAggTransformation(Transformation):
@@ -51,20 +55,20 @@ class WindowAggTransformation(Transformation):
         self.filter = filter
         self.limit = limit
 
-    def to_feature_config(self) -> str:
+    def to_feature_config(self, with_def_field_name: Optional[bool] = True) -> str:
         tm = Template("""
-            "{{windowAgg.def_expr}}"
-            window: {{windowAgg.window}}
-            agg: {{windowAgg.agg_func}}
-            {% if windowAgg.group_by is not none %}
-                groupBy: {{windowAgg.group_by}}
-            {% endif %}
-            {% if windowAgg.filter is not none %}
-                filter: {{windowAgg.filter}}
-            {% endif %}
-            {% if windowAgg.limit is not none %}
-                limit: {{windowAgg.limit}}
-            {% endif %}
+def:"{{windowAgg.def_expr}}"
+window: {{windowAgg.window}}
+aggregation: {{windowAgg.agg_func}}
+{% if windowAgg.group_by is not none %}
+    groupBy: {{windowAgg.group_by}}
+{% endif %}
+{% if windowAgg.filter is not none %}
+    filter: {{windowAgg.filter}}
+{% endif %}
+{% if windowAgg.limit is not none %}
+    limit: {{windowAgg.limit}}
+{% endif %}
         """)
         return tm.render(windowAgg = self)
 

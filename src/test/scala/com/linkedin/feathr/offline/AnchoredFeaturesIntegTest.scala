@@ -3,9 +3,11 @@ package com.linkedin.feathr.offline
 import com.linkedin.feathr.common.configObj.configbuilder.ConfigBuilderException
 import com.linkedin.feathr.common.exception.FeathrConfigException
 import com.linkedin.feathr.offline.generation.SparkIOUtils
-import com.linkedin.feathr.offline.source.dataloader.AvroJsonDataLoader
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
+import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
 import org.testng.Assert.assertTrue
 import org.testng.annotations.{BeforeClass, Test}
@@ -501,5 +503,164 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
 
     val df = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, "/driver_data/green_tripdata_2021-01.csv")
     df.data.show()
+  }
+
+  @Test
+  def tesSWAWithPreprocessing(): Unit = {
+    val featureDefAsString =
+      """
+        |anchors: {
+        |  nonAggFeatures: {
+        |    source: PASSTHROUGH
+        |    key: NOT_NEEDED
+        |    features: {
+        |
+        |      f_trip_distance: "(float)trip_distance"
+        |
+        |      f_is_long_trip_distance: "trip_distance>30"
+        |
+        |      f_trip_time_duration: "time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')"
+        |
+        |      f_day_of_week: "dayofweek(lpep_dropoff_datetime)"
+        |
+        |      f_day_of_month: "dayofmonth(lpep_dropoff_datetime)"
+        |
+        |      f_hour_of_day: "hourofday(lpep_dropoff_datetime)"
+        |    }
+        |  }
+        |
+        |  aggregationFeatures: {
+        |    source: nycTaxiBatchSource
+        |    key: DOLocationID
+        |    features: {
+        |      f_location_avg_fare: {
+        |        def: "float(fare_amount)"
+        |        aggregation: AVG
+        |        window: 3d
+        |      }
+        |      f_location_max_fare: {
+        |        def: "float(fare_amount)"
+        |        aggregation: MAX
+        |        window: 3d
+        |      }
+        |    }
+        |  }
+        |  aggregationFeatures333: {
+        |    source: nycTaxiBatchSource_with_new_dropoff
+        |    key: DOLocationID
+        |    features: {
+        |      f_location_avg_new_tip_amount: {
+        |        def: "float(new_tip_amount)"
+        |        aggregation: AVG
+        |        window: 3d
+        |      }
+        |      f_location_max_new_improvement_surcharge: {
+        |        def: "float(new_improvement_surcharge)"
+        |        aggregation: MAX
+        |        window: 3d
+        |      }
+        |    }
+        |  }
+        |}
+        |
+        |derivations: {
+        |   f_trip_time_distance: {
+        |     definition: "f_trip_distance * f_trip_time_duration"
+        |     type: NUMERIC
+        |   }
+        |}
+        |sources: {
+        |  nycTaxiBatchSource: {
+        |    location: { path: "/driver_data/green_tripdata_2021-01.csv" }
+        |    timeWindowParameters: {
+        |      timestampColumn: "new_lpep_dropoff_datetime"
+        |      timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
+        |    }
+        |  }
+        |  nycTaxiBatchSource_with_new_dropoff: {
+        |    location: { path: "/driver_data/green_tripdata_2021-01.csv" }
+        |    timeWindowParameters: {
+        |      timestampColumn: "new_lpep_pickup_datetime"
+        |      timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
+        |    }
+        |  }
+        |  nycTaxiBatchSource3: {
+        |    location: { path: "/driver_data/copy_green_tripdata_2021-01.csv" }
+        |    timeWindowParameters: {
+        |      timestampColumn: "new_lpep_dropoff_datetime"
+        |      timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
+        |    }
+        |  }
+        |}
+        |
+      """.stripMargin
+
+    val joinConfigAsString =
+      s"""
+         |settings: {
+         | joinTimeSettings: {
+         |    timestampColumn: {
+         |     def: "lpep_dropoff_datetime"
+         |     format: "yyyy-MM-dd HH:mm:ss"
+         |    }
+         |  }
+         |}
+         |
+         |featureList: [
+         |  {
+         |    key: DOLocationID
+         |    featureList: [f_location_avg_new_tip_amount, f_location_max_new_improvement_surcharge, f_location_avg_fare, f_location_max_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week]
+         |  }
+         |]
+      """.stripMargin
+
+    val df1 = new CsvDataLoader(ss, "src/test/resources/mockdata//driver_data/green_tripdata_2021-01.csv")
+      .loadDataFrame()
+      .withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
+      .withColumn("new_fare_amount", col("fare_amount") + 1000000)
+    val df2 = new CsvDataLoader(ss, "src/test/resources/mockdata//driver_data/green_tripdata_2021-01.csv")
+      .loadDataFrame()
+      .withColumn("new_improvement_surcharge", col("improvement_surcharge") + 1000000)
+      .withColumn("new_tip_amount", col("tip_amount") + 1000000)
+      .withColumn("new_lpep_pickup_datetime", col("lpep_pickup_datetime"))
+
+    PreprocessedDataFrameManager.preprocessedDfMap = Map("f_location_avg_fare,f_location_max_fare" -> df1, "f_location_avg_new_tip_amount,f_location_max_new_improvement_surcharge" -> df2)
+    val df = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, "/driver_data/green_tripdata_2021-01.csv")
+
+    val selectedColumns = Seq("DOLocationID", "f_location_avg_new_tip_amount")
+    val filteredDf = df.data.select(selectedColumns.head, selectedColumns.tail: _*)
+
+    val expectedDf = ss.createDataFrame(
+      ss.sparkContext.parallelize(
+        Seq(
+          Row(
+            // DOLocationID
+            "239",
+            // f_location_avg_new_tip_amount
+            1000002.8f),
+          Row(
+            // DOLocationID
+            "151",
+            // f_location_avg_new_tip_amount
+            1000000.0f),
+          Row(
+            // DOLocationID
+            "42",
+            // f_location_avg_new_tip_amount
+            1000001.0f),
+          Row(
+            // DOLocationID
+            "75",
+            // f_location_avg_new_tip_amount
+            1000000.0f),
+        )),
+      StructType(
+        List(
+          StructField("DOLocationID", StringType, true),
+          StructField("f_location_avg_new_tip_amount", FloatType, true))))
+    def cmpFunc(row: Row): String = row.get(0).toString
+    FeathrTestUtils.assertDataFrameApproximatelyEquals(filteredDf, expectedDf, cmpFunc)
+    df.data.show()
+    PreprocessedDataFrameManager.preprocessedDfMap = Map()
   }
 }

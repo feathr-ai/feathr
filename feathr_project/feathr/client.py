@@ -1,13 +1,13 @@
 import base64
 import logging
-import math
 import os
+import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Optional, Union, Dict
-import tempfile
+from typing import Dict, List, Optional, Union
 
 import redis
+from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from pyhocon import ConfigFactory
 
@@ -16,14 +16,19 @@ from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._feature_registry import _FeatureRegistry
 from feathr._file_utils import write_to_file
 from feathr._materialization_utils import _to_materialization_config
+from feathr._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
+from feathr.feathr_configurations import SparkExecutionConfiguration
+from feathr.feature_derivations import DerivedFeature
 from feathr.materialization_settings import MaterializationSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
 from feathr.feature_derivations import DerivedFeature
+from feathr.anchor import FeatureAnchor
 from feathr.feathr_configurations import SparkExecutionConfiguration
+
 
 class FeatureJoinJobParams:
     """Parameters related to feature join job.
@@ -68,13 +73,17 @@ class FeathrClient(object):
     The users of this client is responsible for set up all the necessary information needed to start a Redis client via
     environment variable or a Spark cluster. Host address, port and password are needed to start the Redis client.
 
+    Args:
+        config_path (str, optional): config path. See [Feathr Config Template](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
+        local_workspace_dir (str, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
+        credential (optional): credential to access cloud resources,  most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
+        project_registry_tag (Dict[str, str]): adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
+
     Raises:
         RuntimeError: Fail to create the client since necessary environment variables are not set for Redis
         client creation.
     """
-
-    def __init__(self, config_path = "./feathr_config.yaml", local_workspace_dir = None):
-
+    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_registry_tag: Dict[str, str]=None):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
@@ -83,7 +92,7 @@ class FeathrClient(object):
             self.local_workspace_dir = local_workspace_dir
         else:
             self.local_workspace_dir = tempfile.TemporaryDirectory().name
-        
+
         self.envutils = envutils
 
         if not os.path.exists(config_path):
@@ -112,6 +121,7 @@ class FeathrClient(object):
         self.spark_runtime = envutils.get_environment_variable_with_default(
             'spark_config', 'spark_cluster')
 
+        self.credential = credential
         if self.spark_runtime not in {'azure_synapse', 'databricks'}:
             raise RuntimeError(
                 'Only \'azure_synapse\' and \'databricks\' are currently supported.')
@@ -122,6 +132,9 @@ class FeathrClient(object):
             self._FEATHR_JOB_JAR_PATH = \
                 envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'feathr_runtime_location')
+            
+            if self.credential is None:
+                self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
 
             self.feathr_spark_laucher = _FeathrSynapseJobLauncher(
                 synapse_dev_url=envutils.get_environment_variable_with_default(
@@ -133,7 +146,8 @@ class FeathrClient(object):
                 executor_size=envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_size'),
                 executors=envutils.get_environment_variable_with_default(
-                    'spark_config', 'azure_synapse', 'executor_num')
+                    'spark_config', 'azure_synapse', 'executor_num'),
+                credential=self.credential
             )
         elif self.spark_runtime == 'databricks':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
@@ -156,7 +170,14 @@ class FeathrClient(object):
 
         self._construct_redis_client()
 
-        self.registry = _FeatureRegistry(config_path = config_path)
+
+        # initialize registry
+        self.registry_delimiter = envutils.get_environment_variable_with_default(
+            'feature_registry', 'purview', 'delimiter')
+        self.azure_purview_name = envutils.get_environment_variable_with_default(
+            'feature_registry', 'purview', 'purview_name')
+        # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
+        self.registry = _FeatureRegistry(self.project_name, self.azure_purview_name, self.registry_delimiter, project_registry_tag, config_path = config_path, credential=self.credential)
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
@@ -173,22 +194,41 @@ class FeathrClient(object):
 
             Args:
             from_context: If from_context is True (default), the features will be generated from
-                the current context. Otherwise, the features will be generated from
+                the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
                 configuration files.
         """
 
         if from_context:
+            # make sure those items are in `self`
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
                 _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
-                self.registry.register_features(self.local_workspace_dir)
+                self.registry.register_features(self.local_workspace_dir, from_context=from_context, anchor_list=self.anchor_list, derived_feature_list=self.derived_feature_list)
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
         else:
-            self.registry.register_features(self.local_workspace_dir)
+            self.registry.register_features(self.local_workspace_dir, from_context=from_context)
     
-    def build_features(self, anchor_list, derived_feature_list: Optional[List[DerivedFeature]] = []):
+    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
         """Registers features based on the current workspace
         """
+        # Run necessary validations
+        # anchor name and source name should be unique
+        anchor_names = {}
+        source_names = {}
+        for anchor in anchor_list:
+            if anchor.name in anchor_names:
+                raise RuntimeError(f"Anchor name should be unique but there are duplicate anchor names in your anchor "
+                                   f"definitions. Anchor name of {anchor} is already defined in {anchor_names[anchor.name]}")
+            else:
+                anchor_names[anchor.name] = anchor
+            if anchor.source.name in source_names:
+                raise RuntimeError(f"Source name should be unique but there are duplicate source names in your source "
+                                   f"definitions. Source name of {anchor.source} is already defined in {source_names[anchor.source.name]}")
+            else:
+                source_names[anchor.source.name] = anchor.source
+
+        preprocessingPyudfManager = _PreprocessingPyudfManager()
+        _PreprocessingPyudfManager.build_anchor_preprocessing_metadata(anchor_list, self.local_workspace_dir)
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
@@ -199,11 +239,11 @@ class FeathrClient(object):
         """
         return self.registry.list_registered_features(project_name)
 
-    def get_registry_client(self):
+    def _get_registry_client(self):
         """
         Returns registry client in case users want to perform more advanced operations
         """
-        return self.registry.get_registry_client()
+        return self.registry._get_registry_client()
 
     def get_online_features(self, feature_table, key, feature_names):
         """Fetches feature value for a certain key from a online feature table.
@@ -352,6 +392,7 @@ class FeathrClient(object):
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
                              output_path: str,
                              execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None,
+                             udf_files = None,
                              ):
         """
         Get offline features for the observation dataset
@@ -361,6 +402,14 @@ class FeathrClient(object):
             output_path: output path of job, i.e. the observation data with features attached.
             execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
+        feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
+        feature_names = []
+        for feature_query in feature_queries:
+            for feature_name in feature_query.feature_list:
+                feature_names.append(feature_name)
+
+        udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(feature_names, self.local_workspace_dir)
+
         # produce join config
         tm = Template("""
             {{observation_settings.to_config()}}
@@ -371,7 +420,6 @@ class FeathrClient(object):
             ]
             outputPath: "{{output_path}}"
         """)
-        feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
         config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
         config_file_name = "feature_join_conf/feature_join.conf"
         config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
@@ -385,16 +433,15 @@ class FeathrClient(object):
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_path,execution_configuratons)
+        return self._get_offline_features_with_config(config_file_path, execution_configuratons, udf_files=udf_files)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configuratons: Dict[str,str] = None):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configuratons: Dict[str,str] = None, udf_files=[]):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
           feature_join_conf_path: Relative path to your feature join config file.
         """
-        
-            
+        cloud_udf_paths = [self.feathr_spark_laucher.upload_or_get_cloud_path(udf_local_path) for udf_local_path in udf_files]
         feathr_feature = ConfigFactory.parse_file(feature_join_conf_path)
 
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
@@ -416,6 +463,7 @@ class FeathrClient(object):
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            python_files=cloud_udf_paths,
             job_tags=job_tags,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
             arguments=[
@@ -453,7 +501,6 @@ class FeathrClient(object):
         """
         return self.feathr_spark_laucher.get_job_tags()
 
-
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out
         """
@@ -477,7 +524,7 @@ class FeathrClient(object):
             config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
             config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
             write_to_file(content=config, full_file_name=config_file_path)
-            
+
             # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features in the python SDK
             # otherwise users will be confused on what are the available features
             # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
@@ -486,20 +533,20 @@ class FeathrClient(object):
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
+            udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
             # CLI will directly call this so the experiene won't be broken
-            self._materialize_features_with_config(config_file_path,execution_configuratons)
+            self._materialize_features_with_config(config_file_path, execution_configuratons, udf_files)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None):
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
         Args
           feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
         """
-        
-        
+        cloud_udf_paths = [self.feathr_spark_laucher.upload_or_get_cloud_path(udf_local_path) for udf_local_path in udf_files]
 
         # Read all features conf
         generation_config = FeatureGenerationJobParams(
@@ -514,6 +561,7 @@ class FeathrClient(object):
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            python_files=cloud_udf_paths,
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=[
                 '--generation-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
@@ -635,8 +683,3 @@ class FeathrClient(object):
             JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
             """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
         return config_str
-
-    def get_features_from_registry(self, project_name):
-        """ Sync features from the registry given a project name """
-        # TODO - Add support for customized workspace path
-        self.registry.get_features_from_registry(project_name, os.path.abspath("./"))

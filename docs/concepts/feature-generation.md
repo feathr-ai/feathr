@@ -1,3 +1,9 @@
+---
+layout: default
+title: Feathr Feature Generation
+parent: Feathr Concepts
+---
+
 # Feature Generation
 
 ## Generating Features to Online Store
