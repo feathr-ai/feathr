@@ -22,29 +22,26 @@ def list_registered_features(code, project_name: str, response: Response):
     response.status_code = status.HTTP_200_OK
     result = backend.ListFeatures(project_name)
     return {"features" : result}
-    
 
-@router.get("/projects/{project_name}/features/{feature_name}")
-def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, response: Response, type_name: Optional[str] = None):
-    """List all the already registered features. If project_name is not provided or is None, it will return all
-    the registered features; otherwise it will only return features under this project
+@router.get("/features/{feature_name}")
+def get_feature_by_qualifiedName(code : str, feature_fully_qualified_name: str, response: Response, type_name: Optional[str] = None):
+    """Get the feature by its fully qualified name
     """
     verifyCode(code)
 
     response.status_code = status.HTTP_200_OK
-    result = backend.RetrieveFeature(project_name,feature_name,type_name)
+    result = backend.RetrieveFeature(feature_fully_qualified_name,type_name)
     
     return result
     
 
-@router.get("/projects/{project_name}/features/lineage/{feature_name}")
-def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, response: Response):
-    """List all the already registered features. If project_name is not provided or is None, it will return all
-    the registered features; otherwise it will only return features under this project
+@router.get("/features/lineage/{feature_fully_qualified_name}")
+def get_feature_lineage(code : str, feature_fully_qualified_name:str,response: Response):
+    """Get feature lineage by the fully qualified name
     """
     verifyCode(code)
 
     response.status_code = status.HTTP_200_OK
-    result = backend.RetrieveFeatureLineage(project_name,feature_name)
+    result = backend.RetrieveFeatureLineage(feature_fully_qualified_name)
     return result
     

@@ -53,6 +53,6 @@ async def catch_exceptions_middleware(request: Request, call_next):
             return PlainTextResponse(str(exc.message), status_code=500)
         else:
             logger.error("Error: %s", exc.args[0])
-            return PlainTextResponse("Error: " + exc.args[0], status_code=500)
+            return PlainTextResponse("Error: " + str(exc.args[0]), status_code=500)
 
 app.middleware('http')(catch_exceptions_middleware)

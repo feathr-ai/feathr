@@ -8,4 +8,4 @@ class Features(BaseModel):
     Defining contract for input field
     """
 
-    features: List[str]
+    features: list[dict[str,str]]

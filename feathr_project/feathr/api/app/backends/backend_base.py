@@ -46,7 +46,7 @@ class FeathrBackendAbstract(ABC):
         pass
 
     @abstractmethod
-    def RetrieveFeature(self,project_name,feature_name,type_name):
+    def RetrieveFeature(self,feature_fully_qualified_name,type_name):
         pass
 
     @abstractmethod
@@ -58,7 +58,11 @@ class FeathrBackendAbstract(ABC):
         pass
 
     @abstractmethod
-    def RetrieveFeatureLineage(self,project_name,entity_name):
+    def RetrieveFeatureLineage(self,entity_name):
+        pass
+
+    @abstractmethod
+    def ListAllDataSources(self,project_name):
         pass
 
     @abstractmethod

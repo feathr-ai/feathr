@@ -49,18 +49,21 @@ class PurviewBackend(FeathrBackendAbstract):
     def ListFeatures(self,project_name):
         return self.registry_client.list_registered_features(project_name)
 
-    def RetrieveFeature(self,project_name,feature_name,type_name):
+    def ListAllDataSources(self,project_name):
+        return self.registry_client.list_registered_features(project_name)
+
+    def RetrieveFeature(self,feature_fully_qualified_name,type_name):
         result = None
         if type_name: # Type is provided
-            result = self.registry_client.get_feature_by_fqdn_type(feature_name, type_name)
+            result = self.registry_client.get_feature_by_fqdn_type(feature_fully_qualified_name, type_name)
         else:
-            result = self.registry_client.get_feature_by_fqdn(feature_name)
+            result = self.registry_client.get_feature_by_fqdn(feature_fully_qualified_name)
         return result
 
     def RetrieveFeatureByFQDN(self,project_name,feature_name):
         return self.registry_client.get_feature_by_fqdn(feature_name)
 
-    def RetrieveFeatureLineage(self,project_name,entity_name):
+    def RetrieveFeatureLineage(self,entity_name):
         guid = self.registry_client.get_feature_guid(entity_name)
         if guid:
             result = self.registry_client.get_feature_lineage(guid)
