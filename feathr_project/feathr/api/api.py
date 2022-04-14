@@ -1,22 +1,13 @@
-import os, json
+import os
 import logging
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Response, status
 from pyapacheatlas.core import (AtlasException)
 from pydantic import BaseModel
 from opencensus.ext.azure.log_exporter import AzureLogHandler
-from azure.core.credentials import AzureKeyCredential
-from azure.core.exceptions import HttpResponseError, ServiceRequestError, ResourceNotFoundError
-from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr._feature_registry import _FeatureRegistry
-from feathr._file_utils import write_to_file
-from feathr._synapse_submission import _FeathrSynapseJobLauncher
-from feathr._databricks_submission import _FeathrDatabricksJobLauncher
-from feathr.query_feature_list import FeatureQuery
-from feathr.settings import ObservationSettings
 from feathr.constants import *
 from feathr._feature_registry import _FeatureRegistry
-
 
 
 app = FastAPI()
@@ -46,10 +37,13 @@ and make sure to pass the variable as query parameter when you access the API.
 eg - <apiserver>/projects/<project_name>/features?code=<your_api_code>
 """
 appServiceKey = os.getenv("AppServiceKey")
+project_name = os.getenv("ProjectName")
+azure_purview_name = os.getenv("AZURE_PURVIEW_NAME")
+registry_delimiter = os.getenv("REGISTRY_DELIMITER")
 
 
 def getRegistry():
-    return _FeatureRegistry(config_path=None)
+    return _FeatureRegistry(project_name=project_name, azure_purview_name= azure_purview_name, registry_delimiter = registry_delimiter)
 
 
 @app.get("/")
@@ -166,7 +160,7 @@ def get_source_by_qualifiedName(code : str, project_name: str, source_name: str,
         registry = getRegistry()
         logger.info("Retrieved registry client successfully")
         response.status_code = status.HTTP_200_OK
-        type_name = "feathr_feature_source"
+        type_name = "feathr_source_v1"
         result = registry.get_feature_by_fqdn_type(source_name, type_name)
         return result
     except AtlasException as ae:
@@ -187,7 +181,7 @@ def get_anchor_by_qualifiedName(code : str, project_name: str, anchor_name: str,
         registry = getRegistry()
         logger.info("Retrieved registry client successfully")
         response.status_code = status.HTTP_200_OK
-        type_name = "feathr_anchor_feature"
+        type_name = "feathr_anchor"
         result = registry.get_feature_by_fqdn_type(anchor_name, type_name)
         return result
     except AtlasException as ae:
