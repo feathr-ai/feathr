@@ -1,3 +1,9 @@
+---
+layout: default
+title: Feathr API Deployment
+parent: Feathr How-to Guides
+---
+
 # Feathr API
 The API currently supports following functionality
 
