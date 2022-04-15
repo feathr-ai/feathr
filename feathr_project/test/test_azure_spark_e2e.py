@@ -44,7 +44,7 @@ def test_feathr_online_store_agg_features():
     client.materialize_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
-    client.wait_job_to_finish(timeout_sec=600)
+    client.wait_job_to_finish(timeout_sec=900)
 
     res = client.get_online_features(online_test_table, '265', [
                                      'f_location_avg_fare', 'f_location_max_fare'])
@@ -85,7 +85,7 @@ def test_feathr_online_store_non_agg_features():
     client.materialize_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
-    client.wait_job_to_finish(timeout_sec=600)
+    client.wait_job_to_finish(timeout_sec=900)
 
     res = client.get_online_features(online_test_table, '111', ['f_gen_trip_distance', 'f_gen_is_long_trip_distance',
                                                                    'f1', 'f2', 'f3', 'f4', 'f5', 'f6'])
