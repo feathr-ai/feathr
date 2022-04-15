@@ -21,7 +21,7 @@ from feathr._abc import SparkJobLauncher
 from feathr.constants import *
 
 class LivyStates(Enum):
-    """ Copy LivyStates over to relax the dependency for azure-synapse-spark pacakge.
+    """ Adapt LivyStates over to relax the dependency for azure-synapse-spark pacakge.
     Definition is here:
     https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/synapse/azure-synapse-spark/azure/synapse/spark/models/_spark_client_enums.py#L38
     """
@@ -129,9 +129,9 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         while (timeout_seconds is None) or (time.time() - start_time < timeout_seconds):
             status = self.get_status()
             logger.info('Current Spark job status: {}', status)
-            if status in {LivyStates.SUCCESS}:
+            if status in {LivyStates.SUCCESS.value}:
                 return True
-            elif status in {LivyStates.ERROR, LivyStates.DEAD, LivyStates.KILLED}:
+            elif status in {LivyStates.ERROR.value, LivyStates.DEAD.value, LivyStates.KILLED.value}:
                 return False
             else:
                 time.sleep(30)
