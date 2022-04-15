@@ -1,3 +1,11 @@
+---
+layout: default
+title: Home
+nav_order: 1
+description: "Feathr – An Enterprise-Grade, High Performance Feature Store"
+permalink: /
+---
+
 # Feathr – An Enterprise-Grade, High Performance Feature Store
 
 ## What is Feathr?
@@ -12,7 +20,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 ## Quick Start
 
-- Follow the [quick start Jupyter Notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./quickstart.md) containing a bit more explanation on the notebook.
+- Follow the [quick start Jupyter Notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./quickstart.md) containing a bit more explanation on the notebook.
 - For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Defining Features with Transformation
