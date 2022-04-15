@@ -9,7 +9,7 @@ resource runPowerShellInlineWithOutput 'Microsoft.Resources/deploymentScripts@20
     forceUpdateTag: utcValue
     azPowerShellVersion: '7.3'
     scriptContent: '''
-      $output = "az ad signed-in-user show --query objectId -o tsv"
+      $output = az ad signed-in-user show --query objectId -o tsv
       Write-Output $output
       $DeploymentScriptOutputs = @{}
       $DeploymentScriptOutputs["text"] = $output
