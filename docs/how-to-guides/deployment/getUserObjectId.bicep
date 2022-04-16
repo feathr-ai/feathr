@@ -1,23 +1,18 @@
 param location string
 param utcValue string = utcNow()
 
-resource runPowerShellInlineWithOutput 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: 'runPowerShellInlineWithOutput'
+resource runBashShellInlineWithOutput 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+  name: 'runBashShellInlineWithOutput'
   location: location
-  kind: 'AzurePowerShell'
+  kind: 'AzureCLI'
   properties: {
     forceUpdateTag: utcValue
-    azPowerShellVersion: '7.3'
-    scriptContent: '''
-      $output = az ad signed-in-user show --query objectId -o tsv
-      Write-Output $output
-      $DeploymentScriptOutputs = @{}
-      $DeploymentScriptOutputs["text"] = $output
-    '''
+    azCliVersion:  '2.34.0'
+    scriptContent: 'result=$(az ad signed-in-user show --query objectId -o tsv);echo $result'
     timeout: 'PT30M'
     cleanupPreference: 'OnSuccess'
     retentionInterval: 'P1D'
   }
 }
 
-output result string = runPowerShellInlineWithOutput.properties.outputs.text
+output result string = string(runBashShellInlineWithOutput.properties.outputs)

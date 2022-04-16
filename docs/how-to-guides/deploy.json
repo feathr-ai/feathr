@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.5.6.12127",
-      "templateHash": "12343942862132388064"
+      "templateHash": "10784692756750596603"
     }
   },
   "parameters": {
@@ -75,7 +75,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.5.6.12127",
-              "templateHash": "3240594731915379993"
+              "templateHash": "1435630550991956511"
             }
           },
           "parameters": {
@@ -91,13 +91,13 @@
             {
               "type": "Microsoft.Resources/deploymentScripts",
               "apiVersion": "2020-10-01",
-              "name": "runPowerShellInlineWithOutput",
+              "name": "runBashShellInlineWithOutput",
               "location": "[parameters('location')]",
-              "kind": "AzurePowerShell",
+              "kind": "AzureCLI",
               "properties": {
                 "forceUpdateTag": "[parameters('utcValue')]",
-                "azPowerShellVersion": "7.3",
-                "scriptContent": "      $output = az ad signed-in-user show --query objectId -o tsv\n      Write-Output $output\n      $DeploymentScriptOutputs = @{}\n      $DeploymentScriptOutputs[\"text\"] = $output\n    ",
+                "azCliVersion": "2.34.0",
+                "scriptContent": "result=$(az ad signed-in-user show --query objectId -o tsv);echo $result",
                 "timeout": "PT30M",
                 "cleanupPreference": "OnSuccess",
                 "retentionInterval": "P1D"
@@ -107,7 +107,7 @@
           "outputs": {
             "result": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Resources/deploymentScripts', 'runPowerShellInlineWithOutput')).outputs.text]"
+              "value": "[string(reference(resourceId('Microsoft.Resources/deploymentScripts', 'runBashShellInlineWithOutput')).outputs)]"
             }
           }
         }
