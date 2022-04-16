@@ -60,7 +60,7 @@ def test_request_feature_anchor_to_config():
 
 def test_non_agg_feature_anchor_to_config():
     batch_source = HdfsSource(name="nycTaxiBatchSource",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
@@ -111,7 +111,7 @@ def test_non_agg_feature_anchor_to_config():
 
 def test_agg_anchor_to_config():
     batch_source = HdfsSource(name="nycTaxiBatchSource",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
