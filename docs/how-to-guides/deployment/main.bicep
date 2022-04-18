@@ -30,11 +30,14 @@ var dlsFsName = toLower('${resourcePrefix}fs')
 var purviewName = '${resourcePrefix}purview'
 
 
+// Create Resource Group
 resource FeathrResourceGroup 'Microsoft.Resources/resourceGroups@2020-10-01' = {
   name: 'FeathrRg-${resourcePrefix}'
   location:location
 }
 
+// Create Azure KeyVault for Redis ConnectionString and 
+// Resource Prefix
 module FeathrKeyVault 'deployKV.bicep' = {
   name : 'FeathrKv-${resourcePrefix}'
   scope: FeathrResourceGroup
@@ -47,6 +50,7 @@ module FeathrKeyVault 'deployKV.bicep' = {
   }
 }
 
+// Create Redis for Online Feature store
 module FeathrRedis 'deployRedis.bicep' = {
   name: 'FeathrRedis-${resourcePrefix}'
   scope: FeathrResourceGroup
@@ -57,6 +61,7 @@ module FeathrRedis 'deployRedis.bicep' = {
   }
 }
 
+// Create DataLake for Feathr and Feathr Offline Feature store
 module FeathrStorage 'deployDataLakeStorage.bicep' = {
   name: 'FeathrStorage-${resourcePrefix}'
   scope: FeathrResourceGroup
@@ -67,6 +72,7 @@ module FeathrStorage 'deployDataLakeStorage.bicep' = {
   }
 }
 
+// Create Furview for Feathr
 module FeathrPurview 'deployPurview.bicep' = {
   name: 'FeathrPurview-${resourcePrefix}'
   scope: FeathrResourceGroup
@@ -76,6 +82,7 @@ module FeathrPurview 'deployPurview.bicep' = {
   }
 }
 
+// Create Azure Synapse for Feathr
 module FeathrSynapse 'deploySynapse.bicep' = {
   name: 'FeathrSynapse-${resourcePrefix}'
   scope: FeathrResourceGroup
@@ -90,6 +97,7 @@ module FeathrSynapse 'deploySynapse.bicep' = {
   }
 }
 
+// Assign roles to Azure Keyvault and Stoage Account(Data Lake)
 module FeathrAddRoles 'deployRoleAssignments.bicep' = {
   name: 'FeathrAddRoles-${resourcePrefix}'
   scope: FeathrResourceGroup
