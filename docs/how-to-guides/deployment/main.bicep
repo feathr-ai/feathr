@@ -8,8 +8,8 @@ targetScope = 'subscription'
 @minLength(3)
 param resourcePrefix string = 'feathr${take(newGuid(),5)}'
 
-// @description('Specifies the principal ID assigned to the role. You can find it by logging into \'https://shell.azure.com/bash\' and run \'az ad signed-in-user show --query objectId -o tsv\' ')
-// param principalId string
+@description('Specifies the principal ID assigned to the role. You can find it by logging into \'https://shell.azure.com/bash\' and run \'az ad signed-in-user show --query objectId -o tsv\' ')
+param principalId string
 
 @description('Specifies whether to allow client IPs to connect to Synapse')
 @allowed([
@@ -35,13 +35,13 @@ resource FeathrResourceGroup 'Microsoft.Resources/resourceGroups@2020-10-01' = {
   location:location
 }
 
-module GetUserObjectId 'getUserObjectId.bicep' = {
-  name: 'GetUserObjectId'
-  scope: FeathrResourceGroup
-  params: {
-    location: location
-  }
-}
+// module GetUserObjectId 'getUserObjectId.bicep' = {
+//   name: 'GetUserObjectId'
+//   scope: FeathrResourceGroup
+//   params: {
+//     location: location
+//   }
+// }
 
 module FeathrKeyVault 'deployKV.bicep' = {
   name : 'FeathrKv-${resourcePrefix}'
@@ -102,7 +102,7 @@ module FeathrAddRoles 'deployRoleAssignments.bicep' = {
   name: 'FeathrAddRoles-${resourcePrefix}'
   scope: FeathrResourceGroup
   params: {
-    userObjectID: GetUserObjectId.outputs.result
+    userObjectID: principalId
   }
 }
 

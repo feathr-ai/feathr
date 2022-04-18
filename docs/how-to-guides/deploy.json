@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.5.6.12127",
-      "templateHash": "10784692756750596603"
+      "templateHash": "17812849664422134221"
     }
   },
   "parameters": {
@@ -16,6 +16,12 @@
       "maxLength": 15,
       "metadata": {
         "description": "Resource prefix for all the resource provisioned. This should be an alphanumeric string."
+      }
+    },
+    "principalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the principal ID assigned to the role. You can find it by logging into 'https://shell.azure.com/bash' and run 'az ad signed-in-user show --query objectId -o tsv' "
       }
     },
     "allowAllConnections": {
@@ -52,69 +58,6 @@
       "apiVersion": "2020-10-01",
       "name": "[format('FeathrRg-{0}', parameters('resourcePrefix'))]",
       "location": "[parameters('location')]"
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
-      "name": "GetUserObjectId",
-      "resourceGroup": "[format('FeathrRg-{0}', parameters('resourcePrefix'))]",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.5.6.12127",
-              "templateHash": "1435630550991956511"
-            }
-          },
-          "parameters": {
-            "location": {
-              "type": "string"
-            },
-            "utcValue": {
-              "type": "string",
-              "defaultValue": "[utcNow()]"
-            }
-          },
-          "resources": [
-            {
-              "type": "Microsoft.Resources/deploymentScripts",
-              "apiVersion": "2020-10-01",
-              "name": "runBashShellInlineWithOutput",
-              "location": "[parameters('location')]",
-              "kind": "AzureCLI",
-              "properties": {
-                "forceUpdateTag": "[parameters('utcValue')]",
-                "azCliVersion": "2.34.0",
-                "scriptContent": "result=$(az ad signed-in-user show --query objectId -o tsv);echo $result",
-                "timeout": "PT30M",
-                "cleanupPreference": "OnSuccess",
-                "retentionInterval": "P1D"
-              }
-            }
-          ],
-          "outputs": {
-            "result": {
-              "type": "string",
-              "value": "[string(reference(resourceId('Microsoft.Resources/deploymentScripts', 'runBashShellInlineWithOutput')).outputs)]"
-            }
-          }
-        }
-      },
-      "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('FeathrRg-{0}', parameters('resourcePrefix')))]"
-      ]
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -633,7 +576,7 @@
         "mode": "Incremental",
         "parameters": {
           "userObjectID": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('FeathrRg-{0}', parameters('resourcePrefix'))), 'Microsoft.Resources/deployments', 'GetUserObjectId')).outputs.result.value]"
+            "value": "[parameters('principalId')]"
           }
         },
         "template": {
@@ -682,8 +625,7 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('FeathrRg-{0}', parameters('resourcePrefix')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('FeathrRg-{0}', parameters('resourcePrefix'))), 'Microsoft.Resources/deployments', 'GetUserObjectId')]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('FeathrRg-{0}', parameters('resourcePrefix')))]"
       ]
     }
   ],
