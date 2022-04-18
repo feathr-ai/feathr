@@ -6,6 +6,7 @@ import com.linkedin.feathr.common.exception.FeathrConfigException
 import com.linkedin.feathr.offline.TestFeathr
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.config.{JoinTimeSetting, ObservationDataTimeSetting, TimestampColumn}
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWindowParams}
 import com.linkedin.feathr.sparkcommon.SourceKeyExtractor
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -415,5 +416,40 @@ class TestSlidingWindowFeatureUtils extends TestFeathr {
       ).toMap
     val groups = SlidingWindowFeatureUtils.getSWAAnchorGroups(windowAggAnchorDFThisStage)
     assertTrue(groups.size == 2)
+  }
+
+  @Test(description = "When there is preprocessing for the anchor, it should make the anchors unique.")
+  def testGetSWAAnchorGroupsWithSameAnchorDiffPreprocessing(): Unit = {
+    PreprocessedDataFrameManager.preprocessedDfMap = Map("f1,f2" -> mock[DataFrame], "f3,f4" -> mock[DataFrame])
+
+    val mockSource1 = mock[DataSource]
+    val mockSourceKeyExtractor1 = mock[SourceKeyExtractor]
+    when(mockSourceKeyExtractor1.toString).thenReturn("keyExtractor1")
+    val mockFeatureAnchor1 = mock[FeatureAnchor]
+    when(mockFeatureAnchor1.sourceKeyExtractor).thenReturn(mockSourceKeyExtractor1)
+    when(mockFeatureAnchor1.features).thenReturn(Set("f1,f2"))
+
+
+    val mockSourceKeyExtractor2 = mock[SourceKeyExtractor]
+    when(mockSourceKeyExtractor2.toString).thenReturn("keyExtractor1")
+    val mockFeatureAnchor2 = mock[FeatureAnchor]
+    when(mockFeatureAnchor2.sourceKeyExtractor).thenReturn(mockSourceKeyExtractor2)
+    when(mockFeatureAnchor2.features).thenReturn(Set("f3,f4"))
+
+    val baseAnchorWithSource = mock[FeatureAnchorWithSource]
+    when(baseAnchorWithSource.featureAnchor).thenReturn(mockFeatureAnchor1)
+    when(baseAnchorWithSource.source).thenReturn(mockSource1)
+
+    val baseAnchorWithSourceDiffKey = mock[FeatureAnchorWithSource]
+    when(baseAnchorWithSourceDiffKey.featureAnchor).thenReturn(mockFeatureAnchor2)
+    when(baseAnchorWithSourceDiffKey.source).thenReturn(mockSource1)
+
+    val windowAggAnchorDFThisStage: Map[FeatureAnchorWithSource, DataFrame] =
+      Seq(baseAnchorWithSource, baseAnchorWithSourceDiffKey).map(source =>
+        (source, mockDataFrame)
+      ).toMap
+    val groups = SlidingWindowFeatureUtils.getSWAAnchorGroups(windowAggAnchorDFThisStage)
+    assertTrue(groups.size == 2)
+    PreprocessedDataFrameManager.preprocessedDfMap = Map()
   }
 }

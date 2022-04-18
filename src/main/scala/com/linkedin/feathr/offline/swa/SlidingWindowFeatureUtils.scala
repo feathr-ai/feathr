@@ -7,6 +7,7 @@ import com.linkedin.feathr.offline.FeatureDataFrame
 import com.linkedin.feathr.offline.anchored.anchorExtractor.TimeWindowConfigurableAnchorExtractor
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.config._
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.{DataSource, TimeWindowParams}
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
@@ -318,7 +319,17 @@ private[offline] object SlidingWindowFeatureUtils {
       .groupBy { case (anchor: FeatureAnchorWithSource, _) =>
         // If the SWA features are defined on the same source, keyExtractor and lateralView Params,
         // they can be calculated on the same source DataFrame
-        (anchor.featureAnchor.sourceKeyExtractor.toString(), anchor.featureAnchor.lateralViewParams, anchor.source)
+
+        // For anchors that have preprocessing, we should not merge them. We simply use feature names of this anchor
+        // as a unique identifier to differentiate them.
+        val featureNames = PreprocessedDataFrameManager.preprocessedDfMap.nonEmpty match {
+          case true => {
+            PreprocessedDataFrameManager.getPreprocessingUniquenessForAnchor(anchor)
+          }
+          case false => ""
+        }
+
+        (anchor.featureAnchor.sourceKeyExtractor.toString(), featureNames, anchor.featureAnchor.lateralViewParams, anchor.source)
       }.values.toSeq
   }
 }
