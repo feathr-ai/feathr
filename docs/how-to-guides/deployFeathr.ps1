@@ -10,8 +10,19 @@ Param(
     [string] $AzureRegion
 )
 
-$UserObjectID = az ad signed-in-user show --query objectId -o tsv
+$UserObjectID =  (Get-AzADUser -SignedIn ).Id 
 
-az deployment sub create --location $AzureRegion --principalId $UserObjectID -u https://raw.githubusercontent.com/Dongbumlee/feathr/main/docs/how-to-guides/deploy.json --debug
+New-AzDeployment `
+   -Name feathrDeployment `
+   -location $AzureRegion `
+   -principalId $UserObjectID `
+   -TemplateUri https://raw.githubusercontent.com/Dongbumlee/feathr/main/docs/how-to-guides/deploy.json `
+   -DeploymentDebugLogLevel All
+
+# az deployment sub create 
+# --location $AzureRegion 
+# --principalId $UserObjectID 
+# -u https://raw.githubusercontent.com/Dongbumlee/feathr/main/docs/how-to-guides/deploy.json 
+# --debug
 
 
