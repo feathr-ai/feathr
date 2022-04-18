@@ -301,6 +301,8 @@ private[offline] object FeatureTransformation {
    * @param keyExtractor key extractor of the anchors, all anchors should share same key extractor
    * @param bloomFilter bloomfilter to apply on source view
    * @param inputDateInterval the date parameters passed to the source
+   * @param preprocessedDf the preprocessed DataFrame for this anchorFeatureGroup. It will replace the DataFrame loaded
+   *                       by the source if it exists.
    * @return a TransformedResultWithKey which contains the dataframe and other info such as feature column, keys
    */
   def directCalculate(
@@ -308,15 +310,24 @@ private[offline] object FeatureTransformation {
       source: DataSourceAccessor,
       keyExtractor: SourceKeyExtractor,
       bloomFilter: Option[BloomFilter],
-      inputDateInterval: Option[DateTimeInterval]): KeyedTransformedResult = {
+      inputDateInterval: Option[DateTimeInterval],
+      preprocessedDf: Option[DataFrame] = None): KeyedTransformedResult = {
+    // Can two diff anchors have different keyExtractor?
     assert(anchorFeatureGroup.anchorsWithSameSource.map(_.dateParam).distinct.size == 1)
     val defaultInterval = anchorFeatureGroup.anchorsWithSameSource.head.dateParam.map(OfflineDateTimeUtils.createIntervalFromFeatureGenDateParam)
     val interval = inputDateInterval.orElse(defaultInterval)
 
-    val sourceDF = source match {
-      case timeBasedDataSourceAccessor: TimeBasedDataSourceAccessor => timeBasedDataSourceAccessor.get(interval)
-      case nonTimeBasedDataSourceAccessor: NonTimeBasedDataSourceAccessor => nonTimeBasedDataSourceAccessor.get()
+    // If there are preprocessed DataFrame by users' Pyspark UDFs, just use the preprocessed DataFrame.
+    val sourceDF: DataFrame = preprocessedDf match {
+      case Some(existDf) => existDf
+      case None => {
+        source match {
+          case timeBasedDataSourceAccessor: TimeBasedDataSourceAccessor => timeBasedDataSourceAccessor.get(interval)
+          case nonTimeBasedDataSourceAccessor: NonTimeBasedDataSourceAccessor => nonTimeBasedDataSourceAccessor.get()
+        }
+      }
     }
+
     val withKeyColumnDF = keyExtractor.appendKeyColumns(sourceDF)
     val outputJoinKeyColumnNames = getFeatureJoinKey(keyExtractor, withKeyColumnDF)
     val filteredFactData = applyBloomFilter((keyExtractor, withKeyColumnDF), bloomFilter)
@@ -417,8 +428,10 @@ private[offline] object FeatureTransformation {
   /**
    * Group features based on 4 factors. Only if features have the same source key extractor, time window, source
    * and filters, can they be grouped into same dataframe for downstream processing.
+   * @param preprocessingUniqueness When there is a preprocessing logic, the anchor should be unique as well. It's similar
+   *                                to sourceKeyExtractor.
    */
-  private[offline] case class FeatureGroupingCriteria(sourceKeyExtry: String, timeWindowId: String, source: DataSourceAccessor, filter: String)
+  private[offline] case class FeatureGroupingCriteria(sourceKeyExtry: String, timeWindowId: String, source: DataSourceAccessor, filter: String, preprocessingUniqueness: String = "")
   /**
     * Case class to define tuple of feature anchor + grouping criteria + extractor class
     */
@@ -818,6 +831,17 @@ private[offline] object FeatureTransformation {
          *
          * Note: within each FeatureGroupingCriteria, we should group by and merge extractors of the same class.
          */
+        // preprocessedDfMap is in the form of feature list of an anchor separated by comma to their preprocessed DataFrame.
+        // We use feature list to denote if the anchor has corresponding preprocessing UDF.
+        // For example, an anchor have f1, f2, f3, then corresponding preprocessedDfMap is Map("f1,f2,f3"-> df1)
+        // (Anchor name is not chosen since it may be duplicated and not unique and stable.)
+        // If this anchor has preprocessing UDF, then we need to make its FeatureGroupingCriteria unique so it won't be
+        // merged by different anchor of same source. Otherwise our preprocessing UDF may impact anchors that dont'
+        // need preprocessing.
+        val preprocessedDfMap = PreprocessedDataFrameManager.preprocessedDfMap
+        val featuresInAnchor = anchorWithSourceDF.featureAnchor.features.toList
+        val sortedMkString = featuresInAnchor.sorted.mkString(",")
+        val featureNames = if (preprocessedDfMap.contains(sortedMkString)) sortedMkString else ""
         featureGroupWithSameTimeWindow.featureNames
           .map(
             f =>
@@ -827,7 +851,9 @@ private[offline] object FeatureTransformation {
                   sourcekeyExtractorIdentifier,
                   timeWindowGroupByIdentifier,
                   timeSeriesSource,
-                  AnchorUtils.getFilterFromAnchor(anchorWithSourceDF, f).getOrElse("")),
+                  AnchorUtils.getFilterFromAnchor(anchorWithSourceDF, f).getOrElse(""),
+                  featureNames
+                ),
                 featureExtractor.getClass))
       }).map(f => AnchorFeaturesWithGroupingCriteriaAndExtractorClass(f._1, f._2, f._3)).toList
     // After appending the grouping criteria and extractor class, group and merge the feature anchors.
@@ -860,8 +886,10 @@ private[offline] object FeatureTransformation {
     val (directTransformAnchorGroup, incrementalTransformAnchorGroup) =
       groupAggregationFeatures(source, AnchorFeatureGroups(anchorsWithSameSource, allRequestedFeatures), incrementalAggContext)
 
+    val preprocessedDf = PreprocessedDataFrameManager.getPreprocessedDataframe(anchorsWithSameSource)
+
     val directTransformedResult =
-      directTransformAnchorGroup.map(anchorGroup => Seq(directCalculate(anchorGroup, source, keyExtractor, bloomFilter, None)))
+      directTransformAnchorGroup.map(anchorGroup => Seq(directCalculate(anchorGroup, source, keyExtractor, bloomFilter, None, preprocessedDf)))
 
     val incrementalTransformedResult = incrementalTransformAnchorGroup.map { anchorGroup =>
       {

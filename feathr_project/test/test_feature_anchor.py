@@ -23,10 +23,10 @@ def test_request_feature_anchor_to_config():
     expected_non_agg_feature_config = """
            request_features: {
                source: PASSTHROUGH
-               key: [NOT_NEEDED]
+               key.sqlExpr: [NOT_NEEDED]
                features: {
                     trip_distance: {
-                        def: "trip_distance"
+                        def.sqlExpr: "trip_distance"
                         type: {
                             type: TENSOR
                             tensorCategory: DENSE
@@ -35,7 +35,7 @@ def test_request_feature_anchor_to_config():
                         }
                     } 
                     f_is_long_trip_distance: {
-                        def: "cast_float(trip_distance)>30"
+                        def.sqlExpr: "cast_float(trip_distance)>30"
                         type: {
                             type: TENSOR
                             tensorCategory: DENSE
@@ -44,7 +44,7 @@ def test_request_feature_anchor_to_config():
                         } 
                     } 
                     f_day_of_week: { 
-                        def:"dayofweek(lpep_dropoff_datetime)"
+                        def.sqlExpr:"dayofweek(lpep_dropoff_datetime)"
                         type: {
                             type: TENSOR
                             tensorCategory: DENSE
@@ -60,7 +60,7 @@ def test_request_feature_anchor_to_config():
 
 def test_non_agg_feature_anchor_to_config():
     batch_source = HdfsSource(name="nycTaxiBatchSource",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
@@ -83,10 +83,10 @@ def test_non_agg_feature_anchor_to_config():
     expected_non_agg_feature_config = """
            nonAggFeatures: {
                source: nycTaxiBatchSource
-               key: [DOLocationID]
+               key.sqlExpr: [DOLocationID]
                features: {
                     f_loc_is_long_trip_distance: {
-                        def: "cast_float(trip_distance)>30"
+                        def.sqlExpr: "cast_float(trip_distance)>30"
                         type: {
                             type: TENSOR
                             tensorCategory: DENSE
@@ -95,7 +95,7 @@ def test_non_agg_feature_anchor_to_config():
                         } 
                     } 
                     f_loc_day_of_week: { 
-                        def:"dayofweek(lpep_dropoff_datetime)"
+                        def.sqlExpr:"dayofweek(lpep_dropoff_datetime)"
                         type: {
                             type: TENSOR
                             tensorCategory: DENSE
@@ -111,7 +111,7 @@ def test_non_agg_feature_anchor_to_config():
 
 def test_agg_anchor_to_config():
     batch_source = HdfsSource(name="nycTaxiBatchSource",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
@@ -140,12 +140,12 @@ def test_agg_anchor_to_config():
     expected_agg_feature_config = """
             aggregationFeatures: {
                 source: nycTaxiBatchSource
-                key: [DOLocationID]
+                key.sqlExpr: [DOLocationID]
                 features: {
                     f_location_avg_fare: {
                         def: "cast_float(fare_amount)"
                         window: 90d
-                        agg: AVG
+                        aggregation: AVG
                         type: {
                             type: TENSOR
                             tensorCategory: DENSE
@@ -156,7 +156,7 @@ def test_agg_anchor_to_config():
                     f_location_max_fare: {
                         def: "cast_float(fare_amount)"
                         window: 90d
-                        agg: MAX
+                        aggregation: MAX
                         type: {
                             type: TENSOR
                             tensorCategory: DENSE

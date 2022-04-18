@@ -44,7 +44,7 @@ def test_feathr_online_store_agg_features():
     client.materialize_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
-    client.wait_job_to_finish(timeout_sec=600)
+    client.wait_job_to_finish(timeout_sec=900)
 
     res = client.get_online_features(online_test_table, '265', [
                                      'f_location_avg_fare', 'f_location_max_fare'])
@@ -85,7 +85,7 @@ def test_feathr_online_store_non_agg_features():
     client.materialize_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
-    client.wait_job_to_finish(timeout_sec=600)
+    client.wait_job_to_finish(timeout_sec=900)
 
     res = client.get_online_features(online_test_table, '111', ['f_gen_trip_distance', 'f_gen_is_long_trip_distance',
                                                                    'f1', 'f2', 'f3', 'f4', 'f5', 'f6'])
@@ -120,6 +120,16 @@ def _validate_constant_feature(feature):
     assert feature[7] == ([1, 2, 3], [1, 2, 3])
 
 
+def test_dbfs_path():
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    if client.spark_runtime.casefold() == "databricks":
+        # expect this raise an error since the result path is not in dbfs: format
+        with pytest.raises(RuntimeError):
+            client.feathr_spark_laucher.download_result(result_path="wasb://res_url", local_folder="/tmp")
+
+
 def test_feathr_get_offline_features():
     """
     Test get_offline_features() can get data correctly.
@@ -138,7 +148,7 @@ def test_feathr_get_offline_features():
         feature_query = FeatureQuery(
             feature_list=["f_location_avg_fare"], key=location_id)
         settings = ObservationSettings(
-            observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+            observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
             event_timestamp_column="lpep_dropoff_datetime",
             timestamp_format="yyyy-MM-dd HH:mm:ss")
 
@@ -149,14 +159,14 @@ def test_feathr_get_offline_features():
         else:
             output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
 
-        
+
         client.get_offline_features(observation_settings=settings,
                                     feature_query=feature_query,
                                     output_path=output_path)
 
         # assuming the job can successfully run; otherwise it will throw exception
         client.wait_job_to_finish(timeout_sec=900)
-        
+
         # download result and just assert the returned result is not empty
         res_df = get_result_df(client)
         assert res_df.shape[0] > 0

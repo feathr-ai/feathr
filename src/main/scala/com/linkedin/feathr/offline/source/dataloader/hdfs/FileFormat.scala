@@ -22,9 +22,9 @@ object FileFormat {
   // Detail JDBC Sql Type, please refer to dataloader.jdbc.SqlDbType
   val JDBC = "JDBC"
 
-  private val AVRO_DATASOURCE = "com.databricks.spark.avro"
+  private val AVRO_DATASOURCE = "avro"
   // Use Spark native orc reader instead of hive-orc since Spark 2.3
-  private val ORC_DATASOURCE = "org.apache.spark.sql.execution.datasources.orc"
+  private val ORC_DATASOURCE = "orc"
 
   val DATA_FORMAT = "data.format"
 
@@ -40,6 +40,7 @@ object FileFormat {
       case p if p.endsWith(".parquet") => PARQUET
       case p if p.endsWith(".orc") => ORC
       case p if p.endsWith(".avro.json") => AVRO_JSON
+      case p if p.endsWith(".avro") => AVRO
       case p if p.startsWith("jdbc:") => JDBC
       case _ =>
         // if we cannot tell the file format from the file extensions, we should read from `spark.feathr.inputFormat` to get the format that's sepcified by user.
@@ -64,7 +65,20 @@ object FileFormat {
     // if we cannot detect the file type by extension, we will detect "spark.feathr.inputFormat" and use that as the option;
     // this is a global config (i.e. affecting all the inputs) so customers should use it as the last resort.
     // If this is not set, throw an exception (in `loadHdfsDataFrame()`)
-    if (existingHdfsPaths.head.endsWith(".parquet")) PARQUET else dataIOParameters.getOrElse(DATA_FORMAT, ss.conf.get("spark.feathr.inputFormat", AVRO)).toUpperCase
+    val p = existingHdfsPaths.head.toLowerCase()
+    p match {
+      case p if p.endsWith(".csv") => CSV
+      case p if p.endsWith(".parquet") => PARQUET
+      case p if p.endsWith(".orc") => ORC
+      case p if p.endsWith(".avro.json") => AVRO_JSON
+      case p if p.endsWith(".avro") => AVRO
+      case p if p.startsWith("jdbc:") => JDBC
+      case _ =>
+      // if we cannot tell the file format from the file extensions, we should read from `spark.feathr.inputFormat` to get the format that's sepcified by user.
+      dataIOParameters.getOrElse(DATA_FORMAT, ss.conf.get("spark.feathr.inputFormat", AVRO)).toUpperCase
+    }
+
+
   }
 
   def loadHdfsDataFrame(format: String, existingHdfsPaths: Seq[String]): DataFrame = {
