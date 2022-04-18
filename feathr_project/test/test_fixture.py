@@ -18,7 +18,7 @@ def basic_test_setup(config_path: str):
     
     client = FeathrClient(config_path=config_path)
     batch_source = HdfsSource(name="nycTaxiBatchSource",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 
@@ -135,7 +135,7 @@ def registry_test_setup(config_path: str):
         return df
 
     batch_source = HdfsSource(name="nycTaxiBatchSource",
-                              path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss",
                               preprocessing=add_new_dropoff_and_fare_amount_column,

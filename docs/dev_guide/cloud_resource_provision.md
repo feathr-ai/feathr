@@ -1,3 +1,8 @@
+---
+layout: default
+title: Cloud Resource Provisioning
+parent: Feathr Developer Guides
+---
 # Cloud Resource Provisioning
 
 To simplify the cloud environment setup, we give end users an Azure template (with a button to have a simplified experience) so they can provision resources easily. From a high level point of view, it's a JSON file that Azure knows how to parse, and you specify the corresponding resources in the JSON file and Azure will validate and provision it for you.

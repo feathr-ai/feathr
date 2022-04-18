@@ -1,4 +1,8 @@
-
+---
+layout: default
+title: Feathr Capabilities
+parent: Feathr Concepts
+---
 # Feathr Capabilities
 
 Feathr is a scalable platform and below are some of the capabilities that Feathr has:
