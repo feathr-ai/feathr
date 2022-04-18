@@ -91,7 +91,9 @@ class FeathrClient(object):
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
-            self.local_workspace_dir = tempfile.TemporaryDirectory().name
+            # this is required for Windows
+            tem_dir_obj = tempfile.TemporaryDirectory()
+            self.local_workspace_dir = tem_dir_obj.name
 
         self.envutils = envutils
 
