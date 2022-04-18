@@ -35,14 +35,6 @@ resource FeathrResourceGroup 'Microsoft.Resources/resourceGroups@2020-10-01' = {
   location:location
 }
 
-// module GetUserObjectId 'getUserObjectId.bicep' = {
-//   name: 'GetUserObjectId'
-//   scope: FeathrResourceGroup
-//   params: {
-//     location: location
-//   }
-// }
-
 module FeathrKeyVault 'deployKV.bicep' = {
   name : 'FeathrKv-${resourcePrefix}'
   scope: FeathrResourceGroup
