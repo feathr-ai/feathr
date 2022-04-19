@@ -303,16 +303,16 @@ class _FeatureRegistry():
         for derived_feature in derived_features:
             # make sure the input is derived feature
             if isinstance(derived_feature, DerivedFeature):
+                # add this derived feature in the topo sort graph without any precessesors
+                # since regardless we need it
+                ts.add(derived_feature)
                 for input_feature in derived_feature.input_features:
                     if isinstance(input_feature, DerivedFeature):
                         # `input_feature` is predecessor of `derived_feature`
                         ts.add(derived_feature, input_feature)
                         self._add_all_derived_features(input_feature.input_features, ts)
-                    else:
-                        # the input feature is not a derived feature; it's an anchor feature
-                        # just add the derived feature without predecessors 
-                        # since this derived feature is calculated based only on anchor features
-                        ts.add(derived_feature)
+
+                        
 
 
     def _parse_derived_features(self, derived_features: List[DerivedFeature]) -> List[AtlasEntity]:
