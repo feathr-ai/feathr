@@ -308,6 +308,11 @@ class _FeatureRegistry():
                         # `input_feature` is predecessor of `derived_feature`
                         ts.add(derived_feature, input_feature)
                         self._add_all_derived_features(input_feature.input_features, ts)
+                    else:
+                        # the input feature is not a derived feature; it's an anchor feature
+                        # just add the derived feature without predecessors 
+                        # since this derived feature is calculated based only on anchor features
+                        ts.add(derived_feature)
 
 
     def _parse_derived_features(self, derived_features: List[DerivedFeature]) -> List[AtlasEntity]:
