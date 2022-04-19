@@ -51,7 +51,7 @@ request_anchor = FeatureAnchor(name="request_features",
 
 That sounds all good, but what if we want to share a feature, and others want to build additional features on top of that feature? Thats's why there is a concept in Feathr called `derived feature`, which allows you to calculate features based on other features, with certain transformation support. 
 
-In practice, people can build features on top of other features and have a "feature chain". For example, you have a recommendation system, one of your team mates have built an embedding for users, and antoher team mate have built an embedding on items, and you can build an additional feature called "user_item_similarity" on those two features:
+In practice, people can build features on top of other features. For example, you have a recommendation system, one of your team mates have built an embedding for users, and antoher team mate have built an embedding on items, and you can build an additional feature called "user_item_similarity" on those two features:
 
 ```python
 # Another example to compute embedding similarity
