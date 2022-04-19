@@ -25,7 +25,8 @@ private[offline] class StreamDataSourceAccessor(
    */
   override def get(): DataFrame = {
     if (!source.location.isInstanceOf[KafkaEndpoint]) {
-      throw new FeathrException(s"${source.location} is not a Kakfa streaming source location.")
+      throw new FeathrException(s"${source.location} is not a Kakfa streaming source location." +
+        s" Only Kafka source is supported right now.")
     }
     dataLoaderFactory.createFromLocation(source.location).loadDataFrame()
   }

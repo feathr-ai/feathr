@@ -111,6 +111,12 @@ class HdfsSource(Source):
 
 
 class KafkaConfig:
+    """Kafka config for a streaming source
+    Attributes:
+        brokers: broker/server address
+        topics: Kafka topics
+        schema: Kafka message schema
+        """
     def __init__(self, brokers: List[str], topics: List[str], schema: SourceSchema):
         self.brokers = brokers
         self.topics = topics

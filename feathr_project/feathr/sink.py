@@ -31,7 +31,7 @@ class RedisSink(Sink):
                     {% if source.streaming %}
                     streaming: true
                     {% endif %}
-                    {% if source.streamingTimeoutMs is defined %}
+                    {% if source.streamingTimeoutMs %}
                     timeoutMs: {{source.streamingTimeoutMs}}
                     {% endif %}
                 }

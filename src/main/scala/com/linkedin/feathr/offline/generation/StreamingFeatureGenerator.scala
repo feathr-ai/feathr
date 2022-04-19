@@ -4,6 +4,7 @@ import com.databricks.spark.avro.SchemaConverters
 import com.google.common.collect.Lists
 import com.linkedin.feathr.common.JoiningFeatureParams
 import com.linkedin.feathr.offline.config.location.KafkaEndpoint
+import com.linkedin.feathr.offline.generation.outputProcessor.PushToRedisOutputProcessor.TABLE_PARAM_CONFIG_NAME
 import com.linkedin.feathr.offline.generation.outputProcessor.RedisOutputUtils
 import com.linkedin.feathr.offline.job.FeatureTransformation.getFeatureJoinKey
 import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
@@ -26,11 +27,21 @@ import java.nio.ByteBuffer
 import scala.collection.JavaConverters._
 import scala.collection.convert.wrapAll._
 
+/**
+ * Class to ingest streaming features
+ */
 class StreamingFeatureGenerator {
   @transient val anchorToDataFrameMapper = new AnchorToDataSourceMapper()
 
+  /**
+   * Ingest streaming features
+   * @param ss spark session
+   * @param featureGenSpec feature generation config specification
+   * @param featureGroups all features defined in the system
+   * @param keyTaggedFeatures streaming features to ingest/generate
+   */
   def generateFeatures(ss: SparkSession, featureGenSpec: FeatureGenSpec, featureGroups: FeatureGroups,
-                       keyTaggedFeatures: Seq[JoiningFeatureParams]) = {
+                       keyTaggedFeatures: Seq[JoiningFeatureParams]): Unit = {
     val anchors = keyTaggedFeatures.map(streamingFeature => {
       featureGroups.allAnchoredFeatures.get(streamingFeature.featureName).get
     })
@@ -43,8 +54,8 @@ class StreamingFeatureGenerator {
       outputConfig.getParams.getNumber("timeoutMs").longValue()
     }
     // Load the raw streaming source data
-    val anchorDFRDDMap = anchorToDataFrameMapper.getAnchorDFMapForGen(ss, anchors, None, false, true)
-    anchorDFRDDMap.par.map { case (anchor, accessor) => {
+    val anchorDfRDDMap = anchorToDataFrameMapper.getAnchorDFMapForGen(ss, anchors, None, false, true)
+    anchorDfRDDMap.par.map { case (anchor, dfAccessor) => {
       val schemaStr = anchor.source.location.asInstanceOf[KafkaEndpoint].schema.avroJson
       val schemaStruct = SchemaConverters.toSqlType(Schema.parse(schemaStr)).dataType.asInstanceOf[StructType]
       val rowForRecord = (input: Any) => {
@@ -55,14 +66,21 @@ class StreamingFeatureGenerator {
         val reader = new GenericDatumReader[GenericRecord](avroSchema)
         val record = reader.read(null, decoder)
         for (field <- record.getSchema.getFields) {
-          var value = record.get(field.name)
-          var fieldType = field.schema.getType
-          if (fieldType.equals(Type.UNION)) fieldType = field.schema.getTypes.get(1).getType
-          // Avro returns Utf8s for strings, which Spark SQL doesn't know how to use
-          if (fieldType.equals(Type.STRING) && value != null) value = value.toString
-          // Avro returns binary as a ByteBuffer, but Spark SQL wants a byte[]
-          if (fieldType.equals(Type.BYTES) && value != null) value = value.asInstanceOf[ByteBuffer].array
-          values.add(value)
+          val fieldType = if (field.schema.equals(Type.UNION)) {
+            field.schema.getTypes.get(1).getType
+          } else {
+            field.schema.getType
+          }
+          val fieldValue = Option(record.get(field.name)) match {
+            case Some(value) if fieldType.equals(Type.STRING) =>
+              // Avro returns Utf8s for strings, which Spark SQL doesn't know how to use
+              value.toString
+            case Some(value) if fieldType.equals(Type.BYTES) =>
+              // Avro returns binary as a ByteBuffer, but Spark SQL wants a byte[]
+              value.asInstanceOf[ByteBuffer].array
+            case _ => record.get(field.name)
+          }
+          values.add(fieldValue)
         }
 
         new CustomGenericRowWithSchema(
@@ -72,7 +90,7 @@ class StreamingFeatureGenerator {
       val convertUDF = udf(rowForRecord)
 
       // Streaming processing each source
-      accessor.get().writeStream
+      dfAccessor.get().writeStream
         .outputMode(OutputMode.Update)
         .foreachBatch{ (batchDF: DataFrame, batchId: Long) =>
           // Convert each batch dataframe from the kafka built-in schema(which always has 'value' field) to user provided schema
@@ -97,8 +115,7 @@ class StreamingFeatureGenerator {
           val cleanedDF = transformedResult.df.select(selectedColumns.head, selectedColumns.tail:_*)
           val keyColumnNames = FeatureTransformation.getStandardizedKeyNames(outputJoinKeyColumnNames.size)
           val resultFDS: DataFrame = PostGenPruner().standardizeColumns(outputJoinKeyColumnNames, keyColumnNames, cleanedDF)
-          val tableParam = "table_name"
-          val tableName = outputConfig.getParams.getString(tableParam)
+          val tableName = outputConfig.getParams.getString(TABLE_PARAM_CONFIG_NAME)
           val allFeatureCols = resultFDS.columns.diff(keyColumnNames).toSet
           RedisOutputUtils.writeToRedis(ss, resultFDS, tableName, keyColumnNames, allFeatureCols, SaveMode.Append)
         }

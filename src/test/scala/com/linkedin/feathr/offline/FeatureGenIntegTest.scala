@@ -305,115 +305,69 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     val featureDefConfig =
       """
         |anchors: {
-        |
-        |kafkaAnchor: {
-        |                source: kafkaStreamingSource
-        |                key.sqlExpr: [driver_id]
-        |                features: {
-        |
-        |
-        |            trips_today: {
-        |
-        |
+        |  kafkaAnchor: {
+        |     source: kafkaStreamingSource
+        |     key.sqlExpr: [driver_id]
+        |     features: {
+        |         trips_today: {
         |             def.sqlExpr: "trips_today + 1" //if_else(true, trips_today, 1)"
+        |             type: {
+        |                type: TENSOR
+        |                tensorCategory: DENSE
+        |                dimensionType: []
+        |                valType: INT
+        |             }
+        |         }
         |
-        |
-        |
+        |         f_modified_streaming_count: {
+        |            def.sqlExpr: "trips_today + 1"
         |            type: {
         |                type: TENSOR
         |                tensorCategory: DENSE
         |                dimensionType: []
         |                valType: INT
         |            }
-        |
-        |            }
-        |
-        |            f_modified_streaming_count: {
-        |
-        |
-        |             def.sqlExpr: "trips_today + 1" //if_else(true, trips_today, 1)"
-        |
-        |
-        |
-        |            type: {
+        |         }
+        |      }
+        |  }
+        |  kafkaAnchor2: {
+        |       source: kafkaStreamingSource
+        |       key.sqlExpr: [driver_id]
+        |       features: {
+        |          trips_today2: {
+        |             def.sqlExpr: "trips_today + 1"
+        |             type: {
         |                type: TENSOR
         |                tensorCategory: DENSE
         |                dimensionType: []
         |                valType: INT
+        |              }
         |            }
-        |
-        |            }
-        |
-        |
-        |                }
-        |            }
-        |
-        |            kafkaAnchor2: {
-        |                source: kafkaStreamingSource
-        |                key.sqlExpr: [driver_id]
-        |                features: {
-        |
-        |
-        |            trips_today2: {
-        |
-        |
-        |             def.sqlExpr: "trips_today + 1" //if_else(true, trips_today, 1)"
-        |
-        |
-        |
-        |            type: {
+        |          f_modified_streaming_count2: {
+        |             def.sqlExpr: "trips_today + 1"
+        |             type: {
         |                type: TENSOR
         |                tensorCategory: DENSE
         |                dimensionType: []
         |                valType: INT
-        |            }
-        |
-        |            }
-        |
-        |            f_modified_streaming_count2: {
-        |
-        |
-        |             def.sqlExpr: "trips_today + 1" //if_else(true, trips_today, 1)"
-        |
-        |
-        |
-        |            type: {
-        |                type: TENSOR
-        |                tensorCategory: DENSE
-        |                dimensionType: []
-        |                valType: INT
-        |            }
-        |
-        |            }
-        |
-        |
-        |                }
-        |            }
-        |
-        |
-        |
-        |}
-        |
-        |sources: {
-        |
-        |
-        |
-        |kafkaStreamingSource: {
-        |    type: KAFKA
-        |    config: {
-        |        brokers: ["feathrazureci.servicebus.windows.net:9093"]
-        |        topics: [feathrcieventhub]
-        |
-        |        schema: {
-        |            type = "avro"
-        |            avroJson:"\n    {\n        \"type\": \"record\",\n        \"name\": \"DriverTrips\",\n        \"fields\": [\n            {\"name\": \"driver_id\", \"type\": \"long\"},\n            {\"name\": \"trips_today\", \"type\": \"int\"},\n            {\n                \"name\": \"datetime\",\n                \"type\": {\"type\": \"long\", \"logicalType\": \"timestamp-micros\"}\n            }\n        ]\n    }\n    "
+        |              }
+        |           }
         |        }
-        |
         |    }
         |}
         |
-        |
-        |
+        |sources: {
+        |  kafkaStreamingSource: {
+        |    type: KAFKA
+        |    config: {
+        |       brokers: ["feathrazureci.servicebus.windows.net:9093"]
+        |       topics: [feathrcieventhub]
+        |       schema: {
+        |          type = "avro"
+        |          avroJson:"\n    {\n        \"type\": \"record\",\n        \"name\": \"DriverTrips\",\n        \"fields\": [\n            {\"name\": \"driver_id\", \"type\": \"long\"},\n            {\"name\": \"trips_today\", \"type\": \"int\"},\n            {\n                \"name\": \"datetime\",\n                \"type\": {\"type\": \"long\", \"logicalType\": \"timestamp-micros\"}\n            }\n        ]\n    }\n    "
+        |       }
+        |     }
+        |   }
         |}
         |
         |""".stripMargin

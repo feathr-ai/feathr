@@ -4,7 +4,23 @@ import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.codehaus.jackson.annotate.JsonProperty
 
-
+/**
+ * Kafka source config.
+ * Example:
+ *  kafkaStreamingSource: {
+      type: KAFKA
+      config: {
+        brokers: ["feathrazureci.servicebus.windows.net:9093"]
+        topics: [feathrcieventhub]
+        schema: {
+          type = "avro"
+          avroJson:"......"
+        }
+      }
+    }
+ *
+ *
+ */
 @CaseClassDeserialize()
 case class KafkaSchema(@JsonProperty("type") `type`: String,
                        @JsonProperty("avroJson") avroJson: String)

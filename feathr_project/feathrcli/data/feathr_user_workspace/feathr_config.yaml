@@ -64,6 +64,7 @@ offline_store:
     jdbc_table: "feathrtesttable"
 
   # reading from streaming source
+streaming:
   kafka:
     kafka_endpoint: 'sb://feathrazureci.servicebus.windows.net/'
 

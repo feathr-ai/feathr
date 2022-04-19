@@ -6,7 +6,7 @@ import com.linkedin.feathr.offline.generation.outputProcessor.RedisOutputUtils
 import com.linkedin.feathr.offline.{AssertFeatureUtils, TestFeathr}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.types.{ArrayType, BooleanType, FloatType, IntegerType, StringType, StructField, StructType}
 import org.scalatest.mockito.MockitoSugar
 import org.testng.annotations.Test
 

@@ -64,6 +64,7 @@ offline_store:
     role: "ACCOUNTADMIN"
 
   # reading from streaming source
+streaming:
   kafka:
     kafka_endpoint: 'sb://feathrazureci.servicebus.windows.net/'
 

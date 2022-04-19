@@ -19,16 +19,21 @@ class KafkaDataLoader(ss: SparkSession, input: KafkaEndpoint) extends StreamData
   val kafkaUsername = KafkaResourceInfoSetter.USERNAME
   val sharedAccessKey = KafkaResourceInfoSetter.SHARED_ACCESS_KEY
 
+  // Construct authentication string for Kafka on Azure
   private def getKafkaAuth(ss: SparkSession): String = {
     // If user set password, then we use password to auth
     ss.conf.getOption(kafkaEndpoint) match {
       case Some(_) =>
-          val accessKeyName = ss.conf.get(sharedAccessKeyName)
-          val endpoint = ss.conf.get(kafkaEndpoint)
-          val username = ss.conf.get(kafkaUsername)
-          val accessKey = ss.conf.get(sharedAccessKey)
-          val EH_SASL = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\""+username+"\"" +
-            " password=\"Endpoint="+endpoint+";SharedAccessKeyName="+accessKeyName+";SharedAccessKey="+accessKey+"\";"
+          val accessKeyName = ss.conf.getOption(sharedAccessKeyName)
+          val endpoint = ss.conf.getOption(kafkaEndpoint)
+          val username = ss.conf.getOption(kafkaUsername)
+          val accessKey = ss.conf.getOption(sharedAccessKey)
+          if (!accessKeyName.isDefined || !endpoint.isDefined || !username.isDefined || !accessKey.isDefined) {
+            throw new RuntimeException(s"Invalid Kafka authentication! ${kafkaEndpoint}, ${sharedAccessKeyName}," +
+              s" ${kafkaUsername} and ${sharedAccessKey} must be set in Spark conf.")
+          }
+          val EH_SASL = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\""+username.get+"\"" +
+            " password=\"Endpoint="+endpoint.get+";SharedAccessKeyName="+accessKeyName.get+";SharedAccessKey="+accessKey.get+"\";"
           EH_SASL
       case _ => {
         throw new RuntimeException(s"Invalid Kafka authentication! ${kafkaEndpoint} is not set in Spark conf.")
@@ -43,7 +48,8 @@ class KafkaDataLoader(ss: SparkSession, input: KafkaEndpoint) extends StreamData
         .options(kafkaOptions)
         .option("kafka.group.id", UUID.randomUUID().toString)
         .option("kafka.sasl.jaas.config", EH_SASL)
-        .option("kafka.sasl.mechanism", "PLAIN")
+      // These are default settings, we can expose them in the future if required
+      .option("kafka.sasl.mechanism", "PLAIN")
         .option("kafka.security.protocol", "SASL_SSL")
         .option("kafka.request.timeout.ms", "60000")
         .option("kafka.session.timeout.ms", "60000")
@@ -56,11 +62,12 @@ class KafkaDataLoader(ss: SparkSession, input: KafkaEndpoint) extends StreamData
    * @return an dataframe
    */
   override def loadDataFrame(): DataFrame = {
-    val TOPIC = input.topics.mkString(",")
-    val BOOTSTRAP_SERVERS = input.brokers.mkString(",")
+    // Spark conf require ',' delimited strings for multi-value config
+    val topic = input.topics.mkString(",")
+    val bootstrapServers= input.brokers.mkString(",")
     getDFReader(Map())
-      .option("subscribe", TOPIC)
-      .option("kafka.bootstrap.servers", BOOTSTRAP_SERVERS)
+      .option("subscribe", topic)
+      .option("kafka.bootstrap.servers", bootstrapServers)
       .load()
   }
 

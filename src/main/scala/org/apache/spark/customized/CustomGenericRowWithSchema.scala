@@ -27,16 +27,16 @@ class CustomGenericRowWithSchema(values: Array[Any], inputSchema: StructType)
 class GenericRowWithSchemaUDT extends UserDefinedType[CustomGenericRowWithSchema] {
   override def sqlType: DataType = org.apache.spark.sql.types.BinaryType
   override def serialize(obj: CustomGenericRowWithSchema): Any = {
-    val bos = new ByteArrayOutputStream()
-    val oos = new ObjectOutputStream(bos)
-    oos.writeObject(obj)
-    bos.toByteArray
+    val byteStream = new ByteArrayOutputStream()
+    val objectStream = new ObjectOutputStream(byteStream)
+    objectStream.writeObject(obj)
+    byteStream.toByteArray
   }
   override def deserialize(datum: Any): CustomGenericRowWithSchema = {
-    val bis = new ByteArrayInputStream(datum.asInstanceOf[Array[Byte]])
-    val ois = new ObjectInputStream(bis)
-    val obj = ois.readObject()
-    obj.asInstanceOf[CustomGenericRowWithSchema]
+    val byteStream = new ByteArrayInputStream(datum.asInstanceOf[Array[Byte]])
+    val objectStream = new ObjectInputStream(byteStream)
+    val row = objectStream.readObject()
+    row.asInstanceOf[CustomGenericRowWithSchema]
   }
   override def userClass: Class[CustomGenericRowWithSchema] = classOf[CustomGenericRowWithSchema]
 }

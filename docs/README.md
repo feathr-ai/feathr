@@ -150,7 +150,7 @@ batch_source = HdfsSource(
     timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
 ```
 
-## Beyond Features on Raw Data Sources - Derived Features
+## Define features on top of other features - Derived Features
 
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature

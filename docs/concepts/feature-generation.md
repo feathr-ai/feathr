@@ -93,6 +93,9 @@ kafkaAnchor = FeatureAnchor(name="kafkaAnchor",
                             )
 
 ```
+Note that only Feathr ExpressionTransformation is allowed in streaming anchor at the moment.
+Other transformations support are in the roadmap.
+
 3. Start streaming job
 
 ```python
@@ -102,4 +105,16 @@ settings = MaterializationSettings(name="kafkaSampleDemo",
                                    feature_names=['f_modified_streaming_count']
                                    )
 client.materialize_features(settings) # Will streaming for 10 seconds since streamingTimeoutMs is 10000
+```
+4. Fetch streaming feature values
+
+```python
+
+    res = client.get_online_features('kafkaSampleDemoFeature', '1',
+                                     ['f_modified_streaming_count'])
+    # Get features for multiple feature keys
+    res = client.multi_get_online_features('kafkaSampleDemoFeature',
+                                    ['1', '2'],
+                                    ['f_modified_streaming_count'])
+
 ```

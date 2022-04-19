@@ -119,7 +119,7 @@ class FeathrClient(object):
 
         # Kafka configs
         self.kafka_endpoint = envutils.get_environment_variable_with_default(
-            'offline_store', 'kafka', 'kafka_endpoint')
+            'streaming', 'kafka', 'kafka_endpoint')
 
         # spark configs
         self.output_num_parts = envutils.get_environment_variable_with_default(

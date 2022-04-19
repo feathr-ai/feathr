@@ -42,6 +42,9 @@ class _EnvVaraibleUtil(object):
                 for arg in args:
                     yaml_layer = yaml_layer[arg]
                 return yaml_layer
+            except KeyError as exc:
+                logger.info(exc)
+                return ""
             except yaml.YAMLError as exc:
                 logger.info(exc)
 
