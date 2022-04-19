@@ -70,7 +70,7 @@ class HdfsSource(Source):
         self.path = path    
         self.preprocessing = preprocessing
         if path.startswith("http"):
-            logger.warning("Your input path starts with http, which might not work in Spark. Consider using paths starting with wasb[s]/abfs[s]/s3.")
+            logger.warning("Your input path {} starts with http, which is not supported. Consider using paths starting with wasb[s]/abfs[s]/s3.", path)
 
     def to_feature_config(self) -> str:
         tm = Template("""  
