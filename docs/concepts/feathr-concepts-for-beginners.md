@@ -109,7 +109,7 @@ client.get_online_features(feature_table = "agg_features",
 
 ## Illustration
 
-An illustration of the concepts that we are going to talk about is like this:
+An illustration of the concepts and process that we talked about is like this:
 ![Feature Join Process](../images/observation_data.jpg)
 
 ## Point in time joins and aggregations
