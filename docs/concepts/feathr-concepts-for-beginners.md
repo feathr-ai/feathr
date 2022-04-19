@@ -10,19 +10,17 @@ In this guide, we will cover the high level concepts for Feathr. Don't treat thi
 
 ## What are `Observation` data, and why does Feathr need `key(s)`, `Anchor`, `Source`?
 
-In order to fully utilize Feathr's power, we need to understand the object models that Feathr is expecting. Let's take an example of building a recommendation system, where you have a user click streams and you want to add addtion features on top of this click streams (say user historical clicks in last 1 hour).
+In order to fully utilize Feathr's power, we need to understand what Feathr is expecting. Let's take an example of building a recommendation system, where you have a user click streams and you want to add addtion features on top of this click streams, say user historical clicks in last 1 hour, and the user locations.
+
+![Feature Feature Concept](../images/concept_illustration.jpg)
 
 In Feathr, always think that there is some `Observation` dataset (the above case will be the click streams) which is the central dataset that you will be using. The observation data set will usually have at least two columns: a timestamp column (indicating when this event happened) and a column containing IDs, and with other possible fields.
 
 Usually you will need addtional features to augment this `observation` dataset. For example, you want to augment the user click stream data by adding some historical features, such as the total amount that the user spent in the last one week. This additional dataset is usually in a different storage, say in your historical database, or data lake.
 
-In this case, how would we "link" the `observation` dataset, and the "additional dataset"? In Feathr, but basically think this process as joining two tables.
+In this case, how would we "link" the `observation` dataset, and the "additional dataset"? In Feathr, basically think this process as joining two tables.
 
 Since this is a table join process, we need to specify which `key(s)` that the join would happen. Those `keys` are usually some IDs, but can be others as well. In the above example, if we want to augment the user click stream data with user purchase history, we will use the user ID as `key`, so that the `user_click_stream` table and the `user_historical_buying` table can be joined together. That's why you need to specify `keys` in Feathr `Feature`, becasue you will need to join your `Feature` with your `Observation Data` later on.
-
-Here's an illustration on the above concepts:
-
-![Feature Feature Concept](../images/concept_illustration.jpg)
 
 Since those additional features are from different sources, we want to define an `Anchor` to process it further. Think `Anchor` as a `Feature View`, where it is a collection of features and their corresponding sources. Think `Feature` just as a column in your dataset but it contains some useful information that you want to use in your machine learning scenario.
 
@@ -112,7 +110,7 @@ client.get_online_features(feature_table = "agg_features",
 ## Illustration
 
 An illustration of the concepts that we are going to talk about is like this:
-![Feature Join Process](../images/observation_data.png)
+![Feature Join Process](../images/observation_data.jpg)
 
 ## Point in time joins and aggregations
 
