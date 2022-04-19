@@ -310,6 +310,9 @@ class _FeatureRegistry():
                     if isinstance(input_feature, DerivedFeature):
                         # `input_feature` is predecessor of `derived_feature`
                         ts.add(derived_feature, input_feature)
+                        # if any of the input feature is a derived feature, have this recursive call
+                        # use this for code simplicity. 
+                        # if the amount of features is huge, consider only add the derived features into the function call
                         self._add_all_derived_features(input_feature.input_features, ts)
 
                         
