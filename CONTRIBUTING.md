@@ -22,6 +22,10 @@ If you have any feature request, please create a new Github issue and the commun
 
 If you have any user feedback, please create a new Github issue and the community will collect your feedback and work on it.
 
+## Pull Request Guideline
+
+Detailed Pull Request guideline is at [Feathr Pull Request Guideline](./docs/dev_guide/pull_request_guideline.md)
+
 # Code Of Conduct
 
 This code of conduct outlines our expectations for participants within the community, as well as steps to reporting unacceptable behavior. We are committed to providing a welcoming and inspiring community for all and expect our code of conduct to be honored. Anyone who violates this code of conduct may be banned from the community.

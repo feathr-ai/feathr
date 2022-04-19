@@ -31,7 +31,7 @@ def test_feathr_online_store_agg_features():
     client.materialize_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
-    client.wait_job_to_finish(timeout_sec=600)
+    client.wait_job_to_finish(timeout_sec=900)
 
     res = client.get_online_features('snowflakeSampleDemoFeature', '1',
                                      ['f_snowflake_call_center_division_name', 'f_snowflake_call_center_zipcode'])

@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
 from jinja2 import Template
 
 from feathr.dtype import FeatureType
-from feathr.transformation import ExpressionTransformation, Transformation
+from feathr.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
 from feathr.typed_key import DUMMY_KEY, TypedKey
 
 
@@ -18,14 +18,18 @@ class FeatureBase(ABC):
         feature_type: the feature value type. e.g. INT32, FLOAT, etc. feathr.dtype
         key: The key of this feature. e.g. user_id.
         transform: A transformation used to produce its feature value. e.g. amount * 10
+        registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this feature is deprecated, etc.
     """
     def __init__(self,
                  name: str,
                  feature_type: FeatureType,
                  transform: Optional[Union[str, Transformation]] = None,
-                 key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY]):
+                 key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
+                 registry_tags: Optional[Dict[str, str]] = None,
+                 ):
         self.name = name
         self.feature_type = feature_type
+        self.registry_tags=registry_tags
         self.key = key if isinstance(key, List) else [key]
         # feature_alias: Rename the derived feature to `feature_alias`. Default to feature name.
         self.feature_alias = name
@@ -76,18 +80,22 @@ class Feature(FeatureBase):
         feature_type: the feature value type. e.g. INT32, FLOAT, etc. Should be part of `feathr.dtype`
         key: The key of this feature. e.g. user_id.
         transform: A row transformation used to produce its feature value. e.g. amount * 10
+        registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this feature is deprecated, etc.
     """
     def __init__(self,
                 name: str,
                 feature_type: FeatureType,
                 key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
-                transform: Optional[Union[str, Transformation]] = None):
-        super(Feature, self).__init__(name, feature_type, transform, key)
+                transform: Optional[Union[str, Transformation]] = None,
+                registry_tags: Optional[Dict[str, str]] = None,
+                ):
+        super(Feature, self).__init__(name, feature_type, transform, key, registry_tags)
+
 
     def to_feature_config(self) -> str:
         tm = Template("""
             {{feature.name}}: {
-                def:{{feature.transform.to_feature_config()}}
+                {{feature.transform.to_feature_config()}}
                 {{feature.feature_type.to_feature_config()}} 
             }
         """)
