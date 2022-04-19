@@ -11,10 +11,15 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**/README.md'
-
+  pull_request_target:
+     types: [labeled]
+     paths-ignore:
+       - 'docs/**'
+       - '**/README.md'
 jobs:
   sbt_test:
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
@@ -26,6 +31,7 @@ jobs:
         run: sbt clean && sbt test
   python_lint:
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
@@ -45,6 +51,7 @@ jobs:
       
   databricks_test:
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
@@ -107,6 +114,7 @@ jobs:
   azure_synapse_test:
       # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
       runs-on: ubuntu-latest
+      if: contains(github.event.pull_request.labels.*.name, 'safe to test')
       steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
