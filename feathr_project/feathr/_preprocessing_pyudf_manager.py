@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 import pickle
 from jinja2 import Template
 from feathr.source import HdfsSource
+from pyspark import cloudpickle
 
 # Some metadata that are only needed by Feathr
 FEATHR_PYSPARK_METADATA = 'generated_feathr_pyspark_metadata'
@@ -16,7 +17,8 @@ FEATHR_PYSPARK_DRIVER_FILE_NAME = 'feathr_pyspark_driver.py'
 FEATHR_PYSPARK_DRIVER_TEMPLATE_FILE_NAME = 'feathr_pyspark_driver_template.py'
 # Feathr provided imports for pyspark UDFs all go here
 PROVIDED_IMPORTS = ['\nfrom pyspark.sql import SparkSession, DataFrame\n'] + \
-                   ['from pyspark.sql.functions import *\n']
+                   ['from pyspark.sql.functions import *\n'] + \
+                   ['from pyspark import cloudpickle\n__feathr_user_functions={}\n']
 
 
 class _PreprocessingPyudfManager(object):
@@ -27,8 +29,10 @@ class _PreprocessingPyudfManager(object):
         """When the client build features, UDFs and features that need preprocessing will be stored as metadata. Those
         metadata will later be used when uploading the Pyspark jobs.
         """
-        # feature names concatenated to UDF map
-        # for example, {'f1,f2,f3': my_udf1, 'f4,f5':my_udf2}
+        # feature names concatenated to UDF callable object map
+        # the UDF callable is stored in `__feathr_user_functions` dictionary with source name as the key
+        # so the map is like:
+        # 'f1,f2': __feathr_user_functions['source1']
         feature_names_to_func_mapping = {}
         # features that have preprocessing defined. This is used to figure out if we need to kick off Pyspark
         # preprocessing for requested features.
@@ -39,12 +43,12 @@ class _PreprocessingPyudfManager(object):
                 continue
             preprocessing_func = anchor.source.preprocessing
             if preprocessing_func:
-                _PreprocessingPyudfManager.persist_pyspark_udf_to_file(preprocessing_func, local_workspace_dir)
+                _PreprocessingPyudfManager.persist_pyspark_udf_to_file(anchor.source.name, preprocessing_func, local_workspace_dir)
                 feature_names = [feature.name for feature in anchor.features]
                 features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
                 string_feature_list = ','.join(feature_names)
-                feature_names_to_func_mapping[string_feature_list] = anchor.source.preprocessing
+                feature_names_to_func_mapping[string_feature_list] = "__feathr_user_functions['%s']" % anchor.source.name
 
         if not features_with_preprocessing:
             return
@@ -59,12 +63,15 @@ class _PreprocessingPyudfManager(object):
             pickle.dump(features_with_preprocessing, file)
 
     @staticmethod
-    def persist_pyspark_udf_to_file(user_func, local_workspace_dir):
-        udf_source_code = inspect.getsourcelines(user_func)[0]
-        lines = []
-        # Some basic imports will be provided
-        lines = lines + PROVIDED_IMPORTS
-        lines = lines + udf_source_code
+    def persist_pyspark_udf_to_file(source_name, user_func, local_workspace_dir):
+        if not hasattr(user_func, "__name__") or getattr(user_func, "__name__")=='<lambda>':
+            raise ValueError("Using Lambda as UDF is not supported.")
+        # the UDF callable is stored in `__feathr_user_functions` dictionary with source name as the key,
+        # and the body is packed by cloudpickle.
+        # so the final source line is like:
+        # __feathr_user_functions['source1'] = cloudpickle.loads(b'...')
+        # and this callable object can be called as `__feathr_user_functions['source1'](...)`
+        lines = ["__feathr_user_functions['%s']=cloudpickle.loads(%s)" % (source_name, cloudpickle.dumps(user_func))]
         lines.append('\n')
 
         client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
@@ -80,6 +87,8 @@ class _PreprocessingPyudfManager(object):
                 print("".join(lines), file=handle)
         else:
             with open(client_udf_repo_path, "w") as handle:
+                # Some basic imports will be provided
+                print("".join(PROVIDED_IMPORTS), file=handle)
                 print("".join(lines), file=handle)
 
     @staticmethod
@@ -92,7 +101,7 @@ class _PreprocessingPyudfManager(object):
         tm = Template("""
 feature_names_funcs = {
 {% for key, value in func_maps.items() %}
-    "{{key}}" : {{value.__name__}},
+    "{{key}}" : {{value}},
 {% endfor %}
 }
         """)
