@@ -64,8 +64,6 @@ class _PreprocessingPyudfManager(object):
 
     @staticmethod
     def persist_pyspark_udf_to_file(source_name, user_func, local_workspace_dir):
-        if not hasattr(user_func, "__name__") or getattr(user_func, "__name__")=='<lambda>':
-            raise ValueError("Using Lambda as UDF is not supported.")
         # the UDF callable is stored in `__feathr_user_functions` dictionary with source name as the key,
         # and the body is packed by cloudpickle.
         # so the final source line is like:
