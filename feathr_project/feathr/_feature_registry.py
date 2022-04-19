@@ -796,8 +796,7 @@ derivations: {
         
         returns a list of the result entities.
         """
-        entity_type_list = [entity_type] if isinstance(
-            entity_type, str) else entity_type
+        entity_type_list = [entity_type] if isinstance(entity_type, str) else entity_type
 
         for i in entity_type_list:
             if i not in {TYPEDEF_SOURCE, TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT}:
