@@ -62,10 +62,10 @@ private[offline] object CoercionUtilsScala {
       if (valueSet.size == 1 && valueSet.contains(1.0f)) { // a categorical set feature
         featureValue.getValue.keySet().toSeq
       } else {
-        val isDenseVector = featureValue.getValue.keys.zipWithIndex.filter(pr => pr._1 != pr._2.toString).size == 0
+        val isDenseVector = featureValue.getValue.keys.toSeq.map(_.toInt).sorted.zipWithIndex.filter(pr => pr._1 != pr._2).size == 0
         val isCategoricalSet = featureValue.getValue.values.filter(!_.equals(1.0f)).size == 0
         if (isDenseVector) {
-          featureValue.getValue.values().map(_.toLong.toString).toSeq
+          featureValue.getValue.toSeq.sortBy(_._1.toInt).map(_._2.toLong.toString)
         } else if (isCategoricalSet) {
           featureValue.getValue.keys.toSeq
         } else {
