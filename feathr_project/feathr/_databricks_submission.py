@@ -137,8 +137,10 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
 
         submission_params['run_name'] = job_name
-        submission_params['new_cluster']['spark_conf'] = configuration
-        submission_params['new_cluster']['custom_tags'] = job_tags
+        if 'existing_cluster_id' not in submission_params:
+            # if users don't specify existing_cluster_id
+            submission_params['new_cluster']['spark_conf'] = configuration
+            submission_params['new_cluster']['custom_tags'] = job_tags
         # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
         submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         # see here for the submission parameter definition https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--request-structure-6
