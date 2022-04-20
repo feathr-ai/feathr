@@ -371,7 +371,6 @@ class FeatureGenIntegTest extends FeathrIntegTest {
         |}
         |
         |""".stripMargin
-
     localFeatureGenerate(applicationConfig, featureDefConfig)
   }
 
