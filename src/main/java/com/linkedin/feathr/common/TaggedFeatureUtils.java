@@ -3,13 +3,16 @@ package com.linkedin.feathr.common;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.*;
-
 
 public class TaggedFeatureUtils {
   private TaggedFeatureUtils() { }
 
 
+  public static void checkArgument(Boolean value) {
+    if (!value) {
+      throw new IllegalArgumentException("Unexpected false");
+    }
+  }
   public static ErasedEntityTaggedFeature eraseStringTags(TaggedFeatureName input, List<String> keyNames) {
     /*
      * This function should be run rarely (during setup etc).
@@ -21,9 +24,9 @@ public class TaggedFeatureUtils {
     checkArgument(keyNames.size() == keyNames.stream().distinct().count());
 
     List<Integer> keyBindingIndexes = input.getKeyTag().stream().map(keyNames::indexOf).collect(Collectors.toList());
-    checkArgument(!keyBindingIndexes.contains(-1),
-        "input %s contained some key not present in %s", input, keyNames);
-
+    if(keyBindingIndexes.contains(-1)) {
+       throw new IllegalArgumentException("input " + input + " contained some key not present in " + keyNames);
+    }
     return new ErasedEntityTaggedFeature(keyBindingIndexes, input.getFeatureName());
   }
 

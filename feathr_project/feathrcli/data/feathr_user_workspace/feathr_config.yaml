@@ -32,6 +32,7 @@ project_config:
     - JDBC_TABLE
     - JDBC_USER
     - JDBC_PASSWORD
+    - KAFKA_SASL_JAAS_CONFIG
 
 offline_store:
   # paths starts with abfss:// or abfs://

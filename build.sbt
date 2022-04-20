@@ -10,7 +10,6 @@ val localAndCloudDiffDependencies = Seq(
     "org.apache.spark" %% "spark-sql" % sparkVersion,
     "org.apache.spark" %% "spark-hive" % sparkVersion,
     "org.apache.spark" %% "spark-catalyst" % sparkVersion,
-    "com.google.guava" % "guava" % "17.0",
     "org.apache.logging.log4j" % "log4j-core" % "2.17.1",
     "com.typesafe" % "config" % "1.3.2",
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
@@ -23,9 +22,10 @@ val localAndCloudDiffDependencies = Seq(
 
 val cloudProvidedDeps = localAndCloudDiffDependencies.map(x => x % "provided")
 
-
 val localAndCloudCommonDependencies = Seq(
     "com.microsoft.azure" % "azure-eventhubs-spark_2.12" % "2.3.15",
+    "org.apache.kafka" % "kafka-clients" % "3.1.0",
+    "com.google.guava" % "guava" % "31.1-jre",
     "org.testng" % "testng" % "6.14.3" % Test,
     "org.mockito" % "mockito-core" % "3.1.0" % Test,
     "nl.jqno.equalsverifier" % "equalsverifier" % "3.1.12" % Test,

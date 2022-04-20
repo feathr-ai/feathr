@@ -1,10 +1,12 @@
 import os
 from pathlib import Path
+import pytest
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import RedisSink
 from test_fixture import kafka_test_setup
 
-
+@pytest.mark.skipif(os.environ.get('SPARK_CONFIG__SPARK_CLUSTER') != "azure_synapse",
+                    reason="skip for databricks, as it cannot stop streaming job automatically for now.")
 def test_feathr_kafa_streaming_features():
     """
     Test FeathrClient() materialize_features can ingest streaming feature correctly
