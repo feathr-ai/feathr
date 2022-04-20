@@ -40,20 +40,14 @@ def send_avro_record_to_kafka(topic, record):
     bytes_writer = io.BytesIO()
     encoder = BinaryEncoder(bytes_writer)
     writer.write(record, encoder)
-    endpoint = _EnvVaraibleUtil.get_environment_variable('KAFKA_ENDPOINT')
-    access_key_name = _EnvVaraibleUtil.get_environment_variable('KAFKA_SHARED_ACCESS_KEY_NAME')
-    access_key = _EnvVaraibleUtil.get_environment_variable('KAFKA_SHARED_ACCESS_KEY')
-    username = _EnvVaraibleUtil.get_environment_variable('KAFKA_USERNAME')
+    sasl = _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
     conf = {
         'bootstrap.servers': KAFKA_BROKER,
         'security.protocol': 'SASL_SSL',
         'ssl.ca.location': '/usr/local/etc/openssl@1.1/cert.pem',
         'sasl.mechanism': 'PLAIN',
-        'sasl.username': username,
-        'sasl.password': 'Endpoint={};SharedAccessKeyName={};SharedAccessKey={};EntityPath={}'.format(endpoint,
-                                                                                                      access_key_name,
-                                                                                                      access_key,
-                                                                                                      topic),
+        'sasl.username': '$ConnectionString',
+        'sasl.password': '{};EntityPath={}'.format(sasl, topic),
         'client.id': 'python-example-producer'
     }
 

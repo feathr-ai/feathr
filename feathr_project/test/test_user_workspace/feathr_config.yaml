@@ -63,11 +63,6 @@ offline_store:
     user: "feathrintegration"
     role: "ACCOUNTADMIN"
 
-  # reading from streaming source
-streaming:
-  kafka:
-    kafka_endpoint: 'sb://feathrazureci.servicebus.windows.net/'
-
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks
   # The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.

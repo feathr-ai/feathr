@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.config.datasource
 
-import com.linkedin.feathr.offline.config.datasource.KafkaResourceInfoSetter.{ENDPOINT, SHARED_ACCESS_KEY, SHARED_ACCESS_KEY_NAME, USERNAME}
+import com.linkedin.feathr.offline.config.datasource.KafkaResourceInfoSetter.SASL_JAAS_CONFIG
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -8,18 +8,11 @@ import org.apache.spark.sql.SparkSession
  */
 private[feathr]  class KafkaResourceInfoSetter extends ResourceInfoSetter() {
 
-  override val params = List(USERNAME, ENDPOINT, SHARED_ACCESS_KEY_NAME, SHARED_ACCESS_KEY)
+  override val params = List(SASL_JAAS_CONFIG)
 
   def setupSparkStreamingConf(ss: SparkSession, context: Option[DataSourceConfig], resource: Option[Resource]): Unit = {
-    val endpoint = getAuthStr(ENDPOINT, context, resource)
-    val accessKeyName = getAuthStr(SHARED_ACCESS_KEY_NAME, context, resource)
-    val accessKey = getAuthStr(SHARED_ACCESS_KEY, context, resource)
-    val username = getAuthStr(USERNAME, context, resource)
-
-    ss.conf.set(ENDPOINT, endpoint)
-    ss.conf.set(SHARED_ACCESS_KEY_NAME, accessKeyName)
-    ss.conf.set(SHARED_ACCESS_KEY, accessKey)
-    ss.conf.set(USERNAME, username)
+    val sasl = getAuthStr(SASL_JAAS_CONFIG, context, resource)
+    ss.conf.set(SASL_JAAS_CONFIG, sasl)
   }
 
   def getAuthFromConfig(str: String, resource: Resource): String = ???
@@ -27,10 +20,7 @@ private[feathr]  class KafkaResourceInfoSetter extends ResourceInfoSetter() {
 
 private[feathr] object KafkaResourceInfoSetter{
   val kafkaSetter = new KafkaResourceInfoSetter()
-  val ENDPOINT = "ENDPOINT"
-  val USERNAME = "USERNAME"
-  val SHARED_ACCESS_KEY_NAME = "SHARED_ACCESS_KEY_NAME"
-  val SHARED_ACCESS_KEY = "SHARED_ACCESS_KEY"
+  val SASL_JAAS_CONFIG = "KAFKA_SASL_JAAS_CONFIG"
   def setup(ss: SparkSession, config: DataSourceConfig, resource: Resource): Unit ={
     if (config.configStr.isDefined){
       kafkaSetter.setupSparkStreamingConf(ss, Some(config), Some(resource))

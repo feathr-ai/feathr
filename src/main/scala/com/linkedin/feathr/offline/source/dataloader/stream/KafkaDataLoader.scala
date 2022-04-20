@@ -14,29 +14,17 @@ import java.util.UUID;
  */
 class KafkaDataLoader(ss: SparkSession, input: KafkaEndpoint) extends StreamDataLoader(ss) {
   val format = "kafka"
-  val sharedAccessKeyName = KafkaResourceInfoSetter.SHARED_ACCESS_KEY_NAME
-  val kafkaEndpoint = KafkaResourceInfoSetter.ENDPOINT
-  val kafkaUsername = KafkaResourceInfoSetter.USERNAME
-  val sharedAccessKey = KafkaResourceInfoSetter.SHARED_ACCESS_KEY
+  val kafkaSaslConfig = KafkaResourceInfoSetter.SASL_JAAS_CONFIG
 
   // Construct authentication string for Kafka on Azure
   private def getKafkaAuth(ss: SparkSession): String = {
     // If user set password, then we use password to auth
-    ss.conf.getOption(kafkaEndpoint) match {
-      case Some(_) =>
-          val accessKeyName = ss.conf.getOption(sharedAccessKeyName)
-          val endpoint = ss.conf.getOption(kafkaEndpoint)
-          val username = ss.conf.getOption(kafkaUsername)
-          val accessKey = ss.conf.getOption(sharedAccessKey)
-          if (!accessKeyName.isDefined || !endpoint.isDefined || !username.isDefined || !accessKey.isDefined) {
-            throw new RuntimeException(s"Invalid Kafka authentication! ${kafkaEndpoint}, ${sharedAccessKeyName}," +
-              s" ${kafkaUsername} and ${sharedAccessKey} must be set in Spark conf.")
-          }
-          val EH_SASL = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\""+username.get+"\"" +
-            " password=\"Endpoint="+endpoint.get+";SharedAccessKeyName="+accessKeyName.get+";SharedAccessKey="+accessKey.get+"\";"
-          EH_SASL
+    ss.conf.getOption(kafkaSaslConfig) match {
+      case Some(sasl) =>
+          "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\"" +
+            " password=\""+ sasl +"\";"
       case _ => {
-        throw new RuntimeException(s"Invalid Kafka authentication! ${kafkaEndpoint} is not set in Spark conf.")
+        throw new RuntimeException(s"Invalid Kafka authentication! ${kafkaSaslConfig} is not set in Spark conf.")
       }
     }
   }
