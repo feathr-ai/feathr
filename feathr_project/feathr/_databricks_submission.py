@@ -230,8 +230,14 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
         result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
                                headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-        custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
-        return custom_tags
+        
+        if 'new_cluster' in result.json()['cluster_spec']:
+            custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
+            return custom_tags
+        else:
+            # this is not a new cluster; it's an existing cluster.
+            logger.warning("Job tags are not available since you are using an existing Databricks cluster. Consider use 'new_cluster' in databricks configuration.")
+            return None
 
     def download_result(self, result_path: str, local_folder: str):
         """
