@@ -16,5 +16,5 @@ New-AzDeployment `
    -Name feathrDeployment `
    -location $AzureRegion `
    -principalId $UserObjectID `
-   -TemplateUri https://raw.githubusercontent.com/Dongbumlee/feathr/main/docs/how-to-guides/deploy.json `
+   -TemplateUri https://raw.githubusercontent.com/linkedin/feathr/main/docs/how-to-guides/deploy.json `
    -DeploymentDebugLogLevel All
