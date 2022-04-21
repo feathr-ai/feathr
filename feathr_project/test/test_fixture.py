@@ -127,7 +127,7 @@ def snowflake_test_setup(config_path: str):
 def registry_test_setup(config_path: str):
 
 
-    # use a new project name every time to make sure if all features are registered correctly no
+    # use a new project name every time to make sure all features are registered correctly
     now = datetime.now()
     os.environ["project_config__project_name"] =  ''.join(['feathr_ci','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
 
