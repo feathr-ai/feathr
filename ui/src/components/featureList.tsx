@@ -12,7 +12,7 @@ const FeatureList: React.FC = () => {
   const history = useHistory();
   const navigateTo = useCallback((location) => history.push(location), [history]);
   const projectOptions = [
-    { label: <Tag color={ "green" }>NYC Driver Demo</Tag>, value: "nyc", selected: true }
+    { label: <Tag color={ "green" }>feathr_awe_demo</Tag>, value: "nyc", selected: true }
   ];
   const columns = [
     {
@@ -75,7 +75,7 @@ const FeatureList: React.FC = () => {
       align: 'center' as 'center',
       width: 120,
       render: () => {
-        return "Online"
+        return "Active"
       },
       onCell: () => {
         return {
