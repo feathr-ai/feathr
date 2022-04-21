@@ -6,7 +6,7 @@ import { deleteFeature, fetchFeature } from '../../api';
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { AxiosError } from 'axios';
 import FeatureForm from '../../components/featureForm';
-import { FeatureAttributes} from "../../models/model";
+import { FeatureAttributes } from "../../models/model";
 
 const { confirm } = Modal;
 
@@ -22,8 +22,16 @@ const EditFeature: React.FC<Props> = () => {
   const { qualifiedName } = useParams<QualifiedNameParams>();
   const history = useHistory();
 
-  const { status, error, data } = useQuery<FeatureAttributes, AxiosError>(['feature', qualifiedName], () => fetchFeature(qualifiedName));
+  const {
+    status,
+    error,
+    data
+  } = useQuery<FeatureAttributes, AxiosError>(['feature', qualifiedName], () => fetchFeature(qualifiedName));
   const antIcon = <LoadingOutlined style={ { fontSize: 24 } } spin />;
+
+  const openNewWin = (url: string) => {
+    window.open(url);
+  }
 
   const onClickDeleteFeature = () => {
     showConfirm();
@@ -52,9 +60,13 @@ const EditFeature: React.FC<Props> = () => {
   }
 
   const renderCommandButtons = () => {
+    const lineageUrl = "https://ms.web.purview.azure.com/resource/feathrazuretest3-purview1/main/catalog/entity?guid=06fec203-3096-4c25-aa20-65a20c8fac98&section=lineage&feature.tenant=72f988bf-86f1-41af-91ab-2d7cd011db47";
     return (
       <div>
         <Space>
+          <Button type="primary" onClick={ () => openNewWin(lineageUrl) }>
+            View Lineage
+          </Button>
           <Button type="primary" onClick={ onClickEditFeature }>
             Edit Feature
           </Button>

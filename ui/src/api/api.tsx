@@ -2,10 +2,11 @@ import Axios from "axios";
 import { Features, IDataSource, IFeature, IFeatureDetail } from "../models/model";
 
 const API_ENDPOINT = "https://feathr-api-test.azurewebsites.net";
+const project = "feathr_awe_demo";
 
 export const fetchDataSources = async () => {
   return Axios
-    .get<IDataSource[]>(`${ API_ENDPOINT }/v0.1/projects/feathr_github_ci_synapse/datasources?code=aa`,
+    .get<IDataSource[]>(`${ API_ENDPOINT }/v0.1/projects/${project}/datasources?code=aa`,
       { headers: {} })
     .then((response) => {
       return response.data;
@@ -14,7 +15,7 @@ export const fetchDataSources = async () => {
 
 export const fetchFeatures = async (page: number, limit: number, keyword: string) => {
   return Axios
-    .get<Features>(`${ API_ENDPOINT }/v0.1/projects/feathr_github_ci_synapse/features?code=aa`,
+    .get<Features>(`${ API_ENDPOINT }/v0.1/projects/${project}/features?code=aa`,
       {
         params: { 'keyword': keyword, 'page': page, 'limit': limit },
         headers: {}

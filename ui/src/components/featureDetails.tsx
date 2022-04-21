@@ -14,7 +14,7 @@ const FeatureDetails: React.FC<FeatureDetailsProps> = ({ feature }) => {
   const [lineages, setLineages] = useState<IFeatureDetail>();
   const fetchData = useCallback(
     async () => {
-      if(feature){
+      if (feature) {
         const result = await fetchFeatureLineages(feature.qualifiedName);
         setLineages(result);
         console.log(result);
@@ -45,7 +45,7 @@ const FeatureDetails: React.FC<FeatureDetailsProps> = ({ feature }) => {
         { feature?.type &&
             <Col span={ 8 }>
                 <Card title="Type" bordered={ false }>
-                  { feature.type.replace(/\n/g, '') }
+                  { feature.type }
                 </Card>
             </Col>
         }
