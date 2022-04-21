@@ -1,7 +1,7 @@
 package com.linkedin.feathr.common;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.linkedin.feathr.common.exception.FeathrException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.*;
 import static java.util.stream.Collectors.*;
 
 
@@ -56,7 +55,6 @@ public class FeatureDependencyGraph {
     // Going with #2 right now, but in the future with stricter typing we may want to switch to #1.
     dependencyFeatures.forEach((featureName, inputFeatures) -> {
       Node node = nodes.computeIfAbsent(featureName, Node::new);
-      Preconditions.checkArgument(!inputFeatures.isEmpty());
       node._dependencies = inputFeatures.stream()
           .map(x -> x.getFeatureName().toString())
           .distinct()
@@ -205,10 +203,9 @@ public class FeatureDependencyGraph {
   }
 
   private void checkReachable(Pair<Boolean, String> reachableWithError, String feature) {
-    checkArgument(
-        reachableWithError.fst,
-        "Requirement failed. Feature %s can't be resolved in the dependency graph.",
-        feature);
+    if (!reachableWithError.fst) {
+      throw new IllegalArgumentException("Requirement failed. Feature " + feature + " can't be resolved in the dependency graph.");
+    }
   }
 
   /**

@@ -32,6 +32,7 @@ project_config:
     - JDBC_TABLE
     - JDBC_USER
     - JDBC_PASSWORD
+    - KAFKA_SASL_JAAS_CONFIG
 
 offline_store:
   # paths starts with abfss:// or abfs://
@@ -63,9 +64,6 @@ offline_store:
     jdbc_database: "feathrtestdb"
     jdbc_table: "feathrtesttable"
 
-# reading from streaming source is coming soon
-# streaming_source:
-#   kafka_connection_string: ""
 
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks

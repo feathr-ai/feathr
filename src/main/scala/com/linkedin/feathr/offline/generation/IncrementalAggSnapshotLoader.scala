@@ -4,7 +4,7 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.offline.FeatureName
 import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.job.FeatureGenSpec
-import com.linkedin.feathr.offline.source.dataloader.SparkDataLoader
+import com.linkedin.feathr.offline.source.dataloader.BatchDataLoader
 import com.linkedin.feathr.offline.util.IncrementalAggUtils
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
 import org.apache.hadoop.conf.Configuration
@@ -84,7 +84,7 @@ private[offline] object IncrementalAggSnapshotLoader extends IncrementalAggSnaps
             val endDate = OfflineDateTimeUtils.createTimeFromString(featureGenSpec.endTimeStr, featureGenSpec.endTimeFormat).toLocalDateTime
             val directory = IncrementalAggUtils.getLatestAggSnapshotDFPath(preAggRootDir, endDate).get
             val spark = SparkSession.builder().getOrCreate()
-            val preAggSnapshot = new SparkDataLoader(spark, SimplePath(directory)).loadDataFrame()
+            val preAggSnapshot = new BatchDataLoader(spark, SimplePath(directory)).loadDataFrame()
             val features = params.getStringList(FeatureGenerationPathName.FEATURES).asScala
             // user may have added new features in this run
             val oldFeatures = features.filter(preAggSnapshot.columns.contains)

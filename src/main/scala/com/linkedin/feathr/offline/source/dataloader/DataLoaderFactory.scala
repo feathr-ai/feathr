@@ -1,6 +1,8 @@
 package com.linkedin.feathr.offline.source.dataloader
 
+import com.linkedin.feathr.offline.config.location.InputLocation
 import org.apache.log4j.Logger
+import org.apache.spark.customized.CustomGenericRowWithSchema
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -15,18 +17,23 @@ private[offline] trait DataLoaderFactory {
    * @return a [[DataLoader]]
    */
   def create(path: String): DataLoader
+
+  def createFromLocation(input: InputLocation): DataLoader = create(input.getPath)
 }
 
 private[offline] object DataLoaderFactory {
-
+  CustomGenericRowWithSchema
   /**
    * construct a specific loader factory based on whether the spark session is local or not.
    */
-  def apply(ss: SparkSession): DataLoaderFactory = {
-    if (ss.sparkContext.isLocal) {
+  def apply(ss: SparkSession, streaming: Boolean = false): DataLoaderFactory = {
+    if (streaming) {
+      new StreamingDataLoaderFactory(ss)
+    } else if (ss.sparkContext.isLocal) {
+      // For test
       new LocalDataLoaderFactory(ss)
     } else {
-      new HdfsDataLoaderFactory(ss)
+      new BatchDataLoaderFactory(ss)
     }
   }
 }

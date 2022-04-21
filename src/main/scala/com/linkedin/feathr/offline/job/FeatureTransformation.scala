@@ -2,7 +2,6 @@ package com.linkedin.feathr.offline.job
 
 import com.linkedin.feathr.common._
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException, FeathrFeatureTransformationException}
-import com.linkedin.feathr.{common, offline}
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.MVELSourceKeyExtractor
@@ -21,6 +20,7 @@ import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateT
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinKeys}
 import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark, SourceKeyExtractor}
 import com.linkedin.feathr.swj.aggregate.AggregationType
+import com.linkedin.feathr.{common, offline}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, _}

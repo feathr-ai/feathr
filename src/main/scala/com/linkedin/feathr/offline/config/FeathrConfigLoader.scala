@@ -13,7 +13,7 @@ import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
-import com.linkedin.feathr.offline.config.location.{InputLocation, LocationUtils, SimplePath}
+import com.linkedin.feathr.offline.config.location.{InputLocation, KafkaEndpoint, LocationUtils, SimplePath}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWindowParams}
@@ -691,7 +691,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case _ => "HDFS"
     }
 
-    if (dataSourceType != "HDFS" && dataSourceType != "PASSTHROUGH") {
+    if (dataSourceType != "HDFS" && dataSourceType != "PASSTHROUGH" && dataSourceType != "KAFKA") {
       throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, s"Unknown source type parameter $dataSourceType is used")
     }
 
@@ -713,20 +713,34 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
      * 2. a placeholder with reserved string "PASSTHROUGH" for anchor defined pass-through features,
      *    since anchor defined pass-through features do not have path
      */
-    val path: InputLocation = if (dataSourceType == "HDFS") {
-      Option(node.get("location")) match {
-        case Some(field: ObjectNode) =>
-          LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
-        case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Data location is not defined")
-        case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Illegal setting for location, expected map")
-      }
-    } else SimplePath("PASSTHROUGH")
+    val path: InputLocation = dataSourceType match {
+      case "HDFS" =>
+        Option(node.get("location")) match {
+          case Some(field: ObjectNode) =>
+            LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
+          case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+                                s"Data location is not defined for HDFS source ${node.toPrettyString()}")
+          case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+                                s"Illegal setting for location for HDFS source ${node.toPrettyString()}, expected map")
+        }
+      case "KAFKA" =>
+        Option(node.get("config")) match {
+          case Some(field: ObjectNode) =>
+            LocationUtils.getMapper().treeToValue(field, classOf[KafkaEndpoint])
+          case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+                                s"Kafka config is not defined for Kafka source ${node.toPrettyString()}")
+          case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+                                s"Illegal setting for Kafka source ${node.toPrettyString()}, expected map")
+        }
+      case _ => SimplePath("PASSTHROUGH")
+    }
 
     // time window parameters for data aggregation
     val timeWindowParameterNode = Option(node.get("timeWindowParameters")) match {
       case Some(field: ObjectNode) => Option(field)
       case None => None
-      case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "Illegal setting for timeWindowParameters, expected map")
+      case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+                                s"Illegal setting for timeWindowParameters ${node.toPrettyString()}, expected map")
     }
 
     val timeWindowParameters = timeWindowParameterNode match {
@@ -751,6 +765,10 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case None => null
     }
 
-    DataSource(path, sourceFormatType, Option(timeWindowParameters), timePartitionPattern)
+    if (path.isInstanceOf[KafkaEndpoint]) {
+      DataSource(path, sourceFormatType)
+    } else {
+      DataSource(path, sourceFormatType, Option(timeWindowParameters), timePartitionPattern)
+    }
   }
 }

@@ -156,7 +156,7 @@ batch_source = HdfsSource(
     timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
 ```
 
-### Beyond Features on Raw Data Sources - Derived Features
+### Define features on top of other features - Derived Features
 
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
@@ -175,6 +175,49 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       key=[user_key, item_key],
                                       input_features=[user_embedding, item_embedding],
                                       transform="cosine_similarity(user_embedding, item_embedding)")
+```
+
+### Define Streaming Features
+
+```python
+# Define input data schema
+schema = AvroJsonSchema(schemaStr="""
+{
+    "type": "record",
+    "name": "DriverTrips",
+    "fields": [
+        {"name": "driver_id", "type": "long"},
+        {"name": "trips_today", "type": "int"},
+        {
+        "name": "datetime",
+        "type": {"type": "long", "logicalType": "timestamp-micros"}
+        }
+    ]
+}
+""")
+stream_source = KafKaSource(name="kafkaStreamingSource",
+                            kafkaConfig=KafkaConfig(brokers=["feathrazureci.servicebus.windows.net:9093"],
+                                                    topics=["feathrcieventhub"],
+                                                    schema=schema)
+                            )
+
+driver_id = TypedKey(key_column="driver_id",
+                     key_column_type=ValueType.INT64,
+                     description="driver id",
+                     full_name="nyc driver id")
+
+kafkaAnchor = FeatureAnchor(name="kafkaAnchor",
+                            source=stream_source,
+                            features=[Feature(name="f_modified_streaming_count",
+                                              feature_type=INT32,
+                                              transform="trips_today + 1",
+                                              key=driver_id),
+                                      Feature(name="f_modified_streaming_count2",
+                                              feature_type=INT32,
+                                              transform="trips_today + 2",
+                                              key=driver_id)]
+                            )
+
 ```
 
 ## Running Feathr Examples
@@ -200,9 +243,10 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 - [x] Private Preview release
 - [x] Public Preview release
 - [ ] Future release
-  - [ ] Support streaming and online transformation
+  - [x] Support streaming
+  - [x] Support common data sources
+  - [ ] Support online transformation
   - [ ] Support feature versioning
-  - [ ] Support more data sources
 
 ## Community Guidelines
 
