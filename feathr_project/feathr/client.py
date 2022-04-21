@@ -576,7 +576,8 @@ class FeathrClient(object):
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str()
+                '--snowflake-config', self._get_snowflake_config_str(),
+                '--kafka-config', self._get_kafka_config_str()
             ],
             reference_files_path=[],
             configuration=execution_configuratons,
@@ -684,4 +685,14 @@ class FeathrClient(object):
             JDBC_SF_ROLE: {JDBC_SF_ROLE}
             JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
             """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
+        return config_str
+
+    def _get_kafka_config_str(self):
+        """Construct the Kafka config string. The endpoint, access key, secret key, and other parameters can be set via
+        environment variables."""
+        sasl = _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            KAFKA_SASL_JAAS_CONFIG: "{sasl}"
+            """.format(sasl=sasl)
         return config_str

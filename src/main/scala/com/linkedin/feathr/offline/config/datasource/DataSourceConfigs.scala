@@ -16,7 +16,8 @@ class DataSourceConfigs(
                          val adlsConfigStr: Option[String] = None,
                          val blobConfigStr: Option[String] = None,
                          val sqlConfigStr: Option[String] = None,
-                         val snowflakeConfigStr: Option[String] = None
+                         val snowflakeConfigStr: Option[String] = None,
+                         val kafkaConfigStr: Option[String] = None
                        ) {
   val redisConfig: DataSourceConfig = parseConfigStr(redisConfigStr)
   val s3Config: DataSourceConfig = parseConfigStr(s3ConfigStr)
@@ -24,6 +25,7 @@ class DataSourceConfigs(
   val blobConfig: DataSourceConfig = parseConfigStr(blobConfigStr)
   val sqlConfig: DataSourceConfig = parseConfigStr(sqlConfigStr)
   val snowflakeConfig: DataSourceConfig = parseConfigStr(snowflakeConfigStr)
+  val kafkaConfig: DataSourceConfig = parseConfigStr(kafkaConfigStr)
 
   def parseConfigStr(configStr: Option[String] = None): DataSourceConfig = {
     new DataSourceConfig(configStr)
