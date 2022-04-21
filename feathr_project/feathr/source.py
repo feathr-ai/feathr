@@ -94,6 +94,7 @@ class HdfsSource(Source):
         if path.startswith("http"):
             logger.warning("Your input path {} starts with http, which is not supported. Consider using paths starting with wasb[s]/abfs[s]/s3.", path)
 
+
     def to_feature_config(self) -> str:
         tm = Template("""  
             {{source.name}}: {
