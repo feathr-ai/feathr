@@ -1,3 +1,7 @@
+from feathr import AvroJsonSchema
+from feathr import KafKaSource
+from feathr import KafkaConfig
+from typing import List
 import os
 import random
 from datetime import datetime, timedelta
@@ -83,8 +87,6 @@ def basic_test_setup(config_path: str):
     return client
 
 
-
-
 def snowflake_test_setup(config_path: str):
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
@@ -112,18 +114,49 @@ def snowflake_test_setup(config_path: str):
     snowflakeFeatures = FeatureAnchor(name="snowflakeFeatures",
                                    source=batch_source,
                                    features=features)
-
-
-
-
     client.build_features(anchor_list=[snowflakeFeatures])
-
     return client
 
+def kafka_test_setup(config_path: str):
+    client = FeathrClient(config_path=config_path)
+    schema = AvroJsonSchema(schemaStr="""
+    {
+        "type": "record",
+        "name": "DriverTrips",
+        "fields": [
+            {"name": "driver_id", "type": "long"},
+            {"name": "trips_today", "type": "int"},
+            {
+                "name": "datetime",
+                "type": {"type": "long", "logicalType": "timestamp-micros"}
+            }
+        ]
+    }
+    """)
+    stream_source = KafKaSource(name="kafkaStreamingSource",
+                              kafkaConfig=KafkaConfig(brokers=["feathrazureci.servicebus.windows.net:9093"],
+                                                      topics=["feathrcieventhub"],
+                                                      schema=schema)
+                              )
 
+    driver_id = TypedKey(key_column="driver_id",
+                          key_column_type=ValueType.INT64,
+                          description="driver id",
+                          full_name="nyc driver id")
 
-
-
+    kafkaAnchor = FeatureAnchor(name="kafkaAnchor",
+                                      source=stream_source,
+                                      features=[Feature(name="f_modified_streaming_count",
+                                                        feature_type=INT32,
+                                                        transform="trips_today + 1",
+                                                        key=driver_id),
+                                                Feature(name="f_modified_streaming_count2",
+                                                        feature_type=INT32,
+                                                        transform="trips_today + 2",
+                                                        key=driver_id)]
+                                      )
+    client.build_features(anchor_list=[kafkaAnchor])
+    return client
 def registry_test_setup(config_path: str):
 
 
@@ -213,5 +246,4 @@ def registry_test_setup(config_path: str):
     # This shuffle is to make sure that each time we have random shuffle for the input and make sure the internal sorting algorithm works (we are using topological sort).
     random.shuffle(derived_feature_list)
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
-
     return client
