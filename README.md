@@ -177,7 +177,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
 
-## Define Streaming Features
+### Define Streaming Features
 
 ```python
 # Define input data schema
