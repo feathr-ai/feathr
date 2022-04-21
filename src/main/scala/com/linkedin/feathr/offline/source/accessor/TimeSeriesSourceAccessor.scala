@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.source.accessor
 import com.linkedin.feathr.common.DateTimeResolution.DateTimeResolution
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.DataSource
-import com.linkedin.feathr.offline.source.dataloader.SparkDataLoader
+import com.linkedin.feathr.offline.source.dataloader.BatchDataLoader
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
 import org.apache.hadoop.mapred.JobConf
@@ -33,7 +33,7 @@ private[offline] class TimeSeriesSourceAccessor(
     val interval = timeIntervalOpt.map(sourceTimeInterval.intersection).getOrElse(sourceTimeInterval)
     val dateRange = OfflineDateTimeUtils.dateRange(interval, dateTimeResolution)
     val jobConf = new JobConf(ss.sparkContext.hadoopConfiguration)
-    val df = new SparkDataLoader(ss, source.location).loadDataFrame(Map(SparkIOUtils.FILTER_EXP -> dateRange), jobConf)
+    val df = new BatchDataLoader(ss, source.location).loadDataFrame(Map(SparkIOUtils.FILTER_EXP -> dateRange), jobConf)
     if (addTimestampColumn) {
       log.info(s"added timestamp column to source ${source.path}.")
       df.withColumn(

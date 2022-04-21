@@ -6,12 +6,12 @@ import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, PathInfo, TimeBasedHdfsPathGenerator}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
+import com.linkedin.feathr.offline.transformation.DataFrameExt._
 import com.linkedin.feathr.offline.util.PartitionLimiter
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.lit
-import com.linkedin.feathr.offline.transformation.DataFrameExt._
 /**
  * representation of a source that is comprised of a time series of datasets
  * the idea is that we can call getSourceData with different time window parameter to get a slice of a time series dataset,

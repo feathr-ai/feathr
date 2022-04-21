@@ -4,11 +4,11 @@ import com.linkedin.feathr.offline.config.location.SimplePath
 import org.apache.spark.sql.SparkSession
 
 /**
- * A data loader factory for production HDFS environment. In this case, it will always create a [[SparkDataLoader]].
+ * A data loader factory for production HDFS environment. In this case, it will always create a [[BatchDataLoader]].
  *
  * @param ss the spark session.
  */
-private[offline] class HdfsDataLoaderFactory(ss: SparkSession) extends  DataLoaderFactory {
+private[offline] class BatchDataLoaderFactory(ss: SparkSession) extends  DataLoaderFactory {
 
   /**
    * create a data loader based on the file type.
@@ -18,6 +18,6 @@ private[offline] class HdfsDataLoaderFactory(ss: SparkSession) extends  DataLoad
    */
   override def create(path: String): DataLoader = {
     log.info(s"Creating spark data loader for path: ${path}")
-    new SparkDataLoader(ss, SimplePath(path))
+    new BatchDataLoader(ss, SimplePath(path))
   }
 }
