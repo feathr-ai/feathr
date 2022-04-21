@@ -6,23 +6,23 @@ import { deleteFeature, fetchFeature } from '../../api';
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { AxiosError } from 'axios';
 import FeatureForm from '../../components/featureForm';
-import { IFeature } from "../../models/feature";
+import { FeatureAttributes} from "../../models/model";
 
 const { confirm } = Modal;
 
 type Props = {};
 
-type IdParams = {
-  id: string;
+type QualifiedNameParams = {
+  qualifiedName: string;
 }
 
 const EditFeature: React.FC<Props> = () => {
   const [editMode, setEditMode] = useState<boolean>(false);
 
-  const { id } = useParams<IdParams>();
+  const { qualifiedName } = useParams<QualifiedNameParams>();
   const history = useHistory();
 
-  const { status, error, data } = useQuery<IFeature, AxiosError>(['feature', id], () => fetchFeature(id));
+  const { status, error, data } = useQuery<FeatureAttributes, AxiosError>(['feature', qualifiedName], () => fetchFeature(qualifiedName));
   const antIcon = <LoadingOutlined style={ { fontSize: 24 } } spin />;
 
   const onClickDeleteFeature = () => {
@@ -42,7 +42,7 @@ const EditFeature: React.FC<Props> = () => {
       title: 'Are you sure you want to delete this feature?',
       icon: <ExclamationCircleOutlined />,
       async onOk() {
-        await deleteFeature(id);
+        await deleteFeature(qualifiedName);
         history.push('/features');
       },
       onCancel() {
@@ -76,7 +76,7 @@ const EditFeature: React.FC<Props> = () => {
     )
   }
 
-  const renderFeature = (feature: IFeature): JSX.Element => {
+  const renderFeature = (feature: FeatureAttributes): JSX.Element => {
     return (
       <div>
         { editMode && renderCancelEdit() }
@@ -87,6 +87,7 @@ const EditFeature: React.FC<Props> = () => {
   }
 
   const render = (status: QueryStatus): JSX.Element => {
+    console.log(data);
     switch (status) {
       case "error":
         return (
@@ -117,7 +118,7 @@ const EditFeature: React.FC<Props> = () => {
             <Card>
               <Alert
                 message="Error"
-                description="Data does not exist for this alert..."
+                description="Data does not exist..."
                 type="error"
                 showIcon
               />

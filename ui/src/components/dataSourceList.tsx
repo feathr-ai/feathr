@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { Button } from "antd";
 import TableResize from './resizableTable/resizableTable';
-import { IDataSource } from "../models/feature";
+import { DataSourceAttributes, IDataSource } from "../models/model";
 import { fetchDataSources } from "../api";
 
 const DataSourceList: React.FC = () => {
@@ -10,10 +11,13 @@ const DataSourceList: React.FC = () => {
   const columns = [
     {
       title: <div style={ { userSelect: "none" } }>Name</div>,
-      dataIndex: 'name',
+      dataIndex: 'attributes',
       key: 'name',
       align: 'center' as 'center',
       width: 120,
+      render: (row: DataSourceAttributes) => {
+        return row.name;
+      },
       onCell: () => {
         return {
           style: {
@@ -22,11 +26,31 @@ const DataSourceList: React.FC = () => {
         }
       }
     }, {
-      title: <div style={ { userSelect: "none" } }>Type</div>,
-      dataIndex: 'event_timestamp_column',
-      key: 'event_timestamp_column',
+      title: <div style={ { userSelect: "none" } }>QualifiedName</div>,
+      dataIndex: 'attributes',
+      key: 'qualifiedName',
       align: 'center' as 'center',
       width: 120,
+      render: (row: DataSourceAttributes) => {
+        return row.qualifiedName;
+      },
+      onCell: () => {
+        return {
+          style: {
+            maxWidth: 120
+          }
+        }
+      }
+    },
+    {
+      title: <div style={ { userSelect: "none" } }>Type</div>,
+      dataIndex: 'attributes',
+      key: 'attributes',
+      align: 'center' as 'center',
+      width: 80,
+      render: () => {
+        return "BatchFile"
+      },
       onCell: () => {
         return {
           style: {
@@ -37,23 +61,13 @@ const DataSourceList: React.FC = () => {
     },
     {
       title: <div style={ { userSelect: "none" } }>Path</div>,
-      dataIndex: 'path',
-      key: 'path',
+      dataIndex: 'attributes',
+      key: 'attributes',
       align: 'center' as 'center',
       width: 190,
-      onCell: () => {
-        return {
-          style: {
-            maxWidth: 120
-          }
-        }
-      }
-    }, {
-      title: <div style={ { userSelect: "none" } }>event_timestamp_column</div>,
-      dataIndex: 'event_timestamp_column',
-      key: 'event_timestamp_column',
-      align: 'center' as 'center',
-      width: 120,
+      render: (row: DataSourceAttributes) => {
+        return row.path;
+      },
       onCell: () => {
         return {
           style: {
@@ -63,15 +77,14 @@ const DataSourceList: React.FC = () => {
       }
     },
     {
-      title: <div style={ { userSelect: "none" } }>Features #</div>,
+      title: <div style={ { userSelect: "none" } }>Consumers</div>,
       dataIndex: 'name',
       key: 'name',
       render: () => {
         return (
-          // eslint-disable-next-line jsx-a11y/anchor-is-valid
-          <a onClick={ () => {
+          <Button type={ "link" } onClick={ () => {
             navigateTo(`/features`)
-          } }>3</a>
+          } }>9</Button>
         )
       },
       width: 80,
@@ -87,18 +100,20 @@ const DataSourceList: React.FC = () => {
   let [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   let [tableData, setTableData] = useState<IDataSource[]>();
+  const fetchData = useCallback(
+    async () => {
+      setLoading(true);
+      const result = await fetchDataSources();
+      console.log(result);
+      setPage(page);
+      setTableData(result);
+      setLoading(false);
+    }, [page]
+  );
 
   useEffect(() => {
     fetchData();
-  }, [])
-
-  const fetchData = async () => {
-    setLoading(true);
-    const result = await fetchDataSources();
-    setPage(page);
-    setTableData(tableData = result);
-    setLoading(false);
-  }
+  }, [fetchData])
 
   return (
     <TableResize

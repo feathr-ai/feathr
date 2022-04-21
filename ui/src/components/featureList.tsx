@@ -3,7 +3,7 @@ import { Link, useHistory } from 'react-router-dom';
 import { Button, Dropdown, Input, Menu, message, Popconfirm, Select, Tabs, Tag, Tooltip } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import TableResize from './resizableTable/resizableTable';
-import { IFeature } from "../models/feature";
+import { IFeature } from "../models/model";
 import { deleteFeature, fetchFeatures } from '../api';
 
 const { TabPane } = Tabs;
@@ -12,7 +12,7 @@ const FeatureList: React.FC = () => {
   const history = useHistory();
   const navigateTo = useCallback((location) => history.push(location), [history]);
   const projectOptions = [
-    { label: <Tag color={ "green" }>NYC Taxi</Tag>, value: "nyc" }
+    { label: <Tag color={ "green" }>NYC Driver Demo</Tag>, value: "nyc", selected: true }
   ];
   const columns = [
     {
@@ -21,10 +21,9 @@ const FeatureList: React.FC = () => {
       key: 'name',
       render: (name: string, row: IFeature) => {
         return (
-          // eslint-disable-next-line jsx-a11y/anchor-is-valid
-          <a onClick={ () => {
-            navigateTo(`/feature/${ row.id }`)
-          } }>{ name }</a>
+          <Button type="link" onClick={ () => {
+            navigateTo(`/features/${ row.qualifiedName }`)
+          } }>{ name }</Button>
         )
       },
       width: 190,
@@ -36,11 +35,31 @@ const FeatureList: React.FC = () => {
         }
       }
     }, {
-      title: <div style={ { userSelect: "none" } }>Description</div>,
-      dataIndex: 'description',
-      key: 'description',
+      title: <div style={ { userSelect: "none" } }>QualifiedName</div>,
+      dataIndex: 'qualifiedName',
+      key: 'qualifiedName',
       align: 'center' as 'center',
       width: 150,
+      onCell: () => {
+        return {
+          style: {
+            maxWidth: 120
+          }
+        }
+      }
+    }, {
+      title: <div style={ { userSelect: "none" } }>Data Source</div>,
+      dataIndex: 'dataSource',
+      key: 'dataSource',
+      align: 'center' as 'center',
+      width: 150,
+      render: () => {
+        return (
+          <Button type="link" onClick={ () => {
+            navigateTo(`/dataSources`)
+          } }>nycTaxiBatchSource</Button>
+        )
+      },
       onCell: () => {
         return {
           style: {
@@ -55,40 +74,9 @@ const FeatureList: React.FC = () => {
       key: 'status',
       align: 'center' as 'center',
       width: 120,
-      onCell: () => {
-        return {
-          style: {
-            maxWidth: 120
-          }
-        }
-      }
-    }, {
-      title: <div style={ { userSelect: "none" } }>Feature Type</div>,
-      dataIndex: 'featureType',
-      key: 'featureType',
-      align: 'center' as 'center',
-      width: 120,
-      onCell: () => {
-        return {
-          style: {
-            maxWidth: 120
-          }
-        }
-      }
-    }, {
-      title: <div style={ { userSelect: "none" } }>Data Source</div>,
-      dataIndex: 'dataSource',
-      key: 'dataSource',
-      align: 'center' as 'center',
-      render: (name: string, row: IFeature) => {
-        return (
-          // eslint-disable-next-line jsx-a11y/anchor-is-valid
-          <a onClick={ () => {
-            navigateTo(`/feature/${ row.id }`)
-          } }>{ name }</a>
-        )
+      render: () => {
+        return "Online"
       },
-      width: 150,
       onCell: () => {
         return {
           style: {
@@ -97,11 +85,14 @@ const FeatureList: React.FC = () => {
         }
       }
     }, {
-      title: <div style={ { userSelect: "none" } }>Owners</div>,
+      title: <div style={ { userSelect: "none" } }>Created By</div>,
       dataIndex: 'owners',
       key: 'owners',
       align: 'center' as 'center',
       width: 120,
+      render: () => {
+        return "xiaoyzhu@microsoft.com"
+      },
       onCell: () => {
         return {
           style: {
@@ -122,10 +113,9 @@ const FeatureList: React.FC = () => {
           return (
             <Menu>
               <Menu.Item key="edit">
-                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */ }
-                <a onClick={ () => {
-                  navigateTo(`/feature/${ row.id }`)
-                } }>Edit</a>
+                <Button type="link" onClick={ () => {
+                  navigateTo(`/features/${ row.qualifiedName }`)
+                } }>Edit</Button>
               </Menu.Item>
               <Menu.Item key="delete">
                 <Popconfirm
@@ -155,30 +145,31 @@ const FeatureList: React.FC = () => {
   let [tableData, setTableData] = useState<IFeature[]>();
   let [tabValue, setTab] = useState<string>("my");
   let [query, setQuery] = useState<string>("");
+  const fetchData = useCallback(async () => {
+      setLoading(true);
+      const result = await fetchFeatures(page, limit, query);
+      console.log(result);
+      setPage(page);
+      setTableData(result);
+      setLoading(false);
+    }, [page, query]
+  )
 
   useEffect(() => {
     fetchData();
-  }, [])
-
-  const fetchData = async () => {
-    setLoading(true);
-    const result = await fetchFeatures(page, limit, query);
-    setPage(page);
-    setTableData(tableData = result);
-    setLoading(false);
-  }
+  }, [fetchData])
 
   const onTabChange = useCallback((currentTab) => {
-      setTab(tabValue = currentTab);
+      setTab(currentTab);
       fetchData(); // TODO: Load correct data when tab change fires
     },
-    [],
+    [fetchData],
   )
 
 
   const onKeywordChange = useCallback(
     (value) => {
-      setQuery(query = value);
+      setQuery(value);
     }, []
   )
 

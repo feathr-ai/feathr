@@ -39,7 +39,7 @@ const Routes: React.FC<Props> = () => {
                     <Route exact={ true } path="/dataSources" component={ withRouter(DataSources) } />
                     <Route exact={ true } path="/features" component={ withRouter(Features) } />
                     <Route exact={ true } path="/new-feature" component={ withRouter(NewFeature) } />
-                    <Route exact={ true } path="/feature/:id" component={ withRouter(EditFeature) } />
+                    <Route exact={ true } path="/features/:qualifiedName" component={ withRouter(EditFeature) } />
                     {/* {publicRoutes} */ }
                     {/* <Route component={NotFound} /> */ }
                   </Suspense>

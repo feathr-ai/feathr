@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
-import { AlertOutlined } from '@ant-design/icons';
+import { CopyOutlined, DatabaseOutlined, RocketOutlined } from '@ant-design/icons';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 
@@ -10,7 +10,7 @@ const SideMenu = withRouter(({ history }) => {
   return (
     <Sider>
       <div style={ { fontSize: 'medium', color: 'white', margin: '10px', paddingLeft: '15px' } }>
-        Azure Feature Store
+        Feathr Demo
       </div>
 
       <Menu
@@ -20,13 +20,13 @@ const SideMenu = withRouter(({ history }) => {
         defaultOpenKeys={ ['/'] }
         selectedKeys={ [history.location.pathname] }
       >
-        <Menu.Item key="/data-sources" icon={ <AlertOutlined /> }>
+        <Menu.Item key="/dataSources" icon={ <DatabaseOutlined /> }>
           <Link to="/dataSources">Data Sources</Link>
         </Menu.Item>
-        <Menu.Item key="/features" icon={ <AlertOutlined /> }>
+        <Menu.Item key="/features" icon={ <CopyOutlined /> }>
           <Link to="/features">Features</Link>
         </Menu.Item>
-        <Menu.Item key="/jobs" icon={ <AlertOutlined /> }>
+        <Menu.Item key="/jobs" icon={ <RocketOutlined /> }>
           <Link to="/">Jobs</Link>
         </Menu.Item>
       </Menu>

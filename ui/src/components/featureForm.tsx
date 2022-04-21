@@ -3,12 +3,13 @@ import { BackTop, Button, Form, Input, message, Space } from 'antd';
 import { createFeature, updateFeature } from '../api';
 import { Redirect } from 'react-router';
 import { UpCircleOutlined } from '@ant-design/icons'
-import { IFeature } from "../models/feature";
+import { FeatureAttributes, IFeature } from "../models/model";
+import FeatureDetails from "./featureDetails";
 
 type FeatureFormProps = {
   isNew: boolean;
   editMode: boolean;
-  feature?: IFeature;
+  feature?: FeatureAttributes;
 };
 
 const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) => {
@@ -18,10 +19,11 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
   const [form] = Form.useForm();
 
   useEffect(() => {
+    console.log(feature);
     if (feature !== undefined) {
       form.setFieldsValue(feature);
     }
-  }, []);
+  }, [feature, form]);
 
   const onClickSave = async () => {
     setCreateLoading(true);
@@ -34,8 +36,8 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
       } else {
         message.error(`${ resp.data }`, 8)
       }
-    } else if (feature?.id !== undefined) {
-      const resp = await updateFeature(featureToSave, feature.id);
+    } else if (feature?.qualifiedName !== undefined) {
+      const resp = await updateFeature(featureToSave, feature.qualifiedName);
       if (resp.status === 200) {
         message.success("Feature is updated successfully");
         setRedirect(true);
@@ -49,6 +51,7 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
   const styling: CSSProperties = { width: "92%" }
   return (
     <>
+      <FeatureDetails feature={ feature } />
       <Form
         form={ form }
         style={ styling }
@@ -59,10 +62,16 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
       >
         <Space direction="vertical" size="large" style={ styling }>
           <h3>Feature Information</h3>
-          <Form.Item name="name" label="Name" rules={ [{ required: true, message: 'Name is required' }] }>
+          <Form.Item name="name" label="name">
             <Input disabled={ !editMode } />
           </Form.Item>
           <Form.Item name="description" label="Description">
+            <Input disabled={ !editMode } />
+          </Form.Item>
+          <Form.Item name="type" label="Type">
+            <Input disabled={ !editMode } />
+          </Form.Item>
+          <Form.Item name="transform.transform_expr" label="Transform">
             <Input disabled={ !editMode } />
           </Form.Item>
           <Form.Item name="status" label="Status">
