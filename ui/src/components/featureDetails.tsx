@@ -63,14 +63,14 @@ const FeatureDetails: React.FC<FeatureDetailsProps> = ({ feature }) => {
                 </Card>
             </Col>
         }
-        { feature?.input_anchor_features && feature?.input_anchor_features.length &&
+        { feature?.input_anchor_features && feature?.input_anchor_features.length > 0 &&
             <Col span={ 16 }>
                 <Card title="Input Anchor Features" bordered={ false }>
                   { renderInputFeatureList(feature.input_anchor_features) }
                 </Card>
             </Col>
         }
-        { feature?.input_derived_features && feature?.input_derived_features.length &&
+        { feature?.input_derived_features && feature?.input_derived_features.length > 0 &&
             <Col span={ 16 }>
                 <Card title="Input Derived Features" bordered={ false }>
                   { renderInputFeatureList(feature.input_derived_features) }
