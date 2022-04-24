@@ -29,10 +29,11 @@ class _PreprocessingPyudfManager(object):
         """When the client build features, UDFs and features that need preprocessing will be stored as metadata. Those
         metadata will later be used when uploading the Pyspark jobs.
         """
-        # feature names concatenated to UDF callable object map
-        # the UDF callable is stored in `__feathr_user_functions` dictionary with source name as the key
-        # so the map is like:
-        # 'f1,f2': __feathr_user_functions['source1']
+        # feature names concatenated to UDF callable object map, it is like:
+        # {
+        #   'f1,f2': cloudpickle.loads('...pickledcode...'),
+        #   'f3': cloudpickle.loads('...pickledcode...'),
+        # }
         feature_names_to_func_mapping = {}
         # features that have preprocessing defined. This is used to figure out if we need to kick off Pyspark
         # preprocessing for requested features.
