@@ -18,7 +18,7 @@ FEATHR_PYSPARK_DRIVER_TEMPLATE_FILE_NAME = 'feathr_pyspark_driver_template.py'
 # Feathr provided imports for pyspark UDFs all go here
 PROVIDED_IMPORTS = ['\nfrom pyspark.sql import SparkSession, DataFrame\n'] + \
                    ['from pyspark.sql.functions import *\n'] + \
-                   ['from pyspark import cloudpickle\n__feathr_user_functions={}\n']
+                   ['from pyspark import cloudpickle\n']
 
 
 class _PreprocessingPyudfManager(object):
@@ -43,12 +43,11 @@ class _PreprocessingPyudfManager(object):
                 continue
             preprocessing_func = anchor.source.preprocessing
             if preprocessing_func:
-                _PreprocessingPyudfManager.persist_pyspark_udf_to_file(anchor.source.name, preprocessing_func, local_workspace_dir)
                 feature_names = [feature.name for feature in anchor.features]
                 features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
                 string_feature_list = ','.join(feature_names)
-                feature_names_to_func_mapping[string_feature_list] = "__feathr_user_functions['%s']" % anchor.source.name
+                feature_names_to_func_mapping[string_feature_list] = "cloudpickle.loads(%s)" % cloudpickle.dumps(preprocessing_func)
 
         if not features_with_preprocessing:
             return
@@ -61,33 +60,6 @@ class _PreprocessingPyudfManager(object):
         feathr_pyspark_metadata_abs_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_METADATA)
         with open(feathr_pyspark_metadata_abs_path, 'wb') as file:
             pickle.dump(features_with_preprocessing, file)
-
-    @staticmethod
-    def persist_pyspark_udf_to_file(source_name, user_func, local_workspace_dir):
-        # the UDF callable is stored in `__feathr_user_functions` dictionary with source name as the key,
-        # and the body is packed by cloudpickle.
-        # so the final source line is like:
-        # __feathr_user_functions['source1'] = cloudpickle.loads(b'...')
-        # and this callable object can be called as `__feathr_user_functions['source1'](...)`
-        lines = ["__feathr_user_functions['%s']=cloudpickle.loads(%s)" % (source_name, cloudpickle.dumps(user_func))]
-        lines.append('\n')
-
-        client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
-
-        # the directory may actually not exist yet, so create the directory first
-        file_name_start = client_udf_repo_path.rfind("/")
-        if file_name_start > 0:
-            dir_name = client_udf_repo_path[:file_name_start]
-            Path(dir_name).mkdir(parents=True, exist_ok=True)
-
-        if Path(client_udf_repo_path).is_file():
-            with open(client_udf_repo_path, "a") as handle:
-                print("".join(lines), file=handle)
-        else:
-            with open(client_udf_repo_path, "w") as handle:
-                # Some basic imports will be provided
-                print("".join(PROVIDED_IMPORTS), file=handle)
-                print("".join(lines), file=handle)
 
     @staticmethod
     def write_feature_names_to_udf_name_file(feature_names_to_func_mapping, local_workspace_dir):
@@ -106,7 +78,8 @@ feature_names_funcs = {
         new_file = tm.render(func_maps=feature_names_to_func_mapping)
 
         full_file_name = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
-        with open(full_file_name, "a") as text_file:
+        with open(full_file_name, "w") as text_file:
+            print("".join(PROVIDED_IMPORTS), file=text_file)
             print(new_file, file=text_file)
 
     @staticmethod
@@ -137,6 +110,7 @@ feature_names_funcs = {
         for feature_name in feature_names:
             if feature_name in features_with_preprocessing:
                 has_py_udf_preprocessing = True
+                break
 
         if has_py_udf_preprocessing:
             pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)
