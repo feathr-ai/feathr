@@ -25,6 +25,7 @@ import scala.collection.JavaConverters.mapAsScalaMapConverter
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success}
 import collection.JavaConverters._
+import scala.collection.mutable
 
 /**
  * Join features to some observations for training/testing
@@ -212,7 +213,7 @@ object FeatureJoinJob {
 
     // Set system properties passed via arguments
     val sps = cmdParser.extractOptionalValue("system-properties").getOrElse("{}")
-    val props = (new ObjectMapper()).readValue(sps, classOf[Map[String, String]])
+    val props = (new ObjectMapper()).readValue(sps, classOf[mutable.HashMap[String, String]])
     props.foreach(e => scala.util.Properties.setProp(e._1, e._2))
 
     val joinConfig = cmdParser.extractRequiredValue("join-config")
