@@ -6,8 +6,9 @@ import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.job.TransformedResult
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
-import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark}
-import org.apache.spark.sql.{Column, DataFrame}
+import com.linkedin.feathr.sparkcommon.SimpleAnchorExtractorSpark
+import org.apache.spark.sql.streaming.OutputMode
+import org.apache.spark.sql.{Column, DataFrame, SaveMode}
 
 /**
  * Evaluator that transforms features using Spark SQL or user customized SimpleAnchorExtractorSpark implementation

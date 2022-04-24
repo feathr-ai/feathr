@@ -7,7 +7,7 @@ long_description = (root_path / "README.md").read_text()
 
 setup(
     name='feathr',
-    version='0.2.1',
+    version='0.3.2',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="frame_dev@linkedin.com",
@@ -22,7 +22,7 @@ setup(
     install_requires=[
         'Click',
         "azure-storage-file-datalake>=12.5.0",
-        "azure-synapse-spark>=0.7.0",
+        "azure-synapse-spark",
         "azure-identity",
         "py4j",
         "loguru",
@@ -43,6 +43,8 @@ setup(
         "graphlib_backport",
         "google-api-python-client>=2.41.0",
         "azure-keyvault-secrets",
+        "confluent-kafka",
+        "avro"
     ],
     tests_require=[
         'pytest',

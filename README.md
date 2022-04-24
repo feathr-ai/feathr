@@ -10,7 +10,7 @@ Feathr lets you:
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-For more details, read our [documentation](https://linkedin.github.io/feathr/).
+For more details, read our [documentation](https://linkedin.github.io/feathr/). We also have two blog posts talking about [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
 
 ## Running Feathr on Azure with 3 Simple Steps
 
@@ -22,7 +22,7 @@ Feathr has native cloud integration. To use Feathr on Azure, you only need three
 
 2. Click the button below to deploy a minimal set of Feathr resources for demo purpose. You will need to fill in the `Principal ID` and `Resource Prefix`. You will need "Owner" permission of the selected subscription.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 3. Run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
 
@@ -156,7 +156,7 @@ batch_source = HdfsSource(
     timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
 ```
 
-### Beyond Features on Raw Data Sources - Derived Features
+### Define features on top of other features - Derived Features
 
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
@@ -175,6 +175,49 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       key=[user_key, item_key],
                                       input_features=[user_embedding, item_embedding],
                                       transform="cosine_similarity(user_embedding, item_embedding)")
+```
+
+### Define Streaming Features
+
+```python
+# Define input data schema
+schema = AvroJsonSchema(schemaStr="""
+{
+    "type": "record",
+    "name": "DriverTrips",
+    "fields": [
+        {"name": "driver_id", "type": "long"},
+        {"name": "trips_today", "type": "int"},
+        {
+        "name": "datetime",
+        "type": {"type": "long", "logicalType": "timestamp-micros"}
+        }
+    ]
+}
+""")
+stream_source = KafKaSource(name="kafkaStreamingSource",
+                            kafkaConfig=KafkaConfig(brokers=["feathrazureci.servicebus.windows.net:9093"],
+                                                    topics=["feathrcieventhub"],
+                                                    schema=schema)
+                            )
+
+driver_id = TypedKey(key_column="driver_id",
+                     key_column_type=ValueType.INT64,
+                     description="driver id",
+                     full_name="nyc driver id")
+
+kafkaAnchor = FeatureAnchor(name="kafkaAnchor",
+                            source=stream_source,
+                            features=[Feature(name="f_modified_streaming_count",
+                                              feature_type=INT32,
+                                              transform="trips_today + 1",
+                                              key=driver_id),
+                                      Feature(name="f_modified_streaming_count2",
+                                              feature_type=INT32,
+                                              transform="trips_today + 2",
+                                              key=driver_id)]
+                            )
+
 ```
 
 ## Running Feathr Examples
@@ -200,9 +243,10 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 - [x] Private Preview release
 - [x] Public Preview release
 - [ ] Future release
-  - [ ] Support streaming and online transformation
+  - [x] Support streaming
+  - [x] Support common data sources
+  - [ ] Support online transformation
   - [ ] Support feature versioning
-  - [ ] Support more data sources
 
 ## Community Guidelines
 
@@ -210,4 +254,4 @@ Build for the community and build by the community. Check out [Community Guideli
 
 ## Slack Channel
 
-Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-14sxrbacj-7qo2bKL0LVG~4m0Z8gytZQ)).
+Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-17lugq6e8-Qu3KJXDA25tZqlFsmM94Dg)).

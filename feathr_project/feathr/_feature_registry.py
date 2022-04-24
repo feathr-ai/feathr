@@ -23,7 +23,6 @@ from pyapacheatlas.core.typedef import (AtlasAttributeDef,
 from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
 
-from feathr._envvariableutil import _EnvVaraibleUtil
 from feathr._file_utils import write_to_file
 from feathr.anchor import FeatureAnchor
 from feathr.constants import *
@@ -52,9 +51,9 @@ class _FeatureRegistry():
         self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False) if credential is None else credential
         self.oauth = AzCredentialWrapper(credential=self.credential)
         self.purview_client = PurviewClient(
-            account_name=self.azure_purview_name,
-            authentication=self.oauth
-        )
+                account_name=self.azure_purview_name,
+                authentication=self.oauth
+            )   
         self.guid = GuidTracker(starting=-1000)
         self.entity_batch_queue = []
 
@@ -472,9 +471,10 @@ class _FeatureRegistry():
                 guid=self.guid.get_guid(),
             )
             self.entity_batch_queue.append(lineage_process)
-            self.entity_batch_queue.append(feathr_project_entity)
-            self.entity_batch_queue.extend(anchor_entities)
-            self.entity_batch_queue.extend(derived_feature_entities)
+            
+        self.entity_batch_queue.append(feathr_project_entity)
+        self.entity_batch_queue.extend(anchor_entities)
+        self.entity_batch_queue.extend(derived_feature_entities)
 
     @classmethod
     def _get_py_files(self, path: Path) -> List[Path]:
@@ -682,6 +682,7 @@ derivations: {
         logger.info(
             "Finished registering features. See {} to access the Purview web interface", webinterface_path)
 
+
     def _purge_feathr_registry(self):
         """
         Delete all the feathr related entities and type definitions in feathr registry. For internal use only
@@ -729,7 +730,8 @@ derivations: {
             self.purview_client.delete_entity(
                 guid=guid_list[i:i+batch_delte_size])
             logger.info("{} feathr entities deleted", batch_delte_size)
-
+    
+    @classmethod
     def _get_registry_client(self):
         """
         Return a client object and users can operate more on it (like doing search)
@@ -758,12 +760,66 @@ derivations: {
                 feature_list.append(entity["name"])
 
         return feature_list
+   
+    def get_feature_by_fqdn_type(self, qualifiedName, typeName):
+        """
+        Get a single feature by it's QualifiedName and Type
+        Returns the feature else throws an AtlasException with 400 error code
+        """
+        response = self.purview_client.get_entity(qualifiedName=qualifiedName, typeName=typeName)
+        entities = response.get('entities')
+        for entity in entities:
+            if entity.get('typeName') == typeName and entity.get('attributes').get('qualifiedName') == qualifiedName: 
+                return entity
+       
+    def get_feature_by_fqdn(self, qualifiedName):
+        """
+        Get feature by qualifiedName
+        Returns the feature else throws an AtlasException with 400 error code
+        """        
+        guid = self.get_feature_guid(qualifiedName)
+        return self.get_feature_by_guid(guid)
+    
+    def get_feature_by_guid(self, guid):
+        """
+        Get a single feature by it's GUID
+        Returns the feature else throws an AtlasException with 400 error code
+        """ 
+        response = self.purview_client.get_single_entity(guid=guid)
+        return response
+    
+    def get_feature_lineage(self, guid):
+        """
+        Get feature's lineage by it's GUID
+        Returns the feature else throws an AtlasException with 400 error code
+        """
+        return self.purview_client.get_entity_lineage(guid=guid)
 
+    def get_feature_guid(self, qualifiedName):
+        """
+        Get guid of a feature given its qualifiedName
+        """        
+        search_term = "qualifiedName:{0}".format(qualifiedName)
+        entities = self.purview_client.discovery.search_entities(search_term)
+        for entity in entities:
+            if entity.get('qualifiedName') == qualifiedName:
+                return entity.get('id')
+
+    def search_features(self, searchTerm):
+        """
+        Search the registry for the given query term
+        For a ride hailing company few examples could be - "taxi", "passenger", "fare" etc.
+        It's a keyword search on the registry metadata
+        """        
+        search_term = "qualifiedName:{0}".format(searchTerm)
+        entities = self.purview_client.discovery.search_entities(search_term)
+        return entities
+    
     def _list_registered_entities_with_details(self, project_name: str = None, entity_type: Union[str, List[str]] = None, limit=50, starting_offset=0,) -> List[Dict]:
         """
         List all the already registered entities. entity_type should be one of: SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT, or a list of those values
         limit: a maximum 1000 will be enforced at the underlying API
-
+        
         returns a list of the result entities.
         """
         entity_type_list = [entity_type] if isinstance(

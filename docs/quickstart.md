@@ -1,3 +1,9 @@
+---
+layout: default
+title: Feathr Quick Start Guide
+nav_order: 2
+---
+
 # Feathr Quickstart Guide
 
 ## Overview
@@ -15,11 +21,19 @@ The major problems Feathr solves are:
 
 First step is to provision required cloud resources if you want to use Feathr. Feathr provides a python based client to interact with cloud resources.
 
-Please follow the steps [here](./how-to-guides/azure-deployment.md) to provision required cloud resources. Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the use cases. Because of this, [azure_resource_provision.sh](./how-to-guides/azure_resource_provision.sh) is a full end to end command line to create all the required resources, and you can tailor the script as needed, while [the companion documentation](./how-to-guides/azure-deployment.md) can be used as a complete guide for using that shell script. You should always consider ajusting those parameters based on your specific environment.
+Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
 
-At the end of the script, it should give you some output which you will need later. For example, the Service Principal IDs, Redis endpoint, etc.
+1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
 
-Please also note that at the end of this step, you need to **manually** grant your service principal "Data Curator" permission of your Azure Purview account, due to a current limiation with Azure Purview.
+[Launch Cloud Shell](https://shell.azure.com/bash)
+
+2. Click the button below to deploy a minimal set of Feathr resources for demo purpose. You will need to fill in the `Principal ID` and `Resource Prefix`. You will need "Owner" permission of the selected subscription.
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+
+3. Run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb)
 
 ## Step 2: Install Feathr
 
@@ -37,7 +51,7 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 ## Step 3: Run the sample notebook
 
-We've provided a self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
+We've provided a self-contained [sample notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
 
 ## Step 4: Update Feathr config
 
@@ -85,7 +99,7 @@ os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 
 ## Step 5: Setup environment variables.
 
-In the self-contained [sample notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
+In the self-contained [sample notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
 
 These values can also be reterived by using cloud key value store, such as [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/):
 
@@ -179,6 +193,6 @@ client.multi_get_online_features("nycTaxiDemoFeature", ["239", "265"], ['f_locat
 
 ## Next steps
 
-- Run the [demo notebook](../feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to understand the workflow of Feathr.
+- Run the [demo notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to understand the workflow of Feathr.
 - Read the [Feathr Documentation Page](https://linkedin.github.io/feathr/) page to understand the Feathr abstractions.
 - Read guide to understand [how to setup Feathr on Azure](../how-to-guides/azure-deployment.md).

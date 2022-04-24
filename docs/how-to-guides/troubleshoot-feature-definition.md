@@ -1,3 +1,9 @@
+---
+layout: default
+title: Feature Definition Troubleshooting Guide
+parent: Feathr How-to Guides
+---
+
 # Feature Definition Troubleshooting Guide
 
 You may come across some errors while creating your feature definition config. This guide will help you troubleshoot those errors.

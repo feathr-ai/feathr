@@ -12,7 +12,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
   * @param outputProcessorConfig output processor config object
   * @param endTimeOpt end time of feature generation date, in form of yyyy/MM/dd
   */
-abstract class OutputProcessor(outputProcessorConfig: OutputProcessorConfig, endTimeOpt: Option[String] = None) extends  Serializable {
+abstract class OutputProcessor(val outputProcessorConfig: OutputProcessorConfig, endTimeOpt: Option[String] = None) extends  Serializable {
   /**
     * process all feature data(dataframes)
     * @param ss Spark session

@@ -3,7 +3,7 @@ from feathr.settings import ObservationSettings
 
 def test_observation_setting_with_timestamp():
     observation_settings = ObservationSettings(
-        observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
         event_timestamp_column="lpep_dropoff_datetime",
         timestamp_format="yyyy-MM-dd HH:mm:ss")
     config = observation_settings.to_config()
@@ -17,7 +17,7 @@ def test_observation_setting_with_timestamp():
                 }
             }
             
-            observationPath: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"
+            observationPath: "wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv"
         """
     assert ''.join(config.split()) == ''.join(expected_config.split())
 

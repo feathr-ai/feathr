@@ -7,19 +7,37 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from os.path import basename
+from enum import Enum
 
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
                             DeviceCodeCredential, EnvironmentCredential,
                             ManagedIdentityCredential)
 from azure.storage.filedatalake import DataLakeServiceClient
 from azure.synapse.spark import SparkClient
-from azure.synapse.spark.models import (LivyStates, SparkBatchJob,
-                                        SparkBatchJobOptions)
+from azure.synapse.spark.models import SparkBatchJobOptions
 from loguru import logger
 from tqdm import tqdm
 
 from feathr._abc import SparkJobLauncher
 from feathr.constants import *
+
+class LivyStates(Enum):
+    """ Adapt LivyStates over to relax the dependency for azure-synapse-spark pacakge.
+    Definition is here:
+    https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/synapse/azure-synapse-spark/azure/synapse/spark/models/_spark_client_enums.py#L38
+    """
+
+    NOT_STARTED = "not_started"
+    STARTING = "starting"
+    IDLE = "idle"
+    BUSY = "busy"
+    SHUTTING_DOWN = "shutting_down"
+    ERROR = "error"
+    DEAD = "dead"
+    KILLED = "killed"
+    SUCCESS = "success"
+    RUNNING = "running"
+    RECOVERING = "recovering"
 
 
 class _FeathrSynapseJobLauncher(SparkJobLauncher):
@@ -118,9 +136,9 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         while (timeout_seconds is None) or (time.time() - start_time < timeout_seconds):
             status = self.get_status()
             logger.info('Current Spark job status: {}', status)
-            if status in {LivyStates.SUCCESS}:
+            if status in {LivyStates.SUCCESS.value}:
                 return True
-            elif status in {LivyStates.ERROR, LivyStates.DEAD, LivyStates.KILLED}:
+            elif status in {LivyStates.ERROR.value, LivyStates.DEAD.value, LivyStates.KILLED.value}:
                 return False
             else:
                 time.sleep(30)

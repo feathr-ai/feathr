@@ -1,3 +1,10 @@
+---
+layout: default
+title: Azure Resource Provisioning
+parent: Feathr How-to Guides
+---
+
+
 # Azure Resource Provisioning
 
 Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. Because of this, users are expected to:
@@ -13,7 +20,7 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
 2. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 
 ## Note on the Template above

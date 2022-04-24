@@ -92,7 +92,9 @@ class FeathrClient(object):
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
-            self.local_workspace_dir = tempfile.TemporaryDirectory().name
+            # this is required for Windows
+            tem_dir_obj = tempfile.TemporaryDirectory()
+            self.local_workspace_dir = tem_dir_obj.name
 
         self.envutils = envutils
 
@@ -587,7 +589,8 @@ class FeathrClient(object):
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str()
+                '--snowflake-config', self._get_snowflake_config_str(),
+                '--kafka-config', self._get_kafka_config_str()
             ],
             reference_files_path=[],
             configuration=execution_configuratons,
@@ -711,3 +714,12 @@ class FeathrClient(object):
         """ Sync features from the registry given a project name """
         # TODO - Add support for customized workspace path
         self.registry.get_features_from_registry(project_name, os.path.abspath("./"))
+    def _get_kafka_config_str(self):
+        """Construct the Kafka config string. The endpoint, access key, secret key, and other parameters can be set via
+        environment variables."""
+        sasl = _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
+        # HOCCON format will be parsed by the Feathr job
+        config_str = """
+            KAFKA_SASL_JAAS_CONFIG: "{sasl}"
+            """.format(sasl=sasl)
+        return config_str

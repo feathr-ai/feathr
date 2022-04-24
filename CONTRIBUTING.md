@@ -24,7 +24,7 @@ If you have any user feedback, please create a new Github issue and the communit
 
 ## Pull Request Guideline
 
-Detailed Pull Request guideline is at [Feathr Pull Request Guideline](./docs/pull_request_guideline.md)
+Detailed Pull Request guideline is at [Feathr Pull Request Guideline](./docs/dev_guide/pull_request_guideline.md)
 
 # Code Of Conduct
 

@@ -46,6 +46,7 @@ object FeatureGenJob {
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
       "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
       "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", ""),
+      "kafka-config" -> OptionParam("kc", "Authentication config for Kafka", "KAFKA_CONFIG", ""),
       "system-properties" -> OptionParam("sps", "Additional System Properties", "SYSTEM_PROPERTIES_CONFIG", "")
     )
 
