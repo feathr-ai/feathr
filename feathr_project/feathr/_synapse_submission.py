@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shlex
 import time
 import urllib.request
 from pathlib import Path
@@ -98,7 +99,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         """
 
         if properties is not None:
-            arguments.append("--system-properties=%s" % json.dumps(properties))
+            arguments.append("--system-properties=%s" % shlex.quote(json.dumps(properties)))
 
         assert main_jar_path, 'main_jar_path should not be none or empty but it is none or empty.'
         if main_jar_path.startswith('abfs'):

@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import shlex
 import time
 import traceback
 import urllib
@@ -129,7 +130,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         """
 
         if properties is not None:
-            arguments.append("--system-properties=%s" % json.dumps(properties))
+            arguments.append("--system-properties=%s" % shlex.quote(json.dumps(properties)))
         
         if isinstance(self.config_template, str):
             # if the input is a string, load it directly
