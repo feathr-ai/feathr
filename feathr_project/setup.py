@@ -44,7 +44,8 @@ setup(
         "google-api-python-client>=2.41.0",
         "azure-keyvault-secrets",
         "confluent-kafka",
-        "avro"
+        "avro",
+        "azure-core<=1.22.1"
     ],
     tests_require=[
         'pytest',
