@@ -34,7 +34,8 @@ object DataSourceConfigUtils {
       adlsConfigStr = cmdParser.extractOptionalValue("adls-config"),
       blobConfigStr = cmdParser.extractOptionalValue("blob-config"),
       sqlConfigStr = cmdParser.extractOptionalValue("sql-config"),
-      snowflakeConfigStr = cmdParser.extractOptionalValue("snowflake-config")
+      snowflakeConfigStr = cmdParser.extractOptionalValue("snowflake-config"),
+      kafkaConfigStr = cmdParser.extractOptionalValue("kafka-config")
     )
   }
 
@@ -44,6 +45,7 @@ object DataSourceConfigUtils {
     BlobResourceInfoSetter.setup(ss, configs.blobConfig, resource)
     S3ResourceInfoSetter.setup(ss, configs.s3Config, resource)
     SnowflakeResourceInfoSetter.setup(ss, configs.snowflakeConfig, resource)
+    KafkaResourceInfoSetter.setup(ss, configs.kafkaConfig, resource)
   }
 
   private[feathr] def setupSparkConf(sparkConf: SparkConf, configs: DataSourceConfigs): Unit ={
