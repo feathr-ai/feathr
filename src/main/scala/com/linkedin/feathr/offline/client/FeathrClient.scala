@@ -1,10 +1,10 @@
 package com.linkedin.feathr.offline.client
 
 import com.linkedin.feathr.common.exception._
-import com.linkedin.feathr.common.{FeatureInfo, Header, InternalApi, JoiningFeatureParams, TaggedFeatureName}
+import com.linkedin.feathr.common.{FeatureInfo, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig}
-import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, FeatureGenKeyTagAnalyzer}
+import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, FeatureGenKeyTagAnalyzer, StreamingFeatureGenerator}
 import com.linkedin.feathr.offline.job._
 import com.linkedin.feathr.offline.join.DataFrameFeatureJoiner
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlanner}
@@ -82,18 +82,41 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
     val keyTaggedAnchoredFeatures = FeatureGenKeyTagAnalyzer.inferKeyTagsForAnchoredFeatures(featureGenSpec, featureGroups)
     val keyTaggedDerivedFeatures = FeatureGenKeyTagAnalyzer.inferKeyTagsForDerivedFeatures(featureGenSpec, featureGroups, keyTaggedAnchoredFeatures)
     val keyTaggedRequiredFeatures = keyTaggedAnchoredFeatures ++ keyTaggedDerivedFeatures
-    // Get logical plan
-    val logicalPlan = logicalPlanner.getLogicalPlan(featureGroups, keyTaggedRequiredFeatures)
-    // This pattern is consistent with the join use case which uses DataFrameFeatureJoiner.
-    val dataFrameFeatureGenerator = new DataFrameFeatureGenerator(logicalPlan)
-    val featureMap: Map[TaggedFeatureName, (DataFrame, Header)] =
-      dataFrameFeatureGenerator.generateFeaturesAsDF(sparkSession, featureGenSpec, featureGroups, keyTaggedRequiredFeatures)
+    if (isStreaming(featureGenSpec)) {
+      val streamingFeatureGenerator = new StreamingFeatureGenerator()
+      streamingFeatureGenerator.generateFeatures(sparkSession, featureGenSpec, featureGroups, keyTaggedRequiredFeatures)
+      Map()
+    } else {
+      // Get logical plan
+      val logicalPlan = logicalPlanner.getLogicalPlan(featureGroups, keyTaggedRequiredFeatures)
+      // This pattern is consistent with the join use case which uses DataFrameFeatureJoiner.
+      val dataFrameFeatureGenerator = new DataFrameFeatureGenerator(logicalPlan)
+      val featureMap: Map[TaggedFeatureName, (DataFrame, Header)] =
+        dataFrameFeatureGenerator.generateFeaturesAsDF(sparkSession, featureGenSpec, featureGroups, keyTaggedRequiredFeatures)
 
-    featureMap map {
-      case (taggedFeatureName, (df, _)) =>
-        // Build FDS and convert key columns to Feature columns instead of Opaque columns
-        val fds = SparkFeaturizedDataset(df, FeaturizedDatasetMetadata())
-        (taggedFeatureName, fds)
+      featureMap map {
+        case (taggedFeatureName, (df, _)) =>
+          // Build FDS and convert key columns to Feature columns instead of Opaque columns
+          val fds = SparkFeaturizedDataset(df, FeaturizedDatasetMetadata())
+          (taggedFeatureName, fds)
+      }
+    }
+  }
+
+  /**
+   * Check if the feature generation job needs to run in streaming mode
+   * @param featureGenSpec the feature generation specification.
+   * @return  If 'streaming' is set to true in any of its output processor, return true, otherwise, return false.
+   */
+  private def isStreaming(featureGenSpec: FeatureGenSpec) = {
+    val outputProcessors = featureGenSpec.getProcessorList()
+    if (!outputProcessors.isEmpty) {
+      outputProcessors.map(p=>
+          p.outputProcessorConfig.getParams.getBooleanWithDefault("streaming", false)
+        )
+        .reduce(_ || _)
+    } else {
+      false
     }
   }
 

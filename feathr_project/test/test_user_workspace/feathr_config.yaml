@@ -32,6 +32,7 @@ project_config:
     - JDBC_TABLE
     - JDBC_USER
     - JDBC_PASSWORD
+    - KAFKA_SASL_JAAS_CONFIG
 
 offline_store:
   # paths starts with abfss:// or abfs://
@@ -61,10 +62,16 @@ offline_store:
 # streaming_source:
 #   kafka_connection_string: ''
 
+# snowflake endpoint
+  snowflake:
+    url: "dqllago-ol19457.snowflakecomputing.com"
+    user: "feathrintegration"
+    role: "ACCOUNTADMIN"
+
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks
   # The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.
-  spark_cluster: 'azure_synapse'
+  spark_cluster: 'databricks'
   # configure number of parts for the spark output for feature generation job
   spark_result_output_parts: '1'
 
@@ -78,6 +85,17 @@ spark_config:
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
     # this is the default location so end users don't have to compile the runtime again.
     # feathr_runtime_location: wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-0.1.0-SNAPSHOT.jar
+    feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.1.0.jar"
+  databricks:
+    # workspace instance
+    workspace_instance_url: 'https://adb-5638037984879289.9.azuredatabricks.net/'
+    workspace_token_value: ''
+    # config string including run time information, spark version, machine size, etc.
+    # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
+    config_template: {'run_name':'','new_cluster':{'spark_version':'9.1.x-scala2.12','node_type_id':'Standard_F4s','num_workers':2,'spark_conf':{}},'libraries':[{'jar':''}],'spark_jar_task':{'main_class_name':'','parameters':['']}}
+    # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
+    work_dir: 'dbfs:/feathr_getting_started'
+    # this is the default location so end users don't have to compile the runtime again.
     feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.1.0.jar"
 
 online_store:

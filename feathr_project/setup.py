@@ -43,6 +43,8 @@ setup(
         "graphlib_backport",
         "google-api-python-client>=2.41.0",
         "azure-keyvault-secrets",
+        "confluent-kafka",
+        "avro"
     ],
     tests_require=[
         'pytest',
