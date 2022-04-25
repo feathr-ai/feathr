@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import static com.google.common.base.Preconditions.*;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.*;
 import static com.linkedin.feathr.common.FeatureValue.DEFAULT_VALUE;
@@ -310,6 +309,12 @@ public class CoercionUtils {
       throw new RuntimeException(
           "Couldn't safely coerce to Float, expecting input to be a Number but got " + item.getClass()
               + " instead. (Input = " + item + ")");
+    }
+  }
+
+  private static <T> void checkNotNull(T item) {
+    if (null == item) {
+      throw new RuntimeException("Unexpected null");
     }
   }
 

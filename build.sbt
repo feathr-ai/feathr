@@ -1,4 +1,3 @@
-
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
 ThisBuild / version          := "0.1.0"
@@ -10,21 +9,23 @@ val localAndCloudDiffDependencies = Seq(
     "org.apache.spark" %% "spark-avro" % sparkVersion,
     "org.apache.spark" %% "spark-sql" % sparkVersion,
     "org.apache.spark" %% "spark-hive" % sparkVersion,
-    "com.google.guava" % "guava" % "17.0",
+    "org.apache.spark" %% "spark-catalyst" % sparkVersion,
     "org.apache.logging.log4j" % "log4j-core" % "2.17.1",
     "com.typesafe" % "config" % "1.3.2",
-    "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
+    "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.2",
     "org.apache.hadoop" % "hadoop-mapreduce-client-core" % "2.7.2",
     "org.apache.hadoop" % "hadoop-common" % "2.7.2",
     "org.apache.avro" % "avro" % "1.8.2",
     "org.apache.xbean" % "xbean-asm6-shaded" % "4.10",
+    "org.apache.spark" % "spark-sql-kafka-0-10_2.12" % "3.1.2"
 )
 
 val cloudProvidedDeps = localAndCloudDiffDependencies.map(x => x % "provided")
 
-
 val localAndCloudCommonDependencies = Seq(
-    "org.apache.spark" %% "spark-catalyst" % sparkVersion % Test,
+    "com.microsoft.azure" % "azure-eventhubs-spark_2.12" % "2.3.15",
+    "org.apache.kafka" % "kafka-clients" % "3.1.0",
+    "com.google.guava" % "guava" % "31.1-jre",
     "org.testng" % "testng" % "6.14.3" % Test,
     "org.mockito" % "mockito-core" % "3.1.0" % Test,
     "nl.jqno.equalsverifier" % "equalsverifier" % "3.1.12" % Test,
@@ -32,10 +33,10 @@ val localAndCloudCommonDependencies = Seq(
     "it.unimi.dsi" % "fastutil" % "8.1.1",
     "org.mvel" % "mvel2" % "2.2.7.Final",
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7.1",
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.6.5",
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.4.4",
+    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.2",
+    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.2",
     "com.jasonclawson" % "jackson-dataformat-hocon" % "1.1.0",
-    "com.redislabs" %% "spark-redis" % "2.6.0",
+    "com.redislabs" %% "spark-redis" % "3.0.0",
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     "org.apache.xbean" % "xbean-asm6-shaded" % "4.10",
     "com.google.protobuf" % "protobuf-java" % "3.19.4",
