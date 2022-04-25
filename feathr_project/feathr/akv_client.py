@@ -3,7 +3,7 @@ from azure.identity import DefaultAzureCredential
 from loguru import logger
 from azure.core.exceptions import ResourceNotFoundError
 
-class akvClient:
+class AzureKeyVaultClient:
     def __init__(self, akv_name: str):
         self.akv_name = akv_name
         self.secret_client = None

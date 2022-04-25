@@ -1,7 +1,7 @@
 import os
 import yaml
 from loguru import logger
-from feathr.akv_client import akvClient
+from feathr.akv_client import AzureKeyVaultClient
 
 
 class _EnvVaraibleUtil(object):
@@ -61,8 +61,8 @@ class _EnvVaraibleUtil(object):
         password = os.environ.get(variable_key)
         if not password:
             logger.info(variable_key +
-                        ' is not set in the environment variables. Try Key Vault value.')
-            akv_name = os.env.get("KEY_VAULT__NAME")
-            akv_client = akvClient(akv_name)
+                        ' is not set in the environment variables, fetching the value from Key Vault')
+            akv_name = os.env.get("KEY_VAULT_NAME")
+            akv_client = AzureKeyVaultClient(akv_name)
             password = akv_client.get_akv_secret(variable_key)
         return password
