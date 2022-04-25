@@ -23,7 +23,6 @@ setup(
         'Click',
         "azure-storage-file-datalake>=12.5.0",
         "azure-synapse-spark",
-        "azure-keyvault-secrets"
         "azure-identity",
         "py4j",
         "loguru",
