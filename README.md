@@ -2,15 +2,29 @@
 
 ## What is Feathr?
 
+Feathr is the feature store that is used in production in LinkedIn for many years and was open sourced in April 2022. Read our announcement on [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
+
 Feathr lets you:
 
-- **Define features** based on raw data sources, including time-series data, using simple APIs.
-- **Get those features by their names** during model training and model inferencing.
+- **Define features** based on raw data sources (batch and streaming) using pythonic APIs.
+- **Register and get features by names** during model training and model inferencing.
 - **Share features** across your team and company.
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-For more details, read our [documentation](https://linkedin.github.io/feathr/). We also have two blog posts talking about [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
+## Feathr Highlights
+
+- **Scalable with built-in optimizations.** For example, based on some internal use case, Feathr can process billions of rows and PB scale data with built-in optimizations such as bloom filters and salted joins.
+- **Rich support for point-in-time joins and aggregations:** Feathr has high performant built-in operators designed for Feature Store, including time-based aggregation, sliding window joins, look-up features, all with point-in-time correctness.
+- **Highly customizable user-defined functions (UDFs)** with native PySpark and Spark SQL support to lower the learning curve for data scientists.
+- **Pythonic APIs** to access everything with low learning curve; Integrated with model building so data scientists can be productive from day one.
+- **Rich type system** including support for embeddings for advanced machine learning/deep learning scenarios. One of the common use cases is to build embeddings for customer profiles, and those embeddings can be reused across an organization in all the machine learning applications.
+- **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
+- **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
+
+## Documentation
+
+For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Running Feathr on Azure with 3 Simple Steps
 
@@ -42,7 +56,7 @@ Or use the latest code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## Feathr Highlights
+## Feathr Examples
 
 ### Defining Features with Transformation
 
@@ -198,9 +212,7 @@ schema = AvroJsonSchema(schemaStr="""
 stream_source = KafKaSource(name="kafkaStreamingSource",
                             kafkaConfig=KafkaConfig(brokers=["feathrazureci.servicebus.windows.net:9093"],
                                                     topics=["feathrcieventhub"],
-                                                    schema=schema)
-                            )
-
+                                                    schema=schema))
 driver_id = TypedKey(key_column="driver_id",
                      key_column_type=ValueType.INT64,
                      description="driver id",
@@ -215,8 +227,7 @@ kafkaAnchor = FeatureAnchor(name="kafkaAnchor",
                                       Feature(name="f_modified_streaming_count2",
                                               feature_type=INT32,
                                               transform="trips_today + 2",
-                                              key=driver_id)]
-                            )
+                                              key=driver_id)])
 
 ```
 
