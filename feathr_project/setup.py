@@ -49,7 +49,8 @@ setup(
         # see this for more details:
         # https://github.com/Azure/azure-sdk-for-python/pull/22891
         # using a version lower than that to workaround this issue
-        "azure-core<=1.22.1"
+        "azure-core<=1.22.1",
+        "typing_extensions>=4.2.0"
     ],
     tests_require=[
         'pytest',
