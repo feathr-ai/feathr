@@ -58,7 +58,7 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 ## Feathr Examples
 
-Please read [Feathr Capabilities](./docs/concepts/feathr-capabilities.md) for more examples. Below are a few selected ones:
+Please read [Feathr Capabilities](https://linkedin.github.io/feathr/concepts/feathr-capabilities.html) for more examples. Below are a few selected ones:
 
 ### Rich UDF Support
 
@@ -119,9 +119,15 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 Read the [Streaming Source Ingestion Guide](./docs/how-to-guides/streaming_source_ingestion.md) for more details.
 
+
+### Point in Time Joins
+
+Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linkedin.github.io/feathr/concepts/point-in-time-join.html) for more details.
+
+
 ## Running Feathr Examples
 
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
+Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
 
 ## Cloud Integrations
 
