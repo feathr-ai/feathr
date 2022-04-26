@@ -1,8 +1,8 @@
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
 ThisBuild / version          := "0.1.0"
-ThisBuild / organization     := "com.linkedin"
-ThisBuild / organizationName := "feathr"
+ThisBuild / organization     := "com.linkedin.feathr"
+ThisBuild / organizationName := "linkedin"
 val sparkVersion = "3.1.2"
 
 val localAndCloudDiffDependencies = Seq(
