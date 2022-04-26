@@ -256,4 +256,4 @@ def registry_test_setup(config_path: str):
 def get_online_test_table_name(table_name: str):
     # use different time for testing to avoid write conflicts
     now = datetime.now()
-    return ''.join([table_name,'_', str(now.minute), '_', str(now.second)])
+    return '_'.join([table_name, str(now.minute), str(now.second)])
