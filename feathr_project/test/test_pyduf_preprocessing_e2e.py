@@ -1,3 +1,9 @@
+# NOTE: Workaround for `cloudpickle`.
+# PyTest runs code in a module other than `__main__`,
+# so pickled UDF will fail to be loaded on the remote Spark env as the module doesn't exist there.
+# By changing the module name back to `__main__`, everything should work fine.
+__name__ = "__main__"
+
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
