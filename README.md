@@ -2,15 +2,29 @@
 
 ## What is Feathr?
 
+Feathr is the feature store that is used in production in LinkedIn for many years and was open sourced in April 2022. Read our announcement on [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
+
 Feathr lets you:
 
-- **Define features** based on raw data sources, including time-series data, using simple APIs.
-- **Get those features by their names** during model training and model inferencing.
+- **Define features** based on raw data sources (batch and streaming) using pythonic APIs.
+- **Register and get features by names** during model training and model inferencing.
 - **Share features** across your team and company.
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-For more details, read our [documentation](https://linkedin.github.io/feathr/). We also have two blog posts talking about [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
+## Feathr Highlights
+
+- **Scalable with built-in optimizations.** For example, based on some internal use case, Feathr can process billions of rows and PB scale data with built-in optimizations such as bloom filters and salted joins.
+- **Rich support for point-in-time joins and aggregations:** Feathr has high performant built-in operators designed for Feature Store, including time-based aggregation, sliding window joins, look-up features, all with point-in-time correctness.
+- **Highly customizable user-defined functions (UDFs)** with native PySpark and Spark SQL support to lower the learning curve for data scientists.
+- **Pythonic APIs** to access everything with low learning curve; Integrated with model building so data scientists can be productive from day one.
+- **Rich type system** including support for embeddings for advanced machine learning/deep learning scenarios. One of the common use cases is to build embeddings for customer profiles, and those embeddings can be reused across an organization in all the machine learning applications.
+- **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
+- **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
+
+## Documentation
+
+For more details, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Running Feathr on Azure with 3 Simple Steps
 
@@ -42,26 +56,9 @@ Or use the latest code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## Feathr Highlights
+## Feathr Examples
 
-### Defining Features with Transformation
-
-```python
-features = [
-    Feature(name="f_trip_distance",                         # Ingest feature data as-is
-            feature_type=FLOAT),
-    Feature(name="f_is_long_trip_distance",
-            feature_type=BOOLEAN,
-            transform="cast_float(trip_distance)>30"),      # SQL-like syntax to transform raw data into feature
-    Feature(name="f_day_of_week",
-            feature_type=INT32,
-            transform="dayofweek(lpep_dropoff_datetime)")   # Provides built-in transformation
-]
-
-anchor = FeatureAnchor(name="request_features",             # Features anchored on same source
-                       source=batch_source,
-                       features=features)
-```
+Please read [Feathr Capabilities](https://linkedin.github.io/feathr/concepts/feathr-capabilities.html) for more examples. Below are a few selected ones:
 
 ### Rich UDF Support
 
@@ -80,55 +77,6 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
                         timestamp_format="yyyy-MM-dd HH:mm:ss")
 ```
 
-### Accessing Features
-
-```python
-# Requested features to be joined
-# Define the key for your feature
-location_id = TypedKey(key_column="DOLocationID",
-                       key_column_type=ValueType.INT32,
-                       description="location id in NYC",
-                       full_name="nyc_taxi.location_id")
-feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location_id])
-
-# Observation dataset settings
-settings = ObservationSettings(
-  observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
-  event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
-  timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
-
-# Prepare training data by joining features to the input (observation) data.
-# feature-join.conf and features.conf are detected and used automatically.
-feathr_client.get_offline_features(observation_settings=settings,
-                                   output_path="abfss://output.avro",
-                                   feature_query=feature_query)
-```
-
-### Deploy Features to Online (Redis) Store
-
-```python
-client = FeathrClient()
-redisSink = RedisSink(table_name="nycTaxiDemoFeature")
-# Materialize two features into a redis table.
-settings = MaterializationSettings("nycTaxiMaterializationJob",
-sinks=[redisSink],
-feature_names=["f_location_avg_fare", "f_location_max_fare"])
-client.materialize_features(settings)
-```
-
-And get features from online store:
-
-```python
-# Get features for a locationId (key)
-client.get_online_features(feature_table = "agg_features",
-                           key = "265",
-                           feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
-# Batch get for multiple locationIds (keys)
-client.multi_get_online_features(feature_table = "agg_features",
-                                 key = ["239", "265"],
-                                 feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
-```
-
 ### Defining Window Aggregation Features
 
 ```python
@@ -144,16 +92,6 @@ agg_features = [Feature(name="f_location_avg_fare",
 agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            source=batch_source,
                            features=agg_features)
-```
-
-### Defining Named Data Sources
-
-```python
-batch_source = HdfsSource(
-    name="nycTaxiBatchSource",                              # Source name to enrich your metadata
-    path="abfss://green_tripdata_2020-04.csv",              # Path to your data
-    event_timestamp_column="lpep_dropoff_datetime",         # Event timestamp for point-in-time correctness
-    timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
 ```
 
 ### Define features on top of other features - Derived Features
@@ -179,50 +117,17 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ### Define Streaming Features
 
-```python
-# Define input data schema
-schema = AvroJsonSchema(schemaStr="""
-{
-    "type": "record",
-    "name": "DriverTrips",
-    "fields": [
-        {"name": "driver_id", "type": "long"},
-        {"name": "trips_today", "type": "int"},
-        {
-        "name": "datetime",
-        "type": {"type": "long", "logicalType": "timestamp-micros"}
-        }
-    ]
-}
-""")
-stream_source = KafKaSource(name="kafkaStreamingSource",
-                            kafkaConfig=KafkaConfig(brokers=["feathrazureci.servicebus.windows.net:9093"],
-                                                    topics=["feathrcieventhub"],
-                                                    schema=schema)
-                            )
+Read the [Streaming Source Ingestion Guide](./docs/how-to-guides/streaming_source_ingestion.md) for more details.
 
-driver_id = TypedKey(key_column="driver_id",
-                     key_column_type=ValueType.INT64,
-                     description="driver id",
-                     full_name="nyc driver id")
 
-kafkaAnchor = FeatureAnchor(name="kafkaAnchor",
-                            source=stream_source,
-                            features=[Feature(name="f_modified_streaming_count",
-                                              feature_type=INT32,
-                                              transform="trips_today + 1",
-                                              key=driver_id),
-                                      Feature(name="f_modified_streaming_count2",
-                                              feature_type=INT32,
-                                              transform="trips_today + 2",
-                                              key=driver_id)]
-                            )
+### Point in Time Joins
 
-```
+Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linkedin.github.io/feathr/concepts/point-in-time-join.html) for more details.
+
 
 ## Running Feathr Examples
 
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](./docs/quickstart.md) containing a bit more explanation on the notebook.
+Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
 
 ## Cloud Integrations
 
@@ -230,6 +135,7 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 | ---------------------------- | --------------------------------------------------------------------------- |
 | Offline store – Object Store | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
 | Offline store – SQL          | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
+| Streaming Source             | Kafka                                                                       |
 | Online store                 | Azure Cache for Redis                                                       |
 | Feature Registry             | Azure Purview                                                               |
 | Compute Engine               | Azure Synapse Spark Pools, Databricks                                       |
@@ -237,8 +143,6 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 | File Format                  | Parquet, ORC, Avro, Delta Lake                                              |
 
 ## Roadmap
-
-> `Public Preview` release may introduce API changes.
 
 - [x] Private Preview release
 - [x] Public Preview release
