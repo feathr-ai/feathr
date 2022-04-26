@@ -78,6 +78,8 @@ feature_names_funcs = {
         """)
         new_file = tm.render(func_maps=feature_names_to_func_mapping)
 
+        print("UDF content is: \n%s", new_file)
+
         full_file_name = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
         with open(full_file_name, "w") as text_file:
             print("".join(PROVIDED_IMPORTS), file=text_file)
