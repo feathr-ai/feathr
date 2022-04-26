@@ -7,9 +7,9 @@ parent: Feathr How-to Guides
 
 # Azure Resource Provisioning
 
-Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. Because of this, users are expected to:
+Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. We have a quick start guide below that will facilitate this process.
 
-## Running Feathr with only a few clicks
+## Method 1: Provision Azure Resources with Curret User's Identity:
 
 Feathr has native cloud integration and getting started with Feathr is very straightforward. You only need three steps:
 
