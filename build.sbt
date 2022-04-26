@@ -1,8 +1,8 @@
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
 ThisBuild / version          := "0.1.0"
-ThisBuild / organization     := "com.linkedin"
-ThisBuild / organizationName := "feathr"
+ThisBuild / organization     := "com.linkedin.feathr"
+ThisBuild / organizationName := "linkedin"
 val sparkVersion = "3.1.2"
 
 val localAndCloudDiffDependencies = Seq(
@@ -23,6 +23,7 @@ val localAndCloudDiffDependencies = Seq(
 val cloudProvidedDeps = localAndCloudDiffDependencies.map(x => x % "provided")
 
 val localAndCloudCommonDependencies = Seq(
+    "javax.measure" % "jsr-275" % "0.9.1", // Explicit dependency as downstream maven consumers cannot handle redirect of javax.measure:jsr-275:1.0.0
     "com.microsoft.azure" % "azure-eventhubs-spark_2.12" % "2.3.15",
     "org.apache.kafka" % "kafka-clients" % "3.1.0",
     "com.google.guava" % "guava" % "31.1-jre",
