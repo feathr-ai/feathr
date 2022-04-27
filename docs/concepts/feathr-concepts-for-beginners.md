@@ -19,11 +19,11 @@ In Feathr, always think that there is some `Observation` dataset (the above case
 - a timestamp column (indicating when this event happened) 
 - a column containing IDs, and with other possible fields.
 
-Think this `Observation Data` as ID queries that you want to run on, and that is why some other feature store call this "Entity DataFrame". 
+Think this `Observation Data` just as a set of IDs that you want to query on, and that is why some other feature store call this "Entity DataFrame". Also this observation data usually come with timestampso you can do [point in time join](#point-in-time-joins-and-aggregations).
 
-Usually you will need addtional features to augment this `observation` dataset. For example, you want to augment the user click stream data by adding some historical features, such as the total amount that the user spent in the last one week. This additional dataset is usually in a different storage, say in your historical database, or data lake.
+Because the observation data just contains ID and timestamp, usually you will need addtional features to augment this `observation` dataset. For example, you want to augment the user click stream data by adding some historical features, such as total amount user spent in the last week. This additional dataset is usually in a different storage, say in your historical database, or data lake.
 
-In this case, how would we "link" the `observation` dataset, and the "additional dataset"? In Feathr, basically think this process as joining two tables.
+In this case, how would we "link" the `observation` dataset, and the "additional dataset"? In Feathr, think this process as joining two tables.
 
 Since this is a table join process, we need to specify which `key(s)` that the join would happen. Those `keys` are usually some IDs, but can be others as well. In the above example, if we want to augment the user click stream data with user purchase history, we will use the user ID as `key`, so that the `user_click_stream` table and the `user_historical_buying` table can be joined together. That's why you need to specify `keys` in Feathr `Feature`, becasue you will need to join your `Feature` with your `Observation Data` later on.
 
@@ -69,6 +69,17 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       input_features=[user_embedding, item_embedding],
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
+## Motivation on "INPUT_CONTEXT"
+
+In many of the cases, we not only want to define features on the source data (`user_profile_table` and `user_historical_buying_table` in the above case), but also want to define features on the observation data (`user_click_stream_table` in the above case). `INPUT_CONTEXT` simply means that those features will be defined on `Observation Data` instead of `Source`. That is why you will see something like this in Feathr:
+
+```python
+request_anchor = FeatureAnchor(name="request_features",
+                               source=INPUT_CONTEXT,
+                               features=features)
+```
+
+This is less recommended as it has many limitations (for example, you cannot define UDFs on top of `INPUT_CONTEXT`). 
 
 ## Why does Feathr need `Feature Query`?
 
@@ -116,6 +127,9 @@ client.get_online_features(feature_table = "agg_features",
 
 An illustration of the concepts and process that we talked about is like this:
 ![Feature Join Process](../images/observation_data.jpg)
+
+
+
 
 ## Point in time joins and aggregations
 
