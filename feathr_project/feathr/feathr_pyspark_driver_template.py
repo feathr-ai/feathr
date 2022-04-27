@@ -1,5 +1,4 @@
 
-from turtle import st
 from pyspark.sql import SparkSession, DataFrame, SQLContext
 import sys
 import os.path
