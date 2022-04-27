@@ -17,6 +17,8 @@ from feathr import (BackfillTime, MaterializationSettings)
 from feathr import RedisSink
 from test_fixture import snowflake_test_setup
 
+from udf import *
+
 def trip_distance_preprocessing(df: DataFrame):
     df = df.withColumn("trip_distance", df.trip_distance.cast('double') - 90000)
     df = df.withColumn("fare_amount", df.fare_amount.cast('double') - 90000)

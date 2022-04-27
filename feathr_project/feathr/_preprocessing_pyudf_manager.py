@@ -1,6 +1,7 @@
 import inspect
 import os
 from pathlib import Path
+import sys
 from typing import List, Optional, Union
 import pickle
 from jinja2 import Template
@@ -37,15 +38,23 @@ class _PreprocessingPyudfManager(object):
         feature_names_to_func_mapping = {}
         # features that have preprocessing defined. This is used to figure out if we need to kick off Pyspark
         # preprocessing for requested features.
-        features_with_preprocessing = []
+        features_with_preprocessing = {}
+        dep_modules = set()
         for anchor in anchor_list:
             # only support batch source preprocessing for now.
             if not isinstance(anchor.source, HdfsSource):
                 continue
             preprocessing_func = anchor.source.preprocessing
             if preprocessing_func:
+                # Record module needed by all preprocessing_func
+                for feature in anchor.features:
+                    # Record module file name in metadata
+                    features_with_preprocessing[feature.name] = sys.modules[preprocessing_func.__module__].__file__
+                    # Record module name except __main__
+                    if preprocessing_func.__module__ != "__main__":
+                        dep_modules.add(preprocessing_func.__module__)
                 feature_names = [feature.name for feature in anchor.features]
-                features_with_preprocessing = features_with_preprocessing + feature_names
+                # features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
                 string_feature_list = ','.join(feature_names)
                 feature_names_to_func_mapping[string_feature_list] = "cloudpickle.loads(%s)" % cloudpickle.dumps(preprocessing_func)
@@ -53,7 +62,7 @@ class _PreprocessingPyudfManager(object):
         if not features_with_preprocessing:
             return
 
-        _PreprocessingPyudfManager.write_feature_names_to_udf_name_file(feature_names_to_func_mapping, local_workspace_dir)
+        _PreprocessingPyudfManager.write_feature_names_to_udf_name_file(feature_names_to_func_mapping, dep_modules, local_workspace_dir)
 
         # Save necessary preprocessing-related metadata locally in your workspace
         # Typically it's used as a metadata for join/gen job to figure out if there is preprocessing UDF
@@ -63,20 +72,23 @@ class _PreprocessingPyudfManager(object):
             pickle.dump(features_with_preprocessing, file)
 
     @staticmethod
-    def write_feature_names_to_udf_name_file(feature_names_to_func_mapping, local_workspace_dir):
+    def write_feature_names_to_udf_name_file(feature_names_to_func_mapping, dep_modules, local_workspace_dir):
         """Persist feature names(sorted) of an anchor to the corresponding preprocessing function name to source path
         under the local_workspace_dir.
         """
         # indent in since python needs correct indentation
         # Don't change the indentation
         tm = Template("""
+{% for module in dep_modules %}
+import {{module}}
+{% endfor %}
 feature_names_funcs = {
 {% for key, value in func_maps.items() %}
     "{{key}}" : {{value}},
 {% endfor %}
 }
         """)
-        new_file = tm.render(func_maps=feature_names_to_func_mapping)
+        new_file = tm.render(dep_modules=dep_modules, func_maps=feature_names_to_func_mapping)
 
         full_file_name = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
         with open(full_file_name, "w") as text_file:
@@ -108,10 +120,12 @@ feature_names_funcs = {
         # Only if the requested features contain preprocessing logic, we will load Pyspark. Otherwise just use Scala
         # spark.
         has_py_udf_preprocessing = False
+        modules = set()
         for feature_name in feature_names:
             if feature_name in features_with_preprocessing:
                 has_py_udf_preprocessing = True
-                break
+                if features_with_preprocessing[feature_name] != "__main__":
+                    modules.add(features_with_preprocessing[feature_name])
 
         if has_py_udf_preprocessing:
             pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)
@@ -134,5 +148,5 @@ feature_names_funcs = {
             with open(pyspark_driver_path, "a") as handle:
                 print("".join(lines), file=handle)
 
-            py_udf_files = [pyspark_driver_path]
+            py_udf_files = [pyspark_driver_path] + list(modules)
         return py_udf_files
