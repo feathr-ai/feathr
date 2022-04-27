@@ -1,7 +1,10 @@
 
+from turtle import st
 from pyspark.sql import SparkSession, DataFrame, SQLContext
 import sys
+import os.path
 from pyspark.sql.functions import *
+import base64
 
 # This is executed in Spark driver
 # The logger doesn't work in Pyspark so we just use print
@@ -82,3 +85,20 @@ def submit_spark_job(feature_names_funcs):
     py4j_feature_job.mainWithPreprocessedDataFrame(job_param_java_array, new_preprocessed_df_map)
     return None
 
+def decode_file(filename, encoded):
+    # Decode encoded content into filename under the same directory of this file
+    content = base64.b64decode(encoded)
+    try:
+        start_dir = ""
+        try:
+            this_filename = sys.modules[to_java_string_array.__module__].__file__
+            start_dir = os.path.dirname(this_filename)
+        except:
+            start_dir = os.path.curdir           
+        output_name = os.path.join(start_dir, filename)
+        print("Write file %s ..." % output_name)
+        with open(output_name, "w+b") as f:
+            f.write(content)
+        print("File %s written." % output_name)
+    finally:
+        pass

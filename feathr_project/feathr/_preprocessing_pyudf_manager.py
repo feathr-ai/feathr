@@ -5,6 +5,7 @@ import sys
 from typing import List, Optional, Union
 import pickle
 from jinja2 import Template
+from numpy import append
 from feathr.source import HdfsSource
 from pyspark import cloudpickle
 
@@ -80,9 +81,22 @@ class _PreprocessingPyudfManager(object):
         """Persist feature names(sorted) of an anchor to the corresponding preprocessing function name to source path
         under the local_workspace_dir.
         """
+        file_contents = []
+        for m in dep_modules:
+            if m != "__main__":
+                try:
+                    filename = sys.modules[m].__file__
+                    content = encode_file(filename)
+                    file_contents.append( (os.path.basename(filename), content) )
+                except:
+                    pass
+        
         # indent in since python needs correct indentation
         # Don't change the indentation
-        tm = Template("""
+        tm = Template(r"""
+{% for f in file_contents %}
+decode_file('{{f[0]}}', r'''{{f[1]}}''')
+{% endfor %}
 {% for module in dep_modules %}
 import {{module}}
 {% endfor %}
@@ -92,7 +106,7 @@ feature_names_funcs = {
 {% endfor %}
 }
         """)
-        new_file = tm.render(dep_modules=dep_modules, func_maps=feature_names_to_func_mapping)
+        new_file = tm.render(file_contents=file_contents, dep_modules=dep_modules, func_maps=feature_names_to_func_mapping)
 
         os.makedirs(local_workspace_dir, mode=0o777, exist_ok=True)
         full_file_name = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
@@ -125,12 +139,10 @@ feature_names_funcs = {
         # Only if the requested features contain preprocessing logic, we will load Pyspark. Otherwise just use Scala
         # spark.
         has_py_udf_preprocessing = False
-        modules = set()
         for feature_name in feature_names:
             if feature_name in features_with_preprocessing:
                 has_py_udf_preprocessing = True
-                if features_with_preprocessing[feature_name] != "__main__":
-                    modules.add(features_with_preprocessing[feature_name])
+                break
 
         if has_py_udf_preprocessing:
             pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)
@@ -153,5 +165,15 @@ feature_names_funcs = {
             with open(pyspark_driver_path, "a") as handle:
                 print("".join(lines), file=handle)
 
-            py_udf_files = [pyspark_driver_path] + list(modules)
+            py_udf_files = [pyspark_driver_path]
         return py_udf_files
+
+import base64
+def encode_file(filename: str) -> str:
+    f = open(filename, "rb")
+    content = f.read()
+    encoded = base64.b64encode(content).decode('ascii')
+    n = 80
+    chunks = [encoded[i:i+n] for i in range(0, len(encoded), n)] 
+    return '\n'.join(chunks)
+    
