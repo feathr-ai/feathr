@@ -2,11 +2,10 @@ import base64
 import json
 import os
 import time
-import traceback
-import urllib
+
 from collections import namedtuple
 from os.path import basename
-from pathlib import Path, PosixPath
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 from urllib.request import urlopen
@@ -18,12 +17,7 @@ from tqdm import tqdm
 
 from feathr._abc import SparkJobLauncher
 from feathr.constants import *
-from databricks_cli.utils import eat_exceptions, error_and_quit, CONTEXT_SETTINGS
-from databricks_cli.version import print_version_callback, version
-from databricks_cli.configure.cli import configure_cli
-from databricks_cli.configure.config import provide_api_client, profile_option, debug_option
 from databricks_cli.dbfs.api import DbfsApi
-from databricks_cli.dbfs.dbfs_path import DbfsPath, DbfsPathClickType
 from databricks_cli.sdk.api_client import ApiClient
 from databricks_cli.runs.api import RunsApi
 
