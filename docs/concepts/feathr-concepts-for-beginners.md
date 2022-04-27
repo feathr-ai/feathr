@@ -14,7 +14,12 @@ In order to fully utilize Feathr's power, we need to understand what Feathr is e
 
 ![Feature Feature Concept](../images/concept_illustration.jpg)
 
-In Feathr, always think that there is some `Observation` dataset (the above case will be the click streams) which is the central dataset that you will be using. The observation data set will usually have at least two columns: a timestamp column (indicating when this event happened) and a column containing IDs, and with other possible fields.
+In Feathr, always think that there is some `Observation` dataset (the above case will be the click streams) which is the central dataset that you will be using. The observation data set will usually have at least two columns: 
+
+- a timestamp column (indicating when this event happened) 
+- a column containing IDs, and with other possible fields.
+
+Think this `Observation Data` as ID queries that you want to run on, and that is why some other feature store call this "Entity DataFrame". 
 
 Usually you will need addtional features to augment this `observation` dataset. For example, you want to augment the user click stream data by adding some historical features, such as the total amount that the user spent in the last one week. This additional dataset is usually in a different storage, say in your historical database, or data lake.
 
