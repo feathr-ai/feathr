@@ -85,6 +85,8 @@ def submit_spark_job(feature_names_funcs):
     return None
 
 def decode_file(filename, encoded):
+    import base64
+    import os.path
     # Decode encoded content into filename under the same directory of this file
     content = base64.b64decode(encoded)
     try:
