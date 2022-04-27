@@ -54,10 +54,11 @@ class _PreprocessingPyudfManager(object):
                         # Ingore non-exist modules and modules without corresponding file
                         # In case the module name cannot be retrieved
                         features_with_preprocessing[feature.name] = sys.modules[preprocessing_func.__module__].__file__
-                    finally:
-                        # Record module name except __main__
-                        if preprocessing_func.__module__ != "__main__":
-                            dep_modules.add(preprocessing_func.__module__)
+                    except:
+                        pass
+                    # Record module name except __main__
+                    if preprocessing_func.__module__ != "__main__":
+                        dep_modules.add(preprocessing_func.__module__)
                 feature_names = [feature.name for feature in anchor.features]
                 # features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
