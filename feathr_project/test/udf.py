@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import col,sum,avg,max,dayofweek,dayofyear
+from pyspark.sql.functions import col,sum,avg,max,dayofweek,dayofyear,concat,lit
 
 def trip_distance_preprocessing(df: DataFrame):
     df = df.withColumn("trip_distance", df.trip_distance.cast('double') - 90000)
@@ -34,4 +34,8 @@ def feathr_udf_day_calc(df: DataFrame) -> DataFrame:
     df = df.withColumn("f_day_of_year", dayofyear("lpep_dropoff_datetime"))
     return df
 
+def snowflake_preprocessing(df: DataFrame) -> DataFrame:
+    df = df.withColumn("NEW_CC_DIVISION_NAME", concat(col("CC_DIVISION_NAME"), lit("0000"), col("CC_DIVISION_NAME")))
+    df = df.withColumn("NEW_CC_ZIP", concat(col("CC_ZIP"), lit("____"), col("CC_ZIP")))
+    return df
 
