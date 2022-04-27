@@ -78,7 +78,6 @@ def test_non_swa_feature_gen_with_offline_preprocessing():
         'f_is_long_trip_distance', 'f_day_of_week'])
     assert res == [8000006.0, 4]
 
-
 def test_feature_swa_feature_gen_with_preprocessing():
     """
     Test SWA feature gen with preprocessing.
