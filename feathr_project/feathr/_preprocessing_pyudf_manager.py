@@ -83,6 +83,22 @@ class _PreprocessingPyudfManager(object):
         """
         file_contents = []
         for m in dep_modules:
+            """
+            The `feature_names_funcs` map contents a `cloudpickle.loads` statement that deserialize the
+            UDF function, due to the implementation limitation, cloudpickle shipped with PySpark cannot
+            actually serialize the function body if the function is in a module other than `__main__`,
+            which causes PyTest failed to run the UDF E2E test as it starts the test code in a local module
+            instead of `__main__`.
+            The solution is to bundle addition module with the main file.
+            First we encode module file in base64 and paste it in following format
+            ```
+            decode_file("module_name.py", r'''BASE64_ENCODED_CONTENT''')
+            ```
+            Then we can use `import module_name` to import this module, then `cloudpickle.loads` can work.
+            When the PySpark program is running, it first uses `decode_file` function in the template
+            to extract module file and drop it into the same directory as the main code, then we can run
+            `import UDF_module` and uses functions inside.
+            """
             if m != "__main__":
                 try:
                     filename = sys.modules[m].__file__
@@ -170,6 +186,9 @@ feature_names_funcs = {
 
 import base64
 def encode_file(filename: str) -> str:
+    """
+    Encode file content into a multiline base64 encoded string
+    """
     f = open(filename, "rb")
     content = f.read()
     encoded = base64.b64encode(content).decode('ascii')

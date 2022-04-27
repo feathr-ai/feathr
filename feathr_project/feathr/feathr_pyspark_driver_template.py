@@ -96,7 +96,8 @@ def decode_file(filename, encoded):
             start_dir = os.path.dirname(this_filename)
         except:
             start_dir = os.path.curdir
-        sys.path.append(start_dir)
+        if start_dir not in sys.path:
+            sys.path.append(start_dir)
         output_name = os.path.join(start_dir, filename)
         print("Write file %s ..." % output_name)
         with open(output_name, "w+b") as f:
