@@ -94,7 +94,7 @@ feature_names_funcs = {
         """)
         new_file = tm.render(dep_modules=dep_modules, func_maps=feature_names_to_func_mapping)
 
-        os.makedirs(local_workspace_dir)
+        os.makedirs(local_workspace_dir, mode=0o777, exist_ok=True)
         full_file_name = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
         with open(full_file_name, "w+") as text_file:
             print("".join(PROVIDED_IMPORTS), file=text_file)
