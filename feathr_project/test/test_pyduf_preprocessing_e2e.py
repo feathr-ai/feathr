@@ -357,12 +357,6 @@ def test_get_offline_feature_two_swa_with_diff_preprocessing():
     assert res_df.shape[0] > 0
 
 
-def snowflake_preprocessing(df: DataFrame) -> DataFrame:
-    df = df.withColumn("NEW_CC_DIVISION_NAME", concat(col("CC_DIVISION_NAME"), lit("0000"), col("CC_DIVISION_NAME")))
-    df = df.withColumn("NEW_CC_ZIP", concat(col("CC_ZIP"), lit("____"), col("CC_ZIP")))
-    return df
-
-
 def test_feathr_get_offline_features_from_snowflake():
     """
     Test get_offline_features() can get feature data from Snowflake source correctly.
