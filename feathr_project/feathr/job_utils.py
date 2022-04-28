@@ -26,7 +26,7 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None)
             from pyarrow.parquet import ParquetDataset
             ds = ParquetDataset(files)
             result_df = ds.read().to_pandas()
-        if format.casefold()=="delta":
+        elif format.casefold()=="delta":
             from deltalake import DeltaTable
             delta = DeltaTable(tmp_dir.name)
             if not client.spark_runtime == 'azure_synapse':
@@ -36,7 +36,13 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None)
             else:
                 logger.info("Please use Azure Synapse to read the result in the Azure Synapse cluster. Reading local results is not supported for Azure Synapse. Emtpy DataFrame is returned.")
                 result_df = pd.DataFrame()
+        elif format.casefold()=="avro":
+            import pandavro as pdx
+            for file in glob.glob(os.path.join(tmp_dir.name, '*.avro')):
+                dataframe_list.append(pdx.read_avro(file))
+            result_df = pd.concat(dataframe_list, axis=0)
     else:
+        # by default use avro
         import pandavro as pdx
         for file in glob.glob(os.path.join(tmp_dir.name, '*.avro')):
             dataframe_list.append(pdx.read_avro(file))
