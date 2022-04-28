@@ -201,9 +201,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         Returns:
             str: `output_path` field in the job tags
         """
-        assert self.res_job_id is not None
-        result = RunsApi(self.api_client).get_run(self.res_job_id)
-        custom_tags = result['cluster_spec']['new_cluster']['custom_tags']
+        custom_tags = self.get_job_tags()
         # in case users call this API even when there's no tags available
         return None if custom_tags is None else custom_tags[OUTPUT_PATH_TAG]
 
@@ -223,7 +221,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             return custom_tags
         else:
             # this is not a new cluster; it's an existing cluster.
-            logger.warning("Job tags are not available since you are using an existing Databricks cluster. Consider use 'new_cluster' in databricks configuration.")
+            logger.warning("Job tags are not available since you are using an existing Databricks cluster. Consider using 'new_cluster' in databricks configuration.")
             return None
     
 
