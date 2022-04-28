@@ -80,18 +80,8 @@ Logical operators combines multiple true and false and returns respective true o
 
 > If the UDFs you need is not here, please raise an github issue with us.
 
-Feathr built-in UDFs(user-defined-function) provide useful feature transformation or feature engineering functionalities that might not be easy to achieve with existing expression.
-
-| UDF name                        | UDF description                                            | Example                                                                           |
-| ------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| dayofweek(input)                | get day of the week from the input                         | dayofweek('2009-07-30') returns 5                                                 |
-| dayofmonth(input)               | get day of the month from the input                        | dayofmonth('2009-07-30') returns 30                                               |
-| hourofday(input)                | get hour of the day from the input                         | hourofday('2021-01-01 23:45:57') returns 23                                       |
-| time_duration(start, end, unit) | get the duration in the desired unit between start and end | time_duration('2021-01-01 23:45:57', '2021-01-01 23:55:57', 'minutes') returns 10 |
+Feathr built-in UDFs(user-defined-function) provide useful feature transformation or feature engineering functionalities that might not be easy to achieve with existing expression. All the [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/index.html) are supported.
 
 # How Feathr Expressions Works Under the Hood
 
-Feathr expressions relies on [Mvel](http://mvel.documentnode.com/) and Spark SQL as the underlying engine. The supported
-functionalities are a subset of Mvel and Spark SQL to ensure cross-platform compatibility. The underlying engine may be
-updated or replaced in the future but the supported operators in this doc will stay. If you are using some operators
-that are not mentioned here, it might work in one platform but might not work on others.
+Feathr expressions relies on [Mvel](http://mvel.documentnode.com/) and Spark SQL as the underlying engine. The supported functionalities are a subset of Mvel and Spark SQL to ensure cross-platform compatibility. The underlying engine may be updated or replaced in the future but the supported operators in this doc will stay. If you are using some operators that are not mentioned here, it might work in one platform but might not work on others.
