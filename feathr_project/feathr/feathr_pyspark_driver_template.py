@@ -92,7 +92,7 @@ def decode_file(filename, encoded):
     try:
         start_dir = ""
         try:
-            this_filename = sys.modules[to_java_string_array.__module__].__file__
+            this_filename = sys.modules[__name__].__file__
             start_dir = os.path.dirname(this_filename)
         except:
             start_dir = os.path.curdir
