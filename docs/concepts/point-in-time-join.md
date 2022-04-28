@@ -10,7 +10,7 @@ If your feature doesn't change over time in your modeling, like an adult's heigh
 
 ## Feature Leakage
 
-Models should not use future to predict present. This is called feature leakage. For example, you have an observation data with a timestamp of 7 days ago. In the eyes of this observation data, 7 days ago is its present. On the other side, you have time-series feature data keep ingested into your data warehouse and it contains recent purchase data from 2 days ago. In the eyes of the observation data, all these newly ingested data during the last week is the future feature. If you just blindly use the latest feature data in your model, you are leaking future data into your model. This mistake happens more often than people think.
+Models should not use future to predict present. This is called feature leakage. For example, you have an observation data with a timestamp of 7 days ago. In the eyes of this observation data, 7 days ago is its present. On the other side, time-series feature data is ingested into your data warehouse and it contains recent purchase data from 2 days ago. In the eyes of the observation data, all these newly ingested data during the last week is the future feature. If you just blindly use the latest feature data in your model, you are leaking future data into your model. This mistake happens more often than people think.
 
 The model will perform better during training(usually), but it will not perform as good during online serving. Why? There is no future data on online serving anymore.
 
