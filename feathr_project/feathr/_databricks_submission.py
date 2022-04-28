@@ -179,9 +179,11 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             if status in {'SUCCESS'}:
                 return True
             elif status in {'INTERNAL_ERROR', 'FAILED', 'TIMEDOUT', 'CANCELED'}:
-                logger.error("Feathr job is failed. Please visit this page to view error message: {}", self.job_url)
                 result = RunsApi(self.api_client).get_run_output(self.res_job_id)
-                print(result)
+                # See here for the returned fields: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--response-structure-8
+                logger.error("Feathr job is failed. Please visit this page to view error message: {}", self.job_url)
+                logger.error("Error Code: {}", result["error"])
+                logger.error("{}", result["error_trace"])
                 return False
             else:
                 time.sleep(30)
