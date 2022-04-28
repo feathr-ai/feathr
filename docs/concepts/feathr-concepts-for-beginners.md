@@ -10,7 +10,7 @@ In this guide, we will cover the high level concepts for Feathr. Don't treat thi
 
 ## What are `Observation` data, and why does Feathr need `key(s)`, `Anchor`, `Source`?
 
-In order to fully utilize Feathr's power, we need to understand what Feathr is expecting. Let's take an example of building a recommendation system, where you have a user click streams and you want to add addtion features on top of this click streams, say user historical clicks in last 1 hour, and the user locations.
+In order to fully utilize Feathr's power, we need to understand what Feathr is expecting. Let's take an example of building a recommendation system, where you have a user click streams and you want to add addtional features on top of this click streams, say user historical clicks in last 1 hour, and the user locations.
 
 ![Feature Feature Concept](../images/concept_illustration.jpg)
 
