@@ -7,7 +7,6 @@ import pickle
 from jinja2 import Template
 from numpy import append
 from feathr.source import HdfsSource
-from pyspark import cloudpickle
 
 # Some metadata that are only needed by Feathr
 FEATHR_PYSPARK_METADATA = 'generated_feathr_pyspark_metadata'
@@ -19,8 +18,7 @@ FEATHR_PYSPARK_DRIVER_FILE_NAME = 'feathr_pyspark_driver.py'
 FEATHR_PYSPARK_DRIVER_TEMPLATE_FILE_NAME = 'feathr_pyspark_driver_template.py'
 # Feathr provided imports for pyspark UDFs all go here
 PROVIDED_IMPORTS = ['\nfrom pyspark.sql import SparkSession, DataFrame\n'] + \
-                   ['from pyspark.sql.functions import *\n'] + \
-                   ['from pyspark import cloudpickle\n']
+                   ['from pyspark.sql.functions import *\n']
 
 
 class _PreprocessingPyudfManager(object):
@@ -31,11 +29,8 @@ class _PreprocessingPyudfManager(object):
         """When the client build features, UDFs and features that need preprocessing will be stored as metadata. Those
         metadata will later be used when uploading the Pyspark jobs.
         """
-        # feature names concatenated to UDF callable object map, it is like:
-        # {
-        #   'f1,f2': cloudpickle.loads('...pickledcode...'),
-        #   'f3': cloudpickle.loads('...pickledcode...'),
-        # }
+        # feature names concatenated to UDF map
+        # for example, {'f1,f2,f3': my_udf1, 'f4,f5':my_udf2}
         feature_names_to_func_mapping = {}
         # features that have preprocessing defined. This is used to figure out if we need to kick off Pyspark
         # preprocessing for requested features.
@@ -63,7 +58,7 @@ class _PreprocessingPyudfManager(object):
                 # features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
                 string_feature_list = ','.join(feature_names)
-                feature_names_to_func_mapping[string_feature_list] = "cloudpickle.loads(%s)" % cloudpickle.dumps(preprocessing_func)
+                feature_names_to_func_mapping[string_feature_list] = anchor.source.preprocessing
 
         if not features_with_preprocessing:
             return
@@ -119,7 +114,7 @@ import {{module}}
 {% endfor %}
 feature_names_funcs = {
 {% for key, value in func_maps.items() %}
-    "{{key}}" : {{value}},
+    "{{key}}" : {{value.__name__}},
 {% endfor %}
 }
         """)
@@ -159,7 +154,6 @@ feature_names_funcs = {
         for feature_name in feature_names:
             if feature_name in features_with_preprocessing:
                 has_py_udf_preprocessing = True
-                break
 
         if has_py_udf_preprocessing:
             pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)

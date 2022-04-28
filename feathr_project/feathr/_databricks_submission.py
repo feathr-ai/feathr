@@ -2,8 +2,7 @@ import base64
 import json
 import os
 import time
-import traceback
-import urllib
+
 from collections import namedtuple
 from os.path import basename
 from pathlib import Path
@@ -18,7 +17,9 @@ from tqdm import tqdm
 
 from feathr._abc import SparkJobLauncher
 from feathr.constants import *
-
+from databricks_cli.dbfs.api import DbfsApi
+from databricks_cli.sdk.api_client import ApiClient
+from databricks_cli.runs.api import RunsApi
 
 class _FeathrDatabricksJobLauncher(SparkJobLauncher):
     """Class to interact with Databricks Spark cluster
@@ -61,6 +62,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         self.auth_headers['Accept'] = 'application/json'
         self.auth_headers['Authorization'] = f'Bearer {token_value}'
         self.databricks_work_dir = databricks_work_dir
+        self.api_client = ApiClient(host=self.workspace_instance_url,token=token_value)
 
     def upload_or_get_cloud_path(self, local_path_or_http_path: str):
         """
@@ -72,6 +74,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         returned_path = os.path.join(self.databricks_work_dir, file_name)
         if src_parse_result.scheme.startswith('http'):
             with urlopen(local_path_or_http_path) as f:
+                # use REST API to avoid local temp file
                 data = f.read()
                 files = {'file': data}
                 # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
@@ -104,14 +107,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         file_name = os.path.basename(local_path_or_http_path)
         # returned paths for the uploaded file
         returned_path = os.path.join(self.databricks_work_dir, file_name)
-        with open(local_path_or_http_path, 'rb') as f:
-            data = f.read()
-            files = {'file': data}
-            # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
-            r = requests.post(url=self.workspace_instance_url+'/api/2.0/dbfs/put',
-                              headers=self.auth_headers, files=files,  data={'overwrite': 'true', 'path': returned_path})
-            logger.debug('{} is uploaded to location: {}',
-                         local_path_or_http_path, returned_path)
+        local_path_or_http_path = str(local_path_or_http_path)
+        DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path_or_http_path, dst=returned_path)
         return returned_path
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
@@ -126,7 +123,6 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             job_tags (str): tags of the job, for exmaple you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
         """
-
 
         if isinstance(self.config_template, str):
             # if the input is a string, load it directly
@@ -152,23 +148,18 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             submission_params['spark_jar_task']['parameters'] = arguments
             submission_params['spark_jar_task']['main_class_name'] = main_class_name
 
-
-        # For Job runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit
-        result = requests.post(url=self.workspace_instance_url+'/api/2.0/jobs/runs/submit',
-                                headers=self.auth_headers, data=json.dumps(submission_params))
+        result = RunsApi(self.api_client).submit_run(submission_params)
 
         try:
             # see if we can parse the returned result
-            self.res_job_id = result.json()['run_id']
+            self.res_job_id = result['run_id']
         except:
-            logger.error("submitting to Databricks cluster failed. Message returned from Databricks: {}", result.json())
+            logger.error("Submitting Feathr job to Databricks cluster failed. Message returned from Databricks: {}", result)
             exit(1)
 
-        # For Job runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit
-        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
-                                headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-        logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', result.json()[
-            'run_page_url'])
+        result = RunsApi(self.api_client).get_run(self.res_job_id)
+        self.job_url = result['run_page_url']
+        logger.info('Feathr job Submitted Sucessfully. View more details here: {}', self.job_url)
 
         # return ID as the submission result
         return self.res_job_id
@@ -186,20 +177,19 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             if status in {'SUCCESS'}:
                 return True
             elif status in {'INTERNAL_ERROR', 'FAILED', 'TIMEDOUT', 'CANCELED'}:
+                logger.error("Feathr job is failed. Please visit this page to view error message: {}", self.job_url)
                 return False
             else:
                 time.sleep(30)
         else:
-            raise TimeoutError('Timeout waiting for job to complete')
+            raise TimeoutError('Timeout waiting for Feathr job to complete')
 
     def get_status(self) -> str:
         assert self.res_job_id is not None
-        # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
-        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
-                              headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
+        result = RunsApi(self.api_client).get_run(self.res_job_id)
         # first try to get result state. it might not be available, and if that's the case, try to get life_cycle_state
-        res_state = result.json()['state'].get('result_state') or result.json()[
-            'state']['life_cycle_state']
+        # see result structure: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--response-structure-6
+        res_state = result['state'].get('result_state') or result['state']['life_cycle_state']
         assert res_state is not None
         return res_state
 
@@ -210,10 +200,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             str: `output_path` field in the job tags
         """
         assert self.res_job_id is not None
-        # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
-        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
-                              headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-        custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
+        result = RunsApi(self.api_client).get_run(self.res_job_id)
+        custom_tags = result['cluster_spec']['new_cluster']['custom_tags']
         # in case users call this API even when there's no tags available
         return None if custom_tags is None else custom_tags[OUTPUT_PATH_TAG]
 
@@ -225,10 +213,9 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             Dict[str, str]: a dict of job tags
         """
         assert self.res_job_id is not None
-        # For Job Runs APIs, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-get
-        result = requests.get(url=self.workspace_instance_url+'/api/2.0/jobs/runs/get',
-                               headers=self.auth_headers, params={'run_id': str(self.res_job_id)})
-        custom_tags = result.json()['cluster_spec']['new_cluster']['custom_tags']
+        result = RunsApi(self.api_client).get_run(self.res_job_id)
+        # For result structure, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--response-structure-6
+        custom_tags = result['cluster_spec']['new_cluster']['custom_tags']
         return custom_tags
 
     def download_result(self, result_path: str, local_folder: str):
@@ -238,55 +225,4 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         if not result_path.startswith('dbfs'):
             raise RuntimeError('Currently only paths starting with dbfs is supported for downloading results from a databricks cluster. The path should start with \"dbfs:\" .')
 
-        try:
-            # listing all the files in a folder: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--list
-            result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
-                                headers=self.auth_headers,  params={ 'path': result_path})
-            # see here for response structure: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--response-structure-2
-            dbfs_files = result.json()['files']
-            for file_path in tqdm(dbfs_files, desc="Downloading result files: "):
-                # each file_path would be a dict of this type: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#dbfsfileinfo
-                if not file_path['is_dir']:
-                    # if it's not a directory
-                    self._download_single_file(file_path, local_folder)
-                else:
-                    # if the result is dir
-                    # us this path as the new folder path
-                    folder_path = file_path['path']
-                    folder_name = basename(folder_path)
-                    result = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/list',
-                                headers=self.auth_headers,  params={ 'path': folder_path})
-                    dbfs_files = result.json()['files']
-                    for file_path in dbfs_files:
-                        os.makedirs(os.path.join(local_folder,folder_name), exist_ok=True)
-                        self._download_single_file(file_path, os.path.join(local_folder,folder_name))
-                # Logging once all the download is finished.
-            logger.info('Finish downloading files from {} to {}.', result_path,local_folder)
-        except requests.exceptions.RequestException as e:  # This is the correct syntax
-            raise SystemExit(e)
-
-    def _download_single_file(self,file_path,local_folder):
-        dbfs_file_path, dbfs_file_size, local_file_path = file_path['path'], file_path['file_size'], os.path.join(local_folder, os.path.basename(file_path['path']))
-        with open(local_file_path, 'wb') as file_obj:
-            downloaded_size = 0
-            # Loop until we've downloaded the whole file
-            while downloaded_size < dbfs_file_size:
-                chunk = self._read_single_chunk(path=dbfs_file_path, offset=downloaded_size, length=MB_BYTES)
-                file_obj.write(base64.b64decode(chunk.data))
-                downloaded_size += chunk.bytes_read
-
-
-    def _read_single_chunk(self, path, offset, length=MB_BYTES):
-
-        params = {"path": path,
-                  "offset": offset,
-                  "length": length}
-
-        # get a single chunk of file
-        # https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs#--read
-        resp = requests.get(url=self.workspace_instance_url+'/api/2.0/dbfs/read',  headers=self.auth_headers,  params=params)
-        FileReadInfo = namedtuple("FileReadInfo", ['bytes_read', 'data'])
-        if resp.status_code == 200:
-            return FileReadInfo(**resp.json())
-        else:
-            raise RuntimeError("Files cannot be downloaded.")
+        DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=result_path, dst=local_folder)

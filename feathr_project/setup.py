@@ -44,6 +44,7 @@ setup(
         "google-api-python-client>=2.41.0",
         "azure-keyvault-secrets",
         "confluent-kafka",
+        "databricks-cli",
         "avro",
         # In 1.23.0, azure-core is using ParamSpec which might cause issues in some of the databricks runtime.
         # see this for more details:
