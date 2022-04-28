@@ -1,6 +1,6 @@
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
-ThisBuild / version          := "0.1.0"
+ThisBuild / version          := "0.1.1"
 ThisBuild / organization     := "com.linkedin.feathr"
 ThisBuild / organizationName := "linkedin"
 val sparkVersion = "3.1.2"
@@ -85,7 +85,7 @@ lazy val root = (project in file("."))
 // )
 
 // To assembly with certain java version: sbt assembly -java-home "/Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home"
-// To execute the jar: java -jar target/scala-2.12/feathr-assembly-0.1.0-SNAPSHOT.jar
+// To execute the jar: java -jar target/scala-2.12/feathr-assembly-0.1.1-SNAPSHOT.jar
 
 assembly / assemblyMergeStrategy := {
     // See https://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file

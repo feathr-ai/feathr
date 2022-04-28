@@ -46,18 +46,27 @@ credentials += Credentials("Sonatype Nexus Repository Manager",
 ```
 (ref, https://github.com/xerial/sbt-sonatype)
 
-4. Start sbt console by running
+4. Publish to maven via sbt
+In your feathr directory, clear your cache to prevent stale errors
+```
+rm -rf target/sonatype-staging/
+```
+Start sbt console by running
 ```
 sbt -java-home /Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home
 ```
-
-5. Execute command in sbt console to publish to maven
+Execute command in sbt console to publish to maven
 ```
+reload
  ; publishSigned; sonatypeBundleRelease
 ```
+or run
+```
+reload
+sonatypeBundleRelease
+```
 
-
-6. "Upon release, your component will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to four hours."
+5. "Upon release, your component will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to four hours."
 https://central.sonatype.org/publish/publish-guide/#releasing-to-central
 
 
