@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.generation
 
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import com.linkedin.feathr.common.{Header, TaggedFeatureName}
-import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame, FeatureDataWithJoinKeys, FeatureName, JoinKeys, KeyTagIdTuple}
+import com.linkedin.feathr.offline._
 import com.linkedin.feathr.offline.client._
 import com.linkedin.feathr.offline.job.FeatureTransformation
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan}
@@ -83,22 +83,8 @@ private[offline] class PostGenPruner() {
           s"does not match the number of key tags declared in the features, returned: ${joinKeys.mkString(",")}, size: ${joinKeys.size}, "
           + s"expected: ${keyTagsInfo.mkString(",")}, size: ${keyTagsInfo.size}")
     }
-    // rename key columns to key tags, key columns may have arbitrary prefix, output should use key tags/alias
-    // as  the output column name, as most non-alphaNumeric characters are not allowed in dataframe column names
-
-    // Rename key names to standard names such as key0, key1, key2, etc.
     val keyColumnNames = FeatureTransformation.getStandardizedKeyNames(keyTagsInfo.size)
-    val keyColumnRenamedDF =
-      joinKeys
-        .zip(keyColumnNames)
-        .foldLeft(cleanedDF)((inputDF, renamePair) => inputDF.withColumnRenamed(renamePair._1, renamePair._2))
-    // Set key column to non-nullable and feature columns to nullable
-    val schemaWithNonNullKeys = StructType(keyColumnRenamedDF.schema.map {
-      case StructField(name, dataType, isNullable, metadata) =>
-        if (keyColumnNames.contains(name)) StructField(name, dataType, nullable = false, metadata)
-        else StructField(name, dataType, nullable = true, metadata)
-    })
-    val resultFDS = keyColumnRenamedDF.sqlContext.createDataFrame(keyColumnRenamedDF.rdd, schemaWithNonNullKeys)
+    val resultFDS: DataFrame = standardizeColumns(joinKeys, keyColumnNames, cleanedDF)
 
     val taggedFeatureToColumnNameMap = DataFrameColName.getTaggedFeatureToNewColumnName(resultFDS)
 
@@ -117,6 +103,29 @@ private[offline] class PostGenPruner() {
     }
     val newHeader = new Header(headerInfo)
     featuresToKeep.map(f => (f, (dfWithoutFDSMetadata, newHeader))).toMap
+  }
+
+  /**
+   * Change the columns names and types accordingly to Feathr convention
+   * Rename key names to standard names such as key0, key1, key2, etc.
+   * Set key column to non-nullable and feature columns to nullable.
+   * @param joinKeys
+   * @param keyColumnNames
+   * @param cleanedDF
+   * @return
+   */
+  def standardizeColumns(joinKeys: JoinKeys, keyColumnNames: Seq[String], cleanedDF: DataFrame) = {
+    val keyColumnRenamedDF =
+      joinKeys
+        .zip(keyColumnNames)
+        .foldLeft(cleanedDF)((inputDF, renamePair) => inputDF.withColumnRenamed(renamePair._1, renamePair._2))
+    val schemaWithNonNullKeys = StructType(keyColumnRenamedDF.schema.map {
+      case StructField(name, dataType, isNullable, metadata) =>
+        if (keyColumnNames.contains(name)) StructField(name, dataType, nullable = false, metadata)
+        else StructField(name, dataType, nullable = true, metadata)
+    })
+    val resultFDS = keyColumnRenamedDF.sqlContext.createDataFrame(keyColumnRenamedDF.rdd, schemaWithNonNullKeys)
+    resultFDS
   }
 }
 

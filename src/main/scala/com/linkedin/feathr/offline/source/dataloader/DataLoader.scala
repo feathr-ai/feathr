@@ -7,7 +7,7 @@ import org.apache.spark.sql.DataFrame
 /**
  * The data loader can load source data DataFrame or RDD.
  */
-private[offline] trait DataLoader {
+private[offline] trait DataLoader extends Serializable {
   @transient lazy val log = Logger.getLogger(getClass.getName)
   /**
    * get the schema of the source. It's only used in the deprecated DataSource.getDataSetAndSchema
