@@ -154,11 +154,12 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # see if we can parse the returned result
             self.res_job_id = result['run_id']
         except:
-            logger.error("submitting to Databricks cluster failed. Message returned from Databricks: {}", result)
+            logger.error("Submitting Feathr job to Databricks cluster failed. Message returned from Databricks: {}", result)
             exit(1)
 
         result = RunsApi(self.api_client).get_run(self.res_job_id)
-        logger.info('Feathr Job Submitted Sucessfully. View more details here: {}', result['run_page_url'])
+        self.job_url = result['run_page_url']
+        logger.info('Feathr job Submitted Sucessfully. View more details here: {}', self.job_url)
 
         # return ID as the submission result
         return self.res_job_id
@@ -176,11 +177,12 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             if status in {'SUCCESS'}:
                 return True
             elif status in {'INTERNAL_ERROR', 'FAILED', 'TIMEDOUT', 'CANCELED'}:
+                logger.error("Feathr job is failed. Please visit this page to view error message: {}", self.job_url)
                 return False
             else:
                 time.sleep(30)
         else:
-            raise TimeoutError('Timeout waiting for job to complete')
+            raise TimeoutError('Timeout waiting for Feathr job to complete')
 
     def get_status(self) -> str:
         assert self.res_job_id is not None
