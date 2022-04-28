@@ -1,6 +1,7 @@
 import glob
 import importlib
 import inspect
+import itertools
 import os
 import sys
 from graphlib import TopologicalSorter
@@ -759,8 +760,8 @@ derivations: {
         Get feature by qualifiedName
         Returns the feature else throws an AtlasException with 400 error code
         """        
-        guid = self.get_feature_guid(qualifiedName)
-        return self.get_feature_by_guid(guid)
+        id = self.get_feature_id(qualifiedName)
+        return self.get_feature_by_guid(id)
     
     def get_feature_by_guid(self, guid):
         """
@@ -777,7 +778,7 @@ derivations: {
         """
         return self.purview_client.get_entity_lineage(guid=guid)
 
-    def get_feature_guid(self, qualifiedName):
+    def get_feature_id(self, qualifiedName):
         """
         Get guid of a feature given its qualifiedName
         """        
@@ -838,3 +839,145 @@ derivations: {
         entity_res = [] if guid_list is None else self.purview_client.get_entity(
             guid=guid_list)["entities"]
         return entity_res
+        
+    def get_features_from_registry(self, project_name: str) -> (List[FeatureAnchor], List[DerivedFeature]):
+        """Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
+        If the project is big, the return result could be huge.
+        Args:
+            project_name (str): project name.
+        """
+
+        entities = self._list_registered_entities_with_details(project_name=project_name, entity_type=TYPEDEF_FEATHR_PROJECT)
+        if not entities:
+            # if the result is empty
+            return (None, None)
+        project_entity = entities[0] # there's only one available
+        anchor_guid = [anchor_entity["guid"] for anchor_entity in project_entity["attributes"]["anchor_features"]]
+        derived_feature_guid = [derived_feature_entity["guid"] for derived_feature_entity in project_entity["attributes"]["derived_features"]]
+        
+        derived_feature_result = self.purview_client.get_entity(guid=derived_feature_guid)["entities"]
+        derived_feature_list = []
+        for derived_feature_entity in derived_feature_result:
+            key_from_entity=derived_feature_entity["attributes"]["tags"]
+            anchor_feature_guid = [e["guid"] for e in derived_feature_entity["attributes"]["input_anchor_features"]]
+            derived_feature_guid = [e["guid"] for e in derived_feature_entity["attributes"]["input_derived_features"]]
+            input_features_guid = self.search_input_anchor_features(derived_feature_guid)
+            all_input_features = list(itertools.chain.from_iterable([self._get_features_by_guid(x) for x in input_features_guid+anchor_feature_guid]))
+
+            derived_feature_list.append(DerivedFeature(name=derived_feature_entity["attributes"]["name"],
+                                feature_type=None,
+                                transform=None,
+                                key=key_from_entity,
+                                input_features= all_input_features,
+                                registry_tags=derived_feature_entity["attributes"]["tags"]))
+        anchor_result = self.purview_client.get_entity(guid=anchor_guid)["entities"]
+        anchor_list = []
+        for anchor_entity in anchor_result:
+            feature_guid = [e["guid"] for e in anchor_entity["attributes"]["features"]]
+            anchor_list.append(FeatureAnchor(name=anchor_entity["attributes"]["name"],
+                                source=self._get_source_by_guid(anchor_entity["attributes"]["source"]["guid"]),
+                                features=self._get_features_by_guid(feature_guid),
+                                registry_tags=anchor_entity["attributes"]["tags"]))
+
+        
+        return (anchor_list, derived_feature_list)
+
+    def search_input_anchor_features(self,derived_guids) ->List[str]:
+        '''
+        Iterate all derived features and its parent links, extract and aggregate all inputs
+        '''
+        stack = [x for x in derived_guids]
+        result = []
+        while len(stack)>0:
+            current_derived_guid = stack.pop()
+            current_inputs = self._get_features_by_guid(current_derived_guid)
+            new_derived_features = [x["guid"] for x in current_inputs if len(x["attributes"]["input_anchor_features"])==0]
+            for feature_guid in new_derived_features:
+                stack.append(feature_guid)
+            result += [x["guid"] for x in current_inputs if x["guid"] not in new_derived_features]
+        return result
+
+
+
+
+    def _get_source_by_guid(self, guid) -> Source:
+        # TODO: currently return HDFS source by default. For JDBC source, it's currently implemented using HDFS Source so we should split in the future
+        source_entity = self.purview_client.get_entity(guid=guid)["entities"][0]
+        return HdfsSource(name=source_entity["attributes"]["name"],
+                event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
+                timestamp_format=source_entity["attributes"]["timestamp_format"],
+                path=source_entity["attributes"]["path"],
+                registry_tags=source_entity["attributes"]["tags"]
+                )
+
+    def _get_features_by_guid(self, guid) -> List[FeatureAnchor]:
+        feature_entities = self.purview_client.get_entity(guid=guid)["entities"]
+        feature_list=[]
+        key_list = []
+        for feature_entity in feature_entities:
+            for key in feature_entity["attributes"]["key"]:
+                key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
+
+            # after get keys, put them in features
+            feature_list.append(Feature(name=feature_entity["attributes"]["name"],
+                    feature_type=None, # stored as a hocon string, can be parsed using pyhocon
+                    transform=None, #transform attributes are stored in a dict fashion , can be put in a WindowAggTransformation
+                    key=key_list,
+                    registry_tags=feature_entity["attributes"]["tags"],
+
+            ))
+        return feature_list 
+    def get_feature_by_fqdn_type(self, qualifiedName, typeName):
+        """
+        Get a single feature by it's QualifiedName and Type
+        Returns the feature else throws an AtlasException with 400 error code
+        """
+        response = self.purview_client.get_entity(qualifiedName=qualifiedName, typeName=typeName)
+        entities = response.get('entities')
+        for entity in entities:
+            if entity.get('typeName') == typeName and entity.get('attributes').get('qualifiedName') == qualifiedName: 
+                return entity
+       
+    def get_feature_by_fqdn(self, qualifiedName):
+        """
+        Get feature by qualifiedName
+        Returns the feature else throws an AtlasException with 400 error code
+        """        
+        id = self.get_feature_id(qualifiedName)
+        return self.get_feature_by_guid(id)
+    
+    def get_feature_by_guid(self, guid):
+        """
+        Get a single feature by it's GUID
+        Returns the feature else throws an AtlasException with 400 error code
+        """ 
+        response = self.purview_client.get_single_entity(guid=guid)
+        return response
+    
+    def get_feature_lineage(self, guid):
+        """
+        Get feature's lineage by it's GUID
+        Returns the feature else throws an AtlasException with 400 error code
+        """
+        return self.purview_client.get_entity_lineage(guid=guid)
+
+    def get_feature_id(self, qualifiedName):
+        """
+        Get guid of a feature given its qualifiedName
+        """        
+        search_term = "qualifiedName:{0}".format(qualifiedName)
+        entities = self.purview_client.discovery.search_entities(search_term)
+        for entity in entities:
+            if entity.get('qualifiedName') == qualifiedName:
+                return entity.get('id')
+
+    def search_features(self, searchTerm):
+        """
+        Search the registry for the given query term
+        For a ride hailing company few examples could be - "taxi", "passenger", "fare" etc.
+        It's a keyword search on the registry metadata
+        """        
+        search_term = "qualifiedName:{0}".format(searchTerm)
+        entities = self.purview_client.discovery.search_entities(search_term)
+        return entities
+        
