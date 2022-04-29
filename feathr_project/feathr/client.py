@@ -11,22 +11,22 @@ from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from pyhocon import ConfigFactory
 
-from feathr._databricks_submission import _FeathrDatabricksJobLauncher
+from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr._envvariableutil import _EnvVaraibleUtil
-from feathr._feature_registry import _FeatureRegistry
+from feathr.registry._feature_registry_purview import _FeatureRegistry
 from feathr._file_utils import write_to_file
-from feathr._materialization_utils import _to_materialization_config
+from feathr.feathr_feature_definition._materialization_utils import _to_materialization_config
 from feathr._preprocessing_pyudf_manager import _PreprocessingPyudfManager
-from feathr._synapse_submission import _FeathrSynapseJobLauncher
+from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
 from feathr.feathr_configurations import SparkExecutionConfiguration
-from feathr.feature_derivations import DerivedFeature
-from feathr.materialization_settings import MaterializationSettings
+from feathr.feathr_feature_definition.feature_derivations import DerivedFeature
+from feathr.feathr_feature_definition.materialization_settings import MaterializationSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
-from feathr.query_feature_list import FeatureQuery
-from feathr.settings import ObservationSettings
-from feathr.feature_derivations import DerivedFeature
-from feathr.anchor import FeatureAnchor
+from feathr.feathr_feature_definition.query_feature_list import FeatureQuery
+from feathr.feathr_feature_definition.settings import ObservationSettings
+from feathr.feathr_feature_definition.feature_derivations import DerivedFeature
+from feathr.feathr_feature_definition.anchor import FeatureAnchor
 from feathr.feathr_configurations import SparkExecutionConfiguration
 
 

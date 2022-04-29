@@ -1,5 +1,5 @@
 from jinja2 import Template 
-from feathr.materialization_settings import MaterializationSettings
+from feathr.feathr_feature_definition.materialization_settings import MaterializationSettings
 
 
 def _to_materialization_config(settings: MaterializationSettings):

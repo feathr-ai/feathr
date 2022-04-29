@@ -5,9 +5,9 @@ from fastapi import FastAPI, HTTPException, Response, status
 from pyapacheatlas.core import (AtlasException)
 from pydantic import BaseModel
 from opencensus.ext.azure.log_exporter import AzureLogHandler
-from feathr._feature_registry import _FeatureRegistry
+from feathr.registry._feature_registry_purview import _FeatureRegistry
 from feathr.constants import *
-from feathr._feature_registry import _FeatureRegistry
+from feathr.registry._feature_registry_purview import _FeatureRegistry
 
 
 app = FastAPI()

@@ -1,8 +1,8 @@
-from feathr.anchor import FeatureAnchor
-from feathr.source import Source
-from feathr.feature_derivations import DerivedFeature
-from feathr.feature import Feature
-from feathr.transformation import Transformation
+from feathr.feathr_feature_definition.anchor import FeatureAnchor
+from feathr.feathr_feature_definition.source import Source
+from feathr.feathr_feature_definition.feature_derivations import DerivedFeature
+from feathr.feathr_feature_definition.feature import Feature
+from feathr.feathr_feature_definition.transformation import Transformation
 from typing import Set
 
 

@@ -4,9 +4,9 @@ from typing import List, Optional, Union, Dict
 
 from jinja2 import Template
 
-from feathr.dtype import FeatureType
-from feathr.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
-from feathr.typed_key import DUMMY_KEY, TypedKey
+from feathr.feathr_feature_definition.dtype import FeatureType
+from feathr.feathr_feature_definition.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
+from feathr.feathr_feature_definition.typed_key import DUMMY_KEY, TypedKey
 
 
 class FeatureBase(ABC):
