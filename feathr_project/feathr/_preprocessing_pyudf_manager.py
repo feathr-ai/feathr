@@ -39,7 +39,7 @@ class _PreprocessingPyudfManager(object):
         feature_names_to_func_mapping = {}
         # features that have preprocessing defined. This is used to figure out if we need to kick off Pyspark
         # preprocessing for requested features.
-        features_with_preprocessing = {}
+        features_with_preprocessing = []
         dep_modules = set()
         for anchor in anchor_list:
             # only support batch source preprocessing for now.
@@ -49,18 +49,11 @@ class _PreprocessingPyudfManager(object):
             if preprocessing_func:
                 # Record module needed by all preprocessing_func
                 for feature in anchor.features:
-                    # Record module file name in metadata
-                    try:
-                        # Ingore non-exist modules and modules without corresponding file
-                        # In case the module name cannot be retrieved
-                        features_with_preprocessing[feature.name] = sys.modules[preprocessing_func.__module__].__file__
-                    except:
-                        pass
                     # Record module name except __main__
                     if preprocessing_func.__module__ != "__main__":
                         dep_modules.add(preprocessing_func.__module__)
                 feature_names = [feature.name for feature in anchor.features]
-                # features_with_preprocessing = features_with_preprocessing + feature_names
+                features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
                 string_feature_list = ','.join(feature_names)
                 feature_names_to_func_mapping[string_feature_list] = "cloudpickle.loads(%s)" % cloudpickle.dumps(preprocessing_func)
