@@ -24,9 +24,9 @@ copyright = '2022, Feathr Community'
 author = 'Feathr Community'
 
 # The short X.Y version
-version = '0.1'
+version = '0.4'
 # The full version, including alpha/beta/rc tags
-release = '0.1_azure_alpha'
+release = '0.4_azure_alpha'
 
 
 # -- General configuration ---------------------------------------------------

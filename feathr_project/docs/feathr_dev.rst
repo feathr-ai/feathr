@@ -1,16 +1,6 @@
 feathr package
 ==============
 
-Subpackages
------------
-
-.. toctree::
-
-    feathr.protobuf
-
-Submodules
-----------
-
 feathr.constants module
 -----------------------
 
@@ -26,6 +16,32 @@ feathr.repo\_definitions module
     :members:
     :undoc-members:
     :show-inheritance:
+
+feathr.job\_utils module
+------------------------
+
+.. automodule:: feathr.job_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+feathr.feathr\_pyspark\_driver\_template module
+-----------------------------------------------
+
+.. automodule:: feathr.feathr_pyspark_driver_template
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+feathr.protobuf.featureValue\_pb2 module
+----------------------------------------
+
+.. automodule:: feathr.protobuf.featureValue_pb2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

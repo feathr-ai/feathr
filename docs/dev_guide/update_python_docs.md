@@ -11,27 +11,11 @@ parent: Feathr Developer Guides
 
 Since `sphinx` need to run the source code to generate the documentation, make sure you have installed the all the necessary dependencies needed by the project(see setup.py files).
 
-## Update the documentation html files
-
-After you updated the documentation in the source code, run the following command to update the html files.
-
-In docs directory:
-
-`sphinx-apidoc -f -o . ../feathr ../*setup*`
-
-(excluding setup.py files and some other demo files, test files.)
-
-Then rebuild the html files:
-
-`make clean && make html`
-
-You will see new html files generated under `_build/html/` directory and you can view `_build/html/index.html` in your browser locally.
-
-
 ## How Readthedocs.com Works
 * Readthedocs need to run the Python code to generate the docs. So your dependencies need to exist on the machine that generates these docs.
 * Readthedocs can be configured via `.readthedocs.yml` under project root(not your Python library root). If you don't 
   need extra configurations, you don't need `.readthedocs.yml`.
+* Readthedocs will generate documentations based on your `.rst` file. `.rst` file can be automatically generated or manually modified(see later sections).
 * Readthedocs doesn't support complex dependencies, like Pypi packages with C modules. To address this, Readthedocs provides those common
   dependencies in their server but we need to enable it by setting `system_packages: true`
 * Dependencies can be specified by docs/requirements.txt file.
@@ -56,6 +40,26 @@ python:
 So using requirements.txt is used.
 
 In the future, we should simplify the dependencies for user facing APIs. But it's hard to do the same for developer-facing APIs. We still count on Readthedocs to sipmlify and address the dependency importing issues.
+
+### How to Edit Contents
+You can edit the rst files to modify the structure and contents of the docs page.
+
+## Build the documentation html files
+
+Then rebuild the html files:
+
+`make clean && make html`
+
+You will see new html files generated under `_build/html/` directory and you can view `_build/html/index.html` in your browser locally.
+
+## Re-build the documentation html files
+If you need to re-build the `.rst` files, run the following command to update them:
+
+In docs directory:
+
+`sphinx-apidoc -f -o . ../feathr ../*setup*`
+
+(excluding setup.py files, and some other demo files, test files.)
 
 ## Upload to Readthedocs.com
 * Login to https://readthedocs.org/dashboard/
