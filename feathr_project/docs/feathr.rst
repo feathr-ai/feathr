@@ -27,14 +27,6 @@ feathr.anchor module
     :undoc-members:
     :show-inheritance:
 
-feathr.client module
---------------------
-
-.. automodule:: feathr.client
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 feathr.constants module
 -----------------------
 
@@ -51,21 +43,6 @@ feathr.dtype module
     :undoc-members:
     :show-inheritance:
 
-feathr.feathr\_configurations module
-------------------------------------
-
-.. automodule:: feathr.feathr_configurations
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-feathr.feathr\_pyspark\_driver\_template module
------------------------------------------------
-
-.. automodule:: feathr.feathr_pyspark_driver_template
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 feathr.feature module
 ---------------------
