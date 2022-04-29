@@ -1,8 +1,6 @@
 feathr package
 ==============
 
-Submodules
-----------
 
 
 feathr.anchor module
