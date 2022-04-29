@@ -14,5 +14,6 @@ sphinx:
 # Optionally declare the Python requirements required to build your docs
 python:
   install:
-    - requirements: feathr_project/docs/requirements.txt
+    - method: setuptools
+      path: .
   system_packages: true
