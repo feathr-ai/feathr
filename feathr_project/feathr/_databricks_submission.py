@@ -184,8 +184,10 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                 # See here for the returned fields: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--response-structure-8
                 # print out logs and stack trace if the job is failed
                 logger.error("Feathr job is failed. Please visit this page to view error message: {}", self.job_url)
-                logger.error("Error Code: {}", result["error"])
-                logger.error("{}", result["error_trace"])
+                if "error" in result:
+                    logger.error("Error Code: {}", result["error"])
+                if "error_trace" in result:
+                    logger.error("{}", result["error_trace"])
                 return False
             else:
                 time.sleep(30)
