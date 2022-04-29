@@ -24,7 +24,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 ## Documentation
 
-For more details, read our [documentation](https://linkedin.github.io/feathr/).
+For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
 
 ## Running Feathr on Azure with 3 Simple Steps
 
@@ -117,7 +117,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ### Define Streaming Features
 
-Read the [Streaming Source Ingestion Guide](./docs/how-to-guides/streaming_source_ingestion.md) for more details.
+Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming_source_ingestion.html) for more details.
 
 
 ### Point in Time Joins
