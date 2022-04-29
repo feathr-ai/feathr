@@ -53,7 +53,7 @@ setup(
         "typing_extensions>=4.2.0"
     ],
     tests_require=[
-        'pytest',
+        'pytest',"pyspark>=3.1.2",
     ],
     extras_require={
         "pyspark": ["pyspark>=3.1.2"]
