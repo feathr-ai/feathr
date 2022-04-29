@@ -15,5 +15,5 @@ sphinx:
 python:
   install:
     - method: setuptools
-      path: .
+      path: feathr_project/
   system_packages: true
