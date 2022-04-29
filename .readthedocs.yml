@@ -6,9 +6,6 @@
 version: 2
 
 # Set the version of Python and other tools you might need
-build:
-  tools:
-    python: "3.9"
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
