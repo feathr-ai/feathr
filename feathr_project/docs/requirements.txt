@@ -11,8 +11,4 @@ pyyaml
 graphlib_backport
 pyapacheatlas
 google>=3.0.0
-<<<<<<< HEAD
 google-api-python-client>=2.41.0
-=======
-google-api-python-client>=2.41.0
->>>>>>> 15f215c23c8bea34296a0e034b4c0bd60261ca6f
