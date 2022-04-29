@@ -26,7 +26,7 @@ setup(
         "azure-identity",
         "py4j",
         "loguru",
-        "pandas",
+        # "pandas",
         "redis",
         "requests",
         "pyapacheatlas",
