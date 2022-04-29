@@ -7,7 +7,7 @@ parent: Feathr Developer Guides
 
 ## Install Dependencis
 
-`pip install sphinx`
+`pip install sphinx &&  pip install sphinx_rtd_theme`
 
 Since `sphinx` need to run the source code to generate the documentation, make sure you have installed the all the necessary dependencies needed by the project(see setup.py files).
 
@@ -17,7 +17,7 @@ After you updated the documentation in the source code, run the following comman
 
 In docs directory:
 
-`sphinx-apidoc -f -o . ../feathr ../*setup* ../feathr/*spark_job.py*`
+`sphinx-apidoc -f -o . ../feathr ../*setup*`
 
 (excluding setup.py files and some other demo files, test files.)
 
