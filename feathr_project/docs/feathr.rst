@@ -83,14 +83,6 @@ feathr.feature\_derivations module
     :undoc-members:
     :show-inheritance:
 
-feathr.job\_utils module
-------------------------
-
-.. automodule:: feathr.job_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 feathr.lookup\_feature module
 -----------------------------
 
