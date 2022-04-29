@@ -20,11 +20,3 @@ feathr.anchor module
     :undoc-members:
     :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: feathr
-    :members:
-    :undoc-members:
-    :show-inheritance:
