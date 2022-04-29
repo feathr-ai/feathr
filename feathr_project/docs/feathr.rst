@@ -1,13 +1,6 @@
 feathr package
 ==============
 
-Subpackages
------------
-
-.. toctree::
-
-    feathr.protobuf
-
 Submodules
 ----------
 
