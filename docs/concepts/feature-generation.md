@@ -43,4 +43,4 @@ res = client.get_online_features('nycTaxiDemoFeature', '265', [
                                      'f_location_avg_fare', 'f_location_max_fare'])
 ```
 
-After we finish running the materialization job, we can get the online features by querying the feature name, with the corresponding keys. In the exmaple above, we query the online features called `f_location_avg_fare` and `f_location_max_fare`, and query with a key `265` (which is the location ID).
+After we finish running the materialization job, we can get the online features by querying the feature name, with the corresponding keys. In the example above, we query the online features called `f_location_avg_fare` and `f_location_max_fare`, and query with a key `265` (which is the location ID).

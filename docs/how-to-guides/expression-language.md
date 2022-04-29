@@ -18,7 +18,7 @@ If the feature transformation can't be accomplished with a short line of express
 
 # Usage Guide
 
-Your data transformation can be composed of one or a few smaller tasks. Divide and conquer! For each individual task, check the following sections on how to acheive them. Then combine them. For example, we have a trip mileage column but it's in string form. We want to compare if it's a long trip(> 30 miles). So we need to cast it into string and then compare with 30. We can do `cast_double(mile_column) > 30`.
+Your data transformation can be composed of one or a few smaller tasks. Divide and conquer! For each individual task, check the following sections on how to acheive them. Then combine them. For example, we have a trip mileage column but it's in string form. We want to compare if it's a long trip(> 30 miles). So we need to cast it into double and then compare with 30. We can do `cast_double(mile_column) > 30`.
 
 ## Field accessing
 
@@ -54,7 +54,7 @@ For data of numeric types, you can use arithmetic operators to perform opteratio
 
 > If the logical operator you need is not here, please raise a github issue with us.
 
-Logical operators combines multiple true and false and returns respective true or false. We support three logical operators(here x and y are two expression):
+Logical operators combine multiple true and false statements and return respective true or false. We support three logical operators(here x and y are two expressions):
 
 - `and(x, y)`: returns true when both expressions are true
 - `or(x, y)`: returns true when either expressions are true
