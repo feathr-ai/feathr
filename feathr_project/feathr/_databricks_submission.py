@@ -107,6 +107,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         file_name = os.path.basename(local_path_or_http_path)
         # returned paths for the uploaded file
         returned_path = os.path.join(self.databricks_work_dir, file_name)
+        # `local_path_or_http_path` will be either string or PathLib object, so normalize it to string 
         local_path_or_http_path = str(local_path_or_http_path)
         DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path_or_http_path, dst=returned_path)
         return returned_path
@@ -133,8 +134,10 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
 
         submission_params['run_name'] = job_name
-        submission_params['new_cluster']['spark_conf'] = configuration
-        submission_params['new_cluster']['custom_tags'] = job_tags
+        if 'existing_cluster_id' not in submission_params:
+            # if users don't specify existing_cluster_id
+            submission_params['new_cluster']['spark_conf'] = configuration
+            submission_params['new_cluster']['custom_tags'] = job_tags
         # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
         submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         # see here for the submission parameter definition https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--request-structure-6
@@ -177,7 +180,12 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             if status in {'SUCCESS'}:
                 return True
             elif status in {'INTERNAL_ERROR', 'FAILED', 'TIMEDOUT', 'CANCELED'}:
+                result = RunsApi(self.api_client).get_run_output(self.res_job_id)
+                # See here for the returned fields: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--response-structure-8
+                # print out logs and stack trace if the job is failed
                 logger.error("Feathr job is failed. Please visit this page to view error message: {}", self.job_url)
+                logger.error("Error Code: {}", result["error"])
+                logger.error("{}", result["error_trace"])
                 return False
             else:
                 time.sleep(30)
@@ -199,9 +207,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         Returns:
             str: `output_path` field in the job tags
         """
-        assert self.res_job_id is not None
-        result = RunsApi(self.api_client).get_run(self.res_job_id)
-        custom_tags = result['cluster_spec']['new_cluster']['custom_tags']
+        custom_tags = self.get_job_tags()
         # in case users call this API even when there's no tags available
         return None if custom_tags is None else custom_tags[OUTPUT_PATH_TAG]
 
@@ -213,10 +219,17 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             Dict[str, str]: a dict of job tags
         """
         assert self.res_job_id is not None
-        result = RunsApi(self.api_client).get_run(self.res_job_id)
         # For result structure, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--response-structure-6
-        custom_tags = result['cluster_spec']['new_cluster']['custom_tags']
-        return custom_tags
+        result = RunsApi(self.api_client).get_run(self.res_job_id)
+        
+        if 'new_cluster' in result['cluster_spec']:
+            custom_tags = result['cluster_spec']['new_cluster']['custom_tags']
+            return custom_tags
+        else:
+            # this is not a new cluster; it's an existing cluster.
+            logger.warning("Job tags are not available since you are using an existing Databricks cluster. Consider using 'new_cluster' in databricks configuration.")
+            return None
+    
 
     def download_result(self, result_path: str, local_folder: str):
         """

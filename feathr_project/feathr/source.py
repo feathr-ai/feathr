@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Callable, Dict, List, Optional
 
 from jinja2 import Template
+from loguru import logger
 import json
 
 
@@ -88,8 +89,11 @@ class HdfsSource(Source):
         """
     def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str]= None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
         super().__init__(name, event_timestamp_column, timestamp_format, registry_tags=registry_tags)
-        self.path = path
+        self.path = path    
         self.preprocessing = preprocessing
+        if path.startswith("http"):
+            logger.warning("Your input path {} starts with http, which is not supported. Consider using paths starting with wasb[s]/abfs[s]/s3.", path)
+
 
     def to_feature_config(self) -> str:
         tm = Template("""  
