@@ -1,4 +1,8 @@
-
+---
+layout: default
+title: Streaming Source Ingestion
+parent: Feathr How-to Guides
+---
 # Streaming feature ingestion
 
 1. Define Kafka streaming input source

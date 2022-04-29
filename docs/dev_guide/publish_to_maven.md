@@ -60,11 +60,6 @@ Execute command in sbt console to publish to maven
 reload
  ; publishSigned; sonatypeBundleRelease
 ```
-or run
-```
-reload
-sonatypeBundleRelease
-```
 
 5. "Upon release, your component will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to four hours."
 https://central.sonatype.org/publish/publish-guide/#releasing-to-central
