@@ -36,7 +36,6 @@ setup(
         "Jinja2",
         "tqdm",
         "pyarrow",
-        "pyspark>=3.1.2",
         "python-snappy",
         "deltalake",
         "google>=3.0.0",
@@ -55,6 +54,7 @@ setup(
     ],
     tests_require=[
         'pytest',
+        "pyspark>=3.1.2",
     ],
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
