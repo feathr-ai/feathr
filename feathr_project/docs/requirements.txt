@@ -1,2 +1,2 @@
 redis
-azure
+azure-core<=1.22.1
