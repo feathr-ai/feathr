@@ -56,7 +56,7 @@ setup(
         'pytest',
     ],
     extras_require={
-        'pyspark': ["pyspark>=3.1.2",],
+        'all': ["pyspark>=3.1.2"]
     },
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
