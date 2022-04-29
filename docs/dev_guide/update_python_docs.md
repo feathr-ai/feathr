@@ -40,9 +40,19 @@ You will see new html files generated under `_build/html/` directory and you can
 ### How to Specify Dependencies
 Readthedocs provides two ways of specifying depencies.
 The first one is via the docs/requirements.txt file. This one will need to duplicate some of the information from the setup.py file. The benefit is we can pick only the dependencies that are needed by the execution of Readthedocs.
+```
+python:
+  install:
+    - requirements: feathr_project/docs/requirements.txt
+```
 
 The second one is using setup.py. This one avoids the duplication but have to install all dependencies. Readthedocs have poor support on importing complex dependencies, like Pandas can't be imported. So this really doesn't work for us.
-
+```
+python:
+  install:
+    - method: setuptools
+      path: feathr_project/
+```
 So using requirements.txt is used.
 
 In the future, we should simplify the dependencies for user facing APIs. But it's hard to do the same for developer-facing APIs. We still count on Readthedocs to sipmlify and address the dependency importing issues.
