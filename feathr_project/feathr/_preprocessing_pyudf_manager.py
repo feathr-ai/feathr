@@ -181,7 +181,14 @@ feature_names_funcs = {
 import base64
 def encode_file(filename: str) -> str:
     """
-    Encode file content into a multiline base64 encoded string
+    Encode file content into a multiline base64 encoded string.
+    This function is a replacement of the previous `inspect.getsource()`,
+    it bundles the whole module file instead of a single function to resolve
+    the importing issue.
+    Using base64 instead of the original source code to archive
+    the source file can avoid complicated escaping process, we can
+    directly quote base64 string in the source code by surrounding
+    it with `r'''/'''`.
     """
     f = open(filename, "rb")
     content = f.read()
