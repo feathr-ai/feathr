@@ -6,3 +6,4 @@ azure-identity
 pyhocon
 loguru
 tqdm
+databricks_cli
