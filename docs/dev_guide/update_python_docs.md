@@ -17,7 +17,7 @@ After you updated the documentation in the source code, run the following comman
 
 In docs directory:
 
-`sphinx-apidoc -f -o . ../feathr ../*setup*`
+`sphinx-apidoc -f -o . ../feathr ../*setup* ../feathr/job_utils.py`
 
 (excluding setup.py files and some other demo files, test files.)
 
