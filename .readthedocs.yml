@@ -15,6 +15,7 @@ sphinx:
 python:
 #  install:
 #    - requirements: feathr_project/docs/requirements.txt
+  version: 3.8
   install:
     - method: setuptools
       path: feathr_project/
