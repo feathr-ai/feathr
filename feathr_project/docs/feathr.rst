@@ -11,10 +11,10 @@ Subpackages
 Submodules
 ----------
 
-feathr.aggregation module
--------------------------
+feathr.client module
+--------------------
 
-.. automodule:: feathr.aggregation
+.. automodule:: feathr.client
     :members:
     :undoc-members:
     :show-inheritance:
@@ -27,18 +27,11 @@ feathr.anchor module
     :undoc-members:
     :show-inheritance:
 
-feathr.client module
---------------------
 
-.. automodule:: feathr.client
-    :members:
-    :undoc-members:
-    :show-inheritance:
+feathr.aggregation module
+-------------------------
 
-feathr.constants module
------------------------
-
-.. automodule:: feathr.constants
+.. automodule:: feathr.aggregation
     :members:
     :undoc-members:
     :show-inheritance:
@@ -95,14 +88,6 @@ feathr.query\_feature\_list module
 ----------------------------------
 
 .. automodule:: feathr.query_feature_list
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-feathr.repo\_definitions module
--------------------------------
-
-.. automodule:: feathr.repo_definitions
     :members:
     :undoc-members:
     :show-inheritance:
