@@ -54,7 +54,7 @@ setup(
         "typing_extensions>=4.2.0"
     ],
     tests_require=[
-        'pytest',"pyspark>=3.1.2",
+        'pytest',
     ],
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
