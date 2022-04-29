@@ -4,3 +4,4 @@ azure-storage-file-datalake>=12.5.0
 azure-synapse-spark
 azure-identity
 pyhocon
+loguru
