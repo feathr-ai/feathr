@@ -8,3 +8,4 @@ loguru
 tqdm
 databricks_cli
 pyyaml
+graphlib_backport
