@@ -118,7 +118,7 @@ In Feathr, a feature is viewed as a function, mapping from entity id or key, and
 ## Step 7: Register feature definitions to the central registry
 
 ```python
-from feathr.client import FeathrClient
+from feathr import FeathrClient
 
 client = FeathrClient()
 client.register_features()
