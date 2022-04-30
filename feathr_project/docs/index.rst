@@ -3,15 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to feathr's documentation!
+Welcome to Feathr's documentation!
 ==================================
 
+Feathr User APIs
+==================
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 4
 
-   modules
+   feathr
 
+Feathr APIs for Internal Developers
+==================
+
+.. toctree::
+   :maxdepth: 4
+
+   feathr_dev
 
 Indices and tables
 ==================
