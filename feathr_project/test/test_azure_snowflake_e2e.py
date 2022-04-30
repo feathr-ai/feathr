@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from feathr.client import FeathrClient
+from feathr import FeathrClient
 from feathr import ValueType
 from feathr.utils.job_utils import get_result_df
 from feathr import (BackfillTime, MaterializationSettings)

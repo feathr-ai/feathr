@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-from feathr.client import FeathrClient
+from feathr import FeathrClient
 from feathrcli.cli import init
 
 from test_fixture import basic_test_setup, registry_test_setup

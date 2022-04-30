@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from feathr import (BOOLEAN, FLOAT, INPUT_CONTEXT, INT32, STRING,
                     DerivedFeature, Feature, FeatureAnchor, HdfsSource,
                     TypedKey, ValueType, WindowAggTransformation)
-from feathr.client import FeathrClient
+from feathr import FeathrClient
 from pyspark.sql import DataFrame
 
 
