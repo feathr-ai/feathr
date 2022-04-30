@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
 from typing import Any, Dict, List, Optional, Tuple
-from feathr.feathr_feature_definition.feature_derivations import DerivedFeature
-from feathr.feathr_feature_definition.anchor import FeatureAnchor
+from feathr.feature_definition.feature_derivations import DerivedFeature
+from feathr.feature_definition.anchor import FeatureAnchor
 
 class FeathrRegistry(ABC):
     """This is the abstract class for all the feature registries. All the feature registries should implement those interfaces.

@@ -11,15 +11,15 @@ from urllib.parse import urlparse
 
 
 
-from feathr.feathr_feature_definition.anchor import FeatureAnchor
+from feathr.feature_definition.anchor import FeatureAnchor
 from feathr.constants import *
-from feathr.feathr_feature_definition.feature import Feature, FeatureType
-from feathr.feathr_feature_definition.feature_derivations import DerivedFeature
-from feathr.feathr_feature_definition.repo_definitions import RepoDefinitions
-from feathr.feathr_feature_definition.source import HdfsSource, InputContext, Source
-from feathr.feathr_feature_definition.transformation import (ExpressionTransformation, Transformation,
+from feathr.feature_definition.feature import Feature, FeatureType
+from feathr.feature_definition.feature_derivations import DerivedFeature
+from feathr.feature_definition.repo_definitions import RepoDefinitions
+from feathr.feature_definition.source import HdfsSource, InputContext, Source
+from feathr.feature_definition.transformation import (ExpressionTransformation, Transformation,
                                    WindowAggTransformation)
-from feathr.feathr_feature_definition.typed_key import TypedKey
+from feathr.feature_definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
 
 

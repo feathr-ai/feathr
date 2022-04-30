@@ -2,20 +2,19 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from pyspark.sql.functions import col,sum,avg,max
-from feathr.job_utils import get_result_df
-from feathr.anchor import FeatureAnchor
-from feathr.dtype import STRING, BOOLEAN, FLOAT, INT32, ValueType
-from feathr.feature import Feature
-from feathr.query_feature_list import FeatureQuery
-from feathr.settings import ObservationSettings
-from feathr.source import INPUT_CONTEXT, HdfsSource
-from feathr.typed_key import TypedKey
-from feathr.transformation import WindowAggTransformation
+from feathr.utils.job_utils import get_result_df
+from feathr.feature_definition.anchor import FeatureAnchor
+from feathr.feature_definition.dtype import STRING, BOOLEAN, FLOAT, INT32, ValueType
+from feathr.feature_definition.feature import Feature
+from feathr.feature_definition.query_feature_list import FeatureQuery
+from feathr.feature_definition.settings import ObservationSettings
+from feathr.feature_definition.source import INPUT_CONTEXT, HdfsSource
+from feathr.feature_definition.typed_key import TypedKey
+from feathr.feature_definition.transformation import WindowAggTransformation
 from pyspark.sql import SparkSession, DataFrame
-from test_fixture import basic_test_setup
+from test_fixture import basic_test_setup, snowflake_test_setup
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import RedisSink
-from test_fixture import snowflake_test_setup
 
 def trip_distance_preprocessing(df: DataFrame):
     df = df.withColumn("trip_distance", df.trip_distance.cast('double') - 90000)

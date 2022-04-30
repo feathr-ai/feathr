@@ -3,11 +3,11 @@ from typing import List, Optional, Union, Dict
 
 from jinja2 import Template
 
-from feathr.feathr_feature_definition.dtype import FeatureType
-from feathr.feathr_feature_definition.feature import FeatureBase
-from feathr.feathr_feature_definition.transformation import RowTransformation
-from feathr.feathr_feature_definition.typed_key import DUMMY_KEY, TypedKey
-from feathr.feathr_feature_definition.aggregation import Aggregation
+from feathr.feature_definition.dtype import FeatureType
+from feathr.feature_definition.feature import FeatureBase
+from feathr.feature_definition.transformation import RowTransformation
+from feathr.feature_definition.typed_key import DUMMY_KEY, TypedKey
+from feathr.feature_definition.aggregation import Aggregation
 
 class LookupFeature(FeatureBase):
     """A lookup feature is a feature defined on top of two other features, i.e. using the feature value

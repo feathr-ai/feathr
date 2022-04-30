@@ -4,7 +4,7 @@ from pathlib import Path
 
 from feathr.client import FeathrClient
 from feathr import ValueType
-from feathr.job_utils import get_result_df
+from feathr.utils.job_utils import get_result_df
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import FeatureQuery
 from feathr import ObservationSettings

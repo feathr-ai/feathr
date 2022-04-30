@@ -2,7 +2,7 @@ from __future__ import annotations
 from copy import copy, deepcopy
 
 from typing import List, Optional
-from feathr.feathr_feature_definition.dtype import ValueType, FeatureType
+from feathr.feature_definition.dtype import ValueType, FeatureType
 
 
 class TypedKey:

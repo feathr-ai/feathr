@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from feathr.feathr_feature_definition._materialization_utils import _to_materialization_config
+from feathr.feature_definition._materialization_utils import _to_materialization_config
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import RedisSink
 
