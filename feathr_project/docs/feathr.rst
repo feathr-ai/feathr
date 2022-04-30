@@ -1,4 +1,4 @@
-feathr package
+Feathr APIs for End Users
 ==============
 
 feathr.client module
