@@ -56,7 +56,7 @@ class _PreprocessingPyudfManager(object):
                 features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
                 string_feature_list = ','.join(feature_names)
-                feature_names_to_func_mapping[string_feature_list] = "cloudpickle.loads(%s)" % cloudpickle.dumps(preprocessing_func)
+                feature_names_to_func_mapping[string_feature_list] = "cloudpickle.loads(%s)" % cloudpickle.dumps(preprocessing_func, protocol=pickle.DEFAULT_PROTOCOL)
 
         if not features_with_preprocessing:
             return
