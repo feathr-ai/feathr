@@ -24,15 +24,15 @@ from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
 
 from feathr.utils._file_utils import write_to_file
-from feathr.feature_definition.anchor import FeatureAnchor
+from feathr.definition.anchor import FeatureAnchor
 from feathr.constants import *
-from feathr.feature_definition.feature import Feature, FeatureType
-from feathr.feature_definition.feature_derivations import DerivedFeature
-from feathr.feature_definition.repo_definitions import RepoDefinitions
-from feathr.feature_definition.source import HdfsSource, InputContext, Source
-from feathr.feature_definition.transformation import (ExpressionTransformation, Transformation,
+from feathr.definition.feature import Feature, FeatureType
+from feathr.definition.feature_derivations import DerivedFeature
+from feathr.definition.repo_definitions import RepoDefinitions
+from feathr.definition.source import HdfsSource, InputContext, Source
+from feathr.definition.transformation import (ExpressionTransformation, Transformation,
                                    WindowAggTransformation)
-from feathr.feature_definition.typed_key import TypedKey
+from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
 
 class _FeatureRegistry(FeathrRegistry):

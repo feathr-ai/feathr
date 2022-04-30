@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 
 from jinja2 import Template
 
-from feathr.feature_definition.typed_key import TypedKey
+from feathr.definition.typed_key import TypedKey
 
 
 class FeatureQuery:

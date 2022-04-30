@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Optional, Union
 import pickle
 from jinja2 import Template
-from feathr.feature_definition.source import HdfsSource
+from feathr.definition.source import HdfsSource
 
 # Some metadata that are only needed by Feathr
 FEATHR_PYSPARK_METADATA = 'generated_feathr_pyspark_metadata'

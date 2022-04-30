@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
-from feathr.feature_definition.sink import Sink
+from feathr.definition.sink import Sink
 import math
 
 

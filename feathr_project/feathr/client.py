@@ -15,18 +15,18 @@ from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLau
 from feathr.utils._envvariableutil import _EnvVaraibleUtil
 from feathr.registry._feature_registry_purview import _FeatureRegistry
 from feathr.utils._file_utils import write_to_file
-from feathr.feature_definition._materialization_utils import _to_materialization_config
+from feathr.definition._materialization_utils import _to_materialization_config
 from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
 from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
-from feathr.feature_definition.feature_derivations import DerivedFeature
-from feathr.feature_definition.materialization_settings import MaterializationSettings
+from feathr.definition.feature_derivations import DerivedFeature
+from feathr.definition.materialization_settings import MaterializationSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
-from feathr.feature_definition.query_feature_list import FeatureQuery
-from feathr.feature_definition.settings import ObservationSettings
-from feathr.feature_definition.feature_derivations import DerivedFeature
-from feathr.feature_definition.anchor import FeatureAnchor
+from feathr.definition.query_feature_list import FeatureQuery
+from feathr.definition.settings import ObservationSettings
+from feathr.definition.feature_derivations import DerivedFeature
+from feathr.definition.anchor import FeatureAnchor
 from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
 
 

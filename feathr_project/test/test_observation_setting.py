@@ -1,4 +1,4 @@
-from feathr.feature_definition.settings import ObservationSettings
+from feathr.definition.settings import ObservationSettings
 
 
 def test_observation_setting_with_timestamp():
