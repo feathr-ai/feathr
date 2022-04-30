@@ -8,14 +8,14 @@ from feathr.feathr_feature_definition.source import INPUT_CONTEXT
 # passthrough features do not need keys
 class FeatureAnchor:
     """
-    A feature anchor defines a set of features on top of a data source, a.k.a. a set of features anchored to a source.
+        A feature anchor defines a set of features on top of a data source, a.k.a. a set of features anchored to a source.
 
-    The feature producer writes multiple anchors for a feature, exposing the same feature name for the feature
-    consumer to reference it.
-    Attributes:
+        The feature producer writes multiple anchors for a feature, exposing the same feature name for the feature
+        consumer to reference it.
+        Attributes:
         name: Unique name of the anchor.
         source: data source that the features are anchored to. Should be either of `INPUT_CONTEXT` or `feathr.source.Source`
-        features: list of features within this anchor. 
+        features: list of features within this anchor.
         registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this anchor is deprecated, etc.
     """
     def __init__(self,
