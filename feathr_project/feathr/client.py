@@ -19,7 +19,7 @@ from feathr.feature_definition._materialization_utils import _to_materialization
 from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
-from feathr.feathr_configurations import SparkExecutionConfiguration
+from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
 from feathr.feature_definition.feature_derivations import DerivedFeature
 from feathr.feature_definition.materialization_settings import MaterializationSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
@@ -27,7 +27,7 @@ from feathr.feature_definition.query_feature_list import FeatureQuery
 from feathr.feature_definition.settings import ObservationSettings
 from feathr.feature_definition.feature_derivations import DerivedFeature
 from feathr.feature_definition.anchor import FeatureAnchor
-from feathr.feathr_configurations import SparkExecutionConfiguration
+from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
 
 
 class FeatureJoinJobParams:

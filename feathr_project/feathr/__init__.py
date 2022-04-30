@@ -12,5 +12,4 @@ from .feature_definition.sink import *
 from .feature_definition.query_feature_list import *
 from .feature_definition.lookup_feature import *
 from .feature_definition.aggregation import *
-from .feathr_configurations import *
 from .utils.job_utils import *
