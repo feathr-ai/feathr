@@ -28,25 +28,22 @@ Open Azure Cloud Shell with Powershell environment.
 Invoke Deployment Script from GitHub Repo with parameter for Azure Region.  
 Available regions can be checked with this command
 
+Command
 ```powershell
     Get-AzLocation | select displayname,location
 ```
 
-```powreshell  
-
+Output
+```powreshell 
     iwr https://raw.githubusercontent.com/linkedin/feathr/main/docs/how-to-guides/deployFeathr.ps1 -outfile ./deployFeathr.ps1; ./deployFeathr.ps1 -AzureRegion '{Assign Your Region}'  
 
 ``` 
 
 With this command, [deployFeathr.ps1](../how-to-guides/deployFeathr.ps1) retrieves your Azure User Object Id then create Azure deployment with ARM template which have been built by [bicep files](../how-to-guides/deployment/).
 
-Deployment may take up to 10 mins.  
-After deploying Azure resources for Feathr, need to install additional Python libraries for Synapse notebook environment.
-
+Deployment may take up to 10 mins. After deploying Azure resources for Feathr, we need to install additional Python libraries for Synapse notebook environment.
 
 ## Step 3. Manage Python libraries Packages for Apache Spark in Azure Synapse Analytics  
 
-To working with Feathr libraries in Azure Synapse notebook environment, we need to add additional Python library package with [requirements.txt](../how-to-guides/deployment/requirements.txt) file.  
-
-Please check the [instruction (Manage packages from Synapse Studio or Azure portal)](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/apache-spark-manage-python-packages#manage-packages-from-synapse-studio-or-azure-portal) and follow the step.
+To work with Feathr libraries in Azure Synapse notebook environment, we need to add additional Python library packages with [requirements.txt](../how-to-guides/deployment/requirements.txt). . Please check the [instruction (Manage packages from Synapse Studio or Azure portal)](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/apache-spark-manage-python-packages#manage-packages-from-synapse-studio-or-azure-portal) and follow the step.
 
