@@ -17,7 +17,7 @@ from azure.synapse.spark.models import SparkBatchJobOptions
 from loguru import logger
 from tqdm import tqdm
 
-from feathr._abc import SparkJobLauncher
+from feathr.spark_provider._abc import SparkJobLauncher
 from feathr.constants import *
 
 class LivyStates(Enum):

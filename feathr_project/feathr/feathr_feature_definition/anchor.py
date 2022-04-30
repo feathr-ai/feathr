@@ -1,9 +1,9 @@
 from typing import List, Optional, Dict
-from feathr.feature import Feature
-from feathr.source import Source
-from feathr.typed_key import DUMMY_KEY
+from feathr.feathr_feature_definition.feature import Feature
+from feathr.feathr_feature_definition.source import Source
+from feathr.feathr_feature_definition.typed_key import DUMMY_KEY
 from jinja2 import Template
-from feathr.source import INPUT_CONTEXT
+from feathr.feathr_feature_definition.source import INPUT_CONTEXT
 
 # passthrough features do not need keys
 class FeatureAnchor:

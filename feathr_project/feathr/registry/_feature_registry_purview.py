@@ -33,9 +33,9 @@ from feathr.feathr_feature_definition.source import HdfsSource, InputContext, So
 from feathr.feathr_feature_definition.transformation import (ExpressionTransformation, Transformation,
                                    WindowAggTransformation)
 from feathr.feathr_feature_definition.typed_key import TypedKey
+from feathr.registry.feature_registry import FeathrRegistry
 
-
-class _FeatureRegistry():
+class _FeatureRegistry(FeathrRegistry):
     """
     Initializes the feature registry, doing the following:
     - Use an DefaultAzureCredential() to communicate with Azure Purview
@@ -838,3 +838,6 @@ derivations: {
         entity_res = [] if guid_list is None else self.purview_client.get_entity(
             guid=guid_list)["entities"]
         return entity_res
+
+    def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
+        raise NotImplementedError("This method is not implemented")
