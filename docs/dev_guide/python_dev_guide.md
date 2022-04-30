@@ -16,7 +16,7 @@ parent: Feathr Developer Guides
 - Run `feathr` in your terminal to see the instructions.
 - Run `feathr init` to create a new workspace
 - Navigate to the new workspace
-- Feathr requires a local engine packaged in the jar to test features locally. you can download the jar by `feathr start`.
+- Feathr requires a local engine packaged in the jar to test features locally. You can download the jar by `feathr start`.
 - Run `feathr test`, then type in a feature, like feature_a
 - After features are fully tested, you can create your training dataset by `feathr join`. You can also materialize your features to online storage by `feathr deploy`.
 - You can register your features to the metadata registry by `feathr register`
@@ -39,8 +39,8 @@ It's recommended to use virtual environment for Python project development.
 - Install virtualenv: `python3 -m pip install --user virtualenv`
 - Make sure you are not using any other virtualenv(either Python or Conda) with: `deactivate` or `conda deactivate`
 - Create virtualenv in `my_env` folder: `python3 -m venv my_env`. Use a unique name(here `my_env`), so it doesn't confuse with other virtual environments.
-- Activate `my_env `virtualenv: `source my_env/bin/activate`.
-- After activated, you should see your terminal started with `(my_env)`
+- Activate `my_env` virtualenv: `source my_env/bin/activate`.
+- After activation, you should see your terminal started with `(my_env)`
 - To confirm your virtual environment is working, you can type `which python` and it should show python path is in `my_env` folder
 - Then follow [Installation](#Installation) and [Usage](#CLI-Usage).
 - To deactivate virtualenv: deactivate
