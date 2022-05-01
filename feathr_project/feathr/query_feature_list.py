@@ -7,6 +7,7 @@ from feathr.typed_key import TypedKey
 
 class FeatureQuery:
     """A FeatureQuery contains a list of features
+
     Attributes:
         feature_list: a list of feature names
         key: key of `feature_list`, all features must share the same key

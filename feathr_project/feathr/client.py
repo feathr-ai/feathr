@@ -134,7 +134,7 @@ class FeathrClient(object):
             self._FEATHR_JOB_JAR_PATH = \
                 envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'feathr_runtime_location')
-            
+
             if self.credential is None:
                 self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
 
@@ -209,9 +209,10 @@ class FeathrClient(object):
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
         else:
             self.registry.register_features(self.local_workspace_dir, from_context=from_context)
-    
+
     def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
-        """Registers features based on the current workspace
+        """Build features based on the current workspace. all actions that triggers a spark job will be based on the
+        result of this action.
         """
         # Run necessary validations
         # anchor name and source name should be unique

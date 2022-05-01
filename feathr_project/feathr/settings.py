@@ -1,18 +1,18 @@
 from typing import Optional
 from jinja2 import Template
 from loguru import logger
+from feathr.frameconfig import HoconConvertible
 
-
-class ObservationSettings:
+class ObservationSettings(HoconConvertible):
     """Time settings of the observation data. Used in feature join.
+
     Attributes:
         observation_path: path to the observation dataset, i.e. input dataset to get with features
-        event_timestamp_column (Optional[str]): The timestamp field of your record. As sliding window aggregation feature assume each record in the source data should have a timestamp column. 
-        timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are: 
-        - `epoch` (seconds since epoch), for example `1647737463`
-        - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
-        - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html). 
-            
+        event_timestamp_column (Optional[str]): The timestamp field of your record. As sliding window aggregation feature assume each record in the source data should have a timestamp column.
+        timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are:
+            - `epoch` (seconds since epoch), for example `1647737463`
+            - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
+            - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
     """
     def __init__(self,
                  observation_path: str,
