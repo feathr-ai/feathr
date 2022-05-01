@@ -157,3 +157,6 @@ Feathr has native integration with Azure and other cloud services, and here's th
 - [Feature Definition Troubleshooting Guide](how-to-guides/troubleshoot-feature-definition.md)
 - [Feathr Expression Language](how-to-guides/expression-language.md)
 - [Feathr Job Configuration](how-to-guides/feathr-job-configuration.md)
+
+## API Documentation
+- [Python API Documentation](https://feathr.readthedocs.io/en/latest/)
