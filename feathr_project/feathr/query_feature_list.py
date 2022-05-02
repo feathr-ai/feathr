@@ -3,9 +3,9 @@ from typing import List, Optional, Union
 from jinja2 import Template
 
 from feathr.typed_key import TypedKey
+from feathr.frameconfig import HoconConvertible
 
-
-class FeatureQuery:
+class FeatureQuery(HoconConvertible):
     """A FeatureQuery contains a list of features
 
     Attributes:
@@ -18,7 +18,7 @@ class FeatureQuery:
             self.key = [key]
         self.feature_list = feature_list
 
-    def to_config(self) -> str:
+    def to_feature_config(self) -> str:
         tm = Template("""
             {
                 key: {{key_columns}}
@@ -28,3 +28,14 @@ class FeatureQuery:
         key_columns = ", ".join(k.key_column for k in self.key) if self.key else ["NOT_NEEDED"]
         feature_list = ", ".join(f for f in self.feature_list)
         return tm.render(key_columns = key_columns, feature_names = feature_list)
+    #
+    # def to_config(self) -> str:
+    #     tm = Template("""
+    #         {
+    #             key: {{key_columns}}
+    #             featureList: [{{feature_names}}]
+    #         }
+    #     """)
+    #     key_columns = ", ".join(k.key_column for k in self.key) if self.key else ["NOT_NEEDED"]
+    #     feature_list = ", ".join(f for f in self.feature_list)
+    #     return tm.render(key_columns = key_columns, feature_names = feature_list)

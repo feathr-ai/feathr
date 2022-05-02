@@ -415,10 +415,10 @@ class FeathrClient(object):
 
         # produce join config
         tm = Template("""
-            {{observation_settings.to_config()}}
+            {{observation_settings.to_feature_config()}}
             featureList: [
                 {% for list in feature_lists %}
-                    {{list.to_config()}}
+                    {{list.to_feature_config()}}
                 {% endfor %}
             ]
             outputPath: "{{output_path}}"

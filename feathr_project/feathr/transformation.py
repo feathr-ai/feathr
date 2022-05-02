@@ -6,9 +6,7 @@ from feathr.frameconfig import HoconConvertible
 
 class Transformation(HoconConvertible):
     """Base class for all transformations that produce feature values."""
-    @abstractmethod
-    def to_feature_config(self, with_def_field_name: Optional[bool] = True) -> str:
-        pass
+    pass
 
 
 class RowTransformation(Transformation):
