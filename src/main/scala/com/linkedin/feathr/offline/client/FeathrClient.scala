@@ -37,6 +37,20 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
   private[offline] val allSeqJoinFeatures = featureGroups.allSeqJoinFeatures
 
   /**
+   * Join pre-defined features to input observation data.
+   * @param joinConfig feathr offline's [[FeatureJoinConfig]], specifies features to be joined with observation data.
+   * @param obsData    Observation data taken in as a [[SparkFeaturizedDataset]].
+   * @param jobContext [[JoinJobContext]]
+   * @return Joined observation and Header tuple.
+   */
+  def joinFeaturesAsDfWithHeader(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset, jobContext: JoinJobContext = JoinJobContext()):
+  (DataFrame, Header) = {
+    val sparkConf = sparkSession.sparkContext.getConf
+    FeathrUtils.enableDebugLogging(sparkConf)
+    doJoinObsAndFeatures(joinConfig, jobContext, obsData.data)
+  }
+
+  /**
    * Joins observation data on the feature data. Observation data is loaded as SparkFeaturizedDataset, and the
    * joined data is returned as a SparkFeaturizedDataset.
    *
@@ -56,13 +70,9 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
    */
   @InternalApi
   def joinFeatures(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset, jobContext: JoinJobContext = JoinJobContext()): SparkFeaturizedDataset = {
-    val sparkConf = sparkSession.sparkContext.getConf
-    FeathrUtils.enableDebugLogging(sparkConf)
-
-    val (joinedDF, _) = doJoinObsAndFeatures(joinConfig, jobContext, obsData.data)
+    val (joinedDF, _) = joinFeaturesAsDfWithHeader(joinConfig, obsData, jobContext)
     SparkFeaturizedDataset(joinedDF, FeaturizedDatasetMetadata())
   }
-
   /**
    * Generates features by extracting feature data from its source. It returns generated features, the DataFrame for feature data
    * and the feature related metadata. The API takes in [[FeatureGenSpec]] as the input, which is expected to contain all the
