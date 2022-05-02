@@ -18,6 +18,8 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    feature_names=["f_location_avg_fare", "f_location_max_fare"])
 client.materialize_features(settings)
 ```
+([MaterializationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.materialization_settings.MaterializationSettings),
+[RedisSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.sink.RedisSink))
 
 In the above example, we define a Redis table called `nycTaxiDemoFeature` and materialize two features called `f_location_avg_fare` and `f_location_max_fare` to Redis.
 
@@ -33,6 +35,8 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    backfill_time=backfill_time)
 client.materialize_features(settings)
 ```
+([BackfillTime API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.materialization_settings.BackfillTime),
+[client.materialize_features() API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.client.FeathrClient.materialize_features))
 
 ## Consuming the online features
 
@@ -42,5 +46,6 @@ client.wait_job_to_finish(timeout_sec=600)
 res = client.get_online_features('nycTaxiDemoFeature', '265', [
                                      'f_location_avg_fare', 'f_location_max_fare'])
 ```
+([client.get_online_features API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.client.FeathrClient.get_online_features))
 
 After we finish running the materialization job, we can get the online features by querying the feature name, with the corresponding keys. In the example above, we query the online features called `f_location_avg_fare` and `f_location_max_fare`, and query with a key `265` (which is the location ID).

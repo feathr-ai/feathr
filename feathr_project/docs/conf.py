@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'feathr'
+project = 'Feathr Feature Store'
 copyright = '2022, Feathr Community'
 author = 'Feathr Community'
 

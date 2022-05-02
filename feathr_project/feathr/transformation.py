@@ -2,9 +2,9 @@ import enum
 from typing import Type, Union, List, Optional
 from abc import ABC, abstractmethod
 from jinja2 import Template
+from feathr.frameconfig import HoconConvertible
 
-
-class Transformation(ABC):
+class Transformation(HoconConvertible):
     """Base class for all transformations that produce feature values."""
     @abstractmethod
     def to_feature_config(self, with_def_field_name: Optional[bool] = True) -> str:
@@ -18,6 +18,7 @@ class RowTransformation(Transformation):
 
 class ExpressionTransformation(RowTransformation):
     """A row-level transformations that is defined with the Feathr expression language.
+
     Attributes:
         expr: expression that transforms the raw value into a new value, e.g. amount * 10.
     """
