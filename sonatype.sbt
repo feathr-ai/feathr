@@ -21,4 +21,5 @@ scmInfo := Some(
   )
 )
 developers := List(
+    Developer(id="feathr_dev", name="Feathr Dev", email="feathrai@gmail.com", url=url("https://github.com/linkedin/feathr"))
 )
