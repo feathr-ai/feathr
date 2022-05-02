@@ -561,6 +561,9 @@ class FeathrClient(object):
         - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
+        optional_params = []
+        if _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG'):
+            optional_params = optional_params + ['--kafka-config', self._get_kafka_config_str()]
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
@@ -577,9 +580,8 @@ class FeathrClient(object):
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str(),
-                '--kafka-config', self._get_kafka_config_str()
-            ],
+                '--snowflake-config', self._get_snowflake_config_str()
+            ] + optional_params,
             reference_files_path=[],
             configuration=execution_configuratons,
         )
