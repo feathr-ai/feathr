@@ -39,20 +39,3 @@ class ObservationSettings(HoconConvertible):
                 observationPath: "{{setting.observation_path}}"
             """)
         return tm.render(setting=self)
-
-    # # Will be deprecated in next release
-    # def to_config(self) -> str:
-    #     tm = Template("""
-    #         {% if setting.event_timestamp_column is not none %}
-    #         settings: {
-    #             joinTimeSettings: {
-    #                 timestampColumn: {
-    #                     def: "{{setting.event_timestamp_column}}"
-    #                     format: "{{setting.timestamp_format}}"
-    #                 }
-    #             }
-    #         }
-    #         {% endif %}
-    #         observationPath: "{{setting.observation_path}}"
-    #     """)
-    #     return tm.render(setting=self)
