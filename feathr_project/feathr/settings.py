@@ -24,18 +24,18 @@ class ObservationSettings(HoconConvertible):
         if observation_path.startswith("http"):
             logger.warning("Your observation_path {} starts with http, which is not supported. Consider using paths starting with wasb[s]/abfs[s]/s3.", observation_path)
 
-    def to_config(self) -> str:
+    def to_feature_config(self) -> str:
         tm = Template("""
-            {% if setting.event_timestamp_column is not none %}
-            settings: {
-                joinTimeSettings: {
-                    timestampColumn: {
-                        def: "{{setting.event_timestamp_column}}"
-                        format: "{{setting.timestamp_format}}"
+                {% if setting.event_timestamp_column is not none %}
+                settings: {
+                    joinTimeSettings: {
+                        timestampColumn: {
+                            def: "{{setting.event_timestamp_column}}"
+                            format: "{{setting.timestamp_format}}"
+                        }
                     }
                 }
-            }
-            {% endif %}
-            observationPath: "{{setting.observation_path}}"
-        """)
+                {% endif %}
+                observationPath: "{{setting.observation_path}}"
+            """)
         return tm.render(setting=self)
