@@ -6,6 +6,7 @@ import math
 
 class BackfillTime:
     """Time range to materialize/backfill feature data.
+
     Attributes:
         start: start time of the backfill, inclusive.
         end: end time of the backfill, inclusive.
@@ -18,7 +19,8 @@ class BackfillTime:
 
 
 class MaterializationSettings:
-    """
+    """Settings about materialization features.
+
     Attributes:
         name: The materialization job name
         sinks: sinks where the materialized features should be written to

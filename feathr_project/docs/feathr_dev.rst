@@ -1,4 +1,4 @@
-feathr package
+Feathr APIs for Internal Developers
 ==============
 
 feathr.constants module
