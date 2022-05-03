@@ -13,4 +13,4 @@ from .definition.lookup_feature import *
 from .definition.aggregation import *
 from .utils.job_utils import *
 
-__all__ = ['feature_derivations', 'anchor', 'feature', 'dtype', 'source', 'transformation', 'typed_key', 'materialization_settings', 'sink']
+__all__ = ['DerivedFeature', 'FeatureAnchor', 'feature', 'dtype', 'source', 'transformation', 'typed_key', 'materialization_settings', 'sink']
