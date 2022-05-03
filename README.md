@@ -152,7 +152,7 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
   - [ ] Support online transformation
   - [ ] Support feature versioning
   - [ ] Support feature monitoring
-  - [ ] Support feature sotre UI
+  - [ ] Support feature store UI
       - [ ] Lineage
       - [ ] Search
   - [ ] Support feature data deletion and rentenion
