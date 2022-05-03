@@ -73,7 +73,7 @@ class FeathrClient(object):
     The users of this client is responsible for set up all the necessary information needed to start a Redis client via
     environment variable or a Spark cluster. Host address, port and password are needed to start the Redis client.
 
-    Args:
+    Attributes:
         config_path (str, optional): config path. See [Feathr Config Template](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
         local_workspace_dir (str, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
         credential (optional): credential to access cloud resources,  most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
@@ -415,10 +415,10 @@ class FeathrClient(object):
 
         # produce join config
         tm = Template("""
-            {{observation_settings.to_config()}}
+            {{observation_settings.to_feature_config()}}
             featureList: [
                 {% for list in feature_lists %}
-                    {{list.to_config()}}
+                    {{list.to_feature_config()}}
                 {% endfor %}
             ]
             outputPath: "{{output_path}}"

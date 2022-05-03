@@ -1,5 +1,4 @@
 
-from abc import ABC, abstractmethod
 from typing import Callable, Dict, List, Optional
 from feathr.frameconfig import HoconConvertible
 
@@ -8,7 +7,7 @@ from loguru import logger
 import json
 
 
-class SourceSchema(ABC):
+class SourceSchema(HoconConvertible):
     pass
 
 

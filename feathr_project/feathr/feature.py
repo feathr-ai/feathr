@@ -67,10 +67,6 @@ class FeatureBase(HoconConvertible):
         new_feature.feature_alias = feature_alias
         return new_feature
 
-    @abstractmethod
-    def to_feature_config(self) -> str:
-        pass
-
 
 class Feature(FeatureBase):
     """A feature is an individual measurable property or characteristic of an entity.

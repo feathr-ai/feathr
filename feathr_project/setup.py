@@ -7,7 +7,7 @@ long_description = (root_path / "README.md").read_text()
 
 setup(
     name='feathr',
-    version='0.3.2',
+    version='0.4.0',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="frame_dev@linkedin.com",
@@ -36,6 +36,7 @@ setup(
         "Jinja2",
         "tqdm",
         "pyarrow",
+        "pyspark>=3.1.2",
         "python-snappy",
         "deltalake",
         "google>=3.0.0",
@@ -55,9 +56,6 @@ setup(
     tests_require=[
         'pytest',
     ],
-    extras_require={
-        'all': ["pyspark>=3.1.2"]
-    },
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
     },
