@@ -24,7 +24,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 ## Documentation
 
-For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
+For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/). For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
 
 ## Running Feathr on Azure with 3 Simple Steps
 
