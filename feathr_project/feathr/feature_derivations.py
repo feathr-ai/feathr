@@ -10,6 +10,7 @@ from feathr.typed_key import DUMMY_KEY, TypedKey
 
 class DerivedFeature(FeatureBase):
     """A derived feature is a feature defined on top of other features, rather than external data source.
+
     Attributes:
         name: derived feature name
         feature_type: type of derived feature

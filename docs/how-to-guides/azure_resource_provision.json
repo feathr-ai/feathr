@@ -25,6 +25,14 @@
             "metadata": {
                 "description": "Specifies whether to allow client IPs to connect to Synapse"
             }
+        },
+        "provisionPurview": {
+            "type": "string",
+            "allowedValues": [ "true", "false" ],
+            "defaultValue": "true",
+            "metadata": {
+                "description": "Whether or not put purview in the provision script"
+            }
         }
     },
     "functions": [],
@@ -139,6 +147,7 @@
         {
             "type": "Microsoft.Purview/accounts",
             "apiVersion": "2021-07-01",
+            "condition": "[equals(parameters('provisionPurview'),'true')]",
             "name": "[variables('purviewName')]",
             "location": "[variables('location')]",
             "sku": {

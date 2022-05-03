@@ -12,7 +12,7 @@ val localAndCloudDiffDependencies = Seq(
     "org.apache.spark" %% "spark-catalyst" % sparkVersion,
     "org.apache.logging.log4j" % "log4j-core" % "2.17.1",
     "com.typesafe" % "config" % "1.3.2",
-    "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.2",
+    "com.fasterxml.jackson.core" % "jackson-databind" % "2.12.2",
     "org.apache.hadoop" % "hadoop-mapreduce-client-core" % "2.7.2",
     "org.apache.hadoop" % "hadoop-common" % "2.7.2",
     "org.apache.avro" % "avro" % "1.8.2",
@@ -32,9 +32,9 @@ val localAndCloudCommonDependencies = Seq(
     "org.scalatest" %% "scalatest" % "3.0.0" % Test,
     "it.unimi.dsi" % "fastutil" % "8.1.1",
     "org.mvel" % "mvel2" % "2.2.7.Final",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7.1",
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.2",
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.2",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.12.2",
+    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.12.2",
+    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.12.2",
     "com.jasonclawson" % "jackson-dataformat-hocon" % "1.1.0",
     "com.redislabs" %% "spark-redis" % "3.0.0",
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
@@ -49,7 +49,6 @@ val localAndCloudCommonDependencies = Seq(
 
 val jdbcDrivers = Seq(
   "com.microsoft.sqlserver" % "mssql-jdbc" % "10.2.0.jre8",
-  "mysql" % "mysql-connector-java" % "8.0.25",
   "net.snowflake" % "snowflake-jdbc" % "3.13.14",
   "org.postgresql" % "postgresql" % "42.3.3",
 )

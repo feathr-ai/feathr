@@ -225,10 +225,6 @@ Your inputs to the derived feature({f_trip_distance * f_trip_time_duration}) wit
 
 One of your input(`f_trip_distance`) is None and then your derived feature transformation failed. Since you are adding None with a numeric value here. So you should try to fix the None from `f_trip_distance` feature. If the None is inevitable, try to fix your feature expression so it can handle None.
 
-# FAQ
-
-(TBD)
-
 # Need More Help?
 
 If you need more help, please reach out to us via our slack channel.
