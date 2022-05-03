@@ -56,4 +56,14 @@ class SparkJobLauncher(ABC):
             str: _description_
         """
         pass
+    
+    @abstractmethod
+    def get_driver_log(self) -> str:
+        """
+        Get driver log from the Spark cluster
+        
+        Returns:
+            str: log content
+        """
+        pass
 

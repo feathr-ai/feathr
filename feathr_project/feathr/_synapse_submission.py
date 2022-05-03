@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from os.path import basename
 from enum import Enum
+from azure.identity import DefaultAzureCredential
 
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
                             DeviceCodeCredential, EnvironmentCredential,
@@ -15,6 +16,7 @@ from azure.storage.filedatalake import DataLakeServiceClient
 from azure.synapse.spark import SparkClient
 from azure.synapse.spark.models import SparkBatchJobOptions
 from loguru import logger
+from requests import request
 from tqdm import tqdm
 
 from feathr._abc import SparkJobLauncher
@@ -51,6 +53,9 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             synapse_dev_url, pool_name, executor_size=executor_size, executors=executors, credential=self.credential)
         self._datalake = _DataLakeFiler(
             datalake_dir, credential=self.credential)
+        # Save Synapse parameters to retrieve driver log
+        self._synapse_dev_url = synapse_dev_url
+        self._pool_name = pool_name
 
     def upload_or_get_cloud_path(self, local_path_or_http_path: str):
         """
@@ -166,6 +171,16 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         """
         return self._api.get_spark_batch_job(self.current_job_info.id).tags
 
+    def get_driver_log(self) -> str:
+        # @see: https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/connect-monitor-azure-synapse-spark-application-level-metrics
+        job_id = self.current_job_info.id
+        app_id = self._api.get_spark_batch_job(job_id).app_id
+        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stdout/?isDownload=true" % (self._synapse_dev_url, self._pool_name, job_id, app_id)
+        default_credential = DefaultAzureCredential()
+        token = default_credential.get_token("https://dev.azuresynapse.net/.default")
+        req = urllib.request.Request(url=url, headers={"authorization": "Bearer %s" % token})
+        resp = urllib.request.urlopen(req)
+        return resp.read()
 
 
 class _SynapseJobRunner(object):
