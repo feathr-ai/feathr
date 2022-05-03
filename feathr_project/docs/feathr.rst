@@ -4,7 +4,7 @@ Feathr APIs for End Users
 feathr.client module
 --------------------
 
-.. automodule:: feathr.client
+.. automodule:: feathr.definition.client
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,7 +12,7 @@ feathr.client module
 feathr.anchor module
 --------------------
 
-.. automodule:: feathr.anchor
+.. automodule:: feathr.definition.anchor
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,7 +21,7 @@ feathr.anchor module
 feathr.source module
 --------------------
 
-.. automodule:: feathr.source
+.. automodule:: feathr.definition.source
     :members:
     :undoc-members:
     :show-inheritance:
@@ -30,7 +30,7 @@ feathr.source module
 feathr.feature module
 ---------------------
 
-.. automodule:: feathr.feature
+.. automodule:: feathr.definition.feature
     :members:
     :undoc-members:
     :show-inheritance:
@@ -38,7 +38,7 @@ feathr.feature module
 feathr.transformation module
 ----------------------------
 
-.. automodule:: feathr.transformation
+.. automodule:: feathr.definition.transformation
     :members:
     :undoc-members:
     :show-inheritance:
@@ -46,7 +46,7 @@ feathr.transformation module
 feathr.typed\_key module
 ------------------------
 
-.. automodule:: feathr.typed_key
+.. automodule:: feathr.definition.typed_key
     :members:
     :undoc-members:
     :show-inheritance:
@@ -54,7 +54,7 @@ feathr.typed\_key module
 feathr.aggregation module
 -------------------------
 
-.. automodule:: feathr.aggregation
+.. automodule:: feathr.definition.aggregation
     :members:
     :undoc-members:
     :show-inheritance:
@@ -62,7 +62,7 @@ feathr.aggregation module
 feathr.dtype module
 -------------------
 
-.. automodule:: feathr.dtype
+.. automodule:: feathr.definition.dtype
     :members:
     :undoc-members:
     :show-inheritance:
@@ -70,7 +70,7 @@ feathr.dtype module
 feathr.feature\_derivations module
 ----------------------------------
 
-.. automodule:: feathr.feature_derivations
+.. automodule:: feathr.definition.feature_derivations
     :members:
     :undoc-members:
     :show-inheritance:
@@ -78,7 +78,7 @@ feathr.feature\_derivations module
 feathr.lookup\_feature module
 -----------------------------
 
-.. automodule:: feathr.lookup_feature
+.. automodule:: feathr.definition.lookup_feature
     :members:
     :undoc-members:
     :show-inheritance:
@@ -86,7 +86,7 @@ feathr.lookup\_feature module
 feathr.query\_feature\_list module
 ----------------------------------
 
-.. automodule:: feathr.query_feature_list
+.. automodule:: feathr.definition.query_feature_list
     :members:
     :undoc-members:
     :show-inheritance:
@@ -94,7 +94,7 @@ feathr.query\_feature\_list module
 feathr.materialization\_settings module
 ---------------------------------------
 
-.. automodule:: feathr.materialization_settings
+.. automodule:: feathr.definition.materialization_settings
     :members:
     :undoc-members:
     :show-inheritance:
@@ -102,7 +102,7 @@ feathr.materialization\_settings module
 feathr.settings module
 ----------------------
 
-.. automodule:: feathr.settings
+.. automodule:: feathr.definition.settings
     :members:
     :undoc-members:
     :show-inheritance:
@@ -110,7 +110,7 @@ feathr.settings module
 feathr.sink module
 ------------------
 
-.. automodule:: feathr.sink
+.. automodule:: feathr.definition.sink
     :members:
     :undoc-members:
     :show-inheritance:
@@ -118,7 +118,7 @@ feathr.sink module
 feathr.feathr\_configurations module
 ------------------------------------
 
-.. automodule:: feathr.feathr_configurations
+.. automodule:: feathr.definition.feathr_configurations
     :members:
     :undoc-members:
     :show-inheritance:
