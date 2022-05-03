@@ -15,15 +15,15 @@ from .utils.job_utils import *
 
 # expose the modules so docs can build
 # referencee： https://stackoverflow.com/questions/15115514/how-do-i-document-classes-without-the-module-name/31594545#31594545
-__all__ = ['DerivedFeature', 'FeatureAnchor', 'Feature', 'ValueType', 'WindowAggTransformation',
-           'TypedKey', 'DUMMYKEY', 'BackfillTime', 'MaterializationSettings', 'RedisSink', 'FeatureQuery', 'LookupFeature', 'Aggregation', 'get_result_df', 'AvroJsonSchema', 'Source', 'InputContext', 'HdfsSource', 'KafkaConfig', 'KafKaSource', 'ValueType', 'BOOLEAN',
-           'INT32',
-           'INT64',
-           'FLOAT',
-           'DOUBLE',
-           'STRING',
-           'BYTES',
-           'FLOAT_VECTOR',
-           'INT32_VECTOR',
-           'INT64_VECTOR ',
-           'DOUBLE_VECTOR', ]
+__all__ = ['FeatureJoinJobParams', 'FeatureGenerationJobParams', 'FeathrClient','DerivedFeature', 'FeatureAnchor', 'Feature', 'ValueType', 'WindowAggTransformation',
+           'TypedKey', 'DUMMYKEY', 'BackfillTime', 'MaterializationSettings', 'RedisSink', 'FeatureQuery', 'LookupFeature', 'Aggregation', 'get_result_df', 'AvroJsonSchema', 'Source', 'InputContext', 'HdfsSource', 'KafkaConfig', 'KafKaSource', 'ValueType', 'BooleanFeatureType',
+           'Int32FeatureType',
+           'Int64FeatureType',
+           'FloatFeatureType',
+           'DoubleFeatureType',
+           'StringFeatureType',
+           'BytesFeatureType',
+           'FloatVectorFeatureType',
+           'Int32VectorFeatureType',
+           'INT64_VECTOR = Int64VectorFeatureType',
+           'DoubleVectorFeatureType', ]
