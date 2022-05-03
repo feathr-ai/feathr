@@ -2,7 +2,7 @@ Feathr APIs for End Users
 ==============
 
 
-Module contents xiaoyzhu4
+Module contents
 ---------------
 
 .. automodule:: feathr
