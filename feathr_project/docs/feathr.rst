@@ -10,10 +10,10 @@ feathr.client module
     :show-inheritance:
 
 
-Module contents xiaoyzhu
+Module contents xiaoyzhu2
 ---------------
 
-.. automodule:: feathr.DerivedFeature
+.. automodule:: feathr
     :members:
     :undoc-members:
     :show-inheritance:
