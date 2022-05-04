@@ -847,29 +847,44 @@ derivations: {
             project_name (str): project name.
         """
 
-        entities = self._list_registered_entities_with_details(project_name=project_name, entity_type=TYPEDEF_FEATHR_PROJECT)
+        entities = self._list_registered_entities_with_details(project_name=project_name,entity_type=[TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT])
         if not entities:
             # if the result is empty
             return (None, None)
-        project_entity = entities[0] # there's only one available
+        
+        # get project entity, the else are feature entities (derived+anchor)
+        project_entity = [x for x in entities if x['typeName']==TYPEDEF_FEATHR_PROJECT][0] # there's only one available
+        feature_entities = [x for x in entities if x!=project_entity]
+        feature_entity_guid_mapping = {x['guid']:x for x in feature_entities}
+
+        # this is guid for feature anchor (GROUP of anchor features)
         anchor_guid = [anchor_entity["guid"] for anchor_entity in project_entity["attributes"]["anchor_features"]]
         derived_feature_guid = [derived_feature_entity["guid"] for derived_feature_entity in project_entity["attributes"]["derived_features"]]
         
-        derived_feature_result = self.purview_client.get_entity(guid=derived_feature_guid)["entities"]
+        derived_feature_ids = [feature_entity_guid_mapping[x] for x in derived_feature_guid]
+        
         derived_feature_list = []
-        for derived_feature_entity in derived_feature_result:
-            key_from_entity=derived_feature_entity["attributes"]["tags"]
-            anchor_feature_guid = [e["guid"] for e in derived_feature_entity["attributes"]["input_anchor_features"]]
-            derived_feature_guid = [e["guid"] for e in derived_feature_entity["attributes"]["input_derived_features"]]
-            input_features_guid = self.search_input_anchor_features(derived_feature_guid)
-            all_input_features = list(itertools.chain.from_iterable([self._get_features_by_guid(x) for x in input_features_guid+anchor_feature_guid]))
+        for derived_feature_entity_id in derived_feature_ids:
+            # this will be used to generate DerivedFeature instance
+            key_from_entity=derived_feature_entity_id["attributes"]["tags"]
+            
+            # for feature anchor (GROUP), input features are splitted into input anchor features & input derived features
+            anchor_feature_guid = [e["guid"] for e in derived_feature_entity_id["attributes"]["input_anchor_features"]]
+            derived_feature_guid = [e["guid"] for e in derived_feature_entity_id["attributes"]["input_derived_features"]]
+            
+            # for derived features, search all related input features.
+            input_features_guid = self.search_input_anchor_features(derived_feature_guid,feature_entity_guid_mapping)
 
-            derived_feature_list.append(DerivedFeature(name=derived_feature_entity["attributes"]["name"],
+            # chain the input features together
+            all_input_features = list(itertools.chain.from_iterable(
+                [self._get_features_by_guid(x) for x in input_features_guid+anchor_feature_guid]))
+
+            derived_feature_list.append(DerivedFeature(name=derived_feature_entity_id["attributes"]["name"],
                                 feature_type=None,
                                 transform=None,
                                 key=key_from_entity,
                                 input_features= all_input_features,
-                                registry_tags=derived_feature_entity["attributes"]["tags"]))
+                                registry_tags=derived_feature_entity_id["attributes"]["tags"]))                    
         anchor_result = self.purview_client.get_entity(guid=anchor_guid)["entities"]
         anchor_list = []
         for anchor_entity in anchor_result:
@@ -882,7 +897,7 @@ derivations: {
         
         return (anchor_list, derived_feature_list)
 
-    def search_input_anchor_features(self,derived_guids) ->List[str]:
+    def search_input_anchor_features(self,derived_guids,feature_entity_guid_mapping) ->List[str]:
         '''
         Iterate all derived features and its parent links, extract and aggregate all inputs
         '''
@@ -890,11 +905,13 @@ derivations: {
         result = []
         while len(stack)>0:
             current_derived_guid = stack.pop()
-            current_inputs = self._get_features_by_guid(current_derived_guid)
-            new_derived_features = [x["guid"] for x in current_inputs if len(x["attributes"]["input_anchor_features"])==0]
+            current_input = feature_entity_guid_mapping[current_derived_guid]
+            new_derived_features = [x["guid"] for x in current_input["attributes"]["input_derived_features"]]
+            new_anchor_features = [x["guid"] for x in current_input["attributes"]["input_anchor_features"]]
             for feature_guid in new_derived_features:
                 stack.append(feature_guid)
-            result += [x["guid"] for x in current_inputs if x["guid"] not in new_derived_features]
+            result += new_anchor_features
+            result = list(set(result))
         return result
 
 
