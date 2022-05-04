@@ -104,7 +104,6 @@ const DataSourceList: React.FC = () => {
     async () => {
       setLoading(true);
       const result = await fetchDataSources();
-      console.log(result);
       setPage(page);
       setTableData(result);
       setLoading(false);

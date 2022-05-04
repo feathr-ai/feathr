@@ -4,7 +4,6 @@ import { createFeature, updateFeature } from '../api';
 import { Redirect } from 'react-router';
 import { UpCircleOutlined } from '@ant-design/icons'
 import { FeatureAttributes, IFeature } from "../models/model";
-import FeatureDetails from "./featureDetails";
 
 type FeatureFormProps = {
   isNew: boolean;
@@ -51,7 +50,6 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
   const styling: CSSProperties = { width: "92%" }
   return (
     <>
-      <FeatureDetails feature={ feature } />
       <Form
         form={ form }
         style={ styling }

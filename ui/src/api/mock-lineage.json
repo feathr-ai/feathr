@@ -1,0 +1,854 @@
+{
+  "baseEntityGuid": "06fec203-3096-4c25-aa20-65a20c8fac98",
+  "lineageDirection": "BOTH",
+  "lineageDepth": 3,
+  "lineageWidth": 10,
+  "childrenCount": -1,
+  "guidEntityMap": {
+    "0853a1cf-8ad8-44da-b14e-9ae64f14afe0": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__request_features__f_trip_time_duration",
+        "name": "f_trip_time_duration to request_features"
+      },
+      "lastModifiedTS": "1",
+      "guid": "0853a1cf-8ad8-44da-b14e-9ae64f14afe0",
+      "status": "ACTIVE",
+      "displayText": "f_trip_time_duration to request_features",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "9b7bdb97-722d-4f3f-9f1f-40f0de9dafd2": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__aggregationFeatures",
+        "name": "aggregationFeatures to feathr_awe_demo"
+      },
+      "lastModifiedTS": "1",
+      "guid": "9b7bdb97-722d-4f3f-9f1f-40f0de9dafd2",
+      "status": "ACTIVE",
+      "displayText": "aggregationFeatures to feathr_awe_demo",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "f0535846-034d-40e8-b513-e7643fbca9cc": {
+      "typeName": "feathr_anchor_v1",
+      "attributes": {
+        "features": [
+          {
+            "guid": "d6a3342b-b78e-43fe-a18c-bef20d1e2d19",
+            "typeName": "feathr_anchor_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__aggregationFeatures__f_location_avg_fare"
+            }
+          },
+          {
+            "guid": "2ffd8814-6c65-4fcf-be41-5c0604c83bde",
+            "typeName": "feathr_anchor_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__aggregationFeatures__f_location_max_fare"
+            }
+          }
+        ],
+        "qualifiedName": "feathr_awe_demo__aggregationFeatures",
+        "name": "aggregationFeatures",
+        "source": {
+          "guid": "cfd32485-777c-45cb-bc35-ee781994bfb2",
+          "typeName": "feathr_source_v1",
+          "uniqueAttributes": {
+            "qualifiedName": "feathr_awe_demo__nycTaxiBatchSourcePurview"
+          }
+        }
+      },
+      "lastModifiedTS": "1",
+      "guid": "f0535846-034d-40e8-b513-e7643fbca9cc",
+      "status": "ACTIVE",
+      "displayText": "aggregationFeatures",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "08c63576-941f-4540-93e9-6cc1d0aca6e3": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__f_trip_time_distance__f_trip_distance",
+        "name": "f_trip_distance to f_trip_time_distance"
+      },
+      "lastModifiedTS": "1",
+      "guid": "08c63576-941f-4540-93e9-6cc1d0aca6e3",
+      "status": "ACTIVE",
+      "displayText": "f_trip_distance to f_trip_time_distance",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "04c9afd1-d2f4-48fe-89a7-fad633e54a31": {
+      "typeName": "feathr_anchor_feature_v1",
+      "attributes": {
+        "qualifiedName": "feathr_awe_demo__request_features__f_trip_distance",
+        "name": "f_trip_distance",
+        "type": "\n            type: {\n                type: TENSOR\n                tensorCategory: DENSE\n                dimensionType: []\n                valType: FLOAT\n            }\n        ",
+        "transformation": {
+          "transform_expr": "trip_distance"
+        },
+        "key": [
+          {
+            "full_name": "feathr.dummy_typedkey",
+            "key_column": "NOT_NEEDED",
+            "description": "A dummy typed key for passthrough/request feature.",
+            "key_column_alias": "NOT_NEEDED",
+            "key_column_type": "0"
+          }
+        ]
+      },
+      "lastModifiedTS": "1",
+      "guid": "04c9afd1-d2f4-48fe-89a7-fad633e54a31",
+      "status": "ACTIVE",
+      "displayText": "f_trip_distance",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "5ed1b87d-2aa9-4315-bc9a-0361d8a478cb": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__aggregationFeatures__f_location_avg_fare",
+        "name": "f_location_avg_fare to aggregationFeatures"
+      },
+      "lastModifiedTS": "1",
+      "guid": "5ed1b87d-2aa9-4315-bc9a-0361d8a478cb",
+      "status": "ACTIVE",
+      "displayText": "f_location_avg_fare to aggregationFeatures",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "6af87983-d46d-4c17-9e68-782c45248707": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__f_trip_time_distance",
+        "name": "f_trip_time_distance to feathr_awe_demo"
+      },
+      "lastModifiedTS": "1",
+      "guid": "6af87983-d46d-4c17-9e68-782c45248707",
+      "status": "ACTIVE",
+      "displayText": "f_trip_time_distance to feathr_awe_demo",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "c2a080e9-2e08-44a5-a9c4-0ba7f924df8b": {
+      "typeName": "feathr_derived_feature_v1",
+      "attributes": {
+        "qualifiedName": "feathr_awe_demo__f_trip_time_rounded",
+        "name": "f_trip_time_rounded",
+        "input_derived_features": [],
+        "type": "\n            type: {\n                type: TENSOR\n                tensorCategory: DENSE\n                dimensionType: []\n                valType: INT\n            }\n        ",
+        "transformation": {
+          "transform_expr": "f_trip_time_duration % 10"
+        },
+        "input_anchor_features": [
+          {
+            "guid": "49a7332e-9129-4721-9688-e033077410f9",
+            "typeName": "feathr_anchor_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__request_features__f_trip_time_duration"
+            }
+          }
+        ],
+        "key": [
+          {
+            "full_name": "feathr.dummy_typedkey",
+            "key_column": "NOT_NEEDED",
+            "description": "A dummy typed key for passthrough/request feature.",
+            "key_column_alias": "NOT_NEEDED",
+            "key_column_type": "0"
+          }
+        ]
+      },
+      "lastModifiedTS": "1",
+      "guid": "c2a080e9-2e08-44a5-a9c4-0ba7f924df8b",
+      "status": "ACTIVE",
+      "displayText": "f_trip_time_rounded",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "e3ee3b07-a4d1-4348-90a2-46716fe0d3dc": {
+      "typeName": "feathr_anchor_feature_v1",
+      "attributes": {
+        "qualifiedName": "feathr_awe_demo__request_features__f_is_long_trip_distance",
+        "name": "f_is_long_trip_distance",
+        "type": "\n           type: {\n                type: TENSOR\n                tensorCategory: DENSE\n                dimensionType: []\n                valType: BOOLEAN\n            }\n        ",
+        "transformation": {
+          "transform_expr": "cast_float(trip_distance)>30"
+        },
+        "key": [
+          {
+            "full_name": "feathr.dummy_typedkey",
+            "key_column": "NOT_NEEDED",
+            "description": "A dummy typed key for passthrough/request feature.",
+            "key_column_alias": "NOT_NEEDED",
+            "key_column_type": "0"
+          }
+        ]
+      },
+      "lastModifiedTS": "1",
+      "guid": "e3ee3b07-a4d1-4348-90a2-46716fe0d3dc",
+      "status": "ACTIVE",
+      "displayText": "f_is_long_trip_distance",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "1857ed4d-cf01-41dc-93bf-e5feb3dd2d61": {
+      "typeName": "feathr_anchor_v1",
+      "attributes": {
+        "features": [
+          {
+            "guid": "04c9afd1-d2f4-48fe-89a7-fad633e54a31",
+            "typeName": "feathr_anchor_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__request_features__f_trip_distance"
+            }
+          },
+          {
+            "guid": "49a7332e-9129-4721-9688-e033077410f9",
+            "typeName": "feathr_anchor_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__request_features__f_trip_time_duration"
+            }
+          },
+          {
+            "guid": "e3ee3b07-a4d1-4348-90a2-46716fe0d3dc",
+            "typeName": "feathr_anchor_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__request_features__f_is_long_trip_distance"
+            }
+          },
+          {
+            "guid": "4e881f3f-ec96-4ca0-b9a2-e902045d6486",
+            "typeName": "feathr_anchor_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__request_features__f_day_of_week"
+            }
+          }
+        ],
+        "qualifiedName": "feathr_awe_demo__request_features",
+        "name": "request_features",
+        "source": {
+          "guid": "7bfa3f82-fb7d-4107-ae55-fa1652dd547f",
+          "typeName": "feathr_source_v1",
+          "uniqueAttributes": {
+            "qualifiedName": "feathr_awe_demo__PASSTHROUGH"
+          }
+        }
+      },
+      "lastModifiedTS": "1",
+      "guid": "1857ed4d-cf01-41dc-93bf-e5feb3dd2d61",
+      "status": "ACTIVE",
+      "displayText": "request_features",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "06010c49-b99c-4d4e-8127-3ef29e7ff33b": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__f_trip_time_rounded__f_trip_time_duration",
+        "name": "f_trip_time_duration to f_trip_time_rounded"
+      },
+      "lastModifiedTS": "1",
+      "guid": "06010c49-b99c-4d4e-8127-3ef29e7ff33b",
+      "status": "ACTIVE",
+      "displayText": "f_trip_time_duration to f_trip_time_rounded",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "1bf6c587-3ac5-410d-a9a3-3a4dc158ea8c": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__aggregationFeatures__f_location_max_fare",
+        "name": "f_location_max_fare to aggregationFeatures"
+      },
+      "lastModifiedTS": "1",
+      "guid": "1bf6c587-3ac5-410d-a9a3-3a4dc158ea8c",
+      "status": "ACTIVE",
+      "displayText": "f_location_max_fare to aggregationFeatures",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "cfd32485-777c-45cb-bc35-ee781994bfb2": {
+      "typeName": "feathr_source_v1",
+      "attributes": {
+        "timestamp_format": "yyyy-MM-dd HH:mm:ss",
+        "path": "wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/feathr_delta_table",
+        "event_timestamp_column": "lpep_dropoff_datetime",
+        "qualifiedName": "feathr_awe_demo__nycTaxiBatchSourcePurview",
+        "name": "nycTaxiBatchSourcePurview",
+        "type": "wasbs"
+      },
+      "lastModifiedTS": "1",
+      "guid": "cfd32485-777c-45cb-bc35-ee781994bfb2",
+      "status": "ACTIVE",
+      "displayText": "nycTaxiBatchSourcePurview",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "d6a3342b-b78e-43fe-a18c-bef20d1e2d19": {
+      "typeName": "feathr_anchor_feature_v1",
+      "attributes": {
+        "qualifiedName": "feathr_awe_demo__aggregationFeatures__f_location_avg_fare",
+        "name": "f_location_avg_fare",
+        "type": "\n            type: {\n                type: TENSOR\n                tensorCategory: DENSE\n                dimensionType: []\n                valType: FLOAT\n            }\n        ",
+        "transformation": {
+          "filter": null,
+          "agg_func": "AVG",
+          "limit": null,
+          "group_by": null,
+          "window": "90d",
+          "def_expr": "cast_float(fare_amount)"
+        },
+        "key": [
+          {
+            "full_name": "nyc_taxi.location_id",
+            "key_column": "DOLocationID",
+            "description": "location id in NYC",
+            "key_column_alias": "DOLocationID",
+            "key_column_type": "2"
+          }
+        ]
+      },
+      "lastModifiedTS": "1",
+      "guid": "d6a3342b-b78e-43fe-a18c-bef20d1e2d19",
+      "status": "ACTIVE",
+      "displayText": "f_location_avg_fare",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "7bfa3f82-fb7d-4107-ae55-fa1652dd547f": {
+      "typeName": "feathr_source_v1",
+      "attributes": {
+        "path": "PASSTHROUGH",
+        "qualifiedName": "feathr_awe_demo__PASSTHROUGH",
+        "name": "PASSTHROUGH",
+        "type": "PASSTHROUGH"
+      },
+      "lastModifiedTS": "1",
+      "guid": "7bfa3f82-fb7d-4107-ae55-fa1652dd547f",
+      "status": "ACTIVE",
+      "displayText": "PASSTHROUGH",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "06fec203-3096-4c25-aa20-65a20c8fac98": {
+      "typeName": "feathr_workspace_v1",
+      "attributes": {
+        "anchor_features": [
+          {
+            "guid": "f0535846-034d-40e8-b513-e7643fbca9cc",
+            "typeName": "feathr_anchor_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__aggregationFeatures"
+            }
+          },
+          {
+            "guid": "1857ed4d-cf01-41dc-93bf-e5feb3dd2d61",
+            "typeName": "feathr_anchor_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__request_features"
+            }
+          }
+        ],
+        "derived_features": [
+          {
+            "guid": "c2a080e9-2e08-44a5-a9c4-0ba7f924df8b",
+            "typeName": "feathr_derived_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__f_trip_time_rounded"
+            }
+          },
+          {
+            "guid": "8459a74c-cd98-4ace-96cd-1162a293c937",
+            "typeName": "feathr_derived_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__f_trip_time_distance"
+            }
+          }
+        ],
+        "qualifiedName": "feathr_awe_demo",
+        "name": "feathr_awe_demo"
+      },
+      "lastModifiedTS": "1",
+      "guid": "06fec203-3096-4c25-aa20-65a20c8fac98",
+      "status": "ACTIVE",
+      "displayText": "feathr_awe_demo",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "dda582de-08f5-4da1-a9d4-2ade7aedf5b5": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__request_features__f_is_long_trip_distance",
+        "name": "f_is_long_trip_distance to request_features"
+      },
+      "lastModifiedTS": "1",
+      "guid": "dda582de-08f5-4da1-a9d4-2ade7aedf5b5",
+      "status": "ACTIVE",
+      "displayText": "f_is_long_trip_distance to request_features",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "49a7332e-9129-4721-9688-e033077410f9": {
+      "typeName": "feathr_anchor_feature_v1",
+      "attributes": {
+        "qualifiedName": "feathr_awe_demo__request_features__f_trip_time_duration",
+        "name": "f_trip_time_duration",
+        "type": "\n            type: {\n                type: TENSOR\n                tensorCategory: DENSE\n                dimensionType: []\n                valType: INT\n            }\n        ",
+        "transformation": {
+          "transform_expr": "(to_unix_timestamp(lpep_dropoff_datetime) - to_unix_timestamp(lpep_pickup_datetime))/60"
+        },
+        "key": [
+          {
+            "full_name": "feathr.dummy_typedkey",
+            "key_column": "NOT_NEEDED",
+            "description": "A dummy typed key for passthrough/request feature.",
+            "key_column_alias": "NOT_NEEDED",
+            "key_column_type": "0"
+          }
+        ]
+      },
+      "lastModifiedTS": "1",
+      "guid": "49a7332e-9129-4721-9688-e033077410f9",
+      "status": "ACTIVE",
+      "displayText": "f_trip_time_duration",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "23c98dfa-a47d-41e2-96eb-316a2a83a4c7": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__request_features__f_trip_distance",
+        "name": "f_trip_distance to request_features"
+      },
+      "lastModifiedTS": "1",
+      "guid": "23c98dfa-a47d-41e2-96eb-316a2a83a4c7",
+      "status": "ACTIVE",
+      "displayText": "f_trip_distance to request_features",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "157e1321-5d0f-4c15-86de-76819c95211e": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__aggregationFeatures__nycTaxiBatchSourcePurview",
+        "name": "nycTaxiBatchSourcePurview to aggregationFeatures"
+      },
+      "lastModifiedTS": "1",
+      "guid": "157e1321-5d0f-4c15-86de-76819c95211e",
+      "status": "ACTIVE",
+      "displayText": "nycTaxiBatchSourcePurview to aggregationFeatures",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "f1c5dc8a-9c1c-4300-8290-3819d89fa53f": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__f_trip_time_distance__f_trip_time_duration",
+        "name": "f_trip_time_duration to f_trip_time_distance"
+      },
+      "lastModifiedTS": "1",
+      "guid": "f1c5dc8a-9c1c-4300-8290-3819d89fa53f",
+      "status": "ACTIVE",
+      "displayText": "f_trip_time_duration to f_trip_time_distance",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "4e881f3f-ec96-4ca0-b9a2-e902045d6486": {
+      "typeName": "feathr_anchor_feature_v1",
+      "attributes": {
+        "qualifiedName": "feathr_awe_demo__request_features__f_day_of_week",
+        "name": "f_day_of_week",
+        "type": "\n            type: {\n                type: TENSOR\n                tensorCategory: DENSE\n                dimensionType: []\n                valType: INT\n            }\n        ",
+        "transformation": {
+          "transform_expr": "dayofweek(lpep_dropoff_datetime)"
+        },
+        "key": [
+          {
+            "full_name": "feathr.dummy_typedkey",
+            "key_column": "NOT_NEEDED",
+            "description": "A dummy typed key for passthrough/request feature.",
+            "key_column_alias": "NOT_NEEDED",
+            "key_column_type": "0"
+          }
+        ]
+      },
+      "lastModifiedTS": "1",
+      "guid": "4e881f3f-ec96-4ca0-b9a2-e902045d6486",
+      "status": "ACTIVE",
+      "displayText": "f_day_of_week",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "8459a74c-cd98-4ace-96cd-1162a293c937": {
+      "typeName": "feathr_derived_feature_v1",
+      "attributes": {
+        "qualifiedName": "feathr_awe_demo__f_trip_time_distance",
+        "name": "f_trip_time_distance",
+        "input_derived_features": [],
+        "type": "\n            type: {\n                type: TENSOR\n                tensorCategory: DENSE\n                dimensionType: []\n                valType: FLOAT\n            }\n        ",
+        "transformation": {
+          "transform_expr": "f_trip_distance * f_trip_time_duration"
+        },
+        "input_anchor_features": [
+          {
+            "guid": "04c9afd1-d2f4-48fe-89a7-fad633e54a31",
+            "typeName": "feathr_anchor_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__request_features__f_trip_distance"
+            }
+          },
+          {
+            "guid": "49a7332e-9129-4721-9688-e033077410f9",
+            "typeName": "feathr_anchor_feature_v1",
+            "uniqueAttributes": {
+              "qualifiedName": "feathr_awe_demo__request_features__f_trip_time_duration"
+            }
+          }
+        ],
+        "key": [
+          {
+            "full_name": "feathr.dummy_typedkey",
+            "key_column": "NOT_NEEDED",
+            "description": "A dummy typed key for passthrough/request feature.",
+            "key_column_alias": "NOT_NEEDED",
+            "key_column_type": "0"
+          }
+        ]
+      },
+      "lastModifiedTS": "1",
+      "guid": "8459a74c-cd98-4ace-96cd-1162a293c937",
+      "status": "ACTIVE",
+      "displayText": "f_trip_time_distance",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "649dbae0-7341-4ca5-9e8b-8c1cf45826ef": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__request_features__PASSTHROUGH",
+        "name": "PASSTHROUGH to request_features"
+      },
+      "lastModifiedTS": "1",
+      "guid": "649dbae0-7341-4ca5-9e8b-8c1cf45826ef",
+      "status": "ACTIVE",
+      "displayText": "PASSTHROUGH to request_features",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "25582a2f-9365-4363-8fb4-f6a72495c668": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__request_features",
+        "name": "request_features to feathr_awe_demo"
+      },
+      "lastModifiedTS": "1",
+      "guid": "25582a2f-9365-4363-8fb4-f6a72495c668",
+      "status": "ACTIVE",
+      "displayText": "request_features to feathr_awe_demo",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "d9208810-6845-455c-bde3-7bf174a83ba1": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__f_trip_time_rounded",
+        "name": "f_trip_time_rounded to feathr_awe_demo"
+      },
+      "lastModifiedTS": "1",
+      "guid": "d9208810-6845-455c-bde3-7bf174a83ba1",
+      "status": "ACTIVE",
+      "displayText": "f_trip_time_rounded to feathr_awe_demo",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "2ffd8814-6c65-4fcf-be41-5c0604c83bde": {
+      "typeName": "feathr_anchor_feature_v1",
+      "attributes": {
+        "qualifiedName": "feathr_awe_demo__aggregationFeatures__f_location_max_fare",
+        "name": "f_location_max_fare",
+        "type": "\n            type: {\n                type: TENSOR\n                tensorCategory: DENSE\n                dimensionType: []\n                valType: FLOAT\n            }\n        ",
+        "transformation": {
+          "filter": null,
+          "agg_func": "MAX",
+          "limit": null,
+          "group_by": null,
+          "window": "90d",
+          "def_expr": "cast_float(fare_amount)"
+        },
+        "key": [
+          {
+            "full_name": "nyc_taxi.location_id",
+            "key_column": "DOLocationID",
+            "description": "location id in NYC",
+            "key_column_alias": "DOLocationID",
+            "key_column_type": "2"
+          }
+        ]
+      },
+      "lastModifiedTS": "1",
+      "guid": "2ffd8814-6c65-4fcf-be41-5c0604c83bde",
+      "status": "ACTIVE",
+      "displayText": "f_location_max_fare",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    },
+    "d8b10735-dd50-41a3-9ff0-21878d046e1f": {
+      "typeName": "Process",
+      "attributes": {
+        "qualifiedName": "__PROCESS__feathr_awe_demo__request_features__f_day_of_week",
+        "name": "f_day_of_week to request_features"
+      },
+      "lastModifiedTS": "1",
+      "guid": "d8b10735-dd50-41a3-9ff0-21878d046e1f",
+      "status": "ACTIVE",
+      "displayText": "f_day_of_week to request_features",
+      "classificationNames": [],
+      "meaningNames": [],
+      "meanings": [],
+      "isIncomplete": false,
+      "labels": []
+    }
+  },
+  "includeParent": false,
+  "relations": [
+    {
+      "fromEntityId": "cfd32485-777c-45cb-bc35-ee781994bfb2",
+      "toEntityId": "157e1321-5d0f-4c15-86de-76819c95211e",
+      "relationshipId": "612eacbc-3dc6-452c-93e2-3c45b4643e65"
+    },
+    {
+      "fromEntityId": "8459a74c-cd98-4ace-96cd-1162a293c937",
+      "toEntityId": "6af87983-d46d-4c17-9e68-782c45248707",
+      "relationshipId": "d3038d95-6360-41d7-ba17-7d894af930e2"
+    },
+    {
+      "fromEntityId": "06010c49-b99c-4d4e-8127-3ef29e7ff33b",
+      "toEntityId": "c2a080e9-2e08-44a5-a9c4-0ba7f924df8b",
+      "relationshipId": "80bf28ee-17e2-4171-b07e-492da10c1c9d"
+    },
+    {
+      "fromEntityId": "49a7332e-9129-4721-9688-e033077410f9",
+      "toEntityId": "f1c5dc8a-9c1c-4300-8290-3819d89fa53f",
+      "relationshipId": "8b47bb5a-02af-49a6-89a6-67aae5eec685"
+    },
+    {
+      "fromEntityId": "49a7332e-9129-4721-9688-e033077410f9",
+      "toEntityId": "06010c49-b99c-4d4e-8127-3ef29e7ff33b",
+      "relationshipId": "8f14a5c3-4b58-4546-9824-6a068cd5ded6"
+    },
+    {
+      "fromEntityId": "649dbae0-7341-4ca5-9e8b-8c1cf45826ef",
+      "toEntityId": "1857ed4d-cf01-41dc-93bf-e5feb3dd2d61",
+      "relationshipId": "bf4d3875-e7de-4954-90c7-4b43b6146a07"
+    },
+    {
+      "fromEntityId": "2ffd8814-6c65-4fcf-be41-5c0604c83bde",
+      "toEntityId": "1bf6c587-3ac5-410d-a9a3-3a4dc158ea8c",
+      "relationshipId": "61d18d32-9040-4a4b-ad84-92cc4ed913f1"
+    },
+    {
+      "fromEntityId": "08c63576-941f-4540-93e9-6cc1d0aca6e3",
+      "toEntityId": "8459a74c-cd98-4ace-96cd-1162a293c937",
+      "relationshipId": "9c9ca4e4-e986-4f11-bc5a-467268115d2c"
+    },
+    {
+      "fromEntityId": "d6a3342b-b78e-43fe-a18c-bef20d1e2d19",
+      "toEntityId": "5ed1b87d-2aa9-4315-bc9a-0361d8a478cb",
+      "relationshipId": "59ce839d-5f62-42fd-9497-850d29444e6a"
+    },
+    {
+      "fromEntityId": "5ed1b87d-2aa9-4315-bc9a-0361d8a478cb",
+      "toEntityId": "f0535846-034d-40e8-b513-e7643fbca9cc",
+      "relationshipId": "f5743202-68e3-4a8c-894d-57c4e47e94ad"
+    },
+    {
+      "fromEntityId": "4e881f3f-ec96-4ca0-b9a2-e902045d6486",
+      "toEntityId": "d8b10735-dd50-41a3-9ff0-21878d046e1f",
+      "relationshipId": "e5de249d-9aa8-42cb-a354-6867de81e82b"
+    },
+    {
+      "fromEntityId": "7bfa3f82-fb7d-4107-ae55-fa1652dd547f",
+      "toEntityId": "649dbae0-7341-4ca5-9e8b-8c1cf45826ef",
+      "relationshipId": "acb80092-5d3f-41a9-a30a-4b304bb11a47"
+    },
+    {
+      "fromEntityId": "23c98dfa-a47d-41e2-96eb-316a2a83a4c7",
+      "toEntityId": "1857ed4d-cf01-41dc-93bf-e5feb3dd2d61",
+      "relationshipId": "f4d3a889-2d8c-4d62-b7e3-cea8a0d85e2a"
+    },
+    {
+      "fromEntityId": "1857ed4d-cf01-41dc-93bf-e5feb3dd2d61",
+      "toEntityId": "25582a2f-9365-4363-8fb4-f6a72495c668",
+      "relationshipId": "e1848fc0-f679-4043-84ed-5cbc08b56ff8"
+    },
+    {
+      "fromEntityId": "25582a2f-9365-4363-8fb4-f6a72495c668",
+      "toEntityId": "06fec203-3096-4c25-aa20-65a20c8fac98",
+      "relationshipId": "8763e202-b98e-4286-9e0d-5d4e5c39c007"
+    },
+    {
+      "fromEntityId": "04c9afd1-d2f4-48fe-89a7-fad633e54a31",
+      "toEntityId": "23c98dfa-a47d-41e2-96eb-316a2a83a4c7",
+      "relationshipId": "c723c4f4-b4a4-4a5a-a104-f6a47adcd2be"
+    },
+    {
+      "fromEntityId": "c2a080e9-2e08-44a5-a9c4-0ba7f924df8b",
+      "toEntityId": "d9208810-6845-455c-bde3-7bf174a83ba1",
+      "relationshipId": "2b81b0a9-61ca-484b-9546-f5406308d056"
+    },
+    {
+      "fromEntityId": "e3ee3b07-a4d1-4348-90a2-46716fe0d3dc",
+      "toEntityId": "dda582de-08f5-4da1-a9d4-2ade7aedf5b5",
+      "relationshipId": "71f466d5-1ff3-48be-8abb-65627f621fc5"
+    },
+    {
+      "fromEntityId": "d9208810-6845-455c-bde3-7bf174a83ba1",
+      "toEntityId": "06fec203-3096-4c25-aa20-65a20c8fac98",
+      "relationshipId": "9c89ac4d-eb9d-4cfe-a020-8e531808b47a"
+    },
+    {
+      "fromEntityId": "f0535846-034d-40e8-b513-e7643fbca9cc",
+      "toEntityId": "9b7bdb97-722d-4f3f-9f1f-40f0de9dafd2",
+      "relationshipId": "7abce168-14a8-4873-a3ab-8fed2f240126"
+    },
+    {
+      "fromEntityId": "157e1321-5d0f-4c15-86de-76819c95211e",
+      "toEntityId": "f0535846-034d-40e8-b513-e7643fbca9cc",
+      "relationshipId": "01d98a8b-8c6f-4df1-8395-90a5fcec8ece"
+    },
+    {
+      "fromEntityId": "1bf6c587-3ac5-410d-a9a3-3a4dc158ea8c",
+      "toEntityId": "f0535846-034d-40e8-b513-e7643fbca9cc",
+      "relationshipId": "51974792-9866-474a-86d7-091e7c7f5b76"
+    },
+    {
+      "fromEntityId": "0853a1cf-8ad8-44da-b14e-9ae64f14afe0",
+      "toEntityId": "1857ed4d-cf01-41dc-93bf-e5feb3dd2d61",
+      "relationshipId": "e5cf0c80-106c-4d27-a439-810402af72ad"
+    },
+    {
+      "fromEntityId": "49a7332e-9129-4721-9688-e033077410f9",
+      "toEntityId": "0853a1cf-8ad8-44da-b14e-9ae64f14afe0",
+      "relationshipId": "86c96296-a789-4875-9e74-9eeb5e198af5"
+    },
+    {
+      "fromEntityId": "9b7bdb97-722d-4f3f-9f1f-40f0de9dafd2",
+      "toEntityId": "06fec203-3096-4c25-aa20-65a20c8fac98",
+      "relationshipId": "9b9fd3df-52cc-49b3-aa05-1344ea2f76f9"
+    },
+    {
+      "fromEntityId": "f1c5dc8a-9c1c-4300-8290-3819d89fa53f",
+      "toEntityId": "8459a74c-cd98-4ace-96cd-1162a293c937",
+      "relationshipId": "15eafadb-39a8-4aca-b9aa-7d611320be09"
+    },
+    {
+      "fromEntityId": "04c9afd1-d2f4-48fe-89a7-fad633e54a31",
+      "toEntityId": "08c63576-941f-4540-93e9-6cc1d0aca6e3",
+      "relationshipId": "ada40dfc-81e0-4da0-8614-e20639387769"
+    },
+    {
+      "fromEntityId": "dda582de-08f5-4da1-a9d4-2ade7aedf5b5",
+      "toEntityId": "1857ed4d-cf01-41dc-93bf-e5feb3dd2d61",
+      "relationshipId": "a793af7e-444e-4598-ad6c-a302a1fc8c31"
+    },
+    {
+      "fromEntityId": "d8b10735-dd50-41a3-9ff0-21878d046e1f",
+      "toEntityId": "1857ed4d-cf01-41dc-93bf-e5feb3dd2d61",
+      "relationshipId": "1105baad-100f-4791-926c-57c11d206098"
+    },
+    {
+      "fromEntityId": "6af87983-d46d-4c17-9e68-782c45248707",
+      "toEntityId": "06fec203-3096-4c25-aa20-65a20c8fac98",
+      "relationshipId": "9183076c-6d69-4562-bc36-5123e8a33609"
+    }
+  ],
+  "parentRelations": [],
+  "widthCounts": {
+    "INPUT": {},
+    "OUTPUT": {}
+  }
+}

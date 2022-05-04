@@ -1,12 +1,14 @@
 import Axios from "axios";
-import { Features, IDataSource, IFeature, IFeatureDetail } from "../models/model";
+import { Features, IDataSource, IFeature, IFeatureDetail, IFeatureLineage } from "../models/model";
+// import lineage from "./mock-lineage.json";
 
 const API_ENDPOINT = "https://feathr-api-test.azurewebsites.net";
 const project = "feathr_awe_demo";
+const token = "aa";
 
 export const fetchDataSources = async () => {
   return Axios
-    .get<IDataSource[]>(`${ API_ENDPOINT }/v0.1/projects/${project}/datasources?code=aa`,
+    .get<IDataSource[]>(`${ API_ENDPOINT }/v0.1/projects/${ project }/datasources?code=${ token }`,
       { headers: {} })
     .then((response) => {
       return response.data;
@@ -15,7 +17,7 @@ export const fetchDataSources = async () => {
 
 export const fetchFeatures = async (page: number, limit: number, keyword: string) => {
   return Axios
-    .get<Features>(`${ API_ENDPOINT }/v0.1/projects/${project}/features?code=aa`,
+    .get<Features>(`${ API_ENDPOINT }/v0.1/projects/${ project }/features?code=${ token }`,
       {
         params: { 'keyword': keyword, 'page': page, 'limit': limit },
         headers: {}
@@ -40,15 +42,16 @@ export const createFeature = async (feature: IFeature) => {
 
 export const fetchFeature = async (qualifiedName: string) => {
   return Axios
-    .get<IFeatureDetail>(`${ API_ENDPOINT }/v0.1/features/${ qualifiedName }?code=aa`, {})
+    .get<IFeatureDetail>(`${ API_ENDPOINT }/v0.1/features/${ qualifiedName }?code=${ token }`, {})
     .then((response) => {
       return response.data?.entity?.attributes;
     })
 };
 
-export const fetchFeatureLineages = async (qualifiedName: string) => {
+export const fetchProjectLineages = async () => {
+  // return lineage;
   return Axios
-    .get<IFeatureDetail>(`${ API_ENDPOINT }/v0.1/features/linage/${ qualifiedName }?code=aa`, {})
+    .get<IFeatureLineage>(`${ API_ENDPOINT }/v0.1/features/lineage/${ project }?code=${ token }`, {})
     .then((response) => {
       return response.data;
     })

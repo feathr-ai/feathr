@@ -9,17 +9,16 @@ Make sure you have the latest node LTS installed
 Run the following commands in your terminal
 
 ```bash
-npm i yarn -g
 cd ui
-yarn install
-yarn start
+npm install
+npm start
 ```
 
 Then open [http://localhost:3000/](http://localhost:3000/) on your web browser.
 
 ## Deploying
 
-For deployment, run `yarn run build` and upload `build/` to your server.
+For deployment, run `npm run build` and upload `build/` to your server.
 
 # Docs
 

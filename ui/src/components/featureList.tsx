@@ -34,20 +34,8 @@ const FeatureList: React.FC = () => {
           }
         }
       }
-    }, {
-      title: <div style={ { userSelect: "none" } }>QualifiedName</div>,
-      dataIndex: 'qualifiedName',
-      key: 'qualifiedName',
-      align: 'center' as 'center',
-      width: 150,
-      onCell: () => {
-        return {
-          style: {
-            maxWidth: 120
-          }
-        }
-      }
-    }, {
+    },
+    {
       title: <div style={ { userSelect: "none" } }>Data Source</div>,
       dataIndex: 'dataSource',
       key: 'dataSource',
@@ -84,7 +72,8 @@ const FeatureList: React.FC = () => {
           }
         }
       }
-    }, {
+    },
+    {
       title: <div style={ { userSelect: "none" } }>Created By</div>,
       dataIndex: 'owners',
       key: 'owners',
@@ -148,7 +137,6 @@ const FeatureList: React.FC = () => {
   const fetchData = useCallback(async () => {
       setLoading(true);
       const result = await fetchFeatures(page, limit, query);
-      console.log(result);
       setPage(page);
       setTableData(result);
       setLoading(false);

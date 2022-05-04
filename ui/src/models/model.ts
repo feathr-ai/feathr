@@ -60,3 +60,9 @@ export interface DataSourceAttributes {
   path: string;
 }
 
+
+export interface IFeatureLineage {
+  guidEntityMap: any;
+  relations: any;
+}
+

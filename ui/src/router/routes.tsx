@@ -1,15 +1,16 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Route, Switch, withRouter } from 'react-router-dom';
 import { Layout } from 'antd';
-import Header from '../components/header/header';
-import SideMenu from '../components/sidemenu/siteMenu';
 import { QueryClient, QueryClientProvider } from "react-query";
-import Features from "../pages/feature/features";
-import NewFeature from "../pages/feature/newFeature";
-import EditFeature from "../pages/feature/editFeature";
 import { Configuration, InteractionType, PublicClientApplication } from "@azure/msal-browser";
 import { MsalAuthenticationTemplate, MsalProvider } from "@azure/msal-react";
+import Header from '../components/header/header';
+import SideMenu from '../components/sidemenu/siteMenu';
+import Features from "../pages/feature/features";
+import NewFeature from "../pages/feature/newFeature";
+import FeatureDetails from "../pages/feature/featureDetails";
 import DataSources from "../pages/dataSource/dataSources";
+import FeatureLineage from "../pages/feature/featureLineage";
 
 type Props = {};
 const { Footer } = Layout;
@@ -39,7 +40,8 @@ const Routes: React.FC<Props> = () => {
                     <Route exact={ true } path="/dataSources" component={ withRouter(DataSources) } />
                     <Route exact={ true } path="/features" component={ withRouter(Features) } />
                     <Route exact={ true } path="/new-feature" component={ withRouter(NewFeature) } />
-                    <Route exact={ true } path="/features/:qualifiedName" component={ withRouter(EditFeature) } />
+                    <Route exact={ true } path="/features/:qualifiedName" component={ withRouter(FeatureDetails) } />
+                    <Route exact={ true } path="/features/:qualifiedName/lineage" component={ withRouter(FeatureLineage) } />
                     {/* {publicRoutes} */ }
                     {/* <Route component={NotFound} /> */ }
                   </Suspense>
