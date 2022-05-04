@@ -96,9 +96,9 @@ def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, 
         response.status_code = status.HTTP_200_OK
         result = None
         if type_name: # Type is provided
-            result = registry.get_feature_by_fqdn_type(feature_name, type_name)
+            result = registry.get_feature_by_fully_qualified_domain_name_type(feature_name, type_name)
         else:
-            result = registry.get_feature_by_fqdn(feature_name)
+            result = registry.get_feature_by_fully_qualified_domain_name(feature_name)
         return result
     except AtlasException as ae:
         logger.error("Error retrieving feature: %s", ae.args[0])
@@ -161,7 +161,7 @@ def get_source_by_qualifiedName(code : str, project_name: str, source_name: str,
         logger.info("Retrieved registry client successfully")
         response.status_code = status.HTTP_200_OK
         type_name = "feathr_source_v1"
-        result = registry.get_feature_by_fqdn_type(source_name, type_name)
+        result = registry.get_feature_by_fully_qualified_domain_name_type(source_name, type_name)
         return result
     except AtlasException as ae:
         logger.error("Error retrieving feature: %s", ae.args[0])
@@ -182,7 +182,7 @@ def get_anchor_by_qualifiedName(code : str, project_name: str, anchor_name: str,
         logger.info("Retrieved registry client successfully")
         response.status_code = status.HTTP_200_OK
         type_name = "feathr_anchor"
-        result = registry.get_feature_by_fqdn_type(anchor_name, type_name)
+        result = registry.get_feature_by_fully_qualified_domain_name_type(anchor_name, type_name)
         return result
     except AtlasException as ae:
         logger.error("Error retrieving feature: %s", ae.args[0])

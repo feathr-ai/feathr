@@ -726,7 +726,7 @@ derivations: {
         """
         return self.purview_client
 
-    def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0) -> List[str]:
+    def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0) -> List[Dict[str,str]]:
         """
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
@@ -742,10 +742,10 @@ derivations: {
                 # split the name based on delimiter
                 result = qualified_name.split(self.registry_delimiter)
                 if result[0].casefold() == project_name:
-                    feature_list.append(entity["name"])
+                    feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
             else:
                 # otherwise append all the entities
-                feature_list.append(entity["name"])
+                feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
 
         return feature_list
    
