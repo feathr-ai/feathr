@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 from pprint import pprint
+from xmlrpc.client import Boolean
 
 import redis
 from azure.identity import DefaultAzureCredential
@@ -211,7 +212,7 @@ class FeathrClient(object):
         else:
             self.registry.register_features(self.local_workspace_dir, from_context=from_context)
 
-    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = [], pprint_flag=False):
+    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = [], pprint_flag: bool = False):
         """Build features based on the current workspace. all actions that triggers a spark job will be based on the
         result of this action.
         """
@@ -404,6 +405,7 @@ class FeathrClient(object):
                              output_path: str,
                              execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None,
                              udf_files = None,
+                             pprint_flag: bool = False
                              ):
         """
         Get offline features for the observation dataset
@@ -442,6 +444,13 @@ class FeathrClient(object):
             _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
+        
+        # Pretty print anchor list and derived_feature_list
+        if pprint_flag:
+            if self.anchor_list:
+                pprint(self.anchor_list)
+            if self.derived_feature_list:
+                pprint(self.derived_feature_list)
 
         write_to_file(content=config, full_file_name=config_file_path)
         return self._get_offline_features_with_config(config_file_path, execution_configuratons, udf_files=udf_files)
@@ -520,7 +529,7 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None):
+    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None, pprint_flag: bool = False):
         """Materialize feature data
 
         Args:
@@ -549,6 +558,13 @@ class FeathrClient(object):
             self._materialize_features_with_config(config_file_path, execution_configuratons, udf_files)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
+        
+        # Pretty print anchor_list and derived_feature_list
+        if pprint_flag:
+            if self.anchor_list:
+                pprint(self.anchor_list)
+            if self.derived_feature_list:
+                pprint(self.derived_feature_list)
 
     def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature
