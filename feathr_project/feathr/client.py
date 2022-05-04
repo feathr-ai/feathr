@@ -5,6 +5,7 @@ import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
+from pprint import pprint
 
 import redis
 from azure.identity import DefaultAzureCredential
@@ -210,7 +211,7 @@ class FeathrClient(object):
         else:
             self.registry.register_features(self.local_workspace_dir, from_context=from_context)
 
-    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
+    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = [], pprint_flag=False):
         """Build features based on the current workspace. all actions that triggers a spark job will be based on the
         result of this action.
         """
@@ -235,6 +236,13 @@ class FeathrClient(object):
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
+        
+        # Pretty print anchor list and derived_feature_list
+        if pprint_flag:
+            if self.anchor_list:
+                pprint(self.anchor_list)
+            if self.derived_feature_list:
+                pprint(self.derived_feature_list)
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
