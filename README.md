@@ -159,7 +159,7 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 
 ## Community Guidelines
 
-Build for the community and build by the community. Check out [Community Guidelines](CONTRIBUTING.md).
+Build for the community and build by the community. Check out the [Community Guidelines](CONTRIBUTING.md).
 
 ## Slack Channel
 
