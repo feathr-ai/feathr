@@ -15,7 +15,7 @@ from feathr import TypedKey
 from feathrcli.cli import init
 import pytest
 
-from test_fixture import basic_test_setup
+from test_fixture import (basic_test_setup, get_online_test_table_name)
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_online_store_agg_features():
@@ -23,10 +23,7 @@ def test_feathr_online_store_agg_features():
     Test FeathrClient() get_online_features and batch_get can get data correctly.
     """
 
-    # use different time for testing to avoid write conflicts
-    now = datetime.now()
-
-    online_test_table = ''.join(['nycTaxiCITable','_', str(now.minute), '_', str(now.second)])
+    online_test_table = get_online_test_table_name("nycTaxiCITable")
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
@@ -72,8 +69,8 @@ def test_feathr_online_store_non_agg_features():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
-    now = datetime.now()
-    online_test_table = ''.join(['nycTaxiCITable','_', str(now.minute), '_', str(now.second)])
+    
+    online_test_table = get_online_test_table_name('nycTaxiCITable')
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
     redisSink = RedisSink(table_name=online_test_table)
