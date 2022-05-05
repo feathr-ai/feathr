@@ -836,7 +836,7 @@ derivations: {
             else:
                 # otherwise append all the entities
                 guid_list.append(entity["id"])
-        entity_res = [] if guid_list is None else self.purview_client.get_entity(
+        entity_res = [] if guid_list is None or len(guid_list)==0 else self.purview_client.get_entity(
             guid=guid_list)["entities"]
         return entity_res
         
