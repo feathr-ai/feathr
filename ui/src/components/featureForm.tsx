@@ -59,8 +59,7 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
         initialValues={ { remember: true } }
       >
         <Space direction="vertical" size="large" style={ styling }>
-          <h3>Feature Information</h3>
-          <Form.Item name="name" label="name">
+          <Form.Item name="name" label="Name">
             <Input disabled={ !editMode } />
           </Form.Item>
           <Form.Item name="description" label="Description">
@@ -69,19 +68,7 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
           <Form.Item name="type" label="Type">
             <Input disabled={ !editMode } />
           </Form.Item>
-          <Form.Item name="transform.transform_expr" label="Transform">
-            <Input disabled={ !editMode } />
-          </Form.Item>
-          <Form.Item name="status" label="Status">
-            <Input disabled={ !editMode } />
-          </Form.Item>
-          <Form.Item name="featureType" label="Feature Type">
-            <Input disabled={ !editMode } />
-          </Form.Item>
           <Form.Item name="dataSource" label="Data Source">
-            <Input disabled={ !editMode } />
-          </Form.Item>
-          <Form.Item name="owners" label="Owners">
             <Input disabled={ !editMode } />
           </Form.Item>
         </Space>

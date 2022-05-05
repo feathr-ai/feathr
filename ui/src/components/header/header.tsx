@@ -25,7 +25,7 @@ const Header: React.FC<Props> = () => {
   const { Paragraph } = Typography;
   return (
     <PageHeader
-      title={ `Hello ${ name }, welcome to Azure Feature Store` }
+      title={ `Hello ${ name }, welcome to Feathr Feature Store` }
       style={ { backgroundColor: "white", paddingLeft: "50px", paddingRight: "50px" } }
       extra={ [<Button key="3" onClick={ onClickLogout }>Logout</Button>] }>
       <Row>

@@ -26,7 +26,7 @@ const FeatureList: React.FC = () => {
           } }>{ name }</Button>
         )
       },
-      width: 190,
+      width: 150,
       onCell: () => {
         return {
           style: {
@@ -57,31 +57,11 @@ const FeatureList: React.FC = () => {
       }
     },
     {
-      title: <div style={ { userSelect: "none" } }>Status</div>,
-      dataIndex: 'status',
-      key: 'status',
+      title: <div style={ { userSelect: "none" } }>Qualified Name</div>,
+      dataIndex: 'qualifiedName',
+      key: 'qualifiedName',
       align: 'center' as 'center',
-      width: 120,
-      render: () => {
-        return "Active"
-      },
-      onCell: () => {
-        return {
-          style: {
-            maxWidth: 120
-          }
-        }
-      }
-    },
-    {
-      title: <div style={ { userSelect: "none" } }>Created By</div>,
-      dataIndex: 'owners',
-      key: 'owners',
-      align: 'center' as 'center',
-      width: 120,
-      render: () => {
-        return "xiaoyzhu@microsoft.com"
-      },
+      width: 190,
       onCell: () => {
         return {
           style: {

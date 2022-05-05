@@ -1,6 +1,5 @@
 import Axios from "axios";
 import { Features, IDataSource, IFeature, IFeatureDetail, IFeatureLineage } from "../models/model";
-// import lineage from "./mock-lineage.json";
 
 const API_ENDPOINT = "https://feathr-api-test.azurewebsites.net";
 const project = "feathr_awe_demo";
@@ -49,7 +48,6 @@ export const fetchFeature = async (qualifiedName: string) => {
 };
 
 export const fetchProjectLineages = async () => {
-  // return lineage;
   return Axios
     .get<IFeatureLineage>(`${ API_ENDPOINT }/v0.1/features/lineage/${ project }?code=${ token }`, {})
     .then((response) => {

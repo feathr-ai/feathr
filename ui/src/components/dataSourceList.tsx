@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Button } from "antd";
 import TableResize from './resizableTable/resizableTable';
 import { DataSourceAttributes, IDataSource } from "../models/model";
 import { fetchDataSources } from "../api";
 
 const DataSourceList: React.FC = () => {
   const history = useHistory();
-  const navigateTo = useCallback((location) => history.push(location), [history]);
+  useCallback((location) => history.push(location), [history]);
   const columns = [
     {
       title: <div style={ { userSelect: "none" } }>Name</div>,
@@ -72,26 +71,6 @@ const DataSourceList: React.FC = () => {
         return {
           style: {
             maxWidth: 120
-          }
-        }
-      }
-    },
-    {
-      title: <div style={ { userSelect: "none" } }>Consumers</div>,
-      dataIndex: 'name',
-      key: 'name',
-      render: () => {
-        return (
-          <Button type={ "link" } onClick={ () => {
-            navigateTo(`/features`)
-          } }>9</Button>
-        )
-      },
-      width: 80,
-      onCell: () => {
-        return {
-          style: {
-            maxWidth: 80,
           }
         }
       }

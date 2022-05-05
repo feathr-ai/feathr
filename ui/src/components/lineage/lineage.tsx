@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import ReactFlow, {
   Node, Edge,
   ReactFlowProvider,
@@ -60,9 +60,6 @@ const Lineage: React.FC<LineageProps> = ({ lineageNodes, lineageEdges }) => {
 
     setNodes(layoutedNodes);
   };
-
-  console.log(nodes);
-  console.log(edges);
 
   return (
     <div className="layoutflow">

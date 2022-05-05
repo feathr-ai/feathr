@@ -10,7 +10,7 @@ const SideMenu = withRouter(({ history }) => {
   return (
     <Sider>
       <div style={ { fontSize: 'medium', color: 'white', margin: '10px', paddingLeft: '15px' } }>
-        Feathr Demo
+        Feathr Web UI
       </div>
 
       <Menu
