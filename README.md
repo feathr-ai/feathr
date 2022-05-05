@@ -26,11 +26,11 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
 
-## Running Feathr on Azure with 3 Simple Steps
+## Running Feathr on Azure with Simple Steps
 
 Feathr has native cloud integration with both Azure Synapse and Databricks. For Synapse, please refer to [Running Feathr with Azure Synapse](./docs/quickstart_synapse.md).
 
-For Databricks, you can simply upload [this notebook](./docs/samples/databricks/databricks_quickstart_nyc_taxi_driver.ipynb) to your Databricks cluster and just run it without any configuration.
+For Databricks, you can simply upload [this notebook](./docs/samples/databricks/databricks_quickstart_nyc_taxi_driver.ipynb) to your Databricks cluster and just run it like below:
 
 ![Databricks Quickstart](./docs/images/databricks_quickstart.gif)
 
