@@ -43,15 +43,19 @@ private[offline] object DataSourceAccessor {
       dateIntervalOpt: Option[DateTimeInterval],
       expectDatumType: Option[Class[_]],
       failOnMissingPartition: Boolean,
-      addTimestampColumn: Boolean = false): DataSourceAccessor = {
+      addTimestampColumn: Boolean = false,
+      isStreaming: Boolean = false): DataSourceAccessor = {
     val sourceType = source.sourceType
-    // if no input interval, or the path is fixed or list, load whole dataset
-    if (dateIntervalOpt.isEmpty || sourceType == SourceFormatType.FIXED_PATH || sourceType == SourceFormatType.LIST_PATH) {
-      val fileLoaderFactory = DataLoaderFactory(ss)
-      return new NonTimeBasedDataSourceAccessor(ss, fileLoaderFactory, source, expectDatumType)
+    val dataLoaderFactory = DataLoaderFactory(ss, isStreaming)
+    if (isStreaming) {
+      new StreamDataSourceAccessor(ss, dataLoaderFactory, source)
+    } else if (dateIntervalOpt.isEmpty || sourceType == SourceFormatType.FIXED_PATH || sourceType == SourceFormatType.LIST_PATH) {
+      // if no input interval, or the path is fixed or list, load whole dataset
+      new NonTimeBasedDataSourceAccessor(ss, dataLoaderFactory, source, expectDatumType)
+    } else {
+      val timeInterval = dateIntervalOpt.get
+      createFromHdfsPath(ss, source, timeInterval, expectDatumType, failOnMissingPartition, addTimestampColumn)
     }
-    val timeInterval = dateIntervalOpt.get
-    createFromHdfsPath(ss, source, timeInterval, expectDatumType, failOnMissingPartition, addTimestampColumn)
   }
 
   /**

@@ -1,25 +1,40 @@
-from abc import ABC, abstractmethod
 from typing import List, Optional
 from jinja2 import Template
+from feathr.frameconfig import HoconConvertible
 
 
-class Sink(ABC):
-    @abstractmethod
-    def to_write_config(self) -> str:
-        pass
+class Sink(HoconConvertible):
+    """A data sink.
+    """
+    pass
 
 
 class RedisSink(Sink):
-    def __init__(self, table_name: str) -> None:
-        self.table_name = table_name
+    """Redis-based sink use to store online feature data, can be used in batch job or streaming job.
 
-    def to_write_config(self) -> str:
+    Attributes:
+        table_name: output table name
+        streaming: whether it is used in streaming mode
+        streamingTimeoutMs: maximum running time for streaming mode. It is not used in batch mode.
+    """
+    def __init__(self, table_name: str, streaming: bool=False, streamingTimeoutMs: Optional[int]=None) -> None:
+        self.table_name = table_name
+        self.streaming = streaming
+        self.streamingTimeoutMs = streamingTimeoutMs
+
+    def to_feature_config(self) -> str:
         """Produce the config used in feature materialization"""
         tm = Template("""  
             {
                 name: REDIS
                 params: {
                     table_name: "{{source.table_name}}"
+                    {% if source.streaming %}
+                    streaming: true
+                    {% endif %}
+                    {% if source.streamingTimeoutMs %}
+                    timeoutMs: {{source.streamingTimeoutMs}}
+                    {% endif %}
                 }
             }
         """)

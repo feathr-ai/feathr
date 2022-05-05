@@ -119,8 +119,9 @@ private[offline] class AnchorToDataSourceMapper {
   def getAnchorDFMapForGen(
       ss: SparkSession,
       requiredFeatureAnchors: Seq[FeatureAnchorWithSource],
-      incrementalAggContext: IncrementalAggContext,
-      failOnMissingPartition: Boolean): Map[FeatureAnchorWithSource, DataSourceAccessor] = {
+      incrementalAggContext: Option[IncrementalAggContext],
+      failOnMissingPartition: Boolean,
+      isStreaming: Boolean = false): Map[FeatureAnchorWithSource, DataSourceAccessor] = {
     // get a Map from each source to a list of all anchors based on this source
     val sourceToAnchor = requiredFeatureAnchors
       .map(anchor => (anchor.source, anchor))
@@ -138,7 +139,7 @@ private[offline] class AnchorToDataSourceMapper {
         }
         val dateIntervalOpt = {
           if (dateIntervals.nonEmpty) {
-            Some(getSmallestInterval(dateIntervals, source.sourceType, incrementalAggContext.daysSinceLastAgg))
+            Some(getSmallestInterval(dateIntervals, source.sourceType, incrementalAggContext.get.daysSinceLastAgg))
           } else {
             None
           }
@@ -150,7 +151,8 @@ private[offline] class AnchorToDataSourceMapper {
           dateIntervalOpt,
           Some(expectDatumType),
           failOnMissingPartition = failOnMissingPartition,
-          addTimestampColumn = needCreateTimestampColumn)
+          addTimestampColumn = needCreateTimestampColumn,
+          isStreaming)
         anchors.map(anchor => (anchor, timeSeriesSource))
     })
   }

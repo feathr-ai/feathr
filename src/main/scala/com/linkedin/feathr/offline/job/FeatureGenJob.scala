@@ -44,7 +44,8 @@ object FeatureGenJob {
       "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
       "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
-      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", "")
+      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", ""),
+      "kafka-config" -> OptionParam("kc", "Authentication config for Kafka", "KAFKA_CONFIG", "")
     )
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
 
