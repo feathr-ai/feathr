@@ -137,6 +137,8 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             if status in {LivyStates.SUCCESS.value}:
                 return True
             elif status in {LivyStates.ERROR.value, LivyStates.DEAD.value, LivyStates.KILLED.value}:
+                logger.error("Feathr job has failed. Please visit this page to view error message: {}", self.job_url)
+                logger.error(self.get_driver_log())
                 return False
             else:
                 time.sleep(30)
@@ -171,7 +173,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         """
         return self._api.get_spark_batch_job(self.current_job_info.id).tags
 
-    def get_driver_log(self) -> str:
+    def _get_driver_log(self) -> str:
         # @see: https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/connect-monitor-azure-synapse-spark-application-level-metrics
         job_id = self.current_job_info.id
         app_id = self._api.get_spark_batch_job(job_id).app_id
