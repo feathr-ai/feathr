@@ -66,8 +66,8 @@ class _EnvVaraibleUtil(object):
             logger.info(variable_key +
                         ' is not set in the environment variables, fetching the value from Key Vault')
             akv_name = os.environ.get("KEY_VAULT_NAME")
-            akv_client = AzureKeyVaultClient(akv_name)
-            password = akv_client.get_akv_secret(variable_key)
+            if akv_name:
+                akv_client = AzureKeyVaultClient(akv_name)
+                password = akv_client.get_akv_secret(variable_key)
         return password
 
-        
