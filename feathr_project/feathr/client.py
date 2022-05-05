@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 from pprint import pprint
-from xmlrpc.client import Boolean
 
 import redis
 from azure.identity import DefaultAzureCredential
