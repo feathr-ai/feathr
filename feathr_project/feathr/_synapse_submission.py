@@ -138,7 +138,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                 return True
             elif status in {LivyStates.ERROR.value, LivyStates.DEAD.value, LivyStates.KILLED.value}:
                 logger.error("Feathr job has failed. Please visit this page to view error message: {}", self.job_url)
-                logger.error(self.get_driver_log())
+                logger.error(self._api.get_driver_log(self.current_job_info.id))
                 return False
             else:
                 time.sleep(30)
@@ -173,18 +173,6 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         """
         return self._api.get_spark_batch_job(self.current_job_info.id).tags
 
-    def _get_driver_log(self) -> str:
-        # @see: https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/connect-monitor-azure-synapse-spark-application-level-metrics
-        job_id = self.current_job_info.id
-        app_id = self._api.get_spark_batch_job(job_id).app_id
-        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stdout/?isDownload=true" % (self._synapse_dev_url, self._pool_name, job_id, app_id)
-        default_credential = DefaultAzureCredential()
-        token = default_credential.get_token("https://dev.azuresynapse.net/.default")
-        req = urllib.request.Request(url=url, headers={"authorization": "Bearer %s" % token})
-        resp = urllib.request.urlopen(req)
-        return resp.read()
-
-
 class _SynapseJobRunner(object):
     """
     Class to interact with Synapse Spark cluster
@@ -193,6 +181,7 @@ class _SynapseJobRunner(object):
         if credential is None:
             logger.warning('No valid Azure credential detected. Using DefaultAzureCredential')
             credential = DefaultAzureCredential()
+        self._credential = credential
 
         self.client = SparkClient(
             credential=credential,
@@ -285,6 +274,15 @@ class _SynapseJobRunner(object):
             executor_count=self._executors)
 
         return self.client.spark_batch.create_spark_batch_job(spark_batch_job_options, detailed=True)
+
+    def get_driver_log(self, job_id) -> str:
+        # @see: https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/connect-monitor-azure-synapse-spark-application-level-metrics
+        app_id = self.get_spark_batch_job(job_id).app_id
+        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stdout/?isDownload=true" % (self._synapse_dev_url, self._pool_name, job_id, app_id)
+        token = self._credential.get_token("https://dev.azuresynapse.net/.default")
+        req = urllib.request.Request(url=url, headers={"authorization": "Bearer %s" % token})
+        resp = urllib.request.urlopen(req)
+        return resp.read()
 
 
 class _DataLakeFiler(object):
