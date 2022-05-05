@@ -58,11 +58,7 @@ offline_store:
     jdbc_database: 'feathrtestdb'
     jdbc_table: 'feathrtesttable'
 
-# reading from streaming source is coming soon
-# streaming_source:
-#   kafka_connection_string: ''
-
-# snowflake endpoint
+  # snowflake endpoint
   snowflake:
     url: "dqllago-ol19457.snowflakecomputing.com"
     user: "feathrintegration"
