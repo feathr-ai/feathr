@@ -36,27 +36,6 @@ const FeatureList: React.FC = () => {
       }
     },
     {
-      title: <div style={ { userSelect: "none" } }>Data Source</div>,
-      dataIndex: 'dataSource',
-      key: 'dataSource',
-      align: 'center' as 'center',
-      width: 150,
-      render: () => {
-        return (
-          <Button type="link" onClick={ () => {
-            navigateTo(`/dataSources`)
-          } }>nycTaxiBatchSource</Button>
-        )
-      },
-      onCell: () => {
-        return {
-          style: {
-            maxWidth: 120
-          }
-        }
-      }
-    },
-    {
       title: <div style={ { userSelect: "none" } }>Qualified Name</div>,
       dataIndex: 'qualifiedName',
       key: 'qualifiedName',
