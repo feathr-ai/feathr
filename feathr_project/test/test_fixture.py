@@ -12,6 +12,8 @@ from feathr import (BOOLEAN, FLOAT, INPUT_CONTEXT, INT32, STRING,
 from feathr.client import FeathrClient
 from pyspark.sql import DataFrame
 
+from udf import *
+
 
 def basic_test_setup(config_path: str):
 
@@ -166,11 +168,6 @@ def registry_test_setup(config_path: str):
     os.environ["project_config__project_name"] =  ''.join(['feathr_ci','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
 
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
-
-    def add_new_dropoff_and_fare_amount_column(df: DataFrame):
-        df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
-        df = df.withColumn("new_fare_amount", col("fare_amount") + 1000000)
-        return df
 
     batch_source = HdfsSource(name="nycTaxiBatchSource",
                               path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
