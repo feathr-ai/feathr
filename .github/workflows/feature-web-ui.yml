@@ -1,4 +1,4 @@
-name: Feathr Web UI Azure CI/CD 
+name: Feathr Web UI CI/CD on Azure Web App
 
 on:
   push:
@@ -20,8 +20,6 @@ jobs:
           submodules: true
       - name: Build And Deploy
         id: builddeploy
-        env:
-          CI: ""
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_DEPLOYMENT_TOKEN_FEATHR_UI }}
