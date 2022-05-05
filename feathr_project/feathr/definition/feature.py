@@ -7,7 +7,7 @@ from jinja2 import Template
 from feathr.definition.dtype import FeatureType
 from feathr.definition.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
 from feathr.definition.typed_key import DUMMY_KEY, TypedKey
-from feathr.frameconfig import HoconConvertible
+from feathr.definition.feathrconfig import HoconConvertible
 
 class FeatureBase(HoconConvertible):
     """The base class for features

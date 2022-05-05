@@ -4,7 +4,7 @@ from feathr.definition.source import Source
 from feathr.definition.typed_key import DUMMY_KEY
 from jinja2 import Template
 from feathr.definition.source import INPUT_CONTEXT
-from feathr.frameconfig import HoconConvertible
+from feathr.definition.feathrconfig import HoconConvertible
 
 
 class FeatureAnchor(HoconConvertible):

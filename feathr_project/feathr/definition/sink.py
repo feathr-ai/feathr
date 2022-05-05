@@ -1,6 +1,6 @@
 from typing import List, Optional
 from jinja2 import Template
-from feathr.frameconfig import HoconConvertible
+from feathr.definition.feathrconfig import HoconConvertible
 
 
 class Sink(HoconConvertible):

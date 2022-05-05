@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 from jinja2 import Template
 
 from feathr.definition.typed_key import TypedKey
-from feathr.frameconfig import HoconConvertible
+from feathr.definition.feathrconfig import HoconConvertible
 
 class FeatureQuery(HoconConvertible):
     """A FeatureQuery contains a list of features
