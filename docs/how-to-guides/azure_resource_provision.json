@@ -113,6 +113,16 @@
                         "value": "[concat(variables('redisCacheName'),'.redis.cache.windows.net:6380,password=', listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey, ',ssl=True')]"
                     },
                     "dependsOn": [ "[variables('keyVault')]", "[variables('redisCache')]" ]
+                },
+                {
+                    "type": "Microsoft.KeyVault/vaults/secrets",
+                    "name": "[concat(variables('keyVaultName'), '/REDIS_PASSWORD')]",
+                    "apiVersion": "2021-10-01",
+                    "location": "[resourceGroup().location]",
+                    "properties": {
+                        "value": "[listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey]"
+                    },
+                    "dependsOn": [ "[variables('keyVault')]", "[variables('redisCache')]" ]
                 }
             ]
         },
