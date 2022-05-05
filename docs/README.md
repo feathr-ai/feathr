@@ -141,7 +141,7 @@ Feathr has native integration with Azure and other cloud services, and here's th
 
 ## Quickstart
 
-- [Quickstart](quickstart.md)
+- [Quickstart for Azure Synapse](quickstart_synapse.md)
 
 ## Concepts
 

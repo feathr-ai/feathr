@@ -28,19 +28,11 @@ For more details on Feathr, read our [documentation](https://linkedin.github.io/
 
 ## Running Feathr on Azure with 3 Simple Steps
 
-Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
+Feathr has native cloud integration with both Azure Synapse and Databricks. For Synapse, please refer to [Running Feathr with Azure Synapse](./docs/quickstart_synapse.md).
 
-1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
+For Databricks, you can simply upload [this notebook](./docs/samples/databricks/databricks_quickstart_nyc_taxi_driver.ipynb) to your Databricks cluster and just run it without any configuration.
 
-[Launch Cloud Shell](https://shell.azure.com/bash)
-
-2. Click the button below to deploy a minimal set of Feathr resources for demo purpose. You will need to fill in the `Principal ID` and `Resource Prefix`. You will need "Owner" permission of the selected subscription.
-
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
-
-3. Run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb)
+![Databricks Quickstart](./docs/images/databricks_quickstart.gif)
 
 ## Installing Feathr Client Locally
 
