@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.config.location
 
 import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
 import com.linkedin.feathr.offline.generation.SparkIOUtils
-import com.linkedin.feathr.offline.source.dataloader.SparkDataLoader
+import com.linkedin.feathr.offline.source.dataloader.BatchDataLoader
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.codehaus.jackson.annotate.JsonProperty
 

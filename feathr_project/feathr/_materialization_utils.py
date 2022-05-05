@@ -1,4 +1,4 @@
-from jinja2 import Template 
+from jinja2 import Template
 from feathr.materialization_settings import MaterializationSettings
 
 
@@ -12,7 +12,7 @@ def _to_materialization_config(settings: MaterializationSettings):
             resolution: DAILY
             output:[
                     {% for sink in settings.sinks %}
-                        {{sink.to_write_config()}}
+                        {{sink.to_feature_config()}}
                     {% endfor %}
                 ]
             }

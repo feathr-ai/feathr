@@ -1,3 +1,10 @@
+---
+layout: default
+title: Python Project Build and Release Guide
+parent: Feathr Developer Guides
+---
+
+
 # Python Project Build and Release Guide
 
 ## Include non-code data files

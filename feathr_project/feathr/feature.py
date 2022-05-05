@@ -7,11 +7,12 @@ from jinja2 import Template
 from feathr.dtype import FeatureType
 from feathr.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
 from feathr.typed_key import DUMMY_KEY, TypedKey
+from feathr.frameconfig import HoconConvertible
 
-
-class FeatureBase(ABC):
+class FeatureBase(HoconConvertible):
     """The base class for features
     It has a feature name, feature type, and a convenient transformation used to produce its feature value.
+
     Attributes:
         name: Unique name of the feature. Only alphabet, numbers, and '_' are allowed in the name.
                 It can not start with numbers. Note that '.' is NOT ALLOWED!
@@ -66,14 +67,11 @@ class FeatureBase(ABC):
         new_feature.feature_alias = feature_alias
         return new_feature
 
-    @abstractmethod
-    def to_feature_config(self) -> str:
-        pass
-
 
 class Feature(FeatureBase):
     """A feature is an individual measurable property or characteristic of an entity.
     It has a feature name, feature type, and a convenient row transformation used to produce its feature value.
+
     Attributes:
         name: Unique name of the feature. Only alphabet, numbers, and '_' are allowed in the name.
                 It can not start with numbers. Note that '.' is NOT ALLOWED!

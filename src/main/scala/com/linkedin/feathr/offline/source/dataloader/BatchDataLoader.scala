@@ -15,7 +15,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * @param ss the spark session
  * @param path input data path
  */
-private[offline] class SparkDataLoader(ss: SparkSession, location: InputLocation) extends DataLoader {
+private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation) extends DataLoader {
 
   /**
    * get the schema of the source. It's only used in the deprecated DataSource.getDataSetAndSchema
@@ -65,7 +65,7 @@ private[offline] class SparkDataLoader(ss: SparkSession, location: InputLocation
       if (location.getPath.startsWith("jdbc")){
         JdbcUtils.loadDataFrame(ss, location.getPath)
       } else {
-        SparkIOUtils.createDataFrame(location, dataIOParametersWithSplitSize)
+        location.loadDf(ss, dataIOParametersWithSplitSize)
       }
     } catch {
       case _: Throwable =>

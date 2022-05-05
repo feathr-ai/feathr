@@ -62,4 +62,8 @@ object DataSource {
             sourceType: SourceFormatType,
             timeWindowParams: Option[TimeWindowParams] = None,
             timePartitionPattern: Option[String] = None): DataSource = DataSource(SimplePath(rawPath), sourceType, timeWindowParams, timePartitionPattern)
+
+  def apply(inputLocation: InputLocation,
+            sourceType: SourceFormatType): DataSource = DataSource(inputLocation, sourceType, None, None)
+
 }

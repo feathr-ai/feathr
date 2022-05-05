@@ -24,7 +24,7 @@ import org.apache.spark.sql.types.StructType
   * in an anchor, it is used in the 'keyExtractor' of an anchor,
   * 'keyExtractor' is a replacement for 'key' section in the anchor.
   * Note that, though this is called 'keyExtractor', it is actually a general purpose interface used to
-  * generate the master/fact table that will be passed to anchorExtractors later. Arbitrary transformations are
+  * generate the fact table that will be passed to anchorExtractors later. Arbitrary transformations are
   * allowed in appendKeyColumns(), only requirement is that it generates the key columns in the output dataframe
   *
   * For example,
@@ -80,7 +80,7 @@ abstract class SourceKeyExtractor() extends Serializable {
     * 'dataFrameWithKeyColumns' dataframe which is the input parameters of [[GenericAnchorExtractorSpark]] and
     * [[SimpleAnchorExtractorSpark]]
     * You may do any necessary transformations (e.g, explode/filter/group the dataframe, even run a spark job)
-    * in this function to prepare the input dataframe (or master/fact table) for your anchor extractor.
+    * in this function to prepare the input dataframe (or fact table) for your anchor extractor.
     * @param dataFrame source dataframe to work with
     * @return input dataframe with key columns appended
     */

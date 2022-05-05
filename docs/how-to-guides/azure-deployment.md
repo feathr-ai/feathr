@@ -1,8 +1,15 @@
+---
+layout: default
+title: Azure Resource Provisioning
+parent: Feathr How-to Guides
+---
+
+
 # Azure Resource Provisioning
 
-Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. Because of this, users are expected to:
+Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. We have a quick start guide below that will facilitate this process.
 
-## Running Feathr with only a few clicks
+## Method 1: Provision Azure Resources with Current User's Identity:
 
 Feathr has native cloud integration and getting started with Feathr is very straightforward. You only need three steps:
 
@@ -13,7 +20,7 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
 2. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fone_click_deployment%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 
 ## Note on the Template above
@@ -22,8 +29,7 @@ The above way will work if you have owner access to some of the resources. [Acco
 
 However, if you don't have Owner permission in your subscription, you can ask your IT team to run the above template for you and give you the permissions for those resources; Or you can use the way described below, provision a service principal to access all the resources.
 
-
-## Provision Azure Resources with Service Principals
+## Method 2: Provision Azure Resources with Service Principals:
 
 1. Use the content below as a detailed explanation of [Azure resource provisioning script](./azure_resource_provision.sh). **DO NOT** run that script directly given the complexity of cloud environment setup. Instead, follow the steps in this documentation so you can always go back and check your step in case of some failures.
 2. We provide an [Azure resource provisioning script](./azure_resource_provision.sh) which can be used to automate the process

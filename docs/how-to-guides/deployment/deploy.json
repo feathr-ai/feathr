@@ -1,0 +1,638 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.5.6.12127",
+      "templateHash": "17812849664422134221"
+    }
+  },
+  "parameters": {
+    "resourcePrefix": {
+      "type": "string",
+      "defaultValue": "[format('feathr{0}', take(newGuid(), 5))]",
+      "minLength": 3,
+      "maxLength": 15,
+      "metadata": {
+        "description": "Resource prefix for all the resource provisioned. This should be an alphanumeric string."
+      }
+    },
+    "principalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the principal ID assigned to the role. You can find it by logging into 'https://shell.azure.com/bash' and run 'az ad signed-in-user show --query objectId -o tsv' "
+      }
+    },
+    "allowAllConnections": {
+      "type": "string",
+      "defaultValue": "true",
+      "allowedValues": [
+        "true",
+        "false"
+      ],
+      "metadata": {
+        "description": "Specifies whether to allow client IPs to connect to Synapse"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[deployment().location]",
+      "metadata": {
+        "description": "Specifies the location of your Azure datacenter"
+      }
+    }
+  },
+  "variables": {
+    "redisCacheName": "[format('{0}redis', parameters('resourcePrefix'))]",
+    "keyvaultName": "[format('{0}kv', parameters('resourcePrefix'))]",
+    "sparkPoolName": "spark31",
+    "workspaceName": "[toLower(format('{0}syws', parameters('resourcePrefix')))]",
+    "dlsName": "[toLower(format('{0}dls', parameters('resourcePrefix')))]",
+    "dlsFsName": "[toLower(format('{0}fs', parameters('resourcePrefix')))]",
+    "purviewName": "[format('{0}purview', parameters('resourcePrefix'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2020-10-01",
+      "name": "[format('FeathrRg-{0}', parameters('resourcePrefix'))]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('FeathrKv-{0}', parameters('resourcePrefix'))]",
+      "resourceGroup": "[format('FeathrRg-{0}', parameters('resourcePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "kvName": {
+            "value": "[variables('keyvaultName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "resourcePrefix": {
+            "value": "[parameters('resourcePrefix')]"
+          },
+          "tenantId": {
+            "value": "[tenant().tenantId]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.5.6.12127",
+              "templateHash": "15601712200661265258"
+            }
+          },
+          "parameters": {
+            "kvName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "tenantId": {
+              "type": "string"
+            },
+            "resourcePrefix": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.KeyVault/vaults",
+              "apiVersion": "2021-11-01-preview",
+              "name": "[parameters('kvName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "family": "A",
+                  "name": "standard"
+                },
+                "enableSoftDelete": true,
+                "enableRbacAuthorization": true,
+                "tenantId": "[parameters('tenantId')]"
+              }
+            },
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2021-11-01-preview",
+              "name": "[format('{0}/{1}', parameters('kvName'), 'FEATHR-PREFIX')]",
+              "properties": {
+                "value": "[parameters('resourcePrefix')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('kvName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('FeathrRg-{0}', parameters('resourcePrefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('FeathrRedis-{0}', parameters('resourcePrefix'))]",
+      "resourceGroup": "[format('FeathrRg-{0}', parameters('resourcePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "kvName": {
+            "value": "[variables('keyvaultName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "redisName": {
+            "value": "[variables('redisCacheName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.5.6.12127",
+              "templateHash": "10150357290187855767"
+            }
+          },
+          "parameters": {
+            "redisName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "kvName": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Cache/redis",
+              "apiVersion": "2021-06-01",
+              "name": "[parameters('redisName')]",
+              "location": "[parameters('location')]",
+              "tags": {
+                "displayName": "Feathr Online Store"
+              },
+              "properties": {
+                "redisVersion": "6",
+                "sku": {
+                  "capacity": 0,
+                  "family": "C",
+                  "name": "Basic"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2021-11-01-preview",
+              "name": "[format('{0}/{1}', parameters('kvName'), 'FEATHR-ONLINE-STORE-CONN')]",
+              "properties": {
+                "value": "[format('{0}.redis.cache.windows.net:6380,password={1},ssl=True', parameters('redisName'), listKeys(resourceId('Microsoft.Cache/redis', parameters('redisName')), '2021-06-01').primaryKey)]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cache/redis', parameters('redisName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('FeathrRg-{0}', parameters('resourcePrefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('FeathrStorage-{0}', parameters('resourcePrefix'))]",
+      "resourceGroup": "[format('FeathrRg-{0}', parameters('resourcePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "stroageAccountName": {
+            "value": "[variables('dlsName')]"
+          },
+          "containerName": {
+            "value": "[variables('dlsFsName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.5.6.12127",
+              "templateHash": "13281397764797582316"
+            }
+          },
+          "parameters": {
+            "stroageAccountName": {
+              "type": "string"
+            },
+            "containerName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2019-06-01",
+              "name": "[parameters('stroageAccountName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard_LRS"
+              },
+              "kind": "StorageV2",
+              "properties": {
+                "isHnsEnabled": true,
+                "networkAcls": {
+                  "bypass": "AzureServices",
+                  "defaultAction": "Allow",
+                  "virtualNetworkRules": [],
+                  "ipRules": []
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                  "services": {
+                    "file": {
+                      "enabled": true
+                    },
+                    "blob": {
+                      "enabled": true
+                    }
+                  },
+                  "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices",
+              "apiVersion": "2019-06-01",
+              "name": "[format('{0}/{1}', parameters('stroageAccountName'), 'default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('stroageAccountName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2019-06-01",
+              "name": "[format('{0}/{1}/{2}', parameters('stroageAccountName'), 'default', parameters('containerName'))]",
+              "properties": {
+                "publicAccess": "None"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('stroageAccountName'), 'default')]"
+              ]
+            }
+          ],
+          "outputs": {
+            "accountURL": {
+              "type": "string",
+              "value": "[format('https://{0}.dfs.{1}', parameters('stroageAccountName'), environment().suffixes.storage)]"
+            },
+            "filesystem": {
+              "type": "string",
+              "value": "[parameters('containerName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('FeathrRg-{0}', parameters('resourcePrefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('FeathrPurview-{0}', parameters('resourcePrefix'))]",
+      "resourceGroup": "[format('FeathrRg-{0}', parameters('resourcePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('purviewName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.5.6.12127",
+              "templateHash": "3997404676171706265"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Purview/accounts",
+              "apiVersion": "2021-07-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "cloudConnectors": {},
+                "publicNetworkAccess": "Enabled"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Purview/accounts', parameters('name'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('FeathrRg-{0}', parameters('resourcePrefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('FeathrSynapse-{0}', parameters('resourcePrefix'))]",
+      "resourceGroup": "[format('FeathrRg-{0}', parameters('resourcePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('workspaceName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "sparkpoolName": {
+            "value": "[variables('sparkPoolName')]"
+          },
+          "perviewResourceId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('FeathrRg-{0}', parameters('resourcePrefix'))), 'Microsoft.Resources/deployments', format('FeathrPurview-{0}', parameters('resourcePrefix')))).outputs.id.value]"
+          },
+          "adlsFileSystem": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('FeathrRg-{0}', parameters('resourcePrefix'))), 'Microsoft.Resources/deployments', format('FeathrStorage-{0}', parameters('resourcePrefix')))).outputs.filesystem.value]"
+          },
+          "adlsStorageAccountURL": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('FeathrRg-{0}', parameters('resourcePrefix'))), 'Microsoft.Resources/deployments', format('FeathrStorage-{0}', parameters('resourcePrefix')))).outputs.accountURL.value]"
+          },
+          "allowAllConnections": {
+            "value": "[bool(parameters('allowAllConnections'))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.5.6.12127",
+              "templateHash": "8221589723379929764"
+            }
+          },
+          "parameters": {
+            "adlsStorageAccountURL": {
+              "type": "string"
+            },
+            "adlsFileSystem": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "perviewResourceId": {
+              "type": "string"
+            },
+            "allowAllConnections": {
+              "type": "bool"
+            },
+            "sparkpoolName": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Synapse/workspaces",
+              "apiVersion": "2021-06-01",
+              "name": "[parameters('name')]",
+              "tags": {},
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "defaultDataLakeStorage": {
+                  "accountUrl": "[parameters('adlsStorageAccountURL')]",
+                  "filesystem": "[parameters('adlsFileSystem')]"
+                },
+                "virtualNetworkProfile": {
+                  "computeSubnetId": ""
+                },
+                "managedVirtualNetwork": "default",
+                "purviewConfiguration": {
+                  "purviewResourceId": "[parameters('perviewResourceId')]"
+                }
+              }
+            },
+            {
+              "condition": "[parameters('allowAllConnections')]",
+              "type": "Microsoft.Synapse/workspaces/firewallRules",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'allowAll')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "255.255.255.255"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('name'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('allowAllConnections')]",
+              "type": "Microsoft.Synapse/workspaces/firewallRules",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'AllowAllWindowsAzureIps')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Synapse/workspaces/managedIdentitySqlControlSettings",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'default')]",
+              "properties": {
+                "grantSqlControlToManagedIdentity": {
+                  "desiredState": "Enabled"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Synapse/workspaces/bigDataPools",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', parameters('name'), parameters('sparkpoolName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sparkVersion": "3.1",
+                "nodeCount": 3,
+                "nodeSize": "Medium",
+                "nodeSizeFamily": "MemoryOptimized",
+                "autoScale": {
+                  "enabled": true,
+                  "minNodeCount": 1,
+                  "maxNodeCount": 3
+                },
+                "autoPause": {
+                  "enabled": true,
+                  "delayInMinutes": 30
+                },
+                "dynamicExecutorAllocation": {
+                  "enabled": true
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "synapseWorkspaceName": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('FeathrRg-{0}', parameters('resourcePrefix'))), 'Microsoft.Resources/deployments', format('FeathrPurview-{0}', parameters('resourcePrefix')))]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('FeathrRg-{0}', parameters('resourcePrefix')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('FeathrRg-{0}', parameters('resourcePrefix'))), 'Microsoft.Resources/deployments', format('FeathrStorage-{0}', parameters('resourcePrefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('FeathrAddRoles-{0}', parameters('resourcePrefix'))]",
+      "resourceGroup": "[format('FeathrRg-{0}', parameters('resourcePrefix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "userObjectID": {
+            "value": "[parameters('principalId')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.5.6.12127",
+              "templateHash": "17755453518750119469"
+            }
+          },
+          "parameters": {
+            "userObjectID": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "roleDefinitionIdForBlobContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+            "roleDefinitionIdForKeyVaultSecretsUser": "4633458b-17de-408a-b874-0445c86b69e6",
+            "storageRoleID_user": "[guid(format('storageroleuser-{0}', resourceGroup().name))]",
+            "kvRoleID_user": "[guid(format('kvroleuser-{0}', resourceGroup().name))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2020-04-01-preview",
+              "name": "[variables('storageRoleID_user')]",
+              "properties": {
+                "principalId": "[parameters('userObjectID')]",
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForBlobContributor'))]",
+                "principalType": "User"
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2020-04-01-preview",
+              "name": "[variables('kvRoleID_user')]",
+              "properties": {
+                "principalId": "[parameters('userObjectID')]",
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForKeyVaultSecretsUser'))]",
+                "principalType": "User"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('FeathrRg-{0}', parameters('resourcePrefix')))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "resource_prefix": {
+      "type": "string",
+      "value": "[parameters('resourcePrefix')]"
+    }
+  }
+}
