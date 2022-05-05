@@ -11,7 +11,7 @@ class AzureKeyVaultClient:
     def get_akv_secret(self, secret_name: str):
         if self.secret_client is None:
             self.secret_client = SecretClient(
-                vault_uri = f"https://{self.akv_name}.vault.azure.net",
+                vault_url = f"https://{self.akv_name}.vault.azure.net",
                 credential=DefaultAzureCredential()
             )
         try:
