@@ -15,7 +15,7 @@ from pyspark.sql import SparkSession, DataFrame
 from test_fixture import basic_test_setup
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import RedisSink
-from test_fixture import snowflake_test_setup
+from test_fixture import (snowflake_test_setup, get_online_test_table_name)
 
 def trip_distance_preprocessing(df: DataFrame):
     df = df.withColumn("trip_distance", df.trip_distance.cast('double') - 90000)
@@ -87,8 +87,7 @@ def test_non_swa_feature_gen_with_offline_preprocessing():
 
     client.build_features(anchor_list=[regular_anchor])
 
-    now = datetime.now()
-    online_test_table = ''.join(['nycTaxiCITable', '_', str(now.minute), '_', str(now.second)])
+    online_test_table = get_online_test_table_name('nycTaxiCITable')
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -149,8 +148,7 @@ def test_feature_swa_feature_gen_with_preprocessing():
 
     client.build_features(anchor_list=[agg_anchor])
 
-    now = datetime.now()
-    online_test_table = ''.join(['nycTaxiCITable', '_', str(now.minute), '_', str(now.second)])
+    online_test_table = get_online_test_table_name('nycTaxiCITable')
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))

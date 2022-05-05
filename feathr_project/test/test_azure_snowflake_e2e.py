@@ -10,7 +10,7 @@ from feathr import FeatureQuery
 from feathr import ObservationSettings
 from feathr import RedisSink
 from feathr import TypedKey
-from test_fixture import snowflake_test_setup
+from test_fixture import (snowflake_test_setup, get_online_test_table_name)
 
 
 def test_feathr_online_store_agg_features():
@@ -21,8 +21,10 @@ def test_feathr_online_store_agg_features():
     
     client = snowflake_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
+    online_test_table = get_online_test_table_name("snowflakeSampleDemoFeature")
+
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-    redisSink = RedisSink(table_name="snowflakeSampleDemoFeature")
+    redisSink = RedisSink(table_name= online_test_table)
     settings = MaterializationSettings(name="snowflakeSampleDemoFeature",
                                    sinks=[redisSink],
                                    feature_names=['f_snowflake_call_center_division_name',
@@ -33,7 +35,7 @@ def test_feathr_online_store_agg_features():
     # this part with the test_feathr_online_store test case
     client.wait_job_to_finish(timeout_sec=900)
 
-    res = client.get_online_features('snowflakeSampleDemoFeature', '1',
+    res = client.get_online_features(online_test_table, '1',
                                      ['f_snowflake_call_center_division_name', 'f_snowflake_call_center_zipcode'])
 
     assert len(res) == 2
