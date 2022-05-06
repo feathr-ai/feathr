@@ -24,7 +24,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 ## Documentation
 
-For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
+For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/). For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
 
 ## Running Feathr on Azure with 3 Simple Steps
 
@@ -135,7 +135,7 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 | ---------------------------- | --------------------------------------------------------------------------- |
 | Offline store – Object Store | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
 | Offline store – SQL          | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
-| Streaming Source             | Kafka                                                                       |
+| Streaming Source             | Kafka, EventHub                                                                 |
 | Online store                 | Azure Cache for Redis                                                       |
 | Feature Registry             | Azure Purview                                                               |
 | Compute Engine               | Azure Synapse Spark Pools, Databricks                                       |
