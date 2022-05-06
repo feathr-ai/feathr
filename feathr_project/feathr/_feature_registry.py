@@ -27,13 +27,13 @@ from pyhocon import ConfigFactory
 from feathr._file_utils import write_to_file
 from feathr.anchor import FeatureAnchor
 from feathr.constants import *
-from feathr.feature import Feature, FeatureType
+from feathr.feature import Feature, FeatureType, RegisteredFeature
 from feathr.feature_derivations import DerivedFeature
 from feathr.repo_definitions import RepoDefinitions
 from feathr.source import HdfsSource, InputContext, Source
 from feathr.transformation import (ExpressionTransformation, Transformation,
                                    WindowAggTransformation)
-from feathr.typed_key import TypedKey
+from feathr.typed_key import RegisteredTypedKey, TypedKey
 
 
 class _FeatureRegistry():
@@ -839,7 +839,19 @@ derivations: {
         entity_res = [] if guid_list is None or len(guid_list)==0 else self.purview_client.get_entity(
             guid=guid_list)["entities"]
         return entity_res
+
+    def get_registered_features(self, project_name: str) -> (Dict[str, RegisteredFeature], Dict[str, RegisteredTypedKey]):
+        """
+        Get all registered features in the request project.
+        Args:
+            project_name (str): project name.
         
+        """
+        # Get features from registry
+        # Build features, i.e. save them into local HOCON config files
+        # Return a dict
+        pass
+
     def get_features_from_registry(self, project_name: str) -> (List[FeatureAnchor], List[DerivedFeature]):
         """Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
         If the project is big, the return result could be huge.

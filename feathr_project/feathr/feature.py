@@ -68,6 +68,11 @@ class FeatureBase(HoconConvertible):
         new_feature.feature_alias = feature_alias
         return new_feature
 
+class RegisteredFeature(FeatureBase):
+    """
+    A registered feature is a feature imported from feature registry.
+    """
+    pass
 
 class Feature(FeatureBase):
     """A feature is an individual measurable property or characteristic of an entity.

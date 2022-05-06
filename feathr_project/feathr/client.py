@@ -389,7 +389,6 @@ class FeathrClient(object):
         self.logger.info('Redis connection is successful and completed.')
         self.redis_clint = redis_clint
 
-
     def get_offline_features(self,
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
@@ -705,3 +704,12 @@ class FeathrClient(object):
         Get feature from registry by project name
         """
         return self.registry.get_features_from_registry(project_name)
+
+    def get_registered_features(self,project_name):
+        """
+        Get feature from registry by project name, return two Dict, 
+        (Dict from feature name to the RegisteredFeature object,
+         Dict from feature key full name to RegisteredTypedKey object
+        )
+        """
+        return self.registry.get_registered_features(project_name)

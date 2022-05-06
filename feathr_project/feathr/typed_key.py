@@ -42,3 +42,7 @@ DUMMY_KEY = TypedKey(key_column="NOT_NEEDED",
                      key_column_type=ValueType.UNSPECIFIED,
                      full_name="feathr.dummy_typedkey",
                      description="A dummy typed key for passthrough/request feature.")
+
+class RegisteredTypedKey(TypedKey):
+    """Typed feature key from feature registry"""
+    pass
