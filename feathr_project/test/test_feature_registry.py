@@ -31,7 +31,6 @@ def test_feathr_register_features_e2e():
     assert 'f_trip_time_rounded_plus' in all_features # make sure derived features are there 
     assert 'f_trip_time_distance' in all_features # make sure derived features are there  
 
-    client = FeathrClient()
     # Sync workspace from registry, will get all conf files back
     features = client.get_features_from_registry(project_name)
     assert len(features)==2
