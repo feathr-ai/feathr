@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 from feathr.anchor import FeatureAnchor
 from feathr.feature_derivations import DerivedFeature
+from numpy import equal
 
 import pytest
 from click.testing import CliRunner
@@ -30,6 +31,39 @@ def test_feathr_register_features_e2e():
     assert 'f_trip_time_rounded_plus' in all_features # make sure derived features are there 
     assert 'f_trip_time_distance' in all_features # make sure derived features are there  
 
+    client = FeathrClient()
+    # Sync workspace from registry, will get all conf files back
+    features = client.get_features_from_registry(project_name)
+    assert len(features)==2
+    assert isinstance(features[0][0],FeatureAnchor)
+    assert isinstance(features[1][0],DerivedFeature)
+    assert len(features[0])==2
+    anchor1_features = [x.name for x in features[0][0].features]
+    assert len(anchor1_features)==2 and \
+        'f_location_avg_fare' in anchor1_features and \
+        'f_location_max_fare' in anchor1_features
+
+    anchor2_features = [x.name for x in features[0][1].features]
+    assert len(anchor2_features)==4 and \
+        'f_trip_distance' in anchor2_features and \
+        'f_trip_time_duration' in anchor2_features and \
+        'f_is_long_trip_distance' in anchor2_features and \
+        'f_day_of_week' in anchor2_features
+
+    assert len(features[1])==3
+    derived1_inputs = [x.name for x in features[1][0].input_features]
+    assert len(derived1_inputs)==1 and 'f_trip_time_duration' in derived1_inputs
+
+    derived2_inputs = [x.name for x in features[1][1].input_features]
+    assert len(derived2_inputs)==2 and\
+        'f_trip_distance' in derived2_inputs and \
+        'f_trip_time_duration' in derived2_inputs
+    
+    derived3_inputs = [x.name for x in features[1][2].input_features]
+    assert len(derived3_inputs)==1 and\
+        'f_trip_time_duration' in derived3_inputs
+
+    
 def test_get_feature_from_registry():
     registry = _FeatureRegistry("mock_project","mock_purview","mock_delimeter")
     derived_feature_with_multiple_inputs = {
@@ -91,25 +125,7 @@ def test_get_feature_from_registry():
     inputs = registry.search_input_anchor_features(['hierarchical_derived_feature'],entity_array_to_dict(anchors+[derived_feature_with_multiple_inputs,hierarchical_derived_feature]))
     assert len(inputs)==3
     assert "input_anchorA" in inputs and "input_anchorB" in inputs and "input_anchorC" in inputs
-
-def test_feathr_get_sample_features_from_registry():
-    runner = CliRunner()
-    with runner.isolated_filesystem():
-        result = runner.invoke(init, [])
-
-        os.chdir('feathr_user_workspace')
-        
-        client = FeathrClient()
-        # Sync workspace from registry, will get all conf files back
-        features = client.get_features_from_registry("feathr_github_ci_synapse")
-        assert len(features)==2
-        assert isinstance(features[0][0],FeatureAnchor)
-        assert isinstance(features[1][0],DerivedFeature)
-
-        assert len(features[0])==2
-        assert len(features[1])==2
-
-
+    
 @pytest.mark.skip(reason="Add back get_features is not supported in feature registry for now and needs further discussion")
 def test_feathr_get_features_from_registry():
     """
