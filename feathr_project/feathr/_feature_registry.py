@@ -3,6 +3,7 @@ import importlib
 import inspect
 import itertools
 import os
+from re import X
 import sys
 from graphlib import TopologicalSorter
 from pathlib import Path
@@ -21,12 +22,14 @@ from pyapacheatlas.core import (AtlasClassification, AtlasEntity, AtlasProcess,
 from pyapacheatlas.core.typedef import (AtlasAttributeDef,
                                         AtlasRelationshipEndDef, Cardinality,
                                         EntityTypeDef, RelationshipTypeDef)
+                            
 from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
 
 from feathr._file_utils import write_to_file
 from feathr.anchor import FeatureAnchor
 from feathr.constants import *
+from feathr.dtype import *
 from feathr.feature import Feature, FeatureType
 from feathr.feature_derivations import DerivedFeature
 from feathr.repo_definitions import RepoDefinitions
@@ -840,7 +843,7 @@ derivations: {
             guid=guid_list)["entities"]
         return entity_res
         
-    def get_features_from_registry(self, project_name: str) -> Tuple(List[FeatureAnchor], List[DerivedFeature]):
+    def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
         If the project is big, the return result could be huge.
         Args:
@@ -880,8 +883,8 @@ derivations: {
                 [self._get_features_by_guid(x) for x in input_features_guid+anchor_feature_guid]))
 
             derived_feature_list.append(DerivedFeature(name=derived_feature_entity_id["attributes"]["name"],
-                                feature_type=None,
-                                transform=None,
+                                feature_type=self._get_feature_type_from_hocon(derived_feature_entity_id["attributes"]["type"]),
+                                transform=self._get_transformation_from_dict(derived_feature_entity_id["attributes"]['transformation']),
                                 key=key_from_entity,
                                 input_features= all_input_features,
                                 registry_tags=derived_feature_entity_id["attributes"]["tags"]))                    
@@ -920,12 +923,57 @@ derivations: {
     def _get_source_by_guid(self, guid) -> Source:
         # TODO: currently return HDFS source by default. For JDBC source, it's currently implemented using HDFS Source so we should split in the future
         source_entity = self.purview_client.get_entity(guid=guid)["entities"][0]
+        print(source_entity["attributes"]["preprocessing"],)
         return HdfsSource(name=source_entity["attributes"]["name"],
                 event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
                 timestamp_format=source_entity["attributes"]["timestamp_format"],
+                preprocessing=source_entity["attributes"]["preprocessing"],
                 path=source_entity["attributes"]["path"],
                 registry_tags=source_entity["attributes"]["tags"]
                 )
+
+    def _get_feature_type_from_hocon(input_str: str) -> FeatureType:
+        conf = ConfigFactory.parse_string(input_str)
+        valType = conf.get_string('type.valType')
+        dimensionType = conf.get_string('type.dimensionType')
+        if dimensionType:
+            if valType == 'DOUBLE':
+                return DoubleVectorFeatureType()
+            elif valType == 'LONG':
+                return Int64VectorFeatureType()
+            elif valType == 'INT':
+                return Int32VectorFeatureType()
+            elif valType == 'FLOAT':
+                return FloatVectorFeatureType()
+            else:
+                logger.error("{} cannot be parsed.", valType)
+        else:
+            if valType == 'STRING':
+                return StringFeatureType()
+            elif valType == 'BYTES':
+                return BytesFeatureType()
+            elif valType == 'DOUBLE':
+                return DoubleFeatureType()
+            elif valType == 'FLOAT':
+                return FloatFeatureType()
+            elif valType == 'LONG':
+                return Int64FeatureType()
+            elif valType == 'INT':
+                return Int32FeatureType()
+            elif valType == 'BOOLEAN':
+                return BooleanFeatureType()
+            else:
+                logger.error("{} cannot be parsed.", valType)
+
+    def _get_transformation_from_dict(input: Dict) -> FeatureType:
+        if 'transform_expr' in input:
+            # it's ExpressionTransformation
+            return ExpressionTransformation(input['transform_expr'])
+        elif 'def_expr' in input:
+            return WindowAggTransformation(agg_expr=input['def_expr'], agg_func=input['agg_func'], window=input['agg_func'], group_by=input['agg_func'], filter=input['agg_func'], limit=input['agg_func'])
+        else:
+            # no transformation function observed
+            return None
 
     def _get_features_by_guid(self, guid) -> List[FeatureAnchor]:
         feature_entities = self.purview_client.get_entity(guid=guid)["entities"]
@@ -937,13 +985,14 @@ derivations: {
 
             # after get keys, put them in features
             feature_list.append(Feature(name=feature_entity["attributes"]["name"],
-                    feature_type=None, # stored as a hocon string, can be parsed using pyhocon
-                    transform=None, #transform attributes are stored in a dict fashion , can be put in a WindowAggTransformation
+                    feature_type=self._get_feature_type_from_hocon(feature_entity["attributes"]["type"]), # stored as a hocon string, can be parsed using pyhocon
+                    transform=self._get_transformation_from_dict(feature_entity["attributes"]['transformation']), #transform attributes are stored in a dict fashion , can be put in a WindowAggTransformation
                     key=key_list,
                     registry_tags=feature_entity["attributes"]["tags"],
 
             ))
         return feature_list 
+
     def get_feature_by_fqdn_type(self, qualifiedName, typeName):
         """
         Get a single feature by it's QualifiedName and Type

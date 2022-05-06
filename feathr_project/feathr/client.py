@@ -702,6 +702,7 @@ class FeathrClient(object):
 
     def get_features_from_registry(self,project_name):
         """
-        Get feature from registry by project name
+        Get feature from registry by project name. The features got from registry are automatically built.
         """
-        return self.registry.get_features_from_registry(project_name)
+        registry_anchor_list, registry_derived_feature_list = self.registry.get_features_from_registry(project_name)
+        self.build_features(registry_anchor_list, registry_derived_feature_list)

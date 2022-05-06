@@ -60,7 +60,13 @@ class _PreprocessingPyudfManager(object):
 
     @staticmethod
     def persist_pyspark_udf_to_file(user_func, local_workspace_dir):
-        udf_source_code = inspect.getsourcelines(user_func)[0]
+        """persist the pyspark UDF to a file in `local_workspace_dir` for later usage. 
+        The user_func could be either a string that represents a function body, or a callable object.
+        """
+        if isinstance(user_func, str):
+            udf_source_code = user_func
+        else:
+            udf_source_code = inspect.getsourcelines(user_func)[0]
         lines = []
         # Some basic imports will be provided
         lines = lines + PROVIDED_IMPORTS
