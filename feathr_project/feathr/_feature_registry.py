@@ -840,7 +840,7 @@ derivations: {
             guid=guid_list)["entities"]
         return entity_res
         
-    def get_features_from_registry(self, project_name: str) -> (List[FeatureAnchor], List[DerivedFeature]):
+    def get_features_from_registry(self, project_name: str) -> Tuple(List[FeatureAnchor], List[DerivedFeature]):
         """Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
         If the project is big, the return result could be huge.
         Args:
