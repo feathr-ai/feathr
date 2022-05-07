@@ -17,7 +17,7 @@ import pytest
 
 from test_fixture import (basic_test_setup, get_online_test_table_name)
 # make sure you have run the upload feature script before running these tests
-# the feature configs are from feathr_project/data/feathr_user_workspace
+# the feature configs are from feathr_project/data/feathr_user_workspace folder
 def test_feathr_online_store_agg_features():
     """
     Test FeathrClient() get_online_features and batch_get can get data correctly.
