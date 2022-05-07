@@ -25,6 +25,7 @@ def test_feathr_register_features_e2e():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     client: FeathrClient = registry_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    
     # set output folder based on different runtime
     now = datetime.now()
     if client.spark_runtime == 'databricks':
