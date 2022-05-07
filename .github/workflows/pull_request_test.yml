@@ -7,7 +7,6 @@ on:
       - 'docs/**'
       - '**/README.md'
   pull_request_target:
-    branches: [rijai/citest]
     types: [labeled, edited, synchronize]
     paths-ignore:
       - 'docs/**'
