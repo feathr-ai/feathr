@@ -117,6 +117,8 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="feature_config", typeName="string",
+                                  cardinality=Cardinality.SINGLE)
             ],
             superTypes=["DataSet"],
         )
@@ -137,6 +139,8 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="feature_config", typeName="string",
+                                  cardinality=Cardinality.SINGLE)
             ],
             superTypes=["DataSet"],
         )
@@ -199,6 +203,7 @@ class _FeatureRegistry():
                     "key": key_list,
                     "transformation": transform_dict,
                     "tags": anchor_feature.registry_tags,
+                    "feature_config": anchor_feature.to_feature_config()
                 },
                 typeName=TYPEDEF_ANCHOR_FEATURE,
                 guid=self.guid.get_guid(),
@@ -375,7 +380,9 @@ class _FeatureRegistry():
                     "input_anchor_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==TYPEDEF_ANCHOR_FEATURE],
                     "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==TYPEDEF_DERIVED_FEATURE],
                     "transformation": transform_dict,
-                    "tags": derived_feature.registry_tags
+                    "tags": derived_feature.registry_tags,
+                    "feature_config": derived_feature.to_feature_config()
+
                 },
                 typeName=TYPEDEF_DERIVED_FEATURE,
                 guid=self.guid.get_guid(),
@@ -939,7 +946,8 @@ derivations: {
         # TODO: currently return HDFS source by default. For JDBC source, it's currently implemented using HDFS Source so we should split in the future
         source_entity = self.purview_client.get_entity(guid=guid)["entities"][0]
         print(source_entity["attributes"]["preprocessing"],)
-        
+
+        # if source_entity["attributes"]["path"] is INPUT_CONTEXT, it will also be assigned to this returned object
         return HdfsSource(name=source_entity["attributes"]["name"],
                 event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
                 timestamp_format=source_entity["attributes"]["timestamp_format"],
@@ -989,7 +997,7 @@ derivations: {
             # it's ExpressionTransformation
             return ExpressionTransformation(input['transform_expr'])
         elif 'def_expr' in input:
-            return WindowAggTransformation(agg_expr=input['def_expr'], agg_func=input['agg_func'], window=input['agg_func'], group_by=input['agg_func'], filter=input['agg_func'], limit=input['agg_func'])
+            return WindowAggTransformation(agg_expr=input['def_expr'], agg_func=input['agg_func'], window=input['window'], group_by=input['group_by'], filter=input['filter'], limit=input['limit'])
         else:
             # no transformation function observed
             return None
