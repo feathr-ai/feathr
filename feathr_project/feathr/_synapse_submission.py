@@ -7,8 +7,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from os.path import basename
 from enum import Enum
-from azure.identity import DefaultAzureCredential
-
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
                             DeviceCodeCredential, EnvironmentCredential,
                             ManagedIdentityCredential)
