@@ -16,6 +16,7 @@ class LookupFeature(FeatureBase):
         base feature is user_purchased_item_ids. For a given user_id, it returns the item ids purchased by the user.
         expansion feature is item_price. For a given item id, it returns the item price.
         aggregation function is average of the item prices.
+
     Attributes:
         name: Derived feature name
         feature_type: Type of derived feature
@@ -23,8 +24,8 @@ class LookupFeature(FeatureBase):
         base_feature: The feature value of this feature will be used as key to lookup from the expansion feature
         expansion_feature: The feature to be looked up
         aggregation: Specify the aggregation for the feature values lookup from the expansion feature, in the
-                     case of the base feature value needed to be converted into multiple lookup keys, 
-                     e.g. feature value is an array and each value in the array is used once as a lookup key.   
+                     case of the base feature value needed to be converted into multiple lookup keys,
+                     e.g. feature value is an array and each value in the array is used once as a lookup key.
     """
 
     def __init__(self,

@@ -6,7 +6,7 @@ def test_observation_setting_with_timestamp():
         observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
         event_timestamp_column="lpep_dropoff_datetime",
         timestamp_format="yyyy-MM-dd HH:mm:ss")
-    config = observation_settings.to_config()
+    config = observation_settings.to_feature_config()
     expected_config = """
             settings: {
                 joinTimeSettings: {
@@ -26,7 +26,7 @@ def test_observation_setting_without_timestamp():
     observation_settings = ObservationSettings(
         observation_path='jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse'
                          '=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL')
-    config = observation_settings.to_config()
+    config = observation_settings.to_feature_config()
     expected_config = """            
             observationPath:"jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL"
         """

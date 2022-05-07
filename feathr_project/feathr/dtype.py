@@ -1,12 +1,18 @@
 import enum
-from typing import Type, Union, List
-from abc import ABC, abstractmethod
-
-from jinja2 import Template
+from feathr.frameconfig import HoconConvertible
 
 class ValueType(enum.Enum):
-    """
-    Basic value type. Used as feature key type.
+    """Data type to describe feature keys or observation keys.
+
+    Attributes:
+        UNSPECIFIED: key data type is unspecified.
+        BOOL: key data type is boolean, either true or false
+        INT32: key data type is 32-bit integer, for example, an invoice id, 93231.
+        INT64: key data type is 64-bit integer, for example, an invoice id, 93231.
+        FLOAT: key data type is float, for example, 123.4f.
+        DOUBLE: key data type is double, for example, 123.4d.
+        STRING: key data type is string, for example, a user name, 'user_joe'
+        BYTES: key data type is bytes.
     """
     UNSPECIFIED = 0
     BOOL = 1
@@ -18,13 +24,13 @@ class ValueType(enum.Enum):
     BYTES = 7
 
 
-class FeatureType(ABC):
+class FeatureType(HoconConvertible):
     """Base class for all feature types"""
-    @abstractmethod
-    def to_feature_config(self) -> str:
-        pass
+    pass
 
 class BooleanFeatureType(FeatureType):
+    """Boolean feature value, either true or false.
+    """
     def to_feature_config(self) -> str:
         return """
            type: {
@@ -36,6 +42,8 @@ class BooleanFeatureType(FeatureType):
         """
 
 class Int32FeatureType(FeatureType):
+    """32-bit integer feature value, for example, 123, 98765.
+    """
     def to_feature_config(self) -> str:
         return """
             type: {
@@ -47,6 +55,8 @@ class Int32FeatureType(FeatureType):
         """
 
 class Int64FeatureType(FeatureType):
+    """64-bit integer(a.k.a. Long in some system) feature value, for example, 123, 98765 but stored in 64-bit integer.
+    """
     def to_feature_config(self) -> str:
         return """
             type: {
@@ -58,6 +68,8 @@ class Int64FeatureType(FeatureType):
         """
 
 class FloatFeatureType(FeatureType):
+    """Float feature value, for example, 1.3f, 2.4f.
+    """
     def to_feature_config(self) -> str:
         return """
             type: {
@@ -69,6 +81,8 @@ class FloatFeatureType(FeatureType):
         """
 
 class DoubleFeatureType(FeatureType):
+    """Double feature value, for example, 1.3d, 2.4d. Double has better precision than float.
+    """
     def to_feature_config(self) -> str:
         return """
             type: {
@@ -80,6 +94,8 @@ class DoubleFeatureType(FeatureType):
         """
 
 class StringFeatureType(FeatureType):
+    """String feature value, for example, 'apple', 'orange'.
+    """
     def to_feature_config(self) -> str:
         return """
             type: {
@@ -91,6 +107,8 @@ class StringFeatureType(FeatureType):
         """
 
 class BytesFeatureType(FeatureType):
+    """Bytes feature value.
+    """
     def to_feature_config(self) -> str:
         return """
             type: {
@@ -102,6 +120,8 @@ class BytesFeatureType(FeatureType):
         """
 
 class FloatVectorFeatureType(FeatureType):
+    """Float vector feature value, for example, [1,3f, 2.4f, 3.9f]
+    """
     def to_feature_config(self) -> str:
         return """
            type: {
@@ -114,6 +134,8 @@ class FloatVectorFeatureType(FeatureType):
 
 
 class Int32VectorFeatureType(FeatureType):
+    """32-bit integer vector feature value, for example, [1, 3, 9]
+    """
     def to_feature_config(self) -> str:
         return """
            type: {
@@ -126,6 +148,8 @@ class Int32VectorFeatureType(FeatureType):
 
 
 class Int64VectorFeatureType(FeatureType):
+    """64-bit integer vector feature value, for example, [1, 3, 9]
+    """
     def to_feature_config(self) -> str:
         return """
            type: {
@@ -138,6 +162,8 @@ class Int64VectorFeatureType(FeatureType):
 
 
 class DoubleVectorFeatureType(FeatureType):
+    """Double vector feature value, for example, [1.3d, 3.3d, 9.3d]
+    """
     def to_feature_config(self) -> str:
         return """
            type: {
@@ -147,6 +173,8 @@ class DoubleVectorFeatureType(FeatureType):
                 valType: DOUBLE
             }
         """
+
+
 # tensor dimension/axis
 class Dimension:
     def __init__(self, shape: int, dType: ValueType = ValueType.INT32):

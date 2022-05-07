@@ -10,17 +10,22 @@ In this guide, we will cover the high level concepts for Feathr. Don't treat thi
 
 ## What are `Observation` data, and why does Feathr need `key(s)`, `Anchor`, `Source`?
 
-In order to fully utilize Feathr's power, we need to understand what Feathr is expecting. Let's take an example of building a recommendation system, where you have a user click streams and you want to add addtion features on top of this click streams, say user historical clicks in last 1 hour, and the user locations.
+In order to fully utilize Feathr's power, we need to understand what Feathr is expecting. Let's take an example of building a recommendation system, where you have a user click streams and you want to add addtional features on top of this click streams, say user historical clicks in last 1 hour, and the user locations.
 
 ![Feature Feature Concept](../images/concept_illustration.jpg)
 
-In Feathr, always think that there is some `Observation` dataset (the above case will be the click streams) which is the central dataset that you will be using. The observation data set will usually have at least two columns: a timestamp column (indicating when this event happened) and a column containing IDs, and with other possible fields.
+In Feathr, always think that there is some `Observation` dataset (the above case will be the click streams) which is the central dataset that you will be using. The observation dataset will usually have at least two columns: 
 
-Usually you will need addtional features to augment this `observation` dataset. For example, you want to augment the user click stream data by adding some historical features, such as the total amount that the user spent in the last one week. This additional dataset is usually in a different storage, say in your historical database, or data lake.
+- a timestamp column (indicating when this event happened) 
+- a column containing IDs, and with other possible fields.
 
-In this case, how would we "link" the `observation` dataset, and the "additional dataset"? In Feathr, basically think this process as joining two tables.
+Think this `Observation Data` just as a set of IDs that you want to query on, and that is why some other feature store call this "Entity DataFrame". Also this observation data usually come with timestamp so you can do [point in time join](#point-in-time-joins-and-aggregations).
 
-Since this is a table join process, we need to specify which `key(s)` that the join would happen. Those `keys` are usually some IDs, but can be others as well. In the above example, if we want to augment the user click stream data with user purchase history, we will use the user ID as `key`, so that the `user_click_stream` table and the `user_historical_buying` table can be joined together. That's why you need to specify `keys` in Feathr `Feature`, becasue you will need to join your `Feature` with your `Observation Data` later on.
+Because the observation data just contains ID and timestamp, usually you will need addtional features to augment this `observation` dataset. For example, you want to augment the user click stream data by adding some historical features, such as total amount user spent in the last week. This additional dataset is usually stored in a different storage, say in your historical database, or data lake.
+
+In this case, how would we "link" the `observation` dataset, and the "additional dataset"? In Feathr, think of this process as joining two tables.
+
+Since this is a table join process, we need to specify which `key(s)` that the join would happen. Those `keys` are usually some IDs, but can be others as well. In the above example, if we want to augment the user click stream data with user purchase history, we will use the user ID as `key`, so that the `user_click_stream` table and the `user_historical_buying` table can be joined together. That's why you need to specify `keys` in Feathr `Feature`, because you will need to join your `Feature` with your `Observation Data` later on.
 
 Since those additional features are from different sources, we want to define an `Anchor` to process it further. Think `Anchor` as a `Feature View`, where it is a collection of features and their corresponding sources. Think `Feature` just as a column in your dataset but it contains some useful information that you want to use in your machine learning scenario.
 
@@ -51,7 +56,7 @@ request_anchor = FeatureAnchor(name="request_features",
 
 That sounds all good, but what if we want to share a feature, and others want to build additional features on top of that feature? Thats's why there is a concept in Feathr called `derived feature`, which allows you to calculate features based on other features, with certain transformation support. 
 
-In practice, people can build features on top of other features. For example, you have a recommendation system, one of your team mates have built an embedding for users, and antoher team mate have built an embedding on items, and you can build an additional feature called "user_item_similarity" on those two features:
+In practice, people can build features on top of other features. For example, you have a recommendation system, one of your teammates have built an embedding for users, and another team mate have built an embedding on items, and you can build an additional feature called "user_item_similarity" on those two features:
 
 ```python
 # Another example to compute embedding similarity
@@ -64,6 +69,17 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       input_features=[user_embedding, item_embedding],
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
+## Motivation on "INPUT_CONTEXT"
+
+In many of the cases, we not only want to define features on the source data (`user_profile_table` and `user_historical_buying_table` in the above case), but also want to define features on the observation data (`user_click_stream_table` in the above case). `INPUT_CONTEXT` simply means that those features will be defined on `Observation Data` instead of `Source`. That is why you will see something like this in Feathr:
+
+```python
+request_anchor = FeatureAnchor(name="request_features",
+                               source=INPUT_CONTEXT,
+                               features=features)
+```
+
+This is less recommended as it has many limitations (for example, you cannot define UDFs on top of `INPUT_CONTEXT`). 
 
 ## Why does Feathr need `Feature Query`?
 
@@ -111,6 +127,9 @@ client.get_online_features(feature_table = "agg_features",
 
 An illustration of the concepts and process that we talked about is like this:
 ![Feature Join Process](../images/observation_data.jpg)
+
+
+
 
 ## Point in time joins and aggregations
 

@@ -7,7 +7,7 @@ long_description = (root_path / "README.md").read_text()
 
 setup(
     name='feathr',
-    version='0.3.2',
+    version='0.4.0',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="frame_dev@linkedin.com",
@@ -44,7 +44,14 @@ setup(
         "google-api-python-client>=2.41.0",
         "azure-keyvault-secrets",
         "confluent-kafka",
-        "avro"
+        "databricks-cli",
+        "avro",
+        # In 1.23.0, azure-core is using ParamSpec which might cause issues in some of the databricks runtime.
+        # see this for more details:
+        # https://github.com/Azure/azure-sdk-for-python/pull/22891
+        # using a version lower than that to workaround this issue
+        "azure-core<=1.22.1",
+        "typing_extensions>=4.2.0"
     ],
     tests_require=[
         'pytest',

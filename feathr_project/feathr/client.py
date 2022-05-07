@@ -73,7 +73,7 @@ class FeathrClient(object):
     The users of this client is responsible for set up all the necessary information needed to start a Redis client via
     environment variable or a Spark cluster. Host address, port and password are needed to start the Redis client.
 
-    Args:
+    Attributes:
         config_path (str, optional): config path. See [Feathr Config Template](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
         local_workspace_dir (str, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
         credential (optional): credential to access cloud resources,  most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
@@ -134,7 +134,7 @@ class FeathrClient(object):
             self._FEATHR_JOB_JAR_PATH = \
                 envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'feathr_runtime_location')
-            
+
             if self.credential is None:
                 self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
 
@@ -209,9 +209,10 @@ class FeathrClient(object):
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
         else:
             self.registry.register_features(self.local_workspace_dir, from_context=from_context)
-    
+
     def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
-        """Registers features based on the current workspace
+        """Build features based on the current workspace. all actions that triggers a spark job will be based on the
+        result of this action.
         """
         # Run necessary validations
         # anchor name and source name should be unique
@@ -414,10 +415,10 @@ class FeathrClient(object):
 
         # produce join config
         tm = Template("""
-            {{observation_settings.to_config()}}
+            {{observation_settings.to_feature_config()}}
             featureList: [
                 {% for list in feature_lists %}
-                    {{list.to_config()}}
+                    {{list.to_feature_config()}}
                 {% endfor %}
             ]
             outputPath: "{{output_path}}"
@@ -560,6 +561,9 @@ class FeathrClient(object):
         - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
+        optional_params = []
+        if _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG'):
+            optional_params = optional_params + ['--kafka-config', self._get_kafka_config_str()]
         return self.feathr_spark_laucher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
@@ -576,9 +580,8 @@ class FeathrClient(object):
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str(),
-                '--kafka-config', self._get_kafka_config_str()
-            ],
+                '--snowflake-config', self._get_snowflake_config_str()
+            ] + optional_params,
             reference_files_path=[],
             configuration=execution_configuratons,
         )
@@ -696,3 +699,9 @@ class FeathrClient(object):
             KAFKA_SASL_JAAS_CONFIG: "{sasl}"
             """.format(sasl=sasl)
         return config_str
+
+    def get_features_from_registry(self,project_name):
+        """
+        Get feature from registry by project name
+        """
+        return self.registry.get_features_from_registry(project_name)

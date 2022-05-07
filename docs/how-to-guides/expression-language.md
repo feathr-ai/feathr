@@ -18,7 +18,7 @@ If the feature transformation can't be accomplished with a short line of express
 
 # Usage Guide
 
-Your data transformation can be composed of one or a few smaller tasks. Divide and conquer! For each individual task, check the following sections on how to acheive them. Then combine them. For example, we have a trip mileage column but it's in string form. We want to compare if it's a long trip(> 30 miles). So we need to cast it into string and then compare with 30. We can do `cast_double(mile_column) > 30`.
+Your data transformation can be composed of one or a few smaller tasks. Divide and conquer! For each individual task, check the following sections on how to acheive them. Then combine them. For example, we have a trip mileage column but it's in string form. We want to compare if it's a long trip(> 30 miles). So we need to cast it into double and then compare with 30. We can do `cast_double(mile_column) > 30`.
 
 ## Field accessing
 
@@ -54,7 +54,7 @@ For data of numeric types, you can use arithmetic operators to perform opteratio
 
 > If the logical operator you need is not here, please raise a github issue with us.
 
-Logical operators combines multiple true and false and returns respective true or false. We support three logical operators(here x and y are two expression):
+Logical operators combine multiple true and false statements and return respective true or false. We support three logical operators(here x and y are two expressions):
 
 - `and(x, y)`: returns true when both expressions are true
 - `or(x, y)`: returns true when either expressions are true
@@ -80,18 +80,8 @@ Logical operators combines multiple true and false and returns respective true o
 
 > If the UDFs you need is not here, please raise an github issue with us.
 
-Feathr built-in UDFs(user-defined-function) provide useful feature transformation or feature engineering functionalities that might not be easy to achieve with existing expression.
-
-| UDF name                        | UDF description                                            | Example                                                                           |
-| ------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| dayofweek(input)                | get day of the week from the input                         | dayofweek('2009-07-30') returns 5                                                 |
-| dayofmonth(input)               | get day of the month from the input                        | dayofmonth('2009-07-30') returns 30                                               |
-| hourofday(input)                | get hour of the day from the input                         | hourofday('2021-01-01 23:45:57') returns 23                                       |
-| time_duration(start, end, unit) | get the duration in the desired unit between start and end | time_duration('2021-01-01 23:45:57', '2021-01-01 23:55:57', 'minutes') returns 10 |
+Feathr built-in UDFs(user-defined-function) provide useful feature transformation or feature engineering functionalities that might not be easy to achieve with existing expression. All the [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/index.html) are supported.
 
 # How Feathr Expressions Works Under the Hood
 
-Feathr expressions relies on [Mvel](http://mvel.documentnode.com/) and Spark SQL as the underlying engine. The supported
-functionalities are a subset of Mvel and Spark SQL to ensure cross-platform compatibility. The underlying engine may be
-updated or replaced in the future but the supported operators in this doc will stay. If you are using some operators
-that are not mentioned here, it might work in one platform but might not work on others.
+Feathr expressions relies on [Mvel](http://mvel.documentnode.com/) and Spark SQL as the underlying engine. The supported functionalities are a subset of Mvel and Spark SQL to ensure cross-platform compatibility. The underlying engine may be updated or replaced in the future but the supported operators in this doc will stay. If you are using some operators that are not mentioned here, it might work in one platform but might not work on others.

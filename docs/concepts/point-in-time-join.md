@@ -10,7 +10,7 @@ If your feature doesn't change over time in your modeling, like an adult's heigh
 
 ## Feature Leakage
 
-Models should not use future to predict present. This is called feature leakage. For example, you have an observation data with a timestamp of 7 days ago. In the eyes of this observation data, 7 days ago is its present. On the other side, you have time-series feature data keep ingested into your data warehouse and it contains recent purchase data from 2 days ago. In the eyes of the observation data, all these newly ingested data during the last week is the future feature. If you just blindly use the latest feature data in your model, you are leaking future data into your model. This mistake happens more often than people think.
+Models should not use future to predict present. This is called feature leakage. For example, you have an observation data with a timestamp of 7 days ago. In the eyes of this observation data, 7 days ago is its present. On the other side, time-series feature data is ingested into your data warehouse and it contains recent purchase data from 2 days ago. In the eyes of the observation data, all these newly ingested data during the last week is the future feature. If you just blindly use the latest feature data in your model, you are leaking future data into your model. This mistake happens more often than people think.
 
 The model will perform better during training(usually), but it will not perform as good during online serving. Why? There is no future data on online serving anymore.
 
@@ -18,7 +18,7 @@ The model will perform better during training(usually), but it will not perform 
 
 Point-in-time corretness ensures that no future data is used for training.
 
-Point-in-time correctness can be achieved via two approaches. If your observation data has a global timestamp for all observation events, then you can simply time-travel your feature dataset back to that timestamp. If your observation data has different timestamps for each observation events, then you need to point-in-time join for each events. The first approach is easier to implement but have more restrictions(global timestapm). The second appraoche provides better flexiblity and no feature data is wasted. Feathr uses the second approach and can scale to large datasets.
+Point-in-time correctness can be achieved via two approaches. If your observation data has a global timestamp for all observation events, then you can simply time-travel your feature dataset back to that timestamp. If your observation data has different timestamps for each observation events, then you need to point-in-time join for each events. The first approach is easier to implement but have more restrictions(global timestamp). The second appraoche provides better flexiblity and no feature data is wasted. Feathr uses the second approach and can scale to large datasets.
 
 ## Point-in-time Feature Lookup in Feathr
 

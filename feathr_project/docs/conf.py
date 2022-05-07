@@ -19,14 +19,14 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'feathr'
+project = 'Feathr Feature Store'
 copyright = '2022, Feathr Community'
 author = 'Feathr Community'
 
 # The short X.Y version
-version = '0.1'
+version = '0.4'
 # The full version, including alpha/beta/rc tags
-release = '0.1_azure_alpha'
+release = '0.4'
 
 
 # -- General configuration ---------------------------------------------------
@@ -49,6 +49,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx_rtd_theme',
+    'sphinx.ext.napoleon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
