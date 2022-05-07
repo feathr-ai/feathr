@@ -39,6 +39,7 @@ def test_feathr_register_features_e2e():
     time.sleep(5)
     # in CI test, the project name is set by the CI pipeline so we read it here
     project_name = os.environ["PROJECT_CONFIG__PROJECT_NAME"]
+    print("project_name is", project_name)
     all_features = client.list_registered_features(project_name=project_name)
     assert 'f_is_long_trip_distance' in all_features # test regular ones
     assert 'f_trip_time_rounded' in all_features # make sure derived features are there

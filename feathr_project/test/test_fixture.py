@@ -166,6 +166,7 @@ def registry_test_setup(config_path: str):
     os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
 
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
+    print("project name after client initialization is", client.project_name)
 
     def add_new_dropoff_and_fare_amount_column(df: DataFrame):
         df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
