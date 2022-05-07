@@ -878,7 +878,11 @@ derivations: {
         derived_feature_list = []
         for derived_feature_entity_id in derived_feature_ids:
             # this will be used to generate DerivedFeature instance
-            key_from_entity=derived_feature_entity_id["attributes"]["tags"]
+            derived_feature_key_list = []
+
+                
+            for key in derived_feature_entity_id["attributes"]["key"]:
+                derived_feature_key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
             
             # for feature anchor (GROUP), input features are splitted into input anchor features & input derived features
             anchor_feature_guid = [e["guid"] for e in derived_feature_entity_id["attributes"]["input_anchor_features"]]
@@ -894,7 +898,7 @@ derivations: {
             derived_feature_list.append(DerivedFeature(name=derived_feature_entity_id["attributes"]["name"],
                                 feature_type=self._get_feature_type_from_hocon(derived_feature_entity_id["attributes"]["type"]),
                                 transform=self._get_transformation_from_dict(derived_feature_entity_id["attributes"]['transformation']),
-                                key=key_from_entity,
+                                key=derived_feature_key_list,
                                 input_features= all_input_features,
                                 registry_tags=derived_feature_entity_id["attributes"]["tags"]))                    
         anchor_result = self.purview_client.get_entity(guid=anchor_guid)["entities"]
