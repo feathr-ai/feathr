@@ -210,7 +210,7 @@ class FeathrClient(object):
         else:
             self.registry.register_features(self.local_workspace_dir, from_context=from_context)
 
-    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
+    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = [], save_dir: Optional[str] = None):
         """Build features based on the current workspace. all actions that triggers a spark job will be based on the
         result of this action.
         """
@@ -229,10 +229,10 @@ class FeathrClient(object):
                                    f"definitions. Source name of {anchor.source} is already defined in {source_names[anchor.source.name]}")
             else:
                 source_names[anchor.source.name] = anchor.source
-
-        preprocessingPyudfManager = _PreprocessingPyudfManager()
-        _PreprocessingPyudfManager.build_anchor_preprocessing_metadata(anchor_list, self.local_workspace_dir)
-        self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
+        if not save_dir:
+            save_dir = self.local_workspace_dir + '/feature_conf/'
+        _PreprocessingPyudfManager.build_anchor_preprocessing_metadata(anchor_list, save_dir)
+        self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, save_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
 
@@ -699,17 +699,21 @@ class FeathrClient(object):
             """.format(sasl=sasl)
         return config_str
 
-    def get_features_from_registry(self,project_name):
+    def get_features_from_registry(self, project_name):
         """
         Get feature from registry by project name
         """
         return self.registry.get_features_from_registry(project_name)
 
-    def get_registered_features(self,project_name):
+    def get_registered_features(self, project_name):
         """
         Get feature from registry by project name, return two Dict, 
         (Dict from feature name to the RegisteredFeature object,
          Dict from feature key full name to RegisteredTypedKey object
         )
         """
-        return self.registry.get_registered_features(project_name)
+        save_dir = self.local_workspace_dir + '/feature_conf/' + project_name + '/'
+        # Get features from registry
+        (anchors, derived_features) = self.get_features_from_registry(project_name)
+        self.build_features(anchors, derived_features, save_dir)
+        return self.registry.get_registered_features(anchors, derived_features, project_name)

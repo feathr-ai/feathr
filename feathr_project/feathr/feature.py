@@ -68,11 +68,6 @@ class FeatureBase(HoconConvertible):
         new_feature.feature_alias = feature_alias
         return new_feature
 
-class RegisteredFeature(FeatureBase):
-    """
-    A registered feature is a feature imported from feature registry.
-    """
-    pass
 
 class Feature(FeatureBase):
     """A feature is an individual measurable property or characteristic of an entity.
@@ -105,3 +100,24 @@ class Feature(FeatureBase):
         """)
         return tm.render(feature=self)
 
+
+class RegisteredFeature(FeatureBase):
+    """
+    A registered feature is a feature imported from feature registry.
+    TODO: Registered feature should be created from registry instead of a local feature
+    """
+    def __init__(self, local_feature: FeatureBase, project: str):
+        super().__init__(local_feature.name, local_feature.feature_type, local_feature.transform, local_feature.key, local_feature.registry_tags)
+        self.project = project
+    def to_feature_config(self) -> str:
+        """
+        TODO change to use store value directly
+        :return:
+        """
+        tm = Template("""
+            {{feature.name}}: {
+                {{feature.transform.to_feature_config()}}
+                {{feature.feature_type.to_feature_config()}} 
+            }
+        """)
+        return tm.render(feature=self)

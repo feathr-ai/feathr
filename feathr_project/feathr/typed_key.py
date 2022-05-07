@@ -44,5 +44,8 @@ DUMMY_KEY = TypedKey(key_column="NOT_NEEDED",
                      description="A dummy typed key for passthrough/request feature.")
 
 class RegisteredTypedKey(TypedKey):
-    """Typed feature key from feature registry"""
-    pass
+    """Typed feature key from feature registry
+    TODO It should be created from a registry object instead of a local typed key
+    """
+    def __init__(self, key: TypedKey):
+        super(RegisteredTypedKey, self).__init__(key.key_column, key.key_column_type, key.full_name, key.description, key.key_column_alias)

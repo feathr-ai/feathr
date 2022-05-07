@@ -158,13 +158,13 @@ def kafka_test_setup(config_path: str):
     client.build_features(anchor_list=[kafkaAnchor])
     return client
 
-def registry_test_setup(config_path: str):
-
-
+def registry_test_setup(config_path: str, project_name: str = None):
     # use a new project name every time to make sure all features are registered correctly
     now = datetime.now()
-    os.environ["project_config__project_name"] =  ''.join(['feathr_ci','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    if not project_name:
+        project_name = ''.join(['feathr_ci','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)])
 
+    os.environ["project_config__project_name"] = project_name
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
 
     def add_new_dropoff_and_fare_amount_column(df: DataFrame):

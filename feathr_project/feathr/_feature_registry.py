@@ -9,6 +9,7 @@ from pathlib import Path
 from tracemalloc import stop
 from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
+import pytest
 
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
@@ -112,6 +113,8 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="feature_config", typeName="string",
+                                  cardinality=Cardinality.SINGLE)
             ],
             superTypes=["DataSet"],
         )
@@ -132,6 +135,8 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="feature_config", typeName="string",
+                                  cardinality=Cardinality.SINGLE)
             ],
             superTypes=["DataSet"],
         )
@@ -194,6 +199,7 @@ class _FeatureRegistry():
                     "key": key_list,
                     "transformation": transform_dict,
                     "tags": anchor_feature.registry_tags,
+                    "feature_config": anchor_feature.to_feature_config()
                 },
                 typeName=TYPEDEF_ANCHOR_FEATURE,
                 guid=self.guid.get_guid(),
@@ -370,7 +376,8 @@ class _FeatureRegistry():
                     "input_anchor_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==TYPEDEF_ANCHOR_FEATURE],
                     "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==TYPEDEF_DERIVED_FEATURE],
                     "transformation": transform_dict,
-                    "tags": derived_feature.registry_tags
+                    "tags": derived_feature.registry_tags,
+                    "feature_config": derived_feature.to_feature_config()
                 },
                 typeName=TYPEDEF_DERIVED_FEATURE,
                 guid=self.guid.get_guid(),
@@ -567,7 +574,7 @@ class _FeatureRegistry():
 
     @classmethod
     def _save_request_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
-        config_file_name = "feature_conf/auto_generated_request_features.conf"
+        config_file_name = "auto_generated_request_features.conf"
         tm = Template(
             """
 // THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
@@ -580,16 +587,16 @@ anchors: {
 }
 """
         )
-
-        request_feature_configs = tm.render(
-            feature_anchors=repo_definitions.feature_anchors)
-        config_file_path = os.path.join(local_workspace_dir, config_file_name)
-        write_to_file(content=request_feature_configs,
-                      full_file_name=config_file_path)
+        if repo_definitions.feature_anchors:
+            # pytest.set_trace()
+            request_feature_configs = tm.render(feature_anchors=repo_definitions.feature_anchors)
+            config_file_path = os.path.join(local_workspace_dir, config_file_name)
+            write_to_file(content=request_feature_configs,
+                          full_file_name=config_file_path)
 
     @classmethod
     def _save_anchored_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
-        config_file_name = "feature_conf/auto_generated_anchored_features.conf"
+        config_file_name = "auto_generated_anchored_features.conf"
         tm = Template(
             """
 // THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
@@ -618,7 +625,7 @@ sources: {
 
     @classmethod
     def _save_derived_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
-        config_file_name = "feature_conf/auto_generated_derived_features.conf"
+        config_file_name = "auto_generated_derived_features.conf"
         tm = Template(
             """
 anchors: {}
@@ -840,18 +847,6 @@ derivations: {
             guid=guid_list)["entities"]
         return entity_res
 
-    def get_registered_features(self, project_name: str) -> (Dict[str, RegisteredFeature], Dict[str, RegisteredTypedKey]):
-        """
-        Get all registered features in the request project.
-        Args:
-            project_name (str): project name.
-        
-        """
-        # Get features from registry
-        # Build features, i.e. save them into local HOCON config files
-        # Return a dict
-        pass
-
     def get_features_from_registry(self, project_name: str) -> (List[FeatureAnchor], List[DerivedFeature]):
         """Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
         If the project is big, the return result could be huge.
@@ -909,6 +904,43 @@ derivations: {
         
         return (anchor_list, derived_feature_list)
 
+
+    def get_registered_features(self, anchors, derived_features, project: str) -> (Dict[str, RegisteredFeature], Dict[str, RegisteredTypedKey]):
+        """
+        Get all registered features in the request project.
+        Args:
+            project_name (str): project name.
+        
+        """
+
+        feature_dict = {}
+        key_dict = {}
+        # pytest.set_trace()
+        for anchor in anchors:
+            for feature in anchor.features:
+                feature_dict[feature.name] = RegisteredFeature(feature, project)
+                if isinstance(feature.key, TypedKey):
+                    if feature.key:
+                        key_dict[feature.key.full_name] = RegisteredTypedKey(feature.key)
+                elif isinstance(feature.key, List):
+                    for key in feature.key:
+                        if key:
+                            key_dict[key.full_name] = RegisteredTypedKey(key)
+
+        for feature in derived_features:
+                feature_dict[feature.name] = RegisteredFeature(feature, project)
+                # TODO merge duplicate code
+                if isinstance(feature.key, TypedKey):
+                    if feature.key:
+                        key_dict[feature.key.full_name] = RegisteredTypedKey(feature.key)
+                elif isinstance(feature.key, List):
+                    for key in feature.key:
+                        if key:
+                            key_dict[key.full_name] = RegisteredTypedKey(key)
+        # Build features, i.e. save them into local HOCON config files
+        # Return a dict
+        return (feature_dict, key_dict)
+
     def search_input_anchor_features(self,derived_guids,feature_entity_guid_mapping) ->List[str]:
         '''
         Iterate all derived features and its parent links, extract and aggregate all inputs
@@ -947,6 +979,7 @@ derivations: {
             for key in feature_entity["attributes"]["key"]:
                 key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
 
+            # pytest.set_trace()
             # after get keys, put them in features
             feature_list.append(Feature(name=feature_entity["attributes"]["name"],
                     feature_type=None, # stored as a hocon string, can be parsed using pyhocon

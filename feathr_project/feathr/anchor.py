@@ -49,7 +49,7 @@ class FeatureAnchor(HoconConvertible):
                 key.sqlExpr: [{{key_list}}]
                 features: {
                     {% for feature in features %}
-                        {{feature.to_feature_config()}}
+                    {{feature.to_feature_config()}}
                     {% endfor %}
                 }
             }
