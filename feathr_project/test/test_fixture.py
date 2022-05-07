@@ -185,8 +185,9 @@ def registry_test_setup(config_path: str):
                               registry_tags={"for_test_purpose":"true"}
                               )
     f_trip_time_duration = Feature(name="f_trip_time_duration",
-                                   feature_type=INT32,
-                                   transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
+                               feature_type=INT32,
+                               transform="(to_unix_timestamp(lpep_dropoff_datetime) - to_unix_timestamp(lpep_pickup_datetime))/60")
+
 
     features = [
         f_trip_distance,
