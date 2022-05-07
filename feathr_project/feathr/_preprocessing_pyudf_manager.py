@@ -88,17 +88,12 @@ class _PreprocessingPyudfManager(object):
     @staticmethod
     def persist_pyspark_udf_to_file(user_func, local_workspace_dir):
         """persist the pyspark UDF to a file in `local_workspace_dir` for later usage. 
-        The user_func could be either a string that represents a function body, or a callable object.
+        The user_func could be either a string that represents a function body, or a callable object. 
+        The reason being - if we are defining a regular Python function, it will be a callable object; 
+        however if we reterive features from registry, the current implementation is to use plain strings to store the function body. In that case, the user_fuc will be string.
         """
         if isinstance(user_func, str):
-            # if user_func is a string, turn it into a list of strings so that it can be used below
-            temp_udf_source_code = user_func.split('\n')
-            # assuming the first line is the function name
-            leading_space_num = len(temp_udf_source_code[0]) - len(temp_udf_source_code[0].lstrip())
-            # strip the lines to make sure the function has the correct indentation
-            udf_source_code_striped = [line[leading_space_num:] for line in temp_udf_source_code]
-            # append '\n' back since it was deleted due to the previous split
-            udf_source_code = [line+'\n' for line in udf_source_code_striped]
+            udf_source_code = [user_func]
         else:
             udf_source_code = inspect.getsourcelines(user_func)[0]
         lines = []

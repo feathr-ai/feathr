@@ -3,7 +3,6 @@ import importlib
 import inspect
 import itertools
 import os
-from re import X
 import sys
 import ast
 import types
@@ -932,7 +931,18 @@ derivations: {
 
 
     def _correct_function_identation(self, user_func: str) -> str:
-        """The function read from registry might have the wrong identation. We need to correct those identations.
+        """
+        The function read from registry might have the wrong identation. We need to correct those identations.
+        More specifically, we are using the inspect module to copy the function body for UDF for further submission. In that case, there will be situations like this:
+
+        def feathr_udf1(df)
+            return df
+
+                def feathr_udf2(df)
+                    return df
+
+        For example, in Feathr test cases, there are similar patterns for `feathr_udf2`, since it's defined in another function body (the registry_test_setup method).
+        This is not an ideal way of dealing with that, but we'll keep it here until we figure out a better way.
         """
         if user_func is None:
             return None
