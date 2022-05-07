@@ -49,7 +49,7 @@ def test_feathr_register_features_e2e():
     client.get_features_from_registry(project_name)
 
     feature_query = FeatureQuery(
-        feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance", "f_location_total_fare_cents"], 
+        feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance"], 
         key=TypedKey(key_column="DOLocationID",key_column_type=ValueType.INT32))
     settings = ObservationSettings(
         observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
