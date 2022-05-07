@@ -699,3 +699,9 @@ class FeathrClient(object):
             KAFKA_SASL_JAAS_CONFIG: "{sasl}"
             """.format(sasl=sasl)
         return config_str
+
+    def get_features_from_registry(self,project_name):
+        """
+        Get feature from registry by project name
+        """
+        return self.registry.get_features_from_registry(project_name)
