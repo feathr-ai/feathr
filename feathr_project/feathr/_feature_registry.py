@@ -32,7 +32,7 @@ from feathr._file_utils import write_to_file
 from feathr.anchor import FeatureAnchor
 from feathr.constants import *
 from feathr.dtype import *
-from feathr.feature import Feature, FeatureType
+from feathr.feature import Feature, FeatureBase, FeatureType
 from feathr.feature_derivations import DerivedFeature
 from feathr.repo_definitions import RepoDefinitions
 from feathr.source import HdfsSource, InputContext, Source
@@ -949,7 +949,6 @@ derivations: {
     def _get_source_by_guid(self, guid) -> Source:
         # TODO: currently return HDFS source by default. For JDBC source, it's currently implemented using HDFS Source so we should split in the future
         source_entity = self.purview_client.get_entity(guid=guid)["entities"][0]
-        print(source_entity["attributes"]["preprocessing"],)
 
         # if source_entity["attributes"]["path"] is INPUT_CONTEXT, it will also be assigned to this returned object
         return HdfsSource(name=source_entity["attributes"]["name"],
@@ -963,6 +962,14 @@ derivations: {
 
 
     def _get_feature_type_from_hocon(self, input_str: str) -> FeatureType:
+        """Get Feature types from a HOCON config, given that we stored the feature type in a plain string.
+
+        Args:
+            input_str (str): the input string for the stored HOCON config
+
+        Returns:
+            FeatureType: feature type that can be used by Python
+        """
         conf = ConfigFactory.parse_string(input_str)
         valType = conf.get_string('type.valType')
         dimensionType = conf.get_string('type.dimensionType')
