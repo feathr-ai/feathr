@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 import pickle
 from jinja2 import Template
 from feathr.source import HdfsSource
+import ast
 
 # Some metadata that are only needed by Feathr
 FEATHR_PYSPARK_METADATA = 'generated_feathr_pyspark_metadata'
@@ -33,6 +34,9 @@ class _PreprocessingPyudfManager(object):
         # features that have preprocessing defined. This is used to figure out if we need to kick off Pyspark
         # preprocessing for requested features.
         features_with_preprocessing = []
+        client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
+        # delete the file if it already exists to avoid caching previous results
+        os.remove(client_udf_repo_path) if os.path.exists(client_udf_repo_path) else None
         for anchor in anchor_list:
             # only support batch source preprocessing for now.
             if not isinstance(anchor.source, HdfsSource):
@@ -44,7 +48,11 @@ class _PreprocessingPyudfManager(object):
                 features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
                 string_feature_list = ','.join(feature_names)
-                feature_names_to_func_mapping[string_feature_list] = anchor.source.preprocessing
+                if isinstance(anchor.source.preprocessing, str):
+                    feature_names_to_func_mapping[string_feature_list] = _PreprocessingPyudfManager._parse_function_str_for_name(anchor.source.preprocessing)
+                else:
+                    # it's a callable function
+                    feature_names_to_func_mapping[string_feature_list] = anchor.source.preprocessing.__name__ 
 
         if not features_with_preprocessing:
             return
@@ -59,12 +67,38 @@ class _PreprocessingPyudfManager(object):
             pickle.dump(features_with_preprocessing, file)
 
     @staticmethod
+    def _parse_function_str_for_name(source: str) -> str:
+        """
+        Use AST to parse the functions and get the name out.
+        """
+        if source is None:
+            return None
+        tree = ast.parse(source)
+        if len(tree.body) != 1 or not isinstance(tree.body[0], ast.FunctionDef):
+            raise ValueError('provided code fragment is not a single function')
+        code = compile(source=tree, filename='custom.py',mode= 'exec')
+        # https://docs.python.org/3/library/inspect.html see the inspect module for more details
+        # tuple of names other than arguments and function locals. Assume there will be only one function, so will return the first as the name
+        for ele in code.co_consts:
+            # find the first object, that is the str, this will be the name of the function
+            if isinstance(ele, str):
+                return ele
+
+
+    @staticmethod
     def persist_pyspark_udf_to_file(user_func, local_workspace_dir):
         """persist the pyspark UDF to a file in `local_workspace_dir` for later usage. 
         The user_func could be either a string that represents a function body, or a callable object.
         """
         if isinstance(user_func, str):
-            udf_source_code = user_func
+            # if user_func is a string, turn it into a list of strings so that it can be used below
+            temp_udf_source_code = user_func.split('\n')
+            # assuming the first line is the function name
+            leading_space_num = len(temp_udf_source_code[0]) - len(temp_udf_source_code[0].lstrip())
+            # strip the lines to make sure the function has the correct indentation
+            udf_source_code_striped = [line[leading_space_num:] for line in temp_udf_source_code]
+            # append '\n' back since it was deleted due to the previous split
+            udf_source_code = [line+'\n' for line in udf_source_code_striped]
         else:
             udf_source_code = inspect.getsourcelines(user_func)[0]
         lines = []
@@ -98,7 +132,7 @@ class _PreprocessingPyudfManager(object):
         tm = Template("""
 feature_names_funcs = {
 {% for key, value in func_maps.items() %}
-    "{{key}}" : {{value.__name__}},
+    "{{key}}" : {{value}},
 {% endfor %}
 }
         """)

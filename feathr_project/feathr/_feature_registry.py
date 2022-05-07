@@ -5,6 +5,8 @@ import itertools
 import os
 from re import X
 import sys
+import ast
+import types
 from graphlib import TopologicalSorter
 from pathlib import Path
 from tracemalloc import stop
@@ -918,25 +920,42 @@ derivations: {
         return result
 
 
-
+    def _correct_function_identation(self, user_func: str) -> str:
+        """The function read from registry might have the wrong identation. We need to correct those identations.
+        """
+        if user_func is None:
+            return None
+        # if user_func is a string, turn it into a list of strings so that it can be used below
+        temp_udf_source_code = user_func.split('\n')
+        # assuming the first line is the function name
+        leading_space_num = len(temp_udf_source_code[0]) - len(temp_udf_source_code[0].lstrip())
+        # strip the lines to make sure the function has the correct indentation
+        udf_source_code_striped = [line[leading_space_num:] for line in temp_udf_source_code]
+        # append '\n' back since it was deleted due to the previous split
+        udf_source_code = [line+'\n' for line in udf_source_code_striped]
+        return " ".join(udf_source_code)
 
     def _get_source_by_guid(self, guid) -> Source:
         # TODO: currently return HDFS source by default. For JDBC source, it's currently implemented using HDFS Source so we should split in the future
         source_entity = self.purview_client.get_entity(guid=guid)["entities"][0]
         print(source_entity["attributes"]["preprocessing"],)
+        
         return HdfsSource(name=source_entity["attributes"]["name"],
                 event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
                 timestamp_format=source_entity["attributes"]["timestamp_format"],
-                preprocessing=source_entity["attributes"]["preprocessing"],
+                preprocessing=self._correct_function_identation(source_entity["attributes"]["preprocessing"]),
                 path=source_entity["attributes"]["path"],
                 registry_tags=source_entity["attributes"]["tags"]
                 )
 
-    def _get_feature_type_from_hocon(input_str: str) -> FeatureType:
+
+
+    def _get_feature_type_from_hocon(self, input_str: str) -> FeatureType:
         conf = ConfigFactory.parse_string(input_str)
         valType = conf.get_string('type.valType')
         dimensionType = conf.get_string('type.dimensionType')
-        if dimensionType:
+        if dimensionType == '[INT]':
+            # if it's not empty, i.e. [INT], indicating it's vectors
             if valType == 'DOUBLE':
                 return DoubleVectorFeatureType()
             elif valType == 'LONG':
@@ -965,7 +984,7 @@ derivations: {
             else:
                 logger.error("{} cannot be parsed.", valType)
 
-    def _get_transformation_from_dict(input: Dict) -> FeatureType:
+    def _get_transformation_from_dict(self, input: Dict) -> FeatureType:
         if 'transform_expr' in input:
             # it's ExpressionTransformation
             return ExpressionTransformation(input['transform_expr'])
