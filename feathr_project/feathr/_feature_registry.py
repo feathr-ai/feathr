@@ -799,8 +799,7 @@ derivations: {
         For a ride hailing company few examples could be - "taxi", "passenger", "fare" etc.
         It's a keyword search on the registry metadata
         """        
-        search_term = "qualifiedName:{0}".format(searchTerm)
-        entities = self.purview_client.discovery.search_entities(search_term)
+        entities = self.purview_client.discovery.search_entities(searchTerm)
         return entities
     
     def _list_registered_entities_with_details(self, project_name: str = None, entity_type: Union[str, List[str]] = None, limit=50, starting_offset=0,) -> List[Dict]:
@@ -1035,7 +1034,7 @@ derivations: {
 
             ))
         return feature_list 
-
+        
     def get_feature_by_fqdn_type(self, qualifiedName, typeName):
         """
         Get a single feature by it's QualifiedName and Type
