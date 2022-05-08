@@ -38,9 +38,8 @@ def test_feathr_register_features_e2e():
     # Allow purview to process a bit
     time.sleep(5)
     # in CI test, the project name is set by the CI pipeline so we read it here
-    project_name = os.environ["PROJECT_CONFIG__PROJECT_NAME"]
-    print("project_name is", project_name)
-    all_features = client.list_registered_features(project_name=project_name)
+    print("project_name is", client.project_name, os.environ["project_config__project_name"])
+    all_features = client.list_registered_features(project_name=client.project_name)
     assert 'f_is_long_trip_distance' in all_features # test regular ones
     assert 'f_trip_time_rounded' in all_features # make sure derived features are there
     assert 'f_location_avg_fare' in all_features # make sure aggregated features are there
@@ -48,7 +47,7 @@ def test_feathr_register_features_e2e():
     assert 'f_trip_time_distance' in all_features # make sure derived features are there  
 
     # Sync workspace from registry, will get all conf files back
-    client.get_features_from_registry(project_name)
+    client.get_features_from_registry(client.project_name)
 
     feature_query = FeatureQuery(
         feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance"], 
