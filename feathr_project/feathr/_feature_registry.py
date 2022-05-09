@@ -4,6 +4,8 @@ import inspect
 import itertools
 import os
 import sys
+import ast
+import types
 from graphlib import TopologicalSorter
 from pathlib import Path
 from tracemalloc import stop
@@ -21,13 +23,15 @@ from pyapacheatlas.core import (AtlasClassification, AtlasEntity, AtlasProcess,
 from pyapacheatlas.core.typedef import (AtlasAttributeDef,
                                         AtlasRelationshipEndDef, Cardinality,
                                         EntityTypeDef, RelationshipTypeDef)
+                            
 from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
 
 from feathr._file_utils import write_to_file
 from feathr.anchor import FeatureAnchor
 from feathr.constants import *
-from feathr.feature import Feature, FeatureType
+from feathr.dtype import *
+from feathr.feature import Feature, FeatureBase, FeatureType
 from feathr.feature_derivations import DerivedFeature
 from feathr.repo_definitions import RepoDefinitions
 from feathr.source import HdfsSource, InputContext, Source
@@ -370,7 +374,8 @@ class _FeatureRegistry():
                     "input_anchor_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==TYPEDEF_ANCHOR_FEATURE],
                     "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==TYPEDEF_DERIVED_FEATURE],
                     "transformation": transform_dict,
-                    "tags": derived_feature.registry_tags
+                    "tags": derived_feature.registry_tags,
+
                 },
                 typeName=TYPEDEF_DERIVED_FEATURE,
                 guid=self.guid.get_guid(),
@@ -670,7 +675,7 @@ derivations: {
         """
         Delete all the feathr related entities and type definitions in feathr registry. For internal use only
         """
-        self._delete_all_feathr_entitties()
+        self._delete_all_feathr_entities()
         self._delete_all_feathr_types()
 
 
@@ -695,7 +700,7 @@ derivations: {
 
         logger.info("Deleted all the Feathr related definitions.")
 
-    def _delete_all_feathr_entitties(self):
+    def _delete_all_feathr_entities(self):
         """
         Delete all the corresonding entity for feathr registry. For internal use only
 
@@ -813,7 +818,8 @@ derivations: {
                 raise RuntimeError(
                     f'only SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT are supported when listing the registered entities, {entity_type} is not one of them.')
 
-        # the search grammar is less documented in Atlas/Purview
+        # the search grammar is less documented in Atlas/Purview. 
+        # Here's the query grammar: https://atlas.apache.org/2.0.0/Search-Advanced.html
         search_string = "".join(
             [f" or entityType:{e}" for e in entity_type_list])
         # remvoe the first additional " or "
@@ -840,7 +846,7 @@ derivations: {
             guid=guid_list)["entities"]
         return entity_res
         
-    def get_features_from_registry(self, project_name: str) -> (List[FeatureAnchor], List[DerivedFeature]):
+    def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
         If the project is big, the return result could be huge.
         Args:
@@ -866,7 +872,11 @@ derivations: {
         derived_feature_list = []
         for derived_feature_entity_id in derived_feature_ids:
             # this will be used to generate DerivedFeature instance
-            key_from_entity=derived_feature_entity_id["attributes"]["tags"]
+            derived_feature_key_list = []
+
+                
+            for key in derived_feature_entity_id["attributes"]["key"]:
+                derived_feature_key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
             
             # for feature anchor (GROUP), input features are splitted into input anchor features & input derived features
             anchor_feature_guid = [e["guid"] for e in derived_feature_entity_id["attributes"]["input_anchor_features"]]
@@ -880,9 +890,9 @@ derivations: {
                 [self._get_features_by_guid(x) for x in input_features_guid+anchor_feature_guid]))
 
             derived_feature_list.append(DerivedFeature(name=derived_feature_entity_id["attributes"]["name"],
-                                feature_type=None,
-                                transform=None,
-                                key=key_from_entity,
+                                feature_type=self._get_feature_type_from_hocon(derived_feature_entity_id["attributes"]["type"]),
+                                transform=self._get_transformation_from_dict(derived_feature_entity_id["attributes"]['transformation']),
+                                key=derived_feature_key_list,
                                 input_features= all_input_features,
                                 registry_tags=derived_feature_entity_id["attributes"]["tags"]))                    
         anchor_result = self.purview_client.get_entity(guid=anchor_guid)["entities"]
@@ -915,17 +925,98 @@ derivations: {
         return result
 
 
+    def _correct_function_identation(self, user_func: str) -> str:
+        """
+        The function read from registry might have the wrong identation. We need to correct those identations.
+        More specifically, we are using the inspect module to copy the function body for UDF for further submission. In that case, there will be situations like this:
 
+        def feathr_udf1(df)
+            return df
+
+                def feathr_udf2(df)
+                    return df
+
+        For example, in Feathr test cases, there are similar patterns for `feathr_udf2`, since it's defined in another function body (the registry_test_setup method).
+        This is not an ideal way of dealing with that, but we'll keep it here until we figure out a better way.
+        """
+        if user_func is None:
+            return None
+        # if user_func is a string, turn it into a list of strings so that it can be used below
+        temp_udf_source_code = user_func.split('\n')
+        # assuming the first line is the function name
+        leading_space_num = len(temp_udf_source_code[0]) - len(temp_udf_source_code[0].lstrip())
+        # strip the lines to make sure the function has the correct indentation
+        udf_source_code_striped = [line[leading_space_num:] for line in temp_udf_source_code]
+        # append '\n' back since it was deleted due to the previous split
+        udf_source_code = [line+'\n' for line in udf_source_code_striped]
+        return " ".join(udf_source_code)
 
     def _get_source_by_guid(self, guid) -> Source:
         # TODO: currently return HDFS source by default. For JDBC source, it's currently implemented using HDFS Source so we should split in the future
         source_entity = self.purview_client.get_entity(guid=guid)["entities"][0]
+
+        # if source_entity["attributes"]["path"] is INPUT_CONTEXT, it will also be assigned to this returned object
         return HdfsSource(name=source_entity["attributes"]["name"],
                 event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
                 timestamp_format=source_entity["attributes"]["timestamp_format"],
+                preprocessing=self._correct_function_identation(source_entity["attributes"]["preprocessing"]),
                 path=source_entity["attributes"]["path"],
                 registry_tags=source_entity["attributes"]["tags"]
                 )
+
+
+
+    def _get_feature_type_from_hocon(self, input_str: str) -> FeatureType:
+        """Get Feature types from a HOCON config, given that we stored the feature type in a plain string.
+
+        Args:
+            input_str (str): the input string for the stored HOCON config
+
+        Returns:
+            FeatureType: feature type that can be used by Python
+        """
+        conf = ConfigFactory.parse_string(input_str)
+        valType = conf.get_string('type.valType')
+        dimensionType = conf.get_string('type.dimensionType')
+        if dimensionType == '[INT]':
+            # if it's not empty, i.e. [INT], indicating it's vectors
+            if valType == 'DOUBLE':
+                return DoubleVectorFeatureType()
+            elif valType == 'LONG':
+                return Int64VectorFeatureType()
+            elif valType == 'INT':
+                return Int32VectorFeatureType()
+            elif valType == 'FLOAT':
+                return FloatVectorFeatureType()
+            else:
+                logger.error("{} cannot be parsed.", valType)
+        else:
+            if valType == 'STRING':
+                return StringFeatureType()
+            elif valType == 'BYTES':
+                return BytesFeatureType()
+            elif valType == 'DOUBLE':
+                return DoubleFeatureType()
+            elif valType == 'FLOAT':
+                return FloatFeatureType()
+            elif valType == 'LONG':
+                return Int64FeatureType()
+            elif valType == 'INT':
+                return Int32FeatureType()
+            elif valType == 'BOOLEAN':
+                return BooleanFeatureType()
+            else:
+                logger.error("{} cannot be parsed.", valType)
+
+    def _get_transformation_from_dict(self, input: Dict) -> FeatureType:
+        if 'transform_expr' in input:
+            # it's ExpressionTransformation
+            return ExpressionTransformation(input['transform_expr'])
+        elif 'def_expr' in input:
+            return WindowAggTransformation(agg_expr=input['def_expr'], agg_func=input['agg_func'], window=input['window'], group_by=input['group_by'], filter=input['filter'], limit=input['limit'])
+        else:
+            # no transformation function observed
+            return None
 
     def _get_features_by_guid(self, guid) -> List[FeatureAnchor]:
         feature_entities = self.purview_client.get_entity(guid=guid)["entities"]
@@ -937,13 +1028,14 @@ derivations: {
 
             # after get keys, put them in features
             feature_list.append(Feature(name=feature_entity["attributes"]["name"],
-                    feature_type=None, # stored as a hocon string, can be parsed using pyhocon
-                    transform=None, #transform attributes are stored in a dict fashion , can be put in a WindowAggTransformation
+                    feature_type=self._get_feature_type_from_hocon(feature_entity["attributes"]["type"]), # stored as a hocon string, can be parsed using pyhocon
+                    transform=self._get_transformation_from_dict(feature_entity["attributes"]['transformation']), #transform attributes are stored in a dict fashion , can be put in a WindowAggTransformation
                     key=key_list,
                     registry_tags=feature_entity["attributes"]["tags"],
 
             ))
         return feature_list 
+
     def get_feature_by_fqdn_type(self, qualifiedName, typeName):
         """
         Get a single feature by it's QualifiedName and Type

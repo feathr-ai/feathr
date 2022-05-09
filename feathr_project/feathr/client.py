@@ -5,6 +5,7 @@ import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
+from feathr.feature import FeatureBase
 
 import redis
 from azure.identity import DefaultAzureCredential
@@ -700,8 +701,17 @@ class FeathrClient(object):
             """.format(sasl=sasl)
         return config_str
 
-    def get_features_from_registry(self,project_name):
+    def get_features_from_registry(self, project_name: str) -> Dict[str, FeatureBase]:
         """
-        Get feature from registry by project name
+        Get feature from registry by project name. The features got from registry are automatically built.
         """
-        return self.registry.get_features_from_registry(project_name)
+        registry_anchor_list, registry_derived_feature_list = self.registry.get_features_from_registry(project_name)
+        self.build_features(registry_anchor_list, registry_derived_feature_list)
+        feature_dict = {}
+        # add those features into a dict for easier lookup
+        for anchor in registry_anchor_list:
+            for feature in anchor.features:
+                feature_dict[feature.name] = feature
+        for feature in registry_derived_feature_list:
+                feature_dict[feature.name] = feature
+        return feature_dict
