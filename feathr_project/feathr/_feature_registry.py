@@ -116,8 +116,6 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="feature_config", typeName="string",
-                                  cardinality=Cardinality.SINGLE)
             ],
             superTypes=["DataSet"],
         )
@@ -138,8 +136,6 @@ class _FeatureRegistry():
                                   cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
-                AtlasAttributeDef(name="feature_config", typeName="string",
-                                  cardinality=Cardinality.SINGLE)
             ],
             superTypes=["DataSet"],
         )
@@ -202,7 +198,6 @@ class _FeatureRegistry():
                     "key": key_list,
                     "transformation": transform_dict,
                     "tags": anchor_feature.registry_tags,
-                    "feature_config": anchor_feature.to_feature_config()
                 },
                 typeName=TYPEDEF_ANCHOR_FEATURE,
                 guid=self.guid.get_guid(),
@@ -380,7 +375,6 @@ class _FeatureRegistry():
                     "input_derived_features": [f.to_json(minimum=True) for f in input_feature_entity_list if f.typeName==TYPEDEF_DERIVED_FEATURE],
                     "transformation": transform_dict,
                     "tags": derived_feature.registry_tags,
-                    "feature_config": derived_feature.to_feature_config()
 
                 },
                 typeName=TYPEDEF_DERIVED_FEATURE,
@@ -681,7 +675,7 @@ derivations: {
         """
         Delete all the feathr related entities and type definitions in feathr registry. For internal use only
         """
-        self._delete_all_feathr_entitties()
+        self._delete_all_feathr_entities()
         self._delete_all_feathr_types()
 
 
@@ -706,7 +700,7 @@ derivations: {
 
         logger.info("Deleted all the Feathr related definitions.")
 
-    def _delete_all_feathr_entitties(self):
+    def _delete_all_feathr_entities(self):
         """
         Delete all the corresonding entity for feathr registry. For internal use only
 
@@ -824,7 +818,8 @@ derivations: {
                 raise RuntimeError(
                     f'only SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT are supported when listing the registered entities, {entity_type} is not one of them.')
 
-        # the search grammar is less documented in Atlas/Purview
+        # the search grammar is less documented in Atlas/Purview. 
+        # Here's the query grammar: https://atlas.apache.org/2.0.0/Search-Advanced.html
         search_string = "".join(
             [f" or entityType:{e}" for e in entity_type_list])
         # remvoe the first additional " or "
