@@ -1,14 +1,6 @@
 Feathr APIs for End Users
 ==============
 
-feathr.api module
---------------------
-
-.. automodule:: feathr.api
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 feathr.client module
 --------------------
 
