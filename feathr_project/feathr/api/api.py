@@ -118,9 +118,9 @@ def get_feature_qualifiedName(code : str, project_name: str, feature_name: str, 
         registry = getRegistry()
         logger.info("Retrieved registry client successfully")
         response.status_code = status.HTTP_200_OK
-        guid = registry.get_feature_guid(feature_name)
-        if guid:
-            result = registry.get_feature_lineage(guid)
+        id = registry.get_feature_id(feature_name)
+        if id:
+            result = registry.get_feature_lineage(id)
             return result
     except AtlasException as ae:
         logger.error("Error retrieving feature: %s", ae.args[0])
