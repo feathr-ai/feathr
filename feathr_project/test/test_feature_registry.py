@@ -13,7 +13,7 @@ from feathrcli.cli import init
 from feathr._feature_registry import _FeatureRegistry
 from test_fixture import basic_test_setup, registry_test_setup
 
-
+# Test comment
 # def test_feathr_register_features_e2e():
 
 #     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
