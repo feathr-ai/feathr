@@ -9,15 +9,14 @@ from app.core.feathr_api_exception import FeathrApiException
 from app.backends.purview_backend.purview_backend_config import getRegistryClient
 
 
-DEFAULT_PURVIEW_NAME = "feathrazuretest3-purview1"
 DEFAULT_DELIMETER = "__"
 
 class PurviewBackend(FeathrBackendAbstract):
     '''
     Implementation for backend_base, specifically for purview backend.
     '''
-    def __init__(self):
-        self.default_purview_name = DEFAULT_PURVIEW_NAME
+    def __init__(self,purview_name):
+        self.default_purview_name = purview_name
         self.default_delimeter = DEFAULT_DELIMETER
         self.default_project_name = "feathr_github_ci_synapse"
 
@@ -53,7 +52,7 @@ class PurviewBackend(FeathrBackendAbstract):
 
     def RetrieveFeatureLineage(self,entity_name):
         registry_client = getRegistryClient(self.default_project_name,self.default_purview_name,self.default_delimeter)
-        guid = registry_client.get_feature_guid(entity_name)
+        guid = registry_client.get_feature_id(entity_name)
         if guid:
             result = registry_client.get_feature_lineage(guid)
         return result
