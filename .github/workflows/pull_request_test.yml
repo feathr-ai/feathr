@@ -2,6 +2,7 @@ name: Feathr Scala Tests And Azure E2E Integration
 
 on:
   pull_request_target:
+    branches: [rijai/citest]
     types: [labeled, edited, synchronize]
     paths-ignore:
       - 'docs/**'
