@@ -1,0 +1,6 @@
+namespace com.linkedin.frame.compute
+
+// TODO rename to RelativeKey or AbstractKey?
+record KeyReference {
+  position: int
+}

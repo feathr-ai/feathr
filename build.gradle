@@ -1,3 +1,17 @@
+buildscript {
+  ext.junitJupiterVersion = '5.6.1'
+  ext.pegasusVersion = '29.22.16'
+  ext.mavenVersion = '3.6.3'
+  ext.springVersion = '5.3.19'
+  ext.springBootVersion = '2.5.12'
+  apply from: './repositories.gradle'
+  buildscript.repositories.addAll(project.repositories)
+  dependencies {
+    classpath 'com.linkedin.pegasus:gradle-plugins:' + pegasusVersion
+
+  }
+}
+
 plugins {
   id 'scala'
   id 'com.github.johnrengelman.shadow' version '7.1.2'
@@ -7,8 +21,24 @@ allprojects {
   repositories {
     mavenCentral()
     mavenLocal()
+    maven {
+      url "https://linkedin.jfrog.io/artifactory/open-source/" // GMA, pegasus
+    }
   }
 }
+
+
+project.ext.spec = [
+    'product' : [
+        'pegasus' : [
+            'd2' : 'com.linkedin.pegasus:d2:29.33.3',
+            'data' : 'com.linkedin.pegasus:data:29.33.3',
+            'dataAvro1_6' : 'com.linkedin.pegasus:data-avro-1_6:29.33.3',
+            'generator': 'com.linkedin.pegasus:generator:29.33.3',
+        ]
+    ]
+]
+
 
 ext {
   // Version numbers shared between multiple dependencies
