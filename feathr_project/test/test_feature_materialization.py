@@ -66,15 +66,6 @@ def test_feature_materialization_now_schedule():
     assert expected.month == date.month
     assert expected.day == date.day
 
-def test_feature_materialization_now_schedule():
-    """Test back fill cutoff time without backfill."""
-    settings = MaterializationSettings("", [], [])
-    date = settings.get_backfill_cutoff_time()[0]
-    expected = datetime.now()
-    assert expected.year == date.year
-    assert expected.month == date.month
-    assert expected.day == date.day
-
 def test_build_feature_verbose():
     """
     Test verbose for pretty printing features
