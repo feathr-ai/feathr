@@ -11,7 +11,7 @@ parent: Feathr Developer Guides
 - Navigate to feathr_project folder
 - Install the project by `python3 -m pip install -e .` This will install a feathr CLI for you. Type `feathr` in the terminal to see the instructions.
 
-If you get an error similar "fatal error: 'librdkafka/rdkafka.h' file not found", see the [installing librdkafka](#installing-librdkafka) section of this document.
+If you get an error similar to "fatal error: 'librdkafka/rdkafka.h' file not found", see the [installing librdkafka](#installing-librdkafka) section of this document.
 
 ## CLI Usage
 
