@@ -100,4 +100,29 @@ class TestDesLocation extends FunSuite {
     assert(rows(1).getString(1) == "r2c2")
     assert(rows(2).getString(1) == "r3c2")
   }
+
+  test("Test load Sqlite with SQL query") {
+    val path = s"${System.getProperty("user.dir")}/src/test/resources/mockdata/sqlite/test.db"
+    val configDoc =
+      s"""
+         |{
+         | type: "jdbc"
+         | url: "jdbc:sqlite:${path}"
+         | query: "select c1, c2 from table1"
+         | anonymous: true
+         |}""".stripMargin
+    val ds = jackson.readValue(configDoc, classOf[InputLocation])
+
+    val _ = SparkSession.builder().config("spark.master", "local").appName("Sqlite test").getOrCreate()
+
+    val df = SparkIOUtils.createDataFrame(ds)
+    val rows = df.head(3)
+    assert(rows(0).getLong(0) == 1)
+    assert(rows(1).getLong(0) == 2)
+    assert(rows(2).getLong(0) == 3)
+    assert(rows(0).getString(1) == "r1c2")
+    assert(rows(1).getString(1) == "r2c2")
+    assert(rows(2).getString(1) == "r3c2")
+  }
 }
+
