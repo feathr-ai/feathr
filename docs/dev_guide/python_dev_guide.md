@@ -11,6 +11,8 @@ parent: Feathr Developer Guides
 - Navigate to feathr_project folder
 - Install the project by `python3 -m pip install -e .` This will install a feathr CLI for you. Type `feathr` in the terminal to see the instructions.
 
+If you get an error similar "fatal error: 'librdkafka/rdkafka.h' file not found", see the [installing librdkafka](#installing-librdkafka) section of this document.
+
 ## CLI Usage
 
 - Run `feathr` in your terminal to see the instructions.
@@ -54,3 +56,23 @@ It's recommended to use virtual environment for Python project development.
 - Then follow [Installation](#Installation) and [Usage](#CLI-Usage).
 - To deactivate: `conda deactivate`
   Ref: [Managing environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
+
+## Installing librdkafka
+
+feathr assumes that you have the Apache Kafka C/C++ client library installed. To install it, follow the [install instructions on the librdkafka home page](https://github.com/edenhill/librdkafka#installation). 
+
+For the Mac, if you get this error message when [installing the project](#installation):
+
+```shell
+ fatal error: 'librdkafka/rdkafka.h' file not found
+    #include <librdkafka/rdkafka.h>
+             ^~~~~~~~~~~~~~~~~~~~~~
+    1 error generated.
+    error: command '/usr/bin/clang' failed with exit code 1
+```
+
+If this happens, 
+
+1. Run `brew info librdkafka`, and take note of the library install path (for example, "/opt/homebrew/Cellar/librdkafka/1.8.2/include"),
+2. run `export C_INCLUDE_PATH=$LIBRDKAFKA_INCLUDE_PATH`, where `$LIBRDKAFKA_INCLUDE_PATH` is the include path found in step 2.
+3. Rerun the [python setup install](#installation).
