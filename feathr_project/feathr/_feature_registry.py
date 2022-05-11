@@ -726,7 +726,7 @@ derivations: {
         """
         return self.purview_client
 
-    def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0) -> List[str]:
+    def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0) -> List[Dict[str,str]]:
         """
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
@@ -742,10 +742,10 @@ derivations: {
                 # split the name based on delimiter
                 result = qualified_name.split(self.registry_delimiter)
                 if result[0].casefold() == project_name:
-                    feature_list.append(entity["name"])
+                    feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
             else:
                 # otherwise append all the entities
-                feature_list.append(entity["name"])
+                feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
 
         return feature_list
    
@@ -799,8 +799,7 @@ derivations: {
         For a ride hailing company few examples could be - "taxi", "passenger", "fare" etc.
         It's a keyword search on the registry metadata
         """        
-        search_term = "qualifiedName:{0}".format(searchTerm)
-        entities = self.purview_client.discovery.search_entities(search_term)
+        entities = self.purview_client.discovery.search_entities(searchTerm)
         return entities
     
     def _list_registered_entities_with_details(self, project_name: str = None, entity_type: Union[str, List[str]] = None, limit=50, starting_offset=0,) -> List[Dict]:
@@ -1035,58 +1034,3 @@ derivations: {
 
             ))
         return feature_list 
-
-    def get_feature_by_fqdn_type(self, qualifiedName, typeName):
-        """
-        Get a single feature by it's QualifiedName and Type
-        Returns the feature else throws an AtlasException with 400 error code
-        """
-        response = self.purview_client.get_entity(qualifiedName=qualifiedName, typeName=typeName)
-        entities = response.get('entities')
-        for entity in entities:
-            if entity.get('typeName') == typeName and entity.get('attributes').get('qualifiedName') == qualifiedName: 
-                return entity
-       
-    def get_feature_by_fqdn(self, qualifiedName):
-        """
-        Get feature by qualifiedName
-        Returns the feature else throws an AtlasException with 400 error code
-        """        
-        id = self.get_feature_id(qualifiedName)
-        return self.get_feature_by_guid(id)
-    
-    def get_feature_by_guid(self, guid):
-        """
-        Get a single feature by it's GUID
-        Returns the feature else throws an AtlasException with 400 error code
-        """ 
-        response = self.purview_client.get_single_entity(guid=guid)
-        return response
-    
-    def get_feature_lineage(self, guid):
-        """
-        Get feature's lineage by it's GUID
-        Returns the feature else throws an AtlasException with 400 error code
-        """
-        return self.purview_client.get_entity_lineage(guid=guid)
-
-    def get_feature_id(self, qualifiedName):
-        """
-        Get guid of a feature given its qualifiedName
-        """        
-        search_term = "qualifiedName:{0}".format(qualifiedName)
-        entities = self.purview_client.discovery.search_entities(search_term)
-        for entity in entities:
-            if entity.get('qualifiedName') == qualifiedName:
-                return entity.get('id')
-
-    def search_features(self, searchTerm):
-        """
-        Search the registry for the given query term
-        For a ride hailing company few examples could be - "taxi", "passenger", "fare" etc.
-        It's a keyword search on the registry metadata
-        """        
-        search_term = "qualifiedName:{0}".format(searchTerm)
-        entities = self.purview_client.discovery.search_entities(search_term)
-        return entities
-        

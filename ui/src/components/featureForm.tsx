@@ -18,7 +18,6 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
   const [form] = Form.useForm();
 
   useEffect(() => {
-    console.log(feature);
     if (feature !== undefined) {
       form.setFieldsValue(feature);
     }

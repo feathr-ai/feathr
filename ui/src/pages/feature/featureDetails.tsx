@@ -10,13 +10,13 @@ import { FeatureAttributes, InputAnchorFeatures } from "../../models/model";
 const { confirm } = Modal;
 
 type Props = {};
-
-type QualifiedNameParams = {
+type Params = {
+  project: string;
   qualifiedName: string;
 }
 
 const FeatureDetails: React.FC<Props> = () => {
-  const { qualifiedName } = useParams<QualifiedNameParams>();
+  const { project, qualifiedName } = useParams<Params>();
   const loadingIcon = <LoadingOutlined style={ { fontSize: 24 } } spin />;
   const history = useHistory();
   const navigateTo = useCallback((location) => history.push(location), [history]);
@@ -24,11 +24,10 @@ const FeatureDetails: React.FC<Props> = () => {
     status,
     error,
     data
-  } = useQuery<FeatureAttributes, AxiosError>(['feature', qualifiedName], () => fetchFeature(qualifiedName));
+  } = useQuery<FeatureAttributes, AxiosError>(['feature', qualifiedName], () => fetchFeature(project, qualifiedName));
 
   const openLineageWindow = () => {
-    navigateTo(`/features/${ qualifiedName }/lineage`);
-    const lineageUrl = `/features/${ qualifiedName }/lineage`;
+    const lineageUrl = `/projects/${ project }/features/${ qualifiedName }/lineage`;
     window.open(lineageUrl);
   }
 
@@ -69,7 +68,7 @@ const FeatureDetails: React.FC<Props> = () => {
       <ul>
         { features.map((_) => (
           <Button type="link" onClick={ () => {
-            navigateTo(`/features/${ _.uniqueAttributes.qualifiedName }`)
+            navigateTo(`/projects/${ project }/features/${ _.uniqueAttributes.qualifiedName }`)
           } }>{ _.uniqueAttributes.qualifiedName }</Button>
         )) }
       </ul>

@@ -5,4 +5,3 @@ opencensus-ext-azure
 pyapacheatlas
 pydantic
 uvicorn
-git+https://github.com/linkedin/feathr.git@main#subdirectory=feathr_project
