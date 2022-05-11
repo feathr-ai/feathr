@@ -39,8 +39,8 @@ const Routes: React.FC<Props> = () => {
                     <Route exact={ true } path="/dataSources" component={ withRouter(DataSources) } />
                     <Route exact={ true } path="/features" component={ withRouter(Features) } />
                     <Route exact={ true } path="/new-feature" component={ withRouter(NewFeature) } />
-                    <Route exact={ true } path="/features/:qualifiedName" component={ withRouter(FeatureDetails) } />
-                    <Route exact={ true } path="/features/:qualifiedName/lineage" component={ withRouter(FeatureLineage) } />
+                    <Route exact={ true } path="/projects/:project/features/:qualifiedName" component={ withRouter(FeatureDetails) } />
+                    <Route exact={ true } path="/projects/:project/features/:qualifiedName/lineage" component={ withRouter(FeatureLineage) } />
                     {/* {publicRoutes} */ }
                     {/* <Route component={NotFound} /> */ }
                   </Suspense>

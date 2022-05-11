@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import TableResize from './resizableTable/resizableTable';
+import { LoadingOutlined } from "@ant-design/icons";
+import { Form, Select, Table } from "antd";
 import { DataSourceAttributes, IDataSource } from "../models/model";
-import { fetchDataSources } from "../api";
+import { fetchDataSources, fetchProjects } from "../api";
 
 const DataSourceList: React.FC = () => {
   const history = useHistory();
@@ -24,7 +25,8 @@ const DataSourceList: React.FC = () => {
           }
         }
       }
-    }, {
+    },
+    {
       title: <div style={ { userSelect: "none" } }>QualifiedName</div>,
       dataIndex: 'attributes',
       key: 'qualifiedName',
@@ -76,30 +78,52 @@ const DataSourceList: React.FC = () => {
       }
     }
   ];
-  let [page, setPage] = useState(1);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  let [tableData, setTableData] = useState<IDataSource[]>();
-  const fetchData = useCallback(
-    async () => {
-      setLoading(true);
-      const result = await fetchDataSources();
-      setPage(page);
-      setTableData(result);
-      setLoading(false);
-    }, [page]
-  );
+  const [tableData, setTableData] = useState<IDataSource[]>();
+  const [projects, setProjects] = useState<any>([]);
+  const [project, setProject] = useState<string>("");
+
+  const fetchData = useCallback(async (project: string) => {
+    setLoading(true);
+    const result = await fetchDataSources(project);
+    setPage(page);
+    setTableData(result);
+    setLoading(false);
+  }, [page])
+
+  const loadProjects = useCallback(async () => {
+    const projects = await fetchProjects();
+    const projectOptions = projects.map(p => ({ value: p, label: p }));
+    setProjects(projectOptions);
+  }, [])
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData])
+    loadProjects();
+  }, [])
+
+  const onProjectChange = async (value: string) => {
+    setProject(value);
+    fetchData(value);
+  };
 
   return (
-    <TableResize
-      dataSource={ tableData }
-      columns={ columns }
-      rowKey={ "id" }
-      loading={ loading }
-    />
+    <div>
+      <Form.Item label="Select Project: "
+                 style={ { minWidth: "35%", float: "left", paddingLeft: "10px" } }
+                 rules={ [{ required: true, message: "Please select a project to start." }] }>
+        <Select options={ projects } defaultValue={ project } value={ project } optionFilterProp="label"
+                notFoundContent={ <LoadingOutlined style={ { fontSize: 24 } } spin /> }
+                onChange={ onProjectChange }>
+        </Select>
+      </Form.Item>
+      <Table
+        dataSource={ tableData }
+        columns={ columns }
+        rowKey={ "id" }
+        loading={ loading }
+      />
+    </div>
   );
 }
 
