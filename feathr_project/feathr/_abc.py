@@ -11,7 +11,7 @@ class SparkJobLauncher(ABC):
         """upload a file from local path or an http path to the current work directory. Should support transferring file from an http path to cloud working storage, or upload directly from a local storage.
         
         Args:
-            local_path_or_http_path (str): local path or http path
+            local_path_or_http_path (str): local path or http pathssss
         """
         pass
 
