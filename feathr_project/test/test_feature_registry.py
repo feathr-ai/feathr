@@ -40,6 +40,7 @@ def test_feathr_register_features_e2e():
     # in CI test, the project name is set by the CI pipeline so we read it here
     all_features = client.list_registered_features(project_name=client.project_name)
     all_feature_names = [x['name'] for x in all_features]
+    
     assert 'f_is_long_trip_distance' in all_features # test regular ones
     assert 'f_trip_time_rounded' in all_feature_names # make sure derived features are there
     assert 'f_location_avg_fare' in all_feature_names # make sure aggregated features are there
