@@ -2,7 +2,7 @@
 
 namespace com.linkedin.feathr.compute
 
-import com.linkedin.proml.mlFeatureAnchor.transformation.Window
+import com.linkedin.feathr.featureDataModel.Window
 
 record DataSource includes AbstractNode {
   sourceType: DataSourceType // should different SourceTypes just be different kinds of Nodes?

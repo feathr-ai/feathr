@@ -1,15 +1,5 @@
 namespace com.linkedin.feathr.featureDataModel
 
-import com.linkedin.proml.mlFeatureAnchor.common.MvelExpression
-import com.linkedin.proml.mlFeatureAnchor.common.UserDefinedFunction
-import com.linkedin.proml.mlFeatureAnchor.common.SparkSqlExpression
-import com.linkedin.proml.mlFeatureAnchor.transformation.SlidingWindowAggregation
-import com.linkedin.proml.mlFeatureAnchor.transformation.SlidingWindowEmbeddingAggregation
-import com.linkedin.proml.mlFeatureAnchor.transformation.SlidingWindowLatestAvailable
-import com.linkedin.proml.mlFeatureAnchor.key.KeyPlaceholders
-import com.linkedin.proml.mlFeatureAnchor.source.HdfsDataSource
-
-
 /**
  * Represents an offline anchor with HDFS data source.
  */

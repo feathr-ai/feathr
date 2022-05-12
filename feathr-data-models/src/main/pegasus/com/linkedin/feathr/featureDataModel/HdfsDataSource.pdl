@@ -1,9 +1,5 @@
 namespace com.linkedin.feathr.featureDataModel
 
-import com.linkedin.proml.common.DaliLocation
-import com.linkedin.proml.common.HdfsLocation
-import com.linkedin.proml.mlFeatureAnchor.key.OfflineDataSourceKey
-
 /**
  * Represents a HDFS data source.
  */
