@@ -1,0 +1,15 @@
+apply plugin: 'pegasus'
+
+dependencies {
+  compile spec.product.pegasus.data
+}
+
+mainAvroSchemaJar.dependsOn generateAvroSchema
+
+pegasus.main.generationModes = [PegasusGenerationMode.PEGASUS]
+
+afterEvaluate {
+    dependencies {
+      dataTemplateCompile spec.product.pegasus.data
+    }
+}

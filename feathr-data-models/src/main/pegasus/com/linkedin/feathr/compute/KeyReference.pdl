@@ -1,4 +1,4 @@
-namespace com.linkedin.frame.compute
+namespace com.linkedin.feathr.compute
 
 // TODO rename to RelativeKey or AbstractKey?
 record KeyReference {

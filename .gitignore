@@ -184,22 +184,20 @@ cython_debug/
 #.idea/
 
 *.class
-*.log
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-target/
 .idea
 .project/target
 .project/project
 .DS_store
-.DS_Store
 *.jar
 src/main/scala/META-INF/MANIFEST.MF
 *.MF
 feathr_project/feathr_cli.egg-info/*
 *.pyc
+*.iml
 
 # VS Code
 .vscode
