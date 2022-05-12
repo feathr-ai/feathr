@@ -5,7 +5,7 @@ import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
-from feathr.feature import FeatureBase
+from feathr.definition.feature import FeatureBase
 
 import redis
 from azure.identity import DefaultAzureCredential

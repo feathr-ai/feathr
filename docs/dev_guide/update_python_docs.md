@@ -61,6 +61,43 @@ In docs directory:
 
 (excluding setup.py files, and some other demo files, test files.)
 
+## Exposing the right namespace in Pydocs
+Currently, the code is structured as this:
+```
+feathr_project/feathr
+├── __init__.py
+├── definition
+│   ├── _materialization_utils.py
+│   ├── aggregation.py
+├── protobuf
+│   ├── __init__.py
+│   └── featureValue_pb2.py
+```
+When the end users need to import Feathr modules, for example aggegations, it should be straightforward for them to do so. Currently they should use:
+
+```python
+from feathr import Aggregation
+```
+rather than 
+
+```python
+from feathr.definition import Aggregation
+```
+And this namespace should also be set correctly in the pydocs. 
+
+According to [this answer in StackOverflow](https://stackoverflow.com/questions/15115514/how-do-i-document-classes-without-the-module-name/31594545#31594545), we are doing the following:
+
+1. Add an `__all__` section in `__init__.py` (see code [here](../../feathr_project/feathr/__init__.py)). Every components that are included in the `__all__` section is exposed to end users. Others are not exposed in the pydocs.
+2. In the [rst file](../../feathr_project/docs/feathr.rst), just use a single module:
+```
+.. automodule:: feathr
+    :members:
+    :undoc-members:
+    :show-inheritance:
+```
+
+So that only this module is accessbile for end users.
+
 ## Upload to Readthedocs.com
 * Login to https://readthedocs.org/dashboard/
 * Click `Import a Project`
