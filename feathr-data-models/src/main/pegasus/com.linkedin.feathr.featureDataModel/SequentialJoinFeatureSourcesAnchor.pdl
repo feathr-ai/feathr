@@ -1,0 +1,64 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Sequential join is useful when the feature data of one feature is used as the key values for another feature. Unlike a traditional FeatureSourcesAnchor, the source of SequentialJoinFeatureSourcesAnchor include a base feature and an expansion feature. A high-level data flow is: feature data of the base feature is used as key values to compute the expansion feature, the result will contain multiple feature data for different key values, then a reduce function will be applied to converge them into a single feature data. For more details, refer to go/frame/sequentialjoin.
+ */
+@OnlineAnchor
+@OfflineAnchor
+record SequentialJoinFeatureSourcesAnchor includes KeyPlaceholders {
+
+  /**
+   * Represents the base feature, its feature data is used as key values to compute the expansion feature.
+   */
+  base: FeatureSource
+
+  /**
+   * After feature data of the base feature is computed, it may require additional transformation to match expected key format of the expansion feature.
+   */
+  expansionKeyFunction: record ExpansionKeyFunction includes KeyPlaceholders {
+
+    /**
+     * This transformation ensures the feature data of the base feature can be converted to the expected key format of the expansion feature.
+     */
+    keyFunction: union[
+      //MVEL-based expression. For example, to convert from member id to member urn. For more details and examples, please refer to go/frame/sequentialjoin.
+      MvelExpression
+      //A transformation function that always returns the same value as the input. In other words, feature data of the base feature is already in the right format expected by the key of expansion feature.
+      IdentityFunction
+      // Custom transformation class.
+      UserDefinedFunction
+    ]
+  }
+
+  /**
+   * Represents the expansion feature, which uses the output of expansionKeyFunction as key values to compute feature data of the expansion feature.
+   */
+  expansion: FeatureSource
+
+  /**
+   * The computation of the expansion feature will fanout to multiple feature data for different key values, a reduce function will be applied after the fanout to ensure a single feature data being returned.
+   */
+  reductionFunction: typeref ReductionFunction = union[
+    //Represents supported built-in aggregation types.
+    enum StandardAggregation {
+      /** Average. Apply to 0-rank numeric scalar. For example, base feature gets a job's applicants, and expansion feature gets the age of an applicant, when average is specified, the resulting feature data is the average age of all applicants for a job. */
+      AVG
+      /** Max. Apply to 0-rank numeric scalar. Refer to AVG for a very similar example. */
+      MAX
+      /** Min. Apply to 0-rank numeric scalar. Refer to AVG for a very similar example. */
+      MIN
+      /** Sum. Apply to 0-rank numeric scalar. Refer to AVG for a very similar example. */
+      SUM
+      /** Union. This combines multiple feature data into a collection. For example, base feature gets member's skill ids, and expansion feature gets a skill name based on skill id, when union is specified, the resulting feature data is a list of skill names for a given member. */
+      UNION
+      /** Element-wise Average, which apply average operation to elements corresponding to the same positional index. It applies to 1+ rank feature data, like a dense vector. For example, base feature gets member's skill ids, and expansion feature gets a skill embedding based on skill id, when ELEMENTWISE_AVG is specified, the resulting feature data is a single embedding by element-wise averaging all skill embeddings of the member. */
+      ELEMENTWISE_AVG
+      /** Element-wise Min, which apply min operation to elements corresponding to the same positional index. It applies to 1+ rank feature data, like a dense vector. Refer to ELEMENTWISE_AVG for a very similar example. */
+      ELEMENTWISE_MIN
+      /** Element-wise Max, which apply max operation to elements corresponding to the same positional index. It applies to 1+ rank feature data, like a dense vector. Refer to ELEMENTWISE_AVG for a very similar example. */
+      ELEMENTWISE_MAX
+      /** Element-wise Sum, which apply sum operation to elements corresponding to the same positional index. It applies to 1+ rank feature data, like a dense vector. Refer to ELEMENTWISE_AVG for a very similar example. */
+      ELEMENTWISE_SUM
+    }
+  ]
+}

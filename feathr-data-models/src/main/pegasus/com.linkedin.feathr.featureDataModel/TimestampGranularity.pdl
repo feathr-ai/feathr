@@ -1,0 +1,17 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * TimestampGranularity is to represent the granularity of a timestamp.
+ */
+enum TimestampGranularity {
+
+/**
+ * Indicates the timestamp is represented in seconds.
+ */
+SECONDS
+
+/**
+ * Indicates the timestamp is represented in milliseconds.
+ */
+MILLISECONDS
+}

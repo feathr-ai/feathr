@@ -1,0 +1,6 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * {@link java.time.format.DateTimeFormatter} pattern for a time field. e.g. yyyy/MM/dd/HH/mm/ss.
+ */
+typeref DateTimeFormat = string

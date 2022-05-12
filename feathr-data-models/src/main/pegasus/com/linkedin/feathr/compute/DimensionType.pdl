@@ -1,0 +1,14 @@
+namespace com.linkedin.feathr.compute
+/**
+ * Supported dimension types for tensors in Quince and Frame.
+ */
+enum DimensionType {
+  /** Long. */
+  LONG
+  /** Integer. */
+  INT
+  /** String. */
+  STRING
+  /** Boolean. */
+  BOOLEAN
+}

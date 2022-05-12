@@ -1,0 +1,17 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represent a time field in the dataset schema, it is used for time-series operations. One usage is Sliding Window Aggregation, see details in go/frameoffline.
+ */
+record TimeField {
+
+  /**
+   * Name of the time field in the dataset schema.
+   */
+  name: string
+
+  /**
+   * The format that the time field uses to represent time.
+   */
+  format: TimeFieldFormat
+}

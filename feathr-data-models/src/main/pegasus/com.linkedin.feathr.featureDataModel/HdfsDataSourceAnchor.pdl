@@ -1,0 +1,33 @@
+namespace com.linkedin.feathr.featureDataModel
+
+import com.linkedin.proml.mlFeatureAnchor.common.MvelExpression
+import com.linkedin.proml.mlFeatureAnchor.common.UserDefinedFunction
+import com.linkedin.proml.mlFeatureAnchor.common.SparkSqlExpression
+import com.linkedin.proml.mlFeatureAnchor.transformation.SlidingWindowAggregation
+import com.linkedin.proml.mlFeatureAnchor.transformation.SlidingWindowEmbeddingAggregation
+import com.linkedin.proml.mlFeatureAnchor.transformation.SlidingWindowLatestAvailable
+import com.linkedin.proml.mlFeatureAnchor.key.KeyPlaceholders
+import com.linkedin.proml.mlFeatureAnchor.source.HdfsDataSource
+
+
+/**
+ * Represents an offline anchor with HDFS data source.
+ */
+record HdfsDataSourceAnchor includes KeyPlaceholders {
+  /**
+   * Defines a HDFS data source. See HdfsDataSource for more details.
+   */
+  source: HdfsDataSource
+
+  /**
+   * Defines the supported transformation logic (eg. MVEL, Spark SQL, UDF, SWA) to produce feature value from a hfds data source.
+   */
+  transformationFunction: union[
+    MvelExpression
+    UserDefinedFunction
+    SparkSqlExpression
+    SlidingWindowAggregation
+    SlidingWindowEmbeddingAggregation
+    SlidingWindowLatestAvailable
+  ]
+}

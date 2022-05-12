@@ -2,8 +2,6 @@
 
 namespace com.linkedin.feathr.compute
 
-import com.linkedin.proml.mlFeatureVersion.FeatureVersion
-
 // NOTE THIS TYPO OF DEFINTION IS DELIBERATE TO AVOID CONFLICT WITH OTHER FEATURE DEFINITION CLASS IN FRAME-CORE.
 record FeatureDefintion {
 

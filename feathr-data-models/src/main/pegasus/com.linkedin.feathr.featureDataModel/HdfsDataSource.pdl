@@ -1,0 +1,26 @@
+namespace com.linkedin.feathr.featureDataModel
+
+import com.linkedin.proml.common.DaliLocation
+import com.linkedin.proml.common.HdfsLocation
+import com.linkedin.proml.mlFeatureAnchor.key.OfflineDataSourceKey
+
+/**
+ * Represents a HDFS data source.
+ */
+record HdfsDataSource includes OfflineDataSourceKey DataSourceRef {
+
+  /**
+   * Location of the dataset, it can be a HDFS path of the dataset, or Dali URI (dalids:///)
+   */
+  datasetLocation: union[HdfsLocation, DaliLocation]
+
+  /**
+   * Specify the time field in the dataset schema. This is an optional field used for time-series operations, such as Sliding Window Aggregation. See details in SlidingWindowAggregation section in go/feathroffline.
+   */
+  timeField: optional TimeField
+
+  /**
+   * Represents the time format being used to parse snapshot time from a dataset's file path. See DatasetSnapshotTimeFormat for more details.
+   */
+  datasetSnapshotTimeFormat: optional DatasetSnapshotTimeFormat
+}

@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * A location on HDFS.
+ */
+record HdfsLocation {
+
+  /**
+   * Path to the location on HDFS. It can be: 1. A file path, e.g. /user/test/file.avro, or 2. A directory, e.g. /user/test/files/
+   */
+  path: string
+}

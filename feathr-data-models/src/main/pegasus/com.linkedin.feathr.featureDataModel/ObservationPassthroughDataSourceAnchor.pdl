@@ -1,0 +1,21 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents an offline anchor with observation data passthrough data source, which is used for features that already exist in the observation data.
+ */
+@OfflineAnchor
+record ObservationPassthroughDataSourceAnchor includes KeyPlaceholders {
+  /**
+   * Defines an observation data passthrough data source, which is used for features that already exist in the observation data. See ObservationPassthroughDataSource for more details.
+   */
+  source: ObservationPassthroughDataSource
+
+  /**
+   * Defines the supported transformation logic (eg. MVEL, Spark SQL, UDF) to produce feature value for an observation data passthrough data source.
+   */
+  transformationFunction: union[
+    MvelExpression
+    SparkSqlExpression
+    UserDefinedFunction
+  ]
+}

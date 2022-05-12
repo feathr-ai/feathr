@@ -1,0 +1,46 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * This sliding window algorithm picks the latest available feature data from the source data. Note the latest here means event time instead of processing time.
+ */
+record SlidingWindowLatestAvailable {
+
+  /**
+   * The target column to pick the latest available record from.
+   */
+  targetColumn: union[
+    //A Spark SQL expression. It can be a simple field reference, or a complex Spark SQL statement.
+    SparkSqlExpression
+  ]
+
+  /**
+   * Represents the time window to look back from label data's timestamp.
+   */
+  window: optional Window
+
+  /**
+   * Represents lateral view statements to be applied before applying the sliding window algorithm. Refer to LateralView for more details.
+   */
+  lateralViews: array[LateralView] = []
+
+  /**
+   * Represents the target to be grouped by before applying the sliding window algorithm. If groupBy is not set, the aggregation will be performed over the entire dataset.
+   */
+  groupBy: optional union[
+    //A Spark SQL expression, it can be a simple field reference, or a complex Spark SQL statement.
+    SparkSqlExpression
+  ]
+
+  /**
+   * Represents the filter statement before applying the sliding window algorithm.
+   */
+  filter: optional union[
+    //A Spark SQL expression, for example, "channel = 'RECRUITER_SEARCH' AND event = 'SKIP'".
+    SparkSqlExpression
+  ]
+
+  /**
+   * Represents the max number of groups (with latest available feature data) to return.
+   */
+  limit: optional int
+}
