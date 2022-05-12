@@ -41,9 +41,7 @@ class FeatureAnchor(HoconConvertible):
                 if feature.key == [DUMMY_KEY]:
                     raise RuntimeError(f"For anchors of non-INPUT_CONTEXT source, key of feature {feature.name} "
                                        f"should be explicitly specified and not left blank.")
-        for feature in self.features:
-            assert feature.key_alias == self.features[0].key_alias
-
+        
     def to_feature_config(self) -> str:
         tm = Template("""
             {{anchor_name}}: {
