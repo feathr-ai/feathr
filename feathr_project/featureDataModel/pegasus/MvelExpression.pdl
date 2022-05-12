@@ -1,0 +1,11 @@
+namespace com.linkedin.proml.mlFeatureAnchor.common
+
+/**
+ * An expression in MVEL language. For more information please refer to go/framemvel.
+ */
+record MvelExpression {
+  /**
+   * The MVEL expression.
+   */
+  mvel: string
+}

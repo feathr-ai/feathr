@@ -1,0 +1,8 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+record AggregationFunction {
+  operator: OperatorId // could use an opset/operator/version string-encoded reference here
+  parameters: optional map[string, string] // kind of like Attributes in Onnx?
+}

@@ -1,0 +1,50 @@
+namespace com.linkedin.proml.mlFeatureAnchor.transformation
+
+import com.linkedin.proml.mlFeatureAnchor.common.SparkSqlExpression
+
+/**
+ * Sliding window embedding aggregation produces a single embedding by performing element-wise operations or discretization on a collection of embeddings within a given time interval. It ensures point-in-time correctness, when joining with label data, Frame looks back the configurable time window from each entry's timestamp and produce the aggregagated embedding.
+ */
+record SlidingWindowEmbeddingAggregation {
+
+  /**
+   * The target column to perform aggregation against.
+   */
+  targetColumn: union[
+    //A Spark SQL expression. It can be a simple field reference, or a complex Spark SQL statement.
+    SparkSqlExpression
+  ]
+
+  /**
+   * Represents supported types for embedding aggregation.
+   */
+  aggregationType: enum EmbeddingAggregationType {
+    /** Pooling is a sample-based discretization process. The objective is to down-sample an input representation and reduce its dimensionality. Max pooling is done by applying a max filter to (usually) non-overlapping subregions of the initial representation. */
+    MAX_POOLING
+    /** Pooling is a sample-based discretization process. The objective is to down-sample an input representation and reduce its dimensionality. Min pooling is done by applying a min filter to (usually) non-overlapping subregions of the initial representation. */
+    MIN_POOLING
+    /** Pooling is a sample-based discretization process. The objective is to down-sample an input representation and reduce its dimensionality. Average pooling is done by applying a average filter to (usually) non-overlapping subregions of the initial representation. */
+    AVG_POOLING
+  }
+
+  /**
+   * Represents the time window to look back from label data's timestamp.
+   */
+  window: Window
+
+  /**
+   * Represents the filter statement before the aggregation.
+   */
+  filter: optional union[
+    //A Spark SQL expression, for example, "channel = 'RECRUITER_SEARCH' AND event = 'SKIP'".
+    SparkSqlExpression
+  ]
+
+  /**
+   * Represents the target to be grouped by before aggregation. If groupBy is not set, the aggregation will be performed over the entire dataset.
+   */
+  groupBy: optional union[
+    //A Spark SQL expression, it can be a simple field reference, or a complex Spark SQL statement.
+    SparkSqlExpression
+  ]
+}

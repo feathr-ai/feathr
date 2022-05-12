@@ -1,0 +1,8 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+record NodeReference {
+  id: NodeId
+  keyReference: array[KeyReference]
+}

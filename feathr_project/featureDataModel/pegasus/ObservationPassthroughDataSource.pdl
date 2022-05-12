@@ -1,0 +1,8 @@
+namespace com.linkedin.proml.mlFeatureAnchor.source
+
+import com.linkedin.proml.mlFeatureAnchor.key.OfflineDataSourceKey
+
+/**
+ * Represents a observation data passthrough data source. Passthrough data sources are used when the data are not from external sources. It's commonly used for features that already exist in the observation data. See Pass-through Features section in go/frameoffline.
+ */
+record ObservationPassthroughDataSource includes OfflineDataSourceKey DataSourceRef {}

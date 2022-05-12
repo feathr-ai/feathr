@@ -1,0 +1,11 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+record Aggregation includes AbstractNode {
+  input: NodeReference // expected to be an event-source
+  function: AggregationFunction
+
+  // Feature name here is used so we retain feature name, type, and default values even after graph is resolved.
+  featureName: optional string
+}

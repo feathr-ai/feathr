@@ -1,0 +1,6 @@
+namespace com.linkedin.proml.mlFeatureAnchor.common
+
+/**
+ * Represents a transformation function that always returns the same value as the input. See https://en.wikipedia.org/wiki/Identity_function.
+ */
+record IdentityFunction {}

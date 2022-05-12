@@ -1,0 +1,6 @@
+namespace com.linkedin.proml.common
+
+/**
+ * Represents a Json string.
+ */
+typeref JsonString = string

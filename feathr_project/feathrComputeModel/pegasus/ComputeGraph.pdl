@@ -1,0 +1,19 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+/**
+ * Feature computation graph.
+ */
+record ComputeGraph {
+
+  /**
+   * The nodes in the graph (order does not matter)
+   */
+  nodes: array[AnyNode],
+
+  /**
+   * Map from feature name to node ID, for those nodes in the graph that represent named features.
+   */
+  featureNames: map[string, FeatureDefintion]
+}

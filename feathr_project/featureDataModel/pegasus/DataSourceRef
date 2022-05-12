@@ -1,0 +1,12 @@
+namespace com.linkedin.proml.mlFeatureAnchor.source
+
+/**
+ * Represents the identifier of a DataSource object. This class is expected to be included so the enclosed field can be reused in each concrete DataSource.
+ */
+record DataSourceRef {
+
+  /**
+   * Represents the identifier of a DataSource object. Given a DataSource object is already enclosed in a denormalized manner in each FeatureAnchor, this field is not used for looking up the DataSource object, instead it is optional and should be meaningful to describe a data source for informational usages like metrics.
+   */
+  dataSourceRef: optional string
+}

@@ -1,0 +1,18 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+record AbstractNode {
+  id: NodeId
+
+  /**
+   * The key for which this node is being requested.
+   * If this node is a Source node, the engine can use the key to fetch or join the feature.
+   * If this node is NOT a Source node, the engine should NOT use the key to determine fetch/join behavior, but
+   * should follow the node's inputs. (The core libraries may use the key information in order to optimize the graph,
+   * e.g. it can be used for identifying duplicate sections of the graph that can be pruned.)
+   *
+   * TODO: From the Engines' point of view, this field should be private. Maybe we should consider revising the data model.
+   */
+  concreteKey: optional ConcreteKey
+}

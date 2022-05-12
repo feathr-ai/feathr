@@ -1,0 +1,6 @@
+namespace com.linkedin.proml.mlFeatureAnchor.source
+
+/**
+ * Represents the time format being used to parse snapshot time from a dataset's file path, for example "2020/09/30" in /hdfs/jobs/lyndarel/features/master/members/daily/2020/09/30/. The dataset snapshot time is useful when feature data is time-partitioned for time-aware join or sliding-window aggregation. An example feature is derived skills, because derived skills change often based on user activities, modeling engineers want to join the time-sensitive observation data with the closest version of the feature. Refer to Unification of SWA and time-based features RFC (https://docs.google.com/document/d/1C6u2CKWSmOmHDQEL8Ovm5V5ZZFKhC_HdxVxU9D1F9lg/edit#) for more details.
+ */
+typeref DatasetSnapshotTimeFormat = union[DateTimeFormat, StandardDateTimeFormat]

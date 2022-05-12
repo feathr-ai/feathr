@@ -1,0 +1,21 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+// Should be mainly used for what we used to call "sequential join" features
+record Lookup includes AbstractNode {
+  // TODO: Currently in frame offline we support a "transformation" parameter in the base feature in seq join where
+  // the base feature can go through a MVEL transformation before the join. We can either add support for this or
+  // decide to deprecate this functionality and instead ask users to create a new base feature with the transformation
+  // function they have in mind and use that instead.
+  lookupKey: array[union[NodeReference, KeyReference]]
+  lookupNode: NodeId
+  // TODO: Currently SWA and Seq Join have two different approaches to aggregation so here we will use an enum to capture
+  // all the aggregation types supported by seq join currently. In the future we may want to combine the two aggregation paths
+  // and do something like sliding window node -> agg node AND lookup node -> agg node where the agg node is the same for
+  // these two paths.
+  aggregation: string
+
+  // Feature name here is used so we retain feature name, type, and default values even after graph is resolved.
+  featureName: optional string
+}

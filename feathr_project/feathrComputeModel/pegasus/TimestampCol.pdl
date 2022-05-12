@@ -1,0 +1,7 @@
+namespace com.linkedin.frame.compute
+
+// TODO Loosely based, change it to proper type
+record TimestampCol {
+  expression: string
+  format: string
+}

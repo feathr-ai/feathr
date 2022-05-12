@@ -1,0 +1,11 @@
+namespace com.linkedin.proml.mlFeatureAnchor.common
+
+/**
+ * An expression in Spark SQL.
+ */
+record SparkSqlExpression {
+  /**
+   * The Spark SQL expression.
+   */
+  sql: string
+}

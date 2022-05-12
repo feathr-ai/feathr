@@ -1,0 +1,12 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+record Transformation includes AbstractNode {
+  inputs: array[NodeReference]
+  function: TransformationFunction
+
+  // Feature name here is used so we retain feature name, type, and default values even after graph is resolved.
+  // Feature name here is also used for feature aliasing in the case where TransformationFunction is feature_alias.
+  featureName: optional string
+}

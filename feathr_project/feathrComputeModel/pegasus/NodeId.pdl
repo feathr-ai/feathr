@@ -1,0 +1,5 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+typeref NodeId = int

@@ -1,0 +1,6 @@
+namespace com.linkedin.proml.mlFeatureAnchor.source
+
+/**
+ * {@link java.time.format.DateTimeFormatter} pattern for a time field. e.g. yyyy/MM/dd/HH/mm/ss.
+ */
+typeref DateTimeFormat = string

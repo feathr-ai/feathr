@@ -1,0 +1,6 @@
+namespace com.linkedin.proml.mlFeatureAnchor.source
+
+/**
+ * The format of the time field. It can be either the granularity of a timestamp or datetime format e.g. yyyy/MM/dd/HH/mm/ss.
+ */
+typeref TimeFieldFormat = union[TimestampGranularity, DateTimeFormat]

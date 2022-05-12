@@ -1,0 +1,64 @@
+namespace com.linkedin.proml.mlFeatureAnchor.transformation
+
+import com.linkedin.proml.mlFeatureAnchor.common.SparkSqlExpression
+
+/**
+ * Sliding window aggregation produces feature data by aggregating a collection of data within a given time interval into an aggregate value. It ensures point-in-time correctness, when joining with label data, Frame looks back the configurable time window from each entry's timestamp and compute the aggregagate value.
+ */
+record SlidingWindowAggregation {
+
+  /**
+   * The target column to perform aggregation against.
+   */
+  targetColumn: union[
+    //A Spark SQL expression. It can be a simple field reference, or a complex Spark SQL statement.
+    SparkSqlExpression
+  ]
+
+  /**
+   * Represents supported types of aggregation.
+   */
+  aggregationType: enum AggregationType {
+    /** Sum. */
+    SUM
+    /** Count. */
+    COUNT
+    /** Max. */
+    MAX
+    /** Min. */
+    MIN
+    /** Average. */
+    AVG
+  }
+
+  /**
+   * Represents the time window to look back from label data's timestamp.
+   */
+  window: Window
+
+  /**
+   * Represents lateral view statements to be applied before the aggregation. Refer to LateralView for more details.
+   */
+  lateralViews: array[LateralView] = []
+
+  /**
+   * Represents the filter statement before the aggregation.
+   */
+  filter: optional union[
+    //A Spark SQL expression, for example, "channel = 'RECRUITER_SEARCH' AND event = 'SKIP'".
+    SparkSqlExpression
+  ]
+
+  /**
+   * Represents the target to be grouped by before aggregation. If groupBy is not set, the aggregation will be performed over the entire dataset.
+   */
+  groupBy: optional union[
+    //A Spark SQL expression, it can be a simple field reference, or a complex Spark SQL statement.
+    SparkSqlExpression
+  ]
+
+  /**
+   * Represents the max number of groups (with aggregation results) to return.
+   */
+  limit: optional int
+}

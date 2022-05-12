@@ -1,0 +1,8 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+// TODO: Possibly should be folded in to DataSource (e.g. with DataSourceType FEATURE)
+record External includes AbstractNode {
+  name: string
+}

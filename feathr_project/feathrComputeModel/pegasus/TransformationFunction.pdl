@@ -1,0 +1,9 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+// SHOULD THIS BE CALLED "OPERATOR REFERENCE" AND MERGED WITH AGGREGATION FUNCTION?
+record TransformationFunction {
+  operator: OperatorId // could use an opset/operator/version string-encoded reference here
+  parameters: optional map[string, string] // kind of like Attributes in Onnx?
+}

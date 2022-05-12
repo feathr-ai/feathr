@@ -1,0 +1,11 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+typeref AnyNode = union[
+  Aggregation
+  DataSource
+  Lookup
+  Transformation
+  External
+]

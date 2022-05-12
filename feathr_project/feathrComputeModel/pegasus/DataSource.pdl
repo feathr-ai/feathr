@@ -1,0 +1,29 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+import com.linkedin.proml.mlFeatureAnchor.transformation.Window
+
+record DataSource includes AbstractNode {
+  sourceType: DataSourceType // should different SourceTypes just be different kinds of Nodes?
+  externalSourceRef: string // for CONTEXT type, this is the name of the context column. otherwise, it should be a path
+                            // or URI.
+
+  keyExpression: string //mvel or spark or user-defined class
+
+  // todo change the abstraction to make this available only for a agg node.
+  filePartitionFormat: optional string
+  timestampColumnInfo: optional TimestampCol
+  window: optional Window
+  // BUT WHAT DO WE DO IF THESE ARE ACTUALLY SQL OR MVEL EXPRESSIONS?
+  // Can we fix them in a TransformationNode? Or need to make a KeyTransformation node?
+  //            Datasource
+  //                |
+  //            KeyTransform
+  //                |
+  //            Transform (or other)
+  //              / | \
+  //               ...
+  //             features
+  // An alternative idea: this class (DataSource) could include TransformationFunctions that actually operate on the keys.
+}

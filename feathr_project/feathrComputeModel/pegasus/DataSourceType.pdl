@@ -1,0 +1,9 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+enum DataSourceType {
+  UPDATE // should be renamed to TABLE
+  EVENT
+  CONTEXT
+}

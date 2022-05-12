@@ -1,0 +1,13 @@
+// LINT_SUPPRESS: namespace.three.parts
+
+namespace com.linkedin.frame.compute
+
+import com.linkedin.proml.mlFeatureVersion.FeatureVersion
+
+// NOTE THIS TYPO OF DEFINTION IS DELIBERATE TO AVOID CONFLICT WITH OTHER FEATURE DEFINITION CLASS IN FRAME-CORE.
+record FeatureDefintion {
+
+  nodeId: int,
+
+  featureVersion: FeatureVersion
+}

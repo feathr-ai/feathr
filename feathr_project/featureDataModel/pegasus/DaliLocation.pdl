@@ -1,0 +1,11 @@
+namespace com.linkedin.proml.common
+
+/**
+ * The location of a Dali dataset or view. See [go/dali](http://go/dali).
+ */
+record DaliLocation {
+  /**
+   * The URI to the Dali dataset/view in the form of `dalids:///db_name.table_or_view_name`.
+   */
+  uri: string
+}

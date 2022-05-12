@@ -1,0 +1,12 @@
+namespace com.linkedin.proml.mlFeatureAnchor.common
+
+/**
+ * Reference to a class by fully-qualified name
+ */
+record Clazz {
+
+  /**
+   * A fully-qualified class name. e.g. com.linkedin.proml.mlFeatureAnchor.MyClass
+   */
+  fullyQualifiedName: string
+}
