@@ -14,7 +14,7 @@ from feathr import WindowAggTransformation
 from pyspark.sql import SparkSession, DataFrame
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import RedisSink
-from test_fixture import (snowflake_test_setup, get_online_test_table_name)
+from test_fixture import (snowflake_test_setup, get_online_test_table_name, basic_test_setup)
 
 def trip_distance_preprocessing(df: DataFrame):
     df = df.withColumn("trip_distance", df.trip_distance.cast('double') - 90000)
