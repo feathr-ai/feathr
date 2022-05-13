@@ -3,6 +3,7 @@ from typing import Union, List
 
 from feathr.anchor import FeatureAnchor
 from feathr.feature_derivations import DerivedFeature
+from feathr.query_feature_list import FeatureQuery
 
 class FeaturePrinter:
     """The class for pretty-printing features"""
@@ -24,3 +25,12 @@ class FeaturePrinter:
             for derived_feature in feature_list:
                     pprint("%s is the derived feature of %s" % \
                             (derived_feature.name, [feature.name for feature in derived_feature.input_features]))
+
+    @staticmethod
+    def pretty_print_feature_query(feature_query: Union[FeatureQuery, List[FeatureQuery]]) -> None:
+        """Pretty print feature query
+
+        Args:
+            feature_query: feature query
+        """
+        pprint("Features in feature query are : %s" % feature_query.feature_list)

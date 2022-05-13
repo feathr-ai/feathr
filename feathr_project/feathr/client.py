@@ -443,12 +443,9 @@ class FeathrClient(object):
         else:
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
         
-        # Pretty print anchor list and derived_feature_list
+        # Pretty print feature query
         if verbose:
-            if self.anchor_list:
-                FeaturePrinter.pretty_print(self.anchor_list)
-            if self.derived_feature_list:
-                FeaturePrinter.pretty_print(self.derived_feature_list)
+            FeaturePrinter.pretty_print_feature_query(feature_query)
 
         write_to_file(content=config, full_file_name=config_file_path)
         return self._get_offline_features_with_config(config_file_path, execution_configuratons, udf_files=udf_files)

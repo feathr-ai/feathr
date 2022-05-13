@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from feathr._materialization_utils import _to_materialization_config
-from feathr import (BackfillTime, MaterializationSettings)
+from feathr import (BackfillTime, MaterializationSettings, FeatureQuery, 
+                    ObservationSettings, SparkExecutionConfiguration)
 from feathr import RedisSink
 from feathr.anchor import FeatureAnchor
 from feathr.dtype import BOOLEAN, FLOAT, FLOAT_VECTOR, INT32, ValueType
@@ -101,3 +102,40 @@ def test_build_feature_verbose():
     
     # Check pretty print
     client.build_features(anchor_list=[anchor], derived_feature_list=[derived_feature], verbose=True)
+    
+def test_get_offline_features_verbose():
+    """
+    Test verbose for pretty printing feature query
+    """
+
+    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
+
+    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    location_id = TypedKey(key_column="DOLocationID",
+                            key_column_type=ValueType.INT32)
+
+    feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=location_id)
+    
+    settings = ObservationSettings(
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss"
+    )
+
+    now = datetime.now()
+    
+    # set output folder based on different runtime
+    if client.spark_runtime == 'databricks':
+        output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".parquet"])
+    else:
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".parquet"])
+
+    # Check pretty print
+    client.get_offline_features(
+                                observation_settings=settings,
+                                feature_query=feature_query,
+                                output_path=output_path,
+                                execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}),
+                                verbose=True
+                        )
