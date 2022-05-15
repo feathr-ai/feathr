@@ -112,7 +112,6 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         returned_path = os.path.join(self.databricks_work_dir, file_name)
         # `local_path_or_http_path` will be either string or PathLib object, so normalize it to string 
         local_path = str(local_path)
-        print("local_path_or_http_path, returned path",local_path,returned_path)
         DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
         return returned_path
 
