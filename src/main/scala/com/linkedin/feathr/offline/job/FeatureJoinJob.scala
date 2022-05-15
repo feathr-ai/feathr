@@ -311,7 +311,8 @@ object FeatureJoinJob {
     logger.info("FeatureJoinJob args are: " + args)
     val feathrJoinPreparationInfo = prepareSparkSession(args)
 
-    run(feathrJoinPreparationInfo.sparkSession, feathrJoinPreparationInfo.hadoopConf, feathrJoinPreparationInfo.jobContext)
+    val res = run(feathrJoinPreparationInfo.sparkSession, feathrJoinPreparationInfo.hadoopConf, feathrJoinPreparationInfo.jobContext)
+    feathrJoinPreparationInfo.sparkSession.stop()
   }
 
   def prepareSparkSession(args: Array[String]): FeathrJoinPreparationInfo = {
