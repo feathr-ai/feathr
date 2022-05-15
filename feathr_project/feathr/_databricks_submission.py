@@ -85,32 +85,35 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         elif src_parse_result.scheme.startswith('dbfs'):
             # passed a cloud path
             logger.debug(
-                'Skipping file {} as it is already in the cloud', local_path_or_http_path)
+                'Skipping file {} as the file starts with dbfs:/', local_path_or_http_path)
             returned_path = local_path_or_http_path
+        elif src_parse_result.scheme.startswith(['wasb','s3','gs']):
+            # if the path starts with a location that's not a local path
+            logger.error("File {} cannot be downloaded. Please upload the file to dbfs manually.", local_path_or_http_path)
         else:
             # else it should be a local file path or dir
             if os.path.isdir(local_path_or_http_path):
                 logger.info("Uploading folder {}", local_path_or_http_path)
                 dest_paths = []
                 for item in Path(local_path_or_http_path).glob('**/*.conf'):
-                    returned_path = self.upload_file(item.resolve())
+                    returned_path = self.upload_local_file(item.resolve())
                     dest_paths.extend([returned_path])
                 returned_path = ','.join(dest_paths)
             else:
-                returned_path = self.upload_file(local_path_or_http_path)
+                returned_path = self.upload_local_file(local_path_or_http_path)
         return returned_path
 
-    def upload_file(self, local_path_or_http_path: str) -> str:
+    def upload_local_file(self, local_path: str) -> str:
         """
-        Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
+        Supports transferring file from a local path to cloud working storage.
         """
-        file_name = os.path.basename(local_path_or_http_path)
+        file_name = os.path.basename(local_path)
         # returned paths for the uploaded file
         returned_path = os.path.join(self.databricks_work_dir, file_name)
         # `local_path_or_http_path` will be either string or PathLib object, so normalize it to string 
-        local_path_or_http_path = str(local_path_or_http_path)
-        print("local_path_or_http_path, returned path",local_path_or_http_path,returned_path)
-        DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path_or_http_path, dst=returned_path)
+        local_path = str(local_path)
+        print("local_path_or_http_path, returned path",local_path,returned_path)
+        DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
         return returned_path
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
