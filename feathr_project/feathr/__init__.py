@@ -1,4 +1,4 @@
-from .client import *
+from .client import FeathrClient
 from .definition.feature_derivations import *
 from .definition.anchor import *
 from .definition.feature import *
