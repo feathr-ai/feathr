@@ -90,6 +90,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         elif src_parse_result.scheme.startswith(['wasb','s3','gs']):
             # if the path starts with a location that's not a local path
             logger.error("File {} cannot be downloaded. Please upload the file to dbfs manually.", local_path_or_http_path)
+            raise RuntimeError(f"File {local_path_or_http_path} cannot be downloaded. Please upload the file to dbfs manually.")
         else:
             # else it should be a local file path or dir
             if os.path.isdir(local_path_or_http_path):
