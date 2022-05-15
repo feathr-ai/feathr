@@ -4,16 +4,11 @@ from typing import List, Optional, Union, Dict
 
 from jinja2 import Template
 
+from feathr.api.app.core.feathr_api_exception import FeatureNameValidationError
 from feathr.dtype import FeatureType
 from feathr.frameconfig import HoconConvertible
 from feathr.transformation import ExpressionTransformation, Transformation
 from feathr.typed_key import DUMMY_KEY, TypedKey
-
-
-class FeatureNameValidationError(ValueError):
-    """An exception for feature name validation.
-       Feature names must consist of letters, number, or underscores,
-       and cannot begin with a number."""
 
 
 class FeatureBase(HoconConvertible):
@@ -57,20 +52,22 @@ class FeatureBase(HoconConvertible):
     def validate_feature_name(cls, feature_name: str) -> bool:
         """
         Only alphabet, numbers, and '_' are allowed in the name.
-                It can not start with numbers. Note that '.' is NOT ALLOWED!
+        It can not start with numbers. Note that '.' is NOT ALLOWED!
+        This is because some compute engines, such as Spark, will consider them as operators in feature name.
         """
         if not feature_name:
             raise FeatureNameValidationError('Feature name rule violation: empty feature name detected')
 
-        if str.isnumeric(feature_name[0]):
-            raise FeatureNameValidationError(
-                f'Feature name rule violation: feature name cannot start with a number; name={feature_name}')
-
-        feature_validator = re.compile(r'^[a-zA-Z0-9_]+$')
+        feature_validator = re.compile(r"""^              # from the start of the string
+                                           [a-zA-Z_]{1}   # first character can only be a letter or underscore 
+                                           [a-zA-Z0-9_]+  # as many letters, numbers, or underscores as you like  
+                                           $""",          # to the end of the string
+                                       re.X)
 
         if not feature_validator.match(feature_name):
             raise FeatureNameValidationError(
-                f'Feature name rule violation: only letters, numbers, and underscores are allowed in the name; name={feature_name}')
+                'Feature name rule violation: only letters, numbers, and underscores are allowed in the name, ' +
+                f'and the name cannot start with a number. name={feature_name}')
 
         return True
 
