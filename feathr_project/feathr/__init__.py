@@ -13,4 +13,4 @@ from .query_feature_list import FeatureQuery
 from .lookup_feature import LookupFeature
 from .aggregation import Aggregation
 from .feathr_configurations import SparkExecutionConfiguration
-from feathr.api.app.core.feathr_api_exception import *
+from .api.app.core.feathr_api_exception import *
