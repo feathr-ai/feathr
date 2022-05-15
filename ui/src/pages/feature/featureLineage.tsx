@@ -9,15 +9,14 @@ import { fetchProjectLineages } from '../../api';
 import { IFeatureLineage } from "../../models/model";
 import Lineage from "../../components/lineage/lineage";
 
-
 type Props = {};
-
-type QualifiedNameParams = {
+type Params = {
+  project: string;
   qualifiedName: string;
 }
 
 const FeatureDetails: React.FC<Props> = () => {
-  const { qualifiedName } = useParams<QualifiedNameParams>();
+  const { project, qualifiedName } = useParams<Params>();
   const loadingIcon = <LoadingOutlined style={ { fontSize: 24 } } spin />;
   const history = useHistory();
   useCallback((location) => history.push(location), [history]);
@@ -25,7 +24,7 @@ const FeatureDetails: React.FC<Props> = () => {
     status,
     error,
     data
-  } = useQuery<IFeatureLineage, AxiosError>(['feature', qualifiedName], () => fetchProjectLineages());
+  } = useQuery<IFeatureLineage, AxiosError>(['feature', qualifiedName], () => fetchProjectLineages(project));
 
   const render = (status: QueryStatus): JSX.Element => {
     switch (status) {

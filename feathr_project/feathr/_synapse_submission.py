@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from os.path import basename
 from enum import Enum
-
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
                             DeviceCodeCredential, EnvironmentCredential,
                             ManagedIdentityCredential)
@@ -15,6 +14,7 @@ from azure.storage.filedatalake import DataLakeServiceClient
 from azure.synapse.spark import SparkClient
 from azure.synapse.spark.models import SparkBatchJobOptions
 from loguru import logger
+from requests import request
 from tqdm import tqdm
 
 from feathr._abc import SparkJobLauncher
@@ -51,6 +51,9 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             synapse_dev_url, pool_name, executor_size=executor_size, executors=executors, credential=self.credential)
         self._datalake = _DataLakeFiler(
             datalake_dir, credential=self.credential)
+        # Save Synapse parameters to retrieve driver log
+        self._synapse_dev_url = synapse_dev_url
+        self._pool_name = pool_name
 
     def upload_or_get_cloud_path(self, local_path_or_http_path: str):
         """
@@ -132,6 +135,8 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             if status in {LivyStates.SUCCESS.value}:
                 return True
             elif status in {LivyStates.ERROR.value, LivyStates.DEAD.value, LivyStates.KILLED.value}:
+                logger.error("Feathr job has failed. Please visit this page to view error message: {}", self.job_url)
+                logger.error(self._api.get_driver_log(self.current_job_info.id))
                 return False
             else:
                 time.sleep(30)
@@ -166,8 +171,6 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         """
         return self._api.get_spark_batch_job(self.current_job_info.id).tags
 
-
-
 class _SynapseJobRunner(object):
     """
     Class to interact with Synapse Spark cluster
@@ -176,6 +179,7 @@ class _SynapseJobRunner(object):
         if credential is None:
             logger.warning('No valid Azure credential detected. Using DefaultAzureCredential')
             credential = DefaultAzureCredential()
+        self._credential = credential
 
         self.client = SparkClient(
             credential=credential,
@@ -268,6 +272,15 @@ class _SynapseJobRunner(object):
             executor_count=self._executors)
 
         return self.client.spark_batch.create_spark_batch_job(spark_batch_job_options, detailed=True)
+
+    def get_driver_log(self, job_id) -> str:
+        # @see: https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/connect-monitor-azure-synapse-spark-application-level-metrics
+        app_id = self.get_spark_batch_job(job_id).app_id
+        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stdout/?isDownload=true" % (self._synapse_dev_url, self._pool_name, job_id, app_id)
+        token = self._credential.get_token("https://dev.azuresynapse.net/.default")
+        req = urllib.request.Request(url=url, headers={"authorization": "Bearer %s" % token})
+        resp = urllib.request.urlopen(req)
+        return resp.read()
 
 
 class _DataLakeFiler(object):
