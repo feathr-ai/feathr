@@ -11,8 +11,8 @@ from feathr.dtype import BOOLEAN, FLOAT, FLOAT_VECTOR, INT32, ValueType
 from feathr.feature import Feature
 from feathr.typed_key import TypedKey
 from feathr import INPUT_CONTEXT
-from feathr import DerivedFeature
 from test_fixture import basic_test_setup
+from test_fixture import get_online_test_table_name
 
 def test_feature_materialization_config():
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5,20), step=timedelta(days=1))
@@ -90,18 +90,8 @@ def test_build_feature_verbose():
                            source=INPUT_CONTEXT,
                            features=features)
     
-    user_key = TypedKey(full_name="mockdata.user", key_column="user_id", key_column_type=ValueType.INT32, description="An user identifier")
-    user_embedding = Feature(name="user_embedding", feature_type=FLOAT_VECTOR, key=user_key)
-
-    # A derived feature
-    derived_feature = DerivedFeature(name="user_embemdding_derived",
-                                        feature_type=FLOAT,
-                                        key=user_key,
-                                        input_features=user_embedding,
-                                        transform="if_else(user_embedding, user_embedding, [])")
-    
     # Check pretty print
-    client.build_features(anchor_list=[anchor], derived_feature_list=[derived_feature], verbose=True)
+    client.build_features(anchor_list=[anchor], verbose=True)
     
 def test_get_offline_features_verbose():
     """
@@ -139,3 +129,17 @@ def test_get_offline_features_verbose():
                                 execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}),
                                 verbose=True
                         )
+
+def test_materialize_features_verbose():
+    online_test_table = get_online_test_table_name("nycTaxiCITable")
+    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
+
+    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+    redisSink = RedisSink(table_name=online_test_table)
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[redisSink],
+                                       feature_names=[
+                                           "f_location_avg_fare", "f_location_max_fare"],
+                                       backfill_time=backfill_time)
+    client.materialize_features(settings, verbose=True)

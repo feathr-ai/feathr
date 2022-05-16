@@ -4,13 +4,9 @@ import os
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-<<<<<<< HEAD
 from typing import Dict, List, Union
 from utils import FeaturePrinter
-=======
-from typing import Dict, List, Optional, Union
 from feathr.feature import FeatureBase
->>>>>>> main
 
 import redis
 from azure.identity import DefaultAzureCredential
@@ -242,11 +238,8 @@ class FeathrClient(object):
         self.derived_feature_list = derived_feature_list
         
         # Pretty print anchor list and derived_feature_list
-        if verbose:
-            if self.anchor_list:
-                FeaturePrinter.pretty_print(self.anchor_list)
-            if self.derived_feature_list:
-                FeaturePrinter.pretty_print(self.derived_feature_list)
+        if verbose and self.anchor_list:
+                FeaturePrinter.pretty_print_anchors(self.anchor_list)
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -449,7 +442,7 @@ class FeathrClient(object):
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
         
         # Pretty print feature query
-        if verbose:
+        if verbose and feature_query:
             FeaturePrinter.pretty_print_feature_query(feature_query)
 
         write_to_file(content=config, full_file_name=config_file_path)
@@ -537,7 +530,6 @@ class FeathrClient(object):
             execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
         # produce materialization config
-
         for end in settings.get_backfill_cutoff_time():
             settings.backfill_time.end = end
             config = _to_materialization_config(settings)
@@ -559,12 +551,9 @@ class FeathrClient(object):
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
         
-        # Pretty print anchor_list and derived_feature_list
-        if verbose:
-            if self.anchor_list:
-                FeaturePrinter.pretty_print(self.anchor_list)
-            if self.derived_feature_list:
-                FeaturePrinter.pretty_print(self.derived_feature_list)
+        # Pretty print materialized features
+        if verbose and settings:
+            FeaturePrinter.pretty_print_materialization(settings)
 
     def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature
