@@ -237,7 +237,7 @@ class FeathrClient(object):
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
         
-        # Pretty print anchor list and derived_feature_list
+        # Pretty print anchor_list
         if verbose and self.anchor_list:
                 FeaturePrinter.pretty_print_anchors(self.anchor_list)
 
@@ -441,7 +441,7 @@ class FeathrClient(object):
         else:
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
         
-        # Pretty print feature query
+        # Pretty print feature_query
         if verbose and feature_query:
             FeaturePrinter.pretty_print_feature_query(feature_query)
 
@@ -551,7 +551,7 @@ class FeathrClient(object):
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
         
-        # Pretty print materialized features
+        # Pretty print feature_names of materialized features
         if verbose and settings:
             FeaturePrinter.pretty_print_materialization(settings)
 
