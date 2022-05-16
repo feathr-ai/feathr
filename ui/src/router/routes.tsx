@@ -11,6 +11,8 @@ import NewFeature from "../pages/feature/newFeature";
 import FeatureDetails from "../pages/feature/featureDetails";
 import DataSources from "../pages/dataSource/dataSources";
 import FeatureLineage from "../pages/feature/featureLineage";
+import Jobs from "../pages/jobs/jobs";
+import Monitoring from "../pages/monitoring/monitoring";
 
 type Props = {};
 const queryClient = new QueryClient();
@@ -41,6 +43,8 @@ const Routes: React.FC<Props> = () => {
                     <Route exact={ true } path="/new-feature" component={ withRouter(NewFeature) } />
                     <Route exact={ true } path="/projects/:project/features/:qualifiedName" component={ withRouter(FeatureDetails) } />
                     <Route exact={ true } path="/projects/:project/features/:qualifiedName/lineage" component={ withRouter(FeatureLineage) } />
+                    <Route exact={ true } path="/jobs" component={ withRouter(Jobs) } />
+                    <Route exact={ true } path="/monitoring" component={ withRouter(Monitoring) } />
                     {/* {publicRoutes} */ }
                     {/* <Route component={NotFound} /> */ }
                   </Suspense>
