@@ -553,7 +553,7 @@ class FeathrClient(object):
         
         # Pretty print feature_names of materialized features
         if verbose and settings:
-            FeaturePrinter.pretty_print_materialization(settings)
+            FeaturePrinter.pretty_print_materialize_features(settings)
 
     def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature

@@ -37,7 +37,7 @@ class FeaturePrinter:
             raise TypeError("feature_query must be FeatureQuery")
 
     @staticmethod
-    def pretty_print_materialization(settings: MaterializationSettings) -> None:
+    def pretty_print_materialize_features(settings: MaterializationSettings) -> None:
         """Pretty print feature query
 
         Args:
