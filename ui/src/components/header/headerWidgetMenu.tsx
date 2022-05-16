@@ -1,17 +1,16 @@
-import { Dropdown, Menu, Avatar } from "antd";
 import React from "react";
-import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
-import { useMsal } from "@azure/msal-react";
+import { LogoutOutlined } from "@ant-design/icons";
+import { Menu } from "antd";
+import { IPublicClientApplication } from "@azure/msal-browser";
 
-// @ts-ignore
-const menuHeaderDropdown = (instance) => {
+type Props = { instance: IPublicClientApplication };
+const HeaderWidgetMenu: React.FC<Props> = ({ instance }) => {
   const menuItems = [
     {
       key: 'logout',
       icon: <LogoutOutlined />,
       value: 'Logout',
       callback: () => {
-        // @ts-ignore
         instance.logoutRedirect().catch(e => {
           console.error(e);
         });
@@ -38,23 +37,4 @@ const menuHeaderDropdown = (instance) => {
   );
 }
 
-// @ts-ignore
-const HeaderDropdown = props => {
-  const { instance } = useMsal();
-  const { name: username } = props;
-  if (!username)
-    return null;
-  return (
-    <Dropdown
-      overlay={ menuHeaderDropdown(instance) }
-      { ...props }
-    >
-      <div className='header-container'>
-        <Avatar size="small" style={ { marginRight: 4 } } icon={ <UserOutlined /> } />
-        <span>{ username }</span>
-      </div>
-    </Dropdown>
-  )
-};
-
-export default HeaderDropdown;
+export default HeaderWidgetMenu;

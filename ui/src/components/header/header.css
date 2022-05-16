@@ -1,4 +1,18 @@
-.container {
+.dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    padding:2px 4px;
+    transition: all .3s;
+}
+
+.dropdown-trigger:hover {
+    cursor: pointer;
+    background: rgba(0,0,0,.025);
+}
+
+.layout-header {
     background-color: #fff;
     justify-content: space-between;
     display: flex;
@@ -9,7 +23,7 @@
     align-items: center;
 }
 
-.right-side {
+.layout-header-right {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
