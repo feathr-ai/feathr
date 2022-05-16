@@ -42,7 +42,8 @@ class FeatureBase(HoconConvertible):
         else:
             self.transform = transform
         # An alias for the key in this feature. Default to its key column alias. Useful in derived features.
-        self.key_alias = [k.key_column_alias for k in self.key]
+        # self.key could be null, when getting features from registry.
+        self.key_alias = [k.key_column_alias for k in self.key if k]
 
     def with_key(self, key_alias: Union[str, List[str]]):
         """Rename the feature key with the alias. This is useful in derived features that depends on

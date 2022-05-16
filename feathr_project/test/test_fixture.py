@@ -30,7 +30,7 @@ def basic_test_setup(config_path: str):
                               feature_type=FLOAT, transform="trip_distance")
     f_trip_time_duration = Feature(name="f_trip_time_duration",
                                    feature_type=INT32,
-                                   transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
+                                   transform="(to_unix_timestamp(lpep_dropoff_datetime) - to_unix_timestamp(lpep_pickup_datetime))/60")
 
     features = [
         f_trip_distance,
@@ -157,12 +157,13 @@ def kafka_test_setup(config_path: str):
                                       )
     client.build_features(anchor_list=[kafkaAnchor])
     return client
+
 def registry_test_setup(config_path: str):
 
 
     # use a new project name every time to make sure all features are registered correctly
     now = datetime.now()
-    os.environ["project_config__project_name"] =  ''.join(['feathr_ci','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
 
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
 
@@ -184,8 +185,9 @@ def registry_test_setup(config_path: str):
                               registry_tags={"for_test_purpose":"true"}
                               )
     f_trip_time_duration = Feature(name="f_trip_time_duration",
-                                   feature_type=INT32,
-                                   transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
+                               feature_type=INT32,
+                               transform="(to_unix_timestamp(lpep_dropoff_datetime) - to_unix_timestamp(lpep_pickup_datetime))/60")
+
 
     features = [
         f_trip_distance,
@@ -251,3 +253,8 @@ def registry_test_setup(config_path: str):
     random.shuffle(derived_feature_list)
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
     return client
+
+def get_online_test_table_name(table_name: str):
+    # use different time for testing to avoid write conflicts
+    now = datetime.now()
+    return '_'.join([table_name, str(now.minute), str(now.second)])
