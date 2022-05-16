@@ -8,4 +8,5 @@
  */
 
 rootProject.name = 'feathr'
+include 'feathr-impl'
 include 'feathr-data-models'

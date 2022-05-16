@@ -8,6 +8,7 @@ import org.apache.avro.util.Utf8
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.io.File
+import java.net.{URI, URL}
 import scala.collection.JavaConverters._
 import scala.collection.convert.wrapAll._
 import scala.io.Source
@@ -32,9 +33,17 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
    * @return an dataframe
    */
   override def loadDataFrame(): DataFrame = {
+    def forcePathRelative(path: String) = {
+      if (path.startsWith("/")) path.substring(1)
+      else path
+    }
     try {
       log.debug(s"Loading CSV path :${path}")
-      val absolutePath = new File(path).getPath
+      val uri= new URI(path)
+      val filePath =
+        if (uri.getScheme==null) uri.getPath    // Assume file path
+        else forcePathRelative(uri.getPath)     // Assume path relative to the data directory
+      val absolutePath= new File(filePath).getCanonicalPath
       log.debug(s"Got absolute CSV path: ${absolutePath}, loading..")
       ss.read.format("csv").option("header", "true").load(absolutePath)
     } catch {

@@ -11,11 +11,6 @@ buildscript {
   }
 }
 
-plugins {
-  id 'scala'
-  id 'com.github.johnrengelman.shadow' version '7.1.2'
-}
-
 allprojects {
   repositories {
     mavenCentral()
@@ -25,7 +20,6 @@ allprojects {
     }
   }
 }
-
 
 project.ext.spec = [
     'product' : [
@@ -47,115 +41,4 @@ ext {
       scala_rt: '2.12',
       spark   : '3.1.3'
   ]
-}
-
-configurations {
-  // Dependencies that will be provided at runtime in the cloud execution
-  provided
-
-  compileOnly.extendsFrom(provided)
-  testImplementation.extendsFrom provided
-}
-
-dependencies {
-  implementation "org.scala-lang:scala-library:$ver.scala"
-
-  implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.12.6"
-  implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.6"
-  implementation "com.fasterxml.jackson.module:jackson-module-scala_$ver.scala_rt:2.12.6"
-  implementation "com.jasonclawson:jackson-dataformat-hocon:1.1.0"
-  implementation "com.redislabs:spark-redis_$ver.scala_rt:3.0.0"
-  implementation "com.typesafe:config:1.3.4"
-  implementation "it.unimi.dsi:fastutil:8.1.1"
-  implementation "org.apache.hadoop:hadoop-mapreduce-client-core:2.7.7"
-  implementation "org.mvel:mvel2:2.2.8.Final"
-  implementation "com.github.changvvb:jackson-module-caseclass_$ver.scala_rt:1.1.1"
-
-  provided "org.apache.xbean:xbean-asm6-shaded:4.10"
-  provided "com.fasterxml.jackson.core:jackson-databind:2.12.6.1"
-  provided "com.google.guava:guava:31.1-jre"
-  provided "com.typesafe:config:1.3.4"
-  provided "log4j:log4j:1.2.7"
-  provided "org.apache.hadoop:hadoop-common:2.7.7"
-  provided("org.apache.spark:spark-core_$ver.scala_rt:$ver.spark") {
-    exclude group: 'org.apache.xbean', module: 'xbean-asm6-shaded'
-  }
-  provided("org.apache.spark:spark-avro_$ver.scala_rt:$ver.spark") {
-    exclude group: 'org.apache.xbean', module: 'xbean-asm6-shaded'
-  }
-  provided "org.apache.spark:spark-hive_$ver.scala_rt:$ver.spark"
-  provided "org.apache.spark:spark-sql_$ver.scala_rt:$ver.spark"
-  provided "org.json:json:20180130"
-
-  testImplementation "nl.jqno.equalsverifier:equalsverifier:3.1.12"
-  testImplementation "org.apache.spark:spark-catalyst_$ver.scala_rt:$ver.spark"
-  testImplementation "org.apache.spark:spark-sql_$ver.scala_rt:$ver.spark"
-  testImplementation "org.json:json:20180130"
-  testImplementation "org.mockito:mockito-core:3.1.0"
-  testImplementation "org.scalatest:scalatest_$ver.scala_rt:3.0.0"
-  testImplementation "org.testng:testng:6.14.3"
-  testImplementation "org.anarres.jdiagnostics:jdiagnostics:1.0.7"
-}
-
-// Since there are cross-calls from Scala to Java, we use joint compiler
-// to compile them at the same time with Scala compiler.
-// See https://docs.gradle.org/current/userguide/scala_plugin.html
-sourceSets {
-  main {
-    scala {
-      srcDirs = ['src/main/java', 'src/main/scala']
-    }
-    java {
-      srcDirs = []
-    }
-  }
-  test {
-    scala {
-      srcDirs = ['src/test/java', 'src/test/scala']
-    }
-    java {
-      srcDirs = []
-    }
-  }
-
-}
-
-ext {
-  fatJarConfig = [
-      "local": [
-          "classPath"  : [project.configurations.runtimeClasspath, project.configurations.provided],
-          "mainClass"  : "com.linkedin.feathr.cli.FeatureExperimentEntryPoint",
-          "description": "Build jar for local experimentation"
-      ],
-      "cloud": [
-          "classPath"  : [project.configurations.runtimeClasspath],
-          "mainClass"  : "com.linkedin.feathr.offline.job.FeatureJoinJob",
-          "description": "Build jar for running Feathr in the cloud"
-      ]
-  ]
-}
-
-
-fatJarConfig.each { kind, entry ->
-  tasks.register("${kind}Jar", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-    description entry.description
-    archiveClassifier = kind
-
-    with jar
-    manifest {
-      attributes "Main-Class": entry.mainClass
-    }
-    configurations = entry.classPath
-
-    exclude 'META-INF/*.DSA'
-    exclude 'META-INF/*.SF'
-
-    mergeServiceFiles()
-
-    zip64 true
-  }
-}
-
-test {
-  useTestNG()
 }

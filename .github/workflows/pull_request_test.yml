@@ -23,7 +23,7 @@ jobs:
           java-version: "8"
           distribution: "temurin"
       - name: Run tests
-        run: sbt clean && sbt test
+        run: ./gradlew clean && ./gradlew test
   python_lint:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'safe to test')
@@ -43,7 +43,7 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      
+
   databricks_test:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'safe to test')
@@ -56,13 +56,13 @@ jobs:
           distribution: "temurin"
       - name: Build JAR
         run: |
-          sbt assembly
+          ./gradlew clean && ./gradlew :feathr-impl:cloudJar
           # remote folder for CI upload
           echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
           # get local jar name without paths so version change won't affect it
-          echo "FEATHR_LOCAL_JAR_NAME=$(ls target/scala-2.12/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_NAME=$(ls feathr-impl/build/libs/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
           # get local jar name without path
-          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls target/scala-2.12/*.jar)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls feathr-impl/build/libs/*.jar)" >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -120,13 +120,13 @@ jobs:
           distribution: "temurin"
       - name: Build JAR
         run: |
-          sbt assembly
+          ./gradlew clean && ./gradlew :feathr-impl:cloudJar
           # remote folder for CI upload
           echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
           # get local jar name without paths so version change won't affect it
-          echo "FEATHR_LOCAL_JAR_NAME=$(ls target/scala-2.12/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_NAME=$(ls feathr-impl/build/libs/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
           # get local jar name without path
-          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls target/scala-2.12/*.jar)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls feathr-impl/build/libs/*.jar)" >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:

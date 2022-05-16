@@ -3,7 +3,7 @@
 .AppleDouble
 .LSOverride
 metastore_db
-src/integTest
+feathr-impl/src/integTest
 test-output
 temp
 
@@ -193,7 +193,7 @@ hs_err_pid*
 .project/project
 .DS_store
 *.jar
-src/main/scala/META-INF/MANIFEST.MF
+feathr-impl/src/main/scala/META-INF/MANIFEST.MF
 *.MF
 feathr_project/feathr_cli.egg-info/*
 *.pyc
