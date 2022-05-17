@@ -2,11 +2,7 @@ import React, { Suspense } from "react";
 import { BrowserRouter, Route, Switch, withRouter } from "react-router-dom";
 import { Layout } from "antd";
 import { QueryClient, QueryClientProvider } from "react-query";
-import {
-  Configuration,
-  InteractionType,
-  PublicClientApplication,
-} from "@azure/msal-browser";
+import { Configuration, InteractionType, PublicClientApplication, } from "@azure/msal-browser";
 import { MsalAuthenticationTemplate, MsalProvider } from "@azure/msal-react";
 import Header from "../components/header/header";
 import SideMenu from "../components/sidemenu/siteMenu";
@@ -15,6 +11,8 @@ import NewFeature from "../pages/feature/newFeature";
 import FeatureDetails from "../pages/feature/featureDetails";
 import DataSources from "../pages/dataSource/dataSources";
 import FeatureLineage from "../pages/feature/featureLineage";
+import Jobs from "../pages/jobs/jobs";
+import Monitoring from "../pages/monitoring/monitoring";
 
 type Props = {};
 const queryClient = new QueryClient();
@@ -29,43 +27,27 @@ const msalConfig: Configuration = {
 const pca = new PublicClientApplication(msalConfig);
 const Routes: React.FC<Props> = () => {
   return (
-    <MsalProvider instance={pca}>
-      <MsalAuthenticationTemplate interactionType={InteractionType.Redirect}>
-        <QueryClientProvider client={queryClient}>
+    <MsalProvider instance={ pca }>
+      <MsalAuthenticationTemplate interactionType={ InteractionType.Redirect }>
+        <QueryClientProvider client={ queryClient }>
           <BrowserRouter>
-            <Layout style={{ minHeight: "100vh" }}>
+            <Layout style={ { minHeight: "100vh" } }>
               <SideMenu />
               <Layout>
                 <Header />
                 <Switch>
-                  <Suspense fallback={<div />}>
-                    <Route
-                      exact={true}
-                      path="/dataSources"
-                      component={withRouter(DataSources)}
-                    />
-                    <Route
-                      exact={true}
-                      path="/features"
-                      component={withRouter(Features)}
-                    />
-                    <Route
-                      exact={true}
-                      path="/new-feature"
-                      component={withRouter(NewFeature)}
-                    />
-                    <Route
-                      exact={true}
-                      path="/projects/:project/features/:qualifiedName"
-                      component={withRouter(FeatureDetails)}
-                    />
-                    <Route
-                      exact={true}
-                      path="/projects/:project/features/:qualifiedName/lineage"
-                      component={withRouter(FeatureLineage)}
-                    />
-                    {/* {publicRoutes} */}
-                    {/* <Route component={NotFound} /> */}
+                  <Suspense fallback={ <div /> }>
+                    <Route exact={ true } path="/dataSources" component={ withRouter(DataSources) } />
+                    <Route exact={ true } path="/features" component={ withRouter(Features) } />
+                    <Route exact={ true } path="/new-feature" component={ withRouter(NewFeature) } />
+                    <Route exact={ true } path="/projects/:project/features/:qualifiedName"
+                           component={ withRouter(FeatureDetails) } />
+                    <Route exact={ true } path="/projects/:project/features/:qualifiedName/lineage"
+                           component={ withRouter(FeatureLineage) } />
+                    <Route exact={ true } path="/jobs" component={ withRouter(Jobs) } />
+                    <Route exact={ true } path="/monitoring" component={ withRouter(Monitoring) } />
+                    {/* {publicRoutes} */ }
+                    {/* <Route component={NotFound} /> */ }
                   </Suspense>
                 </Switch>
               </Layout>
