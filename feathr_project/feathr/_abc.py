@@ -56,4 +56,3 @@ class SparkJobLauncher(ABC):
             str: _description_
         """
         pass
-
