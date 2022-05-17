@@ -100,13 +100,13 @@ const FeatureDetails: React.FC<Props> = () => {
           { feature?.transformation &&
               <Col span={ 8 }>
                   <Card title="Transformation" bordered={ false }>
-                    <p>transform_expr: { feature.transformation.transform_expr }</p>
-                    <p>filter: { feature.transformation.filter }</p>
-                    <p>agg_func: { feature.transformation.agg_func }</p>
-                    <p>limit: { feature.transformation.limit }</p>
-                    <p>group_by: { feature.transformation.group_by }</p>
-                    <p>window: { feature.transformation.window }</p>
-                    <p>def_expr: { feature.transformation.def_expr }</p>
+                      <p>transform_expr: { feature.transformation.transform_expr ?? "N/A" }</p>
+                      <p>filter: { feature.transformation.filter ?? "N/A" }</p>
+                      <p>agg_func: { feature.transformation.agg_func ?? "N/A" }</p>
+                      <p>limit: { feature.transformation.limit ?? "N/A" }</p>
+                      <p>group_by: { feature.transformation.group_by ?? "N/A" }</p>
+                      <p>window: { feature.transformation.window ?? "N/A" }</p>
+                      <p>def_expr: { feature.transformation.def_expr ?? "N/A" }</p>
                   </Card>
               </Col>
           }
