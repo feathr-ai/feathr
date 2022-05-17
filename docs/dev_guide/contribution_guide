@@ -1,0 +1,18 @@
+---
+layout: default
+title: Feathr Developer Contribution Guide
+parent: Feathr Developer Guides
+---
+
+# I am interested, how can I start?
+
+## I am not familiar with XYZ, how can I start?
+TBD
+
+## My pull request(PR) requires testing against the database or cluster that I dont' have, how can i fix this?
+
+## Technical Architecutre
+* Python Feathr Client
+* Computation Engine
+* API Layer
+* Web UI layer
