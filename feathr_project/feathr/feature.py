@@ -1,13 +1,15 @@
-from abc import ABC, abstractmethod
+import re
 from copy import deepcopy
 from typing import List, Optional, Union, Dict
 
 from jinja2 import Template
 
+from feathr.api.app.core.feathr_api_exception import FeatureNameValidationError
 from feathr.dtype import FeatureType
-from feathr.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
-from feathr.typed_key import DUMMY_KEY, TypedKey
 from feathr.frameconfig import HoconConvertible
+from feathr.transformation import ExpressionTransformation, Transformation
+from feathr.typed_key import DUMMY_KEY, TypedKey
+
 
 class FeatureBase(HoconConvertible):
     """The base class for features
@@ -28,6 +30,7 @@ class FeatureBase(HoconConvertible):
                  key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
                  registry_tags: Optional[Dict[str, str]] = None,
                  ):
+        FeatureBase.validate_feature_name(name)
         self.name = name
         self.feature_type = feature_type
         self.registry_tags=registry_tags
@@ -44,6 +47,29 @@ class FeatureBase(HoconConvertible):
         # An alias for the key in this feature. Default to its key column alias. Useful in derived features.
         # self.key could be null, when getting features from registry.
         self.key_alias = [k.key_column_alias for k in self.key if k]
+
+    @classmethod
+    def validate_feature_name(cls, feature_name: str) -> bool:
+        """
+        Only alphabet, numbers, and '_' are allowed in the name.
+        It can not start with numbers. Note that '.' is NOT ALLOWED!
+        This is because some compute engines, such as Spark, will consider them as operators in feature name.
+        """
+        if not feature_name:
+            raise FeatureNameValidationError('Feature name rule violation: empty feature name detected')
+
+        feature_validator = re.compile(r"""^              # from the start of the string
+                                           [a-zA-Z_]{1}   # first character can only be a letter or underscore 
+                                           [a-zA-Z0-9_]+  # as many letters, numbers, or underscores as you like  
+                                           $""",          # to the end of the string
+                                       re.X)
+
+        if not feature_validator.match(feature_name):
+            raise FeatureNameValidationError(
+                'Feature name rule violation: only letters, numbers, and underscores are allowed in the name, ' +
+                f'and the name cannot start with a number. name={feature_name}')
+
+        return True
 
     def with_key(self, key_alias: Union[str, List[str]]):
         """Rename the feature key with the alias. This is useful in derived features that depends on
