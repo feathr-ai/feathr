@@ -2,17 +2,18 @@ name: Feathr Scala Tests And Azure E2E Integration
 
 on:
   push:
-    branches: [rijai/citest]
+    branches: [main]
     paths-ignore:
       - 'docs/**'
       - '**/README.md'
   pull_request:
-    branches: [rijai/citest]
+    branches: [main]
     paths-ignore:
       - 'docs/**'
       - '**/README.md'
   pull_request_target:
-    branches: [rijai/citest]
+    branches: [main]
+    types: [labeled, edited, opened, synchronize]
     paths-ignore:
       - 'docs/**'
       - '**/README.md'
@@ -22,6 +23,8 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
@@ -54,6 +57,8 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
@@ -118,6 +123,8 @@ jobs:
       if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
       steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
