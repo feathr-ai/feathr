@@ -20,7 +20,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 - **Pythonic APIs** to access everything with low learning curve; Integrated with model building so data scientists can be productive from day one.
 - **Rich type system** including support for embeddings for advanced machine learning/deep learning scenarios. One of the common use cases is to build embeddings for customer profiles, and those embeddings can be reused across an organization in all the machine learning applications.
 - **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
-- **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
+- **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity. 
 
 ## Documentation
 
@@ -94,7 +94,7 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            features=agg_features)
 ```
 
-### Define features on top of other features - Derived Features
+### Define features on top of other features aka Derived Features
 
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
