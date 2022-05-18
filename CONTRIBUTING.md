@@ -10,7 +10,7 @@ Please do not file reports on Github for security issues. Please review the guid
 
 The Feathr community welcome everyone, and encourage a friendly and positive environment.
 
-**Contributions of various forms are welcome!**
+**Contributions of various forms are welcome**
 
 Please read existing Github issues or development work that is in progress or in the backlog to avoid duplication. If you are interested in those existing ones, you can leave a comment in the Github issues and the community will try to involve you. If you are not sure if it's duplicated, just create a Github issue and ask!
 
