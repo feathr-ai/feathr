@@ -5,7 +5,7 @@ import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Union
-from utils import FeaturePrinter
+from feathr.utils import FeaturePrinter
 from feathr.feature import FeatureBase
 
 import redis
