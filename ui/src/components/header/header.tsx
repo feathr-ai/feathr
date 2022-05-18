@@ -1,52 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { Button, PageHeader, Row, Typography } from 'antd';
+import React from 'react';
+import { Layout } from 'antd';
 import { useAccount, useMsal } from "@azure/msal-react";
-import './header.less';
+import './header.css';
+import HeaderWidget from "./headerWidget";
 
 type Props = {};
-
 const Header: React.FC<Props> = () => {
-  const { accounts, instance } = useMsal();
+  const { accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
-  const [name, setName] = useState("");
-
-  useEffect(() => {
-    if (account && account.name) {
-      setName(account.name.split(" ")[0]);
-    }
-  }, [account]);
-
-  const onClickLogout = () => {
-    instance.logoutRedirect().catch(e => {
-      console.error(e);
-    });
-  }
-
-  const { Paragraph } = Typography;
   return (
-    <PageHeader
-      title={ `Hello ${ name }, welcome to Feathr Feature Store` }
-      style={ { backgroundColor: "white", paddingLeft: "50px", paddingRight: "50px" } }
-      extra={ [<Button key="3" onClick={ onClickLogout }>Logout</Button>] }>
-      <Row>
-        <div style={ { flex: 1 } }>
-          <>
-            <Paragraph>
-              In this web ui, you can see Data Sources, Features and Jobs registered in Feathr. If you are new to
-              Feathr, please visit
-              <a target="_blank" href="https://linkedin.github.io/feathr/concepts/feathr-concepts-for-beginners.html"
-                 rel="noreferrer"> Feathr Concepts for Beginners
-              </a> to get start
-            </Paragraph>
-            <div>
-
-            </div>
-          </>
-        </div>
-      </Row>
-    </PageHeader>
+    <Layout.Header className="layout-header" style={ { backgroundColor: "#fff", height : "auto" } }>
+      <span>In Feathr Feature Store, you can manage and share features.
+        <a target="_blank" rel="noreferrer"
+           href="https://linkedin.github.io/feathr/concepts/feathr-concepts-for-beginners.html"> Learn More</a>
+      </span>
+      <span className='layout-header-right'>
+        <HeaderWidget username={ account?.username } />
+      </span>
+    </Layout.Header>
   );
 };
-
 
 export default Header;

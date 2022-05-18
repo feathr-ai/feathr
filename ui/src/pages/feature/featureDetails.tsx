@@ -10,13 +10,13 @@ import { FeatureAttributes, InputAnchorFeatures } from "../../models/model";
 const { confirm } = Modal;
 
 type Props = {};
-
-type QualifiedNameParams = {
+type Params = {
+  project: string;
   qualifiedName: string;
 }
 
 const FeatureDetails: React.FC<Props> = () => {
-  const { qualifiedName } = useParams<QualifiedNameParams>();
+  const { project, qualifiedName } = useParams<Params>();
   const loadingIcon = <LoadingOutlined style={ { fontSize: 24 } } spin />;
   const history = useHistory();
   const navigateTo = useCallback((location) => history.push(location), [history]);
@@ -24,11 +24,10 @@ const FeatureDetails: React.FC<Props> = () => {
     status,
     error,
     data
-  } = useQuery<FeatureAttributes, AxiosError>(['feature', qualifiedName], () => fetchFeature(qualifiedName));
+  } = useQuery<FeatureAttributes, AxiosError>(['feature', qualifiedName], () => fetchFeature(project, qualifiedName));
 
   const openLineageWindow = () => {
-    navigateTo(`/features/${ qualifiedName }/lineage`);
-    const lineageUrl = `/features/${ qualifiedName }/lineage`;
+    const lineageUrl = `/projects/${ project }/features/${ qualifiedName }/lineage`;
     window.open(lineageUrl);
   }
 
@@ -69,7 +68,7 @@ const FeatureDetails: React.FC<Props> = () => {
       <ul>
         { features.map((_) => (
           <Button type="link" onClick={ () => {
-            navigateTo(`/features/${ _.uniqueAttributes.qualifiedName }`)
+            navigateTo(`/projects/${ project }/features/${ _.uniqueAttributes.qualifiedName }`)
           } }>{ _.uniqueAttributes.qualifiedName }</Button>
         )) }
       </ul>
@@ -79,7 +78,18 @@ const FeatureDetails: React.FC<Props> = () => {
   const renderFeature = (feature: FeatureAttributes): JSX.Element => {
     return (
       <div className="site-card-wrapper">
-        <Row gutter={ 16 }>
+        <Row>
+          { feature?.key && feature.key.length > 0 &&
+              <Col span={ 8 }>
+                  <Card title="Key" bordered={ false }>
+                      <p>full_name: { feature.key[0].full_name }</p>
+                      <p>key_column: { feature.key[0].key_column }</p>
+                      <p>description: { feature.key[0].description }</p>
+                      <p>key_column_alias: { feature.key[0].key_column_alias }</p>
+                      <p>key_column_type: { feature.key[0].key_column_type }</p>
+                  </Card>
+              </Col>
+          }
           { feature?.type &&
               <Col span={ 8 }>
                   <Card title="Type" bordered={ false }>
@@ -87,45 +97,34 @@ const FeatureDetails: React.FC<Props> = () => {
                   </Card>
               </Col>
           }
-          { feature?.definition &&
+          { feature?.transformation &&
               <Col span={ 8 }>
-                  <Card title="Definition" bordered={ false }>
-                    { feature.definition }
+                  <Card title="Transformation" bordered={ false }>
+                      <p>transform_expr: { feature.transformation.transform_expr ?? "N/A" }</p>
+                      <p>filter: { feature.transformation.filter ?? "N/A" }</p>
+                      <p>agg_func: { feature.transformation.agg_func ?? "N/A" }</p>
+                      <p>limit: { feature.transformation.limit ?? "N/A" }</p>
+                      <p>group_by: { feature.transformation.group_by ?? "N/A" }</p>
+                      <p>window: { feature.transformation.window ?? "N/A" }</p>
+                      <p>def_expr: { feature.transformation.def_expr ?? "N/A" }</p>
                   </Card>
               </Col>
           }
-          { feature?.def &&
-              <Col span={ 8 }>
-                  <Card title="SQL Expression" bordered={ false }>
-                    { feature["def.sqlExpr"] }
-                  </Card>
-              </Col>
-          }
+        </Row>
+        <Row>
           { feature?.input_anchor_features && feature?.input_anchor_features.length > 0 &&
-              <Col span={ 16 }>
+              <Col span={ 24 }>
                   <Card title="Input Anchor Features" bordered={ false }>
                     { renderInputFeatureList(feature.input_anchor_features) }
                   </Card>
               </Col>
           }
+        </Row>
+        <Row>
           { feature?.input_derived_features && feature?.input_derived_features.length > 0 &&
-              <Col span={ 16 }>
+              <Col span={ 24 }>
                   <Card title="Input Derived Features" bordered={ false }>
                     { renderInputFeatureList(feature.input_derived_features) }
-                  </Card>
-              </Col>
-          }
-          { feature?.transformation &&
-              <Col span={ 8 }>
-                  <Card title="Transformation" bordered={ false }>
-                    { feature.transformation.transform_expr }
-                  </Card>
-              </Col>
-          }
-          { feature?.window &&
-              <Col span={ 8 }>
-                  <Card title="Window" bordered={ false }>
-                    { feature.window }
                   </Card>
               </Col>
           }

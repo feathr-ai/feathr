@@ -26,9 +26,7 @@ export interface FeatureAttributes {
   name: string;
   type: string;
   transformation: FeatureTransformation;
-  definition: string;
-  def: FeatureDef;
-  "def.sqlExpr": string;
+  key: FeatureKey[];
   window: string;
   input_anchor_features: InputAnchorFeatures[];
   input_derived_features: InputDerivedFeatures[]
@@ -42,12 +40,22 @@ export interface InputDerivedFeatures {
   uniqueAttributes: FeatureAttributes;
 }
 
-export interface FeatureDef {
-  sqlExpr: string;
+export interface FeatureTransformation {
+  transform_expr: string,
+  filter: string,
+  agg_func: string,
+  limit: string,
+  group_by: string,
+  window: string,
+  def_expr: string
 }
 
-export interface FeatureTransformation {
-  transform_expr: string
+export interface FeatureKey {
+  full_name: string,
+  key_column: string,
+  description: string,
+  key_column_alias: string,
+  key_column_type: string
 }
 
 export interface IDataSource {
