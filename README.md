@@ -117,7 +117,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ### Define Streaming Features
 
-Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming_source_ingestion.html) for more details.
+Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming-source-ingestion.html) for more details.
 
 
 ### Point in Time Joins

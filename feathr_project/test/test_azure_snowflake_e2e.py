@@ -41,7 +41,7 @@ def test_feathr_online_store_agg_features():
     assert len(res) == 2
     assert res[0] != None
     assert res[1] != None
-    res = client.multi_get_online_features('snowflakeSampleDemoFeature',
+    res = client.multi_get_online_features(online_test_table,
                                     ['1', '2'],
                                     ['f_snowflake_call_center_division_name', 'f_snowflake_call_center_zipcode'])
     assert res['1'][0] != None

@@ -1,1 +1,14 @@
 /// <reference types="react-scripts" />
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      NODE_ENV: "development" | "production";
+      PORT?: string;
+      PWD: string;
+      REACT_APP_AAD_APP_CLIENT_ID: string;
+      REACT_APP_AAD_APP_AUTHORITY: string;
+    }
+  }
+}
+
+export {};
