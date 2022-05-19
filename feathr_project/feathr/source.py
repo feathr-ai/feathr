@@ -48,7 +48,8 @@ class Source(HoconConvertible):
         self.name = name
         self.event_timestamp_column = event_timestamp_column
         self.timestamp_format = timestamp_format
-        self.registry_tags = registry_tags
+        # adding typecheck for registry tags incase user could also do like this {"description", "this is a test feature"} as well as like this dictionary format {"description":"this is a test feature"}
+        self.registry_tags=registry_tags if isinstance(registry_tags,Dict) else dict([registry_tags])
 
     def __eq__(self, other):
         """A source is equal to another if name is equal."""

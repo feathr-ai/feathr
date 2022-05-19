@@ -33,7 +33,8 @@ class FeatureBase(HoconConvertible):
         FeatureBase.validate_feature_name(name)
         self.name = name
         self.feature_type = feature_type
-        self.registry_tags=registry_tags
+        # adding typecheck for registry tags incase user could also do like this {"description", "this is a test feature"} as well as like this dictionary format {"description":"this is a test feature"}
+        self.registry_tags=registry_tags if isinstance(registry_tags,Dict) else dict([registry_tags])
         self.key = key if isinstance(key, List) else [key]
         # feature_alias: Rename the derived feature to `feature_alias`. Default to feature name.
         self.feature_alias = name

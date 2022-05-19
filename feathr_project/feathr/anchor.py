@@ -30,7 +30,8 @@ class FeatureAnchor(HoconConvertible):
         self.name = name
         self.features = features
         self.source = source
-        self.registry_tags=registry_tags
+        # adding typecheck for registry tags incase user could also do like this {"description", "this is a test feature"} as well as like this dictionary format {"description":"this is a test feature"}
+        self.registry_tags=registry_tags if isinstance(registry_tags,Dict) else dict([registry_tags])
         self.validate_features()
 
     def validate_features(self):
