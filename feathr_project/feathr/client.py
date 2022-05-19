@@ -30,6 +30,7 @@ from feathr.definition.anchor import FeatureAnchor
 from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
 from feathr.utils._envvariableutil import _EnvVaraibleUtil
 from feathr.utils._file_utils import write_to_file
+from feathr.utils.feature_printer import FeaturePrinter
 
 
 class FeatureJoinJobParams:
