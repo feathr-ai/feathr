@@ -265,4 +265,11 @@ settings = MaterializationSettings("nycTaxiTable",
 
 client.materialize_features(settings) 
 
- 
+ Offline transformation:
+
+ Does it support popular transformations (e.g. MinMaxScaler for numerical data or one-hot encoding (mapping categories to integers)?
+Does is support customized transformations (e.g. quantile clipping)?
+
+
+Online transformation:
+Does is support to store necessary information to transform new streaming data (e.g. min and max values of offline data (training set), which is used for model training to normalize new data or integers used before to map categorical data (men → 0 and women → 1)?
