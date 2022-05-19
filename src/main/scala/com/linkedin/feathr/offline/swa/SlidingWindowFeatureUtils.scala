@@ -35,7 +35,7 @@ private[offline] object SlidingWindowFeatureUtils {
   private val EPOCH_MILLIS = "epoch_millis"
   private val MILLIS_IN_SECOND = 1000
 
-  val TIMESTAMP_WITH_TIMEZONE_FORMAT = "yyyy-MM-dd HH:mm:ssZ" // Z is timezone pattern letter
+  val TIMESTAMP_WITH_TIMEZONE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSZ" // Z is timezone pattern letter
   val UTC_TIMEZONE_OFFSET = "-0000" // PDT/PST
   val DEFAULT_TIME_DELAY = "Default-time-delay"
   val TIMESTAMP_PARTITION_COLUMN = "__feathr_timestamp_column_from_partition"
