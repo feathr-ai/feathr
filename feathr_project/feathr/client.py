@@ -13,9 +13,8 @@ from jinja2 import Template
 from pyhocon import ConfigFactory
 
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
-from feathr.utils._envvariableutil import _EnvVaraibleUtil
+
 from feathr.registry._feature_registry_purview import _FeatureRegistry
-from feathr.utils._file_utils import write_to_file
 from feathr.definition._materialization_utils import _to_materialization_config
 from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
@@ -29,6 +28,8 @@ from feathr.definition.settings import ObservationSettings
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.anchor import FeatureAnchor
 from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
+from feathr.utils._envvariableutil import _EnvVaraibleUtil
+from feathr.utils._file_utils import write_to_file
 
 
 class FeatureJoinJobParams:

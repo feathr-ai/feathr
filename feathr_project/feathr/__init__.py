@@ -14,6 +14,7 @@ from .definition.lookup_feature import *
 from .definition.aggregation import *
 from .definition.settings import *
 from .utils.job_utils import *
+from .utils.feature_printer import *
 from .api.app.core.feathr_api_exception import *
 
 # skipped class as they are internal methods:
@@ -21,6 +22,6 @@ from .api.app.core.feathr_api_exception import *
 # expose the modules so docs can build
 # referencee： https://stackoverflow.com/questions/15115514/how-do-i-document-classes-without-the-module-name/31594545#31594545
 __all__ = ['FeatureJoinJobParams', 'FeatureGenerationJobParams', 'FeathrClient', 'DerivedFeature', 'FeatureAnchor', 'Feature', 'ValueType', 'WindowAggTransformation', 'TypedKey', 'DUMMYKEY', 'BackfillTime', 'MaterializationSettings', 'RedisSink', 'FeatureQuery', 'LookupFeature', 'Aggregation', 'get_result_df', 'AvroJsonSchema', 'Source', 'InputContext', 'HdfsSource', 'KafkaConfig',
- 'KafKaSource', 'ValueType', 'BooleanFeatureType', 'Int32FeatureType', 'Int64FeatureType', 'FloatFeatureType', 'DoubleFeatureType', 'StringFeatureType', 'BytesFeatureType', 'FloatVectorFeatureType', 'Int32VectorFeatureType', 'Int64VectorFeatureType', 'DoubleVectorFeatureType', 'FeatureNameValidationError', 'ObservationSettings']
+ 'KafKaSource', 'ValueType', 'BooleanFeatureType', 'Int32FeatureType', 'Int64FeatureType', 'FloatFeatureType', 'DoubleFeatureType', 'StringFeatureType', 'BytesFeatureType', 'FloatVectorFeatureType', 'Int32VectorFeatureType', 'Int64VectorFeatureType', 'DoubleVectorFeatureType', 'FeatureNameValidationError', 'ObservationSettings', 'FeaturePrinter']
 
 
