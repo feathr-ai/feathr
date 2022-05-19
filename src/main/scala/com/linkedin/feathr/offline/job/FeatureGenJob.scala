@@ -243,10 +243,8 @@ object FeatureGenJob {
 
   private[feathr] def process(params: Array[String]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
     val feathrGenPreparationInfo = prepareSparkSession(params)
-    val res = run(feathrGenPreparationInfo.sparkSession, feathrGenPreparationInfo.applicationConfigPath,
+    run(feathrGenPreparationInfo.sparkSession, feathrGenPreparationInfo.applicationConfigPath,
       feathrGenPreparationInfo.featureDefs, feathrGenPreparationInfo.jobContext)
-    feathrGenPreparationInfo.sparkSession.stop()
-    res
   }
 
   def mainWithPreprocessedDataFrame(args: Array[String], preprocessedDfMap: java.util.Map[String, DataFrame]) {

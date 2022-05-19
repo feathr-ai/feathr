@@ -87,7 +87,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             logger.debug(
                 'Skipping file {} as the file starts with dbfs:/', local_path_or_http_path)
             returned_path = local_path_or_http_path
-        elif src_parse_result.scheme.startswith(('wasb','s3','gs')):
+        elif src_parse_result.scheme.startswith(['wasb','s3','gs']):
             # if the path starts with a location that's not a local path
             logger.error("File {} cannot be downloaded. Please upload the file to dbfs manually.", local_path_or_http_path)
             raise RuntimeError(f"File {local_path_or_http_path} cannot be downloaded. Please upload the file to dbfs manually.")
