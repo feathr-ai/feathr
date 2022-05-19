@@ -1,16 +1,14 @@
-FROM ubuntu:20.04
+FROM python:3.9
+
 COPY ./ /usr/src
 
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential python3 python3-dev python3-pip librdkafka-dev 
-
-EXPOSE 80
-
+# Intall package feathr
 WORKDIR /usr/src/feathr_project
-RUN python3 -m pip install -e .
+RUN pip install -e .
 
+# Install packages in requirements.txt
 WORKDIR /usr/src/feathr_project/feathr/api
-RUN pip3 install -r requirements.txt
+RUN pip install -r requirements.txt
 
+# Start web server
 CMD [ "uvicorn","app.main:app","--host", "0.0.0.0", "--port", "80" ]

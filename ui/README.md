@@ -1,6 +1,6 @@
-# Feathr UI
+# Feathr Feature Store UI
 
-This is Feathr web ui frontend code
+This directory hosts Feathr Feature Store UI code. Visit [demo site](https://aka.ms/feathrdemo) to try Feathr Feature Store UI,
 
 ## Prerequisites
 Install the latest version of [NodeJS](https://nodejs.org/en/) LTS v14.x or v16.x. Make sure to use npm no later than 6.x. Run `node --version` and `npm --version` to verify installed versions.

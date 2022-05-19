@@ -60,7 +60,7 @@ def test_feathr_register_features_e2e():
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path)
-    client.wait_job_to_finish(timeout_sec=500)
+    client.wait_job_to_finish(timeout_sec=900)
 
 
     
