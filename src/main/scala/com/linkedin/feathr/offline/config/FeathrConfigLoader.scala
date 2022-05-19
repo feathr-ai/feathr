@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.node._
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
-import com.linkedin.feathr.common._
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException, FeathrException}
+import com.linkedin.feathr.common.{AnchorExtractor, _}
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
@@ -256,14 +256,12 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
 
     anchorExtractor match {
       case extractor: AnchorExtractorBase[_] =>
-        if (node.has("extractor")) {
           val extractorNode = node.get("extractor")
-          if (extractorNode.has("params")) {
+          if (extractorNode != null && extractorNode.get("params") != null) {
             // init the param into the extractor
             val config = ConfigFactory.parseString(extractorNode.get("params").toString)
             extractor.init(config)
           }
-        }
     }
 
     // cast the the extractor class to AnchorExtractor[Any]
@@ -394,13 +392,14 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
               val keyAlias = FeathrConfigLoader.extractStringListOpt(keyNode.get(KEY_ALIAS))
               new SQLSourceKeyExtractor(keys, keyAlias, lateralViewParameters)
             } else {
-              throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, s"No valid keys found for node ${node}")
+              val anchorExtractor = anchorExtractorBase.asInstanceOf[AnchorExtractor[Any]]
+              new MVELSourceKeyExtractor(anchorExtractor)
             }
           case None =>
-            if (!anchorExtractorBase.isInstanceOf[AnchorExtractor[_]]) {
+            if (!anchorExtractorBase.isInstanceOf[AnchorExtractorBase[_]]) {
               throw new FeathrException(
                 ErrorLabel.FEATHR_USER_ERROR,
-                s"In ${node}, ${anchorExtractorBase} with no key and no keyExtractor must be extends AnchorExtractor")
+                s"In ${node}, ${anchorExtractorBase} with no key and no keyExtractor must be extends AnchorExtractorBase")
             }
             val keyAlias = FeathrConfigLoader.extractStringListOpt(node.get(KEY_ALIAS))
             val anchorExtractor = anchorExtractorBase.asInstanceOf[AnchorExtractor[Any]]

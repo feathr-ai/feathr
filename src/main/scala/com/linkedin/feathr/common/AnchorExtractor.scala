@@ -4,7 +4,7 @@ package com.linkedin.feathr.common
   * Provides feature values based on some "raw" data element
   * @tparam T raw data type
   */
-trait AnchorExtractor[T] extends AnchorExtractorBase[T] {
+trait AnchorExtractor[T] extends AnchorExtractorBase[T] with SparkRowExtractor {
 
   // NOTE: We may want to decouple this from Extractor. It's more a property of the source, or source-reference
   def getKey(datum: T): Seq[String]

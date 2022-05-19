@@ -1,9 +1,9 @@
 package com.linkedin.feathr.offline.source.dataloader.jdbc
 
-import org.apache.commons.httpclient.URI
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.spark.sql.{DataFrame, DataFrameReader, SparkSession}
 
+import java.net.URI
 import scala.collection.JavaConverters.asScalaBufferConverter
 import java.nio.charset.Charset
 
