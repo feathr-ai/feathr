@@ -80,11 +80,11 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                 # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
                 r = requests.post(url=self.workspace_instance_url+'/api/2.0/dbfs/put',
                                   headers=self.auth_headers, files=files,  data={'overwrite': 'true', 'path': returned_path})
-                logger.debug('{} is downloaded and then uploaded to location: {}',
+                logger.info('{} is downloaded and then uploaded to location: {}',
                              local_path_or_http_path, returned_path)
         elif src_parse_result.scheme.startswith('dbfs'):
             # passed a cloud path
-            logger.debug(
+            logger.info(
                 'Skipping file {} as the file starts with dbfs:/', local_path_or_http_path)
             returned_path = local_path_or_http_path
         elif src_parse_result.scheme.startswith(('wasb','s3','gs')):
