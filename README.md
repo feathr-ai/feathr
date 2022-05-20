@@ -157,7 +157,7 @@ For a complete roadmap with esitmated dates, please [visit this page](https://gi
   - [ ] Support feature store UI
       - [ ] Lineage
       - [ ] Search
-  - [ ] Support feature data deletion and retenion
+  - [ ] Support feature data deletion and retention
 
 
 ## Community Guidelines
