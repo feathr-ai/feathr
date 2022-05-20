@@ -35,7 +35,8 @@ private[offline] object SlidingWindowFeatureUtils {
   private val EPOCH_MILLIS = "epoch_millis"
   private val MILLIS_IN_SECOND = 1000
 
-  val TIMESTAMP_WITH_TIMEZONE_FORMAT = "yyyy-MM-dd HH:mm:ssZ" // Z is timezone pattern letter
+  val TIMESTAMP_WITHOUT_TIMEZONE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"
+  val TIMESTAMP_WITH_TIMEZONE_FORMAT = TIMESTAMP_WITHOUT_TIMEZONE_FORMAT + "Z" // Z is timezone pattern letter
   val UTC_TIMEZONE_OFFSET = "-0000" // PDT/PST
   val DEFAULT_TIME_DELAY = "Default-time-delay"
   val TIMESTAMP_PARTITION_COLUMN = "__feathr_timestamp_column_from_partition"
@@ -218,9 +219,12 @@ private[offline] object SlidingWindowFeatureUtils {
       // specified timezone to epoch
       s"""to_unix_timestamp(
          |  concat(
-         |    to_utc_timestamp(
-         |      to_timestamp($timeStampCol, "$timeStampFormat"),
-         |      "$parsedTimeZone"
+         |    date_format(
+         |      to_utc_timestamp(
+         |        to_timestamp($timeStampCol, "$timeStampFormat"),
+         |        "$parsedTimeZone"
+         |      ),
+         |      "$TIMESTAMP_WITHOUT_TIMEZONE_FORMAT"
          |    ),
          |    "$UTC_TIMEZONE_OFFSET"
          |  ),
