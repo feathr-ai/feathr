@@ -40,3 +40,42 @@ class RedisSink(Sink):
         """)
         msg = tm.render(source=self)
         return msg
+
+
+# Sample generated HOCON config:
+# operational: {
+#     name: testFeatureGen
+#     endTime: 2019-05-01
+#     endTimeFormat: "yyyy-MM-dd"
+#     resolution: DAILY
+#     output:[
+#         {
+#             name: HDFS
+#             params: {
+#                 path: "/user/featureGen/hdfsResult/"
+#             }
+#         }
+#     ]
+# }
+# features: [mockdata_a_ct_gen, mockdata_a_sample_gen]
+class OfflineSink(Sink):
+    """Offline Hadoop-compatible sink use to store offline feature data, can be used in batch job.
+
+    Attributes:
+        table_name: output table name
+    """
+    def __init__(self, output_path: str) -> None:
+        self.output_path = output_path
+
+    def to_feature_config(self) -> str:
+        """Produce the config used in feature materialization"""
+        tm = Template("""  
+            {
+                name: HDFS
+                params: {
+                    path: "{{sink.output_path}}"
+                }
+            }
+        """)
+        hocon_config = tm.render(sink=self)
+        return hocon_config
