@@ -5,7 +5,9 @@ parent: Feathr Concepts
 ---
 
 # Feature Generation
-User could utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is a common practice when the feature transformation is computation intensive.
+Feature generation is the process to create features from raw source data into a certain persisted storage.
+
+User could utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused(usually in offline setting). Feature generation is also useful in generating embedding features. Embedding distill information from large data and it is usually more compact.
 
 ## Generating Features to Online Store
 When we need to serve the models online, we also need to serve the features online. We provide APIs to generate features to online storage for future consumption. For example:
