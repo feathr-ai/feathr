@@ -42,31 +42,32 @@ class RedisSink(Sink):
         return msg
 
 
-# Sample generated HOCON config:
-# operational: {
-#     name: testFeatureGen
-#     endTime: 2019-05-01
-#     endTimeFormat: "yyyy-MM-dd"
-#     resolution: DAILY
-#     output:[
-#         {
-#             name: HDFS
-#             params: {
-#                 path: "/user/featureGen/hdfsResult/"
-#             }
-#         }
-#     ]
-# }
-# features: [mockdata_a_ct_gen, mockdata_a_sample_gen]
 class OfflineSink(Sink):
-    """Offline Hadoop-compatible sink use to store offline feature data, can be used in batch job.
+    """Offline Hadoop HDFS-compatible(HDFS, delta lake, Azure blog storage etc) sink that is used to store feature data.
+    The result is in AVRO format.
 
     Attributes:
-        table_name: output table name
+        output_path: output path
     """
     def __init__(self, output_path: str) -> None:
         self.output_path = output_path
 
+    # Sample generated HOCON config:
+    # operational: {
+    #     name: testFeatureGen
+    #     endTime: 2019-05-01
+    #     endTimeFormat: "yyyy-MM-dd"
+    #     resolution: DAILY
+    #     output:[
+    #         {
+    #             name: HDFS
+    #             params: {
+    #                 path: "/user/featureGen/hdfsResult/"
+    #             }
+    #         }
+    #     ]
+    # }
+    # features: [mockdata_a_ct_gen, mockdata_a_sample_gen]
     def to_feature_config(self) -> str:
         """Produce the config used in feature materialization"""
         tm = Template("""  
