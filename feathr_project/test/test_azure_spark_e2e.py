@@ -36,8 +36,8 @@ def test_feathr_materialize_to_offline():
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[offline_sink],
                                        feature_names=[
-                                           "f_location_avg_fare", "f_location_max_fare"],
-                                       backfill_time=backfill_time)
+                                           "f_location_avg_fare", "f_location_max_fare"])
+                                       # backfill_time=backfill_time)
     client.materialize_features(settings)
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=900)
