@@ -145,8 +145,7 @@ private[offline] class WriteToHDFSOutputProcessor(val config: OutputProcessorCon
     }
     val featuresToDF = taggedFeatureNames.map(featureToDF => (featureToDF, (augmentedDF, header))).toMap
 
-    // Note that this function returns the resulting output w/o writing data file system.
-    FeatureDataHDFSProcessUtils.processFeatureDataHDFS(ss, featuresToDF, parentPath, config, skipWrite = true, endTimeOpt, timestampOpt)
+    FeatureDataHDFSProcessUtils.processFeatureDataHDFS(ss, featuresToDF, parentPath, config, skipWrite = false, endTimeOpt, timestampOpt)
   }
 
   // path parameter name

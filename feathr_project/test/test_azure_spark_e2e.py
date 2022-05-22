@@ -32,7 +32,7 @@ def test_feathr_materialize_to_offline():
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-    offline_sink = OfflineSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output/hdfs_test.avro")
+    offline_sink = OfflineSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[offline_sink],
                                        feature_names=[
@@ -43,7 +43,8 @@ def test_feathr_materialize_to_offline():
     client.wait_job_to_finish(timeout_sec=900)
 
     # download result and just assert the returned result is not empty
-    res_df = get_result_df(client)
+    # by default, it will write to a folder appended with date
+    res_df = get_result_df(client, "avro", "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20")
     assert res_df.shape[0] > 0
 
 def test_feathr_online_store_agg_features():
