@@ -5,7 +5,9 @@ parent: Feathr Concepts
 ---
 
 # Feature Generation
-User could utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is a common practice when the feature transformation is computation intensive.
+Feature generation is the process to create features from raw source data into a certain persisted storage.
+
+User could utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused(usually in offline setting). Feature generation is also useful in generating embedding features. Embedding distill information from large data and it is usually more compact.
 
 ## Generating Features to Online Store
 When we need to serve the models online, we also need to serve the features online. We provide APIs to generate features to online storage for future consumption. For example:
@@ -52,7 +54,7 @@ After we finish running the materialization job, we can get the online features 
 
 ## Generating Features to Offline Store
 
-User could utilize feature generation to pre-compute and materialize pre-defined features to offline storage. This is a common practice when the feature transformation is computation intensive and can be re-used. For example:
+This is a useful when the feature transformation is computation intensive and features can be re-used. For example, you have a feature that needs more than 24 hours to compute and the feature can be reused by more than one model training pipeline. In this case, you should consider generate features to offline. Here is an API example:
 ```python
 client = FeathrClient()
 offlineSink = OfflineSink(output_path="abfss://path/to/offline/hdfs_test.avro")
@@ -63,4 +65,4 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
 client.materialize_features(settings)
 ```
 ([MaterializationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.materialization_settings.MaterializationSettings),
-[RedisSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.sink.RedisSink))
+[OfflineSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.sink.OfflineSink))
