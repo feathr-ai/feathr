@@ -32,19 +32,25 @@ def test_feathr_materialize_to_offline():
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-    offline_sink = OfflineSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
+
+    now = datetime.now()
+    if client.spark_runtime == 'databricks':
+        output_path = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
+    else:
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
+    offline_sink = OfflineSink(output_path=output_path)
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[offline_sink],
                                        feature_names=[
-                                           "f_location_avg_fare", "f_location_max_fare"])
-                                       # backfill_time=backfill_time)
+                                           "f_location_avg_fare", "f_location_max_fare"],
+                                       backfill_time=backfill_time)
     client.materialize_features(settings)
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=900)
 
     # download result and just assert the returned result is not empty
     # by default, it will write to a folder appended with date
-    res_df = get_result_df(client, "avro", "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20")
+    res_df = get_result_df(client, "avro", output_path + "/df0/daily/2020/05/20")
     assert res_df.shape[0] > 0
 
 def test_feathr_online_store_agg_features():

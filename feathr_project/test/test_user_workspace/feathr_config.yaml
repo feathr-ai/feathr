@@ -67,7 +67,7 @@ offline_store:
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks
   # The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.
-  spark_cluster: 'azure_synapse'
+  spark_cluster: 'databricks'
   # configure number of parts for the spark output for feature generation job
   spark_result_output_parts: '1'
 
