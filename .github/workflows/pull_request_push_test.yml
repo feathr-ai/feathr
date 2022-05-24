@@ -6,12 +6,25 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**/README.md'
-
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
+  pull_request_target:
+    branches: [main]
+    types: [labeled, edited, opened, synchronize]
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
 jobs:
   sbt_test:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
@@ -21,6 +34,7 @@ jobs:
         run: sbt clean && sbt test
   python_lint:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
@@ -40,8 +54,11 @@ jobs:
       
   databricks_test:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
@@ -103,8 +120,11 @@ jobs:
   azure_synapse_test:
       # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
       runs-on: ubuntu-latest
+      if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
       steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:

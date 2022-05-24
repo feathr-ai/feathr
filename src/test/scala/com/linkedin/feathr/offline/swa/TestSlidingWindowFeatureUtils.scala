@@ -77,6 +77,17 @@ class TestSlidingWindowFeatureUtils extends TestFeathr {
     assertEquals(epoch.first().getLong(0), 1556866800)
   }
 
+  @Test(enabled = true)
+  def testTimestampWithMilliSecondsTime(): Unit = {
+    val timeStampFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    val expr = SlidingWindowFeatureUtils.constructTimeStampExpr("\"2019-05-03T15:00:00.123Z\"", timeStampFormat, Some("America/Los_Angeles"))
+
+    val epoch = ss.sql(s"""select $expr
+       """.stripMargin)
+
+    assertEquals(epoch.first().getLong(0), 1556920800)
+  }
+
   /**
    * Test constructing timestamp with daylight saving at:
    * Sunnyvale (USA - California)	Friday, May 3, 2019 0:00:00 GMT-07:00 DST
