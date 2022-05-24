@@ -144,6 +144,8 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 
 ## Roadmap
 
+For a complete roadmap with esitmated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
+
 - [x] Private Preview release
 - [x] Public Preview release
 - [ ] Future release
@@ -155,7 +157,8 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
   - [ ] Support feature store UI
       - [ ] Lineage
       - [ ] Search
-  - [ ] Support feature data deletion and rentenion
+  - [ ] Support feature data deletion and retention
+
 
 ## Community Guidelines
 
@@ -163,4 +166,4 @@ Build for the community and build by the community. Check out [Community Guideli
 
 ## Slack Channel
 
-Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-17lugq6e8-Qu3KJXDA25tZqlFsmM94Dg)).
+Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-19dcbquwl-zKiJGYTak6Psw2GbUYtT2g)).
