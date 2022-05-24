@@ -2,7 +2,8 @@ name: Nightly Feathr Tests on Windows
 
 on:
   schedule:
-    - cron: 15 14 * * *
+    # Trigger the nightly build at 1 AM UTC time.
+    - cron: 00 01 * * *
     
 jobs:
   sbt_test:
