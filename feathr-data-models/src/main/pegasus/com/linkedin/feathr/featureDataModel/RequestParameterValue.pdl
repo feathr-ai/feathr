@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents the value part in a Rest.li request paramater key/value pair.
+ */
+typeref RequestParameterValue = union[
+  // MVEL-based parameter value. It is especially useful when some parts of the parameter value use key placeholders and need to be dynamically replaced at runtime. Note some representations are the same across MVEL, Json, like a string literal or list, while some representations are different, like map. For MVEL syntax, Refer to http://mvel.documentnode.com/.
+  MvelExpression
+
+  // Json-based parameter value. It is useful when the parameter value is static, for example, "{\"language\" : \"en_US\"}"
+  JsonString
+]

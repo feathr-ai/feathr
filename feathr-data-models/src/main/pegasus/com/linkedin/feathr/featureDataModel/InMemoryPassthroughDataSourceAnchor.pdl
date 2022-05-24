@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents an online anchor with in-memory passthrough data source, which is commonly used for contextual features that are supplied as part of an online request.
+ */
+@OnlineAnchor
+record InMemoryPassthroughDataSourceAnchor includes TransformationFunctionForOnlineDataSource {
+  /**
+   * Defines an in-memory passthrough data source, which is commonly used for contextual features that are supplied as part of an online request. See InMemoryPassthroughDataSource for more details.
+   */
+  source: InMemoryPassthroughDataSource
+}

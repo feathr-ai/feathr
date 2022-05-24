@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents an online anchor with Pinot data source.
+ */
+@OnlineAnchor
+record PinotDataSourceAnchor includes TransformationFunctionForOnlineDataSource KeyPlaceholders {
+  /**
+   * Defines a Pinot data source. Pinot is a realtime distributed OLAP datastore. See PinotDataSource for more details.
+   */
+  source: PinotDataSource
+}

@@ -10,6 +10,7 @@ import com.linkedin.data.schema.MaskMap;
 import com.linkedin.data.schema.PathSpec;
 import com.linkedin.data.schema.RecordDataSchema;
 import com.linkedin.data.schema.SchemaFormatType;
+import com.linkedin.data.template.Custom;
 import com.linkedin.data.template.DataTemplateUtil;
 import com.linkedin.data.template.GetMode;
 import com.linkedin.data.template.RecordTemplate;
@@ -27,10 +28,14 @@ public class DaliLocation
 {
 
     private final static DaliLocation.Fields _fields = new DaliLocation.Fields();
-    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("namespace com.linkedin.feathr.featureDataModel/**The location of a Dali dataset or view. See [go/dali](http://go/dali).*/record DaliLocation{/**The URI to the Dali dataset/view in the form of `dalids:///db_name.table_or_view_name`.*/uri:string}", SchemaFormatType.PDL));
-    private String _uriField = null;
+    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("namespace com.linkedin.feathr.featureDataModel/**The location of a Dali dataset or view. See [go/dali](http://go/dali).*/record DaliLocation{/**The URI to the Dali dataset/view in the form of `dalids:///db_name.table_or_view_name`.*/uri:{namespace com.linkedin.frame.common@java.class=\"java.net.URI\"typeref Uri=string}}", SchemaFormatType.PDL));
+    private java.net.URI _uriField = null;
     private DaliLocation.ChangeListener __changeListener = new DaliLocation.ChangeListener(this);
     private final static RecordDataSchema.Field FIELD_Uri = SCHEMA.getField("uri");
+
+    static {
+        Custom.initializeCustomClass(java.net.URI.class);
+    }
 
     public DaliLocation() {
         super(new DataMap(2, 0.75F), SCHEMA);
@@ -80,7 +85,7 @@ public class DaliLocation
      * 
      * @see DaliLocation.Fields#uri
      */
-    public String getUri(GetMode mode) {
+    public java.net.URI getUri(GetMode mode) {
         switch (mode) {
             case STRICT:
                 return getUri();
@@ -90,7 +95,7 @@ public class DaliLocation
                     return _uriField;
                 } else {
                     Object __rawValue = super._map.get("uri");
-                    _uriField = DataTemplateUtil.coerceStringOutput(__rawValue);
+                    _uriField = DataTemplateUtil.coerceCustomOutput(__rawValue, java.net.URI.class);
                     return _uriField;
                 }
         }
@@ -105,7 +110,7 @@ public class DaliLocation
      * @see DaliLocation.Fields#uri
      */
     @Nonnull
-    public String getUri() {
+    public java.net.URI getUri() {
         if (_uriField!= null) {
             return _uriField;
         } else {
@@ -113,7 +118,7 @@ public class DaliLocation
             if (__rawValue == null) {
                 throw new RequiredFieldNotPresentException("uri");
             }
-            _uriField = DataTemplateUtil.coerceStringOutput(__rawValue);
+            _uriField = DataTemplateUtil.coerceCustomOutput(__rawValue, java.net.URI.class);
             return _uriField;
         }
     }
@@ -123,7 +128,7 @@ public class DaliLocation
      * 
      * @see DaliLocation.Fields#uri
      */
-    public DaliLocation setUri(String value, SetMode mode) {
+    public DaliLocation setUri(java.net.URI value, SetMode mode) {
         switch (mode) {
             case DISALLOW_NULL:
                 return setUri(value);
@@ -131,7 +136,7 @@ public class DaliLocation
                 if (value == null) {
                     throw new IllegalArgumentException("Cannot remove mandatory field uri of com.linkedin.feathr.featureDataModel.DaliLocation");
                 } else {
-                    CheckedUtil.putWithoutChecking(super._map, "uri", value);
+                    CheckedUtil.putWithoutChecking(super._map, "uri", DataTemplateUtil.coerceCustomInput(value, java.net.URI.class));
                     _uriField = value;
                 }
                 break;
@@ -139,13 +144,13 @@ public class DaliLocation
                 if (value == null) {
                     removeUri();
                 } else {
-                    CheckedUtil.putWithoutChecking(super._map, "uri", value);
+                    CheckedUtil.putWithoutChecking(super._map, "uri", DataTemplateUtil.coerceCustomInput(value, java.net.URI.class));
                     _uriField = value;
                 }
                 break;
             case IGNORE_NULL:
                 if (value!= null) {
-                    CheckedUtil.putWithoutChecking(super._map, "uri", value);
+                    CheckedUtil.putWithoutChecking(super._map, "uri", DataTemplateUtil.coerceCustomInput(value, java.net.URI.class));
                     _uriField = value;
                 }
                 break;
@@ -162,11 +167,11 @@ public class DaliLocation
      */
     public DaliLocation setUri(
         @Nonnull
-        String value) {
+        java.net.URI value) {
         if (value == null) {
             throw new NullPointerException("Cannot set field uri of com.linkedin.feathr.featureDataModel.DaliLocation to null");
         } else {
-            CheckedUtil.putWithoutChecking(super._map, "uri", value);
+            CheckedUtil.putWithoutChecking(super._map, "uri", DataTemplateUtil.coerceCustomInput(value, java.net.URI.class));
             _uriField = value;
         }
         return this;

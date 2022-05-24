@@ -1,0 +1,12 @@
+namespace com.linkedin.frame.common
+
+/**
+ * Presentation function types that are available for transforming inference internal value to member facing value
+ */
+enum PresentationFunctionType {
+
+  /**
+   * Transform internal boolean value like T, F, 0, 1 to member facing value like True, False
+   */
+  BOOLEAN
+}

@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents a in-memory passthrough data source. Passthrough data sources are used when the data are not from external sources such as Rest.li, Venice and Espresso. It's commonly used for contextual features that are supplied as part of an online request. See Passthrough section in go/frameonline.
+ */
+record InMemoryPassthroughDataSource includes DataSourceRef {
+
+  /**
+   * The fully qualified Java class name for the data model of passthrough (in-memory) data that is supplied as part of the online request.
+   */
+  dataModel: Clazz
+}

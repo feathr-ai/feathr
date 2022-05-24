@@ -1,0 +1,27 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents a Rest.li finder data source, in which source data is fetched by a Rest.li finder method. For more details, refer to https://linkedin.github.io/rest.li/user_guide/restli_server#finder. Note: it is possible for a finder source to have an keyExpr for association resources since the key parts of the association key can be used as query parameters which are modeled as CompoundKey. See https://linkedin.github.io/rest.li/user_guide/restli_server#finder for more details
+ */
+record RestliFinderDataSource includes OnlineDataSourceKey DataSourceRef {
+
+  /**
+   * The Rest.li resource name for the Rest.li service registered in D2. For example, profiles is the resource name for https://sceptre.corp.linkedin.com/service-detail/profiles/resource/profiles/details. A complete list of resources can be found at go/restli.
+   */
+  resourceName: string
+
+  /**
+   * Represents the finder method name of the resource.
+   */
+  finderMethod: string
+
+  /**
+   * Projections are used to select a subset of object contents for performance reasons or based on security policy. See https://linkedin.github.io/rest.li/Projections for details.
+   */
+  projections: array[PathSpec] = []
+
+  /**
+   * Represents the request parameters needed by the resource to fetch the source data. For example, in https://sceptre.corp.linkedin.com/service-detail/jobPostings/resource/jobPostings/details#finders,companyJobCodes, the key value pair keyed by contract represents a request parameter of the companyJobCodes finder method in jobPostings resource.
+   */
+  requestParameters: map[string, RequestParameterValue] = {}
+}

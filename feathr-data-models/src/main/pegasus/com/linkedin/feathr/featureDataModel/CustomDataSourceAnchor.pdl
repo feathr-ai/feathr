@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents an online anchor with custom data source which uses user-defined data fetching mechanism.
+ */
+@OnlineAnchor
+record CustomDataSourceAnchor includes TransformationFunctionForOnlineDataSource KeyPlaceholders {
+  /**
+   * Defines a custom data source which uses user-defined data fetching mechanism. See CustomDataSource for more details.
+   */
+  source: CustomDataSource
+}

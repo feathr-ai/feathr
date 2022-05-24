@@ -12,6 +12,7 @@ import com.linkedin.data.schema.MaskMap;
 import com.linkedin.data.schema.PathSpec;
 import com.linkedin.data.schema.RecordDataSchema;
 import com.linkedin.data.schema.SchemaFormatType;
+import com.linkedin.data.template.Custom;
 import com.linkedin.data.template.DataTemplateUtil;
 import com.linkedin.data.template.GetMode;
 import com.linkedin.data.template.RecordTemplate;
@@ -30,9 +31,9 @@ public class FeatureSource
 {
 
     private final static FeatureSource.Fields _fields = new FeatureSource.Fields();
-    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("namespace com.linkedin.feathr.featureDataModel/**This represents a feature source for FeatureAnchor. That is, it is a source of type 'feature' that can be used for creating other features. For example, say there exist two features: member skills and job skills, they can be the sources of another feature for computing their cosine similarity. In feathr, the feature that represents cosine similarity is called derived feature, refer to go/feathrglossary and go/feathroverview for more details.*/record FeatureSource includes/**Represents the identifier of a DataSource object. This class is expected to be included so the enclosed field can be reused in each concrete DataSource.*/record DataSourceRef{/**Represents the identifier of a DataSource object. Given a DataSource object is already enclosed in a denormalized manner in each FeatureAnchor, this field is not used for looking up the DataSource object, instead it is optional and should be meaningful to describe a data source for informational usages like metrics.*/dataSourceRef:optional string}{/**This is the unique id for the MlFeatureVersionEntity used as the source.*/urn:string/**A feature's alias to be used in transformation function. It should be unique in the scope of a FeatureSourcesAnchor. It is useful when the same feature is used as FeatureSource multiple times with different keys. For example, if we are modeing the problem of the probability of a member A (viewer) seeing the profile of member B (viewee) and we want to use the skills of both viewer and viewee as features. If the alias is set, the alias (instead of feature name) will be used to reference this FeatureSource in the transformation function (especially expression languages like MVEL).*/alias:optional string/**Represents zero, one or multiple keyPlaceholderRefs which are used as the identifiers to reference KeyPlaceholders of the FeatureSourcesAnchor. This is to ensure corresponding key values can be propogated to the right FeatureSource. Refer to KeyPlaceholders for a full example.*/keyPlaceholderRefs:array[/**Represents the identifier of KeyPlaceholder object. It should be meaningful (eg. memberId) and unique in the scope of a feature's definition. It is used to uniformly reference a KeyPlaceholder object in the feature definition. Refer to KeyPlaceholders for a full example.*/typeref KeyPlaceholderRef=string]=[]}", SchemaFormatType.PDL));
+    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("namespace com.linkedin.feathr.featureDataModel/**This represents a feature source for FeatureAnchor. That is, it is a source of type 'feature' that can be used for creating other features. For example, say there exist two features: member skills and job skills, they can be the sources of another feature for computing their cosine similarity. In feathr, the feature that represents cosine similarity is called derived feature, refer to go/feathrglossary and go/feathroverview for more details.*/record FeatureSource includes/**Represents the identifier of a DataSource object. This class is expected to be included so the enclosed field can be reused in each concrete DataSource.*/record DataSourceRef{/**Represents the identifier of a DataSource object. Given a DataSource object is already enclosed in a denormalized manner in each FeatureAnchor, this field is not used for looking up the DataSource object, instead it is optional and should be meaningful to describe a data source for informational usages like metrics.*/dataSourceRef:optional string}{/**This is the unique id for the MlFeatureVersionEntity used as the source.*/urn:{namespace com.linkedin.frame.common/**Standardized MLFeature identifier.*/@java.class=\"com.linkedin.frame.common.urn.MlFeatureVersionUrn\"typeref MlFeatureVersionUrn=string}/**A feature's alias to be used in transformation function. It should be unique in the scope of a FeatureSourcesAnchor. It is useful when the same feature is used as FeatureSource multiple times with different keys. For example, if we are modeing the problem of the probability of a member A (viewer) seeing the profile of member B (viewee) and we want to use the skills of both viewer and viewee as features. If the alias is set, the alias (instead of feature name) will be used to reference this FeatureSource in the transformation function (especially expression languages like MVEL).*/alias:optional string/**Represents zero, one or multiple keyPlaceholderRefs which are used as the identifiers to reference KeyPlaceholders of the FeatureSourcesAnchor. This is to ensure corresponding key values can be propogated to the right FeatureSource. Refer to KeyPlaceholders for a full example.*/keyPlaceholderRefs:array[/**Represents the identifier of KeyPlaceholder object. It should be meaningful (eg. memberId) and unique in the scope of a feature's definition. It is used to uniformly reference a KeyPlaceholder object in the feature definition. Refer to KeyPlaceholders for a full example.*/typeref KeyPlaceholderRef=string]=[]}", SchemaFormatType.PDL));
     private String _dataSourceRefField = null;
-    private String _urnField = null;
+    private com.linkedin.frame.common.urn.MlFeatureVersionUrn _urnField = null;
     private String _aliasField = null;
     private StringArray _keyPlaceholderRefsField = null;
     private FeatureSource.ChangeListener __changeListener = new FeatureSource.ChangeListener(this);
@@ -43,6 +44,7 @@ public class FeatureSource
     private final static StringArray DEFAULT_KeyPlaceholderRefs;
 
     static {
+        Custom.initializeCustomClass(com.linkedin.frame.common.urn.MlFeatureVersionUrn.class);
         DEFAULT_KeyPlaceholderRefs = ((FIELD_KeyPlaceholderRefs.getDefault() == null)?null:new StringArray(DataTemplateUtil.castOrThrow(FIELD_KeyPlaceholderRefs.getDefault(), DataList.class)));
     }
 
@@ -189,7 +191,7 @@ public class FeatureSource
      * 
      * @see FeatureSource.Fields#urn
      */
-    public String getUrn(GetMode mode) {
+    public com.linkedin.frame.common.urn.MlFeatureVersionUrn getUrn(GetMode mode) {
         switch (mode) {
             case STRICT:
                 return getUrn();
@@ -199,7 +201,7 @@ public class FeatureSource
                     return _urnField;
                 } else {
                     Object __rawValue = super._map.get("urn");
-                    _urnField = DataTemplateUtil.coerceStringOutput(__rawValue);
+                    _urnField = DataTemplateUtil.coerceCustomOutput(__rawValue, com.linkedin.frame.common.urn.MlFeatureVersionUrn.class);
                     return _urnField;
                 }
         }
@@ -214,7 +216,7 @@ public class FeatureSource
      * @see FeatureSource.Fields#urn
      */
     @Nonnull
-    public String getUrn() {
+    public com.linkedin.frame.common.urn.MlFeatureVersionUrn getUrn() {
         if (_urnField!= null) {
             return _urnField;
         } else {
@@ -222,7 +224,7 @@ public class FeatureSource
             if (__rawValue == null) {
                 throw new RequiredFieldNotPresentException("urn");
             }
-            _urnField = DataTemplateUtil.coerceStringOutput(__rawValue);
+            _urnField = DataTemplateUtil.coerceCustomOutput(__rawValue, com.linkedin.frame.common.urn.MlFeatureVersionUrn.class);
             return _urnField;
         }
     }
@@ -232,7 +234,7 @@ public class FeatureSource
      * 
      * @see FeatureSource.Fields#urn
      */
-    public FeatureSource setUrn(String value, SetMode mode) {
+    public FeatureSource setUrn(com.linkedin.frame.common.urn.MlFeatureVersionUrn value, SetMode mode) {
         switch (mode) {
             case DISALLOW_NULL:
                 return setUrn(value);
@@ -240,7 +242,7 @@ public class FeatureSource
                 if (value == null) {
                     throw new IllegalArgumentException("Cannot remove mandatory field urn of com.linkedin.feathr.featureDataModel.FeatureSource");
                 } else {
-                    CheckedUtil.putWithoutChecking(super._map, "urn", value);
+                    CheckedUtil.putWithoutChecking(super._map, "urn", DataTemplateUtil.coerceCustomInput(value, com.linkedin.frame.common.urn.MlFeatureVersionUrn.class));
                     _urnField = value;
                 }
                 break;
@@ -248,13 +250,13 @@ public class FeatureSource
                 if (value == null) {
                     removeUrn();
                 } else {
-                    CheckedUtil.putWithoutChecking(super._map, "urn", value);
+                    CheckedUtil.putWithoutChecking(super._map, "urn", DataTemplateUtil.coerceCustomInput(value, com.linkedin.frame.common.urn.MlFeatureVersionUrn.class));
                     _urnField = value;
                 }
                 break;
             case IGNORE_NULL:
                 if (value!= null) {
-                    CheckedUtil.putWithoutChecking(super._map, "urn", value);
+                    CheckedUtil.putWithoutChecking(super._map, "urn", DataTemplateUtil.coerceCustomInput(value, com.linkedin.frame.common.urn.MlFeatureVersionUrn.class));
                     _urnField = value;
                 }
                 break;
@@ -271,11 +273,11 @@ public class FeatureSource
      */
     public FeatureSource setUrn(
         @Nonnull
-        String value) {
+        com.linkedin.frame.common.urn.MlFeatureVersionUrn value) {
         if (value == null) {
             throw new NullPointerException("Cannot set field urn of com.linkedin.feathr.featureDataModel.FeatureSource to null");
         } else {
-            CheckedUtil.putWithoutChecking(super._map, "urn", value);
+            CheckedUtil.putWithoutChecking(super._map, "urn", DataTemplateUtil.coerceCustomInput(value, com.linkedin.frame.common.urn.MlFeatureVersionUrn.class));
             _urnField = value;
         }
         return this;

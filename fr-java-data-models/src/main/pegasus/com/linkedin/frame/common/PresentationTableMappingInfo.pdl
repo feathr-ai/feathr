@@ -1,0 +1,23 @@
+namespace com.linkedin.frame.common
+
+/**
+ * Presentation instructions defining how to fetch member facing value of an inference from a mapping table
+ */
+@gma.aspect.entity.urn = "com.linkedin.common.InferenceUrn"
+record PresentationTableMappingInfo {
+
+  /**
+   * Dataset urn in which the mapping exists
+   */
+  dataset: DatasetUrn
+
+  /**
+   * Array of key columns that need to be joined with the source to get the presentation value. For example, (titleid + language) need to be joined to get the title name from the standardization mapping table
+   */
+  keyColumns: array[string]
+
+  /**
+   * Name of the column containing inference value
+   */
+  valueColumn: string
+}

@@ -1,0 +1,7 @@
+namespace com.linkedin.frame.common
+
+/**
+ * Standardized MLFeature identifier.
+ */
+@java.class = "com.linkedin.frame.common.urn.MlFeatureUrn"
+typeref MlFeatureUrn = string

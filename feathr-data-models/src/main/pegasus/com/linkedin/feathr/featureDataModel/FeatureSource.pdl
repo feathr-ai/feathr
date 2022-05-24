@@ -1,5 +1,6 @@
 namespace com.linkedin.feathr.featureDataModel
 
+import com.linkedin.frame.common.MlFeatureVersionUrn
 /**
  * This represents a feature source for FeatureAnchor. That is, it is a source of type 'feature' that can be used for creating other features. For example, say there exist two features: member skills and job skills, they can be the sources of another feature for computing their cosine similarity. In feathr, the feature that represents cosine similarity is called derived feature, refer to go/feathrglossary and go/feathroverview for more details.
  */
@@ -8,7 +9,7 @@ record FeatureSource includes DataSourceRef {
   /**
    * This is the unique id for the MlFeatureVersionEntity used as the source.
    */
-  urn: string
+  urn: MlFeatureVersionUrn
 
   /**
    * A feature's alias to be used in transformation function. It should be unique in the scope of a FeatureSourcesAnchor. It is useful when the same feature is used as FeatureSource multiple times with different keys. For example, if we are modeing the problem of the probability of a member A (viewer) seeing the profile of member B (viewee) and we want to use the skills of both viewer and viewee as features. If the alias is set, the alias (instead of feature name) will be used to reference this FeatureSource in the transformation function (especially expression languages like MVEL).

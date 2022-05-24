@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents an online anchor with Venice data source.
+ */
+@OnlineAnchor
+record VeniceDataSourceAnchor includes TransformationFunctionForOnlineDataSource KeyPlaceholders {
+  /**
+   * Defines a Venice data source. Venice is a data store for derived data. See VeniceDataSource for more details.
+   */
+  source: VeniceDataSource
+}

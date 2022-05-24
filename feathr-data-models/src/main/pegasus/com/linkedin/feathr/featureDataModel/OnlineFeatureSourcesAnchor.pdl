@@ -1,0 +1,23 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents an online anchor that uses one or multiple other features as source. Ideally, feature source anchor (aka derived feature) should all be environment-agnostic and use CrossEnvFeatureSourcesAnchor. However, currently a large portion of derived features are defined differently in different environments (eg. online environment only supports MVEL, offline environment supports MVEL, UDF, and Spark SQL, galene envionment doesn't support derivation). In Frame v2, one improvement area is to fix the inconsistency across environments, by the completion of Frame v2 and user migration, we can deprecate this class.
+ */
+@OnlineAnchor
+record OnlineFeatureSourcesAnchor includes KeyPlaceholders {
+
+  /**
+   * Defines one or multiple other features as source.
+   */
+  source: array[FeatureSource]
+
+  /**
+   * Defines the supported transformation logic in online environment (eg. MVEL) to produce feature value from feature sources.
+   */
+  transformationFunction: union[
+    MvelExpression
+
+    // DEPRECATED, DO NOT USE!!!
+    UnspecifiedTransformationFunction
+  ]
+}

@@ -1,0 +1,18 @@
+namespace com.linkedin.frame.common
+
+/**
+ * Presentation instructions defining how to fetch member facing value of an inference from a map defined along with the rest of the metadata
+ */
+@gma.aspect.entity.urn = "com.linkedin.common.InferenceUrn"
+record PresentationInlineMappingInfo {
+
+  /**
+   * Name of the mapping to indicate the mapping context, used in search and discovery
+   */
+  name: string
+
+  /**
+   * Key value map defining the mapping of inference internal value to member facing value
+   */
+  mapping: map[string, string]
+}

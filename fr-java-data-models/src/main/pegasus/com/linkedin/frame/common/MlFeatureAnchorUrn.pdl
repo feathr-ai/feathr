@@ -1,0 +1,7 @@
+namespace com.linkedin.frame.common
+
+/**
+ * An URN that identifies a feature anchor, which contains information about the source of the feature, its extractor, environment and derivation. See go/frameoverview
+ */
+@java.class = "com.linkedin.frame.common.urn.MlFeatureAnchorUrn"
+typeref MlFeatureAnchorUrn = string

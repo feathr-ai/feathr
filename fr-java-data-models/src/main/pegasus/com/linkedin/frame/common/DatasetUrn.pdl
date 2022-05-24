@@ -1,0 +1,4 @@
+namespace com.linkedin.frame.common
+
+@java.class = "com.linkedin.frame.common.urn.DatasetUrn"
+typeref DatasetUrn = string

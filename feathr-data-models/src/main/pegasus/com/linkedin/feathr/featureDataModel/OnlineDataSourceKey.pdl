@@ -1,0 +1,15 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents the primary key that is used to fetch source data from the corresponding online data source. Note that the vast majority of online data sources available in Frame are key value stores. This class is expected to be included so the definitions of enclosed fields can be reused.
+ */
+record OnlineDataSourceKey {
+
+  /**
+   * Key function specifies how to construct the primary key to fetch source data from the corresponding online data source. For example, in a Venice store, the key schema is {mid: string, jid: long}, key function specifies a recipe to build the key, with key placholders memberId and jobId to be replaced with the actual key values at runtime. Keeping it optional for two reasons: 1. fulfilling backward compatiblity requirement during schema evolution 2. some online data sources (Rest.li finder, in-memory passthrough) don't have a key. For more details, refer to go/frameonline.
+   */
+  keyFunction: optional union[
+    //MVEL-based key function. It can be a simple case like creating a URN with key placeholders, or can be complicated like constructing a compound key.
+    MvelExpression
+  ]
+}

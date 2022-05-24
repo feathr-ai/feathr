@@ -1,0 +1,24 @@
+namespace com.linkedin.feathr.featureDataModel
+
+import com.linkedin.frame.common.Uri
+
+/**
+ * Represents a Espresso data source. Espresso the recommended source-of-truth distributed database at LinkedIn. It is optimized for balanced read/write traffic with relative small sized data records (< 1MB). For more details: go/espresso.
+ */
+record EspressoDataSource includes OnlineDataSourceKey DataSourceRef {
+
+  /**
+   * Espresso database name.
+   */
+  databaseName: string
+
+  /**
+   * Espresso table name.
+   */
+  tableName: string
+
+  /**
+   * D2 URI of the Espresso database which can be found on go/Nuage.
+   */
+  d2Uri: Uri
+}

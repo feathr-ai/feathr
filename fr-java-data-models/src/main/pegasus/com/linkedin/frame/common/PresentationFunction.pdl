@@ -1,0 +1,17 @@
+namespace com.linkedin.frame.common
+
+/**
+ * Presentation function model capturing the type of function and any parameters needed for the function
+ */
+record PresentationFunction {
+
+  /**
+   * Presentation function types that are available for transforming inference internal value to member facing value
+   */
+  funtionType: PresentationFunctionType
+
+  /**
+   * Optional map of function parameters which are in addition to inference value parameter
+   */
+  params: optional map[string, string]
+}

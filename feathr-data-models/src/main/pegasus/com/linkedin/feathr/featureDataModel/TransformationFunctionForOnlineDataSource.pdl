@@ -1,0 +1,17 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * A transformation function represents the transformation logic to produce feature value from the source of FeatureAnchor. This class defines supported transformation functions (eg. MVEL, UDF) that can be used for an online data source.
+ */
+record TransformationFunctionForOnlineDataSource {
+  /**
+   * Defines the supported transformation logic (eg. MVEL, UDF) to produce feature value from an online data source.
+   */
+  transformationFunction: union[
+    MvelExpression
+    UserDefinedFunction
+
+    // DEPRECATED, DO NOT USE!!!
+    UnspecifiedTransformationFunction
+  ]
+}

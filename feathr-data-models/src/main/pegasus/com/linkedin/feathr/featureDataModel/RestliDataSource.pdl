@@ -1,0 +1,23 @@
+namespace com.linkedin.feathr.featureDataModel
+
+
+/**
+ * Represents a Rest.li data source, in which source data is fetched by the primary key of the Rest.li resource. Also see RestliFinderDataSource if you are looking for fetching source data by a finder method.
+ */
+record RestliDataSource includes OnlineDataSourceKey DataSourceRef {
+
+  /**
+   * The Rest.li resource name for the Rest.li service registered in D2. For example, profiles is the resource name for https://sceptre.corp.linkedin.com/service-detail/profiles/resource/profiles/details. A complete list of resources can be found at go/restli.
+   */
+  resourceName: string
+
+  /**
+   * Projections are used to select a subset of object contents for performance reasons or based on security policy. See https://linkedin.github.io/rest.li/Projections for details. It should be required with a default value, but the optional flag can't be removed after its check-in, for complying with backward compatibility requirement of schema evolution.
+   */
+  projections: optional array[PathSpec] = []
+
+  /**
+   * Represents the request parameters needed by the resource to fetch the source data. For example, in https://sceptre.corp.linkedin.com/service-detail/jobPostings/resource/jobPostings/details#methods,get, the key value pair keyed by viewer represents a request parameter of the Get method in jobPostings resource.
+   */
+  requestParameters: map[string, RequestParameterValue] = {}
+}

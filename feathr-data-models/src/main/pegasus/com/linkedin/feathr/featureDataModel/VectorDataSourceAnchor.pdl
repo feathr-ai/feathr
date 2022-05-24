@@ -1,0 +1,13 @@
+namespace com.linkedin.feathr.featureDataModel
+
+
+/**
+ * Represents an online anchor with Vector data source.
+ */
+record VectorDataSourceAnchor includes TransformationFunctionForOnlineDataSource KeyPlaceholders {
+  /**
+   * Defines a Vector data source, in which source data is fetched by assetUrn + featureSourceName via Restli unstructured
+   * data endpoint.
+   */
+  source: VectorDataSource
+}

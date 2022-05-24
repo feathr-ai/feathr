@@ -1,12 +1,9 @@
 apply plugin: 'pegasus'
 
 dependencies {
-  compile spec.product.pegasus.data
+  implementation spec.product.pegasus.data
+  dataModel project(path: ':fr-java-data-models', configuration: 'dataTemplate')
 }
-
-mainAvroSchemaJar.dependsOn generateAvroSchema
-
-pegasus.main.generationModes = [PegasusGenerationMode.PEGASUS]
 
 afterEvaluate {
     dependencies {

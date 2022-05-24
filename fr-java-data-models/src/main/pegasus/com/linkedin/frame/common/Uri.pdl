@@ -1,0 +1,6 @@
+namespace com.linkedin.frame.common
+
+@java = {
+  "class" : "java.net.URI"
+}
+typeref Uri = string

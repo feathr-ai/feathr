@@ -1,0 +1,33 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * FeatureAnchor defines where a feature is extracted or derived from, and how a feature is transformed. A FeatureVersion can have multiple FeatureAnchors for different environments (eg. online, offline, nearline, galene). Refer to go/ai-metadata/schema for more details.
+ */
+@gma.aspect.entity.urn = "com.linkedin.common.MlFeatureAnchorUrn"
+record FeatureAnchor {
+  /**
+   * All the supported anchors. Each anchor defines which source and environment a feature is extracted or derived from and how a feature is transformed.
+   */
+  anchor: union[
+    //Anchors with a raw online data source being used as the source of a feature.
+    CouchbaseDataSourceAnchor
+    CustomDataSourceAnchor
+    EspressoDataSourceAnchor
+    InMemoryPassthroughDataSourceAnchor
+    RestliDataSourceAnchor
+    RestliFinderDataSourceAnchor
+    VeniceDataSourceAnchor
+    PinotDataSourceAnchor
+    VectorDataSourceAnchor
+
+    //Anchors with a raw offline data source being used as the source of a feature.
+    HdfsDataSourceAnchor
+    ObservationPassthroughDataSourceAnchor
+
+    //Anchors with one or multiple other features being used as the source of a feature.
+    OfflineFeatureSourcesAnchor
+    OnlineFeatureSourcesAnchor
+    CrossEnvironmentFeatureSourcesAnchor
+    SequentialJoinFeatureSourcesAnchor
+  ]
+}

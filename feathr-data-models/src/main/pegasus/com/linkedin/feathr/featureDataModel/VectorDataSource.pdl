@@ -1,0 +1,13 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represent a Vector data source. Vector is a media asset serving service accessed via Restli unstructured data endpoint.
+ */
+record VectorDataSource includes OnlineDataSourceKey DataSourceRef {
+  /**
+   * This is a Vector request param needed to uniquely identify the Vector asset which a user is trying to fetch.
+   * For example "png_200_200". This will be decided by the user at write time when the user writes an asset to Vector.
+   * The type is string and not enum. The values will be decided between the team that will use the media data and Vector.
+   */
+  featureSourceName: string
+}

@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents an online anchor with Rest.li finder data source, in which source data is fetched by a Rest.li finder method.
+ */
+@OnlineAnchor
+record RestliFinderDataSourceAnchor includes TransformationFunctionForOnlineDataSource KeyPlaceholders {
+  /**
+   * Defines a Rest.li finder data source, in which source data is fetched by a Rest.li finder method. See RestliFinderDataSource for more details.
+   */
+  source: RestliFinderDataSource
+}

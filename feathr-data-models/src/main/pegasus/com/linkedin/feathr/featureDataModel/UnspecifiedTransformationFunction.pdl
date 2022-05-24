@@ -1,0 +1,8 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * DO NOT USE!!! This was a placeholder to fill in the union of supported transformation functions for each anchor type. It was needed because the transformationFunction field should be a required top-level field but we were not ready to add concrete types into the union due to the ongoing Frame v2 effort. This record has been deprecated because concrete transformation functions have been filled into the transformationFunction field of each anchor.
+ */
+@Deprecated
+record UnspecifiedTransformationFunction {
+}

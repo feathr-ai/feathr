@@ -1,6 +1,5 @@
 plugins {
   id 'scala'
-  id 'java-library'
   id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
@@ -12,46 +11,50 @@ configurations {
   testImplementation.extendsFrom provided
 }
 
+configurations.all {
+  resolutionStrategy.force "org.antlr:antlr4-runtime:4.8"
+  resolutionStrategy.force "org.antlr:antlr4-tool:4.8"
+}
+
 dependencies {
   implementation project(":feathr-data-models")
-  implementation "org.scala-lang:scala-library:$ver.scala"
+  implementation spec.product.scala.scala_library
 
-  implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.12.6"
-  implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.6"
-  implementation "com.fasterxml.jackson.module:jackson-module-scala_$ver.scala_rt:2.12.6"
-  implementation "com.jasonclawson:jackson-dataformat-hocon:1.1.0"
-  implementation "com.redislabs:spark-redis_$ver.scala_rt:3.0.0"
-  implementation "com.typesafe:config:1.3.4"
-  implementation "it.unimi.dsi:fastutil:8.1.1"
-  implementation "org.apache.hadoop:hadoop-mapreduce-client-core:2.7.7"
-  implementation "org.mvel:mvel2:2.2.8.Final"
-  implementation "com.github.changvvb:jackson-module-caseclass_$ver.scala_rt:1.1.1"
-  implementation "com.google.protobuf:protobuf-java:3.19.4"
-  implementation "com.google.guava:guava:31.1-jre"
-  implementation "org.apache.xbean:xbean-asm6-shaded:4.10"
+  implementation spec.product.jackson.dataformat_csv
+  implementation spec.product.jackson.dataformat_yaml
+  implementation spec.product.jackson.module_scala
+  implementation spec.product.jackson.dataformat_hocon
+  implementation spec.product.spark_redis
+  implementation spec.product.fastutil
+  implementation spec.product.hadoop.mapreduce_client_core
+  implementation spec.product.mvel
+  implementation spec.product.jackson.jackson_module_caseclass
+  implementation spec.product.protobuf
+  implementation spec.product.guava
+  implementation spec.product.xbean
 
-  provided "com.fasterxml.jackson.core:jackson-databind:2.12.6.1"
-  provided "com.typesafe:config:1.3.4"
-  provided "log4j:log4j:1.2.7"
-  provided "org.apache.hadoop:hadoop-common:2.7.7"
-  provided("org.apache.spark:spark-core_$ver.scala_rt:$ver.spark") {
+  provided spec.product.jackson.jackson_databind
+  provided spec.product.typesafe_config
+  provided spec.product.log4j
+  provided spec.product.hadoop.common
+  provided(spec.product.spark.spark_core) {
     exclude group: 'org.apache.xbean', module: 'xbean-asm6-shaded'
   }
-  provided("org.apache.spark:spark-avro_$ver.scala_rt:$ver.spark") {
+  provided(spec.product.spark.spark_avro) {
     exclude group: 'org.apache.xbean', module: 'xbean-asm6-shaded'
   }
-  provided "org.apache.spark:spark-hive_$ver.scala_rt:$ver.spark"
-  provided "org.apache.spark:spark-sql_$ver.scala_rt:$ver.spark"
-  provided "org.json:json:20180130"
+  provided spec.product.spark.spark_hive
+  provided spec.product.spark.spark_sql
+  provided spec.product.json
 
-  testImplementation "nl.jqno.equalsverifier:equalsverifier:3.1.12"
-  testImplementation "org.apache.spark:spark-catalyst_$ver.scala_rt:$ver.spark"
-  testImplementation "org.apache.spark:spark-sql_$ver.scala_rt:$ver.spark"
-  testImplementation "org.json:json:20180130"
-  testImplementation "org.mockito:mockito-core:3.1.0"
-  testImplementation "org.scalatest:scalatest_$ver.scala_rt:3.0.0"
-  testImplementation "org.testng:testng:6.14.3"
-  testImplementation "org.anarres.jdiagnostics:jdiagnostics:1.0.7"
+  testImplementation spec.product.equalsverifier
+  testImplementation spec.product.spark.spark_catalyst
+  testImplementation spec.product.mockito
+  testImplementation spec.product.scala.scalatest
+  testImplementation spec.product.testing
+  testImplementation spec.product.jdiagnostics
+  testImplementation spec.product.antlr
+  testImplementation spec.product.antlrRuntime
 }
 
 // Since there are cross-calls from Scala to Java, we use joint compiler

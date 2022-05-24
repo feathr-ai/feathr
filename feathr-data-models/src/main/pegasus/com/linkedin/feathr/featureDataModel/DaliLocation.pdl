@@ -1,5 +1,6 @@
 namespace com.linkedin.feathr.featureDataModel
 
+import com.linkedin.frame.common.Uri
 /**
  * The location of a Dali dataset or view. See [go/dali](http://go/dali).
  */
@@ -7,5 +8,5 @@ record DaliLocation {
   /**
    * The URI to the Dali dataset/view in the form of `dalids:///db_name.table_or_view_name`.
    */
-  uri: string
+  uri: Uri
 }

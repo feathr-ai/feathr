@@ -1,0 +1,13 @@
+namespace com.linkedin.feathr.featureDataModel
+
+
+/**
+ * Represents an online anchor with Espresso data source.
+ */
+@OnlineAnchor
+record EspressoDataSourceAnchor includes TransformationFunctionForOnlineDataSource KeyPlaceholders {
+  /**
+   * Defines a Espresso data source. Espresso the recommended source-of-truth distributed database at LinkedIn. See EspressoDataSource for more details.
+   */
+  source: EspressoDataSource
+}

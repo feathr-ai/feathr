@@ -1,0 +1,6 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents a PathSpec string. PathSpec is used to specify projections in Rest.li request in order to select a subset of object contents. For more details, refer to https://linkedin.github.io/rest.li/Projections. Some examples: 'listingType', 'member:(firstName, lastName)'.
+ */
+typeref PathSpec = string

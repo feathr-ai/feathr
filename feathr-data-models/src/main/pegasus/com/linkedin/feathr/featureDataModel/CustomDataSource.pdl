@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents a custom data source which uses user-defined data fetching mechanism. Its difference with InMemoryPassthroughDataSource is: CustomDataSource allows dependency injection via Offspring for supporting complex data fetching, whereas InMemoryPassthroughDataSource assumes data is already available in-memory along with the retrieval request. See CustomSource section in go/frameonline.
+ */
+record CustomDataSource includes OnlineDataSourceKey DataSourceRef {
+
+  /**
+   * The fully qualified Java class name of the response data model retrieved from the custom data source.
+   */
+  dataModel: Clazz
+}

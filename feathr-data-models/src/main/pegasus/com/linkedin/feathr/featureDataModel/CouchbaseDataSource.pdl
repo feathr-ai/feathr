@@ -1,0 +1,26 @@
+namespace com.linkedin.feathr.featureDataModel
+
+import com.linkedin.frame.common.Uri
+
+/**
+ * Represents a Couchbase data source. Couchbase is a distributed key-value caching solution. For more details: go/couchbase.
+ */
+record CouchbaseDataSource includes OnlineDataSourceKey DataSourceRef {
+
+  /**
+   * Name of the Couchbase bucket. A bucket is a logical entity that groups documents; allowing them to be accessed, indexed, replicated, and access-controlled.
+   */
+  bucketName: string
+
+  /**
+   * The list of bootstrap servers for Frame to initiate communication to the Couchbase cluster.
+   * This is no longer needed as Couchbase can resolve the URIs based on bucketName field.
+   */
+  @deprecated = "No longer needed as Couchbase can now resolve the URIs based on the bucketName field."
+  bootstrapServers: array[Uri] = []
+
+  /**
+   * Fully qualified Java class name for data model of the documents stored in the Couchbase bucket.
+   */
+  documentDataModel: Clazz
+}

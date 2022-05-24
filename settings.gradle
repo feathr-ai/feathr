@@ -9,4 +9,6 @@
 
 rootProject.name = 'feathr'
 include 'feathr-impl'
+include 'feathr-config'
 include 'feathr-data-models'
+include 'fr-java-data-models'

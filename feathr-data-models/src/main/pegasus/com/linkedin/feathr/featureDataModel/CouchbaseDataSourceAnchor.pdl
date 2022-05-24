@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents an online anchor with Couchbase data source.
+ */
+@OnlineAnchor
+record CouchbaseDataSourceAnchor includes TransformationFunctionForOnlineDataSource KeyPlaceholders {
+  /**
+   * Defines a Couchbase data source. Couchbase is a distributed key-value caching solution. See CouchbaseDataSource for more details.
+   */
+  source: CouchbaseDataSource
+}

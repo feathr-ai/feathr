@@ -1,0 +1,12 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represents a Venice data source. Venice is a data store for derived data. All derived data accessed by primary key, whether produced offline on Hadoop or via nearline stream processing in Samza, can be served by Venice. For more details: go/venice.
+ */
+record VeniceDataSource includes OnlineDataSourceKey DataSourceRef {
+
+  /**
+   * The Venice store name.
+   */
+  storeName: string
+}

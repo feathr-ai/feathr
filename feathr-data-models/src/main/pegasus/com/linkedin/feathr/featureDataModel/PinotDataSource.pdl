@@ -1,0 +1,27 @@
+namespace com.linkedin.feathr.featureDataModel
+
+/**
+ * Represent a Pinot data source. Pinot is a realtime distributed OLAP datastore which supports data fetching through standard SQL query syntax and semantics. It is suitable for querying time series data with lots of Dimensions and Metrics. For more details on Pinot: go/pinot. Also see <a href="https://docs.google.com/document/d/1nx-j-JJLWY4QaU2hgoQ6H9rDEcVG9jZo6CQVRX4ATvA/edit/">[RFC] Pinot Frame Online</a> for the details on the Pinot data source design.
+ */
+record PinotDataSource includes DataSourceRef {
+
+  /**
+   * Represent the service name in the Pinot D2 config for the source Pinot table.
+   */
+  resourceName: string
+
+  /**
+   * Represent the sql query template to fetch data from Pinot table, with “?” as placeholders for run time value replacement from specified queryArguments in the same order. For example: "SELECT objectAttributes, timeStampSec FROM RecentMemberActions WHERE actorId IN (?) AND timeStampSec > ?".
+   */
+  queryTemplate: string
+
+  /**
+   * Represent mvel expressions whose values will be evaluated at runtime to replace the "?" in queryTemplate in the same order. Following the example in queryTemplate, queryArguments could be ["key[0]", "System.currentTimeMillis()/1000 - 2 * 24 * 60 * 60"].
+   */
+  queryArguments: array[MvelExpression]
+
+  /**
+   * Represent Pinot table column names that correspond to the mvel expressions involving key parts in queryArguments. Following the examples in queryTemplate and queryArguments, queryKeyColumns would be ["actorId"]. As in queryArguments, only "key[0]" is base on key values, and it is used with "actorId" column in the queryTemplate. queryKeyColumns is needed because Pinot returns data in a flatten manner like [{“123”, “page_view”, “323”}, {“987", “page_view”, “876"}], we need to explicitly know which column(s) are key parts to deterministically parse Pinot response and construct the collection of feature data for a list of keys.
+   */
+  queryKeyColumns: array[string]
+}
