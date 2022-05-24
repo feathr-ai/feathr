@@ -61,7 +61,7 @@ have a feature that needs more than 24 hours to compute and the feature can be r
 pipeline. In this case, you should consider generate features to offline. Here is an API example:
 ```python
 client = FeathrClient()
-offlineSink = OfflineSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
+offlineSink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
 # Materialize two features into a Offline store.
 settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    sinks=[offlineSink],
@@ -76,7 +76,7 @@ You can also specify a BackfillTime so the features will be generated for those 
 ```Python
 backfill_time = BackfillTime(start=datetime(
     2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-offline_sink = OfflineSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
+offline_sink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
 settings = MaterializationSettings("nycTaxiTable",
                                    sinks=[offline_sink],
                                    feature_names=[
@@ -87,4 +87,4 @@ This will generate features only for 2020/05/20 for me and it will be in folder:
 `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`
 
 ([MaterializationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.materialization_settings.MaterializationSettings),
-[OfflineSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.sink.OfflineSink))
+[HdfsSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.sink.HdfsSink))

@@ -42,7 +42,7 @@ class RedisSink(Sink):
         return msg
 
 
-class OfflineSink(Sink):
+class HdfsSink(Sink):
     """Offline Hadoop HDFS-compatible(HDFS, delta lake, Azure blog storage etc) sink that is used to store feature data.
     The result is in AVRO format.
 

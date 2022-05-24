@@ -10,7 +10,7 @@ from feathr.job_utils import get_result_df
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import FeatureQuery
 from feathr import ObservationSettings
-from feathr import RedisSink, OfflineSink
+from feathr import RedisSink, HdfsSink
 from feathr import TypedKey
 from feathrcli.cli import init
 import pytest
@@ -20,7 +20,7 @@ from test_fixture import (basic_test_setup, get_online_test_table_name)
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_materialize_to_offline():
     """
-    Test FeathrClient() OfflineSink.
+    Test FeathrClient() HdfsSink.
     """
 
     online_test_table = get_online_test_table_name("nycTaxiCITable")
@@ -38,7 +38,7 @@ def test_feathr_materialize_to_offline():
         output_path = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
     else:
         output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
-    offline_sink = OfflineSink(output_path=output_path)
+    offline_sink = HdfsSink(output_path=output_path)
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[offline_sink],
                                        feature_names=[

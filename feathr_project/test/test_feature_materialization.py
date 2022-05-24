@@ -6,7 +6,7 @@ from feathr._materialization_utils import _to_materialization_config
 from feathr import (BackfillTime, MaterializationSettings, FeatureQuery,
                     ObservationSettings, SparkExecutionConfiguration)
 from feathr import RedisSink
-from feathr import OfflineSink
+from feathr import HdfsSink
 from feathr.anchor import FeatureAnchor
 from feathr.dtype import BOOLEAN, FLOAT, FLOAT_VECTOR, INT32, ValueType
 from feathr.feature import Feature
@@ -44,7 +44,7 @@ def test_feature_materialization_config():
 
 def test_feature_materialization_offline_config():
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5,20), step=timedelta(days=1))
-    offlineSink = OfflineSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output/hdfs_test.avro")
+    offlineSink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output/hdfs_test.avro")
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[offlineSink],
                                        feature_names=["f_location_avg_fare", "f_location_max_fare"],
