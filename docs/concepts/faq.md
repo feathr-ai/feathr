@@ -7,9 +7,16 @@ nav_order: 7
 This page covered the most asked questions that we've heard from end users.
 
 
-# What is a key and which kind of features need this
+# What is a key and which kind of features need this?
 
-# Scenarios of using a Key
+For Feathr keys, think that every feature needs it by default, i.e. think each Feathr Feature is associated with a certain key. 
+
+Key is also called `Entity` in many other feature store, so think a Feature is "associated" with a certain entity. For example, if you are building a recommendation system, you probably have `f_item_sales_1_week` for item sales, and `f_user_location` for user historical buying, so `f_item_sales_1_week` should be "keyed" to `item_id`, and `f_user_location` should be "keyed" to `user_id`. The reason is - each feature is only representing something for a particular `Entity` (item or user, in the above case), so the features must be associated with them. Otherwise, it doesn't make sense to use `f_user_location` on items, or use `f_item_sales_1_week` on users.
+
+That's why when querying features, if you want to get a bunch of item related features, say `f_item_sales_1_week` and others, you will need to specify the key as well.
+
+The only exception here would be Features defined in `INPUT_CONTEXT` don't need keys, the reason being that they will usually not be "reused", and are directly computed on observation data, so doesn't make sense to have keys.
+
 
 # What is the essence of Feature Anchors in Purview? Are we really generating feature values to show it as a view ?
 
