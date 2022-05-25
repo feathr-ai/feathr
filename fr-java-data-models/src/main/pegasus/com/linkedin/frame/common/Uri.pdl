@@ -1,6 +1,7 @@
 namespace com.linkedin.frame.common
 
 @java = {
+  "coercerClass" : "com.linkedin.frame.common.coercer.UriCoercer",
   "class" : "java.net.URI"
 }
 typeref Uri = string

@@ -11,6 +11,7 @@ import com.linkedin.data.template.Custom;
 import com.linkedin.data.template.DataTemplateUtil;
 import com.linkedin.data.template.DirectArrayTemplate;
 import com.linkedin.data.template.TemplateOutputCastException;
+import com.linkedin.frame.common.coercer.UriCoercer;
 import com.linkedin.util.ArgumentUtil;
 
 @Generated(value = "com.linkedin.pegasus.generator.JavaCodeUtil", comments = "Rest.li Data Template. Generated from feathr-data-models/src/main/pegasus/com/linkedin/feathr/featureDataModel/CouchbaseDataSource.pdl.")
@@ -18,10 +19,11 @@ public class UriArray
     extends DirectArrayTemplate<java.net.URI>
 {
 
-    private final static ArrayDataSchema SCHEMA = ((ArrayDataSchema) DataTemplateUtil.parseSchema("array[{namespace com.linkedin.frame.common@java.class=\"java.net.URI\"typeref Uri=string}]", SchemaFormatType.PDL));
+    private final static ArrayDataSchema SCHEMA = ((ArrayDataSchema) DataTemplateUtil.parseSchema("array[{namespace com.linkedin.frame.common@java={\"class\":\"java.net.URI\",\"coercerClass\":\"com.linkedin.frame.common.coercer.UriCoercer\"}typeref Uri=string}]", SchemaFormatType.PDL));
 
     static {
         Custom.initializeCustomClass(java.net.URI.class);
+        Custom.initializeCoercerClass(UriCoercer.class);
     }
 
     public UriArray() {

@@ -1,21 +1,24 @@
 apply plugin: 'java'
-apply plugin: 'pegasus'
 
 dependencies {
+  implementation project(":feathr-config")
   implementation project(":feathr-data-models")
   implementation project(path: ':feathr-data-models', configuration: 'dataTemplate')
-  implementation spec.product.avro
-  implementation spec.product.pegasus.data
-  implementation spec.product.typesafe_config
-  implementation spec.product.log4j
-  implementation spec.product.jsonSchemaVali
-  implementation spec.product.jackson.jackson_databind
   implementation spec.product.mvel
+  implementation spec.product.jsqlparser
 
   testImplementation spec.product.testing
   testImplementation spec.product.mockito
   testImplementation spec.product.equalsverifier
   testImplementation spec.product.mockito_inline
+
+  implementation spec.product.jackson.dataformat_yaml
+  implementation spec.product.jackson.jackson_databind
+  implementation spec.product.guava
+}
+
+javadoc {
+  options.noQualifiers 'all'
 }
 
 test {

@@ -16,6 +16,7 @@ import com.linkedin.data.template.GetMode;
 import com.linkedin.data.template.RecordTemplate;
 import com.linkedin.data.template.RequiredFieldNotPresentException;
 import com.linkedin.data.template.SetMode;
+import com.linkedin.frame.common.coercer.UriCoercer;
 
 
 /**
@@ -28,13 +29,14 @@ public class DaliLocation
 {
 
     private final static DaliLocation.Fields _fields = new DaliLocation.Fields();
-    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("namespace com.linkedin.feathr.featureDataModel/**The location of a Dali dataset or view. See [go/dali](http://go/dali).*/record DaliLocation{/**The URI to the Dali dataset/view in the form of `dalids:///db_name.table_or_view_name`.*/uri:{namespace com.linkedin.frame.common@java.class=\"java.net.URI\"typeref Uri=string}}", SchemaFormatType.PDL));
+    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("namespace com.linkedin.feathr.featureDataModel/**The location of a Dali dataset or view. See [go/dali](http://go/dali).*/record DaliLocation{/**The URI to the Dali dataset/view in the form of `dalids:///db_name.table_or_view_name`.*/uri:{namespace com.linkedin.frame.common@java={\"class\":\"java.net.URI\",\"coercerClass\":\"com.linkedin.frame.common.coercer.UriCoercer\"}typeref Uri=string}}", SchemaFormatType.PDL));
     private java.net.URI _uriField = null;
     private DaliLocation.ChangeListener __changeListener = new DaliLocation.ChangeListener(this);
     private final static RecordDataSchema.Field FIELD_Uri = SCHEMA.getField("uri");
 
     static {
         Custom.initializeCustomClass(java.net.URI.class);
+        Custom.initializeCoercerClass(UriCoercer.class);
     }
 
     public DaliLocation() {

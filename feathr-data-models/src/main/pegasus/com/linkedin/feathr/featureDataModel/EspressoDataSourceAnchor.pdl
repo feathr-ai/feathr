@@ -1,6 +1,5 @@
 namespace com.linkedin.feathr.featureDataModel
 
-
 /**
  * Represents an online anchor with Espresso data source.
  */

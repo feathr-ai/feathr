@@ -81,6 +81,7 @@ project.ext.spec = [
         'jsonSchemaVali': "com.github.everit-org.json-schema:org.everit.json.schema:1.9.1",
         "antlr": "org.antlr:antlr4:4.8",
         "antlrRuntime": "org.antlr:antlr4-runtime:4.8",
+        "jsqlparser": "com.github.jsqlparser:jsqlparser:3.1",
 
     ]
 ]

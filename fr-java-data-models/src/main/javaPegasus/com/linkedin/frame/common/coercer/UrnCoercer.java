@@ -1,7 +1,8 @@
-package com.linkedin.frame.common.urn;
+package com.linkedin.frame.common.coercer;
 
 import com.linkedin.data.template.DirectCoercer;
 import com.linkedin.data.template.TemplateOutputCastException;
+import com.linkedin.frame.common.urn.Urn;
 import java.net.URISyntaxException;
 
 

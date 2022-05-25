@@ -1,6 +1,7 @@
 package com.linkedin.frame.common.urn;
 
 import com.linkedin.data.template.Custom;
+import com.linkedin.frame.common.coercer.UrnCoercer;
 import com.linkedin.util.ArgumentUtil;
 import java.net.URISyntaxException;
 import java.util.Collection;
