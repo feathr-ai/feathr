@@ -145,8 +145,9 @@ private[offline] class WriteToHDFSOutputProcessor(val config: OutputProcessorCon
     }
     val featuresToDF = taggedFeatureNames.map(featureToDF => (featureToDF, (augmentedDF, header))).toMap
 
-    // Note that this function returns the resulting output w/o writing data file system.
-    FeatureDataHDFSProcessUtils.processFeatureDataHDFS(ss, featuresToDF, parentPath, config, skipWrite = true, endTimeOpt, timestampOpt)
+    // If it's local, we can't write to HDFS.
+    val skipWrite = if (ss.sparkContext.isLocal) true else false
+    FeatureDataHDFSProcessUtils.processFeatureDataHDFS(ss, featuresToDF, parentPath, config, skipWrite = skipWrite, endTimeOpt, timestampOpt)
   }
 
   // path parameter name
