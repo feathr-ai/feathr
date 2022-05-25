@@ -159,10 +159,10 @@ Stitching them all together, different registry providers need to be registered 
 ```python
 factory = FeatureRegistryFactory()
 
-factory.register_feature_registry(\'AzurePurview\',
+factory.register_feature_registry('AzurePurview',
 AzurePurviewFeatureRegistryBuilder())
 
-factory.register_feature_registry(\'AzureSQL\',
+factory.register_feature_registry('AzureSQL',
 AzureSQLFeatureRegistryBuilder())
 ```
 The factory creates a concrete implementation for the registry backend on the specified key parameter.
