@@ -10,6 +10,7 @@ record DataSource includes AbstractNode {
                             // or URI.
 
   keyExpression: string //mvel or spark or user-defined class
+  keyExpressionType: KeyExpressionType
 
   // todo change the abstraction to make this available only for a agg node.
   filePartitionFormat: optional string

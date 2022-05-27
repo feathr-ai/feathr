@@ -38,7 +38,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
 /**
  * Converts FeatureDefinitions in the Feature Registry PDL model, into an instance of ComputeGraph.
  *
@@ -127,15 +126,21 @@ public class FeatureDefinitionsConverter {
         || anchor.getTransformationFunction().isSlidingWindowLatestAvailable());
 
     String keyExpression;
+    KeyExpressionType keyExpressiontype;
 
     if (anchor.getSource().getKeyFunction().isMvelExpression()) {
       keyExpression = anchor.getSource().getKeyFunction().getMvelExpression().getMvel();
+      keyExpressiontype = KeyExpressionType.MVEL;
     } else if (anchor.getSource().getKeyFunction().isSparkSqlExpression()) {
       keyExpression = anchor.getSource().getKeyFunction().getSparkSqlExpression().getSql();
+      keyExpressiontype = KeyExpressionType.SQL;
+    } else if (anchor.getSource().getKeyFunction().isUserDefinedFunction()) {
+      keyExpression = anchor.getSource().getKeyFunction().getUserDefinedFunction().getClazz().getFullyQualifiedName();
+      keyExpressiontype = KeyExpressionType.UDF;
     } else {
       throw new RuntimeException("Unsupported key type " + anchor.getSource().getKeyFunction());
     }
-
+    
     boolean isHdfs = anchor.getSource().getDatasetLocation().isHdfsLocation();
 
     // Compute-model DataSource doesn't contain details needed to actually access that data. Instead it has a
@@ -148,10 +153,11 @@ public class FeatureDefinitionsConverter {
       path = anchor.getSource().getDatasetLocation().getDaliLocation().getUri().toString();
     }
     DataSource dataSourceNode = graphBuilder.addNewDataSource().setExternalSourceRef(path)
-          // Use "keyPlaceholders" for the entity parameter for the data source, NOT OfflineDataSourceKey.keyFunction.
-          // It is UNCLEAR AND NEEDS TO BE CLARIFIED how/whether OfflineDataSourceKey.keyFunction should be used here.
-          // We might need to add a Transformation node that applies the keyFunction.
-          .setSourceType(isSlidingWindowAggregation ? DataSourceType.EVENT : DataSourceType.UPDATE).setKeyExpression(keyExpression);
+        // Use "keyPlaceholders" for the entity parameter for the data source, NOT OfflineDataSourceKey.keyFunction.
+        // It is UNCLEAR AND NEEDS TO BE CLARIFIED how/whether OfflineDataSourceKey.keyFunction should be used here.
+        // We might need to add a Transformation node that applies the keyFunction.
+        .setSourceType(isSlidingWindowAggregation ? DataSourceType.EVENT : DataSourceType.UPDATE).setKeyExpression(keyExpression)
+        .setKeyExpressionType(keyExpressiontype);
 
 
     NodeReference referenceToSource = makeNodeReferenceWithSimpleKeyReference(dataSourceNode.getId(), numKeyParts);
@@ -262,7 +268,7 @@ public class FeatureDefinitionsConverter {
       // Should be just the base feature.
       List<String> inputFeatureNames = MvelInputsResolver.getInstance().getInputFeatures(baseFeatureTransformationExpression.getMvel());
       TransformationFunction transformationFunction = makeTransformationFunction(baseFeatureTransformationExpression,
-          inputFeatureNames);
+          inputFeatureNames).setOperator(Operators.OPERATOR_ID_MVEL);
       // Note here we specifically do not set the base feature name or add a feature definition because this is not a named feature,
       // it is a intermediate feature that will only be used for sequential join so a name will be generated for it.
       Transformation transformationNode = graphBuilder.addNewTransformation()
@@ -282,8 +288,8 @@ public class FeatureDefinitionsConverter {
     Lookup.LookupKeyArray lookupKeyArray = expansionKeysArray.stream()
         .map(entityParameters::indexOf)
         .map(position -> position == -1 ? lookupKey
-          : entityParameters.get(position).equals(featureNameAlias) ? lookupKey
-              : new Lookup.LookupKey().create(new KeyReference().setPosition(position))
+            : entityParameters.get(position).equals(featureNameAlias) ? lookupKey
+                : new Lookup.LookupKey().create(new KeyReference().setPosition(position))
         )
         .collect(Collectors.toCollection(Lookup.LookupKeyArray::new));
 
@@ -586,19 +592,19 @@ public class FeatureDefinitionsConverter {
   }
 
   private Duration convert(Window frWindow) {
-      int size = frWindow.getSize();
-      if (frWindow.getUnit() == Unit.DAY) {
-        return Duration.ofDays(size);
-      } else if (frWindow.getUnit() == Unit.HOUR) {
-        return Duration.ofHours(size);
-      } else if (frWindow.getUnit() == Unit.MINUTE) {
-        return Duration.ofMinutes(size);
-      } else if (frWindow.getUnit() == Unit.SECOND) {
-        return Duration.ofSeconds(size);
-      } else {
-        throw new RuntimeException("'window' field($frWindow) is not correctly set. The correct example \" +\n"
-            + "            \"can be '1d'(1 day) or '2h'(2 hour) or '3m'(3 minute) or '4s'(4 second) ");
-      }
+    int size = frWindow.getSize();
+    if (frWindow.getUnit() == Unit.DAY) {
+      return Duration.ofDays(size);
+    } else if (frWindow.getUnit() == Unit.HOUR) {
+      return Duration.ofHours(size);
+    } else if (frWindow.getUnit() == Unit.MINUTE) {
+      return Duration.ofMinutes(size);
+    } else if (frWindow.getUnit() == Unit.SECOND) {
+      return Duration.ofSeconds(size);
+    } else {
+      throw new RuntimeException("'window' field($frWindow) is not correctly set. The correct example \" +\n"
+          + "            \"can be '1d'(1 day) or '2h'(2 hour) or '3m'(3 minute) or '4s'(4 second) ");
+    }
   }
 
   private AggregationFunction makeAggregationFunction(SlidingWindowLatestAvailable input) {

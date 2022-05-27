@@ -2,9 +2,12 @@ package com.linkedin.feathr.offline.source.accessor
 
 import com.linkedin.feathr.offline.config.location.KafkaEndpoint
 import com.linkedin.feathr.offline.source.DataSource
-import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
+import com.linkedin.feathr.offline.source.dataloader.{CaseInsensitiveGenericRecordWrapper, DataLoaderFactory}
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
+import org.apache.avro.generic.{GenericRecord, IndexedRecord}
+import org.apache.avro.specific.SpecificRecordBase
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 /**
  * load a dataset from a non-partitioned source.
@@ -44,5 +47,29 @@ private[offline] class NonTimeBasedDataSourceAccessor(
       println()
     }
     df
+  }
+
+  /**
+   * get source data as RDD.
+   * This is only for features are defined using SpecificRecordSourceKeyExtractor
+   *
+   * @return source view in RDD formats
+   */
+  def getAsRdd(): RDD[IndexedRecord] = {
+    require(expectDatumType.nonEmpty)
+    val rdd = source.pathList
+      .map(
+        path =>
+          fileLoaderFactory
+            .create(path)
+            .loadRdd(expectDatumType.get)
+            .asInstanceOf[RDD[IndexedRecord]])
+      .reduce(_ union _)
+    if (classOf[GenericRecord].isAssignableFrom(expectDatumType.get) &&
+      !classOf[SpecificRecordBase].isAssignableFrom(expectDatumType.get)) {
+      rdd.asInstanceOf[RDD[GenericRecord]].map(new CaseInsensitiveGenericRecordWrapper(_))
+    } else {
+      rdd
+    }
   }
 }

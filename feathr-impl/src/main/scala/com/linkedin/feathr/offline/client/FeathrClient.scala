@@ -60,7 +60,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
     FeathrUtils.enableDebugLogging(sparkConf)
 
     val (joinedDF, _) = doJoinObsAndFeatures(joinConfig, jobContext, obsData.data)
-    SparkFeaturizedDataset(joinedDF, FeaturizedDatasetMetadata())
+    SparkFeaturizedDataset(joinedDF, new com.linkedin.feathr.fds.FeaturizedDatasetMetadata())
   }
 
   /**
@@ -97,7 +97,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
       featureMap map {
         case (taggedFeatureName, (df, _)) =>
           // Build FDS and convert key columns to Feature columns instead of Opaque columns
-          val fds = SparkFeaturizedDataset(df, FeaturizedDatasetMetadata())
+          val fds = SparkFeaturizedDataset(df, new com.linkedin.feathr.fds.FeaturizedDatasetMetadata())
           (taggedFeatureName, fds)
       }
     }

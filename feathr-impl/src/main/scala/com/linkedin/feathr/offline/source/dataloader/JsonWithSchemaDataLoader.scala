@@ -39,6 +39,15 @@ private[offline] class JsonWithSchemaDataLoader(ss: SparkSession, path: String) 
   }
 
   /**
+   * load the source data as RDD.
+   * @param expectDatumType the class of the RDD data type. Ususally it's GenericRecord or a subclass of SpecificRecord.
+   * @return an RDD
+   */
+  override def loadRdd(expectDatumType: Class[_]): RDD[_] = {
+    parseJsonAsAvroRDD()(ClassTag(expectDatumType))._1
+  }
+
+  /**
    * read the file content as a string
    *
    * @param path the path to the file

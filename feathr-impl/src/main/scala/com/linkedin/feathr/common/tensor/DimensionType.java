@@ -63,4 +63,34 @@ public abstract class DimensionType implements Serializable, Representable {
     public String getName() {
         return DUMMY_NAME;
     }
+
+
+    /**
+     * Convert a numeric index to a string representation.
+     * @param index the numeric index. 0 is reserved for out-of-vocab.
+     * @return the string representation
+     * @deprecated Use {@link #getDimensionValue(ReadableTuple, int)} instead
+     */
+    @Deprecated
+    // LONG_TERM_TECH_DEBT_ALERT(PROML-6625)
+    public String indexToString(long index) {
+        // Default implementation, to be overridden by subclasses.
+        return Long.toString(index);
+    }
+
+    /**
+     * Convert a string representation to a numeric index.
+     * @param string the string representation
+     * @return the numeric index. Categoricals return 0 if out-of-vocab, others will throw unchecked exceptions.
+     * @deprecated Use {@link #setDimensionValue(WriteableTuple, int, Object)} instead
+     */
+    @Deprecated
+    // LONG_TERM_TECH_DEBT_ALERT(PROML-6625)
+    public long stringToIndex(String string) {
+        long index = Long.parseLong(string);
+        if (index < 0) {
+            throw new IllegalArgumentException(string + " must be >= 0.");
+        }
+        return index;
+    }
 }

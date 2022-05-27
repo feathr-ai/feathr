@@ -75,7 +75,7 @@ object LocalFeatureJoinJob {
     val dataLoaderFactory = DataLoaderFactory(ss)
 
     val data = source.pathList.map(dataLoaderFactory.create(_).loadDataFrame()).reduce(_ union _)
-    SparkFeaturizedDataset(data,FeaturizedDatasetMetadata())
+    SparkFeaturizedDataset(data, new com.linkedin.feathr.fds.FeaturizedDatasetMetadata())
   }
 }
 

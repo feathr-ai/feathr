@@ -1,0 +1,11 @@
+namespace com.linkedin.feathr.fds
+
+/**
+ * OpaqueContextualColumnMetadata structure capturing metadata of columns that contain
+ * Opaque Contextual Data.
+ * <p/>
+ * More details can be found in the specification at docs/qt_fds_spec.md
+ */
+record OpaqueContextualColumnMetadata {
+  // Nothing for now.
+}

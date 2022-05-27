@@ -30,12 +30,13 @@ public class DataSource
 {
 
     private final static DataSource.Fields _fields = new DataSource.Fields();
-    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("namespace com.linkedin.feathr.compute,record DataSource includes record AbstractNode{id:typeref NodeId=int/**The key for which this node is being requested.\nIf this node is a Source node, the engine can use the key to fetch or join the feature.\nIf this node is NOT a Source node, the engine should NOT use the key to determine fetch/join behavior, but\nshould follow the node's inputs. (The core libraries may use the key information in order to optimize the graph,\ne.g. it can be used for identifying duplicate sections of the graph that can be pruned.)\n\nTODO: From the Engines' point of view, this field should be private. Maybe we should consider revising the data model.*/concreteKey:optional record ConcreteKey{key:array[NodeId]}}{sourceType:enum DataSourceType{UPDATE,EVENT,CONTEXT}externalSourceRef:string,keyExpression:string,filePartitionFormat:optional string,timestampColumnInfo:optional record TimestampCol{expression:string,format:string}window:optional{namespace com.linkedin.feathr.featureDataModel/**Represents a time window used in sliding window algorithms.*/record Window{/**Represents the duration of the window.*/size:int/**Represents a unit of time.*/unit:enum Unit{/** A day. */DAY/** An hour. */HOUR/** A minute. */MINUTE/** A second. */SECOND}}}}", SchemaFormatType.PDL));
+    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("namespace com.linkedin.feathr.compute,record DataSource includes record AbstractNode{id:typeref NodeId=int/**The key for which this node is being requested.\nIf this node is a Source node, the engine can use the key to fetch or join the feature.\nIf this node is NOT a Source node, the engine should NOT use the key to determine fetch/join behavior, but\nshould follow the node's inputs. (The core libraries may use the key information in order to optimize the graph,\ne.g. it can be used for identifying duplicate sections of the graph that can be pruned.)\n\nTODO: From the Engines' point of view, this field should be private. Maybe we should consider revising the data model.*/concreteKey:optional record ConcreteKey{key:array[NodeId]}}{sourceType:enum DataSourceType{UPDATE,EVENT,CONTEXT}externalSourceRef:string,keyExpression:string,keyExpressionType:enum KeyExpressionType{MVEL,SQL,UDF}filePartitionFormat:optional string,timestampColumnInfo:optional record TimestampCol{expression:string,format:string}window:optional{namespace com.linkedin.feathr.featureDataModel/**Represents a time window used in sliding window algorithms.*/record Window{/**Represents the duration of the window.*/size:int/**Represents a unit of time.*/unit:enum Unit{/** A day. */DAY/** An hour. */HOUR/** A minute. */MINUTE/** A second. */SECOND}}}}", SchemaFormatType.PDL));
     private Integer _idField = null;
     private ConcreteKey _concreteKeyField = null;
     private DataSourceType _sourceTypeField = null;
     private String _externalSourceRefField = null;
     private String _keyExpressionField = null;
+    private KeyExpressionType _keyExpressionTypeField = null;
     private String _filePartitionFormatField = null;
     private TimestampCol _timestampColumnInfoField = null;
     private Window _windowField = null;
@@ -45,12 +46,13 @@ public class DataSource
     private final static RecordDataSchema.Field FIELD_SourceType = SCHEMA.getField("sourceType");
     private final static RecordDataSchema.Field FIELD_ExternalSourceRef = SCHEMA.getField("externalSourceRef");
     private final static RecordDataSchema.Field FIELD_KeyExpression = SCHEMA.getField("keyExpression");
+    private final static RecordDataSchema.Field FIELD_KeyExpressionType = SCHEMA.getField("keyExpressionType");
     private final static RecordDataSchema.Field FIELD_FilePartitionFormat = SCHEMA.getField("filePartitionFormat");
     private final static RecordDataSchema.Field FIELD_TimestampColumnInfo = SCHEMA.getField("timestampColumnInfo");
     private final static RecordDataSchema.Field FIELD_Window = SCHEMA.getField("window");
 
     public DataSource() {
-        super(new DataMap(11, 0.75F), SCHEMA, 4);
+        super(new DataMap(12, 0.75F), SCHEMA, 4);
         addChangeListener(__changeListener);
     }
 
@@ -650,6 +652,124 @@ public class DataSource
     }
 
     /**
+     * Existence checker for keyExpressionType
+     * 
+     * @see DataSource.Fields#keyExpressionType
+     */
+    public boolean hasKeyExpressionType() {
+        if (_keyExpressionTypeField!= null) {
+            return true;
+        }
+        return super._map.containsKey("keyExpressionType");
+    }
+
+    /**
+     * Remover for keyExpressionType
+     * 
+     * @see DataSource.Fields#keyExpressionType
+     */
+    public void removeKeyExpressionType() {
+        super._map.remove("keyExpressionType");
+    }
+
+    /**
+     * Getter for keyExpressionType
+     * 
+     * @see DataSource.Fields#keyExpressionType
+     */
+    public KeyExpressionType getKeyExpressionType(GetMode mode) {
+        switch (mode) {
+            case STRICT:
+                return getKeyExpressionType();
+            case DEFAULT:
+            case NULL:
+                if (_keyExpressionTypeField!= null) {
+                    return _keyExpressionTypeField;
+                } else {
+                    Object __rawValue = super._map.get("keyExpressionType");
+                    _keyExpressionTypeField = DataTemplateUtil.coerceEnumOutput(__rawValue, KeyExpressionType.class, KeyExpressionType.$UNKNOWN);
+                    return _keyExpressionTypeField;
+                }
+        }
+        throw new IllegalStateException(("Unknown mode "+ mode));
+    }
+
+    /**
+     * Getter for keyExpressionType
+     * 
+     * @return
+     *     Required field. Could be null for partial record.
+     * @see DataSource.Fields#keyExpressionType
+     */
+    @Nonnull
+    public KeyExpressionType getKeyExpressionType() {
+        if (_keyExpressionTypeField!= null) {
+            return _keyExpressionTypeField;
+        } else {
+            Object __rawValue = super._map.get("keyExpressionType");
+            if (__rawValue == null) {
+                throw new RequiredFieldNotPresentException("keyExpressionType");
+            }
+            _keyExpressionTypeField = DataTemplateUtil.coerceEnumOutput(__rawValue, KeyExpressionType.class, KeyExpressionType.$UNKNOWN);
+            return _keyExpressionTypeField;
+        }
+    }
+
+    /**
+     * Setter for keyExpressionType
+     * 
+     * @see DataSource.Fields#keyExpressionType
+     */
+    public DataSource setKeyExpressionType(KeyExpressionType value, SetMode mode) {
+        switch (mode) {
+            case DISALLOW_NULL:
+                return setKeyExpressionType(value);
+            case REMOVE_OPTIONAL_IF_NULL:
+                if (value == null) {
+                    throw new IllegalArgumentException("Cannot remove mandatory field keyExpressionType of com.linkedin.feathr.compute.DataSource");
+                } else {
+                    CheckedUtil.putWithoutChecking(super._map, "keyExpressionType", value.name());
+                    _keyExpressionTypeField = value;
+                }
+                break;
+            case REMOVE_IF_NULL:
+                if (value == null) {
+                    removeKeyExpressionType();
+                } else {
+                    CheckedUtil.putWithoutChecking(super._map, "keyExpressionType", value.name());
+                    _keyExpressionTypeField = value;
+                }
+                break;
+            case IGNORE_NULL:
+                if (value!= null) {
+                    CheckedUtil.putWithoutChecking(super._map, "keyExpressionType", value.name());
+                    _keyExpressionTypeField = value;
+                }
+                break;
+        }
+        return this;
+    }
+
+    /**
+     * Setter for keyExpressionType
+     * 
+     * @param value
+     *     Must not be null. For more control, use setters with mode instead.
+     * @see DataSource.Fields#keyExpressionType
+     */
+    public DataSource setKeyExpressionType(
+        @Nonnull
+        KeyExpressionType value) {
+        if (value == null) {
+            throw new NullPointerException("Cannot set field keyExpressionType of com.linkedin.feathr.compute.DataSource to null");
+        } else {
+            CheckedUtil.putWithoutChecking(super._map, "keyExpressionType", value.name());
+            _keyExpressionTypeField = value;
+        }
+        return this;
+    }
+
+    /**
      * Existence checker for filePartitionFormat
      * 
      * @see DataSource.Fields#filePartitionFormat
@@ -949,6 +1069,7 @@ public class DataSource
         throws CloneNotSupportedException
     {
         DataSource __copy = ((DataSource) super.copy());
+        __copy._keyExpressionTypeField = null;
         __copy._sourceTypeField = null;
         __copy._externalSourceRefField = null;
         __copy._timestampColumnInfoField = null;
@@ -975,6 +1096,9 @@ public class DataSource
         @Override
         public void onUnderlyingMapChanged(String key, Object value) {
             switch (key) {
+                case "keyExpressionType":
+                    __objectRef._keyExpressionTypeField = null;
+                    break;
                 case "sourceType":
                     __objectRef._sourceTypeField = null;
                     break;
@@ -1047,6 +1171,10 @@ public class DataSource
             return new PathSpec(getPathComponents(), "keyExpression");
         }
 
+        public PathSpec keyExpressionType() {
+            return new PathSpec(getPathComponents(), "keyExpressionType");
+        }
+
         public PathSpec filePartitionFormat() {
             return new PathSpec(getPathComponents(), "filePartitionFormat");
         }
@@ -1070,7 +1198,7 @@ public class DataSource
         private com.linkedin.feathr.featureDataModel.Window.ProjectionMask _windowMask;
 
         ProjectionMask() {
-            super(11);
+            super(12);
         }
 
         public DataSource.ProjectionMask withId() {
@@ -1122,6 +1250,11 @@ public class DataSource
 
         public DataSource.ProjectionMask withKeyExpression() {
             getDataMap().put("keyExpression", MaskMap.POSITIVE_MASK);
+            return this;
+        }
+
+        public DataSource.ProjectionMask withKeyExpressionType() {
+            getDataMap().put("keyExpressionType", MaskMap.POSITIVE_MASK);
             return this;
         }
 

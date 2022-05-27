@@ -1,10 +1,12 @@
 package com.linkedin.feathr.offline.source.dataloader
 
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
+import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData.{Array, Record}
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.util.Utf8
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.io.File
@@ -26,6 +28,10 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
    */
   override def loadSchema(): Schema = {
     doLoadCsvDocumentLikeAvro()._2
+  }
+
+  override def loadRdd(expectDatumType: Class[_]): RDD[_] = {
+    throw new FeathrException(ErrorLabel.FEATHR_ERROR, "loadRdd not implemented for this loader")
   }
 
   /**

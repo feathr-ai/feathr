@@ -77,7 +77,7 @@ class TimeWindowFeatureConfigBuilder {
 
     FeatureTypeConfig featureTypeConfig = FeatureTypeConfigBuilder.build(featureConfig);
 
-    String defaultValue = featureConfig.hasPath(DEFAULT) ? featureConfig.getValue(DEFAULT).render() : null;
+    String defaultValue = featureConfig.hasPath(DEFAULT) ? featureConfig.getValue(DEFAULT).unwrapped().toString() : null;
 
     TimeWindowFeatureConfig configObj = new TimeWindowFeatureConfig(new TypedExpr(columnExpr, defExprType), aggregation,
         windowParameters, typedFilter, groupBy, limit, decay, weight, embeddingSize, featureTypeConfig, defaultValue);

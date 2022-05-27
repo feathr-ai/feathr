@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
-import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataException}
+import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataException, FeathrException}
 import com.linkedin.feathr.offline.config.location.InputLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
@@ -8,6 +8,7 @@ import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -71,5 +72,9 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
       case _: Throwable =>
         ss.read.format("csv").option("header", "true").load(location.getPath)
     }
+  }
+
+  override def loadRdd(expectDatumType: Class[_]): RDD[_] = {
+    throw new FeathrException(ErrorLabel.FEATHR_ERROR, "loadRdd not implemented for this loader")
   }
 }

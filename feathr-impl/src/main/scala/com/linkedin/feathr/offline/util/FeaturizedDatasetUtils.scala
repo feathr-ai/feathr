@@ -149,6 +149,23 @@ private[offline] object FeaturizedDatasetUtils {
     tensorType
   }
 
+  def lookupTensorTypeForNonFMLFeatureRef(featureRefStr: String, featureType: FeatureTypes, featureTypeConfig: FeatureTypeConfig): TensorType = {
+    // For backward-compatibility, we are using following order to dertermin the tensor type:
+    //   1. always use FML metadata for tensor type,
+    //   2. then use tensor type specified in the config,
+    //   3. then use get auto-tensorized tensor type.
+    val autoTzTensorTypeOpt = AutoTensorizableTypes.getDefaultTensorType(featureType)
+
+    val tensorType = if (featureType == FeatureTypes.DENSE_VECTOR) {
+      DENSE_VECTOR_FDS_TENSOR_TYPE
+    } else if (featureTypeConfig.hasTensorType) {
+      featureTypeConfig.getTensorType
+    } else if (autoTzTensorTypeOpt.isPresent) {
+      autoTzTensorTypeOpt.get()
+    } else throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Cannot get tensor type for ${featureRefStr} with type ${featureType}")
+    tensorType
+  }
+
 
   /**
    * For a given Quince TensorData, converts the tensor into its Quince-FDS representation, which will be either a

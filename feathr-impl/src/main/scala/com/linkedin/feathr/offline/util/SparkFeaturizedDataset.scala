@@ -7,5 +7,5 @@ import org.apache.spark.sql.DataFrame
  * Contains data as a [[DataFrame]], and a matching FDS metadata.
 
  */
-case class SparkFeaturizedDataset(data: DataFrame, fdsMetadata: FeaturizedDatasetMetadata) {
+case class SparkFeaturizedDataset(data: DataFrame, fdsMetadata: com.linkedin.feathr.fds.FeaturizedDatasetMetadata) {
 }

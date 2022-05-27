@@ -1,0 +1,52 @@
+namespace com.linkedin.feathr.fds
+
+/**
+ * FeatureColumnMetadata structure capturing metadata of columns tgat cintain features (
+ * as defined in the spec). In this context, "feature columns" contain features, labels,
+ * entity ids, weights and all other columns that are used in computation/training (as opposed
+ * to opaque contextual columns).
+ * <p/>
+ * More details can be found in the specification at docs/qt_fds_spec.md
+ */
+record FeatureColumnMetadata {
+
+  /**
+   * Category of the tensor (e.g. TensorCategory.DENSE, TensorCategory.SPARSE)
+   */
+  tensorCategory: TensorCategory
+
+  /**
+   * The shape (sometimes called the “size” or “dense shape”) of the tensor.
+   * Given as a list of integers. The first element gives the size of the first dimension
+   * in the tensor, the second element gives the size of the second dimension, and so on.
+   * The length of the tensorShape array is the number of dimensions in the tensor, also
+   * called the tensor's rank.
+   * The data schema must match the tensor’s rank as indicated in the tensorShape array;
+   * which in case of DENSE means that the level of nesting of the array must
+   * match the rank, and in case of SPARSE there must be the same number of
+   * indices fields as the rank.
+   * Dimensions are allowed to have unknown size. Elements in the tensorShape array may be
+   * set as (-1) to indicate unknown.
+   * For any dimension having dimensionType of string, that dimension’s size must be set
+   * to (-1) (unknown).
+   */
+  tensorShape: array[int]
+
+  /**
+   * List of the types for each dimension. Given as an array of strings.
+   * For DENSE features, must contain only DimensionType.INT. For SPARSE features,
+   * must correspond to the data types of the corresponding indices fields in the data schema
+   */
+  dimensionTypes: array[DimensionType]
+
+  /**
+   * The value type (e.g. ValueType.INT, ValueType.FLOAT)
+   */
+  valueType: ValueType
+
+  /**
+   * Optional metadata that helps with linkage of a feature. See the documentation
+   * on FeatureColumnLinkageMetadata for more info.
+   */
+  linkageMetadata: optional FeatureColumnLinkageMetadata
+}

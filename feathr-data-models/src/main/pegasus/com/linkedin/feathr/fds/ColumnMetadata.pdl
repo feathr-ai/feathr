@@ -1,0 +1,21 @@
+namespace com.linkedin.feathr.fds
+
+/**
+ * Mandatory Metadata for each column in a Featurized Dataset.
+ * <p/>
+ * More details can be found in the specification at docs/qt_fds_spec.md
+ */
+record ColumnMetadata {
+  /**
+   * metadata for a single column in FDS.
+   */
+  metadata: union [
+     // Indicates that the column is a feature column (contains Quince Tensors that are allowed to
+     // be used in model training). See docs/qt_fds_spec.md for more info.
+    FeatureColumnMetadata,
+
+     // Indicates that the column is an opaque contextual column and (contains data not allowed to
+     // be used in model training). See docs/qt_fds_spec.md for more info.
+    OpaqueContextualColumnMetadata
+  ]
+}

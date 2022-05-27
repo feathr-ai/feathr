@@ -375,7 +375,13 @@ private[offline] object FDSConversionUtils {
           // Auto tz case. If user does not explicitly give a valType and the the values are Numbers, auto tz logic sets
           // valType to Float and we will coerce the output to Float.
           if (valType == FloatType) {
-            arrays(0).zip(arrays(1).map(_.toString.toFloat)).sortBy(p => p._1.toString).unzip
+            val dimToValArray = arrays(0).zip(arrays(1).map(_.toString.toFloat))
+            val sortedArray = try {
+              dimToValArray.sortBy(p => java.lang.Float.valueOf(p._1.toString))
+            } catch {
+              case e: Exception => dimToValArray.sortBy(p => p._1.toString)
+            }
+            sortedArray.unzip
           } else { // Explicit tz case
             arrays(0).zip(arrays(1)).sortBy(p => p._1.toString).unzip
           }

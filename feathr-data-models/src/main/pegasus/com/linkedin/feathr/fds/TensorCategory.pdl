@@ -1,0 +1,26 @@
+namespace com.linkedin.feathr.fds
+
+/**
+ * Representation type of a feature
+ * <p/>
+ * More details can be found in the specification
+ * https://docs.google.com/document/d/12VZis-6VyQN3Ivy2rQxf-OktZqCowuTvVrsIFxwTVXU/edit#heading=h.jjuk2t7bn84
+ */
+enum TensorCategory {
+
+  /**
+   * A tensor where we only store values for some positions.
+   */
+  SPARSE
+
+  /**
+   * A tensor where we store a value for each position.
+   */
+  DENSE
+
+  /**
+   * RAGGED tensors (also called nested tensors) are similar to dense tensors but have variable-length
+   * dimensions.
+   */
+  RAGGED
+}

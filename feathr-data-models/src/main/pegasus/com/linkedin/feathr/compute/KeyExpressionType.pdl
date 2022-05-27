@@ -1,0 +1,7 @@
+namespace com.linkedin.feathr.compute
+
+enum KeyExpressionType {
+  MVEL,
+  SQL,
+  UDF
+}

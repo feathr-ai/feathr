@@ -17,7 +17,10 @@ configurations.all {
 }
 
 dependencies {
+  implementation project(":feathr-compute")
+  implementation project(":feathr-config")
   implementation project(":feathr-data-models")
+  implementation project(path: ':feathr-data-models', configuration: 'dataTemplate')
   implementation spec.product.scala.scala_library
 
   implementation spec.product.jackson.dataformat_csv

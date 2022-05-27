@@ -1,0 +1,20 @@
+namespace com.linkedin.feathr.fds
+
+/**
+ * Container for full FDS metadata. Note that this container is not stored on disk as
+ * part of Avro Schema. It is only used as a container to hold both top-level and per-column
+ * metadata in one place in memory.
+ * <p/>
+ * More details can be found in the specification at docs/qt_fds_spec.md
+ */
+record FeaturizedDatasetMetadata {
+  /**
+   * Metadata on the whole FDS (column agnostic).
+   */
+  topLevelMetadata: FeaturizedDatasetTopLevelMetadata
+
+  /**
+   * Metadata on each column of FDS.
+   */
+  columnMetadata: map[string, ColumnMetadata]
+}

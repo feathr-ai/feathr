@@ -1,8 +1,10 @@
 package com.linkedin.feathr.offline.source.dataloader.stream
 
+import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import com.linkedin.feathr.offline.config.datasource.KafkaResourceInfoSetter
 import com.linkedin.feathr.offline.config.location.KafkaEndpoint
 import org.apache.avro.Schema
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.streaming.DataStreamReader
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -42,6 +44,10 @@ class KafkaDataLoader(ss: SparkSession, input: KafkaEndpoint) extends StreamData
         .option("kafka.request.timeout.ms", "60000")
         .option("kafka.session.timeout.ms", "60000")
         .option("failOnDataLoss", "false")
+  }
+
+  override def loadRdd(expectDatumType: Class[_]): RDD[_] = {
+    throw new FeathrException(ErrorLabel.FEATHR_ERROR, "loadRdd not implemented for this loader")
   }
 
   /**

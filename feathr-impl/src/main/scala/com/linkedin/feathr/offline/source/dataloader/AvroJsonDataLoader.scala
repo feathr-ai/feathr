@@ -42,6 +42,15 @@ private[offline] class AvroJsonDataLoader(ss: SparkSession, path: String) extend
     AvroJsonDataLoader.convertRDD2DF(ss, res)
   }
 
+  /**
+   * load the source data as RDD.
+   * @param expectDatumType the class of the RDD data type. Ususally it's GenericRecord or a subclass of SpecificRecord.
+   * @return an RDD
+   */
+  override def loadRdd(expectDatumType: Class[_]): RDD[_] = {
+    AvroJsonDataLoader.loadJsonFileAsAvroToRDD(ss, path)(ClassTag(expectDatumType))._1
+  }
+
 }
 
 private[offline] object AvroJsonDataLoader {

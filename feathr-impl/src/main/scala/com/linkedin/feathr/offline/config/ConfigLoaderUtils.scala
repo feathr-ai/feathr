@@ -46,7 +46,7 @@ private[offline] object ConfigLoaderUtils {
   /**
    * Convert Java List[String] to Scala Seq[String], and make a deep copy to avoid any not-serializable exception
    */
-  private[config] def javaListToSeqWithDeepCopy(inputList: JavaList[String]): Seq[String] = {
+  private[feathr] def javaListToSeqWithDeepCopy(inputList: JavaList[String]): Seq[String] = {
     Seq(inputList.asScala: _*)
   }
 }

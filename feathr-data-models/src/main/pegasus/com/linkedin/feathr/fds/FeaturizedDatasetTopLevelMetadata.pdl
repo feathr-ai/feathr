@@ -1,0 +1,13 @@
+namespace com.linkedin.feathr.fds
+
+/**
+ * Mandatory Metadata for the whole Featurized Dataset (not tied to indivual columns).
+ * <p/>
+ * More details can be found in the specification at docs/qt_fds_spec.md
+ */
+record FeaturizedDatasetTopLevelMetadata {
+  /**
+   * Schema version of FDS.
+   */
+  fdsSchemaVersion: FeaturizedDatasetSchemaVersion
+}

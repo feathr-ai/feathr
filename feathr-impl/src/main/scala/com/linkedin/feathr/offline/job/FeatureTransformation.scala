@@ -2,9 +2,11 @@ package com.linkedin.feathr.offline.job
 
 import com.linkedin.feathr.common._
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException, FeathrFeatureTransformationException}
+import com.linkedin.feathr.common.tensor.TensorData
+import com.linkedin.feathr.common.types.FeatureType
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
-import com.linkedin.feathr.offline.anchored.keyExtractor.MVELSourceKeyExtractor
+import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SpecificRecordSourceKeyExtractor}
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.config.{MVELFeatureDefinition, TimeWindowFeatureDefinition}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
@@ -1073,6 +1075,158 @@ private[offline] object FeatureTransformation {
     } else {
       newDeltaSourceAgg
     }
+  }
+
+
+  /**
+   * Convert the dataframe that results are the end of all node execution to QUINCE_FDS tensors. Note that we expect some
+   * columns to already be in FDS format and FeatureColumnFormats map will tell us that. Some transformation operators
+   * and nodes will return the column in FDS format so we do not need to do conversion in that instance.
+   * @param allFeaturesToConvert all features to convert
+   * @param featureColumnFormatsMap transformer returned result
+   * @param withFeatureDF input dataframe with all requested features
+   * @param userProvidedFeatureTypeConfigs user provided feature types
+   * @return dataframe in FDS format
+   */
+  def convertFCMResultDFToFDS(
+    allFeaturesToConvert: Seq[String],
+    featureColumnFormatsMap: Map[String, FeatureColumnFormat],
+    withFeatureDF: DataFrame,
+    userProvidedFeatureTypeConfigs: Map[String, FeatureTypeConfig] = Map()): FeatureDataFrame = {
+    // 1. infer the feature types if they are not done by the transformers above
+    val defaultInferredFeatureTypes = inferFeatureTypesFromRawDF(withFeatureDF, allFeaturesToConvert)
+    val transformedInferredFeatureTypes = defaultInferredFeatureTypes
+    val featureColNameToFeatureNameAndType =
+      allFeaturesToConvert.map { featureName =>
+        val userProvidedConfig = userProvidedFeatureTypeConfigs.getOrElse(featureName, FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
+        val userProvidedFeatureType = userProvidedConfig.getFeatureType
+        val processedFeatureTypeConfig = if (userProvidedFeatureType == FeatureTypes.UNSPECIFIED) {
+          transformedInferredFeatureTypes.getOrElse(featureName, FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
+        } else userProvidedConfig
+        val colName = featureName
+        (colName, (featureName, processedFeatureTypeConfig))
+      }.toMap
+    val inferredFeatureTypes = featureColNameToFeatureNameAndType.map {
+      case (_, (featureName, featureType)) =>
+        featureName -> featureType
+    }
+
+    // 2. convert to QUINCE_FDS
+    val convertedDF = featureColNameToFeatureNameAndType
+      .groupBy(pair => featureColumnFormatsMap(pair._1))
+      .foldLeft(withFeatureDF)((inputDF, featureColNameToFeatureNameAndTypeWithFormat) => {
+        val fdsDF = featureColNameToFeatureNameAndTypeWithFormat._1 match {
+          case FeatureColumnFormat.FDS_TENSOR =>
+            inputDF
+          case FeatureColumnFormat.RAW =>
+            // sql extractor return rawDerivedFeatureEvaluator.scala (Diff rev
+            val convertedDF = FeaturizedDatasetUtils.convertRawDFtoQuinceFDS(inputDF, featureColNameToFeatureNameAndType)
+            convertedDF
+        }
+        fdsDF
+      })
+    FeatureDataFrame(convertedDF, inferredFeatureTypes)
+  }
+
+  /**
+   * This method is used to strip off the function name, ie - USER_FACING_MULTI_DIM_FDS_TENSOR_UDF_NAME.
+   * For example, if the featureDef: FDSExtract(f1), then only f1 will be returned.
+   * @param featureDef  feature definition expression with the keyword (USER_FACING_MULTI_DIM_FDS_TENSOR_UDF_NAME)
+   * @return  feature def expression after stripping off the keyword (USER_FACING_MULTI_DIM_FDS_TENSOR_UDF_NAME)
+   */
+  def parseMultiDimTensorExpr(featureDef: String): String = {
+    // String char should be one more than the len of the keyword to account for '('. The end should be 1 less than length of feature string
+    // to account for ')'.
+    featureDef.substring(featureDef.indexOf("(") + 1, featureDef.indexOf(")"))
+  }
+
+
+  def applyRowBasedTransformOnRdd(userProvidedFeatureTypes: Map[String, FeatureTypes], requestedFeatureNames: Seq[String],
+    inputRdd: RDD[_], sourceKeyExtractors: Seq[SourceKeyExtractor], transformers: Seq[AnchorExtractorBase[Any]],
+    featureTypeConfigs: Map[String, FeatureTypeConfig]): (DataFrame, Seq[String]) = {
+    /*
+     * Transform the given RDD by applying extractors to each row to create an RDD[Row] where each Row
+     * represents keys and feature values
+     */
+    val spark = SparkSession.builder().getOrCreate()
+    val FeatureTypeInferenceContext(featureTypeAccumulators) =
+      FeatureTransformation.getTypeInferenceContext(spark, userProvidedFeatureTypes, requestedFeatureNames)
+    val transformedRdd = inputRdd map { row =>
+      val (keys, featureValuesWithType) = transformRow(requestedFeatureNames, sourceKeyExtractors, transformers, row, featureTypeConfigs)
+      requestedFeatureNames.zip(featureValuesWithType).foreach {
+        case (featureRef, (_, featureType)) =>
+          if (featureTypeAccumulators(featureRef).isZero && featureType != null) {
+            // This is lazy evaluated
+            featureTypeAccumulators(featureRef).add(FeatureTypes.valueOf(featureType.getBasicType.toString))
+          }
+      }
+      // Create a row by merging a row created from keys and a row created from term-vectors/tensors
+      Row.merge(Row.fromSeq(keys), Row.fromSeq(featureValuesWithType.map(_._1)))
+    }
+
+    // Create a DataFrame from the above obtained RDD
+    val keyNames = getFeatureJoinKey(sourceKeyExtractors.head, inputRdd)
+    val (outputSchema, inferredFeatureTypeConfigs) = {
+      val inferredFeatureTypes = inferFeatureTypes(featureTypeAccumulators, transformedRdd, requestedFeatureNames)
+      val inferredFeatureTypeConfigs = inferredFeatureTypes.map(x => x._1 -> new FeatureTypeConfig(x._2))
+      val mergedFeatureTypeConfig = inferredFeatureTypeConfigs ++ featureTypeConfigs
+      val colPrefix = ""
+      val featureTensorTypeInfo = getFDSSchemaFields(requestedFeatureNames, mergedFeatureTypeConfig, colPrefix)
+      val structFields = keyNames.foldRight(List.empty[StructField]) {
+        case (colName, acc) =>
+          StructField(colName, StringType) :: acc
+      }
+      val outputSchema = StructType(StructType(structFields ++ featureTensorTypeInfo))
+      (outputSchema, mergedFeatureTypeConfig)
+    }
+    (spark.createDataFrame(transformedRdd, outputSchema), keyNames)
+  }
+
+  private def transformRow(
+    requestedFeatureNames: Seq[FeatureName],
+    sourceKeyExtractors: Seq[SourceKeyExtractor],
+    transformers: Seq[AnchorExtractorBase[Any]],
+    row: Any,
+    featureTypeConfigs: Map[String, FeatureTypeConfig] = Map()): (Seq[String], Seq[(Any, FeatureType)]) = {
+    val keys = sourceKeyExtractors.head match {
+      case mvelSourceKeyExtractor: MVELSourceKeyExtractor => mvelSourceKeyExtractor.getKey(row)
+      case specificSourceKeyExtractor: SpecificRecordSourceKeyExtractor => specificSourceKeyExtractor.getKey(row)
+      case _ => throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, s"${sourceKeyExtractors.head} is not a valid extractor on RDD")
+    }
+
+    /*
+     * For the given row, apply all extractors to extract feature values. If requested as tensors, each feature value
+     * contains a tensor else a term-vector.
+     */
+    val features = transformers map {
+      case extractor: AnchorExtractor[Any] =>
+        val features = extractor.getFeatures(row)
+        FeatureValueTypeValidator.validate(features, featureTypeConfigs)
+        features
+      case extractor =>
+        throw new FeathrFeatureTransformationException(
+          ErrorLabel.FEATHR_USER_ERROR,
+          s"Invalid extractor $extractor for features:" +
+            s"$requestedFeatureNames requested as tensors")
+    } reduce (_ ++ _)
+    if (logger.isTraceEnabled) {
+      logger.trace(s"Extracted features: $features")
+    }
+
+    /*
+     * Retain feature values for only the requested features, and represent each feature value as a term-vector or as
+     * a tensor, as specified. If tensors are required, create a row for each feature value (that is, the tensor).
+     */
+    val featureValuesWithType = requestedFeatureNames map { name =>
+      features.get(name) map {
+        case featureValue =>
+          val tensorData: TensorData = featureValue.getAsTensorData()
+          val featureType: FeatureType = featureValue.getFeatureType()
+          val row = FeaturizedDatasetUtils.tensorToDataFrameRow(tensorData)
+          (row, featureType)
+      } getOrElse ((null, null)) // return null if no feature value present
+    }
+    (keys, featureValuesWithType)
   }
 
   /**

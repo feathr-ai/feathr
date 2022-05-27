@@ -14,7 +14,8 @@ public enum SourceType {
   PASSTHROUGH("PASSTHROUGH"),
   COUCHBASE("Couchbase"),
   CUSTOM("Custom"),
-  PINOT("Pinot");
+  PINOT("Pinot"),
+  VECTOR("Vector");
 
   private final String _sourceType;
   SourceType(String sourceType) {

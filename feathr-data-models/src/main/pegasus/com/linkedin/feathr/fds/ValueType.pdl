@@ -1,0 +1,42 @@
+namespace com.linkedin.feathr.fds
+
+/**
+ * The value type for a feature (column) of FDS.
+ */
+enum ValueType {
+
+  /**
+   * The value is an integer.
+   */
+  INT
+
+  /**
+   * The value is a long.
+   */
+  LONG
+
+  /**
+   * The value is a float.
+   */
+  FLOAT
+
+  /**
+   * The value is a double.
+   */
+  DOUBLE
+
+  /**
+   * The value is a boolean.
+   */
+  BOOLEAN
+
+  /**
+   * The value is a string.
+   */
+  STRING
+
+  /**
+   * The value is a byte-array.
+   */
+  BYTES
+}

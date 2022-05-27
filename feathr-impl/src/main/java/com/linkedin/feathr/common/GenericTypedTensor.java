@@ -56,6 +56,9 @@ public class GenericTypedTensor implements TypedTensor {
         throw UNSUPPORTED_OPERATION_EXCEPTION;
     }
 
+    @Override
+    public TypedTensor subSlice(Object val) { throw UNSUPPORTED_OPERATION_EXCEPTION; }
+
     /**
      * Returns human-readable summary suitable for debugging.
      */

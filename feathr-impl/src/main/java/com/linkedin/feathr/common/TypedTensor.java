@@ -14,6 +14,8 @@ public interface TypedTensor {
 
     TypedTensor slice(Object val);
 
+    TypedTensor subSlice(Object val);
+
     String toDebugString();
 
     String toDebugString(int maxStringLenLimit);

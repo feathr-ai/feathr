@@ -1,0 +1,19 @@
+namespace com.linkedin.feathr.fds
+
+/**
+ * Metadata that will be present if this feature was provided by Frame.
+ */
+@deprecated
+record FrameMetadata {
+
+  /**
+   * The fully-qualified Frame featureRef string of the feature; e.g. "namespace-feature-major-minor"
+   * @see [[com.linkedin.frame.core.config.producer.common.FeatureRef]]
+   */
+  featureRef: string
+
+  /**
+   * The names of the join keys (“key tags”) that were used when Frame joined these features.
+   */
+  joinKeys: array[string]
+}
