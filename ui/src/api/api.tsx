@@ -1,7 +1,7 @@
 import Axios from "axios";
 import { Features, IDataSource, IFeature, IFeatureDetail, IFeatureLineage } from "../models/model";
 
-const API_ENDPOINT = "https://feathr-api-test.azurewebsites.net";
+const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT + "/api";
 const purview = "feathrazuretest3-purview1"
 const token = "mockAppServiceKey";
 
@@ -46,6 +46,14 @@ export const fetchFeature = async (project: string, qualifiedName: string) => {
 };
 
 export const fetchProjectLineages = async (project: string) => {
+  return Axios
+    .get<IFeatureLineage>(`${ API_ENDPOINT }/v1/purview/${ purview }/projects/${ project }?code=${ token }`, {})
+    .then((response) => {
+      return response.data;
+    })
+};
+
+export const fetchFeatureLineages = async (project: string) => {
   return Axios
     .get<IFeatureLineage>(`${ API_ENDPOINT }/v1/purview/${ purview }/features/lineage/${ project }?code=${ token }`, {})
     .then((response) => {

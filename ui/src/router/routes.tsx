@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import { BrowserRouter, Route, Switch, withRouter } from "react-router-dom";
+import { CompatRouter } from "react-router-dom-v5-compat";
 import { Layout } from "antd";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { Configuration, InteractionType, PublicClientApplication, } from "@azure/msal-browser";
@@ -10,9 +11,9 @@ import Features from "../pages/feature/features";
 import NewFeature from "../pages/feature/newFeature";
 import FeatureDetails from "../pages/feature/featureDetails";
 import DataSources from "../pages/dataSource/dataSources";
-import FeatureLineage from "../pages/feature/featureLineage";
 import Jobs from "../pages/jobs/jobs";
 import Monitoring from "../pages/monitoring/monitoring";
+import FeatureLineageGraph from "../pages/feature/featureLineageGraph";
 
 type Props = {};
 const queryClient = new QueryClient();
@@ -31,7 +32,8 @@ const Routes: React.FC<Props> = () => {
       <MsalAuthenticationTemplate interactionType={ InteractionType.Redirect }>
         <QueryClientProvider client={ queryClient }>
           <BrowserRouter>
-            <Layout style={ { minHeight: "100vh" } }>
+            <CompatRouter>
+              <Layout style={ { minHeight: "100vh" } }>
               <SideMenu />
               <Layout>
                 <Header />
@@ -43,7 +45,9 @@ const Routes: React.FC<Props> = () => {
                     <Route exact={ true } path="/projects/:project/features/:qualifiedName"
                            component={ withRouter(FeatureDetails) } />
                     <Route exact={ true } path="/projects/:project/features/:qualifiedName/lineage"
-                           component={ withRouter(FeatureLineage) } />
+                           component={ withRouter(FeatureLineageGraph) } />
+                    <Route exact={ true } path="/projects/:project/features/:qualifiedName/lineage/:nodeId"
+                           component={ withRouter(FeatureLineageGraph) } />
                     <Route exact={ true } path="/jobs" component={ withRouter(Jobs) } />
                     <Route exact={ true } path="/monitoring" component={ withRouter(Monitoring) } />
                     {/* {publicRoutes} */ }
@@ -52,6 +56,7 @@ const Routes: React.FC<Props> = () => {
                 </Switch>
               </Layout>
             </Layout>
+            </CompatRouter>
           </BrowserRouter>
         </QueryClientProvider>
       </MsalAuthenticationTemplate>

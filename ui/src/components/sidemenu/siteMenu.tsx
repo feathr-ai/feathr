@@ -1,12 +1,10 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
 import { CopyOutlined, DatabaseOutlined, EyeOutlined, RocketOutlined } from '@ant-design/icons';
-import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 
 const { Sider } = Layout;
-
-const SideMenu = withRouter(({ history }) => {
+const SideMenu = () => {
   return (
     <Sider>
       <div style={ { fontSize: 'medium', color: 'white', margin: '10px', paddingLeft: '15px' } }>
@@ -17,7 +15,6 @@ const SideMenu = withRouter(({ history }) => {
         mode="inline"
         defaultSelectedKeys={ ['/'] }
         defaultOpenKeys={ ['/'] }
-        selectedKeys={ [history.location.pathname] }
       >
         <Menu.Item key="/dataSources" icon={ <DatabaseOutlined /> }>
           <Link to="/dataSources">Data Sources</Link>
@@ -34,6 +31,6 @@ const SideMenu = withRouter(({ history }) => {
       </Menu>
     </Sider>
   );
-});
+};
 
 export default SideMenu;
