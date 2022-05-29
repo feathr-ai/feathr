@@ -35,7 +35,6 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
 
   useEffect(() => {
     setElements(layoutedElements);
-    console.log("setElements fired in useEffect, elements count = ", layoutedElements.length);
   }, [data, nodeId]);
 
   const resetHighlight = (): void => {
@@ -66,7 +65,6 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     }
 
     setElements(values);
-    console.log("setElements fired in resetHighlight, elements count = ", values.length);
   };
 
   const highlightPath = (node: Node, check: boolean): void => {
@@ -113,7 +111,6 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     }
 
     setElements(values);
-    console.log("setElements fired in highlightPath, elements count = ", values.length);
   };
 
   const fitElements = (): void => {
@@ -134,8 +131,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     if (nodeId) {
       const node = findNodeInElement(nodeId, layoutedElements);
       if (node) {
-        resetHighlight(); // new changes to the graph
-        console.log("resetHighlight fired");
+        resetHighlight();
         highlightPath(node, !!nodeId);
       }
     }
@@ -150,7 +146,6 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
   }, [instanceRef]);
 
   const onPaneClick = useCallback(() => {
-    console.log("=====> onPaneClick fired");
     resetHighlight();
     setURLSearchParams({});
   }, []);
@@ -163,11 +158,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     values[nodePosition] = node;
 
     setElements(values);
-    console.log("setElements fired in onNodeDragStop, elements count = ", values.length);
   };
-
-
-  console.log("lineGraph rendered, elements count = ", layoutedElements.length);
 
   return (
     <div className="lineage-graph">
@@ -184,7 +175,6 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
             onElementClick={ (_: ReactMouseEvent, element: Node | Edge): void => {
               if (isNode(element)) {
                 resetHighlight();
-                console.log("resetHighlight fired");
                 highlightPath(element, false);
                 setURLSearchParams({ nodeId: element.data.id });
               }

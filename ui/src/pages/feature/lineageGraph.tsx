@@ -32,7 +32,7 @@ const LineageGraph: React.FC = () => {
 
       const nodeId = currentNode.guid;
 
-      // check if model type exists and this currentNode is of that type
+      // If toggled feature type exists, skip other types
       if (featureType && featureType !== currentNode.typeName) {
         continue;
       }
@@ -51,14 +51,13 @@ const LineageGraph: React.FC = () => {
       const { fromEntityId: from, toEntityId: to, relationshipType } = graphData.relations[index];
       const edge = generateEdge({ obj: elementObj, from, to });
       if (edge?.source && edge?.target) {
-        if (relationshipType === "Produces") { // Drop edges with other relationship like Consumes, BelongsTo, etc)
+        // Drop edges with other relationship e.g, Consumes, BelongsTo
+        if (relationshipType === "Produces") {
           elements.push(edge);
         }
       }
     }
     SetElements(elements);
-
-    console.log("setElements fired in fetchGraphData, elements count = ", elements.length);
   }, [featureType])
 
   useEffect(() => {
@@ -94,7 +93,7 @@ const LineageGraph: React.FC = () => {
         <Button onClick={ () => toggleAllFeatures() }></Button>
       </div>
       <div>
-        { elements && <Graph data={ elements } nodeId={nodeId} /> }
+        { elements && <Graph data={ elements } nodeId={ nodeId } /> }
       </div>
     </Card>
   );
