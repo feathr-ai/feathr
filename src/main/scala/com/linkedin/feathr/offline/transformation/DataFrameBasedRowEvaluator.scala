@@ -144,7 +144,8 @@ private[offline] object DataFrameBasedRowEvaluator {
   }
 }
 
-// Used to 'accumulate' the feature type for a feature while transforming the feature for each row in the dataset
+// Used to infer the feature type for a feature while transforming the feature for each row in the dataset
+// See updateFeatureType() for rules being used.
 private[offline] class FeatureTypeAccumulator(var featureType: FeatureTypes) extends AccumulatorV2[FeatureTypes, FeatureTypes] {
 
   def reset(): Unit = {

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.node._
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException, FeathrException}
-import com.linkedin.feathr.common.{AnchorExtractor, _}
+import com.linkedin.feathr.common.{AnchorExtractor, AnchorExtractorBase, FeathrJacksonScalaModule, FeatureDerivationFunctionBase, FeatureTypeConfig, FeatureTypes}
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}

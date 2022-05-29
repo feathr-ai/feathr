@@ -13,6 +13,8 @@ import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 import org.mvel2.MVEL
 
+import scala.collection.JavaConverters._
+
 /**
  * A general-purpose configurable FeatureAnchor that extract features based on its definitions,
  * the definition includes mvel expression and feature type (optional)
@@ -181,12 +183,16 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
     val resultWithType = result collect {
       // Apply a partial function only for non-empty feature values, empty feature values will be set to default later
       case (featureRefStr, Some(value)) =>
-
+        val javaValue = if (value.isInstanceOf[scala.collection.Map[_, _]]) {
+          value.asInstanceOf[scala.collection.Map[_, _]].asJava
+        } else {
+          value
+        }
         // If user already provided the feature type, we don't need to coerce/infer it
         val coercedFeatureType = if (featureTypeMap(featureRefStr) == FeatureTypes.UNSPECIFIED) {
-          CoercionUtils.getCoercedFeatureType(value)
+          CoercionUtils.getCoercedFeatureType(javaValue)
         } else featureTypeMap(featureRefStr)
-        (featureRefStr, (value, coercedFeatureType))
+        (featureRefStr, (javaValue, coercedFeatureType))
     }
     resultWithType map {
       case (featureRef, (featureValue, coercedFeatureType)) =>
