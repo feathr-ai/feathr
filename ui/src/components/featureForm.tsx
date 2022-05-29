@@ -1,8 +1,8 @@
 import React, { CSSProperties, useEffect, useState } from 'react';
-import { BackTop, Button, Form, Input, message, Space } from 'antd';
-import { createFeature, updateFeature } from '../api';
-import { Redirect } from 'react-router';
 import { UpCircleOutlined } from '@ant-design/icons'
+import { BackTop, Button, Form, Input, message, Space } from 'antd';
+import { Navigate } from "react-router-dom";
+import { createFeature, updateFeature } from '../api';
 import { FeatureAttributes, IFeature } from "../models/model";
 
 type FeatureFormProps = {
@@ -84,7 +84,7 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
         <BackTop style={ { marginBottom: '5%', marginRight: '20px' } }><UpCircleOutlined
           style={ { fontSize: '400%', color: '#3F51B5' } } /></BackTop>
       </Form>
-      { fireRedirect && (<Redirect to={ '/features' }></Redirect>) }
+      { fireRedirect && (<Navigate to={ '/features' }></Navigate>) }
     </>
   );
 };

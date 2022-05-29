@@ -12,10 +12,10 @@ import ReactFlow, {
   OnLoadParams,
   ReactFlowProvider
 } from 'react-flow-renderer';
-import { useSearchParams } from 'react-router-dom-v5-compat';
-import LineageNode from "./lineageNode";
-import { findNodeInElement, getLayoutElements } from "./utils";
+import { useSearchParams } from 'react-router-dom';
 import { Spin } from "antd";
+import LineageNode from "./graphNode";
+import { findNodeInElement, getLayoutedElements } from "./utils";
 import { LoadingOutlined } from "@ant-design/icons";
 
 const nodeTypes = {
@@ -25,20 +25,24 @@ type Props = {
   data: Elements;
   nodeId: string;
 }
-const LineageGraph: React.FC<Props> = ({ data, nodeId }) => {
+const Graph: React.FC<Props> = ({ data, nodeId }) => {
   const [, setURLSearchParams] = useSearchParams();
   const instanceRef = useRef<OnLoadParams | null>(null);
 
-  const { res, elementMapping } = getLayoutElements(data);
-  const [elements, setElements] = useState<Elements>(res);
+  const { layoutedElements, elementMapping } = getLayoutedElements(data);
+  const [elements, setElements] = useState<Elements>(layoutedElements);
   const [loading, setLoading] = useState<boolean>(false);
 
-
   useEffect(() => {
-    setElements(res);
+    setElements(layoutedElements);
+    console.log("setElements fired in useEffect, elements count = ", layoutedElements.length);
   }, [data, nodeId]);
 
   const resetHighlight = (): void => {
+    if (!elements || elements.length === 0) {
+      return;
+    }
+
     const values: Elements = [];
 
     for (let index = 0; index < elements.length; index++) {
@@ -62,10 +66,11 @@ const LineageGraph: React.FC<Props> = ({ data, nodeId }) => {
     }
 
     setElements(values);
+    console.log("setElements fired in resetHighlight, elements count = ", values.length);
   };
 
   const highlightPath = (node: Node, check: boolean): void => {
-    const checkElements = check ? res : elements;
+    const checkElements = check ? layoutedElements : elements;
 
     const incomerIds = new Set([...getIncomers(node, checkElements).map((i) => i.id)]);
     const outgoerIds = new Set([...getOutgoers(node, checkElements).map((o) => o.id)]);
@@ -106,7 +111,9 @@ const LineageGraph: React.FC<Props> = ({ data, nodeId }) => {
         });
       }
     }
+
     setElements(values);
+    console.log("setElements fired in highlightPath, elements count = ", values.length);
   };
 
   const fitElements = (): void => {
@@ -125,9 +132,10 @@ const LineageGraph: React.FC<Props> = ({ data, nodeId }) => {
 
   useEffect(() => {
     if (nodeId) {
-      const node = findNodeInElement(nodeId, res);
+      const node = findNodeInElement(nodeId, layoutedElements);
       if (node) {
         resetHighlight(); // new changes to the graph
+        console.log("resetHighlight fired");
         highlightPath(node, !!nodeId);
       }
     }
@@ -142,6 +150,7 @@ const LineageGraph: React.FC<Props> = ({ data, nodeId }) => {
   }, [instanceRef]);
 
   const onPaneClick = useCallback(() => {
+    console.log("=====> onPaneClick fired");
     resetHighlight();
     setURLSearchParams({});
   }, []);
@@ -154,11 +163,15 @@ const LineageGraph: React.FC<Props> = ({ data, nodeId }) => {
     values[nodePosition] = node;
 
     setElements(values);
+    console.log("setElements fired in onNodeDragStop, elements count = ", values.length);
   };
+
+
+  console.log("lineGraph rendered, elements count = ", layoutedElements.length);
 
   return (
     <div className="lineage-graph">
-      { loading ?  <Spin indicator={ <LoadingOutlined style={ { fontSize: 24 } } spin /> } /> : (
+      { loading ? <Spin indicator={ <LoadingOutlined style={ { fontSize: 24 } } spin /> } /> : (
         <ReactFlowProvider>
           <ReactFlow
             style={ { height: "700px", width: "100%" } }
@@ -171,6 +184,7 @@ const LineageGraph: React.FC<Props> = ({ data, nodeId }) => {
             onElementClick={ (_: ReactMouseEvent, element: Node | Edge): void => {
               if (isNode(element)) {
                 resetHighlight();
+                console.log("resetHighlight fired");
                 highlightPath(element, false);
                 setURLSearchParams({ nodeId: element.data.id });
               }
@@ -187,4 +201,4 @@ const LineageGraph: React.FC<Props> = ({ data, nodeId }) => {
   );
 }
 
-export default LineageGraph;
+export default Graph;

@@ -2,10 +2,6 @@
     margin-top: 1.5rem;
 }
 
-.lineage-node {
-    padding: 4px 12px 7px;
-}
-
 .lineage-node-active {
     overflow: hidden;
     border-radius: 0.25rem;
@@ -18,6 +14,10 @@
     --tw-text-opacity: 1;
     color: rgba(255, 255, 255, var(--tw-text-opacity));
     opacity: 1;
+}
+
+.lineage-node-box {
+    padding: 4px 12px 7px;
 }
 
 .lineage-node-title {

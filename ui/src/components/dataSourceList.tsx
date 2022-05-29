@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
 import { LoadingOutlined } from "@ant-design/icons";
 import { Form, Select, Table } from "antd";
 import { DataSourceAttributes, IDataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
 
 const DataSourceList: React.FC = () => {
-  const history = useHistory();
-  useCallback((location) => history.push(location), [history]);
   const columns = [
     {
       title: <div style={ { userSelect: "none" } }>Name</div>,
@@ -100,7 +97,7 @@ const DataSourceList: React.FC = () => {
 
   useEffect(() => {
     loadProjects();
-  }, [])
+  }, [loadProjects])
 
   const onProjectChange = async (value: string) => {
     setProject(value);

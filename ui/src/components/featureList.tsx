@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from "react-router-dom";
 import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Input, Menu, message, Popconfirm, Select, Tooltip, Form, Table } from 'antd';
 import { IFeature } from "../models/model";
 import { deleteFeature, fetchProjects, fetchFeatures } from "../api";
 
 const FeatureList: React.FC = () => {
-  const history = useHistory();
-  const navigateTo = useCallback((location) => history.push(location), [history]);
+  const navigate = useNavigate();
   const columns = [
     {
       title: <div style={ { userSelect: "none" } }>Name</div>,
@@ -17,7 +16,7 @@ const FeatureList: React.FC = () => {
       render: (name: string, row: IFeature) => {
         return (
           <Button type="link" onClick={ () => {
-            navigateTo(`/projects/${ project }/features/${ row.qualifiedName }`)
+            navigate(`/projects/${ project }/features/${ row.qualifiedName }`)
           } }>{ name }</Button>
         )
       },
@@ -56,7 +55,7 @@ const FeatureList: React.FC = () => {
             <Menu>
               <Menu.Item key="edit">
                 <Button type="link" onClick={ () => {
-                  navigateTo(`/projects/${ project }/features/${ row.qualifiedName }`)
+                  navigate(`/projects/${ project }/features/${ row.qualifiedName }`)
                 } }>Edit</Button>
               </Menu.Item>
               <Menu.Item key="delete">

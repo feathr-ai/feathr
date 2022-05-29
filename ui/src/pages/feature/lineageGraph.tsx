@@ -1,16 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Card, Radio } from 'antd';
+import { useParams, useSearchParams } from "react-router-dom";
 import { Elements } from 'react-flow-renderer';
-import LineageGraph from "../../components/lineage/lineageGraph";
+import Graph from "../../components/lineage/graph";
 import { generateEdge, generateNode } from "../../components/lineage/utils";
 import { fetchProjectLineages } from "../../api";
-import { useSearchParams } from "react-router-dom-v5-compat";
-import { useParams } from "react-router";
 
-const FeatureLineageGraph: React.FC = () => {
+type Params = {
+  project: string;
+}
+const LineageGraph: React.FC = () => {
+  const { project } = useParams() as Params;
   const [searchParams] = useSearchParams();
-  // @ts-ignore
-  const { project } = useParams();
   const nodeId = searchParams.get('nodeId') as string;
 
   const [elements, SetElements] = useState<Elements>([]);
@@ -24,9 +25,11 @@ const FeatureLineageGraph: React.FC = () => {
 
     for (let index = 0; index < Object.values(graphData.guidEntityMap).length; index++) {
       const currentNode: any = Object.values(graphData.guidEntityMap)[index];
+
       if (currentNode.typeName === "feathr_workspace_v1") {
         continue; // Open issue: should project node get displayed as well?
       }
+
       const nodeId = currentNode.guid;
 
       // check if model type exists and this currentNode is of that type
@@ -54,6 +57,8 @@ const FeatureLineageGraph: React.FC = () => {
       }
     }
     SetElements(elements);
+
+    console.log("setElements fired in fetchGraphData, elements count = ", elements.length);
   }, [featureType])
 
   useEffect(() => {
@@ -89,10 +94,10 @@ const FeatureLineageGraph: React.FC = () => {
         <Button onClick={ () => toggleAllFeatures() }></Button>
       </div>
       <div>
-        { elements && <LineageGraph data={ elements } nodeId={nodeId} /> }
+        { elements && <Graph data={ elements } nodeId={nodeId} /> }
       </div>
     </Card>
   );
 }
 
-export default FeatureLineageGraph;
+export default LineageGraph;

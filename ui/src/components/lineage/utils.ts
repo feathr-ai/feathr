@@ -5,11 +5,11 @@ const DEFAULT_WIDTH = 172;
 const DEFAULT_HEIGHT = 36;
 
 type getLayoutElementsRet = {
-  res: Elements,
+  layoutedElements: Elements,
   elementMapping: Record<string, number>,
 };
 
-const getLayoutElements = (elements: Elements, direction = 'LR'): getLayoutElementsRet => {
+const getLayoutedElements = (elements: Elements, direction = 'LR'): getLayoutElementsRet => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
 
@@ -45,7 +45,7 @@ const getLayoutElements = (elements: Elements, direction = 'LR'): getLayoutEleme
       element.sourcePosition = isHorizontal ? Position.Right : Position.Bottom;
 
       element.position = {
-        x: nodeWithPosition.x - DEFAULT_WIDTH / 2 + Math.random() / 1000,
+        x: nodeWithPosition.x - DEFAULT_WIDTH / 2,
         y: nodeWithPosition.y - DEFAULT_HEIGHT / 2,
       };
     }
@@ -54,7 +54,7 @@ const getLayoutElements = (elements: Elements, direction = 'LR'): getLayoutEleme
   }
 
   return {
-    res: newElements,
+    layoutedElements: newElements,
     elementMapping: elementsObj,
   };
 };
@@ -67,10 +67,10 @@ const featureTypeColors: Record<string, string> = {
 };
 
 const generateNode = ({
-  nodeId, index,
-  currentNode
+                        nodeId, index,
+                        currentNode
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}: any): any => ({
+                      }: any): any => ({
   key: nodeId,
   id: index?.toString(),
   type: 'custom-node',
@@ -81,9 +81,10 @@ const generateNode = ({
   },
   data: {
     id: nodeId,
-    label: currentNode.displayText,
+    title: currentNode.displayText,
+    subtitle: currentNode.typeName,
+    qualifiedName: currentNode.attributes.qualifiedName,
     borderColor: featureTypeColors[currentNode.typeName],
-    otherName: currentNode.typeName,
   },
 });
 
@@ -97,7 +98,7 @@ const generateEdge = ({ obj, from, to }: GenerateEdgeProps): Edge => {
   const source = obj?.[from];
   const target = obj?.[to];
 
-  const id = `e${source}-${target}`;
+  const id = `e${ source }-${ target }`;
   return ({
     id,
     source,
@@ -109,7 +110,7 @@ const generateEdge = ({ obj, from, to }: GenerateEdgeProps): Edge => {
 export {
   generateEdge,
   generateNode,
-  getLayoutElements,
+  getLayoutedElements,
 };
 
 export const findNodeInElement = (nodeId: string | null, elements: Elements): Node | null => {

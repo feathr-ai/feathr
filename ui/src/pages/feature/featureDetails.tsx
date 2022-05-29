@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Alert, Button, Card, Col, Modal, Row, Space, Spin } from 'antd';
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
-import { useHistory, useParams } from 'react-router';
+import { useNavigate, useParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
 import { deleteFeature, fetchFeature } from '../../api';
 import { AxiosError } from 'axios';
@@ -16,10 +16,9 @@ type Params = {
 }
 
 const FeatureDetails: React.FC<Props> = () => {
-  const { project, qualifiedName } = useParams<Params>();
+  const { project, qualifiedName } = useParams() as Params;
+  const navigate = useNavigate();
   const loadingIcon = <LoadingOutlined style={ { fontSize: 24 } } spin />;
-  const history = useHistory();
-  const navigateTo = useCallback((location) => history.push(location), [history]);
   const {
     status,
     error,
@@ -27,8 +26,8 @@ const FeatureDetails: React.FC<Props> = () => {
   } = useQuery<FeatureAttributes, AxiosError>(['feature', qualifiedName], () => fetchFeature(project, qualifiedName));
 
   const openLineageWindow = () => {
-    const lineageUrl = `/projects/${ project }/features/${ qualifiedName }/lineage`;
-    window.open(lineageUrl);
+    const lineageUrl = `/projects/${ project }/lineage`;
+    navigate(lineageUrl);
   }
 
   const onClickDeleteFeature = () => {
@@ -41,7 +40,7 @@ const FeatureDetails: React.FC<Props> = () => {
       icon: <ExclamationCircleOutlined />,
       async onOk() {
         await deleteFeature(qualifiedName);
-        history.push('/features');
+        navigate('/features');
       },
       onCancel() {
         console.log('Cancel clicked');
@@ -68,7 +67,7 @@ const FeatureDetails: React.FC<Props> = () => {
       <ul>
         { features.map((_) => (
           <Button type="link" onClick={ () => {
-            navigateTo(`/projects/${ project }/features/${ _.uniqueAttributes.qualifiedName }`)
+            navigate(`/projects/${ project }/features/${ _.uniqueAttributes.qualifiedName }`)
           } }>{ _.uniqueAttributes.qualifiedName }</Button>
         )) }
       </ul>
