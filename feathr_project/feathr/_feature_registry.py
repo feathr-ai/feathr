@@ -218,13 +218,16 @@ class _FeatureRegistry():
             anchor_feature_entities = self._parse_anchor_features(anchor)
             # then parse the source of that anchor
             source_entity = self._parse_source(anchor.source)
-
+            fully_qualified_name = self.project_name+self.registry_delimiter+anchor.name
+            original_id = self.get_feature_id(fully_qualified_name)
+            original_anchor = self.get_feature_by_guid(original_id) if original_id else None
+            merged_elements = self._merge_anchor(original_anchor,anchor_feature_entities)
             anchor_entity = AtlasEntity(
                 name=anchor.name,
-                qualified_name=self.project_name + self.registry_delimiter + anchor.name,
+                qualified_name=fully_qualified_name,
                 attributes={
                     "source": source_entity.to_json(minimum=True),
-                    "features": [s.to_json(minimum=True) for s in anchor_feature_entities],
+                    "features": merged_elements,
                     "tags": anchor.registry_tags
                 },
                 typeName=TYPEDEF_ANCHOR,
@@ -260,6 +263,29 @@ class _FeatureRegistry():
             anchors_batch.append(anchor_entity)
         return anchors_batch
 
+    def _merge_anchor(self,original_anchor, new_anchor):
+        '''
+        This function merges existing anchor with new anchor, in order to fix concurrent conflict.
+        This will serve as a quick fix, but will not solved it entirely. 
+        Full fix will work with MVCC, and is in progress.
+        '''
+        new_anchor_json_repr = [s.to_json(minimum=True) for s in new_anchor]
+        if not original_anchor:
+            return new_anchor_json_repr
+        else:
+            original_anchor_elements = [x for x in original_anchor['entity']['attributes']['features']]
+            transformed_original_elements = {
+                x['uniqueAttributes']['qualifiedName']:
+                {
+                    'guid':x['guid'],
+                    'typeName':x['typeName'],
+                    'qualifiedName':x['uniqueAttributes']['qualifiedName']
+                }
+                for x in original_anchor_elements}
+            for elem in new_anchor_json_repr:
+                transformed_original_elements.setdefault(elem['qualifiedName'],elem)
+            return list(transformed_original_elements.values())
+            
     def _parse_source(self, source: Union[Source, HdfsSource]) -> AtlasEntity:
         """
         parse the input sources

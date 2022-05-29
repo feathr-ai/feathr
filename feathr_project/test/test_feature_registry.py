@@ -4,6 +4,8 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from test_fixture import registry_test_setup_append, registry_test_setup_partially
+
 import pytest
 from click.testing import CliRunner
 from feathr import (FeatureAnchor, FeatureQuery, ObservationSettings, TypedKey,
@@ -62,7 +64,27 @@ def test_feathr_register_features_e2e():
                                 output_path=output_path)
     client.wait_job_to_finish(timeout_sec=900)
 
+def test_feathr_register_features_partially():
+    """
+    This test will register features, get all the registered features, then query a set of already registered features.
+    """
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client: FeathrClient = registry_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client.register_features()
+    full_registration = client.get_features_from_registry(client.project_name)
 
+    client: FeathrClient = registry_test_setup_partially(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    new_project_name = client.project_name
+    client.register_features()
+
+    client: FeathrClient = registry_test_setup_append(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client.project_name = new_project_name
+    client.register_features()
+    appended_registration = client.get_features_from_registry(client.project_name)
+
+    # after a full registration, another registration should not affect the registered anchor features.
+    assert len(full_registration.items())==len(appended_registration.items())
     
 def test_get_feature_from_registry():
     registry = _FeatureRegistry("mock_project","mock_purview","mock_delimeter")
