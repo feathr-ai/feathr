@@ -13,6 +13,8 @@ import DataSources from "../pages/dataSource/dataSources";
 import FeatureLineage from "../pages/feature/featureLineage";
 import Jobs from "../pages/jobs/jobs";
 import Monitoring from "../pages/monitoring/monitoring";
+import Management from "../pages/management/management";
+import RoleManagement from "../pages/management/roleManagement";
 
 type Props = {};
 const queryClient = new QueryClient();
@@ -46,6 +48,10 @@ const Routes: React.FC<Props> = () => {
                            component={ withRouter(FeatureLineage) } />
                     <Route exact={ true } path="/jobs" component={ withRouter(Jobs) } />
                     <Route exact={ true } path="/monitoring" component={ withRouter(Monitoring) } />
+                    <Route exact={ true } path="/projects/:project/features/:qualifiedName" component={ withRouter(FeatureDetails) } />
+                    <Route exact={ true } path="/projects/:project/features/:qualifiedName/lineage" component={ withRouter(FeatureLineage) } />
+                    <Route exact={ true } path="/management" component={ withRouter(Management) } />
+                    <Route exact={ true } path="/role-management" component={ withRouter(RoleManagement) } />
                     {/* {publicRoutes} */ }
                     {/* <Route component={NotFound} /> */ }
                   </Suspense>

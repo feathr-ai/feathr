@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
-import { CopyOutlined, DatabaseOutlined, EyeOutlined, RocketOutlined } from '@ant-design/icons';
+import { CopyOutlined, DatabaseOutlined, EyeOutlined, RocketOutlined, SettingOutlined } from '@ant-design/icons';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 
@@ -30,6 +30,9 @@ const SideMenu = withRouter(({ history }) => {
         </Menu.Item>
         <Menu.Item key="/monitoring" icon={ <EyeOutlined /> }>
           <Link to="/monitoring">Monitoring</Link>
+        </Menu.Item>
+        <Menu.Item key = "/management" icon= { <SettingOutlined/>} >
+          <Link to="/management">Management</Link>
         </Menu.Item>
       </Menu>
     </Sider>
