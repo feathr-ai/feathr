@@ -5,18 +5,14 @@ import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils.DBTABLE_CONF
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.eclipse.jetty.util.StringUtil
 
 @CaseClassDeserialize()
 case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: String = "", password: String = "", token: String = "", useToken: Boolean = false, anonymous: Boolean = false) extends InputLocation {
-
-  def isBlankString(str: String): Boolean = {
-    null == str || "".equals(str)
-  }
-
   override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String] = Map()): DataFrame = {
     var reader = ss.read.format("jdbc")
       .option("url", url)
-    if (isBlankString(dbtable)) {
+    if (StringUtil.isBlank(dbtable)) {
       // Fallback to default table name
       reader = reader.option("dbtable", ss.conf.get(DBTABLE_CONF))
     } else {
@@ -34,7 +30,7 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
         .option("encrypt", true)
         .load
     } else {
-      if (isBlankString(user) && isBlankString(password)) {
+      if (StringUtil.isBlank(user) && StringUtil.isBlank(password)) {
         if (anonymous) {
           reader.load()
         } else {
