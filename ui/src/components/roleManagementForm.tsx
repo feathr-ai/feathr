@@ -15,8 +15,8 @@ const Admin = "Admin"
 const Producer = "Producer"
 const Consumer = "Consumer"
 
-const RoleManagementForm: React.FC<RoleManagementFormProps> = ({ isNew, editMode, userRole }) => {
-  const [fireRedirect, setRedirect] = useState<boolean>(false);
+const RoleManagementForm: React.FC<RoleManagementFormProps> = ({ editMode, userRole }) => {
+  const [fireRedirect] = useState<boolean>(false);
   const [createLoading, setCreateLoading] = useState<boolean>(false);
 
   const [form] = Form.useForm();

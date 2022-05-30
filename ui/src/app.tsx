@@ -16,7 +16,6 @@ import LineageGraph from "./pages/feature/lineageGraph";
 import Management from "./pages/management/management";
 import RoleManagement from "./pages/management/roleManagement";
 
-type Props = {};
 const queryClient = new QueryClient();
 
 const msalConfig: Configuration = {
@@ -26,10 +25,10 @@ const msalConfig: Configuration = {
     redirectUri: window.location.origin,
   },
 };
-const pca = new PublicClientApplication(msalConfig);
-const App: React.FC<Props> = () => {
+const msalClient = new PublicClientApplication(msalConfig);
+const App: React.FC = () => {
   return (
-    <MsalProvider instance={ pca }>
+    <MsalProvider instance={ msalClient }>
       <MsalAuthenticationTemplate interactionType={ InteractionType.Redirect }>
         <QueryClientProvider client={ queryClient }>
           <BrowserRouter>

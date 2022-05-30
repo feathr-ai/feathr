@@ -1,4 +1,4 @@
-import React, { MouseEvent as ReactMouseEvent, useCallback, useEffect, useRef, useState, } from 'react';
+import React, { MouseEvent as ReactMouseEvent, useCallback, useEffect, useState, } from 'react';
 import ReactFlow, {
   ConnectionLineType,
   Controls,
@@ -9,14 +9,11 @@ import ReactFlow, {
   isEdge,
   isNode,
   Node,
-  OnLoadParams,
   ReactFlowProvider
 } from 'react-flow-renderer';
 import { useSearchParams } from 'react-router-dom';
-import { Spin } from "antd";
 import LineageNode from "./graphNode";
 import { findNodeInElement, getLayoutedElements } from "./utils";
-import { LoadingOutlined } from "@ant-design/icons";
 
 const nodeTypes = {
   'custom-node': LineageNode,
@@ -27,16 +24,15 @@ type Props = {
 }
 const Graph: React.FC<Props> = ({ data, nodeId }) => {
   const [, setURLSearchParams] = useSearchParams();
-  const instanceRef = useRef<OnLoadParams | null>(null);
 
   const { layoutedElements, elementMapping } = getLayoutedElements(data);
   const [elements, setElements] = useState<Elements>(layoutedElements);
-  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setElements(layoutedElements);
   }, [data, nodeId]);
 
+  // Reset all node highlight status
   const resetHighlight = (): void => {
     if (!elements || elements.length === 0) {
       return;
@@ -67,6 +63,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     setElements(values);
   };
 
+  // Highlight path of selected node, including all linked up and down stream nodes
   const highlightPath = (node: Node, check: boolean): void => {
     const checkElements = check ? layoutedElements : elements;
 
@@ -113,20 +110,6 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     setElements(values);
   };
 
-  const fitElements = (): void => {
-    setTimeout(() => {
-      instanceRef?.current?.fitView();
-    }, 1);
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  };
-
-  const onLoad = (reactFlowInstance: OnLoadParams<unknown> | null) => {
-    instanceRef.current = reactFlowInstance;
-    fitElements();
-  };
-
   useEffect(() => {
     if (nodeId) {
       const node = findNodeInElement(nodeId, layoutedElements);
@@ -137,14 +120,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     }
   }, [nodeId]);
 
-  useEffect(() => {
-    if (instanceRef.current) {
-      setLoading(true);
-
-      fitElements();
-    }
-  }, [instanceRef]);
-
+  // When panel is clicked, reset all highlighted path, and remove the nodeId query string in url path.
   const onPaneClick = useCallback(() => {
     resetHighlight();
     setURLSearchParams({});
@@ -162,12 +138,10 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
 
   return (
     <div className="lineage-graph">
-      { loading ? <Spin indicator={ <LoadingOutlined style={ { fontSize: 24 } } spin /> } /> : (
         <ReactFlowProvider>
           <ReactFlow
             style={ { height: "700px", width: "100%" } }
             elements={ elements }
-            onLoad={ onLoad }
             snapToGrid
             snapGrid={ [15, 15] }
             zoomOnScroll={ false }
@@ -186,7 +160,6 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
             <Controls />
           </ReactFlow>
         </ReactFlowProvider>
-      ) }
     </div>
   );
 }

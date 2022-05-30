@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Modal, PageHeader, Row, Space, Table, Tag } from "antd";
 import { IUserRole } from "../models/model";
 import { listUserRole } from "../api";
-import { useMsal } from '@azure/msal-react';
 
 const UserRoles: React.FC = () => {
     const navigate = useNavigate();
@@ -11,7 +10,6 @@ const UserRoles: React.FC = () => {
     const [confirmLoading, setConfirmLoading] = React.useState(false);
     const [modalText, setModalText] = React.useState('Content of the modal');
 
-    const { accounts, instance } = useMsal();
     const showModal = ()  => {
         setVisible(true);
         setModalText("This Role Assignment will be deleted.");
@@ -81,7 +79,7 @@ const UserRoles: React.FC = () => {
         {
             title: 'Action',
             key: 'action',
-            render: (text: any) => (
+            render: () => (
                 <Space size="middle">
                     <Button type="primary" onClick={showModal}>
                         Delete
@@ -100,7 +98,7 @@ const UserRoles: React.FC = () => {
         },
     ];
     const [page, setPage] = useState(1);
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
     const [tableData, setTableData] = useState<IUserRole[]>();
 
     const fetchData = useCallback(async () => {
@@ -119,7 +117,7 @@ const UserRoles: React.FC = () => {
 
     useEffect(() => {
         fetchData()
-    }, [])
+    }, [fetchData])
 
     return (
         <div>

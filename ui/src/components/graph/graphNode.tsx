@@ -10,7 +10,7 @@ const GraphNode: FC<NodeProps> = (props: NodeProps) => {
   const navigate = useNavigate();
   const { project } = useParams<Params>();
 
-  const { data: { id, title, subtitle, qualifiedName, borderColor, active } } = props;
+  const { data: { title, subtitle, qualifiedName, borderColor, active } } = props;
 
   const nodeColorStyle = {
     border: `2px solid ${ borderColor }`,
