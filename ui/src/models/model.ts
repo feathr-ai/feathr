@@ -74,3 +74,20 @@ export interface IFeatureLineage {
   relations: any;
 }
 
+export interface IUserRole {
+  id: number;
+  scope: string;
+  userName: string;
+  roleName: string;
+  createTime: string;
+  createReason: string;
+  deleteTime?: any;
+  deleteReason?: any;
+}
+
+export interface RoleForm {
+  scope: string;
+  userName: string;
+  roleName: string;
+  reason: string;
+}

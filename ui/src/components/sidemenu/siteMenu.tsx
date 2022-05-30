@@ -1,6 +1,5 @@
-import React from 'react';
 import { Layout, Menu } from 'antd';
-import { CopyOutlined, DatabaseOutlined, EyeOutlined, RocketOutlined } from '@ant-design/icons';
+import { CopyOutlined, DatabaseOutlined, EyeOutlined, RocketOutlined} from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
 const { Sider } = Layout;

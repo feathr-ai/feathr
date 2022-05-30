@@ -13,6 +13,8 @@ import DataSources from "./pages/dataSource/dataSources";
 import Jobs from "./pages/jobs/jobs";
 import Monitoring from "./pages/monitoring/monitoring";
 import LineageGraph from "./pages/feature/lineageGraph";
+import Management from "./pages/management/management";
+import RoleManagement from "./pages/management/roleManagement";
 
 type Props = {};
 const queryClient = new QueryClient();
@@ -43,6 +45,8 @@ const App: React.FC<Props> = () => {
                   <Route path="/projects/:project/lineage" element={ <LineageGraph /> } />
                   <Route path="/jobs" element={ <Jobs /> } />
                   <Route path="/monitoring" element={ <Monitoring /> } />
+                  <Route path="/management" element={ <Management /> } />
+                  <Route path="/role-management" element={ <RoleManagement /> } />
                 </Routes>
               </Layout>
             </Layout>

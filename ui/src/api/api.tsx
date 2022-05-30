@@ -1,5 +1,6 @@
 import Axios from "axios";
-import { Features, IDataSource, IFeature, IFeatureDetail, IFeatureLineage } from "../models/model";
+import { Features, IDataSource, IFeature, IFeatureDetail, IFeatureLineage, IUserRole, RoleForm } from "../models/model";
+import mockUserRole from "./mock/userrole.json";
 
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT + "/api";
 const purview = "feathrazuretest3-purview1"
@@ -101,3 +102,41 @@ export const deleteFeature = async (qualifiedName: string) => {
     });
 };
 
+export const listUserRole = async () => {
+  let data:IUserRole[] = mockUserRole
+  return data
+};
+
+export const getUserRole = async (userName: string) => {
+  return await Axios
+  .get<IUserRole>(`${ API_ENDPOINT }/user/${userName}/userroles?code=${ token }`, {})
+  .then((response) => {
+    return response.data;
+  })
+}
+
+export const addUserRole = async (roleForm: RoleForm) => {
+  return await Axios
+  .post(`${ API_ENDPOINT }/user/${roleForm.userName}/userroles/new`, roleForm,
+      {
+        headers: { "Content-Type": "application/json;" },
+        params: {},
+      }).then((response) => {
+      return response;
+    }).catch((error) => {
+      return error.response;
+    });
+}
+
+export const deleteUserRole = async (roleForm: RoleForm) => {
+  return await Axios
+  .post(`${ API_ENDPOINT }/user/${roleForm.userName}/userroles/delete`, roleForm,
+      {
+        headers: { "Content-Type": "application/json;" },
+        params: {},
+      }).then((response) => {
+      return response;
+    }).catch((error) => {
+      return error.response;
+    });
+}
