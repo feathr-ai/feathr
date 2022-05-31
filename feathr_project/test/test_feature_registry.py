@@ -73,15 +73,20 @@ def test_feathr_register_features_partially():
         __file__).parent.resolve() / "test_user_workspace"
     client: FeathrClient = registry_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     client.register_features()
+    time.sleep(30)
     full_registration = client.get_features_from_registry(client.project_name)
 
     client: FeathrClient = registry_test_setup_partially(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     new_project_name = client.project_name
     client.register_features()
+    time.sleep(30)
+
 
     client: FeathrClient = registry_test_setup_append(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     client.project_name = new_project_name
     client.register_features()
+    time.sleep(30)
+
     appended_registration = client.get_features_from_registry(client.project_name)
 
     # after a full registration, another registration should not affect the registered anchor features.
