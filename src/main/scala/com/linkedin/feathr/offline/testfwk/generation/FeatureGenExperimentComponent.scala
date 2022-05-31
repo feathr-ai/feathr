@@ -10,7 +10,7 @@ import java.util.Optional
 /**
  * A simple component to collect pretty-print result for local feature gen job.
  */
-class FeatureGenExperimentComponent(dataPathHandlers: List[DataPathHandler]) {
+class FeatureGenExperimentComponent(dataPathHandlers: List[DataPathHandler] = List()) {
   def prettyPrintFeatureGenResult(mockDataDir: String, featureNames: String, featureDefDir: String): String = {
     val genConf = s"""
                  |operational: {
