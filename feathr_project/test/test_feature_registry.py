@@ -66,7 +66,8 @@ def test_feathr_register_features_e2e():
 
 def test_feathr_register_features_partially():
     """
-    This test will register features, get all the registered features, then query a set of already registered features.
+    This test will register full set of features into one project, then register another project in two partial registrations.
+    The length of the return value of get_features_from_registry should be identical.
     """
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
