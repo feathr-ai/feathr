@@ -6,6 +6,8 @@ import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeathrConfigLoader
 import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
 import com.linkedin.feathr.offline.job.FeatureJoinJob._
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.util.{CmdLineParser, FeathrUtils, OptionParam, SparkFeaturizedDataset}
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
@@ -120,7 +122,8 @@ object FeatureGenJob {
       featureGenConfig: String,
       featureDefConfig: Option[String],
       localFeatureConfig: Option[String],
-      jobContext: FeatureGenJobContext): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+      jobContext: FeatureGenJobContext,
+      dataPathHandlers: List[DataPathHandler]=List()): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
 
     logger.info(s"featureDefConfig : ${featureDefConfig}")
     logger.info(s"localFeatureConfig : ${localFeatureConfig}")
@@ -128,8 +131,9 @@ object FeatureGenJob {
         FeathrClient.builder(ss)
           .addFeatureDef(featureDefConfig)
           .addLocalOverrideDef(localFeatureConfig)
+          .addDataPathHandlers(dataPathHandlers)
           .build()
-    val featureGenSpec = parseFeatureGenApplicationConfig(featureGenConfig, jobContext)
+    val featureGenSpec = parseFeatureGenApplicationConfig(featureGenConfig, jobContext, dataPathHandlers)
     feathrClient.generateFeatures(featureGenSpec)
   }
 
@@ -139,11 +143,13 @@ object FeatureGenJob {
    * @param featureGenJobContext feature generation context
    * @return Feature generation Specifications
    */
-  private[feathr] def parseFeatureGenApplicationConfig(featureGenConfigStr: String, featureGenJobContext: FeatureGenJobContext): FeatureGenSpec = {
+  private[feathr] def parseFeatureGenApplicationConfig(featureGenConfigStr: String, featureGenJobContext: FeatureGenJobContext,
+      dataPathHandlers: List[DataPathHandler]=List()): FeatureGenSpec = {
     val withParamsOverrideConfigStr = overrideFeatureGeneration(featureGenConfigStr, featureGenJobContext.paramsOverride)
     val withParamsOverrideConfig = ConfigFactory.parseString(withParamsOverrideConfigStr)
     val featureGenConfig = FeatureGenConfigBuilder.build(withParamsOverrideConfig)
-    new FeatureGenSpec(featureGenConfig)
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
+    new FeatureGenSpec(featureGenConfig, dataLoaderHandlers)
   }
 
   private[feathr] def overrideFeatureGeneration(featureGenConfigStr: String, paramsOverride: Option[String]): String = {
@@ -185,7 +191,8 @@ object FeatureGenJob {
    *         for this anchor source. For example, anchor1 -> f1, f2, anchor2 -> f3, f4. Then the result is
    *         Map("f1,f2" -> df1, "f3,f4" -> df2).
    */
-  def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String]): java.util.Map[String, DataFrame] = {
+  def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String],
+      dataPathHandlers: List[DataPathHandler]): java.util.Map[String, DataFrame] = {
     logger.info("FeatureJoinJob args are: " + args)
     logger.info("Feature join job: loadDataframe")
     logger.info(featureNamesInAnchorSet)
@@ -202,12 +209,13 @@ object FeatureGenJob {
       FeathrClient.builder(sparkSession)
         .addFeatureDef(featureConfig)
         .addLocalOverrideDef(localFeatureConfigWithOverride)
+        .addDataPathHandlers(dataPathHandlers)
         .build()
     val allAnchoredFeatures = feathrClient.allAnchoredFeatures
 
     // Using AnchorToDataSourceMapper to load DataFrame for preprocessing
     val failOnMissing = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
-    val anchorToDataSourceMapper = new AnchorToDataSourceMapper()
+    val anchorToDataSourceMapper = new AnchorToDataSourceMapper(dataPathHandlers) // TODO: Investigate if its possible to accept a hook from python client, and pass that hook here
     val anchorsWithSource = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(
       sparkSession,
       allAnchoredFeatures.values.toSeq,

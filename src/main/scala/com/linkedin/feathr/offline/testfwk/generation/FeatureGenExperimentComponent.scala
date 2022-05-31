@@ -3,13 +3,14 @@ package com.linkedin.feathr.offline.testfwk.generation
 
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
 
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import java.io.File
 import java.util.Optional
 
 /**
  * A simple component to collect pretty-print result for local feature gen job.
  */
-class FeatureGenExperimentComponent {
+class FeatureGenExperimentComponent(dataPathHandlers: List[DataPathHandler]) {
   def prettyPrintFeatureGenResult(mockDataDir: String, featureNames: String, featureDefDir: String): String = {
     val genConf = s"""
                  |operational: {
@@ -37,7 +38,7 @@ class FeatureGenExperimentComponent {
       FeathrGenTestComponent.LocalGenConfString -> List(genConf),
       FeathrGenTestComponent.LocalConfPaths -> featureDefFiles)
     println(f"${Console.GREEN}Testing features in ${featureDefFiles.mkString(",")}${Console.RESET}")
-    val feathrGenTestComponent = new FeathrGenTestComponent(resourceLocations)
+    val feathrGenTestComponent = new FeathrGenTestComponent(resourceLocations, dataPathHandlers)
     val (validationRes, validationErrorMsg) = feathrGenTestComponent.validate(featureNames, mockDataDir)
 
     if (!validationRes) {

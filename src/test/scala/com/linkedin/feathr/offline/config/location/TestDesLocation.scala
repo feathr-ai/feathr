@@ -12,6 +12,7 @@ import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.DataSource
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
+import org.apache.hadoop.mapred.JobConf
 import org.scalatest.FunSuite
 
 class TestDesLocation extends FunSuite {
@@ -91,7 +92,7 @@ class TestDesLocation extends FunSuite {
 
     val _ = SparkSession.builder().config("spark.master", "local").appName("Sqlite test").getOrCreate()
 
-    val df = SparkIOUtils.createDataFrame(ds)
+    val df = SparkIOUtils.createDataFrame(ds, Map(), new JobConf(), List())
     val rows = df.head(3)
     assert(rows(0).getLong(0) == 1)
     assert(rows(1).getLong(0) == 2)
@@ -115,7 +116,7 @@ class TestDesLocation extends FunSuite {
 
     val _ = SparkSession.builder().config("spark.master", "local").appName("Sqlite test").getOrCreate()
 
-    val df = SparkIOUtils.createDataFrame(ds)
+    val df = SparkIOUtils.createDataFrame(ds, Map(), new JobConf(), List())
     val rows = df.head(3)
     assert(rows(0).getLong(0) == 1)
     assert(rows(1).getLong(0) == 2)

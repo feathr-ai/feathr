@@ -14,6 +14,7 @@ import com.linkedin.feathr.offline.job.FeatureTransformation._
 import com.linkedin.feathr.offline.job.{AnchorFeatureGroups, FeatureTransformation, KeyedTransformedResult}
 import com.linkedin.feathr.offline.join.algorithms.{JoinType, SeqJoinExplodedJoinKeyColumnAppender, SparkJoinWithJoinCondition}
 import com.linkedin.feathr.offline.logical.FeatureGroups
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.transformation.{AnchorToDataSourceMapper, MvelDefinition}
 import com.linkedin.feathr.offline.util.{CoercionUtilsScala, DataFrameSplitterMerger, FeaturizedDatasetUtils, FeathrUtils}
@@ -29,7 +30,10 @@ import scala.collection.mutable
 /**
  * This class executes Sequential Join as a derivation on base and expansion features.
  */
-private[offline] class SequentialJoinAsDerivation(ss: SparkSession, featureGroups: FeatureGroups, joiner: SparkJoinWithJoinCondition)
+private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
+                                                  featureGroups: FeatureGroups,
+                                                  joiner: SparkJoinWithJoinCondition,
+                                                  dataPathHandlers: List[DataPathHandler])
     extends SequentialJoinDerivationStrategy
     with Serializable {
   @transient private val log = Logger.getLogger(getClass)
@@ -589,7 +593,7 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession, featureGroup
       seqJoinproducedFeatureName: String): (DataFrame, Seq[String]) = {
     val expansionFeatureKeys = (derivedFeature.derivation.asInstanceOf[SeqJoinDerivationFunction].right.key)
     val expansionAnchor = allAnchoredFeatures(expansionFeatureName)
-    val expandFeatureInfo = getAnchorFeatureDF(allAnchoredFeatures, expansionFeatureName, new AnchorToDataSourceMapper())
+    val expandFeatureInfo = getAnchorFeatureDF(allAnchoredFeatures, expansionFeatureName, new AnchorToDataSourceMapper(dataPathHandlers))
     val transformedFeatureDF = expandFeatureInfo.transformedResult.df
     val expansionAnchorKeyColumnNames = expandFeatureInfo.joinKey
     if (expansionFeatureKeys.size != expansionAnchorKeyColumnNames.size) {

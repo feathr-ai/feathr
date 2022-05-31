@@ -37,7 +37,7 @@ abstract class FeathrIntegTest extends TestFeathr {
       featureDefAsString: String,
       observationDataPath: String,
       extraParams: Array[String] = Array()): SparkFeaturizedDataset = {
-    LocalFeatureJoinJob.joinWithHoconJoinConfig(joinConfigAsString, featureDefAsString, observationDataPath, extraParams)
+    LocalFeatureJoinJob.joinWithHoconJoinConfig(joinConfigAsString, featureDefAsString, observationDataPath, extraParams, dataPathHandlers=List())
   }
 
   def getOrCreateSparkSession: SparkSession = {
@@ -67,7 +67,7 @@ abstract class FeathrIntegTest extends TestFeathr {
    * @return map from the taggedFeatureName to the corresponding SparkFeaturizedDataset
    */
   private[offline] def localFeatureGenerate(featureGenConfigStr: String, featureDefAsString: String): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
-    LocalFeatureGenJob.localFeatureGenerate(featureGenConfigStr, featureDefAsString)
+    LocalFeatureGenJob.localFeatureGenerate(featureGenConfigStr, featureDefAsString, List())
   }
 
   /**
@@ -80,7 +80,7 @@ abstract class FeathrIntegTest extends TestFeathr {
   private[offline] def localFeatureGenerateForSeqOfFeatures(
       featureGenConfigStr: Seq[String],
       featureDefAsString: String): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
-    LocalFeatureGenJob.localFeatureGenerate(featureGenConfigStr, featureDefAsString)
+    LocalFeatureGenJob.localFeatureGenerate(featureGenConfigStr, featureDefAsString, List())
   }
 
 }
