@@ -171,4 +171,4 @@ Build for the community and build by the community. Check out [Community Guideli
 Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-19dcbquwl-zKiJGYTak6Psw2GbUYtT2g)).
 
 
-[![Feathr Recording](https://img.youtube.com/vi/gZg01UKQMTY/0.jpg)](https://www.youtube.com/watch?v=gZg01UKQMTY "Feathr Recording")
+[![Feathr Recording](https://img.youtube.com/vi/gZg01UKQMTY/1.jpg)](https://www.youtube.com/watch?v=gZg01UKQMTY "Feathr Recording")
