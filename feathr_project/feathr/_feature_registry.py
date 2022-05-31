@@ -218,13 +218,13 @@ class _FeatureRegistry():
             anchor_feature_entities = self._parse_anchor_features(anchor)
             # then parse the source of that anchor
             source_entity = self._parse_source(anchor.source)
-            fully_qualified_name = self.project_name+self.registry_delimiter+anchor.name
-            original_id = self.get_feature_id(fully_qualified_name)
+            anchor_fully_qualified_name  = self.project_name+self.registry_delimiter+anchor.name
+            original_id = self.get_feature_id(anchor_fully_qualified_name )
             original_anchor = self.get_feature_by_guid(original_id) if original_id else None
             merged_elements = self._merge_anchor(original_anchor,anchor_feature_entities)
             anchor_entity = AtlasEntity(
                 name=anchor.name,
-                qualified_name=fully_qualified_name,
+                qualified_name=anchor_fully_qualified_name ,
                 attributes={
                     "source": source_entity.to_json(minimum=True),
                     "features": merged_elements,
