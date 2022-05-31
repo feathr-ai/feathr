@@ -40,7 +40,7 @@ const App: React.FC = () => {
                   <Route path="/dataSources" element={ <DataSources /> } />
                   <Route path="/features" element={ <Features /> } />
                   <Route path="/new-feature" element={ <NewFeature /> } />
-                  <Route path="/projects/:project/features/:qualifiedName" element={ <FeatureDetails /> } />
+                  <Route path="/projects/:project/features/:featureId" element={ <FeatureDetails /> } />
                   <Route path="/projects/:project/lineage" element={ <LineageGraph /> } />
                   <Route path="/jobs" element={ <Jobs /> } />
                   <Route path="/monitoring" element={ <Monitoring /> } />

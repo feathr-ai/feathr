@@ -1,35 +1,27 @@
-export interface Features {
-  features: IFeature[];
-}
-
 export interface IFeature {
-  id: string;
-  name: string;
-  qualifiedName: string;
-  description: string;
+  guid: string;
   status: string;
-  featureType: string;
-  dataSource: string;
-  owners: string;
-}
-
-export interface IFeatureDetail {
-  entity: IFeatureEntity;
-}
-
-export interface IFeatureEntity {
+  displayText: string;
+  typeName: string;
   attributes: FeatureAttributes;
 }
 
 export interface FeatureAttributes {
   qualifiedName: string;
   name: string;
-  type: string;
+  type: FeatureType;
   transformation: FeatureTransformation;
   key: FeatureKey[];
   window: string;
   input_anchor_features: InputAnchorFeatures[];
   input_derived_features: InputDerivedFeatures[]
+}
+
+export interface FeatureType {
+  type: string,
+  tensor_category: string,
+  dimension_type: string[],
+  val_type: string
 }
 
 export interface InputAnchorFeatures {

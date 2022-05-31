@@ -10,13 +10,13 @@ const FeatureList: React.FC = () => {
   const columns = [
     {
       title: <div style={ { userSelect: "none" } }>Name</div>,
-      dataIndex: 'name',
+      dataIndex: 'displayText',
       key: 'name',
       width: 150,
       render: (name: string, row: IFeature) => {
         return (
           <Button type="link" onClick={ () => {
-            navigate(`/projects/${ project }/features/${ row.qualifiedName }`)
+            navigate(`/projects/${ project }/features/${ row.guid }`)
           } }>{ name }</Button>
         )
       },
@@ -29,9 +29,9 @@ const FeatureList: React.FC = () => {
       }
     },
     {
-      title: <div style={ { userSelect: "none" } }>Qualified Name</div>,
-      dataIndex: 'qualifiedName',
-      key: 'qualifiedName',
+      title: <div style={ { userSelect: "none" } }>Type</div>,
+      dataIndex: 'typeName',
+      key: 'type',
       align: 'center' as 'center',
       width: 190,
       onCell: () => {
@@ -55,7 +55,7 @@ const FeatureList: React.FC = () => {
             <Menu>
               <Menu.Item key="edit">
                 <Button type="link" onClick={ () => {
-                  navigate(`/projects/${ project }/features/${ row.qualifiedName }`)
+                  navigate(`/projects/${ project }/features/${ row.guid }`)
                 } }>Edit</Button>
               </Menu.Item>
               <Menu.Item key="delete">
@@ -63,7 +63,7 @@ const FeatureList: React.FC = () => {
                   placement="left"
                   title="Are you sure to delete?"
                   onConfirm={ () => {
-                    onDelete(row.id)
+                    onDelete(row.guid)
                   } }
                 >
                   Delete

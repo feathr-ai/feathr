@@ -73,7 +73,7 @@ const LineageGraph: React.FC = () => {
         const edge = generateEdge({ obj: elementObj, from, to });
         if (edge?.source && edge?.target) {
           // Drop edges with other relationship e.g, Consumes, BelongsTo
-          if (relationshipType === "Produces") {
+          if (relationshipType === "Contains") {
             elements.push(edge);
           }
         }
