@@ -263,14 +263,16 @@ class _FeatureRegistry():
             anchors_batch.append(anchor_entity)
         return anchors_batch
 
-    def _merge_anchor(self,original_anchor, new_anchor):
+    def _merge_anchor(self,original_anchor:dict, new_anchor:dict)->dict[str,any]:
+        print('gua?')
         '''
-        This function merges existing anchor with new anchor, in order to fix concurrent conflict.
-        This will serve as a quick fix, but will not solved it entirely. 
-        Full fix will work with MVCC, and is in progress.
+        Merge the new anchors defined locally with the anchors that is defined in the centralized registry.
         '''
+        # TODO: This will serve as a quick fix, full fix will work with MVCC, and is in progress.
         new_anchor_json_repr = [s.to_json(minimum=True) for s in new_anchor]
         if not original_anchor:
+            # if the anchor is not present on the registry, return json representation of the locally defined anchor.
+            # sample : [{'guid':'GUID_OF_ANCHOR','typeName':'','qualifiedName':'QUALIFIED_NAME'}
             return new_anchor_json_repr
         else:
             original_anchor_elements = [x for x in original_anchor['entity']['attributes']['features']]
