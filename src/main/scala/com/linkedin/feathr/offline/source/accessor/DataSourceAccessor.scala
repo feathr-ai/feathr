@@ -140,6 +140,11 @@ private[offline] object DataSourceAccessor {
   }
 }
 
+/**
+ * Class that contains hooks for getting and accessors for a validated path
+ * @param validatePath path validator hook.
+ * @param getAccessor accessor getter hook.
+ */
 private[offline] case class DataAccessorHandler(
   validatePath: String => Boolean,
   getAccessor: 
@@ -153,6 +158,11 @@ private[offline] case class DataAccessorHandler(
   ) => DataSourceAccessor
 )
 
+/**
+ * Class that encapsulates the accessor handling and data loader handling for a given file path type
+ * @param dataAccessorHandler the handler for data accessors.
+ * @param dataLoaderHandler the handler for data loaders.
+ */
 private[offline] case class DataPathHandler(
   dataAccessorHandler: DataAccessorHandler,
   dataLoaderHandler: DataLoaderHandler

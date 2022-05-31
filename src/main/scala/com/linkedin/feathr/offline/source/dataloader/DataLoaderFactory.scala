@@ -42,6 +42,13 @@ private[offline] object DataLoaderFactory {
   }
 }
 
+/**
+ * Class that encloses hooks for creating/writing data frames depends on the data/path type.
+ * @param validatePath used to validate if path should be routed to data handler
+ * @param createDataFrame  used to create a data frame given a path.
+ * @param createUnionDataFrame used to create a data frame given multiple paths
+ * @param writeDataFrame used to write a data frame to a path
+ */
 case class DataLoaderHandler(
   validatePath: String => Boolean,
   createDataFrame: (String, Map[String, String], JobConf) => DataFrame,

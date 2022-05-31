@@ -28,8 +28,8 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataL
     val hourlyPattern = "yyyy/MM/dd/HH"
     val fileFolder = if (filePath.endsWith("/")) filePath else filePath + "/"
 
-    var pathInfoOpt: Option[PathInfo] = None
-    if (pathChecker.isInstanceOf[LocalPathChecker]){
+    var pathInfoOpt: Option[PathInfo] = None // Used to store the pathInfo of any file caught by data loader handlers.
+    if (pathChecker.isInstanceOf[LocalPathChecker]){ // For some external use cases, local file folder needs to be checked with data loader handlers before checking for date time patterns in file name
       import scala.util.control.Breaks._
 
       breakable {
