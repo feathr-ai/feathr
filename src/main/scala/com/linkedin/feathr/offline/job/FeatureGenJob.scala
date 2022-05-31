@@ -191,8 +191,7 @@ object FeatureGenJob {
    *         for this anchor source. For example, anchor1 -> f1, f2, anchor2 -> f3, f4. Then the result is
    *         Map("f1,f2" -> df1, "f3,f4" -> df2).
    */
-  def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String],
-      dataPathHandlers: List[DataPathHandler]): java.util.Map[String, DataFrame] = {
+  def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String]): java.util.Map[String, DataFrame] = {
     logger.info("FeatureJoinJob args are: " + args)
     logger.info("Feature join job: loadDataframe")
     logger.info(featureNamesInAnchorSet)
@@ -205,17 +204,17 @@ object FeatureGenJob {
       val localFeatureConfig = featureDefs.feathrLocalFeatureDefPath.map(path => hdfsFileReader(sparkSession, path))
       val (featureConfigWithOverride, localFeatureConfigWithOverride) = overrideFeatureDefs(featureConfig, localFeatureConfig, jobContext)
 
+    //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val feathrClient =
       FeathrClient.builder(sparkSession)
         .addFeatureDef(featureConfig)
-        .addLocalOverrideDef(localFeatureConfigWithOverride)
-        .addDataPathHandlers(dataPathHandlers)
+        .addLocalOverrideDef(localFeatureConfigWithOverride) 
         .build()
     val allAnchoredFeatures = feathrClient.allAnchoredFeatures
 
     // Using AnchorToDataSourceMapper to load DataFrame for preprocessing
     val failOnMissing = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
-    val anchorToDataSourceMapper = new AnchorToDataSourceMapper(dataPathHandlers) // TODO: Investigate if its possible to accept a hook from python client, and pass that hook here
+    val anchorToDataSourceMapper = new AnchorToDataSourceMapper(List()) //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val anchorsWithSource = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(
       sparkSession,
       allAnchoredFeatures.values.toSeq,

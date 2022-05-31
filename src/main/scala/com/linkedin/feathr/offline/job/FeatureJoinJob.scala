@@ -282,7 +282,7 @@ object FeatureJoinJob {
    *         for this anchor source. For example, anchor1 -> f1, f2, anchor2 -> f3, f4. Then the result is
    *         Map("f1,f2" -> df1, "f3,f4" -> df2).
    */
-  def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String], dataPathHandlers: List[DataPathHandler]): java.util.Map[String, DataFrame] = {
+  def loadSourceDataframe(args: Array[String], featureNamesInAnchorSet: java.util.Set[String]): java.util.Map[String, DataFrame] = {
     logger.info("FeatureJoinJob args are: " + args)
     logger.info("Feature join job: loadDataframe")
     logger.info(featureNamesInAnchorSet)
@@ -291,17 +291,16 @@ object FeatureJoinJob {
     val hadoopConf = feathrJoinPreparationInfo.hadoopConf
     val jobContext = feathrJoinPreparationInfo.jobContext
 
-    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
     // check read authorization for observation data, and write authorization for output path
-    checkAuthorization(sparkSession, hadoopConf, jobContext, dataLoaderHandlers)
+    checkAuthorization(sparkSession, hadoopConf, jobContext, List())
 
     // Doesn't support loading local test client for this yet
-    val feathrClient = getFeathrClient(sparkSession, jobContext.jobJoinContext, dataPathHandlers)
+    val feathrClient = getFeathrClient(sparkSession, jobContext.jobJoinContext, List()) //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val allAnchoredFeatures = feathrClient.allAnchoredFeatures
 
     // Using AnchorToDataSourceMapper to load DataFrame for preprocessing
     val failOnMissing = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
-    val anchorToDataSourceMapper = new AnchorToDataSourceMapper(dataPathHandlers)
+    val anchorToDataSourceMapper = new AnchorToDataSourceMapper(List()) //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val anchorsWithSource = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(
       sparkSession,
       allAnchoredFeatures.values.toSeq,

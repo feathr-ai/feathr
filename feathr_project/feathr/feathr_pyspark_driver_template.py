@@ -61,7 +61,7 @@ def submit_spark_job(feature_names_funcs):
 
     print("submit_spark_job: Load DataFrame from Scala engine.")
 
-    dataframeFromSpark = py4j_feature_job.loadSourceDataframe(job_param_java_array, set(feature_names_funcs.keys()), list()) # TODO: Add data handler support here
+    dataframeFromSpark = py4j_feature_job.loadSourceDataframe(job_param_java_array, set(feature_names_funcs.keys())) # TODO: Add data handler support here
     print("Submit_spark_job: dataframeFromSpark: ")
     print(dataframeFromSpark)
 
