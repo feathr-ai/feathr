@@ -263,8 +263,7 @@ class _FeatureRegistry():
             anchors_batch.append(anchor_entity)
         return anchors_batch
 
-    def _merge_anchor(self,original_anchor:dict, new_anchor:dict)->dict[str,any]:
-        print('gua?')
+    def _merge_anchor(self,original_anchor:Dict, new_anchor:Dict)->Dict[str,any]:
         '''
         Merge the new anchors defined locally with the anchors that is defined in the centralized registry.
         '''
