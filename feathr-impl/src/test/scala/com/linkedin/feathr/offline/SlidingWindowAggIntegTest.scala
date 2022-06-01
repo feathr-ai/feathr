@@ -680,8 +680,10 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
 
   /**
    * test invalid case when there is an overrideTimeDelay with no simulateTimeDelay set.
+   * TODO: Enable after adding validation code in FCM.
    */
   @Test(
+    enabled = false,
     expectedExceptions = Array(classOf[RuntimeException]),
     expectedExceptionsMessageRegExp = "\\[FEATHR_USER_ERROR\\] overrideTimeDelay cannot be defined without setting a simulateTimeDelay(.*)")
   def testInvalidCaseWithOverrideTimeDelay: Unit = {

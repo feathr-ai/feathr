@@ -116,7 +116,7 @@
                 },
                 {
                     "type": "Microsoft.KeyVault/vaults/secrets",
-                    "name": "[concat(variables('keyVaultName'), '/REDIS_PASSWORD')]",
+                    "name": "[concat(variables('keyVaultName'), '/REDIS-PASSWORD')]",
                     "apiVersion": "2021-10-01",
                     "location": "[resourceGroup().location]",
                     "properties": {

@@ -12,7 +12,7 @@ import com.linkedin.feathr.offline.client.{DataFrameColName, NodeContext}
 import com.linkedin.feathr.offline.config.{ConfigLoaderUtils, MVELFeatureDefinition, SQLFeatureDefinition}
 import com.linkedin.feathr.offline.job.FeatureTransformation.{applyRowBasedTransformOnRdd, getFeatureJoinKey}
 import com.linkedin.feathr.offline.source.accessor.{DataSourceAccessor, NonTimeBasedDataSourceAccessor}
-import com.linkedin.feathr.offline.transformation.{FDSConversionUtils, FeatureColumnFormat}
+import com.linkedin.feathr.offline.transformation.{DataFrameBasedRowEvaluator, FDSConversionUtils, FeatureColumnFormat}
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils.tensorTypeToDataFrameSchema
 import com.linkedin.feathr.offline.util.{CoercionUtilsScala, FeaturizedDatasetUtils, SourceUtils}
@@ -57,7 +57,7 @@ private[offline] object TransformationNodeEvaluator {
       val withKeyColumnDF = mvelKeyExtractor.appendKeyColumns(inputNodeContext.df)
       val outputJoinKeyColumnNames = getFeatureJoinKey(mvelKeyExtractor, withKeyColumnDF)
 
-      (mvelExtractor.transform(mvelExtractor, withKeyColumnDF, Seq(featureName)).df, outputJoinKeyColumnNames)
+      (DataFrameBasedRowEvaluator.transform(mvelExtractor, withKeyColumnDF, Seq((featureName, "")), featureTypeConfigs).df, outputJoinKeyColumnNames)
     } else if (transformationFunction.getOperator == Operators.OPERATOR_ID_SPARK_SQL_FEATURE_EXTRACTOR) {
       val sqlExpr = transformationFunction.getParameters.get("expression")
 
@@ -250,7 +250,7 @@ private[offline] object TransformationNodeEvaluator {
       val mvelExtractor = new SimpleConfigurableAnchorExtractor(Seq.empty,
         Map(featureName -> MVELFeatureDefinition(mvelExpr, featureTypeConfigs.get(featureName))))
 
-      var result = mvelExtractor.transform(mvelExtractor, changedInputDf, Seq(featureName)).df
+      var result = DataFrameBasedRowEvaluator.transform(mvelExtractor, changedInputDf, Seq((featureName, "")), featureTypeConfigs).df
       if (featureAlias.isDefined) {
         result = result.withColumn(featureAlias.get, col(featureName))
         featureColumnFormatMap(featureAlias.get) = FeatureColumnFormat.RAW

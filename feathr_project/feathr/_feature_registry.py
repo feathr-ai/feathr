@@ -218,13 +218,16 @@ class _FeatureRegistry():
             anchor_feature_entities = self._parse_anchor_features(anchor)
             # then parse the source of that anchor
             source_entity = self._parse_source(anchor.source)
-
+            anchor_fully_qualified_name  = self.project_name+self.registry_delimiter+anchor.name
+            original_id = self.get_feature_id(anchor_fully_qualified_name )
+            original_anchor = self.get_feature_by_guid(original_id) if original_id else None
+            merged_elements = self._merge_anchor(original_anchor,anchor_feature_entities)
             anchor_entity = AtlasEntity(
                 name=anchor.name,
-                qualified_name=self.project_name + self.registry_delimiter + anchor.name,
+                qualified_name=anchor_fully_qualified_name ,
                 attributes={
                     "source": source_entity.to_json(minimum=True),
-                    "features": [s.to_json(minimum=True) for s in anchor_feature_entities],
+                    "features": merged_elements,
                     "tags": anchor.registry_tags
                 },
                 typeName=TYPEDEF_ANCHOR,
@@ -260,6 +263,30 @@ class _FeatureRegistry():
             anchors_batch.append(anchor_entity)
         return anchors_batch
 
+    def _merge_anchor(self,original_anchor:Dict, new_anchor:Dict)->List[Dict[str,any]]:
+        '''
+        Merge the new anchors defined locally with the anchors that is defined in the centralized registry.
+        '''
+        # TODO: This will serve as a quick fix, full fix will work with MVCC, and is in progress.
+        new_anchor_json_repr = [s.to_json(minimum=True) for s in new_anchor]
+        if not original_anchor:
+            # if the anchor is not present on the registry, return json representation of the locally defined anchor.
+            # sample : [{'guid':'GUID_OF_ANCHOR','typeName':'','qualifiedName':'QUALIFIED_NAME'}
+            return new_anchor_json_repr
+        else:
+            original_anchor_elements = [x for x in original_anchor['entity']['attributes']['features']]
+            transformed_original_elements = {
+                x['uniqueAttributes']['qualifiedName']:
+                {
+                    'guid':x['guid'],
+                    'typeName':x['typeName'],
+                    'qualifiedName':x['uniqueAttributes']['qualifiedName']
+                }
+                for x in original_anchor_elements}
+            for elem in new_anchor_json_repr:
+                transformed_original_elements.setdefault(elem['qualifiedName'],elem)
+            return list(transformed_original_elements.values())
+            
     def _parse_source(self, source: Union[Source, HdfsSource]) -> AtlasEntity:
         """
         parse the input sources
@@ -726,7 +753,7 @@ derivations: {
         """
         return self.purview_client
 
-    def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0) -> List[str]:
+    def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0) -> List[Dict[str,str]]:
         """
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
@@ -742,10 +769,10 @@ derivations: {
                 # split the name based on delimiter
                 result = qualified_name.split(self.registry_delimiter)
                 if result[0].casefold() == project_name:
-                    feature_list.append(entity["name"])
+                    feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
             else:
                 # otherwise append all the entities
-                feature_list.append(entity["name"])
+                feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
 
         return feature_list
    
@@ -799,8 +826,7 @@ derivations: {
         For a ride hailing company few examples could be - "taxi", "passenger", "fare" etc.
         It's a keyword search on the registry metadata
         """        
-        search_term = "qualifiedName:{0}".format(searchTerm)
-        entities = self.purview_client.discovery.search_entities(search_term)
+        entities = self.purview_client.discovery.search_entities(searchTerm)
         return entities
     
     def _list_registered_entities_with_details(self, project_name: str = None, entity_type: Union[str, List[str]] = None, limit=50, starting_offset=0,) -> List[Dict]:
@@ -1035,58 +1061,3 @@ derivations: {
 
             ))
         return feature_list 
-
-    def get_feature_by_fqdn_type(self, qualifiedName, typeName):
-        """
-        Get a single feature by it's QualifiedName and Type
-        Returns the feature else throws an AtlasException with 400 error code
-        """
-        response = self.purview_client.get_entity(qualifiedName=qualifiedName, typeName=typeName)
-        entities = response.get('entities')
-        for entity in entities:
-            if entity.get('typeName') == typeName and entity.get('attributes').get('qualifiedName') == qualifiedName: 
-                return entity
-       
-    def get_feature_by_fqdn(self, qualifiedName):
-        """
-        Get feature by qualifiedName
-        Returns the feature else throws an AtlasException with 400 error code
-        """        
-        id = self.get_feature_id(qualifiedName)
-        return self.get_feature_by_guid(id)
-    
-    def get_feature_by_guid(self, guid):
-        """
-        Get a single feature by it's GUID
-        Returns the feature else throws an AtlasException with 400 error code
-        """ 
-        response = self.purview_client.get_single_entity(guid=guid)
-        return response
-    
-    def get_feature_lineage(self, guid):
-        """
-        Get feature's lineage by it's GUID
-        Returns the feature else throws an AtlasException with 400 error code
-        """
-        return self.purview_client.get_entity_lineage(guid=guid)
-
-    def get_feature_id(self, qualifiedName):
-        """
-        Get guid of a feature given its qualifiedName
-        """        
-        search_term = "qualifiedName:{0}".format(qualifiedName)
-        entities = self.purview_client.discovery.search_entities(search_term)
-        for entity in entities:
-            if entity.get('qualifiedName') == qualifiedName:
-                return entity.get('id')
-
-    def search_features(self, searchTerm):
-        """
-        Search the registry for the given query term
-        For a ride hailing company few examples could be - "taxi", "passenger", "fare" etc.
-        It's a keyword search on the registry metadata
-        """        
-        search_term = "qualifiedName:{0}".format(searchTerm)
-        entities = self.purview_client.discovery.search_entities(search_term)
-        return entities
-        

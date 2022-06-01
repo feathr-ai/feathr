@@ -4,7 +4,8 @@ import os
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
+from feathr.utils import FeaturePrinter
 from feathr.feature import FeatureBase
 
 import redis
@@ -22,12 +23,11 @@ from feathr._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
 from feathr.feathr_configurations import SparkExecutionConfiguration
 from feathr.feature_derivations import DerivedFeature
+from feathr.anchor import FeatureAnchor
 from feathr.materialization_settings import MaterializationSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.query_feature_list import FeatureQuery
 from feathr.settings import ObservationSettings
-from feathr.feature_derivations import DerivedFeature
-from feathr.anchor import FeatureAnchor
 from feathr.feathr_configurations import SparkExecutionConfiguration
 
 
@@ -211,7 +211,7 @@ class FeathrClient(object):
         else:
             self.registry.register_features(self.local_workspace_dir, from_context=from_context)
 
-    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
+    def build_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = [], verbose: bool = False):
         """Build features based on the current workspace. all actions that triggers a spark job will be based on the
         result of this action.
         """
@@ -236,6 +236,10 @@ class FeathrClient(object):
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
+        
+        # Pretty print anchor_list
+        if verbose and self.anchor_list:
+                FeaturePrinter.pretty_print_anchors(self.anchor_list)
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -397,6 +401,7 @@ class FeathrClient(object):
                              output_path: str,
                              execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None,
                              udf_files = None,
+                             verbose: bool = False
                              ):
         """
         Get offline features for the observation dataset
@@ -435,6 +440,10 @@ class FeathrClient(object):
             _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
+        
+        # Pretty print feature_query
+        if verbose and feature_query:
+            FeaturePrinter.pretty_print_feature_query(feature_query)
 
         write_to_file(content=config, full_file_name=config_file_path)
         return self._get_offline_features_with_config(config_file_path, execution_configuratons, udf_files=udf_files)
@@ -513,7 +522,7 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None):
+    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None, verbose: bool = False):
         """Materialize feature data
 
         Args:
@@ -521,7 +530,6 @@ class FeathrClient(object):
             execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
         # produce materialization config
-
         for end in settings.get_backfill_cutoff_time():
             settings.backfill_time.end = end
             config = _to_materialization_config(settings)
@@ -542,6 +550,10 @@ class FeathrClient(object):
             self._materialize_features_with_config(config_file_path, execution_configuratons, udf_files)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
+        
+        # Pretty print feature_names of materialized features
+        if verbose and settings:
+            FeaturePrinter.pretty_print_materialize_features(settings)
 
     def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature

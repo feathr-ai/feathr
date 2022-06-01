@@ -4,6 +4,8 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from test_fixture import registry_test_setup_append, registry_test_setup_partially
+
 import pytest
 from click.testing import CliRunner
 from feathr import (FeatureAnchor, FeatureQuery, ObservationSettings, TypedKey,
@@ -39,11 +41,13 @@ def test_feathr_register_features_e2e():
     time.sleep(5)
     # in CI test, the project name is set by the CI pipeline so we read it here
     all_features = client.list_registered_features(project_name=client.project_name)
-    assert 'f_is_long_trip_distance' in all_features # test regular ones
-    assert 'f_trip_time_rounded' in all_features # make sure derived features are there
-    assert 'f_location_avg_fare' in all_features # make sure aggregated features are there
-    assert 'f_trip_time_rounded_plus' in all_features # make sure derived features are there 
-    assert 'f_trip_time_distance' in all_features # make sure derived features are there  
+    all_feature_names = [x['name'] for x in all_features]
+    
+    assert 'f_is_long_trip_distance' in all_feature_names # test regular ones
+    assert 'f_trip_time_rounded' in all_feature_names # make sure derived features are there
+    assert 'f_location_avg_fare' in all_feature_names # make sure aggregated features are there
+    assert 'f_trip_time_rounded_plus' in all_feature_names # make sure derived features are there 
+    assert 'f_trip_time_distance' in all_feature_names # make sure derived features are there  
 
     # Sync workspace from registry, will get all conf files back
     client.get_features_from_registry(client.project_name)
@@ -58,9 +62,35 @@ def test_feathr_register_features_e2e():
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path)
-    client.wait_job_to_finish(timeout_sec=500)
+    client.wait_job_to_finish(timeout_sec=900)
+
+def test_feathr_register_features_partially():
+    """
+    This test will register full set of features into one project, then register another project in two partial registrations.
+    The length of the return value of get_features_from_registry should be identical.
+    """
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client: FeathrClient = registry_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client.register_features()
+    time.sleep(30)
+    full_registration = client.get_features_from_registry(client.project_name)
+
+    client: FeathrClient = registry_test_setup_partially(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    new_project_name = client.project_name
+    client.register_features()
+    time.sleep(30)
 
 
+    client: FeathrClient = registry_test_setup_append(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client.project_name = new_project_name
+    client.register_features()
+    time.sleep(30)
+
+    appended_registration = client.get_features_from_registry(client.project_name)
+
+    # after a full registration, another registration should not affect the registered anchor features.
+    assert len(full_registration.items())==len(appended_registration.items())
     
 def test_get_feature_from_registry():
     registry = _FeatureRegistry("mock_project","mock_purview","mock_delimeter")

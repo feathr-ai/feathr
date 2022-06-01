@@ -316,9 +316,9 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
 
   /**
    * This test validates that Passthrough features specified over multiple anchors
-   * do not get dropped silently in the output.
+   * do not get dropped silently in the output. TODO: Enable test after FCM can handle new config syntax
    */
-  @Test
+  @Test(enabled = false)
   def testPassthroughFeaturesNotDroppedWithMultipleAnchors(): Unit = {
     val featureDefAsString =
       """
@@ -422,7 +422,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     ds.data.show()
   }
 
-  @Test
+  // TODO: Enable after FCM can handle new syntax
+  @Test(enabled = false)
   def testPassthroughFeaturesWithSWA(): Unit = {
     val featureDefAsString =
       """
@@ -505,7 +506,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     df.data.show()
   }
 
-  @Test
+  // TODO: Enable after FCM can handle new syntax
+  @Test(enabled = false)
   def tesSWAWithPreprocessing(): Unit = {
     val featureDefAsString =
       """

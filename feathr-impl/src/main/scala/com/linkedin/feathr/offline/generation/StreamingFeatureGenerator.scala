@@ -109,7 +109,7 @@ class StreamingFeatureGenerator {
           val withKeyColumnDF = keyExtractor.appendKeyColumns(rowDF)
           // Apply feature transformation
           val transformedResult = DataFrameBasedSqlEvaluator.transform(anchor.featureAnchor.extractor.asInstanceOf[SimpleAnchorExtractorSpark],
-            withKeyColumnDF, featureNamePrefixPairs, anchor)
+            withKeyColumnDF, featureNamePrefixPairs, anchor.featureAnchor.featureTypeConfigs)
           val outputJoinKeyColumnNames = getFeatureJoinKey(keyExtractor, withKeyColumnDF)
           val selectedColumns = outputJoinKeyColumnNames ++ anchor.selectedFeatures.filter(keyTaggedFeatures.map(_.featureName).contains(_))
           val cleanedDF = transformedResult.df.select(selectedColumns.head, selectedColumns.tail:_*)

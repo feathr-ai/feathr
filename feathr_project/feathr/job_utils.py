@@ -9,10 +9,10 @@ import tempfile
 
 def get_result_df(client: FeathrClient, format: str = None, res_url: str = None) -> pd.DataFrame:
     """Download the job result dataset from cloud as a Pandas dataframe.
-    
+
     format: format override, could be "parquet", "delta", etc.
     res_url: output URL to download files. Note that this will not block the job so you need to make sure the job is finished and result URL contains actual data.
-    """    
+    """
     res_url: str = res_url or client.get_job_result_uri(block=True, timeout_sec=1200)
     format: str = format or client.get_job_tags().get(OUTPUT_FORMAT, "")
     tmp_dir = tempfile.TemporaryDirectory()
