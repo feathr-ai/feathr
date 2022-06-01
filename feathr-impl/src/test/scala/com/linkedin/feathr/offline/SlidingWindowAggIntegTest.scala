@@ -130,7 +130,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
           |       }
           |     }
           |   }
-          |  swaAnchorWithKeyExtractor: {
+          |  swaAnchorWithKeyExtractor3: {
           |    source: "swaSource"
           |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor2"
           |    lateralViewParameters: {
