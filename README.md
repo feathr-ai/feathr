@@ -12,7 +12,7 @@ Feathr lets you:
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-## Feathr Highlights
+## 🌟 Feathr Highlights
 
 - **Scalable with built-in optimizations.** For example, based on some internal use case, Feathr can process billions of rows and PB scale data with built-in optimizations such as bloom filters and salted joins.
 - **Rich support for point-in-time joins and aggregations:** Feathr has high performant built-in operators designed for Feature Store, including time-based aggregation, sliding window joins, look-up features, all with point-in-time correctness.
@@ -22,29 +22,13 @@ Feathr automatically computes your feature values and joins them to your trainin
 - **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
 - **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
 
-## Documentation
+## 📓 Documentation
 
 - For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/). 
 - For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
 - For technical talks on Feathr, see the [slides here](./docs/talks/Feathr%20Feature%20Store%20Talk.pdf).
 
-## Running Feathr on Azure with 3 Simple Steps
-
-Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
-
-1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
-
-[Launch Cloud Shell](https://shell.azure.com/bash)
-
-2. Click the button below to deploy a minimal set of Feathr resources for demo purpose. You will need to fill in the `Principal ID` and `Resource Prefix`. You will need "Owner" permission of the selected subscription.
-
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
-
-3. Run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb)
-
-## Installing Feathr Client Locally
+## 🛠️ Installing Feathr Client Locally
 
 If you are not using the above Jupyter Notebook and want to install Feathr client locally, use this:
 
@@ -58,7 +42,13 @@ Or use the latest code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## Feathr Examples
+## ☁️ Running Feathr on Cloud
+
+- Please read the [Quick Start Guide for Feathr on Databricks](./docs/quickstart.md) to run Feathr with Databricks
+- Please read the [Quick Start Guide for Feathr on Azure Synapse](./docs/quickstart.md) to run Feathr with Azure Synapse
+
+
+## 🔡 Feathr Examples
 
 Please read [Feathr Capabilities](https://linkedin.github.io/feathr/concepts/feathr-capabilities.html) for more examples. Below are a few selected ones:
 
@@ -131,7 +121,15 @@ Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linked
 
 Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
 
-## Cloud Integrations
+
+## 🗣️ Tech Talks on Feathr
+
+- [Introduction to Feathr - Beginner's guide](https://www.youtube.com/watch?v=gZg01UKQMTY)
+- [Document Intelligence using Azure Feature Store (Feathr) and SynapseML
+](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
+
+
+## ⚙️ Cloud Integrations
 
 | Feathr component             | Cloud Integrations                                                          |
 | ---------------------------- | --------------------------------------------------------------------------- |
@@ -144,7 +142,7 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 | Machine Learning Platform    | Azure Machine Learning, Jupyter Notebook                                    |
 | File Format                  | Parquet, ORC, Avro, Delta Lake                                              |
 
-## Roadmap
+## 🏞 Roadmap
 
 For a complete roadmap with esitmated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
 
@@ -162,13 +160,11 @@ For a complete roadmap with esitmated dates, please [visit this page](https://gi
   - [ ] Support feature data deletion and retention
 
 
-## Community Guidelines
+## 👨‍👨‍👦‍👦 Community Guidelines
 
 Build for the community and build by the community. Check out [Community Guidelines](CONTRIBUTING.md).
 
-## Slack Channel
+## 📢 Slack Channel
 
 Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-19dcbquwl-zKiJGYTak6Psw2GbUYtT2g)).
 
-
-[![Feathr Recording](https://img.youtube.com/vi/gZg01UKQMTY/0.jpg)](https://www.youtube.com/watch?v=gZg01UKQMTY "Feathr Recording")
