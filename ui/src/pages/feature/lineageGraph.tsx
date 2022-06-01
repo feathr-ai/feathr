@@ -52,7 +52,6 @@ const LineageGraph: React.FC = () => {
         const nodeId = currentNode.guid;
 
         // If toggled feature type exists, skip other types
-        console.log("featureType = ", featureType);
         if (featureType && featureType !== "all_nodes" && currentNode.typeName !== featureType) {
           continue;
         }
@@ -72,14 +71,13 @@ const LineageGraph: React.FC = () => {
         const { fromEntityId: from, toEntityId: to, relationshipType } = lineageData.relations[index];
         const edge = generateEdge({ obj: elementObj, from, to });
         if (edge?.source && edge?.target) {
-          // Drop edges with other relationship e.g, Consumes, BelongsTo
-          if (relationshipType === "Contains") {
+          // Currently, API returns all relationships, filter out Contains, Consumes, etc
+          if (relationshipType === "Produces") {
             elements.push(edge);
           }
         }
       }
 
-      console.log("elements updated to count = ", elements.length);
       SetElements(elements);
     };
 

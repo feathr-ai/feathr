@@ -10,14 +10,14 @@ const GraphNode: FC<NodeProps> = (props: NodeProps) => {
   const navigate = useNavigate();
   const { project } = useParams<Params>();
 
-  const { data: { title, subtitle, qualifiedName, borderColor, active } } = props;
+  const { data: { title, subtitle, featureId, borderColor, active } } = props;
 
   const nodeColorStyle = {
     border: `2px solid ${ borderColor }`,
   };
 
   const onNodeIconClick = () => {
-    navigate(`/projects/${ project }/features/${ qualifiedName }`)
+    navigate(`/projects/${ project }/features/${ featureId }`)
   };
 
   return (
