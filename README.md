@@ -28,12 +28,12 @@ Feathr automatically computes your feature values and joins them to your trainin
 - For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
 - For technical talks on Feathr, see the [slides here](./docs/talks/Feathr%20Feature%20Store%20Talk.pdf).
 
-## 🛠️ Installing Feathr Client Locally
+## 🛠️ Install Feathr Client Locally
 
 If you want to install Feathr client in a python environment, use this:
 
 ```bash
-pip install U feathr
+pip install feathr
 ```
 
 Or use the latest code from GitHub:
