@@ -18,7 +18,7 @@ on:
       - 'docs/**'
       - '**/README.md'
 jobs:
-  sbt_test:
+  gradle_test:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
