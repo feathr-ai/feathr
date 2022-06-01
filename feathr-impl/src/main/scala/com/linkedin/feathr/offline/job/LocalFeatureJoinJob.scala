@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.job
 
-import com.linkedin.feathr.offline.client.FeathrClient
+import com.linkedin.feathr.offline.client.{FeathrClient2}
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
@@ -33,7 +33,7 @@ object LocalFeatureJoinJob {
       extraParams: Array[String] = Array(),
       ss: SparkSession = ss): SparkFeaturizedDataset = {
     val joinConfig = FeatureJoinConfig.parseJoinConfig(joinConfigAsHoconString)
-    val feathrClient = FeathrClient.builder(ss).addFeatureDef(featureDefAsString).build()
+    val feathrClient = FeathrClient2.builder(ss).addFeatureDef(featureDefAsString).build()
     val outputPath: String = FeatureJoinJob.SKIP_OUTPUT
 
     val defaultParams = Array(

@@ -1,10 +1,9 @@
 package com.linkedin.feathr.offline.client
 
-import com.linkedin.feathr.common.tensor.TensorType
-
 import java.time.Duration
 import com.linkedin.frame.common.urn.MlFeatureVersionUrn
 import com.linkedin.feathr.common.{FeatureTypeConfig, JoiningFeatureParams, TaggedFeatureName}
+import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.compute.Resolver.FeatureRequest
 import com.linkedin.feathr.compute._
 import com.linkedin.frame.config.featureanchor.FeatureAnchorEnvironment
@@ -13,7 +12,6 @@ import com.linkedin.feathr.fds.ColumnMetadata
 import com.linkedin.frame.config.{FeatureDefinition, FeatureDefinitionLoaderFactory}
 import com.linkedin.frame.core.config.producer.common.KeyListExtractor
 import com.linkedin.frame.core.configdataprovider.StringConfigDataProvider
-import com.linkedin.frame.exception.{ErrorLabel, FrameConfigException}
 import com.linkedin.feathr.offline.{FeatureDataFrame, PostTransformationUtil}
 import com.linkedin.feathr.offline.exception.DataFrameApiUnsupportedOperationException
 import com.linkedin.feathr.offline.anchored.WindowTimeUnit
@@ -109,8 +107,8 @@ class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph) {
     }
     val conflictFeatureNames: Seq[String] = allFeaturesInGraph.intersect(obsData.data.schema.fieldNames)
     if (conflictFeatureNames.nonEmpty) {
-      throw new FrameConfigException(
-        ErrorLabel.FRAME_USER_ERROR,
+      throw new FeathrConfigException(
+        ErrorLabel.FEATHR_USER_ERROR,
         "Feature names must be different from field names in the observation data. " +
           s"Please rename feature ${conflictFeatureNames} or rename the same field names in the observation data.")
     }
@@ -252,8 +250,8 @@ class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph) {
                 val obsTimeRange = SlidingWindowFeatureUtils.getObsSwaDataTimeRange(contextDf, featureJoinConfig.settings)._1
                 val duration = PegasusRecordDurationConverter.convert(dataSource.getWindow())
                 if (featureJoinConfig.settings.isEmpty || featureJoinConfig.settings.get.joinTimeSetting.isEmpty) {
-                  throw new FrameConfigException(
-                    ErrorLabel.FRAME_USER_ERROR,
+                  throw new FeathrConfigException(
+                    ErrorLabel.FEATHR_USER_ERROR,
                     "joinTimeSettings section is not defined in join config," +
                       " cannot perform window aggregation operation")
                 }
@@ -525,7 +523,7 @@ class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph) {
     throw new UnsupportedOperationException()
   }
 }
-object FrameClient2 {
+object FeathrClient2 {
 
   /**
    * Create an instance of a builder for constructing a FrameClient
