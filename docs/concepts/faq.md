@@ -280,3 +280,22 @@ Does is support customized transformations (e.g. quantile clipping)?
 
 Online transformation:
 Does is support to store necessary information to transform new streaming data (e.g. min and max values of offline data (training set), which is used for model training to normalize new data or integers used before to map categorical data (men → 0 and women → 1)?
+
+
+1) Assuming that feature set has multiple columns, is it possible to retrieve feature set with Feathr?
+Yes (that’s called “Feathr Anchor” (link to the motivation)
+
+2) We use location in both batch source and observation settings, how differently are these locations used?
+It’s also explained here, but basically in observation setting you only need two columns: an ID column, and a timestamp column. Other fields are all optional.
+The existing NYC driver sample is a bit confusing since we are using a same file for two purpose. I’ll update them shortly to make sure it’s less confusing.
+
+
+Does feathr support "local spark" runtime? other than databricks and synapse. For users to build and test features locally, without much changes to Way of working.
+
+Is it possible to update the feature got from Registry(Purview)?Consider I have got the features from purview with get_features_from_registry function of FeathrClient for a particular project name. Now I would like to see the code of the feature, modify the feature and update the feature in registry with Feathr Client.
+
+type_system_initialization: true in feathr_conf(Purview)
+What is the use of this parameter?
+
+
+While using features from registry in consumption flow, it is required that the user has access to all the source datafiles before the feature can be used. This will be tricky especially in our datalake and DDS setup. Any way to handle this 
