@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
 import { AxiosError } from 'axios';
 import { deleteFeature, fetchFeature } from '../../api';
-import { IFeature, InputAnchorFeatures } from "../../models/model";
+import { IFeature } from "../../models/model";
 
 const { confirm } = Modal;
 
@@ -62,17 +62,6 @@ const FeatureDetails: React.FC<Props> = () => {
       </div>
     )
   }
-  const renderInputFeatureList = (features: InputAnchorFeatures[]) => {
-    return (
-      <ul>
-        { features.map((_) => (
-          <Button type="link" onClick={ () => {
-            navigate(`/projects/${ project }/features/${ _.uniqueAttributes.qualifiedName }`)
-          } }>{ _.uniqueAttributes.qualifiedName }</Button>
-        )) }
-      </ul>
-    );
-  }
 
   const renderFeature = (feature: IFeature): JSX.Element => {
     return (
@@ -114,19 +103,29 @@ const FeatureDetails: React.FC<Props> = () => {
           }
         </Row>
         <Row>
-          { feature.attributes.input_anchor_features && feature.attributes.input_anchor_features.length > 0 &&
+          { feature.attributes._input_anchor_features && feature.attributes._input_anchor_features.length > 0 &&
               <Col span={ 24 }>
                   <Card title="Input Anchor Features" bordered={ false }>
-                    { renderInputFeatureList(feature.attributes.input_anchor_features) }
+                    {
+                      feature.attributes._input_anchor_features.map((feature) =>
+                        <Button type="link" onClick={ () => {
+                          navigate(`/projects/${ project }/features/${ feature.id }`)
+                        } }>{ feature.attributes.name }</Button>)
+                    }
                   </Card>
               </Col>
           }
         </Row>
         <Row>
-          { feature.attributes.input_derived_features && feature.attributes.input_derived_features.length > 0 &&
+          { feature.attributes._input_derived_features && feature.attributes._input_derived_features.length > 0 &&
               <Col span={ 24 }>
                   <Card title="Input Derived Features" bordered={ false }>
-                    { renderInputFeatureList(feature.attributes.input_derived_features) }
+                    {
+                      feature.attributes._input_derived_features.map((feature) =>
+                        <Button type="link" onClick={ () => {
+                          navigate(`/projects/${ project }/features/${ feature.id }`)
+                        } }>{ feature.attributes.name }</Button>)
+                    }
                   </Card>
               </Col>
           }

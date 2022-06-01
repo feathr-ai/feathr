@@ -1,4 +1,5 @@
 export interface IFeature {
+  id: string;
   guid: string;
   status: string;
   displayText: string;
@@ -13,8 +14,8 @@ export interface FeatureAttributes {
   transformation: FeatureTransformation;
   key: FeatureKey[];
   window: string;
-  input_anchor_features: InputAnchorFeatures[];
-  input_derived_features: InputDerivedFeatures[]
+  _input_anchor_features: IFeature[];
+  _input_derived_features: IFeature[]
 }
 
 export interface FeatureType {
