@@ -30,10 +30,10 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 ## 🛠️ Installing Feathr Client Locally
 
-If you are not using the above Jupyter Notebook and want to install Feathr client locally, use this:
+If you want to install Feathr client in a python environment, use this:
 
 ```bash
-pip install -U feathr
+pip install U feathr
 ```
 
 Or use the latest code from GitHub:
@@ -44,8 +44,8 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 ## ☁️ Running Feathr on Cloud
 
-- Please read the [Quick Start Guide for Feathr on Databricks](./docs/quickstart.md) to run Feathr with Databricks
-- Please read the [Quick Start Guide for Feathr on Azure Synapse](./docs/quickstart.md) to run Feathr with Azure Synapse
+- Please read the [Quick Start Guide for Feathr on Databricks](./docs/quickstart_databricks.md) to run Feathr with Databricks.
+- Please read the [Quick Start Guide for Feathr on Azure Synapse](./docs/quickstart.md) to run Feathr with Azure Synapse.
 
 
 ## 🔡 Feathr Examples
@@ -117,7 +117,7 @@ Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/ho
 Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linkedin.github.io/feathr/concepts/point-in-time-join.html) for more details.
 
 
-## Running Feathr Examples
+### Running Feathr Examples
 
 Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
 
@@ -142,7 +142,7 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 | Machine Learning Platform    | Azure Machine Learning, Jupyter Notebook                                    |
 | File Format                  | Parquet, ORC, Avro, Delta Lake                                              |
 
-## 🏞 Roadmap
+## 🚀 Roadmap
 
 For a complete roadmap with esitmated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
 
