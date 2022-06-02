@@ -1,14 +1,14 @@
 import React from 'react';
 import { Button, Card, Space } from 'antd';
-import { useHistory } from 'react-router';
+import { useNavigate } from "react-router-dom";
 import FeatureList from "../../components/featureList";
 
 type Props = {};
 
 const Features: React.FC<Props> = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const onCreateFeatureClick = () => {
-    history.push('/new-feature');
+    navigate('/new-feature');
   };
 
   return (

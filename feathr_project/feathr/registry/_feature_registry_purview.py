@@ -581,12 +581,12 @@ class _FeatureRegistry(FeathrRegistry):
         return definitions
 
     @classmethod
-    def save_to_feature_config(self, workspace_path: Path):
+    def save_to_feature_config(self, workspace_path: Path, config_save_dir: Path):
         """Save feature definition within the workspace into HOCON feature config files"""
         repo_definitions = self._extract_features(workspace_path)
-        self._save_request_feature_config(repo_definitions)
-        self._save_anchored_feature_config(repo_definitions)
-        self._save_derived_feature_config(repo_definitions)
+        self._save_request_feature_config(repo_definitions, config_save_dir)
+        self._save_anchored_feature_config(repo_definitions, config_save_dir)
+        self._save_derived_feature_config(repo_definitions, config_save_dir)
 
     @classmethod
     def save_to_feature_config_from_context(self, anchor_list, derived_feature_list, local_workspace_dir: Path):

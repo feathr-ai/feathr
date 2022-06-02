@@ -1,34 +1,33 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Alert, Button, Card, Col, Modal, Row, Space, Spin } from 'antd';
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
-import { useHistory, useParams } from 'react-router';
+import { useNavigate, useParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
-import { deleteFeature, fetchFeature } from '../../api';
 import { AxiosError } from 'axios';
-import { FeatureAttributes, InputAnchorFeatures } from "../../models/model";
+import { deleteFeature, fetchFeature } from '../../api';
+import { Feature } from "../../models/model";
 
 const { confirm } = Modal;
 
 type Props = {};
 type Params = {
   project: string;
-  qualifiedName: string;
+  featureId: string;
 }
 
 const FeatureDetails: React.FC<Props> = () => {
-  const { project, qualifiedName } = useParams<Params>();
+  const { project, featureId } = useParams() as Params;
+  const navigate = useNavigate();
   const loadingIcon = <LoadingOutlined style={ { fontSize: 24 } } spin />;
-  const history = useHistory();
-  const navigateTo = useCallback((location) => history.push(location), [history]);
   const {
     status,
     error,
     data
-  } = useQuery<FeatureAttributes, AxiosError>(['feature', qualifiedName], () => fetchFeature(project, qualifiedName));
+  } = useQuery<Feature, AxiosError>(['featureId', featureId], () => fetchFeature(project, featureId));
 
   const openLineageWindow = () => {
-    const lineageUrl = `/projects/${ project }/features/${ qualifiedName }/lineage`;
-    window.open(lineageUrl);
+    const lineageUrl = `/projects/${ project }/lineage`;
+    navigate(lineageUrl);
   }
 
   const onClickDeleteFeature = () => {
@@ -40,8 +39,8 @@ const FeatureDetails: React.FC<Props> = () => {
       title: 'Are you sure you want to delete this feature?',
       icon: <ExclamationCircleOutlined />,
       async onOk() {
-        await deleteFeature(qualifiedName);
-        history.push('/features');
+        await deleteFeature(featureId);
+        navigate('/features');
       },
       onCancel() {
         console.log('Cancel clicked');
@@ -63,68 +62,70 @@ const FeatureDetails: React.FC<Props> = () => {
       </div>
     )
   }
-  const renderInputFeatureList = (features: InputAnchorFeatures[]) => {
-    return (
-      <ul>
-        { features.map((_) => (
-          <Button type="link" onClick={ () => {
-            navigateTo(`/projects/${ project }/features/${ _.uniqueAttributes.qualifiedName }`)
-          } }>{ _.uniqueAttributes.qualifiedName }</Button>
-        )) }
-      </ul>
-    );
-  }
 
-  const renderFeature = (feature: FeatureAttributes): JSX.Element => {
+  const renderFeature = (feature: Feature): JSX.Element => {
     return (
       <div className="site-card-wrapper">
         <Row>
-          { feature?.key && feature.key.length > 0 &&
+          { feature.attributes.key && feature.attributes.key.length > 0 &&
               <Col span={ 8 }>
                   <Card title="Key" bordered={ false }>
-                      <p>full_name: { feature.key[0].full_name }</p>
-                      <p>key_column: { feature.key[0].key_column }</p>
-                      <p>description: { feature.key[0].description }</p>
-                      <p>key_column_alias: { feature.key[0].key_column_alias }</p>
-                      <p>key_column_type: { feature.key[0].key_column_type }</p>
+                      <p>full_name: { feature.attributes.key[0].full_name }</p>
+                      <p>key_column: { feature.attributes.key[0].key_column }</p>
+                      <p>description: { feature.attributes.key[0].description }</p>
+                      <p>key_column_alias: { feature.attributes.key[0].key_column_alias }</p>
+                      <p>key_column_type: { feature.attributes.key[0].key_column_type }</p>
                   </Card>
               </Col>
           }
-          { feature?.type &&
+          { feature.attributes.type &&
               <Col span={ 8 }>
                   <Card title="Type" bordered={ false }>
-                    { feature.type }
+                      <p>dimension_type: { feature.attributes.type.dimension_type }</p>
+                      <p>tensor_category: { feature.attributes.type.tensor_category }</p>
+                      <p>type: { feature.attributes.type.type }</p>
+                      <p>val_type: { feature.attributes.type.val_type }</p>
                   </Card>
               </Col>
           }
-          { feature?.transformation &&
+          { feature.attributes.transformation &&
               <Col span={ 8 }>
                   <Card title="Transformation" bordered={ false }>
-                      <p>transform_expr: { feature.transformation.transform_expr ?? "N/A" }</p>
-                      <p>filter: { feature.transformation.filter ?? "N/A" }</p>
-                      <p>agg_func: { feature.transformation.agg_func ?? "N/A" }</p>
-                      <p>limit: { feature.transformation.limit ?? "N/A" }</p>
-                      <p>group_by: { feature.transformation.group_by ?? "N/A" }</p>
-                      <p>window: { feature.transformation.window ?? "N/A" }</p>
-                      <p>def_expr: { feature.transformation.def_expr ?? "N/A" }</p>
+                      <p>transform_expr: { feature.attributes.transformation.transform_expr ?? "N/A" }</p>
+                      <p>filter: { feature.attributes.transformation.filter ?? "N/A" }</p>
+                      <p>agg_func: { feature.attributes.transformation.agg_func ?? "N/A" }</p>
+                      <p>limit: { feature.attributes.transformation.limit ?? "N/A" }</p>
+                      <p>group_by: { feature.attributes.transformation.group_by ?? "N/A" }</p>
+                      <p>window: { feature.attributes.transformation.window ?? "N/A" }</p>
+                      <p>def_expr: { feature.attributes.transformation.def_expr ?? "N/A" }</p>
                   </Card>
               </Col>
           }
         </Row>
         <Row>
-          { feature?.input_anchor_features && feature?.input_anchor_features.length > 0 &&
+          { feature.attributes._input_anchor_features && feature.attributes._input_anchor_features.length > 0 &&
               <Col span={ 24 }>
                   <Card title="Input Anchor Features" bordered={ false }>
-                    { renderInputFeatureList(feature.input_anchor_features) }
+                    {
+                      feature.attributes._input_anchor_features.map((feature) =>
+                        <Button type="link" onClick={ () => {
+                          navigate(`/projects/${ project }/features/${ feature.id }`)
+                        } }>{ feature.attributes.name }</Button>)
+                    }
                   </Card>
               </Col>
           }
         </Row>
         <Row>
-          { feature?.input_derived_features && feature?.input_derived_features.length > 0 &&
+          { feature.attributes._input_derived_features && feature.attributes._input_derived_features.length > 0 &&
               <Col span={ 24 }>
                   <Card title="Input Derived Features" bordered={ false }>
-                    { renderInputFeatureList(feature.input_derived_features) }
+                    {
+                      feature.attributes._input_derived_features.map((feature) =>
+                        <Button type="link" onClick={ () => {
+                          navigate(`/projects/${ project }/features/${ feature.id }`)
+                        } }>{ feature.attributes.name }</Button>)
+                    }
                   </Card>
               </Col>
           }
@@ -172,7 +173,7 @@ const FeatureDetails: React.FC<Props> = () => {
           );
         } else {
           return (
-            <Card title={ data.name }>
+            <Card title={ data.displayText }>
               { renderCommandButtons() }
               { renderFeature(data) }
             </Card>
@@ -182,11 +183,9 @@ const FeatureDetails: React.FC<Props> = () => {
   }
 
   return (
-    <>
-      <div style={ { margin: "2%" } }>
-        { render(status) }
-      </div>
-    </>
+    <div style={ { margin: "2%" } }>
+      { render(status) }
+    </div>
   );
 };
 
