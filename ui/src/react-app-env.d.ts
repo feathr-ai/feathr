@@ -7,6 +7,7 @@ declare global {
       PWD: string;
       REACT_APP_AAD_APP_CLIENT_ID: string;
       REACT_APP_AAD_APP_AUTHORITY: string;
+      REACT_APP_API_ENDPOINT: string;
     }
   }
 }

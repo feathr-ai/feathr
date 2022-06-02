@@ -4,6 +4,7 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrDataOutputExcepti
 import com.linkedin.feathr.common.{Header, TaggedFeatureName}
 import com.linkedin.feathr.offline.generation.FeatureDataHDFSProcessUtils._
 import com.linkedin.feathr.offline.util.{HdfsUtils, SourceUtils}
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.avro.Schema
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -22,6 +23,7 @@ private[offline] object RawDataWriterUtils {
    * @param outputParts optional output num parts
    * @param endTimeOpt         optional string of end time, in yyyy/MM/dd format
    * @param saveSchemaMeta save schema and meta data or not
+   * @param dataLoaderHandlers additional data loader handlers that contain hooks for dataframe creation and manipulation
    */
   def writeFdsDataToDisk(
       ss: SparkSession,
@@ -31,7 +33,8 @@ private[offline] object RawDataWriterUtils {
       endTimeOpt: Option[String],
       saveSchemaMeta: Boolean,
       df: DataFrame,
-      header: Header): (DataFrame, Header) = {
+      header: Header,
+      dataLoaderHandlers: List[DataLoaderHandler]): (DataFrame, Header) = {
 
     val dataPath = FeatureGenerationPathName.getDataPath(parentPath, endTimeOpt)
     val metaPath = FeatureGenerationPathName.getMetaPath(parentPath, endTimeOpt)
@@ -45,7 +48,7 @@ private[offline] object RawDataWriterUtils {
     val numPartsParams = outputParts.map(numParts => Map(SparkIOUtils.OUTPUT_PARALLELISM -> numParts.intValue().toString))
     val parameters = Map(SparkIOUtils.OVERWRITE_MODE -> "ALL") ++ numPartsParams.getOrElse(Map.empty[String, String])
 
-    SourceUtils.safeWriteDF(df, tempDataPath, parameters)
+    SourceUtils.safeWriteDF(df, tempDataPath, parameters, dataLoaderHandlers)
     val outputDF = df
 
     HdfsUtils.hdfsCreateDirectoriesAsNeeded(dataPath)

@@ -19,3 +19,7 @@ title: Feathr Documentation Guideline
 parent: Feathr Developer Guides
 ---
 ```
+
+## Emojis
+
+Here's a link to all the emojis avaialble in README files: [Emoji Cheat Sheet](https://github.com/ikatyang/emoji-cheat-sheet/blob/master/README.md). If you want to find a good emoji, you can use [this website](https://emojicombos.com/). 

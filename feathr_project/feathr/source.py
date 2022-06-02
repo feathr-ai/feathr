@@ -103,7 +103,7 @@ class HdfsSource(Source):
         tm = Template("""  
             {{source.name}}: {
                 location: {path: "{{source.path}}"}
-                {% if source.event_timestamp_column is defined %}
+                {% if source.event_timestamp_column %}
                     timeWindowParameters: {
                         timestampColumn: "{{source.event_timestamp_column}}"
                         timestampColumnFormat: "{{source.timestamp_format}}"

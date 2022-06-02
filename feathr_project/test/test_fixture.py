@@ -166,6 +166,128 @@ def registry_test_setup(config_path: str):
     os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
 
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
+    request_anchor, agg_anchor, derived_feature_list = generate_entities()
+
+    client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
+    return client
+def registry_test_setup_partially(config_path: str):
+
+
+    # use a new project name every time to make sure all features are registered correctly
+    now = datetime.now()
+    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+
+    client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
+
+    request_anchor, agg_anchor, derived_feature_list = generate_entities()
+    agg_anchor.features = agg_anchor.features[:1]
+    client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
+    return client
+
+def registry_test_setup_append(config_path: str):
+
+
+    # use a new project name every time to make sure all features are registered correctly
+    now = datetime.now()
+    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+
+    client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
+
+    request_anchor, agg_anchor, derived_feature_list = generate_entities()
+    agg_anchor.features = agg_anchor.features[1:]
+    client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
+    return client
+
+
+def generate_entities():
+    def add_new_dropoff_and_fare_amount_column(df: DataFrame):
+        df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
+        df = df.withColumn("new_fare_amount", col("fare_amount") + 1000000)
+        return df
+
+    batch_source = HdfsSource(name="nycTaxiBatchSource",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
+                              event_timestamp_column="lpep_dropoff_datetime",
+                              timestamp_format="yyyy-MM-dd HH:mm:ss",
+                              preprocessing=add_new_dropoff_and_fare_amount_column,
+                              registry_tags={"for_test_purpose":"true"}
+                              )
+
+    f_trip_distance = Feature(name="f_trip_distance",
+                              feature_type=FLOAT, transform="trip_distance",
+                              registry_tags={"for_test_purpose":"true"}
+                              )
+    f_trip_time_duration = Feature(name="f_trip_time_duration",
+                               feature_type=INT32,
+                               transform="(to_unix_timestamp(lpep_dropoff_datetime) - to_unix_timestamp(lpep_pickup_datetime))/60")
+
+
+    features = [
+        f_trip_distance,
+        f_trip_time_duration,
+        Feature(name="f_is_long_trip_distance",
+                feature_type=BOOLEAN,
+                transform="cast_float(trip_distance)>30"),
+        Feature(name="f_day_of_week",
+                feature_type=INT32,
+                transform="dayofweek(lpep_dropoff_datetime)"),
+    ]
+
+
+    request_anchor = FeatureAnchor(name="request_features",
+                                   source=INPUT_CONTEXT,
+                                   features=features,
+                                   registry_tags={"for_test_purpose":"true"}
+                                   )
+
+    f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
+                                          feature_type=FLOAT,
+                                          input_features=[
+                                              f_trip_distance, f_trip_time_duration],
+                                          transform="f_trip_distance * f_trip_time_duration")
+
+    f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded",
+                                         feature_type=INT32,
+                                         input_features=[f_trip_time_duration],
+                                         transform="f_trip_time_duration % 10")
+    f_trip_time_rounded_plus = DerivedFeature(name="f_trip_time_rounded_plus",
+                                         feature_type=INT32,
+                                         input_features=[f_trip_time_rounded],
+                                         transform="f_trip_time_rounded + 100")
+
+    location_id = TypedKey(key_column="DOLocationID",
+                           key_column_type=ValueType.INT32,
+                           description="location id in NYC",
+                           full_name="nyc_taxi.location_id")
+    agg_features = [Feature(name="f_location_avg_fare",
+                            key=location_id,
+                            feature_type=FLOAT,
+                            transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                                                              agg_func="AVG",
+                                                              window="90d"))
+                    ]
+
+    agg_anchor = FeatureAnchor(name="aggregationFeatures",
+                               source=batch_source,
+                               features=agg_features)
+    
+    derived_feature_list = [
+                        f_trip_time_distance, f_trip_time_rounded, f_trip_time_rounded_plus]
+    
+    # shuffule the order to make sure they can be parsed correctly
+    # Those input derived features can be in arbitrary order, but in order to parse the right dependencies, we need to reorder them internally in a certain order. 
+    # This shuffle is to make sure that each time we have random shuffle for the input and make sure the internal sorting algorithm works (we are using topological sort).
+    random.shuffle(derived_feature_list)
+    return request_anchor,agg_anchor,derived_feature_list
+
+def registry_test_setup_append(config_path: str):
+
+
+    # use a new project name every time to make sure all features are registered correctly
+    now = datetime.now()
+    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+
+    client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
 
     def add_new_dropoff_and_fare_amount_column(df: DataFrame):
         df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))

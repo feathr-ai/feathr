@@ -22,17 +22,16 @@ private[offline] object DataFrameBasedSqlEvaluator {
    * @param transformer SimpleAnchorExtractorSpark implementation
    * @param inputDf input dataframe
    * @param requestedFeatureNameAndPrefix feature names and prefix pairs
-   * @param featureAnchorWithSource feature anchor with source that has the transformer
+   * @param featureTypeConfigs feature name to feature type config
    * @return TransformedResult or transformed feature data.
    */
   def transform(
       transformer: SimpleAnchorExtractorSpark,
       inputDf: DataFrame,
       requestedFeatureNameAndPrefix: Seq[(String, String)],
-      featureAnchorWithSource: FeatureAnchorWithSource): TransformedResult = {
+      featureTypeConfigs: Map[String, FeatureTypeConfig]): TransformedResult = {
     val requestedFeatureName = requestedFeatureNameAndPrefix.map(_._1)
     transformer.setInternalParams(SELECTED_FEATURES, s"[${requestedFeatureName.mkString(",")}]")
-    val featureTypeConfigs = featureAnchorWithSource.featureAnchor.featureTypeConfigs
 
     // Get DataFrame schema for tensor based on inferred tensor type.
     val featureSchemas = requestedFeatureName

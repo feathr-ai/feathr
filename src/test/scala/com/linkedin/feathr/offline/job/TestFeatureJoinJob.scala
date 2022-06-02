@@ -172,7 +172,8 @@ class TestFeatureJoinJob extends TestNGSuite{
         |  }
         |}
         """.stripMargin,
-      observationDataPath = "simple-obs.csv")
+      observationDataPath = "simple-obs.csv",
+      dataPathHandlers = List())
 
     val featureList = res.data.collect().sortBy(x => (x.getAs[String]("mId")))
 

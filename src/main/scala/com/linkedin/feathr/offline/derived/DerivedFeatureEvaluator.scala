@@ -10,6 +10,7 @@ import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, Row
 import com.linkedin.feathr.offline.join.algorithms.{SequentialJoinConditionBuilder, SparkJoinWithJoinCondition}
 import com.linkedin.feathr.offline.logical.FeatureGroups
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.sparkcommon.FeatureDerivationFunctionSpark
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -100,11 +101,14 @@ private[offline] object DerivedFeatureEvaluator {
 
   def apply(derivationStrategies: DerivationStrategies): DerivedFeatureEvaluator = new DerivedFeatureEvaluator(derivationStrategies)
 
-  def apply(ss: SparkSession, featureGroups: FeatureGroups): DerivedFeatureEvaluator = {
+  def apply(ss: SparkSession,
+            featureGroups: FeatureGroups,
+            dataPathHandlers: List[DataPathHandler]): DerivedFeatureEvaluator = {
     val defaultStrategies = strategies.DerivationStrategies(
       new SparkUdfDerivation(),
       new RowBasedDerivation(featureGroups.allTypeConfigs),
-      new SequentialJoinAsDerivation(ss, featureGroups, SparkJoinWithJoinCondition(SequentialJoinConditionBuilder)))
+      new SequentialJoinAsDerivation(ss, featureGroups, SparkJoinWithJoinCondition(SequentialJoinConditionBuilder), dataPathHandlers)
+      )
     new DerivedFeatureEvaluator(defaultStrategies)
   }
 
