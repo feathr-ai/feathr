@@ -197,10 +197,9 @@ class FeathrClient(object):
     def register_features(self, from_context: bool = True):
         """Registers features based on the current workspace
 
-            Args:
-            from_context: If from_context is True (default), the features will be generated from
-                the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
-                configuration files.
+        Args:
+            from_context: If from_context is True (default), the features will be generated from the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
+            configuration files.
         """
 
         if from_context:
