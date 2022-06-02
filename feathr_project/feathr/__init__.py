@@ -22,6 +22,13 @@ from .api.app.core.feathr_api_exception import *
 # RepoDefinitions, HoconConvertible, 
 # expose the modules so docs can build
 # referencee： https://stackoverflow.com/questions/15115514/how-do-i-document-classes-without-the-module-name/31594545#31594545
+
+# __all__ = []
+# for v in dir():
+#     if not v.startswith('__') and v != 'feathr':
+#         __all__.append(v)
+
+
 __all__ = [
     'FeatureJoinJobParams', 
     'FeatureGenerationJobParams', 
