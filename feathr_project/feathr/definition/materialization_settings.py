@@ -35,14 +35,11 @@ class MaterializationSettings:
         self.feature_names = feature_names
 
     def get_backfill_cutoff_time(self) -> List[datetime]:
-        """Get the backfill cutoff time points for materialization.
-        e.g.
-        for BackfillTime(start=datetime(2022, 3, 1), end=datetime(2022, 3, 5), step=timedelta(days=1)),
-        it returns cutoff time list as [2022-3-1, 2022-3-2, 2022-3-3, 2022-3-4, 2022-3-5]
-        for BackfillTime(start=datetime(2022, 3, 1, 1), end=datetime(2022, 3, 1, 5), step=timedelta(hours=1))
-        it returns cutoff time list as [2022-3-1 01:00:00, 2022-3-1 02:00:00, 2022-3-1 03:00:00,
-                                        2022-3-1 04:00:00, 2022-3-1 05:00:00]
-
+        """Get the backfill cutoff time points for materialization. 
+        E.g. for `BackfillTime(start=datetime(2022, 3, 1), end=datetime(2022, 3, 5), step=timedelta(days=1))`, 
+        it returns cutoff time list as `[2022-3-1, 2022-3-2, 2022-3-3, 2022-3-4, 2022-3-5]`, 
+        for `BackfillTime(start=datetime(2022, 3, 1, 1), end=datetime(2022, 3, 1, 5), step=timedelta(hours=1))`, 
+        it returns cutoff time list as `[2022-3-1 01:00:00, 2022-3-1 02:00:00, 2022-3-1 03:00:00, 2022-3-1 04:00:00, 2022-3-1 05:00:00]`
         """        
 
         start_time = self.backfill_time.start

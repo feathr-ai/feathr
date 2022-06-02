@@ -22,19 +22,6 @@ Feathr APIs for End Users xiaoyzhu
 
    feathr
 
-Test
-==================
-
-.. automodule:: 
-   feathr
-
-Feathr APIs for Internal Developers
-==================
-
-.. toctree::
-   :maxdepth: 4
-
-   feathr_dev
 
 Indices and tables
 ==================

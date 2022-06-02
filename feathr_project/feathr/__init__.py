@@ -44,7 +44,7 @@ __all__ = [
     'MaterializationSettings', 
     'RedisSink', 
     'FeatureQuery', 
-    'LookupFeature', 
+    # 'LookupFeature', 
     'Aggregation', 
     'get_result_df', 
     'AvroJsonSchema', 
