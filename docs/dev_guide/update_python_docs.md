@@ -109,8 +109,12 @@ So that only this module is accessbile for end users.
 * After you have imported your own branch, you can click `Build version` to test the build result of your latest code on the branch.
 * You can click on each pannels to see the command message and warnings.
 * After the build is successful, it will show
-  the docs page(like https://test233.readthedocs.io/en/latest/feathr.html). But they have a site cache issue. You have to refresh the
-  site then you can see your new result.
+  the docs page(like https://xxx.readthedocs.io/en/latest/feathr.html). But they have a site cache issue. You have to refresh the site then you can see your new result.
+* Sometimes the python docs are not correctly formatted and you will see the build is successful, but you won't see any docs (just blank pages). You will see error messages like below, **though the build is successful**. Pleae make sure you fix those errors.
+
+```
+/home/docs/checkouts/readthedocs.org/user_builds/feathr-xiaoyzhu/checkouts/latest/feathr_project/feathr/client.py:docstring of feathr.client.FeathrClient.register_features:5: ERROR: Unexpected indentation.
+```
 
 ### Debug and Known Issues
 * `No module named xyz`: Readthedocs need to run the code to generated the docs. So if your dependency is not specified
