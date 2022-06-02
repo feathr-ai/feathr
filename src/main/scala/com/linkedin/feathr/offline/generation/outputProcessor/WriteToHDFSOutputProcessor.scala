@@ -6,6 +6,7 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrDataOutputExcepti
 import com.linkedin.feathr.common.{Header, RichConfig, TaggedFeatureName}
 import com.linkedin.feathr.offline.generation.{FeatureDataHDFSProcessUtils, FeatureGenerationPathName}
 import com.linkedin.feathr.offline.util.{FeatureGenConstants, IncrementalAggUtils}
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.sparkcommon.OutputProcessor
 import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -15,6 +16,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * feature generation output processor used to write data to HDFS
  * @param config config object of output processor, built from the feature generation config,
  *               an example:
+ * @param dataLoaderHandlers additional data loader handlers that contain hooks for dataframe creation and manipulation
  *
  operational: {
   name: testFeatureGen
@@ -32,7 +34,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 }
 features: [mockdata_a_ct_gen, mockdata_a_sample_gen]
  */
-private[offline] class WriteToHDFSOutputProcessor(val config: OutputProcessorConfig, endTimeOpt: Option[String] = None) extends OutputProcessor(config) {
+private[offline] class WriteToHDFSOutputProcessor(val config: OutputProcessorConfig, endTimeOpt: Option[String] = None, dataLoaderHandlers: List[DataLoaderHandler]) extends OutputProcessor(config, endTimeOpt=None) {
 
   /**
    * write feature data to hdfs
@@ -147,7 +149,7 @@ private[offline] class WriteToHDFSOutputProcessor(val config: OutputProcessorCon
 
     // If it's local, we can't write to HDFS.
     val skipWrite = if (ss.sparkContext.isLocal) true else false
-    FeatureDataHDFSProcessUtils.processFeatureDataHDFS(ss, featuresToDF, parentPath, config, skipWrite = skipWrite, endTimeOpt, timestampOpt)
+    FeatureDataHDFSProcessUtils.processFeatureDataHDFS(ss, featuresToDF, parentPath, config, skipWrite = skipWrite, endTimeOpt, timestampOpt, dataLoaderHandlers)
   }
 
   // path parameter name

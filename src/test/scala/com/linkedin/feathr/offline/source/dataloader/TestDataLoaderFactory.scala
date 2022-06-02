@@ -11,7 +11,7 @@ class TestDataLoaderFactory extends TestFeathr {
 
   @Test(description = "test create different DataLoader with LocalDataLoaderFactory")
   def testLocalDataLoaderFactory() : Unit = {
-    val localDataLoaderFactory = new LocalDataLoaderFactory(ss)
+    val localDataLoaderFactory = new LocalDataLoaderFactory(ss, dataLoaderHandlers=List())
     val csvLoader = localDataLoaderFactory.create("anchor1-source.csv")
     assertTrue(csvLoader.isInstanceOf[CsvDataLoader])
     val avroJsonLoader = localDataLoaderFactory.create("anchor5-source.avro.json")

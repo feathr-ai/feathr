@@ -103,7 +103,7 @@ class TestPathPartitionedTimeSeriesSourceAccessor extends TestFeathr {
   def testCreateWithIncorrectInterval(): Unit = {
     val source = DataSource("localTimeAwareTestFeatureData/daily", SourceFormatType.TIME_SERIES_PATH)
     val interval = createDailyInterval("2019-05-22", "2019-05-23")
-    DataSourceAccessor(ss, source, Some(interval), None, failOnMissingPartition = false).asInstanceOf[PathPartitionedTimeSeriesSourceAccessor]
+    DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=Some(interval), expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List()).asInstanceOf[PathPartitionedTimeSeriesSourceAccessor]
   }
 
   @Test(description = "test get all partitions with hourly dataset")
@@ -146,7 +146,7 @@ class TestPathPartitionedTimeSeriesSourceAccessor extends TestFeathr {
   def testCreateTimestampColumn(): Unit = {
     val source = DataSource("localTimeAwareTestFeatureData/daily/", SourceFormatType.TIME_SERIES_PATH, None, Some("yyyy/MM/dd"))
     val sourceInterval = Some(createDailyInterval("2018-04-30", "2018-05-02"))
-    val accessor = DataSourceAccessor(ss, source, sourceInterval, None, failOnMissingPartition = false, addTimestampColumn = true)
+    val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=sourceInterval, expectDatumType=None, failOnMissingPartition = false, addTimestampColumn = true, dataPathHandlers=List())
       .asInstanceOf[PathPartitionedTimeSeriesSourceAccessor]
     val timestamps = accessor.get().select("__feathr_timestamp_column_from_partition").collect().map(_.getLong(0)).distinct.toList
     assertEquals(

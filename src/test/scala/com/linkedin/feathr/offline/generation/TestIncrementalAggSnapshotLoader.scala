@@ -26,7 +26,7 @@ class TestIncrementalAggSnapshotLoader extends TestFeathr with MockitoSugar {
     val mockFeatureGenSpec = mock[FeatureGenSpec]
     when(mockFeatureGenSpec.isEnableIncrementalAgg()).thenReturn(false)
     val mockFileSystem = mock[FileSystem]
-    val context = IncrementalAggSnapshotLoader.load(mockFeatureGenSpec, mockFileSystem)
+    val context = IncrementalAggSnapshotLoader.load(mockFeatureGenSpec, mockFileSystem, dataLoaderHandlers=List())
     assertEquals(context, IncrementalAggContext(isIncrementalAggEnabled = false, None, Map.empty[FeatureName, DataFrame], Map.empty[FeatureName, String]))
     verify(mockFeatureGenSpec).isEnableIncrementalAgg()
   }
@@ -42,7 +42,7 @@ class TestIncrementalAggSnapshotLoader extends TestFeathr with MockitoSugar {
     when(mockFeatureGenSpec.isEnableIncrementalAgg()).thenReturn(true)
     when(mockFeatureGenSpec.getOutputProcessorConfigs).thenReturn(Seq(mockOutputProcessorConfig))
     val mockFileSystem = mock[FileSystem]
-    IncrementalAggSnapshotLoader.load(mockFeatureGenSpec, mockFileSystem)
+    IncrementalAggSnapshotLoader.load(mockFeatureGenSpec, mockFileSystem, dataLoaderHandlers=List())
   }
 
 
@@ -60,7 +60,7 @@ class TestIncrementalAggSnapshotLoader extends TestFeathr with MockitoSugar {
     when(mockFeatureGenSpec.isEnableIncrementalAgg()).thenReturn(true)
     when(mockFeatureGenSpec.getOutputProcessorConfigs).thenReturn(Seq(mockOutputProcessorConfig))
     val mockFileSystem = mock[FileSystem]
-    IncrementalAggSnapshotLoader.load(mockFeatureGenSpec, mockFileSystem)
+    IncrementalAggSnapshotLoader.load(mockFeatureGenSpec, mockFileSystem, dataLoaderHandlers=List())
   }
 
   /**
@@ -78,7 +78,7 @@ class TestIncrementalAggSnapshotLoader extends TestFeathr with MockitoSugar {
     when(mockFeatureGenSpec.isEnableIncrementalAgg()).thenReturn(true)
     when(mockFeatureGenSpec.getOutputProcessorConfigs).thenReturn(Seq(mockOutputProcessorConfig))
     val mockFileSystem = mock[FileSystem]
-    IncrementalAggSnapshotLoader.load(mockFeatureGenSpec, mockFileSystem)
+    IncrementalAggSnapshotLoader.load(mockFeatureGenSpec, mockFileSystem, dataLoaderHandlers=List())
   }
 
   /**

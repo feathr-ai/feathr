@@ -2,6 +2,8 @@ package com.linkedin.feathr.offline.job
 
 import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import com.linkedin.feathr.offline.util.FeathrTestUtils.createSparkSession
@@ -31,9 +33,13 @@ object LocalFeatureJoinJob {
       featureDefAsString: String,
       observationData: SparkFeaturizedDataset,
       extraParams: Array[String] = Array(),
-      ss: SparkSession = ss): SparkFeaturizedDataset = {
+      ss: SparkSession = ss,
+      dataPathHandlers: List[DataPathHandler]): SparkFeaturizedDataset = {
     val joinConfig = FeatureJoinConfig.parseJoinConfig(joinConfigAsHoconString)
-    val feathrClient = FeathrClient.builder(ss).addFeatureDef(featureDefAsString).build()
+    val feathrClient = FeathrClient.builder(ss)
+    .addFeatureDef(featureDefAsString)
+    .addDataPathHandlers(dataPathHandlers)
+    .build()
     val outputPath: String = FeatureJoinJob.SKIP_OUTPUT
 
     val defaultParams = Array(
@@ -59,9 +65,11 @@ object LocalFeatureJoinJob {
       featureDefAsString: String,
       observationDataPath: String,
       extraParams: Array[String] = Array(),
-      ss: SparkSession = ss): SparkFeaturizedDataset = {
-    val obsDf = loadObservationAsFDS(ss, observationDataPath)
-    joinWithObsDFAndHoconJoinConfig(joinConfigAsHoconString, featureDefAsString, obsDf, extraParams, ss)
+      ss: SparkSession = ss,
+      dataPathHandlers: List[DataPathHandler]): SparkFeaturizedDataset = {
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
+    val obsDf = loadObservationAsFDS(ss, observationDataPath,dataLoaderHandlers=dataLoaderHandlers)
+    joinWithObsDFAndHoconJoinConfig(joinConfigAsHoconString, featureDefAsString, obsDf, extraParams, ss, dataPathHandlers=dataPathHandlers)
   }
 
   /**
@@ -70,9 +78,9 @@ object LocalFeatureJoinJob {
    * @param obsDataPath HDFS path for observation
    * @return a SparkFeaturizedDataset
    */
-  def loadObservationAsFDS(ss: SparkSession, obsDataPath: String): SparkFeaturizedDataset = {
+  def loadObservationAsFDS(ss: SparkSession, obsDataPath: String, dataLoaderHandlers: List[DataLoaderHandler]): SparkFeaturizedDataset = {
     val source = DataSource(obsDataPath, SourceFormatType.FIXED_PATH)
-    val dataLoaderFactory = DataLoaderFactory(ss)
+    val dataLoaderFactory = DataLoaderFactory(ss, dataLoaderHandlers=dataLoaderHandlers)
 
     val data = source.pathList.map(dataLoaderFactory.create(_).loadDataFrame()).reduce(_ union _)
     SparkFeaturizedDataset(data,FeaturizedDatasetMetadata())

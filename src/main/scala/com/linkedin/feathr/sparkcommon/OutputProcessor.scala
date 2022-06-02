@@ -2,6 +2,7 @@ package com.linkedin.feathr.sparkcommon
 
 import com.linkedin.feathr.common.configObj.generation.OutputProcessorConfig
 import com.linkedin.feathr.common.{Header, TaggedFeatureName}
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**

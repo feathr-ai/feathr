@@ -1,23 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from "react-router-dom";
 import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Input, Menu, message, Popconfirm, Select, Tooltip, Form, Table } from 'antd';
-import { IFeature } from "../models/model";
+import { Feature } from "../models/model";
 import { deleteFeature, fetchProjects, fetchFeatures } from "../api";
 
 const FeatureList: React.FC = () => {
-  const history = useHistory();
-  const navigateTo = useCallback((location) => history.push(location), [history]);
+  const navigate = useNavigate();
   const columns = [
     {
       title: <div style={ { userSelect: "none" } }>Name</div>,
-      dataIndex: 'name',
+      dataIndex: 'displayText',
       key: 'name',
       width: 150,
-      render: (name: string, row: IFeature) => {
+      render: (name: string, row: Feature) => {
         return (
           <Button type="link" onClick={ () => {
-            navigateTo(`/projects/${ project }/features/${ row.qualifiedName }`)
+            navigate(`/projects/${ project }/features/${ row.guid }`)
           } }>{ name }</Button>
         )
       },
@@ -30,9 +29,9 @@ const FeatureList: React.FC = () => {
       }
     },
     {
-      title: <div style={ { userSelect: "none" } }>Qualified Name</div>,
-      dataIndex: 'qualifiedName',
-      key: 'qualifiedName',
+      title: <div style={ { userSelect: "none" } }>Type</div>,
+      dataIndex: 'typeName',
+      key: 'type',
       align: 'center' as 'center',
       width: 190,
       onCell: () => {
@@ -50,13 +49,13 @@ const FeatureList: React.FC = () => {
       key: 'action',
       align: 'center' as 'center',
       width: 120,
-      render: (name: string, row: IFeature) => (
+      render: (name: string, row: Feature) => (
         <Dropdown overlay={ () => {
           return (
             <Menu>
               <Menu.Item key="edit">
                 <Button type="link" onClick={ () => {
-                  navigateTo(`/projects/${ project }/features/${ row.qualifiedName }`)
+                  navigate(`/projects/${ project }/features/${ row.guid }`)
                 } }>Edit</Button>
               </Menu.Item>
               <Menu.Item key="delete">
@@ -64,7 +63,7 @@ const FeatureList: React.FC = () => {
                   placement="left"
                   title="Are you sure to delete?"
                   onConfirm={ () => {
-                    onDelete(row.id)
+                    onDelete(row.guid)
                   } }
                 >
                   Delete
@@ -84,7 +83,7 @@ const FeatureList: React.FC = () => {
   const defaultPage = 1;
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [tableData, setTableData] = useState<IFeature[]>();
+  const [tableData, setTableData] = useState<Feature[]>();
   const [query, setQuery] = useState<string>("");
   const [projects, setProjects] = useState<any>([]);
   const [project, setProject] = useState<string>("");

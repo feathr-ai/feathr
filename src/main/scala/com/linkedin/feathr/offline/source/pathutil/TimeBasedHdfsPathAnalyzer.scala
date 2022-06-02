@@ -3,12 +3,13 @@ package com.linkedin.feathr.offline.source.pathutil
 import com.linkedin.feathr.common.DateTimeResolution
 import com.linkedin.feathr.common.DateTimeResolution.DateTimeResolution
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 
 /**
  * Analyze how a given path is partitioned: daily, hourly or date partitioned.
  * @param pathChecker the path checker is used to check whether a file path exists.
  */
-private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker) {
+private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataLoaderHandlers: List[DataLoaderHandler]) {
 
   /**
    * check whether the given path is daily or hourly partitioned.
@@ -26,18 +27,38 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker) {
     val dailyPattern = "yyyy/MM/dd"
     val hourlyPattern = "yyyy/MM/dd/HH"
     val fileFolder = if (filePath.endsWith("/")) filePath else filePath + "/"
-    if (fileFolder.endsWith(dailyFolder)) {
-      PathInfo(fileFolder, DateTimeResolution.DAILY, dailyPattern)
-    } else if (fileFolder.endsWith(hourlyFolder)) {
-      PathInfo(fileFolder, DateTimeResolution.HOURLY, hourlyPattern)
-    } else if (pathChecker.exists(fileFolder + dailyFolder)) {
-      PathInfo(fileFolder + dailyFolder, DateTimeResolution.DAILY, dailyPattern)
-    } else if (pathChecker.exists(fileFolder + hourlyFolder)) {
-      PathInfo(fileFolder + hourlyFolder, DateTimeResolution.HOURLY, hourlyPattern)
-    } else {
-      // Daily data can be Orc/Hive data following in HomeDir/datepartition=yyyy-MM-dd-00
-      PathInfo(fileFolder + "datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00")
+
+    var pathInfoOpt: Option[PathInfo] = None // Used to store the pathInfo of any file caught by data loader handlers.
+    if (pathChecker.isInstanceOf[LocalPathChecker]){ // For some external use cases, local file folder needs to be checked with data loader handlers before checking for date time patterns in file name
+      import scala.util.control.Breaks._
+
+      breakable {
+        for(dataLoaderHandler <- dataLoaderHandlers) {
+          if (dataLoaderHandler.validatePath(fileFolder)) {
+            pathInfoOpt = Some(PathInfo(fileFolder, DateTimeResolution.DAILY, dailyPattern))
+          } 
+        }
+      }
     }
+
+    if (pathInfoOpt.isDefined) {
+      pathInfoOpt.get
+    } else {
+      if (fileFolder.endsWith(dailyFolder)) {
+        PathInfo(fileFolder, DateTimeResolution.DAILY, dailyPattern)
+      } else if (fileFolder.endsWith(hourlyFolder)) {
+        PathInfo(fileFolder, DateTimeResolution.HOURLY, hourlyPattern)
+      } else if (pathChecker.exists(fileFolder + dailyFolder)) {
+        PathInfo(fileFolder + dailyFolder, DateTimeResolution.DAILY, dailyPattern)
+      } else if (pathChecker.exists(fileFolder + hourlyFolder)) {
+        PathInfo(fileFolder + hourlyFolder, DateTimeResolution.HOURLY, hourlyPattern)
+      } else {
+        // Daily data can be Orc/Hive data following in HomeDir/datepartition=yyyy-MM-dd-00
+        PathInfo(fileFolder + "datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00")
+      }
+    }
+
+
   }
 
   /**

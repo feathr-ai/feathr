@@ -15,6 +15,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import java.io.{ByteArrayInputStream, DataInputStream}
 import java.util
 import scala.collection.convert.wrapAll._
+import scala.io.Source
 import scala.reflect.ClassTag
 import scala.util.Try
 
@@ -99,11 +100,11 @@ private[offline] object AvroJsonDataLoader {
    * @param tag the class tag for the object in the RDD. It should be GenericRecord or a subclass of SpecificRecord.
    * @return return result RDD and schema
    */
-  private def loadJsonFileAsAvroToRDD[T](ss: SparkSession, path: String)(implicit tag: ClassTag[T]): (RDD[_], Schema) = {
+  def loadJsonFileAsAvroToRDD[T](ss: SparkSession, path: String)(implicit tag: ClassTag[T]): (RDD[_], Schema) = {
     val sc = ss.sparkContext
     require(sc.isLocal)
     require(path.endsWith(".avro.json"))
-    val contents =  scala.io.Source.fromFile(s"src/test/resources/" + path).getLines().mkString
+    val contents = Source.fromResource(path).getLines().mkString
     val jackson = new ObjectMapper(new HoconFactory)
     val tree = jackson.readTree(contents)
     val jsonDataArray = tree.get("data")

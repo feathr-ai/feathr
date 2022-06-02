@@ -25,7 +25,7 @@ class TestFeathrDefaultValue extends TestFeathr {
   def testDefaultValueWithNameTerm(): Unit = {
     val keyedFeatureList = KeyedFeatureList(Seq("mId"), Seq("featuresWithNullNameTerm"))
     val joinConfig = FeatureJoinConfig(Map("featuresWithNullNameTerm" -> Seq(keyedFeatureList)))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
 
     val joined = feathr.joinFeatures(joinConfig, obsData).data.collect()
 
@@ -41,7 +41,7 @@ class TestFeathrDefaultValue extends TestFeathr {
   def testDefaultValueWithSingleTerm(): Unit = {
     val keyedFeatureList = KeyedFeatureList(Seq("mId"), Seq("featuresWithNullSingleTerm"))
     val joinConfig = FeatureJoinConfig(Map("featuresWithNullSingleTerm" -> Seq(keyedFeatureList)))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
 
     val joined = feathr.joinFeatures(joinConfig, obsData).data.collect()
 
@@ -58,7 +58,7 @@ class TestFeathrDefaultValue extends TestFeathr {
   def testDefaultValueWithEmptyMap(): Unit = {
     val keyedFeatureList = KeyedFeatureList(Seq("mId"), Seq("featuresWithEmptyMap"))
     val joinConfig = FeatureJoinConfig(Map("featuresWithEmptyMap" -> Seq(keyedFeatureList)))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
 
     val joined = feathr.joinFeatures(joinConfig, obsData).data.collect()
 

@@ -6,6 +6,8 @@ import com.linkedin.feathr.offline.config.FeathrConfigLoader
 import com.linkedin.feathr.offline.generation.FeatureGenKeyTagAnalyzer
 import com.linkedin.feathr.offline.job.{FeatureGenConfigOverrider, FeatureGenJobContext, FeatureGenSpec, LocalFeatureGenJob}
 import com.linkedin.feathr.offline.source.DataSource
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.testfwk.{FeatureDefMockContext, SourceMockParam, TestFwkUtils}
 import com.linkedin.feathr.offline.util.{FeathrTestUtils, SparkFeaturizedDataset}
 import com.typesafe.config.ConfigFactory
@@ -22,7 +24,7 @@ import scala.collection.JavaConverters._
  * Component to test Feathr generation
  * @param resourceLocation input source paths
  */
-class FeathrGenTestComponent(resourceLocation: Map[String, List[String]], extraParams: Array[String] = Array()) {
+class FeathrGenTestComponent(resourceLocation: Map[String, List[String]], dataPathHandlers: List[DataPathHandler], extraParams: Array[String] = Array()) {
   val ss = FeathrTestUtils.getSparkSession()
   private val logger = Logger.getLogger(getClass)
 
@@ -100,7 +102,10 @@ class FeathrGenTestComponent(resourceLocation: Map[String, List[String]], extraP
     val defaultParams = Array("--work-dir", "featureGen/localFeatureGenerate/")
     val jobContext = FeatureGenJobContext.parse(defaultParams ++ extraParams)
     val overriddenFeatureDefConfig = getOverriddenFeatureDefConfig()
-    val feathrClient = FeathrClient.builder(ss).addLocalOverrideDef(overriddenFeatureDefConfig).build()
+    val feathrClient = FeathrClient.builder(ss)
+    .addLocalOverrideDef(overriddenFeatureDefConfig)
+    .addDataPathHandlers(dataPathHandlers)
+    .build()
     // find generation config
     val genConfigAsString = if (resourceLocation.contains(FeathrGenTestComponent.GenerationConfigPath)) {
       val genConfigPath = resourceLocation.get(FeathrGenTestComponent.GenerationConfigPath).map(_.mkString(",")).get
@@ -110,8 +115,8 @@ class FeathrGenTestComponent(resourceLocation: Map[String, List[String]], extraP
     }
 
     val withParamsOverrideConfigStr = FeatureGenConfigOverrider.applyOverride(genConfigAsString, jobContext.paramsOverride)
-
-    val featureGenSpec = FeatureGenSpec.parse(genConfigAsString, jobContext)
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
+    val featureGenSpec = FeatureGenSpec.parse(genConfigAsString, jobContext, dataLoaderHandlers)
     // find feature sources
     val featureSources = getAllFeatureSources(feathrClient, featureGenSpec)
     new FeatureGenDataConfiguration(featureSources, withParamsOverrideConfigStr, overriddenFeatureDefConfig, featureGenSpec)
@@ -181,7 +186,8 @@ class FeathrGenTestComponent(resourceLocation: Map[String, List[String]], extraP
     val res = LocalFeatureGenJob.localFeatureGenerate(
       rewrittenConfiguration.dataConfigurationMockContext.rewrittenFeatureGenDef,
       rewrittenConfiguration.dataConfiguration.localFeatureDefConfig.get,
-      extraParams)
+      extraParams,
+      dataPathHandlers)
     res
   }
 

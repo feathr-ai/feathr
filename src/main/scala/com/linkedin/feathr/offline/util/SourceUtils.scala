@@ -17,6 +17,7 @@ import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer, TimeBasedHdfsPathGenerator}
 import com.linkedin.feathr.offline.util.AclCheckUtils.getLatestPath
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.avro.generic.GenericData.{Array, Record}
 import org.apache.avro.generic.{GenericDatumReader, GenericRecord, IndexedRecord}
 import org.apache.avro.io.DecoderFactory
@@ -29,6 +30,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.NullWritable
 import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapred.JobConf
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -98,6 +100,7 @@ private[offline] object SourceUtils {
       sourcePath: String,
       ss: SparkSession,
       dateParam: Option[DateParam],
+      dataLoaderHandlers: List[DataLoaderHandler],
       targetDate: Option[String] = None,
       failOnMissing: Boolean = true): Seq[String] = {
     sourceFormatType match {
@@ -105,7 +108,7 @@ private[offline] object SourceUtils {
       case SourceFormatType.TIME_PATH =>
         val pathChecker = PathChecker(ss)
         val pathGenerator = new TimeBasedHdfsPathGenerator(pathChecker)
-        val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker)
+        val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
         val pathInfo = pathAnalyzer.analyze(sourcePath)
         pathGenerator.generate(pathInfo, OfflineDateTimeUtils.createTimeIntervalFromDateParam(dateParam, None, targetDate), !failOnMissing)
       case SourceFormatType.LIST_PATH => sourcePath.split(";")
@@ -167,11 +170,12 @@ private[offline] object SourceUtils {
    * @param df         dataframe to write
    * @param dataPath   path to write the dataframe
    * @param parameters spark parameters
+   * @param dataLoaderHandlers additional data loader handlers that contain hooks for dataframe creation and manipulation
    */
-  def safeWriteDF(df: DataFrame, dataPath: String, parameters: Map[String, String]): Unit = {
+  def safeWriteDF(df: DataFrame, dataPath: String, parameters: Map[String, String], dataLoaderHandlers: List[DataLoaderHandler]): Unit = {
     val tempBasePath = dataPath.stripSuffix("/") + "_temp_"
     HdfsUtils.deletePath(dataPath, true)
-    SparkIOUtils.writeDataFrame(df, tempBasePath, parameters)
+    SparkIOUtils.writeDataFrame(df, tempBasePath, parameters, dataLoaderHandlers)
     if (HdfsUtils.exists(tempBasePath) && !HdfsUtils.renamePath(tempBasePath, dataPath)) {
       throw new FeathrDataOutputException(
         ErrorLabel.FEATHR_ERROR,
@@ -280,12 +284,12 @@ private[offline] object SourceUtils {
    * @param factDataSourcePath Source path of fact dataset, could be a HDFS path
    * @return loaded fact dataset, as a DataFrame.
    */
-  def getRegularAnchorDF(ss: SparkSession, factDataSourcePath: String): DataFrame = {
+  def getRegularAnchorDF(ss: SparkSession, factDataSourcePath: String, dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     if (ss.sparkContext.isLocal){
-      getLocalDF(ss, factDataSourcePath)
+      getLocalDF(ss, factDataSourcePath, dataLoaderHandlers)
     }
     else {
-      loadAsDataFrame(ss, SimplePath(factDataSourcePath))
+      loadAsDataFrame(ss, SimplePath(factDataSourcePath), dataLoaderHandlers)
     }
   }
 
@@ -295,7 +299,7 @@ private[offline] object SourceUtils {
    * @param ss    Spark Session
    * @param path  File Path
    */
-  def getLocalDF(ss: SparkSession, path: String): DataFrame = {
+  def getLocalDF(ss: SparkSession, path: String, dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     val format = FileFormat.getType(path)
     val localPath = getLocalPath(path)
     format match {
@@ -305,7 +309,7 @@ private[offline] object SourceUtils {
         getLocalMockDataPath(ss, path) match {
           case Some(mockData) =>
             loadSeparateJsonFileAsAvroToDF(ss, mockData).getOrElse(throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Cannot load mock data path ${mockData}"))
-          case None => loadAsDataFrame(ss, SimplePath(localPath))
+          case None => loadAsDataFrame(ss, SimplePath(localPath), dataLoaderHandlers)
         }
       }
     }
@@ -347,7 +351,8 @@ private[offline] object SourceUtils {
                             obsDataStartTime: LocalDateTime,
                             obsDataEndTime: LocalDateTime,
                             window: Duration,
-                            timeDelayMapOpt: Map[String, Duration]): DataFrame = {
+                            timeDelayMapOpt: Map[String, Duration],
+                            dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     var dataIOParameters = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize)
@@ -375,11 +380,11 @@ private[offline] object SourceUtils {
               s"data for that time range.")
         }
         log.info(s"Loading HDFS path ${existingHdfsPaths} as union DataFrame for sliding window aggregation, using parameters ${dataIOParameters}")
-        SparkIOUtils.createUnionDataFrame(existingHdfsPaths, dataIOParameters)
+        SparkIOUtils.createUnionDataFrame(existingHdfsPaths, dataIOParameters, new JobConf(), dataLoaderHandlers)
       } else {
         // Load a single folder
         log.info(s"Loading HDFS path ${factDataSourcePath} as DataFrame for sliding window aggregation, using parameters ${dataIOParameters}")
-        SparkIOUtils.createDataFrame(SimplePath(factDataSourcePath), dataIOParameters)
+        SparkIOUtils.createDataFrame(SimplePath(factDataSourcePath), dataIOParameters, new JobConf(), dataLoaderHandlers)
       }
   }
 
@@ -623,13 +628,14 @@ private[offline] object SourceUtils {
    * @param inputPath
    * @return
    */
-  def loadAsUnionDataFrame(ss: SparkSession, inputPath: Seq[String]): DataFrame = {
+  def loadAsUnionDataFrame(ss: SparkSession, inputPath: Seq[String],
+                            dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParameters = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize)
     val hadoopConf = ss.sparkContext.hadoopConfiguration
     log.info(s"Loading ${inputPath} as union DataFrame, using parameters ${dataIOParameters}")
-    SparkIOUtils.createUnionDataFrame(inputPath, dataIOParameters)
+    SparkIOUtils.createUnionDataFrame(inputPath, dataIOParameters, new JobConf(), dataLoaderHandlers)
   }
 
   /**
@@ -638,12 +644,13 @@ private[offline] object SourceUtils {
    * @param inputPath
    * @return
    */
-  def loadAsDataFrame(ss: SparkSession, location: InputLocation): DataFrame = {
+  def loadAsDataFrame(ss: SparkSession, location: InputLocation,
+                            dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParameters = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize)
     log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParameters}")
-    SparkIOUtils.createDataFrame(location, dataIOParameters)
+    SparkIOUtils.createDataFrame(location, dataIOParameters, new JobConf(), dataLoaderHandlers)
   }
 
   /**
@@ -653,21 +660,29 @@ private[offline] object SourceUtils {
    * @param inputData HDFS path for observation
    * @return
    */
-  def loadObservationAsDF(ss: SparkSession, conf: Configuration, inputData: InputData, failOnMissing: Boolean = true): DataFrame = {
+  def loadObservationAsDF(ss: SparkSession, conf: Configuration, inputData: InputData, dataLoaderHandlers: List[DataLoaderHandler],
+ failOnMissing: Boolean = true): DataFrame = {
     // TODO: Split isLocal case into Test Packages
     val format = FileFormat.getType(inputData.inputPath)
     log.info(s"loading ${inputData.inputPath} input Path as Format: ${format}")
     format match {
       case FileFormat.PATHLIST => {
-        val pathList = getPathList(inputData.sourceType, inputData.inputPath, ss, inputData.dateParam, None, failOnMissing)
+        val pathList = getPathList(sourceFormatType=inputData.sourceType,
+        sourcePath=inputData.inputPath,
+        ss=ss,
+        dateParam=inputData.dateParam,
+        targetDate=None, 
+        failOnMissing=failOnMissing, 
+        dataLoaderHandlers=dataLoaderHandlers
+      )
         if (ss.sparkContext.isLocal) { // for test
           try {
-            loadAsUnionDataFrame(ss, pathList)
+            loadAsUnionDataFrame(ss, pathList, dataLoaderHandlers)
           } catch {
             case _: Throwable => loadSeparateJsonFileAsAvroToDF(ss, inputData.inputPath).get
           }
         } else {
-          loadAsUnionDataFrame(ss, pathList)
+          loadAsUnionDataFrame(ss, pathList, dataLoaderHandlers)
         }
       }
       case FileFormat.JDBC => {
@@ -678,9 +693,9 @@ private[offline] object SourceUtils {
       }
       case _ => {
         if (ss.sparkContext.isLocal){
-          getLocalDF(ss, inputData.inputPath)
+          getLocalDF(ss, inputData.inputPath, dataLoaderHandlers)
         } else {
-          loadAsDataFrame(ss, SimplePath(inputData.inputPath))
+          loadAsDataFrame(ss, SimplePath(inputData.inputPath),dataLoaderHandlers)
         }
       }
     }
