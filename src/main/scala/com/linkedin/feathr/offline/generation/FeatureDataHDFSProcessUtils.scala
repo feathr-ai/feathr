@@ -4,6 +4,7 @@ import com.databricks.spark.avro.SchemaConverters
 import com.linkedin.feathr.common.configObj.generation.OutputProcessorConfig
 import com.linkedin.feathr.common.{Header, RichConfig, TaggedFeatureName}
 import com.linkedin.feathr.offline.util.{FeatureGenConstants, HdfsUtils}
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -20,6 +21,7 @@ private[offline] object FeatureDataHDFSProcessUtils {
    * @param skipWrite          skip the write to HDFS, only convert the dataframe and return
    * @param endTimeOpt         optional string of end time, in yyyy/MM/dd format
    * @param timestampOpt       optional string of auto-generated timestamp
+   * @param dataLoaderHandlers additional data loader handlers that contain hooks for dataframe creation and manipulation
    */
   def processFeatureDataHDFS(
       ss: SparkSession,
@@ -28,7 +30,8 @@ private[offline] object FeatureDataHDFSProcessUtils {
       config: OutputProcessorConfig,
       skipWrite: Boolean = false,
       endTimeOpt: Option[String],
-      timestampOpt: Option[String]): (DataFrame, Header) = {
+      timestampOpt: Option[String],
+      dataLoaderHandlers: List[DataLoaderHandler]): (DataFrame, Header) = {
     // since these features are in same dataframe, they must share same key tag size
     assert(groupedFeatureToDF.map(_._1.getKeyTag.size()).toSeq.distinct.size == 1)
     // the input should have been grouped, so that there's only one dataframe in the input map
@@ -40,7 +43,7 @@ private[offline] object FeatureDataHDFSProcessUtils {
     if (skipWrite) {
       (df, header)
     } else {
-      RawDataWriterUtils.writeFdsDataToDisk(ss, featureHeaderMap, parentPath, outputParts, endTimeOpt, saveSchemaMeta, df, header)
+      RawDataWriterUtils.writeFdsDataToDisk(ss, featureHeaderMap, parentPath, outputParts, endTimeOpt, saveSchemaMeta, df, header, dataLoaderHandlers)
     }
   }
 

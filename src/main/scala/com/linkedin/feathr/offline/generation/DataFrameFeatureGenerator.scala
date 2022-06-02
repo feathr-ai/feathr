@@ -10,6 +10,8 @@ import com.linkedin.feathr.offline.derived.{DerivedFeature, DerivedFeatureEvalua
 import com.linkedin.feathr.offline.evaluator.DerivedFeatureGenStage
 import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan}
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.util.{AnchorUtils, FeathrUtils}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -18,9 +20,9 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * Feature generator that is responsible for generating anchored and derived features.
  * @param logicalPlan        logical plan for feature generation job.
  */
-private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan) extends Serializable {
+private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler]) extends Serializable {
   @transient val incrementalAggSnapshotLoader = IncrementalAggSnapshotLoader
-  @transient val anchorToDataFrameMapper = new AnchorToDataSourceMapper()
+  @transient val anchorToDataFrameMapper = new AnchorToDataSourceMapper(dataPathHandlers)
   @transient val featureGenFeatureGrouper = FeatureGenFeatureGrouper()
   @transient val featureGenDefaultsSubstituter = FeatureGenDefaultsSubstituter()
   @transient val postGenPruner = PostGenPruner()
@@ -48,7 +50,8 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
     val allRequiredFeatures = logicalPlan.requiredNonWindowAggFeatures ++ logicalPlan.requiredWindowAggFeatures
 
     // 2. Get AnchorDFMap for Anchored features.
-    val incrementalAggContext = incrementalAggSnapshotLoader.load(featureGenSpec)
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
+    val incrementalAggContext = incrementalAggSnapshotLoader.load(featureGenSpec=featureGenSpec, dataLoaderHandlers=dataLoaderHandlers)
     val allRequiredFeatureAnchorWithSourceAndTime = allRequiredFeatures
       .map(_.getFeatureName)
       .filter(featureGroups.allAnchoredFeatures.contains)

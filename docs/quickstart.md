@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Feathr Quick Start Guide
+title: Feathr Quick Start Guide With Azure Synapse
 nav_order: 2
 ---
 

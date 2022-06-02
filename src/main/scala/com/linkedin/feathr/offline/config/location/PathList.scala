@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.config.location
 
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.hadoop.mapred.JobConf
 
 case class PathList(paths: List[String]) extends InputLocation {
   override def getPath: String = paths.mkString(";")
@@ -9,7 +10,7 @@ case class PathList(paths: List[String]) extends InputLocation {
   override def getPathList: List[String] = paths
 
   override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String] = Map()): DataFrame = {
-    SparkIOUtils.createUnionDataFrame(getPathList, dataIOParameters)
+    SparkIOUtils.createUnionDataFrame(getPathList, dataIOParameters, new JobConf(), List()) //TODO: Add handler support here. Currently there are deserilization issues with adding handlers to factory builder.
   }
 }
 

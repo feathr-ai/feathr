@@ -5,6 +5,7 @@ import com.linkedin.feathr.offline.config.location.InputLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
@@ -15,7 +16,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * @param ss the spark session
  * @param path input data path
  */
-private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation) extends DataLoader {
+private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation, dataLoaderHandlers: List[DataLoaderHandler]) extends DataLoader {
 
   /**
    * get the schema of the source. It's only used in the deprecated DataSource.getDataSetAndSchema
@@ -60,16 +61,35 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParametersWithSplitSize = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize) ++ dataIOParameters
-    log.info(s"Loading ${location.getPath} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
+    val dataPath = location.getPath
+
+    log.info(s"Loading ${dataPath} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
     try {
-      if (location.getPath.startsWith("jdbc")){
-        JdbcUtils.loadDataFrame(ss, location.getPath)
+      if (dataPath.startsWith("jdbc")){
+        JdbcUtils.loadDataFrame(ss, dataPath)
       } else {
-        location.loadDf(ss, dataIOParametersWithSplitSize)
+        import scala.util.control.Breaks._
+
+        var dfOpt: Option[DataFrame] = None
+        breakable {
+          for(dataLoaderHandler <- dataLoaderHandlers) {
+            if (dataLoaderHandler.validatePath(dataPath)) {
+              dfOpt = Some(dataLoaderHandler.createDataFrame(dataPath, dataIOParametersWithSplitSize, jobConf))
+              break
+            } 
+          }
+        }
+        val df = dfOpt match {
+          case Some(df) => df
+          case _ => location.loadDf(ss, dataIOParametersWithSplitSize)
+        }
+        df
       }
     } catch {
-      case _: Throwable =>
-        ss.read.format("csv").option("header", "true").load(location.getPath)
+      case feathrException: FeathrInputDataException => 
+        throw feathrException // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
+      case e: Throwable => //TODO: Analyze all thrown exceptions, instead of swalling them all, and reading as a csv
+        ss.read.format("csv").option("header", "true").load(dataPath)
     }
   }
 }

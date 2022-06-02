@@ -212,3 +212,4 @@ null/*
 .bloop/
 project/.bloop
 metals.sbt
+.bsp/sbt.json
