@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Input, Menu, message, Popconfirm, Select, Tooltip, Form, Table } from 'antd';
-import { IFeature } from "../models/model";
+import { Feature } from "../models/model";
 import { deleteFeature, fetchProjects, fetchFeatures } from "../api";
 
 const FeatureList: React.FC = () => {
@@ -13,7 +13,7 @@ const FeatureList: React.FC = () => {
       dataIndex: 'displayText',
       key: 'name',
       width: 150,
-      render: (name: string, row: IFeature) => {
+      render: (name: string, row: Feature) => {
         return (
           <Button type="link" onClick={ () => {
             navigate(`/projects/${ project }/features/${ row.guid }`)
@@ -49,7 +49,7 @@ const FeatureList: React.FC = () => {
       key: 'action',
       align: 'center' as 'center',
       width: 120,
-      render: (name: string, row: IFeature) => (
+      render: (name: string, row: Feature) => (
         <Dropdown overlay={ () => {
           return (
             <Menu>
@@ -83,7 +83,7 @@ const FeatureList: React.FC = () => {
   const defaultPage = 1;
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [tableData, setTableData] = useState<IFeature[]>();
+  const [tableData, setTableData] = useState<Feature[]>();
   const [query, setQuery] = useState<string>("");
   const [projects, setProjects] = useState<any>([]);
   const [project, setProject] = useState<string>("");

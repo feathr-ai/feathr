@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
 import { AxiosError } from 'axios';
 import { deleteFeature, fetchFeature } from '../../api';
-import { IFeature } from "../../models/model";
+import { Feature } from "../../models/model";
 
 const { confirm } = Modal;
 
@@ -23,7 +23,7 @@ const FeatureDetails: React.FC<Props> = () => {
     status,
     error,
     data
-  } = useQuery<IFeature, AxiosError>(['featureId', featureId], () => fetchFeature(project, featureId));
+  } = useQuery<Feature, AxiosError>(['featureId', featureId], () => fetchFeature(project, featureId));
 
   const openLineageWindow = () => {
     const lineageUrl = `/projects/${ project }/lineage`;
@@ -63,7 +63,7 @@ const FeatureDetails: React.FC<Props> = () => {
     )
   }
 
-  const renderFeature = (feature: IFeature): JSX.Element => {
+  const renderFeature = (feature: Feature): JSX.Element => {
     return (
       <div className="site-card-wrapper">
         <Row>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Modal, PageHeader, Row, Space, Table, Tag } from "antd";
-import { IUserRole } from "../models/model";
+import { UserRole } from "../models/model";
 import { listUserRole } from "../api";
 
 const UserRoles: React.FC = () => {
@@ -99,7 +99,7 @@ const UserRoles: React.FC = () => {
     ];
     const [page, setPage] = useState(1);
     const [, setLoading] = useState(false);
-    const [tableData, setTableData] = useState<IUserRole[]>();
+    const [tableData, setTableData] = useState<UserRole[]>();
 
     const fetchData = useCallback(async () => {
         setLoading(true);

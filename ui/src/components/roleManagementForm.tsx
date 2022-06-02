@@ -3,12 +3,12 @@ import { BackTop, Button, Form, Input, Select, Space } from 'antd';
 import { Navigate } from "react-router-dom";
 import { addUserRole} from '../api';
 import { UpCircleOutlined } from '@ant-design/icons'
-import { RoleForm, IUserRole } from "../models/model";
+import { Role, UserRole } from "../models/model";
 
 type RoleManagementFormProps = {
   isNew: boolean;
   editMode: boolean;
-  userRole?: IUserRole;
+  userRole?: UserRole;
 };
 
 const Admin = "Admin"
@@ -30,7 +30,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({ editMode, userR
 
   const onClickSave = async () => {
     setCreateLoading(true);
-    const roleForm: RoleForm = form.getFieldsValue();
+    const roleForm: Role = form.getFieldsValue();
     await addUserRole(roleForm);
     setCreateLoading(false);
   }

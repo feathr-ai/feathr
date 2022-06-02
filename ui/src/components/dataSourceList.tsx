@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { LoadingOutlined } from "@ant-design/icons";
 import { Form, Select, Table } from "antd";
-import { DataSourceAttributes, IDataSource } from "../models/model";
+import { DataSourceAttributes, DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
 
 const DataSourceList: React.FC = () => {
@@ -77,7 +77,7 @@ const DataSourceList: React.FC = () => {
   ];
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [tableData, setTableData] = useState<IDataSource[]>();
+  const [tableData, setTableData] = useState<DataSource[]>();
   const [projects, setProjects] = useState<any>([]);
   const [project, setProject] = useState<string>("");
 

@@ -5,7 +5,7 @@ import { Elements } from 'react-flow-renderer';
 import Graph from "../../components/graph/graph";
 import { generateEdge, generateNode } from "../../components/graph/utils";
 import { fetchProjectLineages } from "../../api";
-import { IFeatureLineage } from "../../models/model";
+import { FeatureLineage } from "../../models/model";
 import { LoadingOutlined } from "@ant-design/icons";
 
 type Params = {
@@ -16,7 +16,7 @@ const LineageGraph: React.FC = () => {
   const [searchParams] = useSearchParams();
   const nodeId = searchParams.get('nodeId') as string;
 
-  const [lineageData, setLineageData] = useState<IFeatureLineage>({ guidEntityMap: null, relations: null });
+  const [lineageData, setLineageData] = useState<FeatureLineage>({ guidEntityMap: null, relations: null });
   const [loading, setLoading] = useState<boolean>(false);
   const [elements, SetElements] = useState<Elements>([]);
   const [featureType, setFeatureType] = useState<string | null>("all_nodes");

@@ -3,7 +3,7 @@ import { UpCircleOutlined } from '@ant-design/icons'
 import { BackTop, Button, Form, Input, message, Space } from 'antd';
 import { Navigate } from "react-router-dom";
 import { createFeature, updateFeature } from '../api';
-import { FeatureAttributes, IFeature } from "../models/model";
+import { FeatureAttributes, Feature } from "../models/model";
 
 type FeatureFormProps = {
   isNew: boolean;
@@ -25,7 +25,7 @@ const FeatureForm: React.FC<FeatureFormProps> = ({ isNew, editMode, feature }) =
 
   const onClickSave = async () => {
     setCreateLoading(true);
-    const featureToSave: IFeature = form.getFieldsValue();
+    const featureToSave: Feature = form.getFieldsValue();
     if (isNew) {
       const resp = await createFeature(featureToSave);
       if (resp.status === 201) {

@@ -1,4 +1,4 @@
-export interface IFeature {
+export interface Feature {
   id: string;
   guid: string;
   status: string;
@@ -14,8 +14,8 @@ export interface FeatureAttributes {
   transformation: FeatureTransformation;
   key: FeatureKey[];
   window: string;
-  _input_anchor_features: IFeature[];
-  _input_derived_features: IFeature[]
+  _input_anchor_features: Feature[];
+  _input_derived_features: Feature[]
 }
 
 export interface FeatureType {
@@ -24,15 +24,6 @@ export interface FeatureType {
   dimension_type: string[],
   val_type: string
 }
-
-export interface InputAnchorFeatures {
-  uniqueAttributes: FeatureAttributes;
-}
-
-export interface InputDerivedFeatures {
-  uniqueAttributes: FeatureAttributes;
-}
-
 export interface FeatureTransformation {
   transform_expr: string,
   filter: string,
@@ -51,7 +42,7 @@ export interface FeatureKey {
   key_column_type: string
 }
 
-export interface IDataSource {
+export interface DataSource {
   attributes: DataSourceAttributes;
 }
 
@@ -62,12 +53,12 @@ export interface DataSourceAttributes {
 }
 
 
-export interface IFeatureLineage {
+export interface FeatureLineage {
   guidEntityMap: any;
   relations: any;
 }
 
-export interface IUserRole {
+export interface UserRole {
   id: number;
   scope: string;
   userName: string;
@@ -78,7 +69,7 @@ export interface IUserRole {
   deleteReason?: any;
 }
 
-export interface RoleForm {
+export interface Role {
   scope: string;
   userName: string;
   roleName: string;
