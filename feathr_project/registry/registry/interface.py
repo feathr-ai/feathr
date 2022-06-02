@@ -41,8 +41,3 @@ class Registry(ABC):
                       project: Optional[Union[str, UUID]] = None) -> list[EntityRef]:
         pass
 
-
-if __name__ == '__main__':
-    print("foo bar")
-else:
-    print("spam")
