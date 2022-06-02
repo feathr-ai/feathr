@@ -11,7 +11,7 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
  * @param config config object of output processor, built from the feature generation config
  */
 
-private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig, endTimeOpt: Option[String] = None) extends WriteToHDFSOutputProcessor(config, endTimeOpt) {
+private[offline] class PushToRedisOutputProcessor(config: OutputProcessorConfig, endTimeOpt: Option[String] = None) extends WriteToHDFSOutputProcessor(config, endTimeOpt, dataLoaderHandlers=List()) {
   /**
    * process single dataframe, e.g, convert feature data schema
    *

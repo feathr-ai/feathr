@@ -28,7 +28,7 @@ class TestFeathrKeyTag extends TestFeathr {
       KeyedFeatureList(Seq("b"), Seq("a_abc")),
       KeyedFeatureList(Seq("b"), Seq("a_num")))
     val joinConfig = FeatureJoinConfig(Map("testWithDifferentKeys" -> keyedFeatureLists))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
 
     val joinOuput = feathr.joinFeatures(joinConfig, obsData)
     val joined = joinOuput.data.collect().sortBy(row => (row.getAs[String]("a"), row.getAs[String]("b")))
@@ -76,7 +76,7 @@ class TestFeathrKeyTag extends TestFeathr {
     val trainingData = "test1-observations.csv"
     val keyedFeatureLists = Seq(KeyedFeatureList(Seq("a", "b"), Seq("foobar_dualkey_feature2")))
     val joinConfig = FeatureJoinConfig(Map("testWithMultiKeyDerivedFeatures" -> keyedFeatureLists))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
 
     val joinOuput = feathr.joinFeatures(joinConfig, obsData)
     val joined = joinOuput.data.collect().sortBy(row => (row.getAs[String]("a"), row.getAs[String]("b")))
@@ -99,7 +99,7 @@ class TestFeathrKeyTag extends TestFeathr {
       KeyedFeatureList(Seq("viewee"), Seq("f2")),
       KeyedFeatureList(Seq("viewee"), Seq("a_simple_derived_feature")))
     val joinConfig = FeatureJoinConfig(Map("testFeatureWithDifferentKeyTag" -> keyedFeatureLists))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
 
     val joinOuput = feathr.joinFeatures(joinConfig, obsData)
     val joined = joinOuput.data.collect().sortBy(row => (row.getAs[String]("viewer"), row.getAs[String]("viewee")))
@@ -136,7 +136,7 @@ class TestFeathrKeyTag extends TestFeathr {
       KeyedFeatureList(Seq("a"), Seq("a_sum")),
       KeyedFeatureList(Seq("a"), Seq("a_y")))
     val joinConfig = FeatureJoinConfig(Map("testWithDifferentTypeOfFV" -> keyedFeatureLists))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
 
     val joinOuput = feathr.joinFeatures(joinConfig, obsData)
     val joined = joinOuput.data.collect().sortBy(row => (row.getAs[String]("a"), row.getAs[String]("b")))
@@ -173,7 +173,7 @@ class TestFeathrKeyTag extends TestFeathr {
       KeyedFeatureList(Seq("a"), Seq("a_omega_logA")),
       KeyedFeatureList(Seq("a"), Seq("derivedF1")))
     val joinConfig = FeatureJoinConfig(Map("testMathLog" -> keyedFeatureList))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
 
     val joinOuput = feathr.joinFeatures(joinConfig, obsData)
     val joined = joinOuput.data.collect().sortBy(row => (row.getAs[String]("a")))
@@ -208,7 +208,7 @@ class TestFeathrKeyTag extends TestFeathr {
     val trainingData = "testMVELLoopExpFeature-observations.csv"
     val keyedFeatureList = Seq(KeyedFeatureList(Seq("a_id"), Seq("aMap")))
     val joinConfig = FeatureJoinConfig(Map("testMVELLoopExpFeature" -> keyedFeatureList))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
 
     val feathrConfs = List(feathrConfigLoader.load(getClass.getClassLoader.getResource("testMVELLoopExpFeature.conf")))
     val feathrClient = FeathrClient.builder(ss).addFeatureDefConfs(Some(feathrConfs)).build()

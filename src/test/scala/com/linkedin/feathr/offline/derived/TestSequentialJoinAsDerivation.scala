@@ -219,7 +219,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_SUM, aggColumn, inputDF, groupByColumn)
 
     val expectedResult = inputDF.collect()
@@ -249,7 +249,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_AVG, aggColumn, inputDF, groupByColumn)
 
     val expectedResult = inputDF.collect()
@@ -279,7 +279,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     seqJoinDerivations.applyUnionAggregation(aggColumn, inputDF, groupByColumn).collect()
   }
 
@@ -294,7 +294,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_SUM, aggColumn, inputDF, groupByColumn)
 
     val expectedResult = inputDF.collect()
@@ -324,7 +324,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_AVG, aggColumn, inputDF, groupByColumn)
 
     val expectedResult = inputDF.collect()
@@ -354,7 +354,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_MAX, aggColumn, inputDF, groupByColumn)
 
     val expectedResult = inputDF.collect()
@@ -384,7 +384,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_MAX, aggColumn, inputDF, groupByColumn)
 
     val expectedResult = inputDF.collect()
@@ -414,7 +414,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_MIN, aggColumn, inputDF, groupByColumn)
 
     val expectedResult = inputDF.collect()
@@ -444,7 +444,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_MIN, aggColumn, inputDF, groupByColumn)
 
     val expectedResult = inputDF.collect()
@@ -517,7 +517,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     SQLConf.get.setConfString("spark.sql.legacy.allowUntypedScalaUDF", "true")
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(aggType, aggColumn, inputDF, groupByColumn)
 
     val actualResult = resultDF.collect()
@@ -555,7 +555,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(aggType, aggColumn, inputDF, groupByColumn)
     val actualResult = resultDF.collect()
     assertEquals(actualResult.length, 1)
@@ -579,7 +579,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(aggType, aggColumn, inputDF, groupByColumn)
     resultDF.collect()
     verifyNoInteractions(mockSparkSession)
@@ -599,7 +599,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_SUM, aggColumn, inputDF, groupByColumn)
     val actualResult = resultDF.collect()
     assertEquals(actualResult.length, 1)
@@ -621,7 +621,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_AVG, aggColumn, inputDF, groupByColumn)
     val actualResult = resultDF.collect()
     assertEquals(actualResult.length, 1)
@@ -643,7 +643,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_MAX, aggColumn, inputDF, groupByColumn)
     val actualResult = resultDF.collect()
     assertEquals(actualResult.length, 1)
@@ -665,7 +665,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_MIN, aggColumn, inputDF, groupByColumn)
     val actualResult = resultDF.collect()
     assertEquals(actualResult.length, 1)
@@ -687,7 +687,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_SUM, aggColumn, inputDF, groupByColumn)
     resultDF.collect()
     verifyNoInteractions(mockSparkSession)
@@ -707,7 +707,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_SUM, aggColumn, inputDF, groupByColumn)
     resultDF.collect()
     verifyNoInteractions(mockSparkSession)
@@ -727,7 +727,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_AVG, aggColumn, inputDF, groupByColumn)
     resultDF.collect()
     verifyNoInteractions(mockSparkSession)
@@ -747,7 +747,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
     val resultDF = seqJoinDerivations.applyElementWiseAggregation(ELEMENTWISE_AVG, aggColumn, inputDF, groupByColumn)
     resultDF.collect()
     verifyNoInteractions(mockSparkSession)
@@ -862,7 +862,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
 
     val mockDerivedFeature = mock[DerivedFeature]
     val mockDerivationFunction = mock[SeqJoinDerivationFunction]
@@ -895,7 +895,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
 
     val mockDerivedFeature = mock[DerivedFeature]
     val mockDerivationFunction = mock[SeqJoinDerivationFunction]
@@ -922,7 +922,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
 
     val mockDerivedFeature = mock[DerivedFeature]
     val mockDerivationFunction = mock[SeqJoinDerivationFunction]
@@ -953,7 +953,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
 
     val mockDerivedFeature = mock[DerivedFeature]
     val mockDerivationFunction = mock[SeqJoinDerivationFunction]
@@ -981,7 +981,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
 
     val mockDerivedFeature = mock[DerivedFeature]
     val mockDerivationFunction = mock[SeqJoinDerivationFunction]
@@ -1008,7 +1008,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
 
     val mockFeatureAnchorWithSource = mock[FeatureAnchorWithSource]
     val baseFeatureName = "as"
@@ -1033,7 +1033,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
 
     val baseFeatureName = "as"
     val keyColumn = StructField("x", StringType, nullable = false)
@@ -1055,7 +1055,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockJoiner = mock[SparkJoinWithJoinCondition]
     // Mock expansion feature is not in allAnchoredFeature
     when(mockFeatureGroups.allAnchoredFeatures).thenReturn(Map.empty[String, FeatureAnchorWithSource])
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
 
     val mockDerivedFeature = mock[DerivedFeature]
     val mockDerivationFunction = mock[SeqJoinDerivationFunction]
@@ -1082,7 +1082,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockSparkSession = mock[SparkSession]
     val mockFeatureGroups = mock[FeatureGroups]
     val mockJoiner = mock[SparkJoinWithJoinCondition]
-    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner)
+    val seqJoinDerivations = new SequentialJoinAsDerivation(mockSparkSession, mockFeatureGroups, mockJoiner, List())
 
     val mockDerivedFeature = mock[DerivedFeature]
     when(mockDerivedFeature.producedFeatureNames).thenReturn(Seq("seqJoinFeatureName"))

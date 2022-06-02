@@ -6,6 +6,8 @@ import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeathrConfigLoader
 import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
 import com.linkedin.feathr.offline.job.FeatureJoinJob._
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.util.{CmdLineParser, FeathrUtils, OptionParam, SparkFeaturizedDataset}
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
@@ -120,7 +122,8 @@ object FeatureGenJob {
       featureGenConfig: String,
       featureDefConfig: Option[String],
       localFeatureConfig: Option[String],
-      jobContext: FeatureGenJobContext): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+      jobContext: FeatureGenJobContext,
+      dataPathHandlers: List[DataPathHandler]=List()): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
 
     logger.info(s"featureDefConfig : ${featureDefConfig}")
     logger.info(s"localFeatureConfig : ${localFeatureConfig}")
@@ -128,8 +131,9 @@ object FeatureGenJob {
         FeathrClient.builder(ss)
           .addFeatureDef(featureDefConfig)
           .addLocalOverrideDef(localFeatureConfig)
+          .addDataPathHandlers(dataPathHandlers)
           .build()
-    val featureGenSpec = parseFeatureGenApplicationConfig(featureGenConfig, jobContext)
+    val featureGenSpec = parseFeatureGenApplicationConfig(featureGenConfig, jobContext, dataPathHandlers)
     feathrClient.generateFeatures(featureGenSpec)
   }
 
@@ -139,11 +143,13 @@ object FeatureGenJob {
    * @param featureGenJobContext feature generation context
    * @return Feature generation Specifications
    */
-  private[feathr] def parseFeatureGenApplicationConfig(featureGenConfigStr: String, featureGenJobContext: FeatureGenJobContext): FeatureGenSpec = {
+  private[feathr] def parseFeatureGenApplicationConfig(featureGenConfigStr: String, featureGenJobContext: FeatureGenJobContext,
+      dataPathHandlers: List[DataPathHandler]=List()): FeatureGenSpec = {
     val withParamsOverrideConfigStr = overrideFeatureGeneration(featureGenConfigStr, featureGenJobContext.paramsOverride)
     val withParamsOverrideConfig = ConfigFactory.parseString(withParamsOverrideConfigStr)
     val featureGenConfig = FeatureGenConfigBuilder.build(withParamsOverrideConfig)
-    new FeatureGenSpec(featureGenConfig)
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
+    new FeatureGenSpec(featureGenConfig, dataLoaderHandlers)
   }
 
   private[feathr] def overrideFeatureGeneration(featureGenConfigStr: String, paramsOverride: Option[String]): String = {
@@ -198,16 +204,17 @@ object FeatureGenJob {
       val localFeatureConfig = featureDefs.feathrLocalFeatureDefPath.map(path => hdfsFileReader(sparkSession, path))
       val (featureConfigWithOverride, localFeatureConfigWithOverride) = overrideFeatureDefs(featureConfig, localFeatureConfig, jobContext)
 
+    //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val feathrClient =
       FeathrClient.builder(sparkSession)
         .addFeatureDef(featureConfig)
-        .addLocalOverrideDef(localFeatureConfigWithOverride)
+        .addLocalOverrideDef(localFeatureConfigWithOverride) 
         .build()
     val allAnchoredFeatures = feathrClient.allAnchoredFeatures
 
     // Using AnchorToDataSourceMapper to load DataFrame for preprocessing
     val failOnMissing = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
-    val anchorToDataSourceMapper = new AnchorToDataSourceMapper()
+    val anchorToDataSourceMapper = new AnchorToDataSourceMapper(List()) //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val anchorsWithSource = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(
       sparkSession,
       allAnchoredFeatures.values.toSeq,
