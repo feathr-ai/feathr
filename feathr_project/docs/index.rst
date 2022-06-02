@@ -13,15 +13,7 @@ creating_ a Github issue for us.
 .. _creating: https://github.com/linkedin/feathr/issues/new
 
 Feathr APIs for End Users
-==================
-
-.. toctree::
-   :maxdepth: 4
-
-   feathr
-
-Module contents
----------------
+==================================
 
 .. automodule:: feathr
    :members:
