@@ -210,3 +210,6 @@ null/*
 
 # Ignore Gradle build output directory
 build
+
+.bsp/sbt.json
+

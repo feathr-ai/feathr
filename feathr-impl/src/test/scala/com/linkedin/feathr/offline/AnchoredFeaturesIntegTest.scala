@@ -142,7 +142,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
 
     // create a data source from anchorAndDerivations/nullValueSource.avro.json
     val df = new AvroJsonDataLoader(ss, "nullValueSource.avro.json").loadDataFrame()
-    SparkIOUtils.writeDataFrame(df, mockDataFolder + "/nullValueSource")
+    SparkIOUtils.writeDataFrame(df, mockDataFolder + "/nullValueSource", parameters=Map(), dataLoaderHandlers=List())
   }
 
   /**

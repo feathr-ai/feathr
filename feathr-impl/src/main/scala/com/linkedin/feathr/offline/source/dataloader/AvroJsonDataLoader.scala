@@ -109,7 +109,7 @@ private[offline] object AvroJsonDataLoader {
    * @param tag the class tag for the object in the RDD. It should be GenericRecord or a subclass of SpecificRecord.
    * @return return result RDD and schema
    */
-  private def loadJsonFileAsAvroToRDD[T](ss: SparkSession, path: String)(implicit tag: ClassTag[T]): (RDD[_], Schema) = {
+  def loadJsonFileAsAvroToRDD[T](ss: SparkSession, path: String)(implicit tag: ClassTag[T]): (RDD[_], Schema) = {
     val sc = ss.sparkContext
     require(sc.isLocal)
     require(path.endsWith(".avro.json"))

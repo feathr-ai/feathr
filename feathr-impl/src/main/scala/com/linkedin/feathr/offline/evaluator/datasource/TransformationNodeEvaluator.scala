@@ -11,7 +11,7 @@ import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor
 import com.linkedin.feathr.offline.client.{DataFrameColName, NodeContext}
 import com.linkedin.feathr.offline.config.{ConfigLoaderUtils, MVELFeatureDefinition, SQLFeatureDefinition}
 import com.linkedin.feathr.offline.job.FeatureTransformation.{applyRowBasedTransformOnRdd, getFeatureJoinKey}
-import com.linkedin.feathr.offline.source.accessor.{DataSourceAccessor, NonTimeBasedDataSourceAccessor}
+import com.linkedin.feathr.offline.source.accessor.{DataPathHandler, DataSourceAccessor, NonTimeBasedDataSourceAccessor}
 import com.linkedin.feathr.offline.transformation.{DataFrameBasedRowEvaluator, FDSConversionUtils, FeatureColumnFormat}
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils.tensorTypeToDataFrameSchema
@@ -34,7 +34,7 @@ private[offline] object TransformationNodeEvaluator {
   // TODO: Break out handling of different operators to their own functions
   def processTransformationNode(featureName: String, keySeq: Seq[String], inputNodeContext: NodeContext,
     transformationNode: Transformation, featureColumnFormatMap: mutable.HashMap[String, FeatureColumnFormat],
-    featureTypeConfigs: Map[String, FeatureTypeConfig], ss: SparkSession): NodeContext = {
+    featureTypeConfigs: Map[String, FeatureTypeConfig], ss: SparkSession, dataPathHandlers: List[DataPathHandler]): NodeContext = {
     // Algorithm
     // 1. Load a UDF for the transformation function
     // 2. Apply it to the Input Col(s)
@@ -139,7 +139,7 @@ private[offline] object TransformationNodeEvaluator {
           val userProvidedFeatureTypes = featureTypeConfigs map { case (key, value) => (key, value.getFeatureType) }
           val dataSource = inputNodeContext.dataSource.get
           val expectDatumType = SourceUtils.getExpectDatumType(Seq(rowBasedExtractor))
-          val dataSourceAccessor = DataSourceAccessor(ss, dataSource, None, Some(expectDatumType), failOnMissingPartition = false)
+          val dataSourceAccessor = DataSourceAccessor(ss, dataSource, None, Some(expectDatumType), failOnMissingPartition = false, dataPathHandlers = dataPathHandlers)
           val (transformedDf, keyNames) = applyRowBasedTransformOnRdd(userProvidedFeatureTypes, Seq(featureName),
             dataSourceAccessor.asInstanceOf[NonTimeBasedDataSourceAccessor].getAsRdd().asInstanceOf[RDD[_]],
             Seq(new SpecificRecordSourceKeyExtractor(extractor.asInstanceOf[AnchorExtractor[Any]], Seq.empty[String])),

@@ -15,6 +15,7 @@ import com.linkedin.frame.core.configdataprovider.StringConfigDataProvider
 import com.linkedin.feathr.offline.{FeatureDataFrame, PostTransformationUtil}
 import com.linkedin.feathr.offline.exception.DataFrameApiUnsupportedOperationException
 import com.linkedin.feathr.offline.anchored.WindowTimeUnit
+import com.linkedin.feathr.offline.client.FeathrClient.Builder
 import com.linkedin.feathr.offline.config.anchors.PegasusRecordDurationConverter
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.config.join.converters.PegasusRecordFrameFeatureJoinConfigConverter
@@ -34,6 +35,7 @@ import com.linkedin.feathr.offline.util.{AnchorUtils, DataFrameSplitterMerger, S
 import com.linkedin.feathr.offline.fds.FDSUtils
 import com.linkedin.feathr.offline.fds.FDSUtils.FeatureWithKeyAndColumnName
 import com.linkedin.feathr.offline.job.FeatureTransformation.convertFCMResultDFToFDS
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.swj.{FactData, GroupBySpec, LabelData, LateralViewParams, SlidingWindowFeature, SlidingWindowJoin, WindowSpec}
 import com.linkedin.feathr.swj.aggregate.{AggregationType, AvgAggregate, AvgPoolingAggregate, CountAggregate, LatestAggregate, MaxAggregate, MaxPoolingAggregate, MinAggregate, MinPoolingAggregate, SumAggregate}
 import org.apache.spark.sql.functions.{col, lit, monotonically_increasing_id}
@@ -54,7 +56,7 @@ case class NodeContext(df: DataFrame /* TODO is DF needed? */ , keyExpression: S
   dataSource: Option[DataSource] = None)
 // hold a DF and column for each node?
 
-class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph) {
+class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph, dataPathHandlers: List[DataPathHandler]) {
 
   // TODO Will the Columns need unique names? Their node ID and some description might be suitable.
   val nodeContext = mutable.HashMap[Int, NodeContext]()
@@ -245,7 +247,7 @@ class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph) {
                   nodeContext(nodeId) = ContextNodeEvaluator.processContextNode(df, dataSource)
                 }
               case DataSourceType.UPDATE =>
-                nodeContext(nodeId) = TableNodeEvaluator.processTableNode(ss, dataSource)
+                nodeContext(nodeId) = TableNodeEvaluator.processTableNode(ss, dataSource, dataPathHandlers = dataPathHandlers)
               case DataSourceType.EVENT =>
                 val obsTimeRange = SlidingWindowFeatureUtils.getObsSwaDataTimeRange(contextDf, featureJoinConfig.settings)._1
                 val duration = PegasusRecordDurationConverter.convert(dataSource.getWindow())
@@ -257,7 +259,7 @@ class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph) {
                 }
 
                 val adjustedTimeRange = OfflineDateTimeUtils.getFactDataTimeRange(obsTimeRange.get, duration, Array(featureJoinConfig.settings.get.joinTimeSetting.get.simulateTimeDelay.getOrElse(Duration.ZERO)))
-                nodeContext(nodeId) = EventNodeEvaluator.processEventNode(ss, dataSource, Some(adjustedTimeRange))
+                nodeContext(nodeId) = EventNodeEvaluator.processEventNode(ss, dataSource, Some(adjustedTimeRange), dataPathHandlers = dataPathHandlers)
             }
             nodeIdToNode.put(nodeId, if (dataSource.hasConcreteKey) dataSource.getConcreteKey.getKey().asScala else null)
           } else if (node.isExternal) {
@@ -283,7 +285,7 @@ class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph) {
             } else {
               val transformedContext = if (nodes(transformation.getInputs.get(0).getId()).isDataSource) {
                 TransformationNodeEvaluator.processTransformationNode(featureName, nodeContext(inputNodeId).keyExpression,
-                  nodeContext(inputNodeId), transformation, featureColumnFormatsMap, featureTypeConfigs, ss)
+                  nodeContext(inputNodeId), transformation, featureColumnFormatsMap, featureTypeConfigs, ss, dataPathHandlers = dataPathHandlers)
               } else {
                 val isSeqJoinTransformation = if (seqJoinBaseNodes.contains(nodeId)) true else false
                 var derivedContext = TransformationNodeEvaluator.processDerivedTransformationNode(featureName, contextDf, transformation,
@@ -542,6 +544,7 @@ object FeathrClient2 {
     private var localOverrideDef: List[String] = List()
     private var featureDefPath: List[String] = List()
     private var localOverrideDefPath: List[String] = List()
+    private var dataPathHandlers: List[DataPathHandler] = List()
 
     // COPIED FROM FrameClient
     def addFeatureDef(featureDef: String): Builder = {
@@ -587,6 +590,40 @@ object FeathrClient2 {
       if (localOverrideDefPath.isDefined) addLocalOverrideDefPath(localOverrideDefPath.get) else this
     }
 
+
+    /**
+     * Add a list of data path handlers to the builder. Used to handle accessing and loading paths caught by user's udf, validatePath
+     *
+     * @param dataPathHandlers custom data path handlers
+     * @return FeathrClient.Builder
+     */
+    def addDataPathHandlers(dataPathHandlers: List[DataPathHandler]): Builder = {
+      this.dataPathHandlers = dataPathHandlers ++ this.dataPathHandlers
+      this
+    }
+
+    /**
+     * Add a data path handler to the builder. Used to handle accessing and loading paths caught by user's udf, validatePath
+     *
+     * @param dataPathHandler custom data path handler
+     * @return FeathrClient.Builder
+     */
+    def addDataPathHandler(dataPathHandler: DataPathHandler): Builder = {
+      this.dataPathHandlers = dataPathHandler :: this.dataPathHandlers
+      this
+    }
+
+    /**
+     * Same as {@code addDataPathHandler(DataPathHandler)} but the input dataPathHandlers is optional and when it is missing,
+     * this method performs an no-op.
+     *
+     * @param dataPathHandler custom data path handler
+     * @return FeathrClient.Builder
+     */
+    def addDataPathHandler(dataPathHandler: Option[DataPathHandler]): Builder = {
+      if (dataPathHandler.isDefined) addDataPathHandler(dataPathHandler.get) else this
+    }
+
     /**
      * Build a new instance of the FrameClient2 from the added frame definition configs and any local overrides.
      *
@@ -609,7 +646,7 @@ object FeathrClient2 {
 
       val graph: ComputeGraph = FeatureDefinitionsConverter.buildFromFeatureUrns(featureDefs.asJava)
 
-      new FeathrClient2(ss, graph)
+      new FeathrClient2(ss, graph, dataPathHandlers)
     }
 
     private def readHdfsFile(path: Option[String]): Option[String] =
