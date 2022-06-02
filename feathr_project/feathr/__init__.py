@@ -23,52 +23,52 @@ from .api.app.core.feathr_api_exception import *
 # expose the modules so docs can build
 # referencee： https://stackoverflow.com/questions/15115514/how-do-i-document-classes-without-the-module-name/31594545#31594545
 
-# __all__ = []
-# for v in dir():
-#     if not v.startswith('__') and v != 'feathr':
-#         __all__.append(v)
+__all__ = []
+for v in dir():
+    if not v.startswith('__') and v != 'feathr':
+        __all__.append(v)
 
 
-__all__ = [
-    'FeatureJoinJobParams', 
-    'FeatureGenerationJobParams', 
-    'FeathrClient', 
-    'DerivedFeature', 
-    'FeatureAnchor', 
-    'Feature', 
-    'ValueType', 
-    'WindowAggTransformation', 
-    'TypedKey', 
-    'DUMMYKEY', 
-    'BackfillTime', 
-    'MaterializationSettings', 
-    'RedisSink', 
-    'FeatureQuery', 
-    # 'LookupFeature', 
-    'Aggregation', 
-    'get_result_df', 
-    'AvroJsonSchema', 
-    'Source', 
-    'InputContext', 
-    'HdfsSource', 
-    'KafkaConfig',
-    'KafKaSource', 
-    'ValueType', 
-    'BooleanFeatureType', 
-    'Int32FeatureType', 
-    'Int64FeatureType', 
-    'FloatFeatureType', 
-    'DoubleFeatureType', 
-    'StringFeatureType', 
-    'BytesFeatureType',
-    'FloatVectorFeatureType', 
-    'Int32VectorFeatureType', 
-    'Int64VectorFeatureType', 
-    'DoubleVectorFeatureType', 
-    'FeatureNameValidationError', 
-    'ObservationSettings', 
-    'FeaturePrinter', 
-    'SparkExecutionConfiguration',
- ]
+# __all__ = [
+#     'FeatureJoinJobParams', 
+#     'FeatureGenerationJobParams', 
+#     'FeathrClient', 
+#     'DerivedFeature', 
+#     'FeatureAnchor', 
+#     'Feature', 
+#     'ValueType', 
+#     'WindowAggTransformation', 
+#     'TypedKey', 
+#     'DUMMYKEY', 
+#     'BackfillTime', 
+#     'MaterializationSettings', 
+#     'RedisSink', 
+#     'FeatureQuery', 
+#     # 'LookupFeature', 
+#     'Aggregation', 
+#     'get_result_df', 
+#     'AvroJsonSchema', 
+#     'Source', 
+#     'InputContext', 
+#     'HdfsSource', 
+#     'KafkaConfig',
+#     'KafKaSource', 
+#     'ValueType', 
+#     'BooleanFeatureType', 
+#     'Int32FeatureType', 
+#     'Int64FeatureType', 
+#     'FloatFeatureType', 
+#     'DoubleFeatureType', 
+#     'StringFeatureType', 
+#     'BytesFeatureType',
+#     'FloatVectorFeatureType', 
+#     'Int32VectorFeatureType', 
+#     'Int64VectorFeatureType', 
+#     'DoubleVectorFeatureType', 
+#     'FeatureNameValidationError', 
+#     'ObservationSettings', 
+#     'FeaturePrinter', 
+#     'SparkExecutionConfiguration',
+#  ]
 
 
