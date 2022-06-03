@@ -35,7 +35,6 @@ dependencies {
   implementation spec.product.protobuf
   implementation spec.product.guava
   implementation spec.product.xbean
-  implementation spec.product.json
 
   provided spec.product.jackson.jackson_databind
   provided spec.product.typesafe_config

@@ -368,8 +368,18 @@ public class TypesafeConfigValidator implements ConfigValidator {
    * Loads schema for FeatureDef config using Everit JSON Schema Validator
    * (https://github.com/everit-org/json-schema)
    */
+
+  static void printClass(String clazz) throws Exception {
+    String location = Thread.currentThread().getContextClassLoader()
+        .loadClass(clazz)
+        .getProtectionDomain().getCodeSource().getLocation().toString();
+    String msg = "CLASSLOCATION: " + clazz + " === " + location;
+    System.out.println(msg);
+  }
+
   private Schema loadFeatureDefSchema() {
     try (InputStream inputStream = getClass().getResourceAsStream(FEATUREDEF_CONFIG_SCHEMA)) {
+      printClass("org.json.JSONTokener");
       JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
       return SchemaLoader.load(rawSchema);
     } catch (Exception e) {
