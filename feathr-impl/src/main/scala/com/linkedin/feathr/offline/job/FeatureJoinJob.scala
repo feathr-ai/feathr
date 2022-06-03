@@ -391,6 +391,9 @@ object FeatureJoinJob {
 
     val sparkConf = new SparkConf().registerKryoClasses(Array(classOf[GenericRecord]))
     // sparkConf.set("spark.kryo.registrator", "org.apache.spark.serializer.AvroGenericArrayKryoRegistrator")
+    // Hard code hacky solution for json conflict in cloud dependency
+    sparkConf.set("spark.driver.extraClassPath", "json-20180130.jar")
+    sparkConf.set("spark.executor.extraClassPath", "json-20180130.jar")
 
     val sparkSessionBuilder = SparkSession
       .builder()
