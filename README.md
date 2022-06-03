@@ -119,7 +119,7 @@ Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linked
 
 ### Running Feathr Examples
 
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
+Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
 
 
 ## 🗣️ Tech Talks on Feathr

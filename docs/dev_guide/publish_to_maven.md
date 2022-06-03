@@ -64,6 +64,7 @@ reload
 5. "Upon release, your component will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to four hours."
 https://central.sonatype.org/publish/publish-guide/#releasing-to-central
 
+6. After new version is released via Maven, use the released version to run a test to ensure it actually works. You can do this by running a codebase that imports Feathr scala code.
 
 ## CI Automatic Publishing
 
