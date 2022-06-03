@@ -43,7 +43,7 @@ Feathr has native cloud integration. To use Feathr on Azure, you only need three
 
 3. Run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fproduct_recommendation_demo.ipynb)
 
 ## Installing Feathr Client Locally
 
