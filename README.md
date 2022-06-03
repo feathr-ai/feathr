@@ -26,7 +26,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 - For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
 - For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
-- For technical talks on Feathr, see the [slides here](./docs/talks/Feathr%20Feature%20Store%20Talk.pdf).
+- For technical talks on Feathr, see the [slides here](./docs/talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
 
 ## 🛠️ Install Feathr Client Locally
 
