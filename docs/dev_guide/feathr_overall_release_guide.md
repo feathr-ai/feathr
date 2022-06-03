@@ -19,7 +19,7 @@ See [Developer Guide for publishing to maven](../publish_to_maven.md)
 Run the command to generate the Java jar. After the jar is generated, please upload to [Azure storage](https://ms.portal.azure.com/#view/Microsoft_Azure_Storage/ContainerMenuBlade/~/overview/storageAccountId/%2Fsubscriptions%2Fa6c2a7cc-d67e-4a1a-b765-983f08c0423a%2FresourceGroups%2Fazurefeathrintegration%2Fproviders%2FMicrosoft.Storage%2FstorageAccounts%2Fazurefeathrstorage/path/public/etag/%220x8D9E6F64D62D599%22/defaultEncryptionScope/%24account-encryption-key/denyEncryptionScopeOverride//defaultId//publicAccessVal/Container) for faster access.
 
 # Release PyPi
-See [Python Package Release Note](../python_package_release.md)
+See [Python Package Release Note](/python_package_release.md)
 
 # Announcement
 Please announce the release in our #general Slack channel.
