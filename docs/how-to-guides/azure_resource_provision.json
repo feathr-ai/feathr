@@ -55,7 +55,7 @@
         "tenantId": "[subscription().tenantId]",
         "redisCacheName": "[concat(parameters('resourcePrefix'),'redis' )]",
         "keyVaultName": "[concat(parameters('resourcePrefix'),'kv')]",
-        "eventhubNameSpaceName": "[concat(parameters('resourcePrefix'),'ehnamespace')]",
+        "eventhubNameSpaceName": "[concat(parameters('resourcePrefix'),'ehns')]",
         "eventhubName": "[concat(parameters('resourcePrefix'),'eh')]",
         "eventhubSku": "Standard",
         "eventhubSkuCapacity": 1,
@@ -200,7 +200,7 @@
         {
             "condition": "[equals(parameters('provisionEventHub'),'true')]",        
             "type": "Microsoft.EventHub/namespaces",
-            "apiVersion": "2018-01-01-preview",
+            "apiVersion": "2021-11-01",
             "name": "[variables('eventhubNameSpaceName')]",
             "location": "[variables('location')]",
             "sku": {
@@ -213,7 +213,7 @@
                 {
                     "condition": "[equals(parameters('provisionEventHub'),'true')]",
                     "type": "eventhubs",
-                    "apiVersion": "2017-04-01",
+                    "apiVersion": "2021-11-01",
                     "name": "[variables('eventhubName')]",
                     "dependsOn": [
                         "[variables('eventhubNameSpace')]"
@@ -232,10 +232,7 @@
                         "[variables('eventhubNameSpace')]"
                     ],
                     "properties": {
-                        "value": "[if(equals(parameters('provisionEventHub'),'true'),listKeys(resourceId('Microsoft.EventHub/namespaces/AuthorizationRules',variables('eventhubNameSpaceName'),'RootManageSharedAccessKey'),'2015-08-01').primaryConnectionString)]",
-                        "dependsOn": [
-                            "[variables('eventhubNameSpace')]"
-                    ]
+                        "value": "[if(equals(parameters('provisionEventHub'),'true'),listKeys(resourceId('Microsoft.EventHub/namespaces/AuthorizationRules',variables('eventhubNameSpaceName'),'RootManageSharedAccessKey'),'2021-11-01').primaryConnectionString,'null' )]"
                     }
                 }
             ]
