@@ -236,7 +236,7 @@ class FeathrClient(object):
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
-        
+
         # Pretty print anchor_list
         if verbose and self.anchor_list:
                 FeaturePrinter.pretty_print_anchors(self.anchor_list)
@@ -440,7 +440,7 @@ class FeathrClient(object):
             _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
-        
+
         # Pretty print feature_query
         if verbose and feature_query:
             FeaturePrinter.pretty_print_feature_query(feature_query)
@@ -491,7 +491,8 @@ class FeathrClient(object):
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str()
+                '--snowflake-config', self._get_snowflake_config_str(),
+                '--use-fcm', True # Hard code to use FCM client. TODO: Make this more configurable
             ],
             reference_files_path=[],
             configuration=execution_configuratons
@@ -550,7 +551,7 @@ class FeathrClient(object):
             self._materialize_features_with_config(config_file_path, execution_configuratons, udf_files)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
-        
+
         # Pretty print feature_names of materialized features
         if verbose and settings:
             FeaturePrinter.pretty_print_materialize_features(settings)

@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.client
 
 import java.time.Duration
 import com.linkedin.frame.common.urn.MlFeatureVersionUrn
-import com.linkedin.feathr.common.{FeatureTypeConfig, JoiningFeatureParams, TaggedFeatureName}
+import com.linkedin.feathr.common.{FeatureTypeConfig, Header, JoiningFeatureParams, TaggedFeatureName}
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.compute.Resolver.FeatureRequest
 import com.linkedin.feathr.compute._

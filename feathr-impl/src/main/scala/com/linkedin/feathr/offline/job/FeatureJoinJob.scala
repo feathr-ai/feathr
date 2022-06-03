@@ -69,11 +69,12 @@ object FeatureJoinJob {
     checkAuthorization(ss, hadoopConf, jobContext, dataLoaderHandlers)
 
     feathrJoinRun(ss=ss,
-    hadoopConf=hadoopConf,
-    joinConfig=joinConfig,
-    jobContext=jobContext.jobJoinContext,
-    localTestConfig=None,
-    dataPathHandlers=dataPathHandlers)
+      hadoopConf=hadoopConf,
+      joinConfig=joinConfig,
+      jobContext=jobContext.jobJoinContext,
+      localTestConfig=None,
+      dataPathHandlers=dataPathHandlers,
+      useFCM = jobContext.useFCM)
   }
 
   // Log the feature names for bookkeeping. Global config may be merged with local config(s).
@@ -153,6 +154,52 @@ object FeatureJoinJob {
   }
 
   /**
+   * This function will get the FCM client using the spark session and jobContext, and call FCM client (FeathrClient2)#joinObsAndFeatures
+   * method.
+   * @param ss  spark session
+   * @param observations  observations DF
+   * @param featureGroupings   feature groups to join
+   * @param joinConfig  join config
+   * @param jobContext  job context
+   * @param localTestConfigOpt  Local test config
+   * @return  Dataframe and header associated with it.
+   */
+  private[offline] def getFCMClientAndJoinFeatures(
+    ss: SparkSession,
+    observations: DataFrame,
+    featureGroupings: Map[String, Seq[JoiningFeatureParams]],
+    joinConfig: FeatureJoinConfig,
+    jobContext: JoinJobContext,
+    dataPathHandlers: List[DataPathHandler],
+    localTestConfigOpt: Option[LocalTestConfig] = None): DataFrame = {
+
+    val feathrClient2 = getFCMClient(ss, jobContext, dataPathHandlers, localTestConfigOpt)
+    feathrClient2.joinFeatures(joinConfig, SparkFeaturizedDataset(observations, new com.linkedin.feathr.fds.FeaturizedDatasetMetadata()), jobContext).data
+  }
+
+  private[offline] def getFCMClient(
+    ss: SparkSession,
+    jobContext: JoinJobContext,
+    dataPathHandlers: List[DataPathHandler],
+    localTestConfigOpt: Option[LocalTestConfig] = None): FeathrClient2 = {
+
+    localTestConfigOpt match {
+      case None =>
+        FeathrClient2.builder(ss)
+          .addFeatureDefPath(jobContext.feathrFeatureConfig)
+          .addLocalOverrideDefPath(jobContext.feathrLocalConfig)
+          .addDataPathHandlers(dataPathHandlers)
+          .build()
+      case Some(localTestConfig) =>
+        FeathrClient2.builder(ss)
+          .addFeatureDef(localTestConfig.featureConfig)
+          .addLocalOverrideDef(localTestConfig.localConfig)
+          .addDataPathHandlers(dataPathHandlers)
+          .build()
+    }
+  }
+
+  /**
    * This function will collect the data, build the schema and do the join work for hdfs records.
    *
    * @param ss                 SparkSession
@@ -168,7 +215,8 @@ object FeatureJoinJob {
       joinConfig: FeatureJoinConfig,
       jobContext: JoinJobContext,
       dataPathHandlers: List[DataPathHandler],
-      localTestConfig: Option[LocalTestConfig] = None): (Option[RDD[GenericRecord]], Option[DataFrame]) = {
+      localTestConfig: Option[LocalTestConfig] = None,
+      useFCM: Boolean = false): (Option[RDD[GenericRecord]], Option[DataFrame]) = {
     val sparkConf = ss.sparkContext.getConf
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
     val featureGroupings = joinConfig.featureGroupings
@@ -179,7 +227,11 @@ object FeatureJoinJob {
     val failOnMissing = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
     val observationsDF = SourceUtils.loadObservationAsDF(ss, hadoopConf, jobContext.inputData.get, dataLoaderHandlers, failOnMissing)
 
-    val (joinedDF, _) = getFeathrClientAndJoinFeatures(ss, observationsDF, featureGroupings, joinConfig, jobContext, dataPathHandlers, localTestConfig)
+    val joinedDF = if (useFCM) {
+      getFCMClientAndJoinFeatures(ss, observationsDF, featureGroupings, joinConfig, jobContext, dataPathHandlers, localTestConfig)
+    } else {
+      getFeathrClientAndJoinFeatures(ss, observationsDF, featureGroupings, joinConfig, jobContext, dataPathHandlers, localTestConfig)._1
+    }
 
     val parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
 
@@ -219,7 +271,8 @@ object FeatureJoinJob {
       "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
       "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
-      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", "")
+      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", ""),
+      "use-fcm" -> OptionParam("ufcm", "If set to true, use FCM client, else use Feathr Client", "USE_FCM", "false"),
     )
 
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
@@ -263,7 +316,8 @@ object FeatureJoinJob {
     }
 
     val dataSourceConfigs = DataSourceConfigUtils.getConfigs(cmdParser)
-    FeathrJoinJobContext(joinConfig, joinJobContext, dataSourceConfigs)
+    val useFCM = cmdParser.extractRequiredValue("use-fcm").toBoolean
+    FeathrJoinJobContext(joinConfig, joinJobContext, dataSourceConfigs, useFCM)
   }
 
   type KeyTag = Seq[String]
@@ -363,7 +417,7 @@ object FeatureJoinJob {
 
 case class FeathrJoinPreparationInfo(sparkSession: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext)
 
-case class FeathrJoinJobContext(joinConfig: String, jobJoinContext: JoinJobContext, dataSourceConfigs: DataSourceConfigs) {}
+case class FeathrJoinJobContext(joinConfig: String, jobJoinContext: JoinJobContext, dataSourceConfigs: DataSourceConfigs, useFCM: Boolean) {}
 
 /**
  * This case class describes feature record after join process
