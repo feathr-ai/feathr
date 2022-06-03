@@ -35,6 +35,7 @@ dependencies {
   implementation spec.product.protobuf
   implementation spec.product.guava
   implementation spec.product.xbean
+  implementation spec.product.json
 
   provided spec.product.jackson.jackson_databind
   provided spec.product.typesafe_config
@@ -50,7 +51,6 @@ dependencies {
     exclude group: 'com.tdunning', module: 'json'
   }
   provided spec.product.spark.spark_sql
-  provided spec.product.json
 
   testImplementation spec.product.equalsverifier
   testImplementation spec.product.spark.spark_catalyst
