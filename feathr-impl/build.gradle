@@ -46,7 +46,9 @@ dependencies {
   provided(spec.product.spark.spark_avro) {
     exclude group: 'org.apache.xbean', module: 'xbean-asm6-shaded'
   }
-  provided spec.product.spark.spark_hive
+  provided(spec.product.spark.spark_hive) {
+    exclude group: 'com.tdunning', module: 'json'
+  }
   provided spec.product.spark.spark_sql
   provided spec.product.json
 
