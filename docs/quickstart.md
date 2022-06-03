@@ -51,7 +51,7 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 ## Step 3: Run the sample notebook
 
-We've provided a self-contained [sample notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
+We've provided a self-contained [sample notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
 
 ## Step 4: Update Feathr config
 
