@@ -11,6 +11,7 @@ dependencies {
   implementation spec.product.jsonSchemaVali
   implementation spec.product.jackson.jackson_databind
   implementation spec.product.mvel
+  implementation spec.product.json
 
   testImplementation spec.product.testing
   testImplementation spec.product.mockito

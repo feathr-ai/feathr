@@ -72,6 +72,7 @@ project.ext.spec = [
         'guava' : "com.google.guava:guava:31.1-jre",
         'xbean' : "org.apache.xbean:xbean-asm6-shaded:4.10",
         'log4j' : "log4j:log4j:1.2.17",
+        'json' : "org.json:json:20180130",
         'equalsverifier' : "nl.jqno.equalsverifier:equalsverifier:3.1.12",
         'mockito' : "org.mockito:mockito-core:3.1.0",
         "mockito_inline": "org.mockito:mockito-inline:2.28.2",
