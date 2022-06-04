@@ -20,27 +20,10 @@ The only exception here would be Features defined in `INPUT_CONTEXT` don't need 
 
 # What is the essence of Feature Anchors in Purview? Are we really generating feature values to show it as a view ?
 
+Think `Anchors` like just "views" in regular SQL terms, where it doesn't store the feature value, but it's merely a group of features; individual `Feature` is just a column in that view. That's why when you "group" features together, you need to 
 
 
-
-Feathr Notes 
-
-Source 
-
-name="nycTaxiBatchSource", 
-path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data.csv", 
-event_timestamp_column="lpep_dropoff_datetime", 
-preprocessing=feathr_udf_day_calc, 
-timestamp_format="yyyy-MM-dd HH:mm:ss" 
-
-Key 
-
-key_column="DOLocationID" 
-key_column_type=ValueType.INT32, 
-description="location id in NYC", 
-full_name="nyc_taxi.location_id" 
-
-Question: what are key_column and full_name? where used? 
+# What are key_column and full_name? where used? 
 
 key_column: maps to source table. Ignore full_name (used for reference) 
 
