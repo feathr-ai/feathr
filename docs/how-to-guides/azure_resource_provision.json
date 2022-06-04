@@ -2,47 +2,66 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-
-
         "resourcePrefix": {
-            "type": "string",
+            "minLength": 3,
+            "maxLength": 15,
+            "type": "String",
             "metadata": {
                 "description": "Resource prefix for all the resource provisioned. This should be an alphanumeric string."
-            },
-            "minLength": 3,
-            "maxLength": 15
+            }
         },
         "principalId": {
-            "type": "string",
+            "type": "String",
             "metadata": {
                 "description": "Specifies the principal ID assigned to the role. You can find it by logging into 'https://shell.azure.com/bash' and run 'az ad signed-in-user show --query objectId -o tsv'"
             }
         },
         "allowAllConnections": {
-            "type": "string",
-            "allowedValues": [ "true", "false" ],
             "defaultValue": "true",
+            "allowedValues": [
+                "true",
+                "false"
+            ],
+            "type": "String",
             "metadata": {
                 "description": "Specifies whether to allow client IPs to connect to Synapse"
             }
         },
         "provisionPurview": {
-            "type": "string",
-            "allowedValues": [ "true", "false" ],
             "defaultValue": "true",
+            "allowedValues": [
+                "true",
+                "false"
+            ],
+            "type": "String",
             "metadata": {
                 "description": "Whether or not put purview in the provision script"
             }
+        },
+        "provisionEventHub": {
+            "defaultValue": "true",
+            "allowedValues": [
+                "true",
+                "false"
+            ],
+            "type": "String",
+            "metadata": {
+                "description": "Whether or not to deploy eventhub provision script"
+            }
         }
     },
-    "functions": [],
     "variables": {
         "location": "[resourceGroup().location]",
         "tenantId": "[subscription().tenantId]",
         "redisCacheName": "[concat(parameters('resourcePrefix'),'redis' )]",
         "keyVaultName": "[concat(parameters('resourcePrefix'),'kv')]",
+        "eventhubNameSpaceName": "[concat(parameters('resourcePrefix'),'ehns')]",
+        "eventhubName": "[concat(parameters('resourcePrefix'),'eh')]",
+        "eventhubSku": "Standard",
+        "eventhubSkuCapacity": 1,
         "keyVault": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "redisCache": "[resourceId('Microsoft.Cache/redis', variables('redisCacheName'))]",
+        "eventhubNameSpace": "[resourceId('Microsoft.EventHub/namespaces/', variables('eventhubNameSpaceName'))]",
         "sparkPoolName": "spark31",
         "workspaceName": "[toLower(concat(parameters('resourcePrefix'),'syws'))]",
         "dlsName": "[toLower(concat(parameters('resourcePrefix'), 'dls'))]",
@@ -54,6 +73,7 @@
         "roleAssignmentNameForBlobContributor": "[guid(parameters('principalId'), variables('roleDefinitionIdForBlobContributor'), resourceGroup().id)]",
         "roleAssignmentNameForKeyVaultSecretsUser": "[guid(parameters('principalId'), variables('roleDefinitionIdForKeyVaultSecretsUser'), resourceGroup().id)]"
     },
+    "functions": [],
     "resources": [
         {
             "type": "Microsoft.KeyVault/vaults",
@@ -73,24 +93,22 @@
             "resources": [
                 {
                     "type": "Microsoft.KeyVault/vaults/secrets",
-                    "name": "[concat(variables('keyVaultName'), '/FEATHR-PREFIX')]",
                     "apiVersion": "2021-10-01",
+                    "name": "[concat(variables('keyVaultName'), '/FEATHR-PREFIX')]",
                     "location": "[resourceGroup().location]",
-                    "properties": {
-                        "value": "[parameters('resourcePrefix')]"
-                    },
                     "dependsOn": [
                         "[variables('keyVault')]"
-                    ]
+                    ],
+                    "properties": {
+                        "value": "[parameters('resourcePrefix')]"
+                    }
                 }
-
             ]
         },
-
         {
             "type": "Microsoft.Cache/redis",
-            "name": "[variables('redisCacheName')]",
             "apiVersion": "2021-06-01",
+            "name": "[variables('redisCacheName')]",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "Feathr Online Store"
@@ -106,23 +124,29 @@
             "resources": [
                 {
                     "type": "Microsoft.KeyVault/vaults/secrets",
-                    "name": "[concat(variables('keyVaultName'), '/FEATHR-ONLINE-STORE-CONN')]",
                     "apiVersion": "2021-10-01",
+                    "name": "[concat(variables('keyVaultName'), '/FEATHR-ONLINE-STORE-CONN')]",
                     "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[variables('keyVault')]",
+                        "[variables('redisCache')]"
+                    ],
                     "properties": {
                         "value": "[concat(variables('redisCacheName'),'.redis.cache.windows.net:6380,password=', listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey, ',ssl=True')]"
-                    },
-                    "dependsOn": [ "[variables('keyVault')]", "[variables('redisCache')]" ]
+                    }
                 },
                 {
                     "type": "Microsoft.KeyVault/vaults/secrets",
-                    "name": "[concat(variables('keyVaultName'), '/REDIS-PASSWORD')]",
                     "apiVersion": "2021-10-01",
+                    "name": "[concat(variables('keyVaultName'), '/REDIS-PASSWORD')]",
                     "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[variables('keyVault')]",
+                        "[variables('redisCache')]"
+                    ],
                     "properties": {
                         "value": "[listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey]"
-                    },
-                    "dependsOn": [ "[variables('keyVault')]", "[variables('redisCache')]" ]
+                    }
                 }
             ]
         },
@@ -143,21 +167,22 @@
             },
             "resources": [
                 {
-                    "name": "[concat('default/', variables('dlsFsName'))]",
                     "type": "blobServices/containers",
                     "apiVersion": "2021-08-01",
-                    "dependsOn": [ "[variables('dlsName')]" ],
+                    "name": "[concat('default/', variables('dlsFsName'))]",
+                    "dependsOn": [
+                        "[variables('dlsName')]"
+                    ],
                     "properties": {
                         "publicAccess": "None"
                     }
                 }
             ]
         },
-
         {
+            "condition": "[equals(parameters('provisionPurview'),'true')]",
             "type": "Microsoft.Purview/accounts",
             "apiVersion": "2021-07-01",
-            "condition": "[equals(parameters('provisionPurview'),'true')]",
             "name": "[variables('purviewName')]",
             "location": "[variables('location')]",
             "sku": {
@@ -172,16 +197,58 @@
                 "publicNetworkAccess": "Enabled"
             }
         },
-
+        {
+            "condition": "[equals(parameters('provisionEventHub'),'true')]",        
+            "type": "Microsoft.EventHub/namespaces",
+            "apiVersion": "2021-11-01",
+            "name": "[variables('eventhubNameSpaceName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[variables('eventhubSku')]",
+                "tier": "[variables('eventhubSku')]",
+                "capacity": "[variables('eventhubSkuCapacity')]"
+            },
+            "properties": {},
+            "resources": [
+                {
+                    "condition": "[equals(parameters('provisionEventHub'),'true')]",
+                    "type": "eventhubs",
+                    "apiVersion": "2021-11-01",
+                    "name": "[variables('eventhubName')]",
+                    "dependsOn": [
+                        "[variables('eventhubNameSpace')]"
+                    ],
+                    "properties": {}
+                },
+                {
+                    "condition": "[equals(parameters('provisionEventHub'),'true')]",
+                    "type": "Microsoft.KeyVault/vaults/secrets",
+                    "apiVersion": "2021-10-01",
+                    "name": "[concat(variables('keyVaultName'), '/EVENTHUB-POLICY-KEY')]",
+                    "condition": "[equals(parameters('provisionEventHub'),'true')]",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[variables('keyVault')]",
+                        "[variables('eventhubNameSpace')]"
+                    ],
+                    "properties": {
+                        "value": "[if(equals(parameters('provisionEventHub'),'true'),listKeys(resourceId('Microsoft.EventHub/namespaces/AuthorizationRules',variables('eventhubNameSpaceName'),'RootManageSharedAccessKey'),'2021-11-01').primaryConnectionString,'null' )]"
+                    }
+                }
+            ]
+        },
         {
             "type": "Microsoft.Synapse/workspaces",
             "apiVersion": "2021-06-01",
             "name": "[variables('workspaceName')]",
             "location": "[variables('location')]",
+            "dependsOn": [
+                "[variables('dlsName')]",
+                "[variables('dlsFsName')]"
+            ],
             "identity": {
                 "type": "SystemAssigned"
             },
-            "dependsOn": [ "[variables('dlsName')]", "[variables('dlsFsName')]" ],
             "properties": {
                 "defaultDataLakeStorage": {
                     "accountUrl": "[reference(variables('dlsName')).primaryEndpoints.dfs]",
@@ -191,23 +258,27 @@
             },
             "resources": [
                 {
-                    "condition": "[equals(parameters('allowAllConnections'),'true')]",
                     "type": "firewallrules",
                     "apiVersion": "2021-06-01",
                     "name": "allowAll",
                     "location": "[variables('location')]",
-                    "dependsOn": [ "[variables('workspaceName')]" ],
+                    "dependsOn": [
+                        "[variables('workspaceName')]"
+                    ],
                     "properties": {
                         "startIpAddress": "0.0.0.0",
                         "endIpAddress": "255.255.255.255"
-                    }
+                    },
+                    "condition": "[equals(parameters('allowAllConnections'),'true')]"
                 },
                 {
                     "type": "firewallrules",
                     "apiVersion": "2021-06-01",
                     "name": "AllowAllWindowsAzureIps",
                     "location": "[variables('location')]",
-                    "dependsOn": [ "[variables('workspaceName')]" ],
+                    "dependsOn": [
+                        "[variables('workspaceName')]"
+                    ],
                     "properties": {
                         "startIpAddress": "0.0.0.0",
                         "endIpAddress": "0.0.0.0"
@@ -218,7 +289,9 @@
                     "apiVersion": "2021-06-01",
                     "name": "default",
                     "location": "[variables('location')]",
-                    "dependsOn": [ "[variables('workspaceName')]" ],
+                    "dependsOn": [
+                        "[variables('workspaceName')]"
+                    ],
                     "properties": {
                         "grantSqlControlToManagedIdentity": {
                             "desiredState": "Enabled"
@@ -232,7 +305,9 @@
             "apiVersion": "2021-06-01",
             "name": "[concat(variables('workspaceName'), '/', variables('sparkPoolName'))]",
             "location": "[variables('location')]",
-            "dependsOn": [ "[variables('workspaceName')]" ],
+            "dependsOn": [
+                "[variables('workspaceName')]"
+            ],
             "properties": {
                 "autoPause": {
                     "delayInMinutes": 30,
@@ -249,37 +324,32 @@
                 "nodeSize": "Medium"
             }
         },
-
-
-
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-10-01-preview",
             "name": "[variables('roleAssignmentNameForBlobContributor')]",
+            "dependsOn": [
+                "[variables('dlsAccount')]"
+            ],
             "properties": {
                 "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForBlobContributor'))]",
                 "principalId": "[parameters('principalId')]",
                 "scope": "[resourceGroup().id]"
-            },
-            "dependsOn": [
-                "[variables('dlsAccount')]"
-            ]
+            }
         },
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-10-01-preview",
             "name": "[variables('roleAssignmentNameForKeyVaultSecretsUser')]",
+            "dependsOn": [
+                "[variables('keyVault')]"
+            ],
             "properties": {
                 "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForKeyVaultSecretsUser'))]",
                 "principalId": "[parameters('principalId')]",
                 "scope": "[resourceGroup().id]"
-            },
-            "dependsOn": [
-                "[variables('keyVault')]"
-            ]
+            }
         }
-
-
     ],
     "outputs": {}
 }
