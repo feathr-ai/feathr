@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.source.dataloader
 
 import com.linkedin.feathr.offline.config.location.{InputLocation, KafkaEndpoint, SimplePath}
 import com.linkedin.feathr.offline.source.dataloader.stream.KafkaDataLoader
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.util.LocalFeatureJoinUtils
 import org.apache.spark.sql.SparkSession
 
@@ -9,7 +10,8 @@ import org.apache.spark.sql.SparkSession
  * DataLoaderFactory for local test environment. It creates a data loader based on the input file type.
  * @param ss the spark session.
  */
-private[offline] class LocalDataLoaderFactory(ss: SparkSession) extends DataLoaderFactory {
+private[offline] class LocalDataLoaderFactory(ss: SparkSession, 
+dataLoaderHandlers: List[DataLoaderHandler]) extends DataLoaderFactory {
 
   private val TEST_AVRO_JSON_FILE = "/data.avro.json"
 
@@ -51,7 +53,7 @@ private[offline] class LocalDataLoaderFactory(ss: SparkSession) extends DataLoad
         // check if the mock data exist or not, if it does, load the mock data
         LocalFeatureJoinUtils.getMockPathIfExist(path, ss.sparkContext.hadoopConfiguration, workspaceDir) match {
           case Some(mockData) => new JsonWithSchemaDataLoader(ss, mockData)
-          case None => new BatchDataLoader(ss, SimplePath(path))
+          case None => new BatchDataLoader(ss, SimplePath(path), dataLoaderHandlers)
         }
       }
   }

@@ -9,6 +9,7 @@ import com.linkedin.feathr.offline.generation.outputProcessor.RedisOutputUtils
 import com.linkedin.feathr.offline.job.FeatureTransformation.getFeatureJoinKey
 import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
 import com.linkedin.feathr.offline.logical.FeatureGroups
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.transformation.{AnchorToDataSourceMapper, DataFrameBasedSqlEvaluator}
 import com.linkedin.feathr.sparkcommon.SimpleAnchorExtractorSpark
 import org.apache.avro.Schema
@@ -30,8 +31,8 @@ import scala.collection.convert.wrapAll._
 /**
  * Class to ingest streaming features
  */
-class StreamingFeatureGenerator {
-  @transient val anchorToDataFrameMapper = new AnchorToDataSourceMapper()
+class StreamingFeatureGenerator(dataPathHandlers: List[DataPathHandler]) {
+  @transient val anchorToDataFrameMapper = new AnchorToDataSourceMapper(dataPathHandlers)
 
   /**
    * Ingest streaming features
