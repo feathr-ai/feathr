@@ -1,10 +1,13 @@
 package com.linkedin.feathr.common
 
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+
 /**
   * Provides feature values based on some "raw" data element
-  * @tparam T raw data type
+ *
+ * @tparam T raw data type
   */
-trait AnchorExtractor[T] extends AnchorExtractorBase[T] {
+trait AnchorExtractor[T] extends AnchorExtractorBase[T] with SparkRowExtractor {
 
   // NOTE: We may want to decouple this from Extractor. It's more a property of the source, or source-reference
   def getKey(datum: T): Seq[String]
@@ -31,4 +34,17 @@ trait AnchorExtractor[T] extends AnchorExtractorBase[T] {
     */
   def getInputType: Class[_]
 
+  /**
+   * Get key from input row
+   * @param datum input row
+   * @return list of feature keys
+   */
+  def getKeyFromRow(datum: GenericRowWithSchema): Seq[String] = getKey(datum.asInstanceOf[T])
+
+  /**
+   * Get the feature value from the row
+   * @param datum input row
+   * @return A map of feature name to feature value
+   */
+  def getFeaturesFromRow(datum: GenericRowWithSchema): Map[String, FeatureValue] = getFeatures(datum.asInstanceOf[T])
 }

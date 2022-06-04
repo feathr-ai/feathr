@@ -15,7 +15,7 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
   @Test(description = "test analyzePath with explicit daily path")
   def testAnalyzePathWithDailyPath(): Unit = {
     val mockPathChecker = mock[PathChecker]
-    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker)
+    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker, List())
     assertEquals(
       pathAnalyzer.analyze("src/test/resources/generation/daily/"),
       PathInfo("src/test/resources/generation/daily/", DateTimeResolution.DAILY, "yyyy/MM/dd"))
@@ -25,7 +25,7 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
   @Test(description = "test analyzePath with explicit hourly path")
   def testAnalyzePathWithHourlyPath(): Unit = {
     val mockPathChecker = mock[PathChecker]
-    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker)
+    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker, List())
     assertEquals(
       pathAnalyzer.analyze("src/test/resources/generationHourly/hourly/"),
       PathInfo("src/test/resources/generationHourly/hourly/", DateTimeResolution.HOURLY, "yyyy/MM/dd/HH"))
@@ -36,7 +36,7 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
   def testAnalyzePathWithImplicitDailyPath(): Unit = {
     val mockPathChecker = mock[PathChecker]
     when(mockPathChecker.exists("src/test/resources/generation/daily/")).thenReturn(true)
-    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker)
+    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker, List())
     assertEquals(
       pathAnalyzer.analyze("src/test/resources/generation"),
       PathInfo("src/test/resources/generation/daily/", DateTimeResolution.DAILY, "yyyy/MM/dd"))
@@ -48,7 +48,7 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
   def testAnalyzePathWithImplicitHourlyPath(): Unit = {
     val mockPathChecker = mock[PathChecker]
     when(mockPathChecker.exists("src/test/resources/generationHourly/hourly/")).thenReturn(true)
-    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker)
+    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker, List())
     assertEquals(
       pathAnalyzer.analyze("src/test/resources/generationHourly"),
       PathInfo("src/test/resources/generationHourly/hourly/", DateTimeResolution.HOURLY, "yyyy/MM/dd/HH"))
@@ -60,7 +60,7 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
   @Test(description = "test analyzePath with date partition")
   def testAnalyzePathWithDatePartition(): Unit = {
     val mockPathChecker = mock[PathChecker]
-    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker)
+    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker, List())
     assertEquals(
       pathAnalyzer.analyze("src/test/resources/datePartitionSource"),
       PathInfo("src/test/resources/datePartitionSource/datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00"))
@@ -72,7 +72,7 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
   @Test(description = "test analyze with time partition pattern")
   def tetAnalyzePathWithTimePartitionPattern(): Unit = {
     val mockPathChecker = mock[PathChecker]
-    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker)
+    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker, List())
     assertEquals(
       pathAnalyzer.analyze("src/test/resources/generation/", "yyyy/MM/dd"),
       PathInfo("src/test/resources/generation/", DateTimeResolution.DAILY, "yyyy/MM/dd"))

@@ -1,0 +1,28 @@
+{
+  "env": {
+    "commonjs": true,
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
+    "eslint:recommended",
+    // https://github.com/facebook/create-react-app/tree/main/packages/eslint-config-react-app
+    "react-app"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "rules": {
+    "dot-notation": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.ts?(x)"
+      ],
+      "rules": {}
+    }
+  ]
+}

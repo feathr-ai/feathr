@@ -7,18 +7,6 @@ import org.apache.spark.sql.types.StructType
 /**
   *
   *
-  *  _________            __________
-  * |         | 1*     1 |          |
-  * | Feature |__________| Source   |
-  * |_________|     .    |__________|
-  *                 .
-  *             ____.___________
-  *            |                |
-  *            | Anchor         |
-  *            |1. keyExtractor |
-  *            |2. Time         |
-  *            |3. ...          |
-  *            |________________|
   *
   * This is the base class for user customized key extractor for a source (feature dataset, rather than observation dataset)
   * in an anchor, it is used in the 'keyExtractor' of an anchor,

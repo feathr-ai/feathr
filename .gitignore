@@ -144,7 +144,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+#.env
 .venv
 env/
 venv/
@@ -206,3 +206,4 @@ feathr_project/feathr_cli.egg-info/*
 
 #Local Build
 null/*
+.bsp/sbt.json

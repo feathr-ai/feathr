@@ -21,7 +21,7 @@ class TestDataSourceAccessor extends TestFeathr {
   @Test(description = "It should create a NonTimeBasedDataSourceAccessor if the time interval is not provided")
   def testCreateWithNoTimeInterval(): Unit = {
     val source = DataSource("anchor5-source.avro.json", SourceFormatType.FIXED_PATH)
-    val accessor = DataSourceAccessor(ss, source, None, None, failOnMissingPartition = false)
+    val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=None, expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
     assertTrue(accessor.isInstanceOf[NonTimeBasedDataSourceAccessor])
   }
 
@@ -29,7 +29,7 @@ class TestDataSourceAccessor extends TestFeathr {
   def testCreateWithFixedPath(): Unit = {
     val interval = Some(createDailyInterval("2019-12-09", "2019-12-10"))
     val source = DataSource("anchor5-source.avro.json", SourceFormatType.FIXED_PATH)
-    val accessor = DataSourceAccessor(ss, source, interval, None, failOnMissingPartition = false)
+    val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=interval, expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
     assertTrue(accessor.isInstanceOf[NonTimeBasedDataSourceAccessor])
   }
 
@@ -37,7 +37,7 @@ class TestDataSourceAccessor extends TestFeathr {
   def testCreateWithListPath(): Unit = {
     val interval = Some(createDailyInterval("2019-12-09", "2019-12-10"))
     val source = DataSource("anchor1-source.csv;anchor5-source.avro.json", SourceFormatType.FIXED_PATH)
-    val accessor = DataSourceAccessor(ss, source, interval, None, failOnMissingPartition = false)
+    val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=interval, expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
     assertTrue(accessor.isInstanceOf[NonTimeBasedDataSourceAccessor])
   }
 
@@ -45,21 +45,21 @@ class TestDataSourceAccessor extends TestFeathr {
   @Test(description = "It should create a PathPartitionedTimeSeriesSourceAccessor from a daily path")
   def testCreateFromPartitionedFiles(): Unit = {
     val source = DataSource("localTimeAwareTestFeatureData/daily", SourceFormatType.TIME_SERIES_PATH)
-    val accessor = DataSourceAccessor(ss, source, sourceInterval, None, failOnMissingPartition = false)
+    val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=sourceInterval, expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
     assertTrue(accessor.isInstanceOf[PathPartitionedTimeSeriesSourceAccessor])
   }
 
   @Test(description = "It should create a PathPartitionedTimeSeriesSourceAccessor from a path with time path pattern")
   def testCreateFromPartitionedFilesWithTimePathPattern(): Unit = {
     val source = DataSource("localTimeAwareTestFeatureData/daily", SourceFormatType.TIME_SERIES_PATH, None, Some("yyyy/MM/dd"))
-    val accessor = DataSourceAccessor(ss, source, sourceInterval, None, failOnMissingPartition = false)
+    val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=sourceInterval, expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
     assertTrue(accessor.isInstanceOf[PathPartitionedTimeSeriesSourceAccessor])
   }
 
   @Test(description = "It should create a NonTimeBasedDataSourceAccessor from a single file")
   def testCreateFromSingleFile(): Unit = {
     val source = DataSource("anchor1-source.csv", SourceFormatType.FIXED_PATH)
-    val accessor = DataSourceAccessor(ss, source, sourceInterval, None, failOnMissingPartition = false)
+    val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=sourceInterval, expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
     assertTrue(accessor.isInstanceOf[NonTimeBasedDataSourceAccessor])
   }
 }

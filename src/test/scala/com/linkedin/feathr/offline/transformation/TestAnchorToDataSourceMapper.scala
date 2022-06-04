@@ -20,7 +20,7 @@ import scala.util.Random
  * Unit test class for AnchorToDataSourceMapper.
  */
 class TestAnchorToDataSourceMapper extends TestFeathr with MockitoSugar {
-  private val anchorToDataSourceMapper = new AnchorToDataSourceMapper()
+  private val anchorToDataSourceMapper = new AnchorToDataSourceMapper(dataPathHandlers=List())
   val testSchemaString =
     """
       |{

@@ -12,7 +12,7 @@ Feathr lets you:
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-## Feathr Highlights
+## 🌟 Feathr Highlights
 
 - **Scalable with built-in optimizations.** For example, based on some internal use case, Feathr can process billions of rows and PB scale data with built-in optimizations such as bloom filters and salted joins.
 - **Rich support for point-in-time joins and aggregations:** Feathr has high performant built-in operators designed for Feature Store, including time-based aggregation, sliding window joins, look-up features, all with point-in-time correctness.
@@ -22,24 +22,18 @@ Feathr automatically computes your feature values and joins them to your trainin
 - **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
 - **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
 
-## Documentation
+## 📓 Documentation
 
-For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
+- For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
+- For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
+- For technical talks on Feathr, see the [slides here](./docs/talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
 
-## Running Feathr on Azure with Simple Steps
+## 🛠️ Install Feathr Client Locally
 
-Feathr has native cloud integration with both Azure Synapse and Databricks. For Synapse, please refer to [Running Feathr with Azure Synapse](./docs/quickstart_synapse.md).
-
-For Databricks, you can simply upload [this notebook](./docs/samples/databricks/databricks_quickstart_nyc_taxi_driver.ipynb) to your Databricks cluster and just run it like below:
-
-![Databricks Quickstart](./docs/images/databricks_quickstart.gif)
-
-## Installing Feathr Client Locally
-
-If you are not using the above Jupyter Notebook and want to install Feathr client locally, use this:
+If you want to install Feathr client in a python environment, use this:
 
 ```bash
-pip install -U feathr
+pip install feathr
 ```
 
 Or use the latest code from GitHub:
@@ -48,7 +42,12 @@ Or use the latest code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## Feathr Examples
+## ☁️ Running Feathr on Cloud
+
+- Please read the [Quick Start Guide for Feathr on Databricks](./docs/quickstart_databricks.md) to run Feathr with Databricks.
+- Please read the [Quick Start Guide for Feathr on Azure Synapse](./docs/quickstart.md) to run Feathr with Azure Synapse.
+
+## 🔡 Feathr Examples
 
 Please read [Feathr Capabilities](https://linkedin.github.io/feathr/concepts/feathr-capabilities.html) for more examples. Below are a few selected ones:
 
@@ -109,32 +108,41 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ### Define Streaming Features
 
-Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming_source_ingestion.html) for more details.
-
+Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming-source-ingestion.html) for more details.
 
 ### Point in Time Joins
 
 Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linkedin.github.io/feathr/concepts/point-in-time-join.html) for more details.
 
+### Running Feathr Examples
 
-## Running Feathr Examples
+Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
 
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
+## 🗣️ Tech Talks on Feathr
 
-## Cloud Integrations
+- [Introduction to Feathr - Beginner's guide](https://www.youtube.com/watch?v=gZg01UKQMTY)
+- [Document Intelligence using Azure Feature Store (Feathr) and SynapseML
+  ](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
 
-| Feathr component             | Cloud Integrations                                                          |
-| ---------------------------- | --------------------------------------------------------------------------- |
-| Offline store – Object Store | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
-| Offline store – SQL          | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
-| Streaming Source             | Kafka                                                                       |
-| Online store                 | Azure Cache for Redis                                                       |
-| Feature Registry             | Azure Purview                                                               |
-| Compute Engine               | Azure Synapse Spark Pools, Databricks                                       |
-| Machine Learning Platform    | Azure Machine Learning, Jupyter Notebook                                    |
-| File Format                  | Parquet, ORC, Avro, Delta Lake                                              |
+## ⚙️ Cloud Integrations and Architecture
 
-## Roadmap
+![Architecture Diagram](./docs/images/architecture.png)
+
+| Feathr component                | Cloud Integrations                                                          |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| Offline store – Object Store    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
+| Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
+| Streaming Source                | Kafka, EventHub                                                             |
+| Online store                    | Azure Cache for Redis                                                       |
+| Feature Registry and Governance | Azure Purview                                                               |
+| Compute Engine                  | Azure Synapse Spark Pools, Databricks                                       |
+| Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook               |
+| File Format                     | Parquet, ORC, Avro, JSON, Delta Lake                                        |
+| Credentials                     | Azure Key Vault                                                             |
+
+## 🚀 Roadmap
+
+For a complete roadmap with esitmated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
 
 - [x] Private Preview release
 - [x] Public Preview release
@@ -145,14 +153,14 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
   - [ ] Support feature versioning
   - [ ] Support feature monitoring
   - [ ] Support feature store UI
-      - [ ] Lineage
-      - [ ] Search
-  - [ ] Support feature data deletion and rentenion
+    - [ ] Lineage
+    - [ ] Search
+  - [ ] Support feature data deletion and retention
 
-## Community Guidelines
+## 👨‍👨‍👦‍👦 Community Guidelines
 
 Build for the community and build by the community. Check out [Community Guidelines](CONTRIBUTING.md).
 
-## Slack Channel
+## 📢 Slack Channel
 
-Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-17lugq6e8-Qu3KJXDA25tZqlFsmM94Dg)).
+Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-19dcbquwl-zKiJGYTak6Psw2GbUYtT2g)).
