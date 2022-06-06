@@ -282,3 +282,6 @@ What is the use of this parameter?
 
 
 While using features from registry in consumption flow, it is required that the user has access to all the source datafiles before the feature can be used. This will be tricky especially in our datalake and DDS setup. Any way to handle this 
+
+
+how he can pass a list in preprocessing to execute multiple UDF functions currently it looks like it only supports passing in a single function
