@@ -120,6 +120,7 @@ fatJarConfig.each { kind, entry ->
     // Some systems(like Hadoop) use different versinos of protobuf(like v2) so we have to shade it.
     relocate ('com.google.protobuf', 'shade.com.google.protobuf')
     relocate ('org.json', 'shade.org.json')
+    relocate ('com.typesafe.config', 'shade.com.typesafe.config')
   }
 }
 
