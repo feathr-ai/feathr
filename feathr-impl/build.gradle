@@ -1,7 +1,12 @@
 plugins {
   id 'scala'
   id 'com.github.johnrengelman.shadow' version '7.1.2'
+  id 'maven-publish'
+  id 'signing'
 }
+
+group = 'com.linkedin.feathr'
+version = '0.6.0'
 
 configurations {
   // Dependencies that will be provided at runtime in the cloud execution
@@ -126,4 +131,61 @@ fatJarConfig.each { kind, entry ->
 
 test {
   useTestNG()
+}
+
+java {
+  withSourcesJar()
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      artifactId = 'feathr_2.12'
+      from components.java
+      versionMapping {
+        usage('java-api') {
+          fromResolutionOf('runtimeClasspath')
+        }
+        usage('java-runtime') {
+          fromResolutionResult()
+        }
+      }
+      pom {
+        name = 'Feathr'
+        description = 'An Enterprise-Grade, High Performance Feature Store'
+        url = 'https://github.com/linkedin/feathr'
+        licenses {
+          license {
+            name = 'The Apache License, Version 2.0'
+            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+        developers {
+          developer {
+            id = 'feathr_dev'
+            name = 'Feathr Dev'
+            email = 'feathrai@gmail.com'
+          }
+        }
+        scm {
+          connection = 'scm:git@github.com:linkedin/feathr.git'
+          developerConnection = 'scm:git@github.com:linkedin/feathr.git'
+          url = 'https://github.com/linkedin/feathr'
+        }
+      }
+    }
+  }
+  repositories {
+    maven {
+      url 'https://oss.sonatype.org/content/repositories/releases/'
+      credentials {
+        username = sonatypeUsername
+        password = sonatypePassword
+      }
+    }
+  }
+}
+
+signing {
+  sign publishing.publications.mavenJava
 }
