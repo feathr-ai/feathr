@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.source.dataloader
 
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData.{Array, Record}
@@ -80,7 +81,7 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
     // hackishly convert to Avro GenericRecord format
     val avroSchema = Schema.createRecord(getArbitraryRecordName(fields), null, null, false)
     avroSchema.setFields(
-      fields.map(new Schema.Field(_, Schema.createUnion(List(Schema.create(Schema.Type.STRING), Schema.create(Schema.Type.NULL))), null, null)))
+      fields.map(AvroCompatibilityHelper.createSchemaField(_, Schema.createUnion(List(Schema.create(Schema.Type.STRING), Schema.create(Schema.Type.NULL))), null, null)))
 
     val genericRecords = rowsCleaned.map(coerceToAvro(avroSchema, _).asInstanceOf[GenericRecord])
     (genericRecords, avroSchema)

@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper
 import com.linkedin.feathr.offline.TestFeathr
 import org.apache.avro.Schema
 import org.apache.spark.sql.Row
@@ -28,7 +29,7 @@ class TestAvroJsonDataLoader extends TestFeathr {
     val schema = dataLoader.loadSchema()
 
     val expectedFields = List(
-      new Schema.Field("mId", Schema.create(Schema.Type.LONG), null, null)
+      AvroCompatibilityHelper.createSchemaField("mId", Schema.create(Schema.Type.LONG), null, null)
     ).asJava
     val expectedSchema = Schema.createRecord("FeathrTest", null, null, false)
     expectedSchema.setFields(expectedFields)

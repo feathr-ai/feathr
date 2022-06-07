@@ -2,9 +2,8 @@ package com.linkedin.feathr.offline.config.join.converters
 
 import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
-
 import com.linkedin.feathr.config.join.{Date, HourTime, TimeUnit}
-import com.linkedin.frame.exception.{ErrorLabel, FrameConfigException}
+import com.linkedin.feathr.exception.{ErrorLabel, FrameConfigException}
 
 private[converters] object PegasusRecordDateTimeConverter {
 

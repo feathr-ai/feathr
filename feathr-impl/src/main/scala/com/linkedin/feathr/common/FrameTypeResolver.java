@@ -3,23 +3,22 @@ package com.linkedin.feathr.common;
 import com.linkedin.feathr.common.metadata.MetadataException;
 import com.linkedin.feathr.common.types.PrimitiveType;
 import com.linkedin.frame.common.urn.MlFeatureVersionUrn;
-import com.linkedin.frame.core.config.producer.common.DimensionRef;
-import com.linkedin.frame.core.config.producer.common.FeatureRef;
-import com.linkedin.frame.core.config.producer.common.Version;
-import com.linkedin.frame.core.config.producer.dimensions.Categorical;
-import com.linkedin.frame.core.config.producer.dimensions.DimensionDefinition;
-import com.linkedin.frame.core.config.producer.dimensions.Discrete;
-import com.linkedin.frame.core.config.producer.dimensions.HashFunction;
-import com.linkedin.frame.core.config.producer.dimensions.Hashed;
-import com.linkedin.frame.core.config.producer.dimensions.MurmurHash3;
-import com.linkedin.frame.core.config.producer.features.FeatureDefinition;
-import com.linkedin.frame.core.config.producer.features.ValueType;
+import com.linkedin.feathr.core.config.producer.common.DimensionRef;
+import com.linkedin.feathr.core.config.producer.common.FeatureRef;
+import com.linkedin.feathr.core.config.producer.common.Version;
+import com.linkedin.feathr.core.config.producer.dimensions.Categorical;
+import com.linkedin.feathr.core.config.producer.dimensions.DimensionDefinition;
+import com.linkedin.feathr.core.config.producer.dimensions.Discrete;
+import com.linkedin.feathr.core.config.producer.dimensions.HashFunction;
+import com.linkedin.feathr.core.config.producer.dimensions.Hashed;
+import com.linkedin.feathr.core.config.producer.dimensions.MurmurHash3;
+import com.linkedin.feathr.core.config.producer.features.FeatureDefinition;
+import com.linkedin.feathr.core.config.producer.features.ValueType;
 import com.linkedin.feathr.common.metadata.MetadataProvider;
 import com.linkedin.feathr.common.tensor.BoundedCountType;
 import com.linkedin.feathr.common.tensor.CategoricalType;
 import com.linkedin.feathr.common.tensor.DimensionType;
 import com.linkedin.feathr.common.tensor.EntityType;
-import com.linkedin.feathr.common.FeatureUrnUtil;
 import com.linkedin.feathr.common.tensor.HashedType;
 import com.linkedin.feathr.common.tensor.TensorType;
 import com.linkedin.feathr.common.tensor.TextType;
@@ -130,13 +129,13 @@ public class FrameTypeResolver implements TypeResolver {
   private static DimensionType convertDimensionType(DimensionDefinition dimensionDef,
       Map<String, DimensionType> dimensionTypes, MetadataProvider metadataProvider) {
     DimensionType dimensionType;
-    com.linkedin.frame.core.config.producer.dimensions.DimensionType frameDimType = dimensionDef.getDimensionType();
+    com.linkedin.feathr.core.config.producer.dimensions.DimensionType frameDimType = dimensionDef.getDimensionType();
 
     switch (frameDimType.getType()) {
       case CATEGORICAL:
         Categorical categorical = (Categorical) frameDimType;
         boolean isOrdinal = categorical.getCategoricalType()
-            == com.linkedin.frame.core.config.producer.dimensions.CategoricalType.ORDINAL;
+            == com.linkedin.feathr.core.config.producer.dimensions.CategoricalType.ORDINAL;
         List<String> categories = new ArrayList<>(categorical.getIdToCategoryMap().values());
         // TODO: MII-9796 Migrate categoricals to use maps
         dimensionType = new CategoricalType(dimensionDef.getName(), isOrdinal, categories);

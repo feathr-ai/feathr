@@ -6,12 +6,12 @@ import com.linkedin.feathr.common.{FeatureTypeConfig, Header, JoiningFeaturePara
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.compute.Resolver.FeatureRequest
 import com.linkedin.feathr.compute._
-import com.linkedin.frame.config.featureanchor.FeatureAnchorEnvironment
+import com.linkedin.feathr.config.{FeatureDefinition, FeatureDefinitionLoaderFactory}
+import com.linkedin.feathr.config.featureanchor.FeatureAnchorEnvironment
 import com.linkedin.feathr.config.join.FrameFeatureJoinConfig
+import com.linkedin.feathr.core.config.producer.common.KeyListExtractor
+import com.linkedin.feathr.core.configdataprovider.StringConfigDataProvider
 import com.linkedin.feathr.fds.ColumnMetadata
-import com.linkedin.frame.config.{FeatureDefinition, FeatureDefinitionLoaderFactory}
-import com.linkedin.frame.core.config.producer.common.KeyListExtractor
-import com.linkedin.frame.core.configdataprovider.StringConfigDataProvider
 import com.linkedin.feathr.offline.{FeatureDataFrame, PostTransformationUtil}
 import com.linkedin.feathr.offline.exception.DataFrameApiUnsupportedOperationException
 import com.linkedin.feathr.offline.anchored.WindowTimeUnit

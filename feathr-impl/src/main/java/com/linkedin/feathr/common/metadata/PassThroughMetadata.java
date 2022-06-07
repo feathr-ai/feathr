@@ -1,11 +1,10 @@
 package com.linkedin.feathr.common.metadata;
 
-import com.linkedin.frame.core.config.producer.sources.PassThroughConfig;
+import com.linkedin.feathr.core.config.producer.sources.PassThroughConfig;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.linkedin.frame.core.config.producer.sources.SourceType.*;
-
+import static com.linkedin.feathr.core.config.producer.sources.SourceType.*;
 
 public class PassThroughMetadata extends SourceMetadata {
   private final String _dataModel;

@@ -6,9 +6,12 @@ plugins {
 }
 
 group = 'com.linkedin.feathr'
-version = '0.6.0'
+version = '0.5.0'
 
 configurations {
+  // configuration that holds jars to include in the jar
+  extraLibs
+
   // Dependencies that will be provided at runtime in the cloud execution
   provided
 
@@ -26,6 +29,11 @@ dependencies {
   implementation project(":feathr-config")
   implementation project(":feathr-data-models")
   implementation project(path: ':feathr-data-models', configuration: 'dataTemplate')
+  // needed to include data models in jar
+  extraLibs project(":feathr-compute")
+  extraLibs project(":feathr-config")
+  extraLibs project(":feathr-data-models")
+  extraLibs project(path: ':feathr-data-models', configuration: 'dataTemplate')
   implementation spec.product.scala.scala_library
 
   implementation spec.product.jackson.dataformat_csv
@@ -41,6 +49,7 @@ dependencies {
   implementation spec.product.guava
   implementation spec.product.xbean
   implementation spec.product.json
+  implementation spec.product.avroUtil
 
   provided spec.product.jackson.jackson_databind
   provided spec.product.typesafe_config
@@ -86,6 +95,13 @@ sourceSets {
     java {
       srcDirs = []
     }
+  }
+}
+
+jar {
+  duplicatesStrategy = "exclude"
+  from {
+    configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
   }
 }
 
@@ -156,7 +172,7 @@ publishing {
         url = 'https://github.com/linkedin/feathr'
         licenses {
           license {
-            name = 'The Apache License, Version 2.0'
+            name = 'APL2'
             url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
           }
         }
@@ -169,7 +185,6 @@ publishing {
         }
         scm {
           connection = 'scm:git@github.com:linkedin/feathr.git'
-          developerConnection = 'scm:git@github.com:linkedin/feathr.git'
           url = 'https://github.com/linkedin/feathr'
         }
       }
@@ -177,7 +192,7 @@ publishing {
   }
   repositories {
     maven {
-      url 'https://oss.sonatype.org/content/repositories/releases/'
+      url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
       credentials {
         username = sonatypeUsername
         password = sonatypePassword

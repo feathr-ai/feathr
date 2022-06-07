@@ -1,8 +1,8 @@
 package com.linkedin.feathr.offline.config
 
 import com.linkedin.feathr.common.{FeatureValue, PegasusDefaultFeatureValueResolver}
-import com.linkedin.frame.core.utils.MlFeatureVersionUrnCreator
 import com.linkedin.feathr.compute.FeatureVersion
+import com.linkedin.feathr.core.utils.MlFeatureVersionUrnCreator
 
 private[offline] class PegasusRecordDefaultValueConverter private (
   pegasusDefaultFeatureValueResolver: PegasusDefaultFeatureValueResolver,

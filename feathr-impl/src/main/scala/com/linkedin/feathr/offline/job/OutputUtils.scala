@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.job
 
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper
 import com.linkedin.feathr.common.{Header, JoiningFeatureParams}
 import org.apache.avro.Schema
 
@@ -48,7 +49,7 @@ private[offline] object OutputUtils {
   val compactFeatureSchemaFloat = {
     val schema = Schema.createRecord("Feature", null, null, false)
     schema.setFields(util.Arrays
-      .asList(new Schema.Field("term", Schema.create(Schema.Type.STRING), null, null), new Schema.Field("value", Schema.create(Schema.Type.FLOAT), null, null)))
+      .asList(AvroCompatibilityHelper.createSchemaField("term", Schema.create(Schema.Type.STRING), null, null), AvroCompatibilityHelper.createSchemaField("value", Schema.create(Schema.Type.FLOAT), null, null)))
     schema
   }
 
@@ -57,8 +58,8 @@ private[offline] object OutputUtils {
     val schema = Schema.createRecord("Feature", null, null, false)
     schema.setFields(
       util.Arrays.asList(
-        new Schema.Field("term", Schema.create(Schema.Type.STRING), null, null),
-        new Schema.Field("value", Schema.create(Schema.Type.DOUBLE), null, null)))
+        AvroCompatibilityHelper.createSchemaField("term", Schema.create(Schema.Type.STRING), null, null),
+        AvroCompatibilityHelper.createSchemaField("value", Schema.create(Schema.Type.DOUBLE), null, null)))
     schema
   }
 
@@ -67,9 +68,9 @@ private[offline] object OutputUtils {
     val schema = Schema.createRecord("Feature", null, null, false)
     schema.setFields(
       util.Arrays.asList(
-        new Schema.Field("name", Schema.create(Schema.Type.STRING), null, null),
-        new Schema.Field("term", Schema.create(Schema.Type.STRING), null, null),
-        new Schema.Field("value", Schema.create(Schema.Type.FLOAT), null, null)))
+        AvroCompatibilityHelper.createSchemaField("name", Schema.create(Schema.Type.STRING), null, null),
+        AvroCompatibilityHelper.createSchemaField("term", Schema.create(Schema.Type.STRING), null, null),
+        AvroCompatibilityHelper.createSchemaField("value", Schema.create(Schema.Type.FLOAT), null, null)))
     schema
   }
 
@@ -78,9 +79,9 @@ private[offline] object OutputUtils {
     val schema = Schema.createRecord("Feature", null, null, false)
     schema.setFields(
       util.Arrays.asList(
-        new Schema.Field("name", Schema.create(Schema.Type.STRING), null, null),
-        new Schema.Field("term", Schema.create(Schema.Type.STRING), null, null),
-        new Schema.Field("value", Schema.create(Schema.Type.DOUBLE), null, null)))
+        AvroCompatibilityHelper.createSchemaField("name", Schema.create(Schema.Type.STRING), null, null),
+        AvroCompatibilityHelper.createSchemaField("term", Schema.create(Schema.Type.STRING), null, null),
+        AvroCompatibilityHelper.createSchemaField("value", Schema.create(Schema.Type.DOUBLE), null, null)))
     schema
   }
 

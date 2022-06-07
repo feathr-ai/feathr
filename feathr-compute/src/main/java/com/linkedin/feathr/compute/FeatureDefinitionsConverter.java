@@ -5,9 +5,9 @@ import com.linkedin.frame.common.urn.MlFeatureVersionUrn;
 import com.linkedin.data.template.RecordTemplate;
 import com.linkedin.data.template.StringArray;
 import com.linkedin.data.template.StringMap;
-import com.linkedin.frame.config.FeatureDefinition;
-import com.linkedin.frame.core.utils.FeatureRefConverter;
-import com.linkedin.frame.core.utils.MvelInputsResolver;
+import com.linkedin.feathr.config.FeatureDefinition;
+import com.linkedin.feathr.core.utils.FeatureRefConverter;
+import com.linkedin.feathr.core.utils.MvelInputsResolver;
 import com.linkedin.feathr.featureDataModel.FeatureAnchor;
 import com.linkedin.feathr.featureDataModel.HdfsDataSourceAnchor;
 import com.linkedin.feathr.featureDataModel.ObservationPassthroughDataSourceAnchor;
@@ -26,7 +26,6 @@ import com.linkedin.feathr.featureDataModel.SlidingWindowEmbeddingAggregation;
 import com.linkedin.feathr.featureDataModel.SlidingWindowLatestAvailable;
 import com.linkedin.feathr.featureDataModel.Unit;
 import com.linkedin.feathr.featureDataModel.Window;
-import com.linkedin.feathr.compute.FeatureVersion;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -140,7 +139,7 @@ public class FeatureDefinitionsConverter {
     } else {
       throw new RuntimeException("Unsupported key type " + anchor.getSource().getKeyFunction());
     }
-    
+
     boolean isHdfs = anchor.getSource().getDatasetLocation().isHdfsLocation();
 
     // Compute-model DataSource doesn't contain details needed to actually access that data. Instead it has a

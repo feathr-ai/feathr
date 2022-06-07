@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.{AvroRuntimeException, Schema}
 import org.scalatest.testng.TestNGSuite
@@ -73,11 +74,11 @@ class TestCaseInsensitiveGenericRecordWrapper extends TestNGSuite{
    * @return
    */
   def createRecord(): GenericData.Record = {
-    val childSchema = Schema.createRecord(List(new Schema.Field("f", Schema.create(Schema.Type.INT), null, null)).asJava)
+    val childSchema = Schema.createRecord(List(AvroCompatibilityHelper.createSchemaField("f", Schema.create(Schema.Type.INT), null, null)).asJava)
     val childRecord = new GenericData.Record(childSchema)
     childRecord.put("f", 2)
     val schema =
-      Schema.createRecord(List(new Schema.Field("a", Schema.create(Schema.Type.INT), null, null), new Schema.Field("child", childSchema, null, null)).asJava)
+      Schema.createRecord(List(AvroCompatibilityHelper.createSchemaField("a", Schema.create(Schema.Type.INT), null, null), AvroCompatibilityHelper.createSchemaField("child", childSchema, null, null)).asJava)
     val record = new GenericData.Record(schema)
     record.put("a", 1)
     record.put("child", childRecord)

@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper
 import com.linkedin.feathr.offline.TestFeathr
 import org.apache.avro.Schema
 import org.apache.spark.sql.Row
@@ -37,11 +38,11 @@ class TestCsvDataLoader extends TestFeathr {
 
     val fieldSchema = Schema.createUnion(List(Schema.create(Schema.Type.STRING), Schema.create(Schema.Type.NULL)).asJava)
     val expectedFields = List(
-      new Schema.Field("alpha", fieldSchema, null, null),
-      new Schema.Field("beta", fieldSchema, null, null),
-      new Schema.Field("gamma", fieldSchema, null, null),
-      new Schema.Field("mId", fieldSchema, null, null),
-      new Schema.Field("omega", fieldSchema, null, null)
+      AvroCompatibilityHelper.createSchemaField("alpha", fieldSchema, null, null),
+      AvroCompatibilityHelper.createSchemaField("beta", fieldSchema, null, null),
+      AvroCompatibilityHelper.createSchemaField("gamma", fieldSchema, null, null),
+      AvroCompatibilityHelper.createSchemaField("mId", fieldSchema, null, null),
+      AvroCompatibilityHelper.createSchemaField("omega", fieldSchema, null, null)
     ).asJava
     val expectedSchema = Schema.createRecord(expectedFields)
     assertEquals(schema.getFields, expectedSchema.getFields)

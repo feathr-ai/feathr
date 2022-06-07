@@ -1,6 +1,6 @@
 package com.linkedin.feathr.sparkcommon
 
-import com.linkedin.frame.exception.{ErrorLabel, FrameFeatureJoinException}
+import com.linkedin.feathr.exception.{ErrorLabel, FrameFeatureJoinException}
 import org.apache.spark.sql.{Column, DataFrame}
 
 /**

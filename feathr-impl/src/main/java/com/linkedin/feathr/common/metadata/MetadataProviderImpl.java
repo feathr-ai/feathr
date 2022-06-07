@@ -1,29 +1,30 @@
 package com.linkedin.feathr.common.metadata;
 
-import com.linkedin.frame.core.config.producer.FeatureDefConfig;
-import com.linkedin.frame.core.config.producer.anchors.AnchorConfig;
-import com.linkedin.frame.core.config.producer.anchors.AnchorsConfig;
-import com.linkedin.frame.core.config.producer.common.DimensionRef;
-import com.linkedin.frame.core.config.producer.common.FeatureRef;
-import com.linkedin.frame.core.config.producer.common.Namespace;
-import com.linkedin.frame.core.config.producer.common.Version;
-import com.linkedin.frame.core.config.producer.derivations.DerivationsConfig;
-import com.linkedin.frame.core.config.producer.dimensions.DimensionDefinition;
-import com.linkedin.frame.core.config.producer.dimensions.DimensionSection;
-import com.linkedin.frame.core.config.producer.features.FeatureDefinition;
-import com.linkedin.frame.core.config.producer.features.FeatureMetadata;
-import com.linkedin.frame.core.config.producer.features.FeatureSection;
-import com.linkedin.frame.core.config.producer.sources.EspressoConfig;
-import com.linkedin.frame.core.config.producer.sources.HdfsConfig;
-import com.linkedin.frame.core.config.producer.sources.KafkaConfig;
-import com.linkedin.frame.core.config.producer.sources.PassThroughConfig;
-import com.linkedin.frame.core.config.producer.sources.PinotConfig;
-import com.linkedin.frame.core.config.producer.sources.RestliConfig;
-import com.linkedin.frame.core.config.producer.sources.RocksDbConfig;
-import com.linkedin.frame.core.config.producer.sources.SourceConfig;
-import com.linkedin.frame.core.config.producer.sources.SourceType;
-import com.linkedin.frame.core.config.producer.sources.SourcesConfig;
-import com.linkedin.frame.core.config.producer.sources.VeniceConfig;
+import com.linkedin.feathr.core.config.producer.dimensions.DimensionMetadata;
+import com.linkedin.feathr.core.config.producer.FeatureDefConfig;
+import com.linkedin.feathr.core.config.producer.anchors.AnchorConfig;
+import com.linkedin.feathr.core.config.producer.anchors.AnchorsConfig;
+import com.linkedin.feathr.core.config.producer.common.DimensionRef;
+import com.linkedin.feathr.core.config.producer.common.FeatureRef;
+import com.linkedin.feathr.core.config.producer.common.Namespace;
+import com.linkedin.feathr.core.config.producer.common.Version;
+import com.linkedin.feathr.core.config.producer.derivations.DerivationsConfig;
+import com.linkedin.feathr.core.config.producer.dimensions.DimensionDefinition;
+import com.linkedin.feathr.core.config.producer.dimensions.DimensionSection;
+import com.linkedin.feathr.core.config.producer.features.FeatureDefinition;
+import com.linkedin.feathr.core.config.producer.features.FeatureMetadata;
+import com.linkedin.feathr.core.config.producer.features.FeatureSection;
+import com.linkedin.feathr.core.config.producer.sources.EspressoConfig;
+import com.linkedin.feathr.core.config.producer.sources.HdfsConfig;
+import com.linkedin.feathr.core.config.producer.sources.KafkaConfig;
+import com.linkedin.feathr.core.config.producer.sources.PassThroughConfig;
+import com.linkedin.feathr.core.config.producer.sources.PinotConfig;
+import com.linkedin.feathr.core.config.producer.sources.RestliConfig;
+import com.linkedin.feathr.core.config.producer.sources.RocksDbConfig;
+import com.linkedin.feathr.core.config.producer.sources.SourceConfig;
+import com.linkedin.feathr.core.config.producer.sources.SourceType;
+import com.linkedin.feathr.core.config.producer.sources.SourcesConfig;
+import com.linkedin.feathr.core.config.producer.sources.VeniceConfig;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -345,12 +346,12 @@ class MetadataProviderImpl implements MetadataProvider {
       DimensionSection dimSection = dimSectionOpt.get();
 
       // Iterate over each namespace
-      for (Pair<Namespace, Set<com.linkedin.frame.core.config.producer.dimensions.DimensionMetadata>> pair : dimSection) {
+      for (Pair<Namespace, Set<DimensionMetadata>> pair : dimSection) {
         Namespace namespace = pair.getLeft();
-        Set<com.linkedin.frame.core.config.producer.dimensions.DimensionMetadata> dimMetadataSet = pair.getRight();
+        Set<DimensionMetadata> dimMetadataSet = pair.getRight();
 
         // Iterate over each dimension metadata
-        for (com.linkedin.frame.core.config.producer.dimensions.DimensionMetadata dimMetadata : dimMetadataSet) {
+        for (DimensionMetadata dimMetadata : dimMetadataSet) {
           String name = dimMetadata.getName();
 
           // Iterate over each (versioned) dimension definition

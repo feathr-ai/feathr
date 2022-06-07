@@ -1,8 +1,8 @@
 package com.linkedin.feathr.offline.config.anchors
 
-import java.time.Duration
+import com.linkedin.feathr.exception.{ErrorLabel, FrameConfigException}
 
-import com.linkedin.frame.exception.{ErrorLabel, FrameConfigException}
+import java.time.Duration
 import com.linkedin.feathr.featureDataModel.{Unit, Window}
 
 /**

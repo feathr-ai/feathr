@@ -2,12 +2,12 @@ package com.linkedin.feathr.offline.evaluator.datasource
 
 import com.linkedin.feathr.common.AnchorExtractor
 import com.linkedin.feathr.compute.KeyExpressionType
+import com.linkedin.feathr.core.config.producer.common.KeyListExtractor
 import com.linkedin.feathr.offline.client.{FeathrClient2, NodeContext}
 import com.linkedin.feathr.offline.config.ConfigLoaderUtils
 import com.linkedin.feathr.offline.source.accessor.{DataPathHandler, DataSourceAccessor}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import com.linkedin.feathr.sparkcommon.SourceKeyExtractor
-import com.linkedin.frame.core.config.producer.common.KeyListExtractor
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.JavaConverters._

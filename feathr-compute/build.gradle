@@ -1,4 +1,6 @@
 apply plugin: 'java'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 dependencies {
   implementation project(":feathr-config")
@@ -27,4 +29,60 @@ test {
   // need to keep a lower heap size (TOOLS-296596)
   minHeapSize = "512m"
   useTestNG()
+}
+
+java {
+  withSourcesJar()
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      artifactId = 'feathr-compute'
+      from components.java
+      versionMapping {
+        usage('java-api') {
+          fromResolutionOf('runtimeClasspath')
+        }
+        usage('java-runtime') {
+          fromResolutionResult()
+        }
+      }
+      pom {
+        name = 'Feathr'
+        description = 'An Enterprise-Grade, High Performance Feature Store'
+        url = 'https://github.com/linkedin/feathr'
+        licenses {
+          license {
+            name = 'APL2'
+            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+        developers {
+          developer {
+            id = 'feathr_dev'
+            name = 'Feathr Dev'
+            email = 'feathrai@gmail.com'
+          }
+        }
+        scm {
+          connection = 'scm:git@github.com:linkedin/feathr.git'
+          url = 'https://github.com/linkedin/feathr'
+        }
+      }
+    }
+  }
+  repositories {
+    maven {
+      url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+      credentials {
+        username = sonatypeUsername
+        password = sonatypePassword
+      }
+    }
+  }
+}
+
+signing {
+  sign publishing.publications.mavenJava
 }

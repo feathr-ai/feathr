@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.generation
 
+import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrDataOutputException}
 import com.linkedin.feathr.common.{Header, TaggedFeatureName}
 import com.linkedin.feathr.offline.generation.FeatureDataHDFSProcessUtils._
@@ -102,10 +103,10 @@ private[offline] object RawDataWriterUtils {
   // single key does not have to be record?
   private def makeSingleWrappedSchema(schema: Schema, recordName: String, wrapperName: String): Schema.Field = {
     val outputKeySchemaFields = schema.getFields.map(f => {
-      new Schema.Field(f.name(), f.schema(), f.doc(), SourceUtils.getDefaultValueFromAvroRecord(f), f.order())
+      AvroCompatibilityHelper.createSchemaField(f.name(), f.schema(), f.doc(), SourceUtils.getDefaultValueFromAvroRecord(f), f.order())
     })
     val outputKeySchema = Schema.createRecord(recordName, null, null, false)
     outputKeySchema.setFields(outputKeySchemaFields)
-    new Schema.Field(wrapperName, outputKeySchema, null, null)
+    AvroCompatibilityHelper.createSchemaField(wrapperName, outputKeySchema, null, null)
   }
 }

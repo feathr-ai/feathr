@@ -1,8 +1,8 @@
 package com.linkedin.feathr.offline.anchored.keyExtractor
 
 import com.linkedin.feathr.common.AnchorExtractor
+import com.linkedin.feathr.exception.{ErrorLabel, FrameException}
 import com.linkedin.feathr.sparkcommon.SourceKeyExtractor
-import com.linkedin.frame.exception.{ErrorLabel, FrameException}
 import com.typesafe.config.ConfigRenderOptions
 import org.apache.spark.sql._
 

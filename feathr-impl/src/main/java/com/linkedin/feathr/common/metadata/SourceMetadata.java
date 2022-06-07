@@ -1,6 +1,6 @@
 package com.linkedin.feathr.common.metadata;
 
-import com.linkedin.frame.core.config.producer.sources.SourceType;
+import com.linkedin.feathr.core.config.producer.sources.SourceType;
 import java.util.Objects;
 
 

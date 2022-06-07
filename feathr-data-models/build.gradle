@@ -1,4 +1,7 @@
 apply plugin: 'pegasus'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+apply plugin: 'java'
 
 dependencies {
   implementation spec.product.pegasus.data
@@ -9,4 +12,60 @@ afterEvaluate {
     dependencies {
       dataTemplateCompile spec.product.pegasus.data
     }
+}
+
+java {
+  withSourcesJar()
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      artifactId = 'feathr-data-models'
+      from components.java
+      versionMapping {
+        usage('java-api') {
+          fromResolutionOf('runtimeClasspath')
+        }
+        usage('java-runtime') {
+          fromResolutionResult()
+        }
+      }
+      pom {
+        name = 'Feathr'
+        description = 'An Enterprise-Grade, High Performance Feature Store'
+        url = 'https://github.com/linkedin/feathr'
+        licenses {
+          license {
+            name = 'APL2'
+            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+        developers {
+          developer {
+            id = 'feathr_dev'
+            name = 'Feathr Dev'
+            email = 'feathrai@gmail.com'
+          }
+        }
+        scm {
+          connection = 'scm:git@github.com:linkedin/feathr.git'
+          url = 'https://github.com/linkedin/feathr'
+        }
+      }
+    }
+  }
+  repositories {
+    maven {
+      url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+      credentials {
+        username = sonatypeUsername
+        password = sonatypePassword
+      }
+    }
+  }
+}
+
+signing {
+  sign publishing.publications.mavenJava
 }

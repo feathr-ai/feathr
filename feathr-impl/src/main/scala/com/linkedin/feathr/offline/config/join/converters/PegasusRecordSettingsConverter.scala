@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.config.join.converters
 import com.linkedin.data.template.GetMode
 import com.linkedin.feathr.common.DateParam
 import com.linkedin.feathr.config.join.{InputDataTimeSettings, JoinTimeSettings, Settings}
-import com.linkedin.frame.exception.{ErrorLabel, FrameConfigException}
+import com.linkedin.feathr.exception.{ErrorLabel, FrameConfigException}
 import com.linkedin.feathr.offline.anchored.WindowTimeUnit
 import com.linkedin.feathr.offline.config.{JoinConfigSettings, JoinTimeSetting, ObservationDataTimeSetting, TimestampColumn}
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils

@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.evaluator.datasource
 
 import com.linkedin.feathr.compute.KeyExpressionType
+import com.linkedin.feathr.core.config.producer.common.KeyListExtractor
 import com.linkedin.feathr.offline.client.NodeContext
 import com.linkedin.feathr.offline.config.ConfigLoaderUtils
 import com.linkedin.feathr.offline.source.accessor.{DataPathHandler, DataSourceAccessor}
@@ -8,7 +9,6 @@ import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWin
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.{EPOCH, TIMESTAMP_PARTITION_COLUMN, constructTimeStampExpr}
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.sparkcommon.SourceKeyExtractor
-import com.linkedin.frame.core.config.producer.common.KeyListExtractor
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 

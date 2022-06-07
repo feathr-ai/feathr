@@ -3,8 +3,6 @@ package com.linkedin.feathr.offline.evaluator.datasource
 import com.linkedin.feathr.common
 import com.linkedin.feathr.common.{AnchorExtractor, AnchorExtractorBase, FeatureDerivationFunction, FeatureTypeConfig, FeatureTypes}
 import com.linkedin.feathr.compute.{NodeReference, Operators, Transformation}
-import com.linkedin.frame.core.config.producer.common.KeyListExtractor
-import com.linkedin.frame.exception.{ErrorLabel, FrameFeatureTransformationException}
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction1, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SQLKeys, SimpleConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor, SpecificRecordSourceKeyExtractor}
@@ -18,6 +16,8 @@ import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils.tensorTypeToDataF
 import com.linkedin.feathr.offline.util.{CoercionUtilsScala, FeaturizedDatasetUtils, SourceUtils}
 import com.linkedin.feathr.sparkcommon.{FDSExtractor, GenericAnchorExtractorSpark, SimpleAnchorExtractorSpark}
 import com.linkedin.feathr.compute.FeatureVersion
+import com.linkedin.feathr.core.config.producer.common.KeyListExtractor
+import com.linkedin.feathr.exception.{ErrorLabel, FrameFeatureTransformationException}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.functions.col
