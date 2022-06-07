@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Optional, Union
 import pickle
 from jinja2 import Template
-from feathr.source import HdfsSource
+from feathr.definition.source import HdfsSource
 import ast
 
 # Some metadata that are only needed by Feathr

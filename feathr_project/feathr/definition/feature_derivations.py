@@ -2,10 +2,10 @@ from typing import List, Optional, Union, Dict
 
 from jinja2 import Template
 
-from feathr.dtype import FeatureType
-from feathr.feature import FeatureBase
-from feathr.transformation import RowTransformation
-from feathr.typed_key import DUMMY_KEY, TypedKey
+from feathr.definition.dtype import FeatureType
+from feathr.definition.feature import FeatureBase
+from feathr.definition.transformation import RowTransformation
+from feathr.definition.typed_key import DUMMY_KEY, TypedKey
 
 
 class DerivedFeature(FeatureBase):

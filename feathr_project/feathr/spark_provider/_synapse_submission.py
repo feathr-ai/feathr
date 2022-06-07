@@ -17,7 +17,7 @@ from loguru import logger
 from requests import request
 from tqdm import tqdm
 
-from feathr._abc import SparkJobLauncher
+from feathr.spark_provider._abc import SparkJobLauncher
 from feathr.constants import *
 
 class LivyStates(Enum):

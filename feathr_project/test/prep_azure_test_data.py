@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.getcwd()))
 
 from feathrcli.cli import init
 from click.testing import CliRunner
-from feathr.client import FeathrClient
+from feathr import FeathrClient
 
 def initialize_data():
     """

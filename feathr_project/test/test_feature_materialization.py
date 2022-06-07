@@ -2,15 +2,15 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from feathr._materialization_utils import _to_materialization_config
-from feathr import (BackfillTime, MaterializationSettings, FeatureQuery,
+from feathr.definition._materialization_utils import _to_materialization_config
+from feathr import (BackfillTime, MaterializationSettings)
+from feathr import (BackfillTime, MaterializationSettings, FeatureQuery, 
                     ObservationSettings, SparkExecutionConfiguration)
-from feathr import RedisSink
-from feathr import HdfsSink
-from feathr.anchor import FeatureAnchor
-from feathr.dtype import BOOLEAN, FLOAT, FLOAT_VECTOR, INT32, ValueType
-from feathr.feature import Feature
-from feathr.typed_key import TypedKey
+from feathr import RedisSink, HdfsSink
+from feathr import FeatureAnchor
+from feathr import BOOLEAN, FLOAT, FLOAT_VECTOR, INT32, ValueType
+from feathr import Feature
+from feathr import TypedKey
 from feathr import INPUT_CONTEXT
 from test_fixture import basic_test_setup
 from test_fixture import get_online_test_table_name
