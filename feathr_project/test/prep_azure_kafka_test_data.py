@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 from avro.io import BinaryEncoder, DatumWriter
 from confluent_kafka import Producer
-from feathr._envvariableutil import _EnvVaraibleUtil
+from feathr.utils._envvariableutil import _EnvVaraibleUtil
 """
 Produce some sample data for streaming feature using Kafka"""
 KAFKA_BROKER = "feathrazureci.servicebus.windows.net:9093"
