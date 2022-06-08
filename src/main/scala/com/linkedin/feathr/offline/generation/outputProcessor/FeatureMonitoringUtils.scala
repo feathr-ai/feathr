@@ -85,7 +85,6 @@ object FeatureMonitoringUtils {
       println("monitoring output:")
       println("url: " + url)
       println("username: " + username)
-      println("password: " + password)
 
       stats_df.write
         .format("jdbc")
