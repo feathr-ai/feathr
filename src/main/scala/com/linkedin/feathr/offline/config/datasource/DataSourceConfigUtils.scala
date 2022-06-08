@@ -35,6 +35,7 @@ object DataSourceConfigUtils {
       blobConfigStr = cmdParser.extractOptionalValue("blob-config"),
       sqlConfigStr = cmdParser.extractOptionalValue("sql-config"),
       snowflakeConfigStr = cmdParser.extractOptionalValue("snowflake-config"),
+      monitoringConfigStr = cmdParser.extractOptionalValue("monitoring-config"),
       kafkaConfigStr = cmdParser.extractOptionalValue("kafka-config")
     )
   }
@@ -45,6 +46,7 @@ object DataSourceConfigUtils {
     BlobResourceInfoSetter.setup(ss, configs.blobConfig, resource)
     S3ResourceInfoSetter.setup(ss, configs.s3Config, resource)
     SnowflakeResourceInfoSetter.setup(ss, configs.snowflakeConfig, resource)
+    MonitoringResourceInfoSetter.setup(ss, configs.monitoringConfig, resource)
     KafkaResourceInfoSetter.setup(ss, configs.kafkaConfig, resource)
   }
 

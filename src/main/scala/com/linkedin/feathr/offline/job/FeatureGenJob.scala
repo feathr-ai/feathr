@@ -47,6 +47,7 @@ object FeatureGenJob {
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
       "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
       "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", ""),
+      "monitoring-config" -> OptionParam("mc", "Feature monitoring related configs", "MONITORING_CONFIG", ""),
       "kafka-config" -> OptionParam("kc", "Authentication config for Kafka", "KAFKA_CONFIG", "")
     )
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
@@ -65,6 +66,8 @@ object FeatureGenJob {
     val dataSourceConfigs = DataSourceConfigUtils.getConfigs(cmdParser)
     val featureGenJobContext = new FeatureGenJobContext(workDir, paramsOverride, featureConfOverride)
 
+    println("dataSourceConfigs: ")
+    println(dataSourceConfigs)
     (applicationConfigPath, featureDefinitionsInput, featureGenJobContext, dataSourceConfigs)
   }
 
@@ -208,7 +211,7 @@ object FeatureGenJob {
     val feathrClient =
       FeathrClient.builder(sparkSession)
         .addFeatureDef(featureConfig)
-        .addLocalOverrideDef(localFeatureConfigWithOverride) 
+        .addLocalOverrideDef(localFeatureConfigWithOverride)
         .build()
     val allAnchoredFeatures = feathrClient.allAnchoredFeatures
 

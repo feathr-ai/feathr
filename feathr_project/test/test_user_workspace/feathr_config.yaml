@@ -67,7 +67,7 @@ offline_store:
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks
   # The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.
-  spark_cluster: 'databricks'
+  spark_cluster: 'azure_synapse'
   # configure number of parts for the spark output for feature generation job
   spark_result_output_parts: '1'
 
@@ -112,3 +112,9 @@ feature_registry:
     # this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'
     # the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips'
     delimiter: '__'
+
+monitoring:
+  database:
+    sql:
+      url: 'jdbc:postgresql://featuremonitoring.postgres.database.azure.com:5432/postgres'
+      user: "demo"

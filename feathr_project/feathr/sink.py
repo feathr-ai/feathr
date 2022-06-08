@@ -8,6 +8,27 @@ class Sink(HoconConvertible):
     """
     pass
 
+class MonitoringSqlSink(Sink):
+    """SQL-based sink that stores feature monitoring results.
+
+    Attributes:
+        table_name: output table name
+    """
+    def __init__(self, table_name: str) -> None:
+        self.table_name = table_name
+
+    def to_feature_config(self) -> str:
+        """Produce the config used in feature monitoring"""
+        tm = Template("""  
+            {
+                name: MONITORING
+                params: {
+                    table_name: "{{source.table_name}}"
+                }
+            }
+        """)
+        msg = tm.render(source=self)
+        return msg
 
 class RedisSink(Sink):
     """Redis-based sink use to store online feature data, can be used in batch job or streaming job.

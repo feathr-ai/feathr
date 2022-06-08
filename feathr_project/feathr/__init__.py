@@ -8,7 +8,8 @@ from .transformation import *
 from .transformation import *
 from .typed_key import *
 from .materialization_settings import (BackfillTime, MaterializationSettings)
-from .sink import RedisSink, HdfsSink
+from .monitoring_settings import MonitoringSettings
+from .sink import RedisSink, HdfsSink, MonitoringSqlSink
 from .query_feature_list import FeatureQuery
 from .lookup_feature import LookupFeature
 from .aggregation import Aggregation
