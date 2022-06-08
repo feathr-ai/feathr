@@ -29,36 +29,40 @@ export ONLINE_STORE__REDIS__HOST=feathrazure.redis.cache.windows.net
 | S3_ACCESS_KEY                     | Parquet, ORC, Avro, JSON, Delta Lake                                        |
 | S3_SECRET_KEY                     | Azure Key Vault                                                             |
 | JDBC_TABLE                     | Azure Key Vault                                                             |
-
 | JDBC_USER                     | Azure Key Vault                                                             |
 | JDBC_PASSWORD                     | Azure Key Vault                                                             |
 | KAFKA_SASL_JAAS_CONFIG                     | Azure Key Vault                                                             |
+|PROJECT_CONFIG__PROJECT_NAME|  |
+|PROJECT_CONFIG__REQUIRED_ENVIRONMENT_VARIABLES|  |
+|PROJECT_CONFIG__OPTIONAL_ENVIRONMENT_VARIABLES|  |
 |OFFLINE_STORE__ADLS__ADLS_ENABLED|  |
 |OFFLINE_STORE__WASB__WASB_ENABLED|  |
 |OFFLINE_STORE__S3__S3_ENABLED|  |
-|OFFLINE_STORE__S3__S3_ENDPOINT|  |
+|OFFLINE_STORE__S3__S3_ENDPOINT| S3 endpoint. If you use S3 endpoint, then you need to provide access key and secret key in the environment variable as well. |
 |OFFLINE_STORE__SNOWFLAKE__URL|  |
 |OFFLINE_STORE__SNOWFLAKE__USER|  |
 |OFFLINE_STORE__SNOWFLAKE__ROLE|  |
 |OFFLINE_STORE__JDBC__JDBC_ENABLED|  |
 |OFFLINE_STORE__JDBC__JDBC_DATABASE|  |
 |OFFLINE_STORE__JDBC__JDBC_TABLE|  |
-|SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL|  |
-|SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME|  |
-|SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR|  |
+|SPARK_CONFIG__SPARK_CLUSTER| choice for spark runtime. Currently support: `azure_synapse`, `databricks`. The `databricks` configs will be ignored if `azure_synapse` is set and vice versa. |
+|SPARK_CONFIG__SPARK_RESULT_OUTPUT_PARTS| configure number of parts for the spark output for feature generation job |
+|SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL| dev URL to the synapse cluster. Usually it's `https://yourclustername.dev.azuresynapse.net` |
+|SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME| name of the sparkpool that you are going to use |
+|SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR| workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here |
 |SPARK_CONFIG__AZURE_SYNAPSE__EXECUTOR_SIZE|  |
 |SPARK_CONFIG__AZURE_SYNAPSE__EXECUTOR_NUM|  |
 |SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION|  |
-|SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL|  |
-|SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE|  |
-|SPARK_CONFIG__DATABRICKS__WORK_DIR|  |
-|SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION|  |
-|ONLINE_STORE__REDIS__HOST|  |
+|SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL| workspace instance |
+|SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE| config string including run time information, spark version, machine size, etc. |
+|SPARK_CONFIG__DATABRICKS__WORK_DIR| workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here.  |
+|SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION| Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with dbfs:/. this is the default location so end users don't have to compile the runtime again. |
+|ONLINE_STORE__REDIS__HOST| Redis configs to access Redis cluster |
 |ONLINE_STORE__REDIS__PORT|  |
 |ONLINE_STORE__REDIS__SSL_ENABLED|  |
-|FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME|  |
-|FEATURE_REGISTRY__PURVIEW__DELIMITER|  |
-|FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION|  |
+|FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME| configure the name of the purview endpoint |
+|FEATURE_REGISTRY__PURVIEW__DELIMITER| delimiter indicates that how the project/workspace name, feature names etc. are delimited. By default it will be '__'. this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'. the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips' |
+|FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION| controls whether the type system will be initialized or not. Usually this is only required to be executed once. |
 # Default behaviors
 
 Feathr will get the required configuration in the following order:
