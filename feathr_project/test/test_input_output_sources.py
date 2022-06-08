@@ -6,7 +6,7 @@ from unittest import result
 from click.testing import CliRunner
 from feathr import (BOOLEAN, FLOAT, INT32, FeatureQuery, ObservationSettings,
                     SparkExecutionConfiguration, TypedKey, ValueType)
-from feathr.job_utils import get_result_df
+from feathr.utils.job_utils import get_result_df
 
 from test_fixture import basic_test_setup
 from feathr.constants import OUTPUT_FORMAT

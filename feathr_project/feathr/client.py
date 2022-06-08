@@ -4,32 +4,34 @@ import os
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Union
-from feathr.utils import FeaturePrinter
-from feathr.feature import FeatureBase
+from typing import Dict, List, Optional, Union
+from feathr.definition.feature import FeatureBase
 
 import redis
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from pyhocon import ConfigFactory
 
-from feathr._databricks_submission import _FeathrDatabricksJobLauncher
-from feathr._envvariableutil import _EnvVaraibleUtil
-from feathr._feature_registry import _FeatureRegistry
-from feathr._file_utils import write_to_file
-from feathr._materialization_utils import _to_materialization_config
-from feathr._preprocessing_pyudf_manager import _PreprocessingPyudfManager
-from feathr._synapse_submission import _FeathrSynapseJobLauncher
+from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
+
+from feathr.registry._feature_registry_purview import _FeatureRegistry
+from feathr.definition._materialization_utils import _to_materialization_config
+from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
+from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
-from feathr.feathr_configurations import SparkExecutionConfiguration
-from feathr.feature_derivations import DerivedFeature
-from feathr.anchor import FeatureAnchor
-from feathr.materialization_settings import MaterializationSettings
+from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
+from feathr.definition.feature_derivations import DerivedFeature
+from feathr.definition.materialization_settings import MaterializationSettings
 from feathr.monitoring_settings import MonitoringSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
-from feathr.query_feature_list import FeatureQuery
-from feathr.settings import ObservationSettings
-from feathr.feathr_configurations import SparkExecutionConfiguration
+from feathr.definition.query_feature_list import FeatureQuery
+from feathr.definition.settings import ObservationSettings
+from feathr.definition.feature_derivations import DerivedFeature
+from feathr.definition.anchor import FeatureAnchor
+from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
+from feathr.utils._envvariableutil import _EnvVaraibleUtil
+from feathr.utils._file_utils import write_to_file
+from feathr.utils.feature_printer import FeaturePrinter
 
 
 class FeatureJoinJobParams:
@@ -196,10 +198,9 @@ class FeathrClient(object):
     def register_features(self, from_context: bool = True):
         """Registers features based on the current workspace
 
-            Args:
-            from_context: If from_context is True (default), the features will be generated from
-                the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
-                configuration files.
+        Args:
+            from_context: If from_context is True (default), the features will be generated from the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
+            configuration files.
         """
 
         if from_context:
