@@ -211,5 +211,11 @@ null/*
 # Ignore Gradle build output directory
 build
 
+# For Metal Server
+.metals/
+.bloop/
+project/.bloop
+metals.sbt
+
 .bsp/sbt.json
 

@@ -2,7 +2,7 @@ import enum
 from typing import Type, Union, List, Optional
 from abc import ABC, abstractmethod
 from jinja2 import Template
-from feathr.frameconfig import HoconConvertible
+from feathr.definition.feathrconfig import HoconConvertible
 
 class Transformation(HoconConvertible):
     """Base class for all transformations that produce feature values."""
