@@ -6,7 +6,8 @@ plugins {
 }
 
 group = 'com.linkedin.feathr'
-version = '0.5.0'
+version = '0.5.0-SNAPSHOT'
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 configurations {
   // configuration that holds jars to include in the jar
@@ -202,5 +203,6 @@ publishing {
 }
 
 signing {
+  required { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
   sign publishing.publications.mavenJava
 }
