@@ -24,3 +24,4 @@ TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_{REGISTRY_TYPEDEF_VERSION}>"
 TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_{REGISTRY_TYPEDEF_VERSION}>"
 TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_{REGISTRY_TYPEDEF_VERSION}>"
 
+FEATHR_JAR_MAVEN_REPO="com.linkedin.feathr:feathr_2.12:0.4.0"

@@ -1,4 +1,6 @@
+from copy import deepcopy
 import os
+import pathlib
 import re
 import time
 import urllib.request
@@ -43,7 +45,8 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
     """
     Submits spark jobs to a Synapse spark cluster.
     """
-    def __init__(self, synapse_dev_url: str, pool_name: str, datalake_dir: str, executor_size: str, executors: int, credential = None):
+
+    def __init__(self, synapse_dev_url: str, pool_name: str, datalake_dir: str, executor_size: str, executors: int, credential=None):
         # use DeviceCodeCredential if EnvironmentCredential is not available
         self.credential = credential
         # use the same credential for authentication to avoid further login.
@@ -60,9 +63,11 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
         """
         logger.info('Uploading {} to cloud..', local_path_or_http_path)
-        res_path = self._datalake.upload_file_to_workdir(local_path_or_http_path)
+        res_path = self._datalake.upload_file_to_workdir(
+            local_path_or_http_path)
 
-        logger.info('{} is uploaded to location: {}', local_path_or_http_path, res_path)
+        logger.info('{} is uploaded to location: {}',
+                    local_path_or_http_path, res_path)
         return res_path
 
     def download_result(self, result_path: str, local_folder: str):
@@ -73,7 +78,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         return self._datalake.download_file(result_path, local_folder)
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str = None,  main_class_name: str = None, arguments: List[str] = None,
-                          python_files: List[str]= None, reference_files_path: List[str] = None, job_tags: Dict[str, str] = None,
+                          python_files: List[str] = None, reference_files_path: List[str] = None, job_tags: Dict[str, str] = None,
                           configuration: Dict[str, str] = None):
         """
         Submits the feathr job
@@ -96,7 +101,18 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             job_tags (str): tags of the job, for exmaple you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
         """
-        assert main_jar_path, 'main_jar_path should not be none or empty but it is none or empty.'
+
+        # Use an no-op jar as the main executable, as we must set the `main_file` in order to submit a Spark job to Azure Synapse
+        cfg = configuration.copy()  # We don't want to mess up input parameters
+        if main_jar_path is None:
+            logger.info("Main JAR file is not set, using default package from Maven")
+            if "spark.jars.packages" in cfg:
+                cfg["spark.jars.packages"] = ",".join(
+                    [cfg["spark.jars.packages"], FEATHR_JAR_MAVEN_REPO])
+            else:
+                cfg["spark.jars.packages"] = FEATHR_JAR_MAVEN_REPO
+            current_dir = pathlib.Path(__file__).parent.resolve()
+            main_jar_path = os.path.join(current_dir, "noop-1.0.jar")
         if main_jar_path.startswith('abfs'):
             main_jar_cloud_path = main_jar_path
             logger.info(
@@ -120,7 +136,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                                                                  arguments=arguments,
                                                                  reference_files=reference_files_path,
                                                                  tags=job_tags,
-                                                                 configuration=configuration)
+                                                                 configuration=cfg)
         logger.info('See submitted job here: https://web.azuresynapse.net/en-us/monitoring/sparkapplication')
         return self.current_job_info
 
@@ -319,7 +335,7 @@ class _DataLakeFiler(object):
             self.dir_client = self.file_system_client.get_directory_client('/')
 
         self.datalake_dir = datalake_dir + \
-                            '/' if datalake_dir[-1] != '/' else datalake_dir
+            '/' if datalake_dir[-1] != '/' else datalake_dir
 
     def upload_file_to_workdir(self, src_file_path: str) -> str:
         """
@@ -394,7 +410,7 @@ class _DataLakeFiler(object):
         for folder in result_folders:
             folder_name = basename(folder)
             file_in_folder = [os.path.join(folder_name, basename(file_path.name)) for file_path in self.file_system_client.get_paths(
-            path=folder, recursive=False) if not file_path.is_directory]
+                path=folder, recursive=False) if not file_path.is_directory]
             local_paths = [os.path.join(local_dir_cache, file_name)
                        for file_name in file_in_folder]
             self._download_file_list(local_paths, file_in_folder, directory_client)
@@ -405,7 +421,7 @@ class _DataLakeFiler(object):
         self._download_file_list(local_paths, result_paths, directory_client)
 
         logger.info('Finish downloading files from {} to {}.',
-                    target_adls_directory,local_dir_cache)
+                    target_adls_directory, local_dir_cache)
 
     def _download_file_list(self, local_paths: List[str], result_paths, directory_client):
         '''
