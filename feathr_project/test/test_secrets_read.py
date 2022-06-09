@@ -26,7 +26,7 @@ def test_feathr_get_secrets_from_key_vault():
     # the config below doesn't have `ONLINE_STORE__REDIS__HOST` for testing purpose
     yaml_config = """
     project_config:
-        project_name: 'feathr_awe_demo_get_features'
+        project_name: 'project_feathr_integration_test'
     offline_store:
         s3:
             s3_enabled: true
