@@ -22,7 +22,7 @@ from feathr.constants import *
 from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.materialization_settings import MaterializationSettings
-from feathr.monitoring_settings import MonitoringSettings
+from feathr.definition.monitoring_settings import MonitoringSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.definition.query_feature_list import FeatureQuery
 from feathr.definition.settings import ObservationSettings
