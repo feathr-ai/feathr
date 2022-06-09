@@ -7,8 +7,10 @@ from feathr.secrets.akv_client import AzureKeyVaultClient
 class _EnvVaraibleUtil(object):
     def __init__(self, config_path):
         self.config_path = config_path
-        self.akv_client = None
-        self.akv_name = os.environ.get("FEATHR_KEY_VAULT_NAME")
+        # Set to none first to avoid invalid reference
+        self.akv_name = None
+        self.akv_name = self.get_environment_variable_with_default( 'secrets', 'azure_key_vault', 'name')
+        
 
     def get_environment_variable_with_default(self, *args):
         """Gets the environment variable for the variable key.
