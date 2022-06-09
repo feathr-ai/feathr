@@ -5,7 +5,6 @@ import mockUserRole from "./mock/userrole.json";
 import { getMsalConfig } from "../utils/utils";
 
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT + "/api/v1";
-const MOCK_TOKEN = "mockAppServiceKey";
 const msalInstance = getMsalConfig();
 
 export const fetchDataSources = async (project: string) => {
@@ -172,5 +171,5 @@ export const getIdToken = async( msalInstance: PublicClientApplication ): Promis
         });
     }
     })
-    return MOCK_TOKEN
+    return ""
 }
