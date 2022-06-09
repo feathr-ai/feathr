@@ -81,6 +81,22 @@ Feathr will get the configurations in the following order:
 
 # Explanation for selected configurations
 # SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE
+
+Essentially it's a compact JSON string represents the important configurations that you can configure for the databricks cluster that you use. There are parts that marked as "FEATHR_FILL_IN" that Feathr will fill in, but all the other parts are customizable.
+
+Essentially, the config template represents what is going to be submitted to a databricks cluster, and you can see the structure of this configuration template by visiting the [Databricks job runs API](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit):
+
+The most important and useful part would be the `new_cluster` section. For example, you can change`spark_version`, `node_type_id`, `num_workers`, etc. based on your environment.
+
 ```json
 {"run_name":"FEATHR_FILL_IN","new_cluster":{"spark_version":"9.1.x-scala2.12","node_type_id":"Standard_D3_v2","num_workers":2,"spark_conf":{"FEATHR_FILL_IN":"FEATHR_FILL_IN"}},"libraries":[{"jar":"FEATHR_FILL_IN"}],"spark_jar_task":{"main_class_name":"FEATHR_FILL_IN","parameters":["FEATHR_FILL_IN"]}}
 ```
+
+Another use case is to use `instance_pool_id`, where instead of creating the Spark cluster from scratch every time, you can reuse a pool to run the job to make the run time shorter:
+
+```json
+{"run_name":"FEATHR_FILL_IN","new_cluster":{"spark_version":"9.1.x-scala2.12","num_workers":2,"spark_conf":{"FEATHR_FILL_IN":"FEATHR_FILL_IN"},"instance_pool_id":"0403-214809-inlet434-pool-l9dj3kwz"},"libraries":[{"jar":"FEATHR_FILL_IN"}],"spark_jar_task":{"main_class_name":"FEATHR_FILL_IN","parameters":["FEATHR_FILL_IN"]}}
+
+```
+
+Other advanced settings includes `idempotency_token` to guarantee the idempotency of job run requests, etc.
