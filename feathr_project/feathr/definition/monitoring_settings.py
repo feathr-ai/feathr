@@ -1,4 +1,4 @@
-from feathr.materialization_settings import MaterializationSettings
+from feathr.definition.materialization_settings import MaterializationSettings
 
 
 # it's completely the same as MaterializationSettings. But we renamed it to improve usability.
