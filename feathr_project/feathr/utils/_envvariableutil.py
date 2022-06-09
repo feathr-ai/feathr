@@ -10,7 +10,7 @@ class _EnvVaraibleUtil(object):
         # Set to none first to avoid invalid reference
         self.akv_name = None
         self.akv_name = self.get_environment_variable_with_default( 'secrets', 'azure_key_vault', 'name')
-        
+        self.akv_client = AzureKeyVaultClient(self.akv_name) if self.akv_name else None
 
     def get_environment_variable_with_default(self, *args):
         """Gets the environment variable for the variable key.
@@ -49,12 +49,12 @@ class _EnvVaraibleUtil(object):
                 except KeyError as exc:
                     logger.info("{} not found in the config file, loading it in key vault.", env_keyword)
                     # if not found in the config file, use key vault to get the value
-                    return self._get_environment_variable_from_key_vault(env_keyword) if self.akv_name else ""
+                    return self.akv_client.get_akv_secret(env_keyword)  if self.akv_name else ""
                 except yaml.YAMLError as exc:
                     logger.info(exc)
         # If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from key vault
         if self.akv_name:
-            return self._get_environment_variable_from_key_vault(env_keyword)
+            return  self.akv_client.get_akv_secret(env_keyword) 
         
         # print out warning message if cannot find the env variable in all the resources
         logger.warning('Environment variable {} not found.', env_keyword)
@@ -81,17 +81,5 @@ class _EnvVaraibleUtil(object):
         logger.info(variable_key + ' is not set in the environment variables.')
         
         if self.akv_name:
-            return self._get_environment_variable_from_key_vault(variable_key)
+            return self.akv_client.get_akv_secret(variable_key)
     
-
-    def _get_environment_variable_from_key_vault(self, variable_key):
-        """Gets the secrets from a key valut
-
-        Args:
-            variable_key: environment variable key that is used to retrieve the environment variable
-        Return:
-            value from the key vault
-            """
-        logger.info('Fetching the value {} from Key Vault {}.', variable_key, self.akv_name)
-        akv_client = AzureKeyVaultClient(self.akv_name)
-        return akv_client.get_akv_secret(variable_key)
