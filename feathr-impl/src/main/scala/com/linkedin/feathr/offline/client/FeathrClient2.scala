@@ -11,7 +11,7 @@ import com.linkedin.feathr.config.featureanchor.FeatureAnchorEnvironment
 import com.linkedin.feathr.config.join.FrameFeatureJoinConfig
 import com.linkedin.feathr.core.config.producer.common.KeyListExtractor
 import com.linkedin.feathr.core.configdataprovider.StringConfigDataProvider
-import com.linkedin.feathr.fds.ColumnMetadata
+import com.linkedin.feathr.fds.{ColumnMetadata, FeaturizedDatasetMetadata}
 import com.linkedin.feathr.offline.{FeatureDataFrame, PostTransformationUtil}
 import com.linkedin.feathr.offline.exception.DataFrameApiUnsupportedOperationException
 import com.linkedin.feathr.offline.anchored.WindowTimeUnit
@@ -60,7 +60,8 @@ class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph, dataPathHandle
 
   // TODO Will the Columns need unique names? Their node ID and some description might be suitable.
   val nodeContext = mutable.HashMap[Int, NodeContext]()
-  def joinFeatures(frameJoinConfig: FrameFeatureJoinConfig, obsData: SparkFeaturizedDataset, jobContext: JoinJobContext): SparkFeaturizedDataset = {
+  def joinFeatures(frameJoinConfig: FrameFeatureJoinConfig, obsData: SparkFeaturizedDataset, jobContext: JoinJobContext):
+  (FeatureDataFrame, Map[String, FeatureTypeConfig]) = {
     val joinConfig = PegasusRecordFrameFeatureJoinConfigConverter.convert(frameJoinConfig)
     joinFeatures(joinConfig, obsData, jobContext)
   }
@@ -77,7 +78,8 @@ class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph, dataPathHandle
   }
 
   @deprecated
-  def joinFeatures(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset, jobContext: JoinJobContext = JoinJobContext()): SparkFeaturizedDataset = {
+  def joinFeatures(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset, jobContext: JoinJobContext = JoinJobContext()):
+  (FeatureDataFrame, Map[String, FeatureTypeConfig]) = {
     val featureNames = joinConfig.joinFeatures.map(_.featureName)
     val duplicateFeatureNames = featureNames.diff(featureNames.distinct).distinct
     val joinFeatures = joinConfig.joinFeatures.map {
@@ -122,23 +124,12 @@ class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph, dataPathHandle
     val newDf = execute(joinConfig, computeGraph, resolvedGraph, obsData.data)
     newDf.df.show()
 
-    // Note here that feature name is equal to the column name in df.
-    val featuresWithKeysAndColumnNames = joinConfig.joinFeatures.map {
-      case JoiningFeatureParams(keyTags, featureName, dateParam, timeDelay, featureAlias) =>
-        if (duplicateFeatureNames.contains(featureName)) {
-          FeatureWithKeyAndColumnName(keyTags.mkString("_") + "__" + featureName, keyTags, keyTags.mkString("_") + "__" + featureName)
-        } else {
-          FeatureWithKeyAndColumnName(featureName, keyTags, featureName)
-        }
-    }
     val userProvidedfeatureTypeConfigs = resolvedGraph.getFeatureNames.asScala.map(e =>
       (e._1, if (e._2.hasFeatureVersion) PegasusRecordFeatureTypeConverter().convert(e._2.getFeatureVersion) else None)).collect {
       case (key, Some(value)) => (key, value) // filter out Nones and get rid of Option
     }.toMap
-    val fds = FDSUtils.buildSparkFeaturizedDatasetForFCM(newDf.df, newDf.inferredFeatureType, featuresWithKeysAndColumnNames, null, userProvidedfeatureTypeConfigs)
-
     // return the new SparkFeaturizedDataset
-    fds
+    (newDf, userProvidedfeatureTypeConfigs)
   }
 
   def execute(featureJoinConfig: FeatureJoinConfig, unresolvedGraph: ComputeGraph, resolvedGraph: ComputeGraph, df: DataFrame): FeatureDataFrame = {

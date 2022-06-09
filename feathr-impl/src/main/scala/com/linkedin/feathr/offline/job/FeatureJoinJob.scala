@@ -174,7 +174,7 @@ object FeatureJoinJob {
     localTestConfigOpt: Option[LocalTestConfig] = None): DataFrame = {
 
     val feathrClient2 = getFCMClient(ss, jobContext, dataPathHandlers, localTestConfigOpt)
-    feathrClient2.joinFeatures(joinConfig, SparkFeaturizedDataset(observations, new com.linkedin.feathr.fds.FeaturizedDatasetMetadata()), jobContext).data
+    feathrClient2.joinFeatures(joinConfig, SparkFeaturizedDataset(observations, new com.linkedin.feathr.fds.FeaturizedDatasetMetadata()), jobContext)._1.df
   }
 
   private[offline] def getFCMClient(

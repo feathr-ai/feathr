@@ -1,13 +1,14 @@
 package com.linkedin.feathr.offline.job
 
-import com.linkedin.feathr.offline.client.{FeathrClient2}
+import com.linkedin.feathr.fds.FeaturizedDatasetMetadata
+import com.linkedin.feathr.offline.client.FeathrClient2
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import com.linkedin.feathr.offline.util.FeathrTestUtils.createSparkSession
-import com.linkedin.feathr.offline.util.{FeaturizedDatasetMetadata, SparkFeaturizedDataset}
+import com.linkedin.feathr.offline.util.SparkFeaturizedDataset
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -47,7 +48,7 @@ object LocalFeatureJoinJob {
       outputPath)
 
     val jobContext = FeatureJoinJob.parseInputArgument(defaultParams ++ extraParams).jobJoinContext
-    feathrClient.joinFeatures(joinConfig, observationData, jobContext)
+    SparkFeaturizedDataset(feathrClient.joinFeatures(joinConfig, observationData, jobContext)._1.df, new FeaturizedDatasetMetadata())
   }
 
   /**
