@@ -59,6 +59,7 @@ Feathr will get the configurations in the following order:
 | OFFLINE_STORE__SNOWFLAKE__URL     |  Configures the Snowflake URL. Usually it's something like `dqllago-ol19457.snowflakecomputing.com`. Required if using Snowflake as an offline store.   |
 | OFFLINE_STORE__SNOWFLAKE__USER     |  Configures the Snowflake user. Required if using Snowflake as an offline store.   |
 | OFFLINE_STORE__SNOWFLAKE__ROLE     |   Configures the Snowflake role. Usually it's something like `ACCOUNTADMIN`. Required if using Snowflake as an offline store.  |
+|JDBC_SF_PASSWORD| Configurations for Snowflake password|
 | SPARK_CONFIG__SPARK_CLUSTER     | Choice for spark runtime. Currently support: `azure_synapse`, `databricks`. The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.     |
 | SPARK_CONFIG__SPARK_RESULT_OUTPUT_PARTS     | Configure number of parts for the spark output for feature generation job     |
 | SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL     | Dev URL to the synapse cluster. Usually it's something like `https://yourclustername.dev.azuresynapse.net`     |
