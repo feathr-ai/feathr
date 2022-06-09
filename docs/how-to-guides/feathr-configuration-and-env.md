@@ -103,4 +103,4 @@ Other advanced settings includes `idempotency_token` to guarantee the idempotenc
 
 
 ## FEATURE_REGISTRY__PURVIEW__DELIMITER
-Delimiter indicates that how the project name, feature names etc. are delimited. By default it will be '__'. this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'. the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips'
+Delimiter indicates that how the project name, feature names etc. are delimited. By default it will be '__'. this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'. the feature will have a global unique name called 'foo__taxi_driver__f_daily_trips'
