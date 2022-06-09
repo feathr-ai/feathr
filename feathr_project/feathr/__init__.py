@@ -9,7 +9,7 @@ from .definition.dtype import *
 from .definition.source import *
 from .definition.typed_key import *
 from .definition.materialization_settings import *
-from .monitoring_settings import *
+from .definition.monitoring_settings import *
 from .definition.sink import *
 from .definition.query_feature_list import *
 from .definition.lookup_feature import *
@@ -43,7 +43,9 @@ __all__ = [
     'DUMMYKEY',
     'BackfillTime',
     'MaterializationSettings',
+    'MonitoringSettings',
     'RedisSink',
+    'MonitoringSqlSink',
     'FeatureQuery',
     'LookupFeature',
     'Aggregation',
