@@ -1,40 +1,60 @@
 # Feathr Feature Store UI
 
-This directory hosts Feathr Feature Store UI code. Visit [demo site](https://aka.ms/feathrdemo) to try Feathr Feature Store UI,
+This directory hosts Feathr Feature Store UI code. 
 
-## Prerequisites
-Install the latest version of [NodeJS](https://nodejs.org/en/) LTS v14.x or v16.x. Make sure to use npm no later than 6.x. Run `node --version` and `npm --version` to verify installed versions.
+## Live Demo
 
-## Build and run locally
+Check out the latest Feathr Feature Store UI live demo [here](https://aka.ms/feathrdemo), use one of following accounts when you are prompted to login:  
+- A work or school organization account, includes Office 365 subscribers.
+- Microsoft personal account, this means an account can access to Skype, Outlook.com, OneDrive, and Xbox LIVE.
+
+## Development Getting Started
+
+### Prerequisites
+
+1. Install the latest [Node](https://nodejs.org/en/) LTS ( Currently v14.x or v16.x are supported). Run `node --version` to verify installed Node versions.
+
+### Build and run locally
 
 Each command in this section should be run from the root directory of the repository.
 
 Open terminal, go to root of this repository and run following commands.
 
-```bash
+```
 cd ui
 npm install
 npm start
 ```
 
-This should launch [http://localhost:3000/](http://localhost:3000/) on your web browser. The page will reload when you make code changes and save.
+This should launch [http://localhost:3000](http://localhost:3000) on your web browser. The page will reload when you make code changes and save.
 
-## Deploying
+#### [Optional] Change to use different backend API or Authentication settings
+- **Point to a different backend endpoint**: by default, UI talks to live backend API at (https://feathr-registry.azurewebsites.net/docs). To point to a custom backend API (eg running locally). Create a .env.local in this directory and set REACT_APP_API_ENDPOINT, for example:
+```
+REACT_APP_API_ENDPOINT=http://localhost:8080
+```
+- **Use different authentication settings**: by default, the frontend uses an Azure AD application with multiple tenants authentication enabled. To change to use a different Azure AD application for authentication, create or update .env.local in this directory and set REACT_APP_AAD_APP_CLIENT_ID and REACT_APP_AAD_APP_AUTHORITY, for example:
+```
+REACT_APP_AAD_APP_CLIENT_ID=<REPLACE_WITH_YOUR_APPLICATION_CLIENT_ID>>
+REACT_APP_AAD_APP_AUTHORITY=https://login.microsoftonline.com/<>REPLACE_WITH_YOUR_TENANT_ID>
+```
 
-- For static file based deployment, run `npm run build` and upload `build/` to your server. 
+### Deploying
+
+- For static file based deployment, run `npm run build` and upload `build/` to your server.
 - For docker image based deployment, run `docker -t <image_name> .` to build image and push to your container registry.
 
-## Lint
+### Lint
 
-To lint typescript code files, sim run:
-```bash
+To lint ts and tsx code, run:
+```
 npm run lint:fix
 ```
 
-This command will Automatically fix all problems that can be fixed, and list the rest problems requires manual fix. 
-Linting rules are configured in [.eslintrc](.eslintrc) file. 
+This command will Automatically fix all problems that can be fixed, and list the rest problems requires manual fix.
+Linting rules are configured in [.eslintrc](.eslintrc) file. [Read More](https://eslint.org/docs/rules/).
 
-## Project Structure
+### Project Structure
 
 ```
 src/
