@@ -67,5 +67,7 @@ publishing {
 }
 
 signing {
+  ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+  required { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
   sign publishing.publications.mavenJava
 }

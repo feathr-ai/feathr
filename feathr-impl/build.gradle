@@ -6,8 +6,6 @@ plugins {
 }
 
 group = 'com.linkedin.feathr'
-version = '0.5.0-SNAPSHOT'
-ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 configurations {
   // configuration that holds jars to include in the jar
@@ -51,6 +49,8 @@ dependencies {
   implementation spec.product.xbean
   implementation spec.product.json
   implementation spec.product.avroUtil
+  implementation spec.product.antlr
+  implementation spec.product.antlrRuntime
 
   provided spec.product.jackson.jackson_databind
   provided spec.product.typesafe_config
@@ -73,8 +73,6 @@ dependencies {
   testImplementation spec.product.scala.scalatest
   testImplementation spec.product.testing
   testImplementation spec.product.jdiagnostics
-  testImplementation spec.product.antlr
-  testImplementation spec.product.antlrRuntime
 }
 
 // Since there are cross-calls from Scala to Java, we use joint compiler
@@ -203,6 +201,7 @@ publishing {
 }
 
 signing {
+  ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
   required { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
   sign publishing.publications.mavenJava
 }
