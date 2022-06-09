@@ -161,8 +161,8 @@ export const getIdToken = async( msalInstance: PublicClientApplication ): Promis
       scopes: ["User.Read"],
       account: activeAccount || accounts[0]
   };
+  // Silently acquire an token for a given set of scopes. Will use cached token if available, otherwise will attempt to acquire a new token from the network via refresh token.
   await msalInstance.acquireTokenSilent(request).then(response => {
-    console.log(response.idToken)
     return response.idToken
   }).catch(error => {
      if (error instanceof InteractionRequiredAuthError) {
