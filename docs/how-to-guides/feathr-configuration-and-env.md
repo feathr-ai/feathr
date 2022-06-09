@@ -35,9 +35,9 @@ Feathr will get the configurations in the following order:
 | Environment Variable     | Description     |
 | -------------- | -------------- |
 | SECRETS__AZURE_KEY_VAULT__NAME     | Name of the Azure Key Vault service so that Feathr can get credentials from that service.  Optional |
-| AZURE_CLIENT_ID     | Authentication into Azure Services. This is required if you are using Service Principal to login with Feathr. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.     |
-| AZURE_TENANT_ID     |Authentication into Azure Services. This is required if you are using Service Principal to login with Feathr. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.      |
-| AZURE_CLIENT_SECRET     | Authentication into Azure Services. This is required if you are using Service Principal to login with Feathr. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.     |
+| AZURE_CLIENT_ID     | Client ID for authentication into Azure Services. This is required if you are using Service Principal to login with Feathr. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.     |
+| AZURE_TENANT_ID     |Client ID for authentication into Azure Services. This is required if you are using Service Principal to login with Feathr. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.      |
+| AZURE_CLIENT_SECRET     | Client ID for authentication into Azure Services. This is required if you are using Service Principal to login with Feathr. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.     |
 | OFFLINE_STORE__ADLS__ADLS_ENABLED     |   Whether to enable ADLS as offline store or not.   |
 | ADLS_ACCOUNT     | ADLS account that you connect to. Required if using ADLS as an offline store.     |
 | ADLS_KEY     | ADLS key that you connect to. Required if using ADLS as an offline store.     |
@@ -68,7 +68,7 @@ Feathr will get the configurations in the following order:
 | SPARK_CONFIG__AZURE_SYNAPSE__EXECUTOR_NUM     |   Sepcifies the number of executors for  the Azure Synapse cluster |
 | SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION  | Specifies the Feathr runtime location. Support local paths, path start with `http(s)://`, and paths start with `abfss:/`. If not set, will use the [Feathr package published in Maven](https://search.maven.org/artifact/com.linkedin.feathr/feathr_2.12).    |
 | SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL     | Workspace instance URL for your databricks cluster.  Will be something like this: `https://adb-6885802458123232.12.azuredatabricks.net/`     |
-| SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE     | Config string including run time information, spark version, machine size, etc.  See [below](#explanation-for-selected-configurations) for more details.   |
+| SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE     | Config string including run time information, spark version, machine size, etc.  See [below](#sparkconfigdatabricksconfigtemplate) for more details.   |
 | SPARK_CONFIG__DATABRICKS__WORK_DIR     | Workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here.     |
 | SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION     | Feathr runtime location. Support local paths, path start with `http(s)://`, and paths start with `dbfs:/`.  If not set, will use the [Feathr package published in Maven](https://search.maven.org/artifact/com.linkedin.feathr/feathr_2.12). |
 | ONLINE_STORE__REDIS__HOST     | Redis host name to access Redis cluster. Required if you are using Redis.      |
@@ -76,11 +76,11 @@ Feathr will get the configurations in the following order:
 | ONLINE_STORE__REDIS__SSL_ENABLED     |  Whether SSL is enabled to access Redis cluster. Required if you are using Redis.    |
 | REDIS_PASSWORD     | Password for the Redis cluster. Required if you are using Redis.     |
 | FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME     | Configure the name of the purview endpoint. Required if using Purview as the endpoint.     |
-| FEATURE_REGISTRY__PURVIEW__DELIMITER     | Delimiter indicates that how the project name, feature names etc. are delimited. By default it will be '__'. this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'. the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips' |
+| FEATURE_REGISTRY__PURVIEW__DELIMITER     | See [here](#featureregistrypurviewdelimiter) for more details. |
 | FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION | Controls whether the type system (think this as the "schema" for the registry) will be initialized or not. Usually this is only required to be set to `True` to initialize schema, and then you can set it to `False` to shorten the initialization time.     |
 
 # Explanation for selected configurations
-# SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE
+## SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE
 
 Essentially it's a compact JSON string represents the important configurations that you can configure for the databricks cluster that you use. There are parts that marked as "FEATHR_FILL_IN" that Feathr will fill in, but all the other parts are customizable.
 
@@ -100,3 +100,7 @@ Another use case is to use `instance_pool_id`, where instead of creating the Spa
 ```
 
 Other advanced settings includes `idempotency_token` to guarantee the idempotency of job run requests, etc.
+
+
+## FEATURE_REGISTRY__PURVIEW__DELIMITER
+Delimiter indicates that how the project name, feature names etc. are delimited. By default it will be '__'. this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'. the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips'
