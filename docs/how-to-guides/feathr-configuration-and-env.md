@@ -4,9 +4,19 @@ title: Configuration and environment varialbles in Feathr
 parent: Feathr How-to Guides
 ---
 
+# Default behaviors
+
+Feathr will get the configurations in the following order:
+
+1. If the key is set in the envrionment variable, Feathr will use the value of that environment variable
+2. If it's not set in the environment, then a default is retrieved from from the feathr_config.yaml file with the same config key.
+3. If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from key vault. Note that usually a key vault is case sensitive.
+
+
 # Configuration and environment varialbles in Feathr
 
-
+Feathr uses a YAML file and a few environment variables to allow end users to have more flexibility. 
+See the example of the following configurations in [this file](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml):
 This file contains the configurations that are used by Feathr
 All the configurations can be overwritten by environment variables with concatenation of `__` for different layers of this config file.
 For example, `feathr_runtime_location` for databricks can be overwritten by setting this environment variable:
@@ -15,10 +25,14 @@ Another example would be overwriting Redis host with this config: `ONLINE_STORE_
 For example if you want to override this setting in a shell environment:
 export ONLINE_STORE__REDIS__HOST=feathrazure.redis.cache.windows.net
 
+
 # A list of environment variables that Feathr uses
+
+
 
 |Environment Variable                 | Description                                                          |
 | ------------------------------- | --------------------------------------------------------------------------- |
+| FEATHR_KEY_VAULT_NAME    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
 | REDIS_PASSWORD    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
 | AZURE_CLIENT_ID            | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
 | AZURE_TENANT_ID                | Kafka, EventHub                                                             |
@@ -56,17 +70,10 @@ export ONLINE_STORE__REDIS__HOST=feathrazure.redis.cache.windows.net
 |SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL| workspace instance |
 |SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE| config string including run time information, spark version, machine size, etc. |
 |SPARK_CONFIG__DATABRICKS__WORK_DIR| workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here.  |
-|SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION| Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with dbfs:/. this is the default location so end users don't have to compile the runtime again. |
+|SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION| Feathr Job configuration. Support local paths, path start with `http(s)://`, and paths start with dbfs:/. this is the default location so end users don't have to compile the runtime again. |
 |ONLINE_STORE__REDIS__HOST| Redis configs to access Redis cluster |
 |ONLINE_STORE__REDIS__PORT|  |
 |ONLINE_STORE__REDIS__SSL_ENABLED|  |
 |FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME| configure the name of the purview endpoint |
 |FEATURE_REGISTRY__PURVIEW__DELIMITER| delimiter indicates that how the project/workspace name, feature names etc. are delimited. By default it will be '__'. this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'. the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips' |
 |FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION| controls whether the type system will be initialized or not. Usually this is only required to be executed once. |
-# Default behaviors
-
-Feathr will get the required configuration in the following order:
-
-1. If the key is set in the envrionment variable, Feathr will use the value of that environment variable
-2. If it's not set in the environment, then a default is retrieved from from the feathr_config.yaml file with the same config key.
-3. If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from key vault. Note that usually a key vault is case sensitive.
