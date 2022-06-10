@@ -101,7 +101,7 @@ class FeathrClient(object):
         self.envutils = envutils
 
         if not os.path.exists(config_path):
-            self.logger.warning('Configuration file does not exist at the user provided config_path or the default config_path (./feathr_config.yaml), you need to set the environment variables explicitly. For all the environment variables that you need to set, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
+            self.logger.warning('No Configuration file exist at the user provided config_path or the default config_path (./feathr_config.yaml), you need to set the environment variables explicitly. For all the environment variables that you need to set, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
 
         # Load all configs from yaml at initialization
         # DO NOT load any configs from yaml during runtime.
