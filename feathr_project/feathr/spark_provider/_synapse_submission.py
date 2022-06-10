@@ -102,26 +102,30 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             configuration (Dict[str, str]): Additional configs for the spark job
         """
 
-        cfg = configuration.copy()  # We don't want to mess up input parameters
+        if configuration:
+            cfg = configuration.copy()  # We don't want to mess up input parameters
+        else:
+            cfg = {}
         if not main_jar_path:
             # We don't have the main jar, use Maven
+            # Add Maven dependency to the job configuration
+            if "spark.jars.packages" in cfg:
+                cfg["spark.jars.packages"] = ",".join(
+                    [cfg["spark.jars.packages"], FEATHR_MAVEN_ARTIFACT])
+            else:
+                cfg["spark.jars.packages"] = FEATHR_MAVEN_ARTIFACT
+
             if not python_files:
                 # This is a JAR job
                 # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
                 # so we have to use a dummy jar as the main file.
                 logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
-                # Add Maven dependency to the job
-                if "spark.jars.packages" in cfg:
-                    cfg["spark.jars.packages"] = ",".join(
-                        [cfg["spark.jars.packages"], FEATHR_MAVEN_ARTIFACT])
-                else:
-                    cfg["spark.jars.packages"] = FEATHR_MAVEN_ARTIFACT
                 # Use the no-op jar as the main file
                 # This is a dummy jar which contains only one `org.example.Noop` class with one empty `main` function which does nothing
                 current_dir = pathlib.Path(__file__).parent.resolve()
                 main_jar_path = os.path.join(current_dir, "noop-1.0.jar")
             else:
-                # This is a PySpark job
+                # This is a PySpark job, no more things to do
                 pass
         main_jar_cloud_path = None
         if main_jar_path:
@@ -136,6 +140,10 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                 main_jar_cloud_path = self._datalake.upload_file_to_workdir(main_jar_path)
                 logger.info('{} is uploaded to {} for running job: {}',
                             main_jar_path, main_jar_cloud_path, job_name)
+        else:
+            # We don't have the main Jar, and this is a PySpark job so we don't use `noop.jar` either
+            # Keep `main_jar_cloud_path` as `None` as we already added maven package into cfg
+            pass
 
         reference_file_paths = []
         for file_path in reference_files_path:
@@ -279,10 +287,10 @@ class _SynapseJobRunner(object):
         # If we have a main jar, it needs to be added as dependencies for pyspark job
         # Otherwise it's a PySpark job with Feathr JAR from Maven
         if main_file:
-            if not python_files:
-                # These 2 parameters should not be empty at the same time
-                raise ValueError("Main JAR is not set for the Spark job")
             jars = jars + [main_file]
+        elif not python_files:
+            # These 2 parameters should not be empty at the same time
+            raise ValueError("Main JAR is not set for the Spark job")
 
         # If file=main_file, then it's using only Scala Spark
         # If file=python_files[0], then it's using Pyspark
