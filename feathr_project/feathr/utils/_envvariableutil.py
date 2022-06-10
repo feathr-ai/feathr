@@ -47,11 +47,11 @@ class _EnvVaraibleUtil(object):
                         yaml_layer = yaml_layer[arg]
                     return yaml_layer
                 except KeyError as exc:
-                    logger.info("{} not found in the config file, loading it in key vault.", env_keyword)
+                    logger.warning("{} not found in the config file, loading it in key vault.", env_keyword)
                     # if not found in the config file, use key vault to get the value
-                    return self.akv_client.get_akv_secret(env_keyword)  if self.akv_name else ""
+                    # return self.akv_client.get_akv_secret(env_keyword)  if self.akv_name else ""
                 except yaml.YAMLError as exc:
-                    logger.info(exc)
+                    logger.warning(exc)
         # If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from key vault
         if self.akv_name:
             return  self.akv_client.get_akv_secret(env_keyword) 

@@ -12,7 +12,6 @@ from feathr.utils.job_utils import get_result_df
 from test_fixture import basic_test_setup
 from feathr.constants import OUTPUT_FORMAT
 
-
 # test parquet file read/write without an extension name
 def test_feathr_get_secrets_from_key_vault():
     """
@@ -59,4 +58,4 @@ def test_feathr_get_secrets_from_key_vault():
     client = FeathrClient(config_path="/tmp/feathr_config.yaml")
     # `redis_host` should be there since it's not available in the environment variable, and not in the config file, we expect we get it from azure key_vault
     assert client.redis_host is not None
-        
+
