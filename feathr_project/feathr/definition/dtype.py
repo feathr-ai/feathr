@@ -1,5 +1,5 @@
 import enum
-from feathr.frameconfig import HoconConvertible
+from feathr.definition.feathrconfig import HoconConvertible
 
 class ValueType(enum.Enum):
     """Data type to describe feature keys or observation keys.

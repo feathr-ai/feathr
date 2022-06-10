@@ -17,7 +17,7 @@ from loguru import logger
 from requests import request
 from tqdm import tqdm
 
-from feathr._abc import SparkJobLauncher
+from feathr.spark_provider._abc import SparkJobLauncher
 from feathr.constants import *
 
 class LivyStates(Enum):
@@ -135,7 +135,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             if status in {LivyStates.SUCCESS.value}:
                 return True
             elif status in {LivyStates.ERROR.value, LivyStates.DEAD.value, LivyStates.KILLED.value}:
-                logger.error("Feathr job has failed. Please visit this page to view error message: {}", self.job_url)
+                logger.error("Feathr job has failed.")
                 logger.error(self._api.get_driver_log(self.current_job_info.id))
                 return False
             else:

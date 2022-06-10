@@ -27,20 +27,20 @@ from pyapacheatlas.core.typedef import (AtlasAttributeDef,
 from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
 
-from feathr._file_utils import write_to_file
-from feathr.anchor import FeatureAnchor
+from feathr.definition.dtype import *
+from feathr.utils._file_utils import write_to_file
+from feathr.definition.anchor import FeatureAnchor
 from feathr.constants import *
-from feathr.dtype import *
-from feathr.feature import Feature, FeatureBase, FeatureType
-from feathr.feature_derivations import DerivedFeature
-from feathr.repo_definitions import RepoDefinitions
-from feathr.source import HdfsSource, InputContext, Source
-from feathr.transformation import (ExpressionTransformation, Transformation,
+from feathr.definition.feature import Feature, FeatureType,FeatureBase
+from feathr.definition.feature_derivations import DerivedFeature
+from feathr.definition.repo_definitions import RepoDefinitions
+from feathr.definition.source import HdfsSource, InputContext, Source
+from feathr.definition.transformation import (ExpressionTransformation, Transformation,
                                    WindowAggTransformation)
-from feathr.typed_key import TypedKey
+from feathr.definition.typed_key import TypedKey
+from feathr.registry.feature_registry import FeathrRegistry
 
-
-class _FeatureRegistry():
+class _FeatureRegistry(FeathrRegistry):
     """
     Initializes the feature registry, doing the following:
     - Use an DefaultAzureCredential() to communicate with Azure Purview
@@ -871,7 +871,8 @@ derivations: {
         entity_res = [] if guid_list is None or len(guid_list)==0 else self.purview_client.get_entity(
             guid=guid_list)["entities"]
         return entity_res
-        
+
+
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
         If the project is big, the return result could be huge.

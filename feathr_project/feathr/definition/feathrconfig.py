@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 
 class HoconConvertible(ABC):
-    """Represent classes that can convert into Frame HOCON config.
+    """Represent classes that can convert into Feathr HOCON config.
     """
     @abstractmethod
     def to_feature_config(self) -> str:
