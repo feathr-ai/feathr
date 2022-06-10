@@ -715,7 +715,6 @@ class FeathrClient(object):
                 MONITORING_DATABASE_SQL_USER: {user}
                 MONITORING_DATABASE_SQL_PASSWORD: {password}
                 """.format(url=url, user=user, password=password)
-            print("config_str: " + config_str)
             return config_str
         else:
             ""
