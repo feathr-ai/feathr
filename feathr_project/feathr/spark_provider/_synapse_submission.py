@@ -109,7 +109,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                 # This is a JAR job
                 # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
                 # so we have to use a dummy jar as the main file.
-                logger.info("Main JAR file is not set, using default package from Maven")
+                logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
                 # Add Maven dependency to the job
                 if "spark.jars.packages" in cfg:
                     cfg["spark.jars.packages"] = ",".join(
