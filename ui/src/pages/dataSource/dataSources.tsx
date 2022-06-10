@@ -7,8 +7,8 @@ type Props = {};
 const DataSources: React.FC<Props> = () => {
   return (
     <>
-      <div className="home" style={ { margin: "2%" } }>
-        <Card style={ { minWidth: '1000px' } }>
+      <div className="home" style={ { margin: "2%"} }>
+        <Card style={ { minWidth: '1000px' } } bordered={true} size="small" >
           <DataSourceList />
         </Card>
       </div>

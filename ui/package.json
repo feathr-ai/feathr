@@ -14,7 +14,8 @@
     "react-query": "^3.38.0",
     "react-resizable": "^3.0.4",
     "react-router": "^5.0.1",
-    "react-router-dom": "^5.1.2"
+    "react-router-dom": "^5.1.2",
+    "recharts": "^2.1.10"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.3",

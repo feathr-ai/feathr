@@ -12,6 +12,7 @@ import FeatureDetails from "../pages/feature/featureDetails";
 import DataSources from "../pages/dataSource/dataSources";
 import FeatureLineage from "../pages/feature/featureLineage";
 import Jobs from "../pages/jobs/jobs";
+import Dashboard from "../pages/dashboard/dashboard";
 import Monitoring from "../pages/monitoring/monitoring";
 
 type Props = {};
@@ -37,6 +38,7 @@ const Routes: React.FC<Props> = () => {
                 <Header />
                 <Switch>
                   <Suspense fallback={ <div /> }>
+                    <Route exact={ true } path="/dashboard" component={ withRouter(Dashboard) } />
                     <Route exact={ true } path="/dataSources" component={ withRouter(DataSources) } />
                     <Route exact={ true } path="/features" component={ withRouter(Features) } />
                     <Route exact={ true } path="/new-feature" component={ withRouter(NewFeature) } />
