@@ -3,19 +3,18 @@ from typing import List, Optional, Union, Dict
 
 from jinja2 import Template
 
-from feathr.dtype import FeatureType
-from feathr.feature import FeatureBase
-from feathr.transformation import RowTransformation
-from feathr.typed_key import DUMMY_KEY, TypedKey
-from feathr.aggregation import Aggregation
+from feathr.definition.dtype import FeatureType
+from feathr.definition.feature import FeatureBase
+from feathr.definition.transformation import RowTransformation
+from feathr.definition.typed_key import DUMMY_KEY, TypedKey
+from feathr.definition.aggregation import Aggregation
 
 class LookupFeature(FeatureBase):
-    """A lookup feature is a feature defined on top of two other features, i.e. using the feature value
-    of the base feature as key, to lookup the feature value from the expansion feature.
+    """A lookup feature is a feature defined on top of two other features, i.e. using the feature value of the base feature as key, to lookup the feature value from the expansion feature.
     e.g. a lookup feature user_purchased_item_avg_price could be key-ed by user_id, and computed by:
-        base feature is user_purchased_item_ids. For a given user_id, it returns the item ids purchased by the user.
-        expansion feature is item_price. For a given item id, it returns the item price.
-        aggregation function is average of the item prices.
+    base feature is user_purchased_item_ids. For a given user_id, it returns the item ids purchased by the user.
+    expansion feature is item_price. For a given item id, it returns the item price.
+    aggregation function is average of the item prices.
 
     Attributes:
         name: Derived feature name

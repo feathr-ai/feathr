@@ -1,7 +1,7 @@
 from feathrcli.cli import init
 from click.testing import CliRunner
 import os
-from feathr.client import FeathrClient
+from feathr import FeathrClient
 
 
 def test_configuration_loading():

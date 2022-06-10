@@ -1,9 +1,9 @@
 from pprint import pprint
 from typing import Union, List
 
-from feathr.anchor import FeatureAnchor
-from feathr.query_feature_list import FeatureQuery
-from feathr.materialization_settings import MaterializationSettings
+from feathr.definition.anchor import FeatureAnchor
+from feathr.definition.query_feature_list import FeatureQuery
+from feathr.definition.materialization_settings import MaterializationSettings
 
 class FeaturePrinter:
     """The class for pretty-printing features"""

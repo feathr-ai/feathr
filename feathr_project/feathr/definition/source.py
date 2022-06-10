@@ -1,6 +1,6 @@
 
 from typing import Callable, Dict, List, Optional
-from feathr.frameconfig import HoconConvertible
+from feathr.definition.feathrconfig import HoconConvertible
 
 from jinja2 import Template
 from loguru import logger

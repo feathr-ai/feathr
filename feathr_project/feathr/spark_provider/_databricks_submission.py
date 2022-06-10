@@ -15,7 +15,7 @@ from loguru import logger
 from requests.structures import CaseInsensitiveDict
 from tqdm import tqdm
 
-from feathr._abc import SparkJobLauncher
+from feathr.spark_provider._abc import SparkJobLauncher
 from feathr.constants import *
 from databricks_cli.dbfs.api import DbfsApi
 from databricks_cli.sdk.api_client import ApiClient
