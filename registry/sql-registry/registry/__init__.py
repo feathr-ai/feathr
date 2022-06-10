@@ -1,4 +1,3 @@
-__all__ = ["models", "db_registry"]
 __all__ = ["interface", "models", "database", "db_registry"]
 
 from registry.models import *

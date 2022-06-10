@@ -21,7 +21,8 @@ def quote(id):
 
 def parse_conn_str(s: str) -> dict:
     """
-    TODO: Not a sound and safe implementation
+    TODO: Not a sound and safe implementation, but useful enough in this case
+    as the connection string is provided by users themselves.
     """
     parts = dict([p.strip().split("=", 1)
                  for p in s.split(";") if len(p.strip()) > 0])

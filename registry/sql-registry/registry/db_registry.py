@@ -2,7 +2,7 @@ from typing import Optional, Tuple, Union
 from uuid import UUID
 from registry import Registry
 from registry import connect
-from registry.models import Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, RelationshipType, to_type, to_uuid
+from registry.models import Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, RelationshipType, _to_type, _to_uuid
 import json
 
 
@@ -30,7 +30,7 @@ class DbRegistry(Registry):
 
     def get_entity_id(self, id_or_name: Union[str, UUID]) -> UUID:
         try:
-            id = to_uuid(id_or_name)
+            id = _to_uuid(id_or_name)
             return id
         except ValueError:
             pass
@@ -63,6 +63,9 @@ class DbRegistry(Registry):
             upstream_edges + downstream_edges)
 
     def get_project(self, id_or_name: Union[str, UUID]) -> EntitiesAndRelations:
+        """
+        This function returns not only the project itself, but also everything in the project
+        """
         project = self._get_entity(id_or_name)
         edges = set(self.get_neighbors(id_or_name, RelationshipType.Contains))
         ids = list([e.to_id for e in edges])
@@ -87,6 +90,10 @@ class DbRegistry(Registry):
         return EntitiesAndRelations([project] + children, list(edges.union(all_edges)))
     
     def _fill_entity(self, e: Entity) -> Entity:
+        """
+        Entities in the DB contains only attributes belong to itself, but the returned
+        data model contains connections/contents, so we need to fill this gap
+        """
         if e.entity_type == EntityType.Project:
             edges = self.get_neighbors(e.id, RelationshipType.Contains)
             ids = list([e.to_id for e in edges])
@@ -120,7 +127,7 @@ class DbRegistry(Registry):
             and from_id in ({quote(ids)})
             and to_id in ({quote(ids)})"""
         rows = self.conn.execute(sql)
-        return list([to_type(row, Edge) for row in rows])
+        return list([_to_type(row, Edge) for row in rows])
     
     def _get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
         row = self.conn.execute(fr'''
@@ -129,7 +136,7 @@ class DbRegistry(Registry):
             where entity_id = '{self.get_entity_id(id_or_name)}'
         ''')[0]
         row["attributes"] = json.loads(row["attributes"])
-        return to_type(row, Entity)
+        return _to_type(row, Entity)
 
     def _get_entities(self, ids: list[UUID]) -> list[Entity]:
         rows = self.conn.execute(fr'''
@@ -147,6 +154,8 @@ class DbRegistry(Registry):
         """
         Breadth first traversal
         Starts from `id`, follow edges with `conn_type` only.
+        
+        WARN: There is no depth limit.
         """
         connections = []
         to_ids = [{
@@ -176,6 +185,9 @@ class DbRegistry(Registry):
     def search_entity(self,
                       keyword: str,
                       type: list[EntityType]) -> list[EntityRef]:
+        """
+        WARN: This search function is implemented via `like` operator, which could be extremely slow.
+        """
         types = ",".join([quote(str(t)) for t in type])
         sql = fr'''select entity_id as id, qualified_name, entity_type as type from entities where qualified_name like %s and entity_type in ({types})'''
         rows = self.conn.execute(sql, ('%' + keyword + '%', ))

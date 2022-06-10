@@ -6,26 +6,35 @@ import json
 import re
 
 
-def to_snake(d):
+def _to_snake(d):
+    """
+    Convert `string`, `list[string]`, or all keys in a `dict` into snake case
+    """
     if isinstance(d, str):
         return re.sub('([A-Z]\w+$)', '_\\1', d).lower()
     if isinstance(d, list):
-        return [to_snake(i) if isinstance(i, (dict, list)) else i for i in d]
-    return {to_snake(a): to_snake(b) if isinstance(b, (dict, list)) else b for a, b in d.items()}
+        return [_to_snake(i) if isinstance(i, (dict, list)) else i for i in d]
+    return {_to_snake(a): _to_snake(b) if isinstance(b, (dict, list)) else b for a, b in d.items()}
 
 
-def to_type(value, type):
+def _to_type(value, type):
+    """
+    Convert `value` into `type`,
+    or `list[type]` if `value` is a list
+    NOTE: This is **not** a generic implementation, only for objects in this module
+    """
     if isinstance(value, type):
         return value
     if isinstance(value, list):
-        return list([to_type(v, type) for v in value])
+        return list([_to_type(v, type) for v in value])
     if isinstance(value, dict):
         if hasattr(type, "new"):
             try:
-                return type.new(**to_snake(value))
+                # The convention is to use `new` method to create the object from a dict
+                return type.new(**_to_snake(value))
             except TypeError:
                 pass
-        return type(**to_snake(value))
+        return type(**_to_snake(value))
     if issubclass(type, Enum):
         try:
             n = int(value)
@@ -34,6 +43,7 @@ def to_type(value, type):
             pass
         if hasattr(type, "new"):
             try:
+                # As well as Enum types, some of them have alias that cannot be handled by default Enum constructor
                 return type.new(value)
             except KeyError:
                 pass
@@ -41,8 +51,8 @@ def to_type(value, type):
     return type(value)
 
 
-def to_uuid(value):
-    return to_type(value, UUID)
+def _to_uuid(value):
+    return _to_type(value, UUID)
 
 
 class ValueType(Enum):
@@ -100,6 +110,9 @@ class RelationshipType(Enum):
 
 
 class ToDict(ABC):
+    """
+    This ABC is used to convert object to dict, then JSON.
+    """
     @abstractmethod
     def to_dict(self) -> dict:
         pass
@@ -114,10 +127,10 @@ class FeatureType(ToDict):
                  tensor_category: Union[str, TensorCategory],
                  dimension_type: list[Union[str, ValueType]],
                  val_type: Union[str, ValueType]):
-        self.type = to_type(type, VectorType)
-        self.tensor_category = to_type(tensor_category, TensorCategory)
-        self.dimension_type = to_type(dimension_type, ValueType)
-        self.val_type = to_type(val_type, ValueType)
+        self.type = _to_type(type, VectorType)
+        self.tensor_category = _to_type(tensor_category, TensorCategory)
+        self.dimension_type = _to_type(dimension_type, ValueType)
+        self.val_type = _to_type(val_type, ValueType)
 
     def to_dict(self) -> dict:
         return {
@@ -136,7 +149,7 @@ class TypedKey(ToDict):
                  description: Optional[str] = None,
                  key_column_alias: Optional[str] = None):
         self.key_column = key_column
-        self.key_column_type = to_type(key_column_type, ValueType)
+        self.key_column_type = _to_type(key_column_type, ValueType)
         self.full_name = full_name
         self.description = description
         self.key_column_alias = key_column_alias
@@ -227,7 +240,7 @@ class EntityRef(ToDict):
                  qualified_name: Optional[str] = None,
                  uniq_attr: dict = {}):
         self.id = id
-        self.type = to_type(type, EntityType)
+        self.type = _to_type(type, EntityType)
         if qualified_name is not None:
             self.uniq_attr = {"qualifiedName": qualified_name}
         else:
@@ -261,7 +274,7 @@ class Attributes(ToDict):
             EntityType.Anchor: AnchorAttributes,
             EntityType.AnchorFeature: AnchorFeatureAttributes,
             EntityType.DerivedFeature: DerivedFeatureAttributes,
-        }[to_type(entity_type, EntityType)](**kwargs)
+        }[_to_type(entity_type, EntityType)](**kwargs)
 
 
 class Entity(ToDict):
@@ -271,14 +284,14 @@ class Entity(ToDict):
                  entity_type: Union[str, EntityType],
                  attributes: Union[dict, Attributes],
                  **kwargs):
-        self.id = to_uuid(entity_id)
+        self.id = _to_uuid(entity_id)
         self.qualified_name = qualified_name
-        self.entity_type = to_type(entity_type, EntityType)
+        self.entity_type = _to_type(entity_type, EntityType)
         if isinstance(attributes, Attributes):
             self.attributes = attributes
         else:
             self.attributes = Attributes.new(
-                entity_type, **to_snake(attributes))
+                entity_type, **_to_snake(attributes))
 
     def get_ref(self) -> EntityRef:
         return EntityRef(self.id,
@@ -322,7 +335,7 @@ class ProjectAttributes(Attributes):
             if isinstance(f, Entity):
                 self._children.append(f)
             elif isinstance(f, dict):
-                self._children.append(to_type(f, Entity))
+                self._children.append(_to_type(f, Entity))
             else:
                 raise TypeError(f)
 
@@ -431,7 +444,7 @@ class AnchorAttributes(Attributes):
         elif isinstance(s, EntityRef):
             self._source = s
         elif isinstance(s, dict):
-            self._source = to_type(s, Entity).get_ref()
+            self._source = _to_type(s, Entity).get_ref()
         else:
             raise TypeError(s)
 
@@ -448,7 +461,7 @@ class AnchorAttributes(Attributes):
             elif isinstance(f, EntityRef):
                 self._features.append(f)
             elif isinstance(f, dict):
-                self._features.append(to_type(f, Entity).get_ref())
+                self._features.append(_to_type(f, Entity).get_ref())
             else:
                 raise TypeError(f)
 
@@ -474,9 +487,9 @@ class AnchorFeatureAttributes(Attributes):
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
-        self.type = to_type(type, FeatureType)
-        self.transformation = to_type(transformation, Transformation)
-        self.key = to_type(key, TypedKey)
+        self.type = _to_type(type, FeatureType)
+        self.transformation = _to_type(transformation, Transformation)
+        self.key = _to_type(key, TypedKey)
         self.tags = tags
 
     @property
@@ -507,9 +520,9 @@ class DerivedFeatureAttributes(Attributes):
                  **kwargs):
         self.qualified_name = qualified_name
         self.name = name
-        self.type = to_type(type, FeatureType)
-        self.transformation = to_type(transformation, Transformation)
-        self.key = to_type(key, TypedKey)
+        self.type = _to_type(type, FeatureType)
+        self.transformation = _to_type(transformation, Transformation)
+        self.key = _to_type(key, TypedKey)
         self._input_anchor_features = []
         self._input_derived_features = []
         self.tags = tags
@@ -533,7 +546,7 @@ class DerivedFeatureAttributes(Attributes):
             if isinstance(f, Entity):
                 e = f
             elif isinstance(f, dict):
-                e = to_type(f, Entity)
+                e = _to_type(f, Entity)
             else:
                 raise TypeError(f)
 
@@ -599,10 +612,10 @@ class Edge(ToDict):
                  from_id: Union[str, UUID],
                  to_id: Union[str, UUID],
                  conn_type: Union[str, RelationshipType]):
-        self.id = to_uuid(edge_id)
-        self.from_id = to_uuid(from_id)
-        self.to_id = to_uuid(to_id)
-        self.conn_type = to_type(conn_type, RelationshipType)
+        self.id = _to_uuid(edge_id)
+        self.from_id = _to_uuid(from_id)
+        self.to_id = _to_uuid(to_id)
+        self.conn_type = _to_type(conn_type, RelationshipType)
 
     def __eq__(self, o: object) -> bool:
         # Edge ID is kinda useless
@@ -667,7 +680,7 @@ class AnchorDef:
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
-        self.source_id = to_uuid(source_id)
+        self.source_id = _to_uuid(source_id)
         self.tags = tags
 
 
@@ -681,9 +694,9 @@ class AnchorFeatureDef:
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
-        self.feature_type = to_type(feature_type, FeatureType)
-        self.transformation = to_type(transformation, Transformation)
-        self.key = to_type(key, TypedKey)
+        self.feature_type = _to_type(feature_type, FeatureType)
+        self.transformation = _to_type(transformation, Transformation)
+        self.key = _to_type(key, TypedKey)
         self.tags = tags
 
 
@@ -699,9 +712,9 @@ class DerivedFeatureDef:
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
-        self.feature_type = to_type(feature_type, FeatureType)
-        self.transformation = to_type(transformation, Transformation)
-        self.key = to_type(key, TypedKey)
-        self.input_anchor_features = to_uuid(input_anchor_features)
-        self.input_derived_features = to_uuid(input_derived_features)
+        self.feature_type = _to_type(feature_type, FeatureType)
+        self.transformation = _to_type(transformation, Transformation)
+        self.key = _to_type(key, TypedKey)
+        self.input_anchor_features = _to_uuid(input_anchor_features)
+        self.input_derived_features = _to_uuid(input_derived_features)
         self.tags = tags
