@@ -18,8 +18,6 @@ def test_feathr_get_secrets_from_key_vault():
     """
     Test if the program can read the key vault secrets as expected
     """
-    # delete ONLINE_STORE__REDIS__HOST to test get_environment_variable_with_default()
-    del os.environ['ONLINE_STORE__REDIS__HOST']
     # TODO: need to test get_environment_variable() as well
     os.environ['SECRETS__AZURE_KEY_VAULT__NAME'] = 'feathrazuretest3-kv'
 
