@@ -17,6 +17,17 @@ object FeatureMonitoringUtils {
           case DoubleType | FloatType | IntegerType | LongType =>
             val missing = df.filter(col(fieldName).isNull).count()
             val total = df.count()
+//            +------------+------------+----------+----+---+---+---+--------+
+//            |feature_name|feature_type|      date|mean|avg|min|max|coverage|
+//            +------------+------------+----------+----+---+---+---+--------+
+//            |       f_int|     integer|2022-06-09| 0.5|0.5|  0|  1|     1.0|
+//            +------------+------------+----------+----+---+---+---+--------+
+//
+//            +------------+------------+----------+------------------+------------------+-------------------+------------------+--------+
+//            |feature_name|feature_type|      date|              mean|               avg|                min|               max|coverage|
+//            +------------+------------+----------+------------------+------------------+-------------------+------------------+--------+
+//            |    f_double|      double|2022-06-09|0.6061345296768118|0.6061345296768118|0.13751738103840128|0.9651418273038033|     1.0|
+//            +------------+------------+----------+------------------+------------------+-------------------+------------------+--------+
             val stats_df = df.select(
               lit(fieldName).name("feature_name"),
               lit(field.dataType.typeName).name("feature_type"),
@@ -55,10 +66,22 @@ object FeatureMonitoringUtils {
             // cardinality is defined as the number of elements in a set or other grouping, as a property of that grouping.
             val cardinality = df.groupBy(fieldName).count().count()
 
+//            +------------+------------+----------+-----+------+--------+-----------+
+//            |feature_name|feature_type|      date|  min|   max|coverage|cardinality|
+//            +------------+------------+----------+-----+------+--------+-----------+
+//            |    f_string|      string|2022-06-09|apple|orange|     0.9|          3|
+//            +------------+------------+----------+-----+------+--------+-----------+
+//            +------------+------------+----------+-----+----+--------+-----------+
+//            |feature_name|feature_type|      date|  min| max|coverage|cardinality|
+//            +------------+------------+----------+-----+----+--------+-----------+
+//            |   f_boolean|     boolean|2022-06-09|false|true|     1.0|          2|
+//            +------------+------------+----------+-----+----+--------+-----------+
             val stats_df = df.select(
               lit(fieldName).name("feature_name"),
               lit(field.dataType.typeName).name("feature_type"),
               current_date().name("date"),
+              min(df(fieldName)).name("min"),
+              max(df(fieldName)).name("max"),
               lit((total - missing) * 1.0 / total).name("coverage"),
               lit(cardinality).name("cardinality")
             )
@@ -95,7 +118,7 @@ object FeatureMonitoringUtils {
         .mode(saveMode)
         .save()
     } else {
-      stats_df.show()
+      stats_df.show(10)
     }
   }
 }
