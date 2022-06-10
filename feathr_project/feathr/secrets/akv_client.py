@@ -8,7 +8,12 @@ class AzureKeyVaultClient:
         self.akv_name = akv_name
         self.secret_client = None
 
-    def get_akv_secret(self, secret_name: str):
+    def get_feathr_akv_secret(self, secret_name: str):
+        """Get Feathr Secrets from Azure Key Vault. Note that this function will replace '_' in `secret_name` with '-' since Azure Key Vault doesn't support it
+
+        Returns:
+            _type_: _description_
+        """
         if self.secret_client is None:
             self.secret_client = SecretClient(
                 vault_url = f"https://{self.akv_name}.vault.azure.net",

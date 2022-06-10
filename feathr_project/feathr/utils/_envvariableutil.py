@@ -2,7 +2,7 @@ import os
 import yaml
 from loguru import logger
 from feathr.secrets.akv_client import AzureKeyVaultClient
-
+from azure.core.exceptions import ResourceNotFoundError
 
 class _EnvVaraibleUtil(object):
     def __init__(self, config_path):
@@ -54,10 +54,12 @@ class _EnvVaraibleUtil(object):
                     logger.warning(exc)
         # If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from key vault
         if self.akv_name:
-            return  self.akv_client.get_akv_secret(env_keyword) 
-        
-        # print out warning message if cannot find the env variable in all the resources
-        logger.warning('Environment variable {} not found.', env_keyword)
+            try:
+                return  self.akv_client.get_feathr_akv_secret(env_keyword) 
+            except ResourceNotFoundError:
+                # print out warning message if cannot find the env variable in all the resources
+                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
+                return ""
 
     def get_environment_variable(self, variable_key):
         """Gets the environment variable for the variable key.
@@ -81,5 +83,5 @@ class _EnvVaraibleUtil(object):
         logger.info(variable_key + ' is not set in the environment variables.')
         
         if self.akv_name:
-            return self.akv_client.get_akv_secret(variable_key)
+            return self.akv_client.get_feathr_akv_secret(variable_key)
     
