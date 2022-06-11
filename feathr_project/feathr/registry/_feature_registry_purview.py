@@ -766,8 +766,9 @@ derivations: {
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
         """
-        entities = self.purview_client.discovery.query(
+        result = self.purview_client.discovery.query(
             keywords=f"entityType:{TYPEDEF_ANCHOR_FEATURE} or entityType:{TYPEDEF_DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
+        entities = result['value']
         feature_list = []
         for entity in entities:
             if project_name:
