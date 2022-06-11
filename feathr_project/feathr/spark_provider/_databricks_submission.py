@@ -140,6 +140,10 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         submission_params['run_name'] = job_name
         if 'existing_cluster_id' not in submission_params:
             # if users don't specify existing_cluster_id
+            # Solving this issue: Handshake fails trying to connect from Azure Databricks to Azure PostgreSQL with SSL
+            # https://docs.microsoft.com/en-us/answers/questions/170730/handshake-fails-trying-to-connect-from-azure-datab.html
+            configuration['spark.executor.extraJavaOptions'] = '-Djava.security.properties='
+            configuration['spark.driver.extraJavaOptions'] = '-Djava.security.properties='
             submission_params['new_cluster']['spark_conf'] = configuration
             submission_params['new_cluster']['custom_tags'] = job_tags
         # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
