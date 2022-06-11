@@ -14,6 +14,9 @@ All forms of contributions are welcome, including and not limited to:
 * Refactor and improve architecture
 
 # I am interested, how can I start?
+If you are new to this project, we recommend start with [`good-first-issue`](https://github.com/linkedin/feathr/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+
+If you are familiar with this project, you can just start to pick up our github issues.
 
 ## I am not familiar with XYZ, can I still contribute?
 If you are willing to learn, no problem at all!
