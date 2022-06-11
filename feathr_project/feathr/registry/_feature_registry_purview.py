@@ -824,7 +824,7 @@ derivations: {
         """        
         search_term = "qualifiedName:{0}".format(qualifiedName)
         result = self.purview_client.discovery.query(search_term)
-        entities = results['value']
+        entities = result['value']
         for entity in entities:
             if entity.get('qualifiedName') == qualifiedName:
                 return entity.get('id')
