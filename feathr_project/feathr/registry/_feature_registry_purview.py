@@ -735,13 +735,13 @@ derivations: {
         :param guid: The guid or guids you want to remove.
         """
         # should not be large than this, otherwise the backend might throw out error
-        batch_delte_size = 50
+        batch_delte_size = 100
 
         # use the `query` API so that it can return immediatelly (don't use the search_entity API as it will try to return all the results in a single request)
 
         while True:
             result = self.purview_client.discovery.query(
-                "feathr*", limit=batch_delte_size)
+                "feathr*", limit=batch_delte_size, api_version="2022-03-01-preview")
             logger.info("Total number of entities:",result['@search.count'] )
 
             # if no results, break:
@@ -752,7 +752,7 @@ derivations: {
             self.purview_client.delete_entity(guid=guid_list)
             logger.info("{} feathr entities deleted", batch_delte_size)
             # sleep here, otherwise backend might throttle
-            sleep(0.5)
+            sleep(1)
     
     @classmethod
     def _get_registry_client(self):
