@@ -116,7 +116,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
         return returned_path
 
-    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
+    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = {}):
         """
         submit the feathr job to databricks
         Refer to the databricks doc for more details on the meaning of the parameters:
@@ -138,8 +138,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
 
         submission_params['run_name'] = job_name
+        # if users don't specify existing_cluster_id
         if 'existing_cluster_id' not in submission_params:
-            # if users don't specify existing_cluster_id
             # Solving this issue: Handshake fails trying to connect from Azure Databricks to Azure PostgreSQL with SSL
             # https://docs.microsoft.com/en-us/answers/questions/170730/handshake-fails-trying-to-connect-from-azure-datab.html
             configuration['spark.executor.extraJavaOptions'] = '-Djava.security.properties='

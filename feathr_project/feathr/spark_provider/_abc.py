@@ -19,7 +19,7 @@ class SparkJobLauncher(ABC):
     @abstractmethod
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str],
                           reference_files_path: List[str], job_tags: Dict[str, str] = None,
-                          configuration: Dict[str, str] = None):
+                          configuration: Dict[str, str] = {}):
         """
         Submits the feathr job
 
