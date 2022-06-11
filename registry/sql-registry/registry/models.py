@@ -6,15 +6,23 @@ import json
 import re
 
 
-def _to_snake(d):
+def _to_snake(d, level: int = 0):
     """
     Convert `string`, `list[string]`, or all keys in a `dict` into snake case
+    The maximum length of input string or list is 100, or it will be truncated before being processed, for dict, the exception will be thrown if it has more than 100 keys.
+    the maximum nested level is 10, otherwise the exception will be thrown
     """
+    if level >= 10:
+        raise ValueError("Too many nested levels")
     if isinstance(d, str):
-        return re.sub('([A-Z]\w+$)', '_\\1', d).lower()
+        d = d[:100]
+        return re.sub(r'([A-Z]\w+$)', r'_\1', d).lower()
     if isinstance(d, list):
-        return [_to_snake(i) if isinstance(i, (dict, list)) else i for i in d]
-    return {_to_snake(a): _to_snake(b) if isinstance(b, (dict, list)) else b for a, b in d.items()}
+        d = d[:100]
+        return [_to_snake(i, level + 1) if isinstance(i, (dict, list)) else i for i in d]
+    if len(d) > 100:
+        raise ValueError("Dict has too many keys")
+    return {_to_snake(a, level + 1): _to_snake(b, level + 1) if isinstance(b, (dict, list)) else b for a, b in d.items()}
 
 
 def _to_type(value, type):
