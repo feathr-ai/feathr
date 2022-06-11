@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Configuration, environment varialbles, and store secrets in a secure way
+title: Configuration, environment variables, and store secrets in a secure way
 parent: Feathr How-to Guides
 ---
 
-# Configuration and environment varialbles in Feathr
+# Configuration and environment variables in Feathr
 
 Feathr uses a YAML file and a few environment variables to allow end users to have more flexibility. See the example of the following configurations in [this file](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml).
 
@@ -27,58 +27,58 @@ This allows end users to store the configuration in a secure way, say in Kuberne
 
 Feathr will get the configurations in the following order:
 
-1. If the key is set in the envrionment variable, Feathr will use the value of that environment variable
-2. If it's not set in the environment, then a value is retrieved from from the feathr_config.yaml file with the same config key.
+1. If the key is set in the environment variable, Feathr will use the value of that environment variable
+2. If it's not set in the environment, then a value is retrieved from the feathr_config.yaml file with the same config key.
 3. If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from a key vault service. Currently only Azure Key Vault is supported.
 
 # A list of environment variables that Feathr uses
-| Environment Variable     | Description     |
-| -------------- | -------------- |
-| SECRETS__AZURE_KEY_VAULT__NAME     | Name of the Azure Key Vault service so that Feathr can get credentials from that service.  Optional |
-| AZURE_CLIENT_ID     | Client ID for authentication into Azure Services. This is required if you are using Service Principal to login with Feathr. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.     |
-| AZURE_TENANT_ID     |Client ID for authentication into Azure Services. This is required if you are using Service Principal to login with Feathr. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.      |
-| AZURE_CLIENT_SECRET     | Client ID for authentication into Azure Services. This is required if you are using Service Principal to login with Feathr. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.     |
-| OFFLINE_STORE__ADLS__ADLS_ENABLED     |   Whether to enable ADLS as offline store or not.   |
-| ADLS_ACCOUNT     | ADLS account that you connect to. Required if using ADLS as an offline store.     |
-| ADLS_KEY     | ADLS key that you connect to. Required if using ADLS as an offline store.     |
+| Environment Variable     | Description     | Required? |
+| -------------- | -------------- |  -------------- |
+| SECRETS__AZURE_KEY_VAULT__NAME     | Name of the Azure Key Vault service so that Feathr can get credentials from that service.  | Optional |
+| AZURE_CLIENT_ID     | Client ID for authentication into Azure Services. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.     | This is required if you are using Service Principal to login with Feathr. |
+| AZURE_TENANT_ID     |Client ID for authentication into Azure Services. Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.      |This is required if you are using Service Principal to login with Feathr. |
+| AZURE_CLIENT_SECRET     | Client ID for authentication into Azure Services.  Read [here](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.environmentcredential?view=azure-python) for more details.     |This is required if you are using Service Principal to login with Feathr. |
+| OFFLINE_STORE__ADLS__ADLS_ENABLED     |   Whether to enable ADLS as offline store or not.   |Optional |
+| ADLS_ACCOUNT     | ADLS account that you connect to.      |Required if using ADLS as an offline store.   |
+| ADLS_KEY     | ADLS key that you connect to.    |Required if using ADLS as an offline store.  |
 | OFFLINE_STORE__WASB__WASB_ENABLED     |   Whether to enable Azure BLOB storage as offline store or not.   |
-| WASB_ACCOUNT     | Azure BLOB Storage account that you connect to. Required if using Azure BLOB Storage as an offline store.     |
-| WASB_KEY     | Azure BLOB Storage key that you connect to. Required if using Azure BLOB Storage as an offline store.     |
-| S3_ACCESS_KEY     | AWS S3 access key for the S3 account. Required if using AWS S3 Storage as an offline store.     |
-| S3_SECRET_KEY     | AWS S3 secret key for the S3 account. Required if using AWS S3 Storage as an offline store.     |
-| OFFLINE_STORE__S3__S3_ENABLED     | Whether to enable S3 as offline store or not.    |
-| OFFLINE_STORE__S3__S3_ENDPOINT     | S3 endpoint. If you use S3 endpoint, then you need to provide access key and secret key in the environment variable as well.     |
-| OFFLINE_STORE__JDBC__JDBC_ENABLED     |  Whether to enable JDBC as offline store or not.   |
-| OFFLINE_STORE__JDBC__JDBC_DATABASE     | If using JDBC endpoint as offline store, this config specifies the JDBC database to read from     |
-| OFFLINE_STORE__JDBC__JDBC_TABLE     |  If using JDBC endpoint as offline store, this config specifies the JDBC table to read from. Same as `JDBC_TABLE`.    |
-| JDBC_TABLE     | If using JDBC endpoint as offline store, this config specifies the JDBC table to read from     |
-| JDBC_USER     | If using JDBC endpoint as offline store, this config specifies the JDBC user |
-| JDBC_PASSWORD     | If using JDBC endpoint as offline store, this config specifies the JDBC password     |
-| KAFKA_SASL_JAAS_CONFIG     | If using EventHub as a streaming input source, this configures the KAFKA stream. If using EventHub, read [here](https://github.com/Azure/azure-event-hubs-for-kafka#updating-your-kafka-client-configuration) for how to get this string from the existing string in Azure Portal.    |
-| PROJECT_CONFIG__PROJECT_NAME     |   Configures the project name.  |
-| OFFLINE_STORE__SNOWFLAKE__URL     |  Configures the Snowflake URL. Usually it's something like `dqllago-ol19457.snowflakecomputing.com`. Required if using Snowflake as an offline store.   |
-| OFFLINE_STORE__SNOWFLAKE__USER     |  Configures the Snowflake user. Required if using Snowflake as an offline store.   |
-| OFFLINE_STORE__SNOWFLAKE__ROLE     |   Configures the Snowflake role. Usually it's something like `ACCOUNTADMIN`. Required if using Snowflake as an offline store.  |
-|JDBC_SF_PASSWORD| Configurations for Snowflake password|
-| SPARK_CONFIG__SPARK_CLUSTER     | Choice for spark runtime. Currently support: `azure_synapse`, `databricks`. The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.     |
-| SPARK_CONFIG__SPARK_RESULT_OUTPUT_PARTS     | Configure number of parts for the spark output for feature generation job     |
-| SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL     | Dev URL to the synapse cluster. Usually it's something like `https://yourclustername.dev.azuresynapse.net`     |
-| SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME     | name of the sparkpool that you are going to use     |
-| SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR     | A location that Synapse has access to. This workspace dir stores all the required configuration files and the jar resources. All the feature definitions will be uploaded here     |
-| SPARK_CONFIG__AZURE_SYNAPSE__EXECUTOR_SIZE     |   Specifies the executor size for the Azure Synapse cluster. Currently the options are `Small`, `Medium`, `Large`.  |
-| SPARK_CONFIG__AZURE_SYNAPSE__EXECUTOR_NUM     |   Sepcifies the number of executors for  the Azure Synapse cluster |
-| SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION  | Specifies the Feathr runtime location. Support local paths, path start with `http(s)://`, and paths start with `abfss:/`. If not set, will use the [Feathr package published in Maven](https://search.maven.org/artifact/com.linkedin.feathr/feathr_2.12).    |
-| SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL     | Workspace instance URL for your databricks cluster.  Will be something like this: `https://adb-6885802458123232.12.azuredatabricks.net/`     |
-| SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE     | Config string including run time information, spark version, machine size, etc.  See [below](#sparkconfigdatabricksconfigtemplate) for more details.   |
-| SPARK_CONFIG__DATABRICKS__WORK_DIR     | Workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here.     |
-| SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION     | Feathr runtime location. Support local paths, path start with `http(s)://`, and paths start with `dbfs:/`.  If not set, will use the [Feathr package published in Maven](https://search.maven.org/artifact/com.linkedin.feathr/feathr_2.12). |
-| ONLINE_STORE__REDIS__HOST     | Redis host name to access Redis cluster. Required if you are using Redis.      |
-| ONLINE_STORE__REDIS__PORT     |  Redis port number to access Redis cluster. Required if you are using Redis.    |
-| ONLINE_STORE__REDIS__SSL_ENABLED     |  Whether SSL is enabled to access Redis cluster. Required if you are using Redis.    |
-| REDIS_PASSWORD     | Password for the Redis cluster. Required if you are using Redis.     |
-| FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME     | Configure the name of the purview endpoint. Required if using Purview as the endpoint.     |
-| FEATURE_REGISTRY__PURVIEW__DELIMITER     | See [here](#featureregistrypurviewdelimiter) for more details. |
-| FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION | Controls whether the type system (think this as the "schema" for the registry) will be initialized or not. Usually this is only required to be set to `True` to initialize schema, and then you can set it to `False` to shorten the initialization time.     |
+| WASB_ACCOUNT     | Azure BLOB Storage account that you connect to.| Required if using Azure BLOB Storage as an offline store.     |
+| WASB_KEY     | Azure BLOB Storage key that you connect to. |Required if using Azure BLOB Storage as an offline store.     |
+| S3_ACCESS_KEY     | AWS S3 access key for the S3 account. |Required if using AWS S3 Storage as an offline store.     |
+| S3_SECRET_KEY     | AWS S3 secret key for the S3 account. |Required if using AWS S3 Storage as an offline store.     |
+| OFFLINE_STORE__S3__S3_ENABLED     | Whether to enable S3 as offline store or not.    |Optional |
+| OFFLINE_STORE__S3__S3_ENDPOINT     | S3 endpoint. If you use S3 endpoint, then you need to provide access key and secret key in the environment variable as well.     |Required if using AWS S3 Storage as an offline store. |
+| OFFLINE_STORE__JDBC__JDBC_ENABLED     |  Whether to enable JDBC as offline store or not.   |Optional |
+| OFFLINE_STORE__JDBC__JDBC_DATABASE     | If using JDBC endpoint as offline store, this config specifies the JDBC database to read from.     | Required if using JDBC sources as offline store |
+| OFFLINE_STORE__JDBC__JDBC_TABLE     |  If using JDBC endpoint as offline store, this config specifies the JDBC table to read from. Same as `JDBC_TABLE`.    |Required if using JDBC sources as offline store |
+| JDBC_TABLE     | If using JDBC endpoint as offline store, this config specifies the JDBC table to read from     |Required if using JDBC sources as offline store |
+| JDBC_USER     | If using JDBC endpoint as offline store, this config specifies the JDBC user |Required if using JDBC sources as offline store |
+| JDBC_PASSWORD     | If using JDBC endpoint as offline store, this config specifies the JDBC password     |Required if using JDBC sources as offline store |
+| KAFKA_SASL_JAAS_CONFIG     | If using EventHub as a streaming input source, this configures the KAFKA stream. If using EventHub, read [here](https://github.com/Azure/azure-event-hubs-for-kafka#updating-your-kafka-client-configuration) for how to get this string from the existing string in Azure Portal.    | Required if using Kafka/EventHub as streaming source input.|
+| PROJECT_CONFIG__PROJECT_NAME     |   Configures the project name.  | Required|
+| OFFLINE_STORE__SNOWFLAKE__URL     |  Configures the Snowflake URL. Usually it's something like `dqllago-ol19457.snowflakecomputing.com`. |Required if using Snowflake as an offline store.   |
+| OFFLINE_STORE__SNOWFLAKE__USER     |  Configures the Snowflake user. |Required if using Snowflake as an offline store.   |
+| OFFLINE_STORE__SNOWFLAKE__ROLE     |   Configures the Snowflake role. Usually it's something like `ACCOUNTADMIN`. |Required if using Snowflake as an offline store.  |
+|JDBC_SF_PASSWORD| Configurations for Snowflake password|Required if using Snowflake as an offline store.  |
+| SPARK_CONFIG__SPARK_CLUSTER     | Choice for spark runtime. Currently support: `azure_synapse`, `databricks`. The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.     | Required|
+| SPARK_CONFIG__SPARK_RESULT_OUTPUT_PARTS     | Configure number of parts for the spark output for feature generation job     | Required|
+| SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL     | Dev URL to the synapse cluster. Usually it's something like `https://yourclustername.dev.azuresynapse.net`     | Required if using Azure Synapse|
+| SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME     | name of the sparkpool that you are going to use     |Required if using Azure Synapse|
+| SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR     | A location that Synapse has access to. This workspace dir stores all the required configuration files and the jar resources. All the feature definitions will be uploaded here     |Required if using Azure Synapse|
+| SPARK_CONFIG__AZURE_SYNAPSE__EXECUTOR_SIZE     |   Specifies the executor size for the Azure Synapse cluster. Currently the options are `Small`, `Medium`, `Large`.  |Required if using Azure Synapse|
+| SPARK_CONFIG__AZURE_SYNAPSE__EXECUTOR_NUM     |   Sepcifies the number of executors for  the Azure Synapse cluster |Required if using Azure Synapse|
+| SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION  | Specifies the Feathr runtime location. Support local paths, path start with `http(s)://`, and paths start with `abfss:/`. If not set, will use the [Feathr package published in Maven](https://search.maven.org/artifact/com.linkedin.feathr/feathr_2.12).    |Required if using Azure Synapse|
+| SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL     | Workspace instance URL for your databricks cluster.  Will be something like this: `https://adb-6885802458123232.12.azuredatabricks.net/`     |Required if using Databricks|
+| SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE     | Config string including run time information, spark version, machine size, etc.  See [below](#sparkconfigdatabricksconfigtemplate) for more details.   |Required if using Databricks|
+| SPARK_CONFIG__DATABRICKS__WORK_DIR     | Workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here.     |Required if using Databricks|
+| SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION     | Feathr runtime location. Support local paths, path start with `http(s)://`, and paths start with `dbfs:/`.  If not set, will use the [Feathr package published in Maven](https://search.maven.org/artifact/com.linkedin.feathr/feathr_2.12). |Required if using Databricks|
+| ONLINE_STORE__REDIS__HOST     | Redis host name to access Redis cluster. |Required if using Redis as online store.      |
+| ONLINE_STORE__REDIS__PORT     |  Redis port number to access Redis cluster. |Required if using Redis as online store.    |
+| ONLINE_STORE__REDIS__SSL_ENABLED     |  Whether SSL is enabled to access Redis cluster. |Required if using Redis as online store.    |
+| REDIS_PASSWORD     | Password for the Redis cluster. |Required if using Redis as online store.     |
+| FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME     | Configure the name of the purview endpoint. |Required if using Purview as the endpoint.     |
+| FEATURE_REGISTRY__PURVIEW__DELIMITER     | See [here](#featureregistrypurviewdelimiter) for more details. | Required|
+| FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION | Controls whether the type system (think this as the "schema" for the registry) will be initialized or not. Usually this is only required to be set to `True` to initialize schema, and then you can set it to `False` to shorten the initialization time.     | Required|
 
 # Explanation for selected configurations
 ## SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE

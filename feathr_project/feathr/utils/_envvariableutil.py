@@ -18,8 +18,8 @@ class _EnvVaraibleUtil(object):
             *args: list of keys in feathr_config.yaml file
         Return:
             A environment variable for the variable key. It will retrieve the value of the environment variables in the following order:
-            If the key is set in the envrionment variable, Feathr will use the value of that environment variable
-            If it's not set in the environment, then a default is retrieved from from the feathr_config.yaml file with the same config key.
+            If the key is set in the environment variable, Feathr will use the value of that environment variable
+            If it's not set in the environment, then a default is retrieved from the feathr_config.yaml file with the same config key.
             If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from key vault
             """
 
@@ -30,11 +30,11 @@ class _EnvVaraibleUtil(object):
         env_variable = os.environ.get(
             env_keyword, os.environ.get(upper_env_keyword))
 
-        # If the key is set in the envrionment variable, Feathr will use the value of that environment variable
+        # If the key is set in the environment variable, Feathr will use the value of that environment variable
         if env_variable:
             return env_variable
 
-        # If it's not set in the environment, then a default is retrieved from from the feathr_config.yaml file with the same config key.
+        # If it's not set in the environment, then a default is retrieved from the feathr_config.yaml file with the same config key.
         if os.path.exists(os.path.abspath(self.config_path)):
             with open(os.path.abspath(self.config_path), 'r') as stream:
                 try:
@@ -47,11 +47,10 @@ class _EnvVaraibleUtil(object):
                         yaml_layer = yaml_layer[arg]
                     return yaml_layer
                 except KeyError as exc:
-                    logger.warning("{} not found in the config file, loading it in key vault.", env_keyword)
-                    # if not found in the config file, use key vault to get the value
-                    # return self.akv_client.get_akv_secret(env_keyword)  if self.akv_name else ""
+                    logger.info("{} not found in the config file.", env_keyword)
                 except yaml.YAMLError as exc:
                     logger.warning(exc)
+        
         # If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from key vault
         if self.akv_name:
             try:
@@ -69,15 +68,15 @@ class _EnvVaraibleUtil(object):
             variable_key: environment variable key that is used to retrieve the environment variable
         Return:
             A environment variable for the variable key. It will retrieve the value of the environment variables in the following order:
-            If the key is set in the envrionment variable, Feathr will use the value of that environment variable
+            If the key is set in the environment variable, Feathr will use the value of that environment variable
             If it's not available in the environment variable file, Feathr will try to reterive the value from key vault
         Raises:
             ValueError: If the environment variable is not set for this key, an exception is thrown.
             """
-        password = os.environ.get(variable_key)
+        env_var_value = os.environ.get(variable_key)
 
-        if password:
-            return password
+        if env_var_value:
+            return env_var_value
 
         # If it's not available in the environment variable file, Feathr will try to reterive the value from key vault
         logger.info(variable_key + ' is not set in the environment variables.')
