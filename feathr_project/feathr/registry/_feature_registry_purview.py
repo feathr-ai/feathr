@@ -11,6 +11,7 @@ from pathlib import Path
 from tracemalloc import stop
 from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
+from time import sleep
 
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
@@ -733,18 +734,25 @@ derivations: {
 
         :param guid: The guid or guids you want to remove.
         """
-        entities = self.purview_client.discovery.search_entities(
-            "feathr*", limit=20)
-
-        # [print(entity) for entity in entities]
-        guid_list = [entity["id"] for entity in entities]
-
         # should not be large than this, otherwise the backend might throw out error
-        batch_delte_size = 15
-        for i in range(0, len(guid_list), batch_delte_size):
-            self.purview_client.delete_entity(
-                guid=guid_list[i:i+batch_delte_size])
+        batch_delte_size = 50
+
+        # use the `query` API so that it can return immediatelly (don't use the search_entity API as it will try to return all the results in a single request)
+
+        while True:
+            result = self.purview_client.discovery.query(
+                "feathr*", limit=batch_delte_size)
+            logger.info("Total number of entities:",result['@search.count'] )
+
+            # if no results, break:
+            if result['@search.count']  == 0:
+                break
+            entities = result['value']
+            guid_list = [entity["id"] for entity in entities]
+            self.purview_client.delete_entity(guid=guid_list)
             logger.info("{} feathr entities deleted", batch_delte_size)
+            # sleep here, otherwise backend might throttle
+            sleep(0.5)
     
     @classmethod
     def _get_registry_client(self):
@@ -753,13 +761,13 @@ derivations: {
         """
         return self.purview_client
 
-    def list_registered_features(self, project_name: str = None, limit=50, starting_offset=0) -> List[Dict[str,str]]:
+    def list_registered_features(self, project_name: str = None, limit=100, starting_offset=0) -> List[Dict[str,str]]:
         """
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
         """
-        entities = self.purview_client.discovery.search_entities(
-            f"entityType:{TYPEDEF_ANCHOR_FEATURE} or entityType:{TYPEDEF_DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
+        entities = self.purview_client.discovery.query(
+            keywords="entityType:{TYPEDEF_ANCHOR_FEATURE} or entityType:{TYPEDEF_DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
         feature_list = []
         for entity in entities:
             if project_name:
@@ -815,7 +823,7 @@ derivations: {
         Get guid of a feature given its qualifiedName
         """        
         search_term = "qualifiedName:{0}".format(qualifiedName)
-        entities = self.purview_client.discovery.search_entities(search_term)
+        entities = self.purview_client.discovery.query(search_term)
         for entity in entities:
             if entity.get('qualifiedName') == qualifiedName:
                 return entity.get('id')
@@ -850,8 +858,13 @@ derivations: {
             [f" or entityType:{e}" for e in entity_type_list])
         # remvoe the first additional " or "
         search_string = search_string[4:]
-        result_entities = self.purview_client.discovery.search_entities(
+
+        # get the result with paging
+        result = self.purview_client.discovery.query(
             search_string, limit=limit, starting_offset=starting_offset)
+        
+        logger.info("Total number of Feathr entities found:",result['@search.count'] )
+        result_entities = result['value']
         # Important properties returned includes:
         # id (the guid of the entity), name, qualifiedName, @search.score,
         # and @search.highlights
