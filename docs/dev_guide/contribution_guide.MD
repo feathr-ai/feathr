@@ -37,4 +37,4 @@ Feathr contains multiple components so you can learn and contribute to various t
   * The Web UI for feature registry. Written in React with a few UI frameworks.
 
 # Developer Guide
-See (`feathr/docs/dev_guide`)[../]
+See [`feathr/docs/dev_guide`](../)
