@@ -767,7 +767,7 @@ derivations: {
         registered features; otherwise it will only return only features under this project
         """
         entities = self.purview_client.discovery.query(
-            keywords="entityType:{TYPEDEF_ANCHOR_FEATURE} or entityType:{TYPEDEF_DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
+            keywords=f"entityType:{TYPEDEF_ANCHOR_FEATURE} or entityType:{TYPEDEF_DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
         feature_list = []
         for entity in entities:
             if project_name:
@@ -823,7 +823,8 @@ derivations: {
         Get guid of a feature given its qualifiedName
         """        
         search_term = "qualifiedName:{0}".format(qualifiedName)
-        entities = self.purview_client.discovery.query(search_term)
+        result = self.purview_client.discovery.query(search_term)
+        entities = results['value']
         for entity in entities:
             if entity.get('qualifiedName') == qualifiedName:
                 return entity.get('id')
