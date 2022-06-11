@@ -8,10 +8,12 @@ parent: Feathr Developer Guides
 All forms of contributions are welcome, including and not limited to:
 * Improve or contribute new [notebook samples](https://github.com/linkedin/feathr/tree/main/feathr_project/feathrcli/data/feathr_user_workspace)
 * Add tutorial, blog posts, tech talks etc
+* Increase media coverage and exposure
 * Improve user-facing documentation or developer-facing documentation
 * Add testing code 
 * Add new features
 * Refactor and improve architecture
+* For any other forms of contribution and collaboration, don't hesitate to reach out to us.
 
 # I am interested, how can I start?
 If you are new to this project, we recommend start with [`good-first-issue`](https://github.com/linkedin/feathr/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
@@ -26,6 +28,7 @@ You can ping your questions in the community Slack channel and Feathr developers
 * "I am not sure how to setup the cluster and test my code. Can someone help me out?"
 
 ## My pull request(PR) requires testing against the database or cluster that I dont' have, how can i fix this?
+(We are still working on this. Stay tuned.)
 
 ## Technical Architecutre
 Feathr contains multiple components so you can learn and contribute to various things:
