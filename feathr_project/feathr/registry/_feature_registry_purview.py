@@ -76,6 +76,7 @@ class _FeatureRegistry(FeathrRegistry):
         type_feathr_project = EntityTypeDef(
             name=TYPEDEF_FEATHR_PROJECT,
             attributeDefs=[
+                # TODO: this should be called "anchors" rather than "anchor_features" to make it less confusing.
                 AtlasAttributeDef(
                     name="anchor_features", typeName=TYPEDEF_ARRAY_ANCHOR, cardinality=Cardinality.SET),
                 AtlasAttributeDef(
@@ -220,7 +221,7 @@ class _FeatureRegistry(FeathrRegistry):
             # then parse the source of that anchor
             source_entity = self._parse_source(anchor.source)
             anchor_fully_qualified_name  = self.project_name+self.registry_delimiter+anchor.name
-            original_id = self.get_feature_id(anchor_fully_qualified_name )
+            original_id = self.get_feature_id(anchor_fully_qualified_name, type=TYPEDEF_ANCHOR )
             original_anchor = self.get_feature_by_guid(original_id) if original_id else None
             merged_elements = self._merge_anchor(original_anchor,anchor_feature_entities)
             anchor_entity = AtlasEntity(
@@ -761,27 +762,42 @@ derivations: {
         """
         return self.purview_client
 
-    def list_registered_features(self, project_name: str = None, limit=100, starting_offset=0) -> List[Dict[str,str]]:
+    def list_registered_features(self, project_name: str, limit=100, starting_offset=0) -> List[Dict[str,str]]:
         """
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
         """
-        result = self.purview_client.discovery.query(
-            keywords=f"entityType:{TYPEDEF_ANCHOR_FEATURE} or entityType:{TYPEDEF_DERIVED_FEATURE}", limit=limit, starting_offset=starting_offset)
-        entities = result['value']
+
         feature_list = []
+
+        if not project_name:
+            raise RuntimeError("project_name must be specified.")
+
+        # get the corresponding features belongs to a certain project.
+        # note that we need to use "startswith" to filter out the features that don't belong to this project.
+        # see syntax here: https://docs.microsoft.com/en-us/rest/api/purview/catalogdataplane/discovery/query#discovery_query_andornested
+        query_filter = {
+            "and": [
+            {
+                "or": 
+                [
+                    {"entityType": TYPEDEF_DERIVED_FEATURE},
+                    {"entityType": TYPEDEF_ANCHOR_FEATURE}          
+                ]
+            },
+            {
+                "attributeName": "qualifiedName",
+                "operator": "startswith",
+                "attributeValue": project_name + self.registry_delimiter
+            }
+            ]
+        }
+        result = self.purview_client.discovery.query(keywords=None, filter=query_filter)
+
+        entities = result['value']
+
         for entity in entities:
-            if project_name:
-                # if project_name is a valid string, only append entities if the qualified name start with
-                # project_name+delimiter
-                qualified_name: str = entity["qualifiedName"]
-                # split the name based on delimiter
-                result = qualified_name.split(self.registry_delimiter)
-                if result[0].casefold() == project_name:
-                    feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
-            else:
-                # otherwise append all the entities
-                feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
+            feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
 
         return feature_list
    
@@ -819,11 +835,14 @@ derivations: {
         """
         return self.purview_client.get_entity_lineage(guid=guid)
 
-    def get_feature_id(self, qualifiedName):
+    def get_feature_id(self, qualifiedName, type: str):
         """
         Get guid of a feature given its qualifiedName
         """        
-        search_term = "qualifiedName:{0}".format(qualifiedName)
+        # the search term should be full qualified name
+        # purview_client.get_entity(qualifiedName=qualifiedName) might not work here since it requires an additonal typeName parameter
+        self.purview_client.get_entity(qualifiedName=qualifiedName, typeName=type)
+        search_term = "{0}".format(qualifiedName)
         result = self.purview_client.discovery.query(search_term)
         entities = result['value']
         for entity in entities:
@@ -839,7 +858,7 @@ derivations: {
         entities = self.purview_client.discovery.search_entities(searchTerm)
         return entities
     
-    def _list_registered_entities_with_details(self, project_name: str = None, entity_type: Union[str, List[str]] = None, limit=50, starting_offset=0,) -> List[Dict]:
+    def _list_registered_entities_with_details(self, project_name: str, entity_type: Union[str, List[str]] = None, limit=1000, starting_offset=0,) -> List[Dict]:
         """
         List all the already registered entities. entity_type should be one of: SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT, or a list of those values
         limit: a maximum 1000 will be enforced at the underlying API
@@ -854,35 +873,55 @@ derivations: {
                 raise RuntimeError(
                     f'only SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT are supported when listing the registered entities, {entity_type} is not one of them.')
 
-        # the search grammar is less documented in Atlas/Purview. 
-        # Here's the query grammar: https://atlas.apache.org/2.0.0/Search-Advanced.html
-        search_string = "".join(
-            [f" or entityType:{e}" for e in entity_type_list])
-        # remvoe the first additional " or "
-        search_string = search_string[4:]
+        if project_name is None:
+            raise RuntimeError("You need to specify a project_name")
+        # the search grammar: 
+        # https://docs.microsoft.com/en-us/azure/purview/how-to-search-catalog#search-query-syntax
+        # https://docs.microsoft.com/en-us/rest/api/datacatalog/data-catalog-search-syntax-reference
 
-        # get the result with paging
-        result = self.purview_client.discovery.query(
-            search_string, limit=limit, starting_offset=starting_offset)
-        
-        logger.info("Total number of Feathr entities found:",result['@search.count'] )
-        result_entities = result['value']
+        # get the corresponding features belongs to a certain project.
+        # note that we need to use "startswith" to filter out the features that don't belong to this project.
+        # see syntax here: https://docs.microsoft.com/en-us/rest/api/purview/catalogdataplane/discovery/query#discovery_query_andornested
+        # this search does the following:
+        # search all the entities that start with project_name+delimiter for all the search entities
+        # However, for TYPEDEF_FEATHR_PROJECT, it doesn't have delimiter in the qualifiedName
+        # Hence if TYPEDEF_FEATHR_PROJECT is in the `entity_type` input, we need to search for that specifically
+        # and finally "OR" the result to union them
+        query_filter = {
+            "or":
+            [{
+            "and": [ {
+                "or": [{"entityType": e} for e in entity_type_list] # this is a list of the entity types that you want to query
+            },
+            {
+                "attributeName": "qualifiedName",
+                "operator": "startswith",
+                "attributeValue": project_name + self.registry_delimiter
+            }] },
+            {
+            "and": [ {
+                "or": [{"entityType": TYPEDEF_FEATHR_PROJECT}] if TYPEDEF_FEATHR_PROJECT in entity_type_list else None # this is a list of the entity types that you want to query
+            },
+            {
+                "attributeName": "qualifiedName",
+                "operator": "startswith",
+                "attributeValue": project_name
+            } ]} ]
+        }
+
         # Important properties returned includes:
         # id (the guid of the entity), name, qualifiedName, @search.score,
         # and @search.highlights
-        guid_list = []
-        for entity in result_entities:
-            if project_name:
-                # if project_name is a valid string, only append entities if the qualified name start with
-                # project_name+delimiter
-                qualified_name: str = entity["qualifiedName"]
-                # split the name based on delimiter
-                result = qualified_name.split(self.registry_delimiter)
-                if result[0].casefold() == project_name:
-                    guid_list.append(entity["id"])
-            else:
-                # otherwise append all the entities
-                guid_list.append(entity["id"])
+        result = self.purview_client.discovery.query(keywords=None, filter=query_filter, limit = limit)
+        
+        logger.info(f"Total number of Feathr entities found: {result['@search.count']}" )
+        result_entities = result['value']
+
+        # append the guid list. Since we are using project_name + delimiter to search, all the result will be valid.
+        # Note that a max of 1000 will be enforced
+        # TODO: make sure it's scalalbe if there are more than 1000 entities
+        guid_list = [entity["id"] for entity in result_entities]
+
         entity_res = [] if guid_list is None or len(guid_list)==0 else self.purview_client.get_entity(
             guid=guid_list)["entities"]
         return entity_res
