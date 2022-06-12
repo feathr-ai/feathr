@@ -742,7 +742,7 @@ derivations: {
 
         while True:
             result = self.purview_client.discovery.query(
-                "feathr*", limit=batch_delte_size, api_version="2022-03-01-preview")
+                "feathr", limit=batch_delte_size)
             logger.info("Total number of entities:",result['@search.count'] )
 
             # if no results, break:
@@ -792,7 +792,7 @@ derivations: {
             }
             ]
         }
-        result = self.purview_client.discovery.query(keywords=None, filter=query_filter)
+        result = self.purview_client.discovery.query(filter=query_filter)
 
         entities = result['value']
 
