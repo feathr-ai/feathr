@@ -74,7 +74,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str = None,  main_class_name: str = None, arguments: List[str] = None,
                           python_files: List[str]= None, reference_files_path: List[str] = None, job_tags: Dict[str, str] = None,
-                          configuration: Dict[str, str] = None):
+                          configuration: Dict[str, str] = {}):
         """
         Submits the feathr job
         Refer to the Apache Livy doc for more details on the meaning of the parameters:

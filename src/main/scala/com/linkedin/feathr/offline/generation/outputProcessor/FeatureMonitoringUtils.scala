@@ -115,6 +115,8 @@ object FeatureMonitoringUtils {
         .option("dbtable", tableName)
         .option("user", username)
         .option("password", password)
+        .option("ssl", true)
+        .option("sslmode", "require")
         .mode(saveMode)
         .save()
     } else {
