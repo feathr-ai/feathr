@@ -116,5 +116,5 @@ feature_registry:
 monitoring:
   database:
     sql:
-      url: 'jdbc:postgresql://featuremonitoring.postgres.database.azure.com:5432/postgres'
+      url: 'jdbc:postgresql://featuremonitoring.postgres.database.azure.com:5432/postgres?sslmode=require'
       user: "demo"
