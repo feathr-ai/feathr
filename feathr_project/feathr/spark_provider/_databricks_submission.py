@@ -143,7 +143,11 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             submission_params['new_cluster']['spark_conf'] = configuration
             submission_params['new_cluster']['custom_tags'] = job_tags
         # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
-        submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
+        if not main_jar_path:
+            logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
+            submission_params['libraries'][0]['maven'] = { "coordinates": FEATHR_MAVEN_ARTIFACT }
+        else:
+            submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         # see here for the submission parameter definition https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--request-structure-6
         if python_files:
             # this is a pyspark job. definition here: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--sparkpythontask
