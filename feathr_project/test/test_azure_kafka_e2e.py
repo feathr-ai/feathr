@@ -1,8 +1,7 @@
 import os
 from pathlib import Path
 import pytest
-from feathr import (BackfillTime, MaterializationSettings)
-from feathr import RedisSink
+from feathr import MaterializationSettings, RedisSink
 from test_fixture import kafka_test_setup
 
 @pytest.mark.skipif(os.environ.get('SPARK_CONFIG__SPARK_CLUSTER') != "azure_synapse",

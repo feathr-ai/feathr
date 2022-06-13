@@ -4,31 +4,34 @@ import os
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Union
-from feathr.utils import FeaturePrinter
-from feathr.feature import FeatureBase
+from typing import Dict, List, Optional, Union
+from feathr.definition.feature import FeatureBase
 
 import redis
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from pyhocon import ConfigFactory
 
-from feathr._databricks_submission import _FeathrDatabricksJobLauncher
-from feathr._envvariableutil import _EnvVaraibleUtil
-from feathr._feature_registry import _FeatureRegistry
-from feathr._file_utils import write_to_file
-from feathr._materialization_utils import _to_materialization_config
-from feathr._preprocessing_pyudf_manager import _PreprocessingPyudfManager
-from feathr._synapse_submission import _FeathrSynapseJobLauncher
+from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
+
+from feathr.registry._feature_registry_purview import _FeatureRegistry
+from feathr.definition._materialization_utils import _to_materialization_config
+from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
+from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
-from feathr.feathr_configurations import SparkExecutionConfiguration
-from feathr.feature_derivations import DerivedFeature
-from feathr.anchor import FeatureAnchor
-from feathr.materialization_settings import MaterializationSettings
+from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
+from feathr.definition.feature_derivations import DerivedFeature
+from feathr.definition.materialization_settings import MaterializationSettings
+from feathr.definition.monitoring_settings import MonitoringSettings
 from feathr.protobuf.featureValue_pb2 import FeatureValue
-from feathr.query_feature_list import FeatureQuery
-from feathr.settings import ObservationSettings
-from feathr.feathr_configurations import SparkExecutionConfiguration
+from feathr.definition.query_feature_list import FeatureQuery
+from feathr.definition.settings import ObservationSettings
+from feathr.definition.feature_derivations import DerivedFeature
+from feathr.definition.anchor import FeatureAnchor
+from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
+from feathr.utils._envvariableutil import _EnvVaraibleUtil
+from feathr.utils._file_utils import write_to_file
+from feathr.utils.feature_printer import FeaturePrinter
 
 
 class FeatureJoinJobParams:
@@ -99,7 +102,7 @@ class FeathrClient(object):
         self.envutils = envutils
 
         if not os.path.exists(config_path):
-            self.logger.warning('Configuration path does not exist, you need to set the environment variables explicitly. For all the environment variables, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
+            self.logger.warning('No Configuration file exist at the user provided config_path or the default config_path (./feathr_config.yaml), you need to set the environment variables explicitly. For all the environment variables that you need to set, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
 
         # Load all configs from yaml at initialization
         # DO NOT load any configs from yaml during runtime.
@@ -195,10 +198,9 @@ class FeathrClient(object):
     def register_features(self, from_context: bool = True):
         """Registers features based on the current workspace
 
-            Args:
-            from_context: If from_context is True (default), the features will be generated from
-                the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
-                configuration files.
+        Args:
+            from_context: If from_context is True (default), the features will be generated from the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
+            configuration files.
         """
 
         if from_context:
@@ -236,7 +238,7 @@ class FeathrClient(object):
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
-        
+
         # Pretty print anchor_list
         if verbose and self.anchor_list:
                 FeaturePrinter.pretty_print_anchors(self.anchor_list)
@@ -399,7 +401,7 @@ class FeathrClient(object):
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
                              output_path: str,
-                             execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None,
+                             execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
                              udf_files = None,
                              verbose: bool = False
                              ):
@@ -440,7 +442,7 @@ class FeathrClient(object):
             _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
-        
+
         # Pretty print feature_query
         if verbose and feature_query:
             FeaturePrinter.pretty_print_feature_query(feature_query)
@@ -448,7 +450,7 @@ class FeathrClient(object):
         write_to_file(content=config, full_file_name=config_file_path)
         return self._get_offline_features_with_config(config_file_path, execution_configuratons, udf_files=udf_files)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configuratons: Dict[str,str] = None, udf_files=[]):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configuratons: Dict[str,str] = {}, udf_files=[]):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
@@ -522,7 +524,16 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = None, verbose: bool = False):
+    def monitor_features(self, settings: MonitoringSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
+        """Create a offline job to generate statistics to monitor feature data
+
+        Args:
+            settings: Feature monitoring settings
+            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+        """
+        self.materialize_features(settings, execution_configuratons, verbose)
+
+    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
         """Materialize feature data
 
         Args:
@@ -550,12 +561,12 @@ class FeathrClient(object):
             self._materialize_features_with_config(config_file_path, execution_configuratons, udf_files)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
-        
+
         # Pretty print feature_names of materialized features
         if verbose and settings:
             FeaturePrinter.pretty_print_materialize_features(settings)
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = None, udf_files=[]):
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = {}, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
@@ -577,24 +588,29 @@ class FeathrClient(object):
         optional_params = []
         if _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG'):
             optional_params = optional_params + ['--kafka-config', self._get_kafka_config_str()]
-        return self.feathr_spark_laucher.submit_feathr_job(
-            job_name=self.project_name + '_feathr_feature_materialization_job',
-            main_jar_path=self._FEATHR_JOB_JAR_PATH,
-            python_files=cloud_udf_paths,
-            main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
-            arguments=[
+        arguments = [
                 '--generation-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
-                    generation_config.generation_config_path),
+                generation_config.generation_config_path),
                 # Local Config, comma seperated file names
                 '--feature-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
-                    generation_config.feature_config),
+                generation_config.feature_config),
                 '--redis-config', self._getRedisConfigStr(),
                 '--s3-config', self._get_s3_config_str(),
                 '--adls-config', self._get_adls_config_str(),
                 '--blob-config', self._get_blob_config_str(),
                 '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str()
-            ] + optional_params,
+                '--snowflake-config', self._get_snowflake_config_str(),
+            ] + optional_params
+        monitoring_config_str = self._get_monitoring_config_str()
+        if monitoring_config_str:
+            arguments.append('--monitoring-config')
+            arguments.append(monitoring_config_str)
+        return self.feathr_spark_laucher.submit_feathr_job(
+            job_name=self.project_name + '_feathr_feature_materialization_job',
+            main_jar_path=self._FEATHR_JOB_JAR_PATH,
+            python_files=cloud_udf_paths,
+            main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
+            arguments=arguments,
             reference_files_path=[],
             configuration=execution_configuratons,
         )
@@ -686,6 +702,22 @@ class FeathrClient(object):
             JDBC_TOKEN: {JDBC_TOKEN}
             """.format(JDBC_TABLE=table, JDBC_USER=user, JDBC_PASSWORD=password, JDBC_DRIVER = driver, JDBC_AUTH_FLAG = auth_flag, JDBC_TOKEN = token)
         return config_str
+
+    def _get_monitoring_config_str(self):
+        """Construct monitoring-related config string."""
+        url = self.envutils.get_environment_variable_with_default('monitoring', 'database', 'sql', 'url')
+        user = self.envutils.get_environment_variable_with_default('monitoring', 'database', 'sql', 'user')
+        password = self.envutils.get_environment_variable('MONITORING_DATABASE_SQL_PASSWORD')
+        if url:
+            # HOCCON format will be parsed by the Feathr job
+            config_str = """
+                MONITORING_DATABASE_SQL_URL: "{url}"
+                MONITORING_DATABASE_SQL_USER: {user}
+                MONITORING_DATABASE_SQL_PASSWORD: {password}
+                """.format(url=url, user=user, password=password)
+            return config_str
+        else:
+            ""
 
     def _get_snowflake_config_str(self):
         """Construct the Snowflake config string for jdbc. The url, user, role and other parameters can be set via

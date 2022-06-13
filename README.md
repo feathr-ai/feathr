@@ -44,8 +44,10 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 ## ☁️ Running Feathr on Cloud
 
+Feathr has native integrations with Databricks and Azure Synapse:
+
 - Please read the [Quick Start Guide for Feathr on Databricks](./docs/quickstart_databricks.md) to run Feathr with Databricks.
-- Please read the [Quick Start Guide for Feathr on Azure Synapse](./docs/quickstart.md) to run Feathr with Azure Synapse.
+- Please read the [Quick Start Guide for Feathr on Azure Synapse](./docs/quickstart_synapse.md) to run Feathr with Azure Synapse.
 
 ## 🔡 Feathr Examples
 

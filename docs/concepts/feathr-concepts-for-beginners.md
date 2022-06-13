@@ -141,4 +141,4 @@ For more details on how to utilize Feathr to perform point-in-time joins, refer 
 
 ## Next Steps
 
-After you are familar with the above concepts, please check out the [quick start guide](../quickstart.md) to get your hands dirty. Enjoy!
+After you are familar with the above concepts, please check out the [quick start guide](../quickstart_synapse.md) to get your hands dirty. Enjoy!
