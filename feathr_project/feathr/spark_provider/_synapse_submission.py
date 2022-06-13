@@ -1,4 +1,6 @@
+from copy import deepcopy
 import os
+import pathlib
 import re
 import time
 import urllib.request
@@ -43,7 +45,8 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
     """
     Submits spark jobs to a Synapse spark cluster.
     """
-    def __init__(self, synapse_dev_url: str, pool_name: str, datalake_dir: str, executor_size: str, executors: int, credential = None):
+
+    def __init__(self, synapse_dev_url: str, pool_name: str, datalake_dir: str, executor_size: str, executors: int, credential=None):
         # use DeviceCodeCredential if EnvironmentCredential is not available
         self.credential = credential
         # use the same credential for authentication to avoid further login.
@@ -60,9 +63,11 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
         """
         logger.info('Uploading {} to cloud..', local_path_or_http_path)
-        res_path = self._datalake.upload_file_to_workdir(local_path_or_http_path)
+        res_path = self._datalake.upload_file_to_workdir(
+            local_path_or_http_path)
 
-        logger.info('{} is uploaded to location: {}', local_path_or_http_path, res_path)
+        logger.info('{} is uploaded to location: {}',
+                    local_path_or_http_path, res_path)
         return res_path
 
     def download_result(self, result_path: str, local_folder: str):
@@ -92,21 +97,53 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             job_name (str): name of the job
             main_jar_path (str): main file paths, usually your main jar file
             main_class_name (str): name of your main class
-            arguments (str): all the arugments you want to pass into the spark job
-            job_tags (str): tags of the job, for exmaple you might want to put your user ID, or a tag with a certain information
+            arguments (str): all the arguments you want to pass into the spark job
+            job_tags (str): tags of the job, for example you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
         """
-        assert main_jar_path, 'main_jar_path should not be none or empty but it is none or empty.'
-        if main_jar_path.startswith('abfs'):
-            main_jar_cloud_path = main_jar_path
-            logger.info(
-                'Cloud path {} is used for running the job: {}', main_jar_path, job_name)
+
+        if configuration:
+            cfg = configuration.copy()  # We don't want to mess up input parameters
         else:
-            logger.info('Uploading jar from {} to cloud for running job: {}',
-                        main_jar_path, job_name)
-            main_jar_cloud_path = self._datalake.upload_file_to_workdir(main_jar_path)
-            logger.info('{} is uploaded to {} for running job: {}',
-                        main_jar_path, main_jar_cloud_path, job_name)
+            cfg = {}
+        if not main_jar_path:
+            # We don't have the main jar, use Maven
+            # Add Maven dependency to the job configuration
+            if "spark.jars.packages" in cfg:
+                cfg["spark.jars.packages"] = ",".join(
+                    [cfg["spark.jars.packages"], FEATHR_MAVEN_ARTIFACT])
+            else:
+                cfg["spark.jars.packages"] = FEATHR_MAVEN_ARTIFACT
+
+            if not python_files:
+                # This is a JAR job
+                # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
+                # so we have to use a dummy jar as the main file.
+                logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
+                # Use the no-op jar as the main file
+                # This is a dummy jar which contains only one `org.example.Noop` class with one empty `main` function which does nothing
+                current_dir = pathlib.Path(__file__).parent.resolve()
+                main_jar_path = os.path.join(current_dir, "noop-1.0.jar")
+            else:
+                # This is a PySpark job, no more things to do
+                pass
+        main_jar_cloud_path = None
+        if main_jar_path:
+            # Now we have a main jar, either feathr or noop
+            if main_jar_path.startswith('abfs'):
+                main_jar_cloud_path = main_jar_path
+                logger.info(
+                    'Cloud path {} is used for running the job: {}', main_jar_path, job_name)
+            else:
+                logger.info('Uploading jar from {} to cloud for running job: {}',
+                            main_jar_path, job_name)
+                main_jar_cloud_path = self._datalake.upload_file_to_workdir(main_jar_path)
+                logger.info('{} is uploaded to {} for running job: {}',
+                            main_jar_path, main_jar_cloud_path, job_name)
+        else:
+            # We don't have the main Jar, and this is a PySpark job so we don't use `noop.jar` either
+            # Keep `main_jar_cloud_path` as `None` as we already added maven package into cfg
+            pass
 
         reference_file_paths = []
         for file_path in reference_files_path:
@@ -120,7 +157,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                                                                  arguments=arguments,
                                                                  reference_files=reference_files_path,
                                                                  tags=job_tags,
-                                                                 configuration=configuration)
+                                                                 configuration=cfg)
         logger.info('See submitted job here: https://web.azuresynapse.net/en-us/monitoring/sparkapplication')
         return self.current_job_info
 
@@ -247,8 +284,13 @@ class _SynapseJobRunner(object):
         executor_cores = self.EXECUTOR_SIZE[self._executor_size]['Cores']
         executor_memory = self.EXECUTOR_SIZE[self._executor_size]['Memory']
 
-        # need to put the jar in as dependencies for pyspark job
-        jars = jars + [main_file]
+        # If we have a main jar, it needs to be added as dependencies for pyspark job
+        # Otherwise it's a PySpark job with Feathr JAR from Maven
+        if main_file:
+            jars = jars + [main_file]
+        elif not python_files:
+            # These 2 parameters should not be empty at the same time
+            raise ValueError("Main JAR is not set for the Spark job")
 
         # If file=main_file, then it's using only Scala Spark
         # If file=python_files[0], then it's using Pyspark
@@ -319,7 +361,7 @@ class _DataLakeFiler(object):
             self.dir_client = self.file_system_client.get_directory_client('/')
 
         self.datalake_dir = datalake_dir + \
-                            '/' if datalake_dir[-1] != '/' else datalake_dir
+            '/' if datalake_dir[-1] != '/' else datalake_dir
 
     def upload_file_to_workdir(self, src_file_path: str) -> str:
         """
@@ -394,7 +436,7 @@ class _DataLakeFiler(object):
         for folder in result_folders:
             folder_name = basename(folder)
             file_in_folder = [os.path.join(folder_name, basename(file_path.name)) for file_path in self.file_system_client.get_paths(
-            path=folder, recursive=False) if not file_path.is_directory]
+                path=folder, recursive=False) if not file_path.is_directory]
             local_paths = [os.path.join(local_dir_cache, file_name)
                        for file_name in file_in_folder]
             self._download_file_list(local_paths, file_in_folder, directory_client)
@@ -405,7 +447,7 @@ class _DataLakeFiler(object):
         self._download_file_list(local_paths, result_paths, directory_client)
 
         logger.info('Finish downloading files from {} to {}.',
-                    target_adls_directory,local_dir_cache)
+                    target_adls_directory, local_dir_cache)
 
     def _download_file_list(self, local_paths: List[str], result_paths, directory_client):
         '''
