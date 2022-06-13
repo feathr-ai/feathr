@@ -778,18 +778,18 @@ derivations: {
         # see syntax here: https://docs.microsoft.com/en-us/rest/api/purview/catalogdataplane/discovery/query#discovery_query_andornested
         query_filter = {
             "and": [
-            {
-                "or": 
-                [
-                    {"entityType": TYPEDEF_DERIVED_FEATURE},
-                    {"entityType": TYPEDEF_ANCHOR_FEATURE}          
-                ]
-            },
-            {
-                "attributeName": "qualifiedName",
-                "operator": "startswith",
-                "attributeValue": project_name + self.registry_delimiter
-            }
+                {
+                    "or":
+                    [
+                        {"entityType": TYPEDEF_DERIVED_FEATURE},
+                        {"entityType": TYPEDEF_ANCHOR_FEATURE}
+                    ]
+                },
+                {
+                    "attributeName": "qualifiedName",
+                    "operator": "startswith",
+                    "attributeValue": project_name + self.registry_delimiter
+                }
             ]
         }
         result = self.purview_client.discovery.query(filter=query_filter)
@@ -890,23 +890,26 @@ derivations: {
         query_filter = {
             "or":
             [{
-            "and": [ {
-                "or": [{"entityType": e} for e in entity_type_list] # this is a list of the entity types that you want to query
-            },
-            {
-                "attributeName": "qualifiedName",
-                "operator": "startswith",
-                "attributeValue": project_name + self.registry_delimiter
-            }] },
-            {
-            "and": [ {
-                "or": [{"entityType": TYPEDEF_FEATHR_PROJECT}] if TYPEDEF_FEATHR_PROJECT in entity_type_list else None # this is a list of the entity types that you want to query
-            },
-            {
-                "attributeName": "qualifiedName",
-                "operator": "startswith",
-                "attributeValue": project_name
-            } ]} ]
+                "and": [{
+                    # this is a list of the entity types that you want to query
+                    "or": [{"entityType": e} for e in entity_type_list]
+                },
+                    {
+                    "attributeName": "qualifiedName",
+                    "operator": "startswith",
+                    # use `project_name + self.registry_delimiter` to limit the search results
+                    "attributeValue": project_name + self.registry_delimiter
+                }]},
+                # if we are querying TYPEDEF_FEATHR_PROJECT, then "union" the result by using this query
+                {
+                "and": [{
+                    "or": [{"entityType": TYPEDEF_FEATHR_PROJECT}] if TYPEDEF_FEATHR_PROJECT in entity_type_list else None
+                },
+                    {
+                    "attributeName": "qualifiedName",
+                    "operator": "startswith",
+                    "attributeValue": project_name
+                }]}]
         }
 
         # Important properties returned includes:
