@@ -116,6 +116,5 @@ feature_registry:
 monitoring:
   database:
     sql:
-      # sslmode is required for some clusters. Configure this based on your need.
       url: 'jdbc:postgresql://featuremonitoring.postgres.database.azure.com:5432/postgres'
       user: "demo"
