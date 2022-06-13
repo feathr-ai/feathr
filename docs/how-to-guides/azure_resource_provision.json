@@ -13,7 +13,7 @@
         "principalId": {
             "type": "String",
             "metadata": {
-                "description": "Specifies the principal ID assigned to the role. You can find it by logging into 'https://shell.azure.com/bash' and run 'az ad signed-in-user show --query objectId -o tsv'"
+                "description": "Specifies the principal ID assigned to the role. You can find it by logging into 'https://shell.azure.com/bash' and run 'az ad signed-in-user show --query id -o tsv'"
             }
         },
         "allowAllConnections": {
@@ -71,7 +71,11 @@
         "roleDefinitionIdForBlobContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
         "roleDefinitionIdForKeyVaultSecretsUser": "4633458b-17de-408a-b874-0445c86b69e6",
         "roleAssignmentNameForBlobContributor": "[guid(parameters('principalId'), variables('roleDefinitionIdForBlobContributor'), resourceGroup().id)]",
-        "roleAssignmentNameForKeyVaultSecretsUser": "[guid(parameters('principalId'), variables('roleDefinitionIdForKeyVaultSecretsUser'), resourceGroup().id)]"
+        "roleAssignmentNameForKeyVaultSecretsUser": "[guid(parameters('principalId'), variables('roleDefinitionIdForKeyVaultSecretsUser'), resourceGroup().id)]",
+        "webAppName": "[concat(parameters('resourcePrefix'),'webapp' )]",
+        "webAppPlanName": "[concat(parameters('resourcePrefix'),'appplan' )]",
+        "webAppPlanSku": "P1v2",
+        "webAppAPIVersion": "2021-03-01"
     },
     "functions": [],
     "resources": [
@@ -198,7 +202,7 @@
             }
         },
         {
-            "condition": "[equals(parameters('provisionEventHub'),'true')]",        
+            "condition": "[equals(parameters('provisionEventHub'),'true')]",
             "type": "Microsoft.EventHub/namespaces",
             "apiVersion": "2021-11-01",
             "name": "[variables('eventhubNameSpaceName')]",
@@ -348,6 +352,48 @@
                 "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForKeyVaultSecretsUser'))]",
                 "principalId": "[parameters('principalId')]",
                 "scope": "[resourceGroup().id]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "[variables('webAppAPIVersion')]",
+            "name": "[variables('webAppPlanName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[variables('webAppPlanSku')]"
+            },
+            "kind": "linux",
+            "properties": {
+                "reserved": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "[variables('webAppAPIVersion')]",
+            "name": "[variables('webAppName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName'))]"
+            ],
+            "kind": "app,linux,container",
+            "identity": {
+                "type": "systemAssigned"
+            },
+            "properties": {
+                "name": "[variables('webAppName')]",
+                "httpsOnly": "true",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName'))]",
+                "siteConfig": {
+                    "linuxFxVersion": "DOCKER|dockercloud/hello-world",
+                    "alwaysOn": true,
+                    "ftpsState": "Disabled",
+                    "appSettings": [
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_URL",
+                            "value": "https://index.docker.io/v1"
+                        }
+                    ]
+                }
             }
         }
     ],
