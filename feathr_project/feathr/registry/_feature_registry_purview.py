@@ -753,6 +753,7 @@ derivations: {
             self.purview_client.delete_entity(guid=guid_list)
             logger.info("{} feathr entities deleted", batch_delte_size)
             # sleep here, otherwise backend might throttle
+            # process the next batch after sleep
             sleep(1)
     
     @classmethod
@@ -946,14 +947,14 @@ derivations: {
         Args:
             project_name (str): project name.
         """
-        all_entities_in_project = self._list_registered_entities_with_details(project_name=project_name,entity_type=[TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT])
+        all_entities_in_project = self._list_registered_entities_with_details(project_name=project_name,entity_type=[TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT, TYPEDEF_ANCHOR, TYPEDEF_SOURCE])
         if not all_entities_in_project:
             # if the result is empty
             return (None, None)
         
         # get project entity, the else are feature entities (derived+anchor)
         project_entity = [x for x in all_entities_in_project if x['typeName']==TYPEDEF_FEATHR_PROJECT][0] # there's only one available
-        feature_entities = [x for x in all_entities_in_project if x!=project_entity]
+        feature_entities = [x for x in all_entities_in_project if (x['typeName']==TYPEDEF_ANCHOR_FEATURE or x['typeName']==TYPEDEF_DERIVED_FEATURE)]
         feature_entity_guid_mapping = {x['guid']:x for x in feature_entities}
 
         # this is guid for feature anchor (GROUP of anchor features)
@@ -992,8 +993,8 @@ derivations: {
         for anchor_entity in anchor_result:
             feature_guid = [e["guid"] for e in anchor_entity["attributes"]["features"]]
             anchor_list.append(FeatureAnchor(name=anchor_entity["attributes"]["name"],
-                                source=self._get_source_by_guid(anchor_entity["attributes"]["source"]["guid"]),
-                                features=self._get_features_by_guid_or_entities(guid_list = feature_guid, entity_list=anchor_result),
+                                source=self._get_source_by_guid(anchor_entity["attributes"]["source"]["guid"], entity_list = all_entities_in_project),
+                                features=self._get_features_by_guid_or_entities(guid_list = feature_guid, entity_list=all_entities_in_project),
                                 registry_tags=anchor_entity["attributes"]["tags"]))
 
         return (anchor_list, derived_feature_list)
@@ -1042,9 +1043,13 @@ derivations: {
         udf_source_code = [line+'\n' for line in udf_source_code_striped]
         return " ".join(udf_source_code)
 
-    def _get_source_by_guid(self, guid) -> Source:
+    def _get_source_by_guid(self, guid, entity_list) -> Source:
+        """give a entity list and the target GUID for the source entity, return a python `Source` object.
+        """
         # TODO: currently return HDFS source by default. For JDBC source, it's currently implemented using HDFS Source so we should split in the future
-        source_entity = self.purview_client.get_entity(guid=guid)["entities"][0]
+
+        # there should be only one entity available
+        source_entity = [x for x in entity_list if x['guid'] == guid][0]
 
         # if source_entity["attributes"]["path"] is INPUT_CONTEXT, it will also be assigned to this returned object
         return HdfsSource(name=source_entity["attributes"]["name"],
@@ -1110,7 +1115,9 @@ derivations: {
             return None
 
     def _get_features_by_guid_or_entities(self, guid_list, entity_list) -> List[FeatureAnchor]:
-        """return a python list of the features that are referenced by a list of guids. If entity_list is provided, use entity_list to reconstruct those features
+        """return a python list of the features that are referenced by a list of guids. 
+        If entity_list is provided, use entity_list to reconstruct those features
+        This is for "anchor feature" only.
         """
         if not entity_list:
             feature_entities = self.purview_client.get_entity(guid=guid_list)["entities"]
