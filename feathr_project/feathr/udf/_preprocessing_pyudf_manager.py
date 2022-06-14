@@ -52,7 +52,7 @@ class _PreprocessingPyudfManager(object):
                     feature_names_to_func_mapping[string_feature_list] = _PreprocessingPyudfManager._parse_function_str_for_name(anchor.source.preprocessing)
                 else:
                     # it's a callable function
-                    feature_names_to_func_mapping[string_feature_list] = anchor.source.preprocessing.__name__ 
+                    feature_names_to_func_mapping[string_feature_list] = anchor.source.preprocessing.__name__
 
         if not features_with_preprocessing:
             return
@@ -87,9 +87,9 @@ class _PreprocessingPyudfManager(object):
 
     @staticmethod
     def persist_pyspark_udf_to_file(user_func, local_workspace_dir):
-        """persist the pyspark UDF to a file in `local_workspace_dir` for later usage. 
-        The user_func could be either a string that represents a function body, or a callable object. 
-        The reason being - if we are defining a regular Python function, it will be a callable object; 
+        """persist the pyspark UDF to a file in `local_workspace_dir` for later usage.
+        The user_func could be either a string that represents a function body, or a callable object.
+        The reason being - if we are defining a regular Python function, it will be a callable object;
         however if we reterive features from registry, the current implementation is to use plain strings to store the function body. In that case, the user_fuc will be string.
         """
         if isinstance(user_func, str):
