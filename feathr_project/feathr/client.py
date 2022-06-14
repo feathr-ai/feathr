@@ -91,7 +91,7 @@ class FeathrClient(object):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
-        envutils = _EnvVaraibleUtil(config_path)
+        self.envutils = _EnvVaraibleUtil(config_path)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
@@ -99,32 +99,30 @@ class FeathrClient(object):
             tem_dir_obj = tempfile.TemporaryDirectory()
             self.local_workspace_dir = tem_dir_obj.name
 
-        self.envutils = envutils
-
         if not os.path.exists(config_path):
             self.logger.warning('No Configuration file exist at the user provided config_path or the default config_path (./feathr_config.yaml), you need to set the environment variables explicitly. For all the environment variables that you need to set, please refer to https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml')
 
         # Load all configs from yaml at initialization
         # DO NOT load any configs from yaml during runtime.
-        self.project_name = envutils.get_environment_variable_with_default(
+        self.project_name = self.envutils.get_environment_variable_with_default(
             'project_config', 'project_name')
 
         # Redis configs
-        self.redis_host = envutils.get_environment_variable_with_default(
+        self.redis_host = self.envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'host')
-        self.redis_port = envutils.get_environment_variable_with_default(
+        self.redis_port = self.envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'port')
-        self.redis_ssl_enabled = envutils.get_environment_variable_with_default(
+        self.redis_ssl_enabled = self.envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'ssl_enabled')
 
         # S3 configs
-        self.s3_endpoint = envutils.get_environment_variable_with_default(
+        self.s3_endpoint = self.envutils.get_environment_variable_with_default(
             'offline_store', 's3', 's3_endpoint')
 
         # spark configs
-        self.output_num_parts = envutils.get_environment_variable_with_default(
+        self.output_num_parts = self.envutils.get_environment_variable_with_default(
             'spark_config', 'spark_result_output_parts')
-        self.spark_runtime = envutils.get_environment_variable_with_default(
+        self.spark_runtime = self.envutils.get_environment_variable_with_default(
             'spark_config', 'spark_cluster')
 
         self.credential = credential
@@ -136,22 +134,22 @@ class FeathrClient(object):
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
             self._FEATHR_JOB_JAR_PATH = \
-                envutils.get_environment_variable_with_default(
+                self.envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'feathr_runtime_location')
 
             if self.credential is None:
                 self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
 
             self.feathr_spark_laucher = _FeathrSynapseJobLauncher(
-                synapse_dev_url=envutils.get_environment_variable_with_default(
+                synapse_dev_url=self.envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'dev_url'),
-                pool_name=envutils.get_environment_variable_with_default(
+                pool_name=self.envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'pool_name'),
-                datalake_dir=envutils.get_environment_variable_with_default(
+                datalake_dir=self.envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'workspace_dir'),
-                executor_size=envutils.get_environment_variable_with_default(
+                executor_size=self.envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_size'),
-                executors=envutils.get_environment_variable_with_default(
+                executors=self.envutils.get_environment_variable_with_default(
                     'spark_config', 'azure_synapse', 'executor_num'),
                 credential=self.credential
             )
@@ -160,17 +158,17 @@ class FeathrClient(object):
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
             # their local env.
             self._FEATHR_JOB_JAR_PATH = \
-                envutils.get_environment_variable_with_default(
+                self.envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'feathr_runtime_location')
 
             self.feathr_spark_laucher = _FeathrDatabricksJobLauncher(
-                workspace_instance_url=envutils.get_environment_variable_with_default(
+                workspace_instance_url=self.envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'workspace_instance_url'),
-                token_value=_EnvVaraibleUtil.get_environment_variable(
+                token_value=self.envutils.get_environment_variable(
                     'DATABRICKS_WORKSPACE_TOKEN_VALUE'),
-                config_template=envutils.get_environment_variable_with_default(
+                config_template=self.envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'config_template'),
-                databricks_work_dir=envutils.get_environment_variable_with_default(
+                databricks_work_dir=self.envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'work_dir')
             )
 
@@ -178,9 +176,9 @@ class FeathrClient(object):
 
 
         # initialize registry
-        self.registry_delimiter = envutils.get_environment_variable_with_default(
+        self.registry_delimiter = self.envutils.get_environment_variable_with_default(
             'feature_registry', 'purview', 'delimiter')
-        self.azure_purview_name = envutils.get_environment_variable_with_default(
+        self.azure_purview_name = self.envutils.get_environment_variable_with_default(
             'feature_registry', 'purview', 'purview_name')
         # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
         self.registry = _FeatureRegistry(self.project_name, self.azure_purview_name, self.registry_delimiter, project_registry_tag, config_path = config_path, credential=self.credential)
@@ -383,7 +381,7 @@ class FeathrClient(object):
         """Constructs the Redis client. The host, port, credential and other parameters can be set via environment
         parameters.
         """
-        password = _EnvVaraibleUtil.get_environment_variable(REDIS_PASSWORD)
+        password = self.envutils.get_environment_variable(REDIS_PASSWORD)
         host = self.redis_host
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
@@ -586,7 +584,7 @@ class FeathrClient(object):
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
         optional_params = []
-        if _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG'):
+        if self.envutils.get_environment_variable('KAFKA_SASL_JAAS_CONFIG'):
             optional_params = optional_params + ['--kafka-config', self._get_kafka_config_str()]
         arguments = [
                 '--generation-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
@@ -627,7 +625,7 @@ class FeathrClient(object):
     def _getRedisConfigStr(self):
         """Construct the Redis config string. The host, port, credential and other parameters can be set via environment
         variables."""
-        password = _EnvVaraibleUtil.get_environment_variable(REDIS_PASSWORD)
+        password = self.envutils.get_environment_variable(REDIS_PASSWORD)
         host = self.redis_host
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
@@ -645,8 +643,8 @@ class FeathrClient(object):
         endpoint = self.s3_endpoint
         # if s3 endpoint is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
-        access_key = _EnvVaraibleUtil.get_environment_variable('S3_ACCESS_KEY')
-        secret_key = _EnvVaraibleUtil.get_environment_variable('S3_SECRET_KEY')
+        access_key = self.envutils.get_environment_variable('S3_ACCESS_KEY')
+        secret_key = self.envutils.get_environment_variable('S3_SECRET_KEY')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             S3_ENDPOINT: {S3_ENDPOINT}
@@ -658,10 +656,10 @@ class FeathrClient(object):
     def _get_adls_config_str(self):
         """Construct the ADLS config string for abfs(s). The Account, access key and other parameters can be set via
         environment variables."""
-        account = _EnvVaraibleUtil.get_environment_variable('ADLS_ACCOUNT')
+        account = self.envutils.get_environment_variable('ADLS_ACCOUNT')
         # if ADLS Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
-        key = _EnvVaraibleUtil.get_environment_variable('ADLS_KEY')
+        key = self.envutils.get_environment_variable('ADLS_KEY')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             ADLS_ACCOUNT: {ADLS_ACCOUNT}
@@ -672,10 +670,10 @@ class FeathrClient(object):
     def _get_blob_config_str(self):
         """Construct the Blob config string for wasb(s). The Account, access key and other parameters can be set via
         environment variables."""
-        account = _EnvVaraibleUtil.get_environment_variable('BLOB_ACCOUNT')
+        account = self.envutils.get_environment_variable('BLOB_ACCOUNT')
         # if BLOB Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
-        key = _EnvVaraibleUtil.get_environment_variable('BLOB_KEY')
+        key = self.envutils.get_environment_variable('BLOB_KEY')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             BLOB_ACCOUNT: {BLOB_ACCOUNT}
@@ -686,12 +684,12 @@ class FeathrClient(object):
     def _get_sql_config_str(self):
         """Construct the SQL config string for jdbc. The dbtable (query), user, password and other parameters can be set via
         environment variables."""
-        table = _EnvVaraibleUtil.get_environment_variable('JDBC_TABLE')
-        user = _EnvVaraibleUtil.get_environment_variable('JDBC_USER')
-        password = _EnvVaraibleUtil.get_environment_variable('JDBC_PASSWORD')
-        driver = _EnvVaraibleUtil.get_environment_variable('JDBC_DRIVER')
-        auth_flag = _EnvVaraibleUtil.get_environment_variable('JDBC_AUTH_FLAG')
-        token = _EnvVaraibleUtil.get_environment_variable('JDBC_TOKEN')
+        table = self.envutils.get_environment_variable('JDBC_TABLE')
+        user = self.envutils.get_environment_variable('JDBC_USER')
+        password = self.envutils.get_environment_variable('JDBC_PASSWORD')
+        driver = self.envutils.get_environment_variable('JDBC_DRIVER')
+        auth_flag = self.envutils.get_environment_variable('JDBC_AUTH_FLAG')
+        token = self.envutils.get_environment_variable('JDBC_TOKEN')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             JDBC_TABLE: {JDBC_TABLE}
@@ -738,7 +736,7 @@ class FeathrClient(object):
     def _get_kafka_config_str(self):
         """Construct the Kafka config string. The endpoint, access key, secret key, and other parameters can be set via
         environment variables."""
-        sasl = _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
+        sasl = self.envutils.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
         # HOCCON format will be parsed by the Feathr job
         config_str = """
             KAFKA_SASL_JAAS_CONFIG: "{sasl}"

@@ -382,7 +382,7 @@ class _DataLakeFiler(object):
                 logger.info("{} is downloaded and then uploaded to location: {}", src_file_path, returned_path)
         elif src_parse_result.scheme.startswith('abfs') or src_parse_result.scheme.startswith('wasb'):
             # passed a cloud path
-            logger.info("Skipping file {} as it's already in the cloud", src_file_path)
+            logger.info("Skip uploading file {} as it's already in the cloud", src_file_path)
             returned_path = src_file_path
         else:
             # else it should be a local file path or dir

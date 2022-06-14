@@ -85,7 +85,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         elif src_parse_result.scheme.startswith('dbfs'):
             # passed a cloud path
             logger.info(
-                'Skipping file {} as the file starts with dbfs:/', local_path_or_http_path)
+                'Skip uploading file {} as the file starts with dbfs:/', local_path_or_http_path)
             returned_path = local_path_or_http_path
         elif src_parse_result.scheme.startswith(('wasb','s3','gs')):
             # if the path starts with a location that's not a local path
