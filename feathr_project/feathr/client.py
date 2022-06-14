@@ -357,7 +357,7 @@ class FeathrClient(object):
                 typed_result.append(raw_feature)
         return typed_result
     
-    def delete_feature_from_redis(self, feature_table, key, feature_name):
+    def delete_feature_from_redis(self, feature_table, key, feature_name) -> None:
         """
         Delete feature from Redis
 
@@ -368,11 +368,13 @@ class FeathrClient(object):
         """
         
         redis_key = self._construct_redis_key(feature_table, key)
-
+        print("redis_key: " + str(redis_key))
+        print(self.redis_clint.hgetall(redis_key))
         if self.redis_clint.hexists(redis_key, feature_name):
-            self.redis_clint.delete(redis_key)
+            self.redis_clint.delete(redis_key, feature_name)
+            print(f'Deletion successful. {feature_name} is deleted from Redis.')
         else:
-            raise RuntimeError(f'{feature_name} not found in Redis')
+            raise RuntimeError(f'Deletion failed. {feature_name} not found in Redis.')
 
     def _clean_test_data(self, feature_table):
         """
@@ -551,6 +553,7 @@ class FeathrClient(object):
         for end in settings.get_backfill_cutoff_time():
             settings.backfill_time.end = end
             config = _to_materialization_config(settings)
+            print(config)
             config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
             config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
             write_to_file(content=config, full_file_name=config_file_path)
