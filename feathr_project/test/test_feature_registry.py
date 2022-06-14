@@ -8,11 +8,12 @@ from test_fixture import registry_test_setup_append, registry_test_setup_partial
 
 import pytest
 from click.testing import CliRunner
+from feathr import FeathrClient
 from feathr import (FeatureAnchor, FeatureQuery, ObservationSettings, TypedKey,
                     ValueType)
-from feathr._feature_registry import _FeatureRegistry
+from feathr.registry._feature_registry_purview import _FeatureRegistry
 from feathr.client import FeathrClient
-from feathr.feature_derivations import DerivedFeature
+from feathr.definition.feature_derivations import DerivedFeature
 from feathrcli.cli import init
 from numpy import equal
 

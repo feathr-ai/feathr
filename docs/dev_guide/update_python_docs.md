@@ -61,6 +61,43 @@ In docs directory:
 
 (excluding setup.py files, and some other demo files, test files.)
 
+## Exposing the right namespace in Pydocs
+Currently, the code is structured as this:
+```
+feathr_project/feathr
+├── __init__.py
+├── definition
+│   ├── _materialization_utils.py
+│   ├── aggregation.py
+├── protobuf
+│   ├── __init__.py
+│   └── featureValue_pb2.py
+```
+When the end users need to import Feathr modules, for example aggegations, it should be straightforward for them to do so. Currently they should use:
+
+```python
+from feathr import Aggregation
+```
+rather than 
+
+```python
+from feathr.definition import Aggregation
+```
+And this namespace should also be set correctly in the pydocs. 
+
+According to [this answer in StackOverflow](https://stackoverflow.com/questions/15115514/how-do-i-document-classes-without-the-module-name/31594545#31594545), we are doing the following:
+
+1. Add an `__all__` section in `__init__.py` (see code [here](../../feathr_project/feathr/__init__.py)). Every components that are included in the `__all__` section is exposed to end users. Others are not exposed in the pydocs.
+2. In the [rst file](../../feathr_project/docs/feathr.rst), just use a single module:
+```
+.. automodule:: feathr
+    :members:
+    :undoc-members:
+    :show-inheritance:
+```
+
+So that only this module is accessbile for end users.
+
 ## Upload to Readthedocs.com
 * Login to https://readthedocs.org/dashboard/
 * Click `Import a Project`
@@ -72,8 +109,12 @@ In docs directory:
 * After you have imported your own branch, you can click `Build version` to test the build result of your latest code on the branch.
 * You can click on each pannels to see the command message and warnings.
 * After the build is successful, it will show
-  the docs page(like https://test233.readthedocs.io/en/latest/feathr.html). But they have a site cache issue. You have to refresh the
-  site then you can see your new result.
+  the docs page(like https://xxx.readthedocs.io/en/latest/feathr.html). But they have a site cache issue. You have to refresh the site then you can see your new result.
+* Sometimes the python docs are not correctly formatted and you will see the build is successful, but you won't see any docs (just blank pages). You will see error messages like below, **though the build is successful**. Pleae make sure you fix those errors.
+
+```
+/home/docs/checkouts/readthedocs.org/user_builds/feathr-xiaoyzhu/checkouts/latest/feathr_project/feathr/client.py:docstring of feathr.client.FeathrClient.register_features:5: ERROR: Unexpected indentation.
+```
 
 ### Debug and Known Issues
 * `No module named xyz`: Readthedocs need to run the code to generated the docs. So if your dependency is not specified

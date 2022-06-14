@@ -16,6 +16,7 @@ import java.util.TimeZone
 private[offline] object FeatureGenConstants {
   val HDFS_OUTPUT_PROCESSOR_NAME = "HDFS"
   val REDIS_OUTPUT_PROCESSOR_NAME = "REDIS"
+  val MONITORING_OUTPUT_PROCESSOR_NAME = "MONITORING"
   val OUTPUT_TIME_PATH = "outputTimePath"
   val SAVE_SCHEMA_META = "saveSchemaMeta"
   val WORK_DIR = "workDir"

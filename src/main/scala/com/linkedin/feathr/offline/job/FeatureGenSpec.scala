@@ -5,7 +5,7 @@ import com.linkedin.feathr.common.configObj.configbuilder.{FeatureGenConfigBuild
 import com.linkedin.feathr.common.configObj.generation.{FeatureGenConfig, OfflineOperationalConfig, OutputProcessorConfig}
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrDataOutputException}
 import com.linkedin.feathr.common.{DateParam, DateTimeParam, DateTimeUtils, RichConfig}
-import com.linkedin.feathr.offline.generation.outputProcessor.{PushToRedisOutputProcessor, WriteToHDFSOutputProcessor}
+import com.linkedin.feathr.offline.generation.outputProcessor.{FeatureMonitoringProcessor, PushToRedisOutputProcessor, WriteToHDFSOutputProcessor}
 import com.linkedin.feathr.offline.util.{FeatureGenConstants, IncrementalAggUtils}
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.sparkcommon.OutputProcessor
@@ -55,6 +55,10 @@ class FeatureGenSpec(private val featureGenConfig: FeatureGenConfig, dataLoaderH
         val params = config.getParams
         val decoratedConfig = OutputProcessorBuilder.build(config.getName, params)
         new PushToRedisOutputProcessor(decoratedConfig, None)
+      case FeatureGenConstants.MONITORING_OUTPUT_PROCESSOR_NAME =>
+        val params = config.getParams
+        val decoratedConfig = OutputProcessorBuilder.build(config.getName, params)
+        new FeatureMonitoringProcessor(decoratedConfig, None)
       case _ =>
         throw new FeathrDataOutputException(ErrorLabel.FEATHR_USER_ERROR, "Custom output processor is not yet supported.")
     }

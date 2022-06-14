@@ -118,3 +118,6 @@ feature_registry:
     type_system_initialization: false
     
     
+secrets:
+  azure_key_vault:
+    name: feathrazuretest3-kv

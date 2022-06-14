@@ -24,9 +24,9 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 ## 📓 Documentation
 
-- For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/). 
+- For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
 - For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
-- For technical talks on Feathr, see the [slides here](./docs/talks/Feathr%20Feature%20Store%20Talk.pdf).
+- For technical talks on Feathr, see the [slides here](./docs/talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
 
 ## 🛠️ Install Feathr Client Locally
 
@@ -44,9 +44,10 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 ## ☁️ Running Feathr on Cloud
 
-- Please read the [Quick Start Guide for Feathr on Databricks](./docs/quickstart_databricks.md) to run Feathr with Databricks.
-- Please read the [Quick Start Guide for Feathr on Azure Synapse](./docs/quickstart.md) to run Feathr with Azure Synapse.
+Feathr has native integrations with Databricks and Azure Synapse:
 
+- Please read the [Quick Start Guide for Feathr on Databricks](./docs/quickstart_databricks.md) to run Feathr with Databricks.
+- Please read the [Quick Start Guide for Feathr on Azure Synapse](./docs/quickstart_synapse.md) to run Feathr with Azure Synapse.
 
 ## 🔡 Feathr Examples
 
@@ -111,36 +112,35 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming-source-ingestion.html) for more details.
 
-
 ### Point in Time Joins
 
 Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linkedin.github.io/feathr/concepts/point-in-time-join.html) for more details.
 
-
 ### Running Feathr Examples
 
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
-
+Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
 
 ## 🗣️ Tech Talks on Feathr
 
 - [Introduction to Feathr - Beginner's guide](https://www.youtube.com/watch?v=gZg01UKQMTY)
 - [Document Intelligence using Azure Feature Store (Feathr) and SynapseML
-](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
+  ](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
 
+## ⚙️ Cloud Integrations and Architecture
 
-## ⚙️ Cloud Integrations
+![Architecture Diagram](./docs/images/architecture.png)
 
-| Feathr component             | Cloud Integrations                                                          |
-| ---------------------------- | --------------------------------------------------------------------------- |
-| Offline store – Object Store | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
-| Offline store – SQL          | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
-| Streaming Source             | Kafka, EventHub                                                                 |
-| Online store                 | Azure Cache for Redis                                                       |
-| Feature Registry             | Azure Purview                                                               |
-| Compute Engine               | Azure Synapse Spark Pools, Databricks                                       |
-| Machine Learning Platform    | Azure Machine Learning, Jupyter Notebook                                    |
-| File Format                  | Parquet, ORC, Avro, Delta Lake                                              |
+| Feathr component                | Cloud Integrations                                                          |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| Offline store – Object Store    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
+| Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
+| Streaming Source                | Kafka, EventHub                                                             |
+| Online store                    | Azure Cache for Redis                                                       |
+| Feature Registry and Governance | Azure Purview                                                               |
+| Compute Engine                  | Azure Synapse Spark Pools, Databricks                                       |
+| Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook               |
+| File Format                     | Parquet, ORC, Avro, JSON, Delta Lake                                        |
+| Credentials                     | Azure Key Vault                                                             |
 
 ## 🚀 Roadmap
 
@@ -155,10 +155,9 @@ For a complete roadmap with esitmated dates, please [visit this page](https://gi
   - [ ] Support feature versioning
   - [ ] Support feature monitoring
   - [ ] Support feature store UI
-      - [ ] Lineage
-      - [ ] Search
+    - [ ] Lineage
+    - [ ] Search
   - [ ] Support feature data deletion and retention
-
 
 ## 👨‍👨‍👦‍👦 Community Guidelines
 
@@ -167,4 +166,3 @@ Build for the community and build by the community. Check out [Community Guideli
 ## 📢 Slack Channel
 
 Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-19dcbquwl-zKiJGYTak6Psw2GbUYtT2g)).
-
