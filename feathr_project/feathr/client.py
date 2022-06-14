@@ -356,6 +356,23 @@ class FeathrClient(object):
             else:
                 typed_result.append(raw_feature)
         return typed_result
+    
+    def delete_feature_from_redis(self, feature_table, key, feature_name):
+        """
+        Delete feature from Redis
+
+        Args:
+            feature_table: the name of the feature table
+            key: the key of the entity
+            feature_name: feature name to be deleted
+        """
+        
+        redis_key = self._construct_redis_key(feature_table, key)
+
+        if self.redis_clint.hexists(redis_key, feature_name):
+            self.redis_clint.delete(redis_key)
+        else:
+            raise RuntimeError(f'{feature_name} not found in Redis')
 
     def _clean_test_data(self, feature_table):
         """
