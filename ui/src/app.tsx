@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "antd";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { Configuration, InteractionType, PublicClientApplication, } from "@azure/msal-browser";
+import { InteractionType } from "@azure/msal-browser";
 import { MsalAuthenticationTemplate, MsalProvider } from "@azure/msal-react";
 import Header from "./components/header/header";
 import SideMenu from "./components/sidemenu/siteMenu";
@@ -15,17 +15,11 @@ import Monitoring from "./pages/monitoring/monitoring";
 import LineageGraph from "./pages/feature/lineageGraph";
 import Management from "./pages/management/management";
 import RoleManagement from "./pages/management/roleManagement";
+import { getMsalConfig } from "./utils/utils";
 
 const queryClient = new QueryClient();
 
-const msalConfig: Configuration = {
-  auth: {
-    clientId: process.env.REACT_APP_AAD_APP_CLIENT_ID,
-    authority: process.env.REACT_APP_AAD_APP_AUTHORITY,
-    redirectUri: window.location.origin,
-  },
-};
-const msalClient = new PublicClientApplication(msalConfig);
+const msalClient = getMsalConfig();
 const App: React.FC = () => {
   return (
     <MsalProvider instance={ msalClient }>

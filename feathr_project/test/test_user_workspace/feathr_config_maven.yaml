@@ -11,16 +11,16 @@
 # version of API settings
 api_version: 1
 project_config:
-  project_name: "feathr_getting_started"
+  project_name: 'project_feathr_integration_test'
   # Information that are required to be set via environment variables.
   required_environment_variables:
     # the environemnt variables are required to run Feathr
     # Redis password for your online store
-    - "REDIS_PASSWORD"
-    # Client IDs and client Secret for the service principal. Read the getting started docs on how to get those information.
-    - "AZURE_CLIENT_ID"
-    - "AZURE_TENANT_ID"
-    - "AZURE_CLIENT_SECRET"
+    - 'REDIS_PASSWORD'
+    # client IDs and client Secret for the service principal. Read the getting started docs on how to get those information.
+    - 'AZURE_CLIENT_ID'
+    - 'AZURE_TENANT_ID'
+    - 'AZURE_CLIENT_SECRET'
   optional_environment_variables:
     # the environemnt variables are optional, however you will need them if you want to use some of the services:
     - ADLS_ACCOUNT
@@ -50,7 +50,13 @@ offline_store:
   s3:
     s3_enabled: true
     # S3 endpoint. If you use S3 endpoint, then you need to provide access key and secret key in the environment variable as well.
-    s3_endpoint: "s3.amazonaws.com"
+    s3_endpoint: 's3.amazonaws.com'
+
+  # jdbc endpoint
+  jdbc:
+    jdbc_enabled: true
+    jdbc_database: 'feathrtestdb'
+    jdbc_table: 'feathrtesttable'
 
   # snowflake endpoint
   snowflake:
@@ -58,66 +64,55 @@ offline_store:
     user: "feathrintegration"
     role: "ACCOUNTADMIN"
 
-  # jdbc endpoint
-  jdbc:
-    jdbc_enabled: true
-    jdbc_database: "feathrtestdb"
-    jdbc_table: "feathrtesttable"
-
-
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks
   # The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.
-  spark_cluster: "azure_synapse"
+  spark_cluster: 'azure_synapse'
   # configure number of parts for the spark output for feature generation job
-  spark_result_output_parts: "1"
+  spark_result_output_parts: '1'
 
   azure_synapse:
-    # dev URL to the synapse cluster. Usually it's `https://yourclustername.dev.azuresynapse.net`
-    dev_url: "https://feathrazuretest3synapse.dev.azuresynapse.net"
-    # name of the sparkpool that you are going to use
-    pool_name: "spark3"
-    # workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here
-    workspace_dir: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_getting_started"
-    executor_size: "Small"
+    dev_url: 'https://feathrazuretest3synapse.dev.azuresynapse.net'
+    pool_name: 'spark3'
+    # workspace dir for storing all the required configuration files and the jar resources
+    workspace_dir: 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_test_workspace'
+    executor_size: 'Small'
     executor_num: 4
+
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
     # this is the default location so end users don't have to compile the runtime again.
-    feathr_runtime_location: "wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-LATEST.jar"
-
+    # feathr_runtime_location: wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-0.5.0-SNAPSHOT.jar
+    # Unset this value will use default package on Maven
+    # feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.5.0.jar"
   databricks:
     # workspace instance
-    workspace_instance_url: 'https://adb-6885802458123232.12.azuredatabricks.net/'
+    workspace_instance_url: 'https://adb-5638037984879289.9.azuredatabricks.net/'
+    workspace_token_value: ''
     # config string including run time information, spark version, machine size, etc.
-    # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--request-structure-6
-    # The fields marked as "FEATHR_FILL_IN" will be managed by Feathr. Other parameters can be customizable. For example, you can customize the node type, spark version, number of workers, instance pools, timeout, etc.
-    config_template: '{"run_name":"FEATHR_FILL_IN","new_cluster":{"spark_version":"9.1.x-scala2.12","node_type_id":"Standard_D3_v2","num_workers":2,"spark_conf":{"FEATHR_FILL_IN":"FEATHR_FILL_IN"}},"libraries":[{"jar":"FEATHR_FILL_IN"}],"spark_jar_task":{"main_class_name":"FEATHR_FILL_IN","parameters":["FEATHR_FILL_IN"]}}'
-    # workspace dir for storing all the required configuration files and the jar resources. All the feature definitions will be uploaded here
-    work_dir: "dbfs:/feathr_getting_started"
-    # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with dbfs:/
+    # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
+    config_template: {'run_name':'','new_cluster':{'spark_version':'9.1.x-scala2.12','node_type_id':'Standard_F4s','num_workers':2,'spark_conf':{}},'libraries':[{'jar':''}],'spark_jar_task':{'main_class_name':'','parameters':['']}}
+    # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
+    work_dir: 'dbfs:/feathr_getting_started'
+
     # this is the default location so end users don't have to compile the runtime again.
-    feathr_runtime_location: "https://azurefeathrstorage.blob.core.windows.net/public/feathr-assembly-LATEST.jar"
+    # Unset this value will use default package on Maven
+    # feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.5.0.jar"
 
 online_store:
   redis:
     # Redis configs to access Redis cluster
-    host: "feathrazuretest3redis.redis.cache.windows.net"
+    host: 'feathrazuretest3redis.redis.cache.windows.net'
     port: 6380
     ssl_enabled: True
 
 feature_registry:
-  # Registry configs if use purview
   purview:
+    # Registry configs
+    # register type system in purview during feathr client initialization. This is only required to be executed once.
+    type_system_initialization: true
     # configure the name of the purview endpoint
-    purview_name: "feathrazuretest3-purview1"
+    purview_name: 'feathrazuretest3-purview1'
     # delimiter indicates that how the project/workspace name, feature names etc. are delimited. By default it will be '__'
     # this is for global reference (mainly for feature sharing). For exmaple, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'
     # the feature will have a globally unique name called 'foo__taxi_driver__f_daily_trips'
-    delimiter: "__"
-    # controls whether the type system will be initialized or not. Usually this is only required to be executed once.
-    type_system_initialization: false
-    
-    
-secrets:
-  azure_key_vault:
-    name: feathrazuretest3-kv
+    delimiter: '__'
