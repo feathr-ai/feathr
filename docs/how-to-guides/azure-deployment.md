@@ -13,7 +13,7 @@ Due to the complexity of the possible cloud environment, it is almost impossible
 
 Feathr has native cloud integration and getting started with Feathr is very straightforward. You only need three steps:
 
-1. Get the principal ID of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if you are asked to choose one), and write down that value (will be something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
+1. Get the principal ID of your account by running `az ad signed-in-user show --query id -o tsv` in the link below (Select "Bash" if you are asked to choose one), and write down that value (will be something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
 
 
 [Launch Cloud Shell](https://shell.azure.com/bash)
