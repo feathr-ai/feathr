@@ -762,7 +762,7 @@ derivations: {
         """
         return self.purview_client
 
-    def list_registered_features(self, project_name: str, limit=100, starting_offset=0) -> List[Dict[str,str]]:
+    def list_registered_features(self, project_name: str, limit=1000, starting_offset=0) -> List[Dict[str,str]]:
         """
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
@@ -795,6 +795,7 @@ derivations: {
         result = self.purview_client.discovery.query(filter=query_filter)
 
         entities = result['value']
+        # entities = self.purview_client.discovery.search_entities(query = None, search_filter=query_filter, limit=limit)
 
         for entity in entities:
             feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
@@ -840,11 +841,22 @@ derivations: {
         Get guid of a feature given its qualifiedName
         """        
         # the search term should be full qualified name
+        # TODO: need to update the calling functions to add `type` field to make it more performant
         # purview_client.get_entity(qualifiedName=qualifiedName) might not work here since it requires an additonal typeName parameter
-        self.purview_client.get_entity(qualifiedName=qualifiedName, typeName=type)
-        search_term = "{0}".format(qualifiedName)
-        result = self.purview_client.discovery.query(search_term)
+        # Currently still use the `query` API to get the result in a "full name match" way.
+        # self.purview_client.get_entity(qualifiedName=qualifiedName, typeName=type)
+
+        # get the corresponding features belongs to a certain project.
+        # note that we need to use "eq" to filter exactly this qualified name
+        # see syntax here: https://docs.microsoft.com/en-us/rest/api/purview/catalogdataplane/discovery/query#discovery_query_andornested
+        query_filter = {
+            "attributeName": "qualifiedName",
+            "operator": "eq",
+            "attributeValue": qualifiedName
+        }
+        result = self.purview_client.discovery.query(keywords = None, filter=query_filter)
         entities = result['value']
+        # There should be exactly one result, but we don't enforce the check here
         for entity in entities:
             if entity.get('qualifiedName') == qualifiedName:
                 return entity.get('id')
@@ -915,14 +927,12 @@ derivations: {
         # Important properties returned includes:
         # id (the guid of the entity), name, qualifiedName, @search.score,
         # and @search.highlights
-        result = self.purview_client.discovery.query(keywords=None, filter=query_filter, limit = limit)
+        # TODO: it might be throttled in the backend and wait for the `pyapacheatlas` to fix this
+        # https://github.com/wjohnson/pyapacheatlas/issues/206
+        # `pyapacheatlas` needs a bit optimization to avoid additional calls.
+        result_entities = self.purview_client.discovery.search_entities(query=None, search_filter=query_filter, limit = limit)
         
-        logger.info(f"Total number of Feathr entities found: {result['@search.count']}" )
-        result_entities = result['value']
-
         # append the guid list. Since we are using project_name + delimiter to search, all the result will be valid.
-        # Note that a max of 1000 will be enforced
-        # TODO: make sure it's scalalbe if there are more than 1000 entities
         guid_list = [entity["id"] for entity in result_entities]
 
         entity_res = [] if guid_list is None or len(guid_list)==0 else self.purview_client.get_entity(
@@ -936,15 +946,14 @@ derivations: {
         Args:
             project_name (str): project name.
         """
-
-        entities = self._list_registered_entities_with_details(project_name=project_name,entity_type=[TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT])
-        if not entities:
+        all_entities_in_project = self._list_registered_entities_with_details(project_name=project_name,entity_type=[TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT])
+        if not all_entities_in_project:
             # if the result is empty
             return (None, None)
         
         # get project entity, the else are feature entities (derived+anchor)
-        project_entity = [x for x in entities if x['typeName']==TYPEDEF_FEATHR_PROJECT][0] # there's only one available
-        feature_entities = [x for x in entities if x!=project_entity]
+        project_entity = [x for x in all_entities_in_project if x['typeName']==TYPEDEF_FEATHR_PROJECT][0] # there's only one available
+        feature_entities = [x for x in all_entities_in_project if x!=project_entity]
         feature_entity_guid_mapping = {x['guid']:x for x in feature_entities}
 
         # this is guid for feature anchor (GROUP of anchor features)
@@ -957,7 +966,6 @@ derivations: {
         for derived_feature_entity_id in derived_feature_ids:
             # this will be used to generate DerivedFeature instance
             derived_feature_key_list = []
-
                 
             for key in derived_feature_entity_id["attributes"]["key"]:
                 derived_feature_key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
@@ -965,30 +973,29 @@ derivations: {
             # for feature anchor (GROUP), input features are splitted into input anchor features & input derived features
             anchor_feature_guid = [e["guid"] for e in derived_feature_entity_id["attributes"]["input_anchor_features"]]
             derived_feature_guid = [e["guid"] for e in derived_feature_entity_id["attributes"]["input_derived_features"]]
-            
             # for derived features, search all related input features.
             input_features_guid = self.search_input_anchor_features(derived_feature_guid,feature_entity_guid_mapping)
-
             # chain the input features together
-            all_input_features = list(itertools.chain.from_iterable(
-                [self._get_features_by_guid(x) for x in input_features_guid+anchor_feature_guid]))
-
+            # filter out features that is related with this derived feature 
+            all_input_features = self._get_features_by_guid_or_entities(guid_list=input_features_guid+anchor_feature_guid, entity_list=all_entities_in_project) 
             derived_feature_list.append(DerivedFeature(name=derived_feature_entity_id["attributes"]["name"],
                                 feature_type=self._get_feature_type_from_hocon(derived_feature_entity_id["attributes"]["type"]),
                                 transform=self._get_transformation_from_dict(derived_feature_entity_id["attributes"]['transformation']),
                                 key=derived_feature_key_list,
                                 input_features= all_input_features,
                                 registry_tags=derived_feature_entity_id["attributes"]["tags"]))                    
-        anchor_result = self.purview_client.get_entity(guid=anchor_guid)["entities"]
+        
+        # anchor_result = self.purview_client.get_entity(guid=anchor_guid)["entities"]
+        anchor_result = [x for x in all_entities_in_project if x['typeName']==TYPEDEF_ANCHOR]
         anchor_list = []
+
         for anchor_entity in anchor_result:
             feature_guid = [e["guid"] for e in anchor_entity["attributes"]["features"]]
             anchor_list.append(FeatureAnchor(name=anchor_entity["attributes"]["name"],
                                 source=self._get_source_by_guid(anchor_entity["attributes"]["source"]["guid"]),
-                                features=self._get_features_by_guid(feature_guid),
+                                features=self._get_features_by_guid_or_entities(guid_list = feature_guid, entity_list=anchor_result),
                                 registry_tags=anchor_entity["attributes"]["tags"]))
 
-        
         return (anchor_list, derived_feature_list)
 
     def search_input_anchor_features(self,derived_guids,feature_entity_guid_mapping) ->List[str]:
@@ -1102,8 +1109,19 @@ derivations: {
             # no transformation function observed
             return None
 
-    def _get_features_by_guid(self, guid) -> List[FeatureAnchor]:
-        feature_entities = self.purview_client.get_entity(guid=guid)["entities"]
+    def _get_features_by_guid_or_entities(self, guid_list, entity_list) -> List[FeatureAnchor]:
+        """return a python list of the features that are referenced by a list of guids. If entity_list is provided, use entity_list to reconstruct those features
+        """
+        if not entity_list:
+            feature_entities = self.purview_client.get_entity(guid=guid_list)["entities"]
+        else:
+            guid_set = set(guid_list)
+            feature_entities = [x for x in entity_list if x['guid'] in guid_set]
+
+            # raise error if we cannot find all the guid
+            if len(feature_entities) != len(guid_list):
+                raise RuntimeError("Number of `feature_entities` is less than provided GUID list for search. The project might be broken.")
+
         feature_list=[]
         key_list = []
         for feature_entity in feature_entities:
