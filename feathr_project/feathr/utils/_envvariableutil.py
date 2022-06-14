@@ -2,20 +2,25 @@ import os
 import yaml
 from loguru import logger
 from feathr.secrets.akv_client import AzureKeyVaultClient
-
+from azure.core.exceptions import ResourceNotFoundError
 
 class _EnvVaraibleUtil(object):
     def __init__(self, config_path):
         self.config_path = config_path
-        self.akv_client = None
+        # Set to none first to avoid invalid reference
+        self.akv_name = None
+        self.akv_name = self.get_environment_variable_with_default( 'secrets', 'azure_key_vault', 'name')
+        self.akv_client = AzureKeyVaultClient(self.akv_name) if self.akv_name else None
 
     def get_environment_variable_with_default(self, *args):
         """Gets the environment variable for the variable key.
         Args:
             *args: list of keys in feathr_config.yaml file
         Return:
-            A environment variable for the variable key. If it's not set in the environment, then a default is retrieved
-            from the feathr_config.yaml file with the same config key.
+            A environment variable for the variable key. It will retrieve the value of the environment variables in the following order:
+            If the key is set in the environment variable, Feathr will use the value of that environment variable
+            If it's not set in the environment, then a default is retrieved from the feathr_config.yaml file with the same config key.
+            If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from key vault
             """
 
         # if envs exist, just return the existing env variable without reading the file
@@ -24,51 +29,58 @@ class _EnvVaraibleUtil(object):
         # make it work for lower case and upper case.
         env_variable = os.environ.get(
             env_keyword, os.environ.get(upper_env_keyword))
+
+        # If the key is set in the environment variable, Feathr will use the value of that environment variable
         if env_variable:
             return env_variable
 
-        # if the config path doesn't exist, just return
-        try:
-            assert os.path.exists(os.path.abspath(self.config_path))
-        except:
-            logger.info("{} is not set and configuration file {} cannot be found. One of those should be set." , env_keyword, self.config_path)
+        # If it's not set in the environment, then a default is retrieved from the feathr_config.yaml file with the same config key.
+        if os.path.exists(os.path.abspath(self.config_path)):
+            with open(os.path.abspath(self.config_path), 'r') as stream:
+                try:
+                    yaml_config = yaml.safe_load(stream)
+                    # concat all layers and  check in environment variable
+                    yaml_layer = yaml_config
 
-        with open(os.path.abspath(self.config_path), 'r') as stream:
+                    # resolve one layer after another
+                    for arg in args:
+                        yaml_layer = yaml_layer[arg]
+                    return yaml_layer
+                except KeyError as exc:
+                    logger.info("{} not found in the config file.", env_keyword)
+                except yaml.YAMLError as exc:
+                    logger.warning(exc)
+        
+        # If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from key vault
+        if self.akv_name:
             try:
-                yaml_config = yaml.safe_load(stream)
-                # concat all layers
-                # check in environment variable
-                yaml_layer = yaml_config
-
-                # resolve one layer after another
-                for arg in args:
-                    yaml_layer = yaml_layer[arg]
-                return yaml_layer
-            except KeyError as exc:
-                logger.info(exc)
+                return  self.akv_client.get_feathr_akv_secret(env_keyword) 
+            except ResourceNotFoundError:
+                # print out warning message if cannot find the env variable in all the resources
+                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
                 return ""
-            except yaml.YAMLError as exc:
-                logger.info(exc)
 
-    @staticmethod
-    def get_environment_variable(variable_key):
+    def get_environment_variable(self, variable_key):
         """Gets the environment variable for the variable key.
+        
 
         Args:
             variable_key: environment variable key that is used to retrieve the environment variable
         Return:
-            A environment variable for the variable key.
+            A environment variable for the variable key. It will retrieve the value of the environment variables in the following order:
+            If the key is set in the environment variable, Feathr will use the value of that environment variable
+            If it's not available in the environment variable file, Feathr will try to reterive the value from key vault
         Raises:
             ValueError: If the environment variable is not set for this key, an exception is thrown.
             """
-        password = os.environ.get(variable_key)
-        if not password:
-            logger.info(variable_key +
-                        ' is not set in the environment variables.')
-            akv_name = os.environ.get("KEY_VAULT_NAME")
-            if akv_name:
-                logger.info('Fetching the value {} from Key Vault.', variable_key)
-                akv_client = AzureKeyVaultClient(akv_name)
-                password = akv_client.get_akv_secret(variable_key)
-        return password
+        env_var_value = os.environ.get(variable_key)
 
+        if env_var_value:
+            return env_var_value
+
+        # If it's not available in the environment variable file, Feathr will try to reterive the value from key vault
+        logger.info(variable_key + ' is not set in the environment variables.')
+        
+        if self.akv_name:
+            return self.akv_client.get_feathr_akv_secret(variable_key)
+    
