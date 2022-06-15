@@ -446,62 +446,69 @@ private[offline] object FeatureTransformation {
       case (featureGroupingFactors, anchorsWithSameSource) =>
         // use future to submit spark job asynchronously so that these feature groups can be evaluated in parallel
         Future {
-          // evaluate each group of feature, each group of features are defined on same dataframe
-          // we already group by (keyExtractor, dataframe/rdd, timeWindow), so anchorsWithSameSource contains all anchors
-          // defined on this dataframe/rdd with same set of keys.
-          // hence we can just take any(e.g, the first) extractor (in anchorsWithSameSource.head) to get the join keys to apply
-          // bloomfilter and get key column
-          val keyExtractor = anchorsWithSameSource.head._1.featureAnchor.sourceKeyExtractor
-          val featureAnchorWithSource = anchorsWithSameSource.keys.toSeq
-          val selectedFeatures = anchorsWithSameSource.flatMap(_._2.featureNames).toSeq
+          // we have to wrap the code inside the Future in a try/catch because otherwise only non-fatal exceptions will get caught
+          // so if a fatal exception occurs, the error is only printed out and the thread silently dies which would leave the
+          // spark driver hanging as it does not know the thread is dead. Documentation: https://docs.scala-lang.org/overviews/core/futures.html#exceptions
+          try {
+            // evaluate each group of feature, each group of features are defined on same dataframe
+            // we already group by (keyExtractor, dataframe/rdd, timeWindow), so anchorsWithSameSource contains all anchors
+            // defined on this dataframe/rdd with same set of keys.
+            // hence we can just take any(e.g, the first) extractor (in anchorsWithSameSource.head) to get the join keys to apply
+            // bloomfilter and get key column
+            val keyExtractor = anchorsWithSameSource.head._1.featureAnchor.sourceKeyExtractor
+            val featureAnchorWithSource = anchorsWithSameSource.keys.toSeq
+            val selectedFeatures = anchorsWithSameSource.flatMap(_._2.featureNames).toSeq
 
-          val sourceDF = featureGroupingFactors.source
-          val transformedResults: Seq[KeyedTransformedResult] = transformMultiAnchorsOnSingleDataFrame(sourceDF,
-                keyExtractor, featureAnchorWithSource, bloomFilter, selectedFeatures, incrementalAggContext)
+            val sourceDF = featureGroupingFactors.source
+            val transformedResults: Seq[KeyedTransformedResult] = transformMultiAnchorsOnSingleDataFrame(sourceDF,
+              keyExtractor, featureAnchorWithSource, bloomFilter, selectedFeatures, incrementalAggContext)
 
-          val res = transformedResults
-            .map { transformedResultWithKey =>
-              // rename feature column names from feature names to prefixed/standard form,
-              // so we can avoid feathr name conflicting with data fields
-              val transformedDF = transformedResultWithKey.transformedResult.df
-              val outputJoinKeyColumnNames = transformedResultWithKey.joinKey
-              val featureNamePrefixPair = transformedResultWithKey.transformedResult.featureNameAndPrefixPairs
-              val rightJoinKeyPrefix = featureGroupingFactors.sourceKeyExtry.replaceAll("[^\\w]", "") + "_"
+            val res = transformedResults
+              .map { transformedResultWithKey =>
+                // rename feature column names from feature names to prefixed/standard form,
+                // so we can avoid feathr name conflicting with data fields
+                val transformedDF = transformedResultWithKey.transformedResult.df
+                val outputJoinKeyColumnNames = transformedResultWithKey.joinKey
+                val featureNamePrefixPair = transformedResultWithKey.transformedResult.featureNameAndPrefixPairs
+                val rightJoinKeyPrefix = featureGroupingFactors.sourceKeyExtry.replaceAll("[^\\w]", "") + "_"
 
-              // keep only key columns and feature column in the output column for feature join
-              val joinKeyColumnToNewColName = outputJoinKeyColumnNames.map(keyCol => {
-                // dataframe column should not have special characters
-                val cleanedJoinKeyColumn = (rightJoinKeyPrefix + keyCol).replaceAll("[^\\w]", "_")
-                (transformedDF(keyCol), cleanedJoinKeyColumn)
-              })
-              val joinKeyColumnNames = joinKeyColumnToNewColName.map(_._2)
-              val featureColumnToNewColumnName = featureNamePrefixPair.map { featurePair =>
-                val featureRefStrInDF = DataFrameColName.getEncodedFeatureRefStrForColName(featurePair._1)
-                (transformedDF(featurePair._2 + featureRefStrInDF), DataFrameColName.genFeatureColumnName(featureRefStrInDF))
+                // keep only key columns and feature column in the output column for feature join
+                val joinKeyColumnToNewColName = outputJoinKeyColumnNames.map(keyCol => {
+                  // dataframe column should not have special characters
+                  val cleanedJoinKeyColumn = (rightJoinKeyPrefix + keyCol).replaceAll("[^\\w]", "_")
+                  (transformedDF(keyCol), cleanedJoinKeyColumn)
+                })
+                val joinKeyColumnNames = joinKeyColumnToNewColName.map(_._2)
+                val featureColumnToNewColumnName = featureNamePrefixPair.map { featurePair =>
+                  val featureRefStrInDF = DataFrameColName.getEncodedFeatureRefStrForColName(featurePair._1)
+                  (transformedDF(featurePair._2 + featureRefStrInDF), DataFrameColName.genFeatureColumnName(featureRefStrInDF))
+                }
+                val featureNames = featureNamePrefixPair.map(_._1)
+                if (featureColumnToNewColumnName.map(_._2).distinct.size != featureColumnToNewColumnName.map(_._2).size) {
+                  throw new FeathrFeatureTransformationException(
+                    ErrorLabel.FEATHR_USER_ERROR,
+                    s"Fatal internal error, ${featureColumnToNewColumnName} should be distinct!")
+                }
+                // only preserve join key columns and feature data column in the output
+                val selectedDF = transformedDF.select((joinKeyColumnToNewColName ++ featureColumnToNewColumnName)
+                  .map { case (column, newColumnName) => column.alias(newColumnName) }: _*)
+                // outputJoinKeyColumnNames are the same for the dataframe in one stage, as they have same join key
+                val updatedTransformedResult = transformedResultWithKey.transformedResult.copy(df = selectedDF)
+                val updatedKeyedTransformedResult = KeyedTransformedResult(joinKeyColumnNames, updatedTransformedResult)
+                featureNames.map(featureName => (featureName, updatedKeyedTransformedResult))
               }
-              val featureNames = featureNamePrefixPair.map(_._1)
-              if (featureColumnToNewColumnName.map(_._2).distinct.size != featureColumnToNewColumnName.map(_._2).size) {
-                throw new FeathrFeatureTransformationException(
-                  ErrorLabel.FEATHR_USER_ERROR,
-                  s"Fatal internal error, ${featureColumnToNewColumnName} should be distinct!")
-              }
-              // only preserve join key columns and feature data column in the output
-              val selectedDF = transformedDF.select((joinKeyColumnToNewColName ++ featureColumnToNewColumnName)
-                .map { case (column, newColumnName) => column.alias(newColumnName) }: _*)
-              // outputJoinKeyColumnNames are the same for the dataframe in one stage, as they have same join key
-              val updatedTransformedResult = transformedResultWithKey.transformedResult.copy(df = selectedDF)
-              val updatedKeyedTransformedResult = KeyedTransformedResult(joinKeyColumnNames, updatedTransformedResult)
-              featureNames.map(featureName => (featureName, updatedKeyedTransformedResult))
+              .reduce(_ ++ _)
+            val computedFeatures = res.map(_._1)
+            if (computedFeatures.distinct.size != computedFeatures.size) {
+              throw new FeathrFeatureTransformationException(
+                ErrorLabel.FEATHR_ERROR,
+                s"Internal error: ${computedFeatures} should be not have duplicate features, " +
+                  s"this means some features are computed multiple times, current anchors: ${featureAnchorWithSource}")
             }
-            .reduce(_ ++ _)
-          val computedFeatures = res.map(_._1)
-          if (computedFeatures.distinct.size != computedFeatures.size) {
-            throw new FeathrFeatureTransformationException(
-              ErrorLabel.FEATHR_ERROR,
-              s"Internal error: ${computedFeatures} should be not have duplicate features, " +
-                s"this means some features are computed multiple times, current anchors: ${featureAnchorWithSource}")
+            res.toMap
+          } catch {
+            case e: Throwable => throw(e)
           }
-          res.toMap
         }
     }
     futures.map(k => Await.result(k, Duration.Inf)).reduce(_ ++ _)
