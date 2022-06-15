@@ -63,7 +63,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({ editMode, userR
             <Option value={Consumer}>{Consumer}</Option>
           </Select>
         </Form.Item>
-          <Form.Item name="Reason" label="Reason" rules={[{ required: true }]}>
+          <Form.Item name="reason" label="Reason" rules={[{ required: true }]}>
             <Input disabled={!editMode} />
           </Form.Item>
         </Space>

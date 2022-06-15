@@ -1,7 +1,6 @@
 import Axios from "axios";
 import { DataSource, Feature, FeatureLineage, UserRole, Role } from "../models/model";
 import { InteractionRequiredAuthError, PublicClientApplication } from "@azure/msal-browser";
-import mockUserRole from "./mock/userrole.json";
 import { getMsalConfig } from "../utils/utils";
 
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT + "/api/v1";
@@ -113,8 +112,12 @@ export const deleteFeature = async (qualifiedName: string) => {
 };
 
 export const listUserRole = async () => {
-  let data:UserRole[] = mockUserRole
-  return data
+  const token = await getIdToken(msalInstance);
+  return await Axios
+  .get<UserRole[]>(`${ API_ENDPOINT }/userroles?code=${ token }`, {})
+  .then((response) => {
+    return response.data;
+  })
 };
 
 export const getUserRole = async (userName: string) => {
@@ -124,21 +127,21 @@ export const getUserRole = async (userName: string) => {
   .then((response) => {
     return response.data;
   })
-}
+};
 
 export const addUserRole = async (role: Role) => {
   const token = await getIdToken(msalInstance);
   return await Axios
-  .post(`${ API_ENDPOINT }/user/${role.userName}/userroles/new?code=${ token }`, role,
+  .post(`${ API_ENDPOINT }/user/${role.userName}/userroles/add`, role,
       {
         headers: { "Content-Type": "application/json;" },
-        params: {},
+        params: {'project': role.scope, 'role': role.roleName, 'reason':role.reason},
       }).then((response) => {
       return response;
     }).catch((error) => {
       return error.response;
     });
-}
+};
 
 export const deleteUserRole = async (role: Role) => {
   const token = await getIdToken(msalInstance);
@@ -152,7 +155,7 @@ export const deleteUserRole = async (role: Role) => {
     }).catch((error) => {
       return error.response;
     });
-}
+};
 
 export const getIdToken = async( msalInstance: PublicClientApplication ): Promise<string> => {
   const activeAccount = msalInstance.getActiveAccount(); // This will only return a non-null value if you have logic somewhere else that calls the setActiveAccount API

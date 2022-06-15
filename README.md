@@ -4,6 +4,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/linkedin/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/linkedin/feathr/releases)
 [![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://linkedin.github.io/feathr/)
 [![Python API](https://img.shields.io/readthedocs/feathr?label=Python%20API)](https://feathr.readthedocs.io/en/latest/)
+[![Deploy to Azure](https://img.shields.io/badge/Deploy-Azure-blue)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 ## What is Feathr?
 

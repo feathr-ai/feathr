@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Modal, PageHeader, Row, Space, Table, Tag } from "antd";
 import { UserRole } from "../models/model";
-import { listUserRole } from "../api";
+import { deleteUserRole, listUserRole } from "../api";
+import RoleManagementForm from './roleManagementForm';
 
 const UserRoles: React.FC = () => {
     const navigate = useNavigate();
@@ -12,7 +13,7 @@ const UserRoles: React.FC = () => {
 
     const showModal = ()  => {
         setVisible(true);
-        setModalText("This Role Assignment will be deleted.");
+        setModalText(`This Role Assignment will be deleted.`);
     };
     const handleOk = () => {
         setModalText('The modal will be closed after two seconds');
@@ -46,15 +47,15 @@ const UserRoles: React.FC = () => {
             key: 'roleName',
             align: 'center' as 'center',
         },
-        {
+                {
             title: <div>Permissions</div>,
-            key: 'permissions',
-            dataIndex: 'permissions',
+            key: 'access',
+            dataIndex: 'access',
             render: (tags: any[]) => (
                 <>
                     {tags.map(tag => {
                         let color = tag.length > 5 ? 'red' : 'green';
-                        if (tag === 'Write') color = 'blue'
+                        if (tag === 'write') color = 'blue'
                         return (
                             <Tag color={color} key={tag}>
                                 {tag.toUpperCase()}
@@ -79,20 +80,15 @@ const UserRoles: React.FC = () => {
         {
             title: 'Action',
             key: 'action',
-            render: () => (
+            render: (row: UserRole) => (
                 <Space size="middle">
-                    <Button type="primary" onClick={showModal}>
+                    <Button type="primary" onClick={()=> {
+                        showModal()
+                        let data = row.roleName;
+                        console.log(`delete ${row.roleName}`);
+        }}>
                         Delete
                     </Button>
-                    <Modal
-                        title="Please Confirm"
-                        visible={visible}
-                        onOk={handleOk}
-                        confirmLoading={confirmLoading}
-                        onCancel={handleCancel}
-                    >
-                        <p>{modalText}</p>
-                    </Modal>
                 </Space>
             ),
         },

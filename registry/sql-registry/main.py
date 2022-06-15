@@ -5,8 +5,11 @@ from starlette.middleware.cors import CORSMiddleware
 from registry import *
 from registry.db_registry import DbRegistry
 from registry.models import EntityType
+from rbac import *
+from rbac.db_rbac import DbRBAC
 
 rp = "/"
+os.environ["API_BASE"] = "api/v1"
 try:
     rp = os.environ["API_BASE"]
     if rp[0] != '/':
@@ -16,16 +19,18 @@ except:
 print("Using API BASE: ", rp)
 
 registry = DbRegistry()
+rbac = DbRBAC()
 app = FastAPI()
 router = APIRouter()
 
 # Enables CORS
 app.add_middleware(CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+                   allow_origins=["*"],
+                   allow_credentials=True,
+                   allow_methods=["*"],
+                   allow_headers=["*"],
+                   )
+
 
 @router.get("/projects")
 def get_projects() -> list[str]:
@@ -54,7 +59,8 @@ def get_project_features(project: str, keyword: Optional[str] = None) -> list:
         features = registry.get_entities(feature_ids)
         return list([e.to_dict() for e in features])
     else:
-        efs = registry.search_entity(keyword, [EntityType.AnchorFeature, EntityType.DerivedFeature])
+        efs = registry.search_entity(
+            keyword, [EntityType.AnchorFeature, EntityType.DerivedFeature])
         feature_ids = [ef.id for ef in efs]
         features = registry.get_entities(feature_ids)
         return list([e.to_dict() for e in features])
@@ -64,7 +70,8 @@ def get_project_features(project: str, keyword: Optional[str] = None) -> list:
 def get_feature(feature: str) -> dict:
     e = registry.get_entity(feature)
     if e.entity_type not in [EntityType.DerivedFeature, EntityType.AnchorFeature]:
-        raise HTTPException(status_code=404, detail=f"Feature {feature} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Feature {feature} not found")
     return e
 
 
@@ -74,4 +81,26 @@ def get_feature_lineage(feature: str) -> dict:
     return lineage.to_dict()
 
 
-app.include_router(prefix = rp, router=router)
+@router.get("/users")
+def get_users() -> list[str]:
+    return rbac.get_users()
+
+
+@router.get("/userroles")
+def get_userroles() -> list:
+    userroles = rbac.get_userroles()
+    ret = list([r.to_dict() for r in userroles])
+    return ret
+
+
+@router.post("/users/{user}/userroles/add")
+def add_userrole(project: str, user: str, role: str, reason: str):
+    return rbac.add_userrole(project, user, role, reason)
+
+
+@router.post("/users/{user}/userroles/delete")
+def delete_userrole(project: str, user: str, role: str, reason: str):
+    return rbac.delete_userrole(project, user, role, reason)
+
+
+app.include_router(prefix=rp, router=router)
