@@ -59,7 +59,7 @@ class _EnvVaraibleUtil(object):
             except ResourceNotFoundError:
                 # print out warning message if cannot find the env variable in all the resources
                 logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
-                return ""
+                return None
 
     def get_environment_variable(self, variable_key):
         """Gets the environment variable for the variable key.
@@ -87,5 +87,5 @@ class _EnvVaraibleUtil(object):
             except ResourceNotFoundError:
                 # print out warning message if cannot find the env variable in all the resources
                 logger.warning('Environment variable {} not found in environment variable or key vault service.', variable_key)
-                return ""
+                return None
     
