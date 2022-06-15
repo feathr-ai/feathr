@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 from unittest import result
+import time
 
 from click.testing import CliRunner
 from feathr import (BOOLEAN, FLOAT, INT32, FeatureQuery, ObservationSettings,
@@ -96,6 +97,8 @@ def test_feathr_get_offline_features_with_delta_lake():
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=900)
     
+    # wait for a few secs for the resource to come up in the databricks API
+    time.sleep(5)
     # download result and just assert the returned result is not empty
     res_df = get_result_df(client)
     
