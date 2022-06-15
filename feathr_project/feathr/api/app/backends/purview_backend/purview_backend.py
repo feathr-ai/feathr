@@ -27,6 +27,10 @@ class PurviewBackend(FeathrBackendAbstract):
         raw_result = registry_client._list_registered_entities_with_details(entity_type=[TYPEDEF_FEATHR_PROJECT])
         result = [x['attributes']['name'] for x in raw_result]
         return result
+    
+    def GetProject(self,project_name):
+        #todo : transform purview entities to entity-relation definition
+        pass
 
     # feature-related
     def ListFeatures(self,project_name):
