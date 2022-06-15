@@ -1,5 +1,10 @@
 # Feathr – An Enterprise-Grade, High Performance Feature Store
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/linkedin/feathr/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/linkedin/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/linkedin/feathr/releases)
+[![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://linkedin.github.io/feathr/)
+[![Python API](https://img.shields.io/readthedocs/feathr?label=Python%20API)](https://feathr.readthedocs.io/en/latest/)
+
 ## What is Feathr?
 
 Feathr is the feature store that is used in production in LinkedIn for many years and was open sourced in April 2022. Read our announcement on [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
@@ -118,7 +123,7 @@ Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linked
 
 ### Running Feathr Examples
 
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
+Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart_synapse.html) containing a bit more explanation on the notebook.
 
 ## 🗣️ Tech Talks on Feathr
 

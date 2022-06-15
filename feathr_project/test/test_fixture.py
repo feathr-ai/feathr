@@ -171,12 +171,8 @@ def registry_test_setup(config_path: str):
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
     return client
 def registry_test_setup_partially(config_path: str):
-
-
-    # use a new project name every time to make sure all features are registered correctly
-    now = datetime.now()
-    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
-
+    """Register a partial of a project. Will call `generate_entities()` and register only the first anchor feature.
+    """
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
 
     request_anchor, agg_anchor, derived_feature_list = generate_entities()
@@ -185,11 +181,8 @@ def registry_test_setup_partially(config_path: str):
     return client
 
 def registry_test_setup_append(config_path: str):
-
-
-    # use a new project name every time to make sure all features are registered correctly
-    now = datetime.now()
-    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    """Append features to a project. Will call `generate_entities()` and register from the 2nd anchor feature
+    """
 
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
 
