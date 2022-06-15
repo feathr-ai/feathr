@@ -27,6 +27,7 @@ from pyapacheatlas.core.typedef import (AtlasAttributeDef,
                             
 from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
+from collections import defaultdict
 
 from feathr.definition.dtype import *
 from feathr.utils._file_utils import write_to_file
@@ -765,8 +766,7 @@ derivations: {
 
     def list_registered_features(self, project_name: str, limit=1000, starting_offset=0) -> List[Dict[str,str]]:
         """
-        List all the already registered features. If project_name is not provided or is None, it will return all the
-        registered features; otherwise it will only return only features under this project
+        List all the already registered features in a certain project.
         """
 
         feature_list = []
@@ -774,32 +774,23 @@ derivations: {
         if not project_name:
             raise RuntimeError("project_name must be specified.")
 
-        # get the corresponding features belongs to a certain project.
-        # note that we need to use "startswith" to filter out the features that don't belong to this project.
-        # see syntax here: https://docs.microsoft.com/en-us/rest/api/purview/catalogdataplane/discovery/query#discovery_query_andornested
-        query_filter = {
-            "and": [
-                {
-                    "or":
-                    [
-                        {"entityType": TYPEDEF_DERIVED_FEATURE},
-                        {"entityType": TYPEDEF_ANCHOR_FEATURE}
-                    ]
-                },
-                {
-                    "attributeName": "qualifiedName",
-                    "operator": "startswith",
-                    "attributeValue": project_name + self.registry_delimiter
-                }
-            ]
-        }
-        result = self.purview_client.discovery.query(filter=query_filter)
+        # get the ID of the project name
+        res = self.purview_client.get_entity(qualifiedName=project_name, typeName=TYPEDEF_FEATHR_PROJECT)
 
-        entities = result['value']
-        # entities = self.purview_client.discovery.search_entities(query = None, search_filter=query_filter, limit=limit)
-
-        for entity in entities:
-            feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
+        # error handling
+        if len(res) == 0:
+            logger.warning(f"project {project_name} is not found.")
+            return []
+        # there should be only one entity
+        project_guid = res['entities'][0]['guid']  
+        # return the project lineage that we can use
+        # maintain almost the same parameter with the Purview portal. Can be changed later.
+        result = self.purview_client.get_entity_lineage(guid=project_guid, depth=6, width=100, direction="BOTH", includeParent=True,getDerivedLineage=False)
+        
+        # result['guidEntityMap'] should be a dict and we only care about the values
+        for entity in result['guidEntityMap'].values():
+            if entity['typeName'] in {TYPEDEF_ANCHOR_FEATURE, TYPEDEF_DERIVED_FEATURE}:
+                feature_list.append({"name":entity['attributes']["name"],'id':entity['guid'],"qualifiedName":entity['attributes']['qualifiedName']}) 
 
         return feature_list
    
@@ -871,74 +862,53 @@ derivations: {
         entities = self.purview_client.discovery.search_entities(searchTerm)
         return entities
     
-    def _list_registered_entities_with_details(self, project_name: str, entity_type: Union[str, List[str]] = None, limit=1000, starting_offset=0,) -> List[Dict]:
+    def _get_lineage_map(self, project_name: str, entity_type: Union[str, List[str]] = None, limit=1000, starting_offset=0,) -> List[Dict]:
         """
         List all the already registered entities. entity_type should be one of: SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT, or a list of those values
         limit: a maximum 1000 will be enforced at the underlying API
         
         returns a list of the result entities.
         """
-        entity_type_list = [entity_type] if isinstance(
-            entity_type, str) else entity_type
-
-        for i in entity_type_list:
-            if i not in {TYPEDEF_SOURCE, TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT}:
-                raise RuntimeError(
-                    f'only SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT are supported when listing the registered entities, {entity_type} is not one of them.')
-
         if project_name is None:
             raise RuntimeError("You need to specify a project_name")
-        # the search grammar: 
-        # https://docs.microsoft.com/en-us/azure/purview/how-to-search-catalog#search-query-syntax
-        # https://docs.microsoft.com/en-us/rest/api/datacatalog/data-catalog-search-syntax-reference
-
-        # get the corresponding features belongs to a certain project.
-        # note that we need to use "startswith" to filter out the features that don't belong to this project.
-        # see syntax here: https://docs.microsoft.com/en-us/rest/api/purview/catalogdataplane/discovery/query#discovery_query_andornested
-        # this search does the following:
-        # search all the entities that start with project_name+delimiter for all the search entities
-        # However, for TYPEDEF_FEATHR_PROJECT, it doesn't have delimiter in the qualifiedName
-        # Hence if TYPEDEF_FEATHR_PROJECT is in the `entity_type` input, we need to search for that specifically
-        # and finally "OR" the result to union them
-        query_filter = {
-            "or":
-            [{
-                "and": [{
-                    # this is a list of the entity types that you want to query
-                    "or": [{"entityType": e} for e in entity_type_list]
-                },
-                    {
-                    "attributeName": "qualifiedName",
-                    "operator": "startswith",
-                    # use `project_name + self.registry_delimiter` to limit the search results
-                    "attributeValue": project_name + self.registry_delimiter
-                }]},
-                # if we are querying TYPEDEF_FEATHR_PROJECT, then "union" the result by using this query
-                {
-                "and": [{
-                    "or": [{"entityType": TYPEDEF_FEATHR_PROJECT}] if TYPEDEF_FEATHR_PROJECT in entity_type_list else None
-                },
-                    {
-                    "attributeName": "qualifiedName",
-                    "operator": "startswith",
-                    "attributeValue": project_name
-                }]}]
-        }
-
-        # Important properties returned includes:
-        # id (the guid of the entity), name, qualifiedName, @search.score,
-        # and @search.highlights
-        # TODO: it might be throttled in the backend and wait for the `pyapacheatlas` to fix this
-        # https://github.com/wjohnson/pyapacheatlas/issues/206
-        # `pyapacheatlas` needs a bit optimization to avoid additional calls.
-        result_entities = self.purview_client.discovery.search_entities(query=None, search_filter=query_filter, limit = limit)
         
-        # append the guid list. Since we are using project_name + delimiter to search, all the result will be valid.
-        guid_list = [entity["id"] for entity in result_entities]
+        # get the ID of the project name
+        res = self.purview_client.get_entity(qualifiedName=project_name, typeName=TYPEDEF_FEATHR_PROJECT)
 
-        entity_res = [] if guid_list is None or len(guid_list)==0 else self.purview_client.get_entity(
-            guid=guid_list)["entities"]
-        return entity_res
+        # error handling
+        if len(res) == 0:
+            logger.warning(f"project {project_name} is not found.")
+            return []
+        # there should be only one entity
+        project_guid = res['entities'][0]['guid']  
+        # return the project lineage that we can use
+        # maintain almost the same parameter with the Purview portal. Can be changed later.
+        lineage_map = self.purview_client.get_entity_lineage(guid=project_guid, depth=6, width=100, direction="BOTH", includeParent=True,getDerivedLineage=False)
+        
+
+        return lineage_map
+    def _reverse_relations(self, input_relations: List[Dict[str, str]], base_entity_guid):
+        """Reverse the `fromEntityId` and `toEntityId` field, as currently we are using a bottom up way to store in Purview
+        """
+        output_reversed_relations = []        
+        output_reversed_relation_lookup = defaultdict(list)
+        for d in input_relations:
+            output_reversed_relations.append({"fromEntityId": d['toEntityId'], "toEntityId": d['fromEntityId']})
+            # lookup table so that we can easily get the associated entities given a higher up level entity
+            # for example given a project entity, we can use this output_reversed_relation_lookup to look up the associated anchor/derived feature.
+            output_reversed_relation_lookup[d['toEntityId']].append(d['fromEntityId'])
+
+        return output_reversed_relation_lookup
+
+    def _get_two_hop_entity_with_type(self, guid, lookup_dict, type, guidEntityMap):
+
+        return_guid = []
+        for next_guid in lookup_dict[guid]:
+            for two_hop_guid in lookup_dict[next_guid]:
+                if guidEntityMap[two_hop_guid]['typeName'] == type:
+                    return_guid.append(two_hop_guid)
+        
+        return return_guid
 
 
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
@@ -947,11 +917,20 @@ derivations: {
         Args:
             project_name (str): project name.
         """
-        all_entities_in_project = self._list_registered_entities_with_details(project_name=project_name,entity_type=[TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT, TYPEDEF_ANCHOR, TYPEDEF_SOURCE])
+        lineage_result = self._get_lineage_map(project_name=project_name)
+        self.lineage_result = lineage_result
+        # result['guidEntityMap'] should be a dict and we only care about the values (key will be the GUID of the entity)
+        all_entities_in_project = []
+        entity_type_set = set([TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT, TYPEDEF_ANCHOR, TYPEDEF_SOURCE])
+        for entity in lineage_result['guidEntityMap'].values():
+            if entity['typeName'] in entity_type_set:
+                all_entities_in_project.append(entity) 
         if not all_entities_in_project:
             # if the result is empty
             return (None, None)
         
+        reversed_relations_lookup = self._reverse_relations(lineage_result['relations'], base_entity_guid=lineage_result['baseEntityGuid'])
+        self.reversed_relations_lookup = reversed_relations_lookup
         # get project entity, the else are feature entities (derived+anchor)
         project_entity = [x for x in all_entities_in_project if x['typeName']==TYPEDEF_FEATHR_PROJECT][0] # there's only one available
         feature_entities = [x for x in all_entities_in_project if (x['typeName']==TYPEDEF_ANCHOR_FEATURE or x['typeName']==TYPEDEF_DERIVED_FEATURE)]
@@ -972,8 +951,9 @@ derivations: {
                 derived_feature_key_list.append(TypedKey(key_column=key["key_column"], key_column_type=key["key_column_type"], full_name=key["full_name"], description=key["description"], key_column_alias=key["key_column_alias"]))
             
             # for feature anchor (GROUP), input features are splitted into input anchor features & input derived features
-            anchor_feature_guid = [e["guid"] for e in derived_feature_entity_id["attributes"]["input_anchor_features"]]
-            derived_feature_guid = [e["guid"] for e in derived_feature_entity_id["attributes"]["input_derived_features"]]
+            
+            anchor_feature_guid = self._get_two_hop_entity_with_type(derived_feature_entity_id['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
+            derived_feature_guid = self._get_two_hop_entity_with_type(derived_feature_entity_id['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_DERIVED_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
             # for derived features, search all related input features.
             input_features_guid = self.search_input_anchor_features(derived_feature_guid,feature_entity_guid_mapping)
             # chain the input features together
@@ -984,18 +964,19 @@ derivations: {
                                 transform=self._get_transformation_from_dict(derived_feature_entity_id["attributes"]['transformation']),
                                 key=derived_feature_key_list,
                                 input_features= all_input_features,
-                                registry_tags=derived_feature_entity_id["attributes"]["tags"]))                    
+                                # use dict.get() since "tags" field is optional
+                                registry_tags=derived_feature_entity_id["attributes"].get("tags")))                    
         
         # anchor_result = self.purview_client.get_entity(guid=anchor_guid)["entities"]
         anchor_result = [x for x in all_entities_in_project if x['typeName']==TYPEDEF_ANCHOR]
         anchor_list = []
 
         for anchor_entity in anchor_result:
-            feature_guid = [e["guid"] for e in anchor_entity["attributes"]["features"]]
+            feature_guid = self._get_two_hop_entity_with_type(anchor_entity['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
             anchor_list.append(FeatureAnchor(name=anchor_entity["attributes"]["name"],
                                 source=self._get_source_by_guid(anchor_entity["attributes"]["source"]["guid"], entity_list = all_entities_in_project),
                                 features=self._get_features_by_guid_or_entities(guid_list = feature_guid, entity_list=all_entities_in_project),
-                                registry_tags=anchor_entity["attributes"]["tags"]))
+                                registry_tags=anchor_entity["attributes"].get("tags")))
 
         return (anchor_list, derived_feature_list)
 
@@ -1008,6 +989,7 @@ derivations: {
         while len(stack)>0:
             current_derived_guid = stack.pop()
             current_input = feature_entity_guid_mapping[current_derived_guid]
+            self._get_two_hop_entity_with_type(current_input['guid'],lookup_dict=self.reversed_relations_lookup,type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=self.lineage_result['guidEntityMap'])
             new_derived_features = [x["guid"] for x in current_input["attributes"]["input_derived_features"]]
             new_anchor_features = [x["guid"] for x in current_input["attributes"]["input_anchor_features"]]
             for feature_guid in new_derived_features:
@@ -1051,14 +1033,18 @@ derivations: {
         # there should be only one entity available
         source_entity = [x for x in entity_list if x['guid'] == guid][0]
 
-        # if source_entity["attributes"]["path"] is INPUT_CONTEXT, it will also be assigned to this returned object
-        return HdfsSource(name=source_entity["attributes"]["name"],
-                event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
-                timestamp_format=source_entity["attributes"]["timestamp_format"],
-                preprocessing=self._correct_function_identation(source_entity["attributes"]["preprocessing"]),
-                path=source_entity["attributes"]["path"],
-                registry_tags=source_entity["attributes"]["tags"]
-                )
+        # return different source type
+        if source_entity["attributes"]["type"] == INPUT_CONTEXT:
+            return InputContext()
+        else:
+            
+            return HdfsSource(name=source_entity["attributes"]["name"],
+                    event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
+                    timestamp_format=source_entity["attributes"]["timestamp_format"],
+                    preprocessing=self._correct_function_identation(source_entity["attributes"]["preprocessing"]),
+                    path=source_entity["attributes"]["path"],
+                    registry_tags=source_entity["attributes"].get("tags")
+                    )
 
 
 
@@ -1140,7 +1126,8 @@ derivations: {
                     feature_type=self._get_feature_type_from_hocon(feature_entity["attributes"]["type"]), # stored as a hocon string, can be parsed using pyhocon
                     transform=self._get_transformation_from_dict(feature_entity["attributes"]['transformation']), #transform attributes are stored in a dict fashion , can be put in a WindowAggTransformation
                     key=key_list,
-                    registry_tags=feature_entity["attributes"]["tags"],
+                    # use dict.get() since "tags" field is optional
+                    registry_tags=feature_entity["attributes"].get("tags"),
 
             ))
         return feature_list 
