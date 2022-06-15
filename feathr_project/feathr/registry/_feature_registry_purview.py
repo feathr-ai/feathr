@@ -997,9 +997,9 @@ derivations: {
         while len(stack)>0:
             current_derived_guid = stack.pop()
             current_input = feature_entity_guid_mapping[current_derived_guid]
-            self._get_child_entity_with_type(current_input['guid'],lookup_dict=self.reversed_relations_lookup,type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=self.lineage_result['guidEntityMap'])
-            new_derived_features = [x["guid"] for x in current_input["attributes"]["input_derived_features"]]
-            new_anchor_features = [x["guid"] for x in current_input["attributes"]["input_anchor_features"]]
+            
+            new_derived_features = self._get_child_entity_with_type(current_input['guid'],lookup_dict=self.reversed_relations_lookup,type=TYPEDEF_DERIVED_FEATURE, guidEntityMap=self.lineage_result['guidEntityMap'])
+            new_anchor_features = self._get_child_entity_with_type(current_input['guid'],lookup_dict=self.reversed_relations_lookup,type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=self.lineage_result['guidEntityMap'])
             for feature_guid in new_derived_features:
                 stack.append(feature_guid)
             result += new_anchor_features
