@@ -900,10 +900,18 @@ derivations: {
 
         return output_reversed_relation_lookup
 
-    def _get_two_hop_entity_with_type(self, guid, lookup_dict, type, guidEntityMap):
+    def _get_child_entity_with_type(self, parent_guid: str, lookup_dict: Dict[str, List], type: str, guidEntityMap):
+        """Get corresponding entity with certain type, by providing a parent_guid to lookup, a `lookup_dict` which can make the search faster, the target type, and the full `guidEntityMap` so that we know the type for each entity ID
+        The reason that we need to have this function is because in Purview, the "parent" entity (say a project) and the corresponding "child" entity (say an anchor associated with the project) don't connect directly. They are connected thru an `AtlasProcees`, so the connection is like this:
+        child entity > PROCESS > parent entity.
+
+        Because of this, in order to find the corresponding child entity, we need to look up twice here, first to find child entity > PROCESS, then find PROCESS > parent entity
+
+        Returns: a list of entities that is the child entity of the given parent entity, while matching the given type.
+        """
 
         return_guid = []
-        for next_guid in lookup_dict[guid]:
+        for next_guid in lookup_dict[parent_guid]:
             for two_hop_guid in lookup_dict[next_guid]:
                 if guidEntityMap[two_hop_guid]['typeName'] == type:
                     return_guid.append(two_hop_guid)
@@ -952,8 +960,8 @@ derivations: {
             
             # for feature anchor (GROUP), input features are splitted into input anchor features & input derived features
             
-            anchor_feature_guid = self._get_two_hop_entity_with_type(derived_feature_entity_id['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
-            derived_feature_guid = self._get_two_hop_entity_with_type(derived_feature_entity_id['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_DERIVED_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
+            anchor_feature_guid = self._get_child_entity_with_type(derived_feature_entity_id['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
+            derived_feature_guid = self._get_child_entity_with_type(derived_feature_entity_id['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_DERIVED_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
             # for derived features, search all related input features.
             input_features_guid = self.search_input_anchor_features(derived_feature_guid,feature_entity_guid_mapping)
             # chain the input features together
@@ -972,7 +980,7 @@ derivations: {
         anchor_list = []
 
         for anchor_entity in anchor_result:
-            feature_guid = self._get_two_hop_entity_with_type(anchor_entity['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
+            feature_guid = self._get_child_entity_with_type(anchor_entity['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
             anchor_list.append(FeatureAnchor(name=anchor_entity["attributes"]["name"],
                                 source=self._get_source_by_guid(anchor_entity["attributes"]["source"]["guid"], entity_list = all_entities_in_project),
                                 features=self._get_features_by_guid_or_entities(guid_list = feature_guid, entity_list=all_entities_in_project),
@@ -989,7 +997,7 @@ derivations: {
         while len(stack)>0:
             current_derived_guid = stack.pop()
             current_input = feature_entity_guid_mapping[current_derived_guid]
-            self._get_two_hop_entity_with_type(current_input['guid'],lookup_dict=self.reversed_relations_lookup,type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=self.lineage_result['guidEntityMap'])
+            self._get_child_entity_with_type(current_input['guid'],lookup_dict=self.reversed_relations_lookup,type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=self.lineage_result['guidEntityMap'])
             new_derived_features = [x["guid"] for x in current_input["attributes"]["input_derived_features"]]
             new_anchor_features = [x["guid"] for x in current_input["attributes"]["input_anchor_features"]]
             for feature_guid in new_derived_features:
