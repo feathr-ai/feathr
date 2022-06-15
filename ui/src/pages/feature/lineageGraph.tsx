@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Radio, Spin } from 'antd';
+import { Card, Col, Radio, Row, Spin } from 'antd';
 import { useParams, useSearchParams } from "react-router-dom";
 import { Elements } from 'react-flow-renderer';
 import Graph from "../../components/graph/graph";
@@ -7,6 +7,7 @@ import { generateEdge, generateNode } from "../../components/graph/utils";
 import { fetchProjectLineages } from "../../api";
 import { FeatureLineage } from "../../models/model";
 import { LoadingOutlined } from "@ant-design/icons";
+import GraphNodeDetails from "../../components/graph/graphNodeDetails";
 
 type Params = {
   project: string;
@@ -24,6 +25,7 @@ const LineageGraph: React.FC = () => {
   // Fetch lineage data from server side, invoked immediately after component is mounted
   useEffect(() => {
     const fetchLineageData = async () => {
+      setLoading(true);
       const data = await fetchProjectLineages(project);
       setLineageData(data);
       setLoading(false);
@@ -105,9 +107,20 @@ const LineageGraph: React.FC = () => {
         </Radio.Group>
       </div>
       <div>
-        { loading
-          ? <Spin indicator={ <LoadingOutlined style={ { fontSize: 24 } } spin /> } />
-          : <Graph data={ elements } nodeId={ nodeId } /> }
+        {
+          loading
+            ? (<Spin indicator={ <LoadingOutlined style={ { fontSize: 24 } } spin /> } />)
+            : (
+              <Row>
+                <Col flex="2">
+                  <Graph data={ elements } nodeId={ nodeId } />
+                </Col>
+                <Col flex="1">
+                  <GraphNodeDetails></GraphNodeDetails>
+                </Col>
+              </Row>
+            )
+        }
       </div>
     </Card>
   );

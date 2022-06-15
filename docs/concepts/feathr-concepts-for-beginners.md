@@ -107,9 +107,9 @@ client.get_offline_features(observation_settings=settings,
 
 ## What is "materialization" in Feathr?
 
-You are very likely to train a machine learning model with the features that you just queried (with `get_offline_features()`). After you have trained a machine learning model, say a fraud detection model, you are likely to put the machine learning model into an online envrionment and do online inference.
+You are very likely to train a machine learning model with the features that you just queried (with `get_offline_features()`). After you have trained a machine learning model, say a fraud detection model, you are likely to put the machine learning model into an online environment and do online inference.
 
-In that case, you will need to retrieve the features (for example the user historical spending) in real time, since the fraud detection model is very time sensitive. Usually some key-value store is used for that scenario (for example Redis), and Feathr will help you to materialize features in the online environment for faster inference. That is why you will see something like below, where you specify Redis as the online storage you want to use, and retrieve features from online envrionment using `get_online_features()` from there:
+In that case, you will need to retrieve the features (for example the user historical spending) in real time, since the fraud detection model is very time sensitive. Usually some key-value store is used for that scenario (for example Redis), and Feathr will help you to materialize features in the online environment for faster inference. That is why you will see something like below, where you specify Redis as the online storage you want to use, and retrieve features from online environment using `get_online_features()` from there:
 
 ```python
 redisSink = RedisSink(table_name="nycTaxiDemoFeature")
@@ -141,4 +141,4 @@ For more details on how to utilize Feathr to perform point-in-time joins, refer 
 
 ## Next Steps
 
-After you are familar with the above concepts, please check out the [quick start guide](../quickstart.md) to get your hands dirty. Enjoy!
+After you are familar with the above concepts, please check out the [quick start guide](../quickstart_synapse.md) to get your hands dirty. Enjoy!

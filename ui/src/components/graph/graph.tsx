@@ -150,7 +150,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
               if (isNode(element)) {
                 resetHighlight();
                 highlightPath(element, false);
-                setURLSearchParams({ nodeId: element.data.id });
+                setURLSearchParams({ nodeId: element.data.id, featureType: element.data.subtitle });
               }
             } }
             onNodeDragStop={ onNodeDragStop }

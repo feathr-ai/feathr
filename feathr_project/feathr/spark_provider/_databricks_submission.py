@@ -85,7 +85,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         elif src_parse_result.scheme.startswith('dbfs'):
             # passed a cloud path
             logger.info(
-                'Skipping file {} as the file starts with dbfs:/', local_path_or_http_path)
+                'Skip uploading file {} as the file starts with dbfs:/', local_path_or_http_path)
             returned_path = local_path_or_http_path
         elif src_parse_result.scheme.startswith(('wasb','s3','gs')):
             # if the path starts with a location that's not a local path
@@ -111,12 +111,12 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         file_name = os.path.basename(local_path)
         # returned paths for the uploaded file
         returned_path = os.path.join(self.databricks_work_dir, file_name)
-        # `local_path_or_http_path` will be either string or PathLib object, so normalize it to string 
+        # `local_path_or_http_path` will be either string or PathLib object, so normalize it to string
         local_path = str(local_path)
         DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
         return returned_path
 
-    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = None):
+    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = {}):
         """
         submit the feathr job to databricks
         Refer to the databricks doc for more details on the meaning of the parameters:
@@ -140,10 +140,18 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         submission_params['run_name'] = job_name
         if 'existing_cluster_id' not in submission_params:
             # if users don't specify existing_cluster_id
+            # Solving this issue: Handshake fails trying to connect from Azure Databricks to Azure PostgreSQL with SSL
+            # https://docs.microsoft.com/en-us/answers/questions/170730/handshake-fails-trying-to-connect-from-azure-datab.html
+            configuration['spark.executor.extraJavaOptions'] = '-Djava.security.properties='
+            configuration['spark.driver.extraJavaOptions'] = '-Djava.security.properties='
             submission_params['new_cluster']['spark_conf'] = configuration
             submission_params['new_cluster']['custom_tags'] = job_tags
         # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
-        submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
+        if not main_jar_path:
+            logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
+            submission_params['libraries'][0]['maven'] = { "coordinates": FEATHR_MAVEN_ARTIFACT }
+        else:
+            submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         # see here for the submission parameter definition https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--request-structure-6
         if python_files:
             # this is a pyspark job. definition here: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--sparkpythontask
@@ -227,7 +235,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         assert self.res_job_id is not None
         # For result structure, see https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--response-structure-6
         result = RunsApi(self.api_client).get_run(self.res_job_id)
-        
+
         if 'new_cluster' in result['cluster_spec']:
             custom_tags = result['cluster_spec']['new_cluster']['custom_tags']
             return custom_tags
@@ -235,7 +243,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # this is not a new cluster; it's an existing cluster.
             logger.warning("Job tags are not available since you are using an existing Databricks cluster. Consider using 'new_cluster' in databricks configuration.")
             return None
-    
+
 
     def download_result(self, result_path: str, local_folder: str):
         """

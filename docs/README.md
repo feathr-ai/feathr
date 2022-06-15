@@ -33,7 +33,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
 
-1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
+1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query id -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
 
 [Launch Cloud Shell](https://shell.azure.com/bash)
 
@@ -141,7 +141,7 @@ Feathr has native integration with Azure and other cloud services, and here's th
 
 ## Quickstart
 
-- [Quickstart](quickstart.md)
+- [Quickstart for Azure Synapse](quickstart_synapse.md)
 
 ## Concepts
 

@@ -111,6 +111,7 @@ jobs:
           BLOB_KEY: ${{secrets.BLOB_KEY}}
           JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
           KAFKA_SASL_JAAS_CONFIG: ${{secrets.KAFKA_SASL_JAAS_CONFIG}}
+          MONITORING_DATABASE_SQL_PASSWORD: ${{secrets.MONITORING_DATABASE_SQL_PASSWORD}}
           SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION: dbfs:/${{ env.CI_SPARK_REMOTE_JAR_FOLDER}}/${{ env.FEATHR_LOCAL_JAR_NAME}}
 
         run: |
@@ -177,6 +178,7 @@ jobs:
           JDBC_DRIVER: ${{secrets.JDBC_DRIVER}}
           JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
           KAFKA_SASL_JAAS_CONFIG: ${{secrets.KAFKA_SASL_JAAS_CONFIG}}
+          MONITORING_DATABASE_SQL_PASSWORD: ${{secrets.MONITORING_DATABASE_SQL_PASSWORD}}
           SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/${{ env.CI_SPARK_REMOTE_JAR_FOLDER}}/${{ env.FEATHR_LOCAL_JAR_NAME}}"
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
