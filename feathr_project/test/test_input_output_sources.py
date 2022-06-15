@@ -6,6 +6,7 @@ from unittest import result
 from click.testing import CliRunner
 from feathr import (BOOLEAN, FLOAT, INT32, FeatureQuery, ObservationSettings,
                     SparkExecutionConfiguration, TypedKey, ValueType)
+from feathr.client import FeathrClient
 from feathr.utils.job_utils import get_result_df
 
 from test_fixture import basic_test_setup
@@ -21,7 +22,7 @@ def test_feathr_get_offline_features_with_parquet():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
 
-    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     location_id = TypedKey(key_column="DOLocationID",
                             key_column_type=ValueType.INT32)
@@ -36,7 +37,7 @@ def test_feathr_get_offline_features_with_parquet():
     now = datetime.now()
     # set output folder based on different runtime
     if client.spark_runtime == 'databricks':
-        output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".parquet"])
+        output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second),'_', str(now.microsecond),  ".parquet"])
     else:
         output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".parquet"])
 
