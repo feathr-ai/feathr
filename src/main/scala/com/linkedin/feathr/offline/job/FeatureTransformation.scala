@@ -33,6 +33,7 @@ import java.util.UUID.randomUUID
 import java.util.concurrent.Executors
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.control.ControlThrowable
 
 /**
  * represent a group of anchors defined on the same source view and a subset of features defined are requested
@@ -448,7 +449,8 @@ private[offline] object FeatureTransformation {
         Future {
           // we have to wrap the code inside the Future in a try/catch because otherwise only non-fatal exceptions will get caught
           // so if a fatal exception occurs, the error is only printed out and the thread silently dies which would leave the
-          // spark driver hanging as it does not know the thread is dead. Documentation: https://docs.scala-lang.org/overviews/core/futures.html#exceptions
+          // spark driver hanging as it does not know the thread is dead. Thus we need to catch Fatal exceptions and wrap them as
+          // non-fatal in order to propagate the error up. Documentation: https://docs.scala-lang.org/overviews/core/futures.html#exceptions
           try {
             // evaluate each group of feature, each group of features are defined on same dataframe
             // we already group by (keyExtractor, dataframe/rdd, timeWindow), so anchorsWithSameSource contains all anchors
@@ -507,6 +509,11 @@ private[offline] object FeatureTransformation {
             }
             res.toMap
           } catch {
+            case e: VirtualMachineError => throw new FeathrException(ErrorLabel.FEATHR_ERROR, "VirtualMachineError thrown in transformFeatures Future. Original error message is: " + e.getMessage)
+            case e: ThreadDeath => throw new FeathrException(ErrorLabel.FEATHR_ERROR, "ThreadDeath thrown in transformFeatures Future. Original error message is: " + e.getMessage)
+            case e: InterruptedException => throw new FeathrException(ErrorLabel.FEATHR_ERROR, "InterruptedException thrown in transformFeatures Future. Original error message is: " + e.getMessage)
+            case e: LinkageError => throw new FeathrException(ErrorLabel.FEATHR_ERROR, "LinkageError thrown in transformFeatures Future. Original error message is: " + e.getMessage)
+            case e: ControlThrowable => throw new FeathrException(ErrorLabel.FEATHR_ERROR, "ControlThrowable thrown in transformFeatures Future. Original error message is: " + e.getMessage)
             case e: Throwable => throw(e)
           }
         }
