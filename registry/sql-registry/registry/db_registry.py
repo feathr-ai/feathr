@@ -18,7 +18,7 @@ class DbRegistry(Registry):
         self.conn = connect()
 
     def get_projects(self) -> list[str]:
-        ret = self.conn.execute(
+        ret = self.conn.query(
             f"select qualified_name from entities where entity_type='{EntityType.Project}'")
         return list([r["qualified_name"] for r in ret])
 
@@ -35,12 +35,12 @@ class DbRegistry(Registry):
         except ValueError:
             pass
         # It is a name
-        ret = self.conn.execute(
+        ret = self.conn.query(
             f"select entity_id from entities where qualified_name='{id_or_name}'")
         return ret[0]["entity_id"]
 
     def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
-        rows = self.conn.execute(fr'''
+        rows = self.conn.query(fr'''
             select edge_id, from_id, to_id, conn_type
             from edges
             where from_id = '{self.get_entity_id(id_or_name)}'
@@ -78,7 +78,8 @@ class DbRegistry(Registry):
             edges = edges.union(conn)
             features = list([child_map[id] for id in feature_ids])
             anchor.attributes.features = features
-            source_id = self.get_neighbors(anchor.id, RelationshipType.Consumes)[0].to_id
+            source_id = self.get_neighbors(
+                anchor.id, RelationshipType.Consumes)[0].to_id
             anchor.attributes.source = child_map[source_id]
         for df in project.attributes.derived_features:
             conn = self.get_neighbors(anchor.id, RelationshipType.Consumes)
@@ -88,7 +89,7 @@ class DbRegistry(Registry):
             df.attributes.input_features = features
         all_edges = self._get_edges(ids)
         return EntitiesAndRelations([project] + children, list(edges.union(all_edges)))
-    
+
     def _fill_entity(self, e: Entity) -> Entity:
         """
         Entities in the DB contains only attributes belong to itself, but the returned
@@ -105,7 +106,8 @@ class DbRegistry(Registry):
             feature_ids = [e.to_id for e in conn]
             features = self._get_entities(feature_ids)
             e.attributes.features = features
-            source_id = self.get_neighbors(e.id, RelationshipType.Consumes)[0].to_id
+            source_id = self.get_neighbors(
+                e.id, RelationshipType.Consumes)[0].to_id
             source = self.get_entity(source_id)
             e.attributes.source = source
             return e
@@ -116,21 +118,21 @@ class DbRegistry(Registry):
             e.attributes.input_features = features
             return e
         return e
-    
+
     def _get_edges(self, ids: list[UUID], types: list[RelationshipType] = []) -> list[Edge]:
         sql = fr"""select edge_id, from_id, to_id, conn_type from edges
         where from_id in ({quote(ids)})
         and to_id in ({quote(ids)})"""
-        if len(types)>0:
+        if len(types) > 0:
             sql = fr"""select edge_id, from_id, to_id, conn_type from edges
             where conn_type in ({quote(types)})
             and from_id in ({quote(ids)})
             and to_id in ({quote(ids)})"""
-        rows = self.conn.execute(sql)
+        rows = self.conn.query(sql)
         return list([_to_type(row, Edge) for row in rows])
-    
+
     def _get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
-        row = self.conn.execute(fr'''
+        row = self.conn.query(fr'''
             select entity_id, qualified_name, entity_type, attributes
             from entities
             where entity_id = '{self.get_entity_id(id_or_name)}'
@@ -139,7 +141,7 @@ class DbRegistry(Registry):
         return _to_type(row, Entity)
 
     def _get_entities(self, ids: list[UUID]) -> list[Entity]:
-        rows = self.conn.execute(fr'''
+        rows = self.conn.query(fr'''
             select entity_id, qualified_name, entity_type, attributes
             from entities
             where entity_id in ({quote(ids)})
@@ -154,7 +156,7 @@ class DbRegistry(Registry):
         """
         Breadth first traversal
         Starts from `id`, follow edges with `conn_type` only.
-        
+
         WARN: There is no depth limit.
         """
         connections = []
@@ -180,7 +182,7 @@ class DbRegistry(Registry):
         """
         ids = list([id["to_id"] for id in ids])
         sql = fr"""select edge_id, from_id, to_id, conn_type from edges where conn_type = '{conn_type.name}' and from_id in ({quote(ids)})"""
-        return self.conn.execute(sql)
+        return self.conn.query(sql)
 
     def search_entity(self,
                       keyword: str,
@@ -190,5 +192,5 @@ class DbRegistry(Registry):
         """
         types = ",".join([quote(str(t)) for t in type])
         sql = fr'''select entity_id as id, qualified_name, entity_type as type from entities where qualified_name like %s and entity_type in ({types})'''
-        rows = self.conn.execute(sql, ('%' + keyword + '%', ))
+        rows = self.conn.query(sql, ('%' + keyword + '%', ))
         return list([EntityRef(**row) for row in rows])

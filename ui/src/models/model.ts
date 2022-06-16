@@ -15,31 +15,31 @@ export interface FeatureAttributes {
   key: FeatureKey[];
   window: string;
   _input_anchor_features: Feature[];
-  _input_derived_features: Feature[]
+  _input_derived_features: Feature[];
 }
 
 export interface FeatureType {
-  type: string,
-  tensor_category: string,
-  dimension_type: string[],
-  val_type: string
+  type: string;
+  tensor_category: string;
+  dimension_type: string[];
+  val_type: string;
 }
 export interface FeatureTransformation {
-  transform_expr: string,
-  filter: string,
-  agg_func: string,
-  limit: string,
-  group_by: string,
-  window: string,
-  def_expr: string
+  transform_expr: string;
+  filter: string;
+  agg_func: string;
+  limit: string;
+  group_by: string;
+  window: string;
+  def_expr: string;
 }
 
 export interface FeatureKey {
-  full_name: string,
-  key_column: string,
-  description: string,
-  key_column_alias: string,
-  key_column_type: string
+  full_name: string;
+  key_column: string;
+  description: string;
+  key_column_alias: string;
+  key_column_type: string;
 }
 
 export interface DataSource {
@@ -51,7 +51,6 @@ export interface DataSourceAttributes {
   qualifiedName: string;
   path: string;
 }
-
 
 export interface FeatureLineage {
   guidEntityMap: any;
@@ -67,6 +66,7 @@ export interface UserRole {
   createReason: string;
   deleteTime?: any;
   deleteReason?: any;
+  access?: string[];
 }
 
 export interface Role {

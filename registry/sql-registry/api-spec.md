@@ -364,3 +364,62 @@ Create new derived feature in the project
 | Field | Type |
 |-------|------|
 | guid  | Guid |
+
+
+## Access Control
+
+### Access Role Mapping
+
+| Pre-Defined Role   | Access                             |
+| ------------------ | ---------------------------------- |
+| Admin              | Read, Write, Management            |
+| Contributor        | Read, Write                        |
+| Viewer             | Read Only                          |
+| Default            | NA (configurable)                  |
+| Global Admin       | Admin Access to All Projects       |
+| Global Contributor | Contributor Access to All Projects |
+| Global Viewer      | Viewer  Access to All Projects     |
+
++ Rules
+  + Project creator will defaultly get `Admin` access to the Project
+  + When a project is shared, the `Read` access is granted.
+  + In this version, customized role is NOT supported.
+
+### UserRoles
+
+Type: Object
+
+| Field        | Type      |
+| ------------ | --------- |
+| id           | `string`  |
+| scope        | `string`  |
+| userName     | `string`  |
+| roleName     | `string`  |
+| createDate   | `datetime`|
+| createReason | `string`  |
+| deleteDate   | `datetime`|
+| deleteReason | `string`  |
+| access       | `list`    |
+
+## Access Control APIs
+
+### `GET/userroles`
+
+List all user roles
+
++ Response Type: [`array<UserRoles>`](#userroles)
++ Required Access: Management
+
+### `POST /users/{user}/userroles/add`
+
+Create a new user role
+
++ Request Type: [`UserRoles`](#userroles)
++ Required Access: Management
+
+### `POST /users/{user}/userroles/delete`
+
+Remove a user role assginment
+
++ Request Type: [`UserRoles`](#userroles)
++ Required Access: Management

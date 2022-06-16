@@ -7,10 +7,12 @@ import pymssql
 
 providers = []
 
+
 class DbConnection(ABC):
     @abstractmethod
-    def execute(self, sql: str, *args, **kwargs) -> list[dict]:
+    def query(self, sql: str, *args, **kwargs) -> list[dict]:
         pass
+
 
 def quote(id):
     if isinstance(id, str):
@@ -49,11 +51,11 @@ class MssqlConnection(DbConnection):
         self.params = params
         self.make_connection()
         self.mutex = threading.Lock()
-        
+
     def make_connection(self):
         self.conn = pymssql.connect(**self.params)
 
-    def execute(self, sql: str, *args, **kwargs) -> list[dict]:
+    def query(self, sql: str, *args, **kwargs) -> list[dict]:
         debug(f"SQL: `{sql}`")
         # NOTE: Only one cursor is allowed at the same time
         retry = 0
@@ -63,6 +65,25 @@ class MssqlConnection(DbConnection):
                     c = self.conn.cursor(as_dict=True)
                     c.execute(sql, *args, **kwargs)
                     return c.fetchall()
+            except pymssql.OperationalError:
+                warn("Database error, retrying...")
+                # Reconnect
+                self.make_connection()
+                retry += 1
+                if retry >= 3:
+                    # Stop retrying
+                    raise
+                pass
+
+    def update(self, sql: str, *args, **kwargs):
+        retry = 0
+        while True:
+            try:
+                with self.mutex:
+                    c = self.conn.cursor(as_dict=True)
+                    c.execute(sql, *args, **kwargs)
+                    self.conn.commit()
+                    return True
             except pymssql.OperationalError:
                 warn("Database error, retrying...")
                 # Reconnect

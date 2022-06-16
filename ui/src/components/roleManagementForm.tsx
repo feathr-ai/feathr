@@ -11,9 +11,9 @@ type RoleManagementFormProps = {
   userRole?: UserRole;
 };
 
-const Admin = "Admin"
-const Producer = "Producer"
-const Consumer = "Consumer"
+const Admin = "admin"
+const Producer = "producer"
+const Consumer = "consumer"
 
 const RoleManagementForm: React.FC<RoleManagementFormProps> = ({ editMode, userRole }) => {
   const [fireRedirect] = useState<boolean>(false);
@@ -63,7 +63,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({ editMode, userR
             <Option value={Consumer}>{Consumer}</Option>
           </Select>
         </Form.Item>
-          <Form.Item name="Reason" label="Reason" rules={[{ required: true }]}>
+          <Form.Item name="reason" label="Reason" rules={[{ required: true }]}>
             <Input disabled={!editMode} />
           </Form.Item>
         </Space>
