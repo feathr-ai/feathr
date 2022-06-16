@@ -10,6 +10,15 @@ declare global {
       REACT_APP_API_ENDPOINT: string;
     }
   }
+
+  interface Window {
+    environment: EnvironmentConfig;
+  }
+
+  interface EnvironmentConfig {
+    azureClientId: string;
+    azureTenantId: string;
+  }
 }
 
 export {};

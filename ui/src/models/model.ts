@@ -75,3 +75,8 @@ export interface Role {
   roleName: string;
   reason: string;
 }
+
+export interface EnvConfig {
+  azureClientId?: string;
+  azureTenantId?: string;
+}

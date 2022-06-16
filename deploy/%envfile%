@@ -1,0 +1,4 @@
+window.environment = {
+  "azureClientId": "b40e49c0-75c7-4959-ad25-896118cd79e8",
+  "azureTenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+}
