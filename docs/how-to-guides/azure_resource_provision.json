@@ -362,7 +362,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "apiVersion": "2021-02-01-preview",
+      "apiVersion": "2021-11-01-preview",
       "name": "[parameters('databaseServerName')]",
       "location": "[parameters('location')]",
       "properties": {
@@ -373,7 +373,7 @@
       "resources": [
         {
           "type": "firewallrules",
-          "apiVersion": "2021-02-01-preview",
+          "apiVersion": "2021-11-01-preview",
           "name": "AllowAllAzureIps",
           "location": "[parameters('location')]",
           "dependsOn": [
@@ -388,7 +388,7 @@
     },
     {
       "type": "Microsoft.Sql/servers/databases",
-      "apiVersion": "2021-02-01-preview",
+      "apiVersion": "2021-11-01-preview",
       "name": "[concat(string(parameters('databaseServerName')), '/', string(parameters('databaseName')))]",
       "location": "[parameters('location')]",
       "dependsOn": [
@@ -397,7 +397,7 @@
       "resources": [
         {
           "type": "extensions",
-          "apiVersion": "2014-04-01",
+          "apiVersion": "2021-11-01-preview",
           "name": "Import",
           "dependsOn": [
             "[resourceId('Microsoft.Sql/servers/databases', parameters('databaseServerName'), parameters('databaseName'))]"
