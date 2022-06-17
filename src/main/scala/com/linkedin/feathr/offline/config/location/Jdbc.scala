@@ -48,6 +48,10 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
   override def getPath: String = url
 
   override def getPathList: List[String] = List(url)
+
+  override def isFileBasedLocation(): Boolean = false
+
+  override def toString: String = s"Jdbc(url=$url, dbtable=$dbtable, useToken=$useToken, anonymous=$anonymous)"
 }
 
 object Jdbc {

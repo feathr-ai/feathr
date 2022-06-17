@@ -42,6 +42,12 @@ trait InputLocation {
    */
   def loadDf(ss: SparkSession, dataIOParameters: Map[String, String] = Map()): DataFrame
 
+  /**
+   * Tell if this location is file based
+   * @return boolean
+   */
+  def isFileBasedLocation(): Boolean
+
   override def toString: String = getPath
 }
 

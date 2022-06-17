@@ -63,16 +63,17 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
     val dataIOParametersWithSplitSize = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize) ++ dataIOParameters
     val dataPath = location.getPath
 
-    log.info(s"Loading ${dataPath} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
+    log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
     try {
-      if (dataPath.startsWith("jdbc")){
-        JdbcUtils.loadDataFrame(ss, dataPath)
-      } else {
+//      if (dataPath.startsWith("jdbc")){
+//        location.loadDf(ss, dataIOParametersWithSplitSize)
+//      } else {
         import scala.util.control.Breaks._
 
         var dfOpt: Option[DataFrame] = None
         breakable {
           for(dataLoaderHandler <- dataLoaderHandlers) {
+            println(s"Applying dataLoaderHandler ${dataLoaderHandler}")
             if (dataLoaderHandler.validatePath(dataPath)) {
               dfOpt = Some(dataLoaderHandler.createDataFrame(dataPath, dataIOParametersWithSplitSize, jobConf))
               break
@@ -84,12 +85,14 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
           case _ => location.loadDf(ss, dataIOParametersWithSplitSize)
         }
         df
-      }
+//      }
     } catch {
-      case feathrException: FeathrInputDataException => 
+      case feathrException: FeathrInputDataException =>
+        println(feathrException.toString)
         throw feathrException // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
-      case e: Throwable => //TODO: Analyze all thrown exceptions, instead of swalling them all, and reading as a csv
-        ss.read.format("csv").option("header", "true").load(dataPath)
+//      case e: Throwable => //TODO: Analyze all thrown exceptions, instead of swalling them all, and reading as a csv
+//        println(e.toString)
+//        ss.read.format("csv").option("header", "true").load(dataPath)
     }
   }
 }

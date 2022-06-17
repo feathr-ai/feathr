@@ -1,4 +1,5 @@
 from copy import deepcopy
+import json
 import os
 import pathlib
 import re
@@ -79,7 +80,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str = None,  main_class_name: str = None, arguments: List[str] = None,
                           python_files: List[str]= None, reference_files_path: List[str] = None, job_tags: Dict[str, str] = None,
-                          configuration: Dict[str, str] = {}):
+                          configuration: Dict[str, str] = {}, properties: Dict[str, str] = {}):
         """
         Submits the feathr job
         Refer to the Apache Livy doc for more details on the meaning of the parameters:
@@ -100,7 +101,11 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             arguments (str): all the arguments you want to pass into the spark job
             job_tags (str): tags of the job, for example you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
+            properties (Dict[str, str]): Additional System Properties for the spark job
         """
+
+        if properties:
+            arguments.append("--system-properties=%s" % json.dumps(properties))
 
         if configuration:
             cfg = configuration.copy()  # We don't want to mess up input parameters

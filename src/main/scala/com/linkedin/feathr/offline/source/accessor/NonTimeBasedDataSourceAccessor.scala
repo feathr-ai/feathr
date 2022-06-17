@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source.accessor
 
-import com.linkedin.feathr.offline.config.location.KafkaEndpoint
+import com.linkedin.feathr.offline.config.location.{Jdbc, KafkaEndpoint}
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
@@ -29,7 +29,8 @@ private[offline] class NonTimeBasedDataSourceAccessor(
     val df = if (source.location.isInstanceOf[KafkaEndpoint]) {
      fileLoaderFactory.createFromLocation(source.location).loadDataFrame()
     } else {
-      source.pathList.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
+      println(s"NonTimeBasedDataSourceAccessor loading source ${source.location}")
+      source.location.loadDf(ss)
     }
     if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
       println()
