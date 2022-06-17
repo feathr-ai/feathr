@@ -752,6 +752,7 @@ class FeathrClient(object):
         feature_dict = {}
         # add those features into a dict for easier lookup
         for anchor in registry_anchor_list:
+            feature_dict[anchor.name] = anchor
             for feature in anchor.features:
                 feature_dict[feature.name] = feature
         for feature in registry_derived_feature_list:
