@@ -1,6 +1,6 @@
 import os
 from typing import Optional
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 from starlette.middleware.cors import CORSMiddleware
 from registry import *
 from registry.db_registry import DbRegistry
@@ -9,7 +9,6 @@ from rbac import *
 from rbac.db_rbac import DbRBAC
 
 rp = "/"
-os.environ["API_BASE"] = "api/v1"
 try:
     rp = os.environ["API_BASE"]
     if rp[0] != '/':
@@ -19,9 +18,10 @@ except:
 print("Using API BASE: ", rp)
 
 registry = DbRegistry()
-rbac = DbRBAC()
 app = FastAPI()
 router = APIRouter()
+rbac_enabled = str(os.environ.get("RBAC_ENABLED")).lower() == 'true'
+rbac = DbRBAC()
 
 # Enables CORS
 app.add_middleware(CORSMiddleware,
@@ -82,31 +82,46 @@ def get_feature_lineage(feature: str) -> dict:
 
 
 @router.get("/userroles")
-def get_userroles(code: str) -> list:
-    if rbac.is_global_admin(code):
-        userroles = rbac.get_userroles()
-        return list([r.to_dict() for r in userroles])
+def get_userroles(req: Request) -> list:
+    if rbac_enabled:
+        if rbac.is_global_admin(req.headers.get("authorization")):
+            userroles = rbac.get_userroles()
+            return list([r.to_dict() for r in userroles])
+        else:
+            raise HTTPException(
+                status_code=403, detail=f"Only `Global Admin` have access to this content.")
     else:
         raise HTTPException(
-            status_code=403, detail=f"Only Global Admin have access to this content.")
+            status_code=503, detail=f"Registry access control is not enabled. Please Set `RBAC_ENABLED` to true." 
+        )
 
 
 @router.post("/users/{user}/userroles/add")
-def add_userrole(project: str, user: str, role: str, reason: str, code: str):
-    if rbac.is_project_admin(code, project):
-        return rbac.add_userrole(project, user, role, reason)
+def add_userrole(project: str, user: str, role: str, reason: str, req:Request):
+    if rbac_enabled:
+        if rbac.is_project_admin(req.headers.get("authorization"), project):
+            return rbac.add_userrole(project, user, role, reason, rbac.requestor)
+        else:
+            raise HTTPException(
+                status_code=403, detail=f"Only `Project Admin` can add userroles")
     else:
         raise HTTPException(
-            status_code=403, detail=f"Only Project Admin can add userroles")
+            status_code=503, detail=f"Registry access control is not enabled. Please Set `RBAC_ENABLED` to true." 
+        )
 
 
-@router.post("/users/{user}/userroles/delete")
-def delete_userrole(project: str, user: str, role: str, reason: str, code: str):
-    if rbac.is_project_admin(code, project):
-        rbac.delete_userrole(project, user, role, reason)
+@router.delete("/users/{user}/userroles/delete")
+def delete_userrole(project: str, user: str, role: str, reason: str, req:Request):
+    if rbac_enabled:
+        if rbac.is_project_admin(req.headers.get("authorization"), project):
+            rbac.delete_userrole(project, user, role, reason, rbac.requestor)
+        else:
+            raise HTTPException(
+                status_code=403, detail=f"Only `Project Admin` can delete userroles")
     else:
         raise HTTPException(
-            status_code=403, detail=f"Only Project Admin can delete userroles")
+            status_code=503, detail=f"Registry access control is not enabled. Please Set `RBAC_ENABLED` to true." 
+        )
 
 
 app.include_router(prefix=rp, router=router)

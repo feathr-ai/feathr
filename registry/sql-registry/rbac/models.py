@@ -28,8 +28,10 @@ class UserRole(ToDict):
                  project_name: str,
                  user_name: str,
                  role_name: str,
+                 create_by: str,
                  create_reason: str,
                  create_time: datetime,
+                 delete_by: Optional[str] = None,
                  delete_reason: Optional[str] = None,
                  delete_time: Optional[datetime] = None,
                  **kwargs):
@@ -37,8 +39,10 @@ class UserRole(ToDict):
         self.project_name = project_name.lower()
         self.user_name = user_name.lower()
         self.role_name = role_name.lower()
+        self.create_by = create_by.lower()
         self.create_reason = create_reason
         self.create_time = create_time
+        self.delete_by = delete_by
         self.delete_reason = delete_reason
         self.delete_time = delete_time
         self.access = RoleAccessMapping[RoleType(self.role_name)]
@@ -49,8 +53,10 @@ class UserRole(ToDict):
             "scope": self.project_name,
             "userName": self.user_name,
             "roleName": str(self.role_name),
+            "createBy": self.create_by,
             "createReason": self.create_reason,
             "createTime": str(self.create_time),
+            "deleteBy": str(self.delete_by),
             "deleteReason": self.delete_reason,
             "deleteTime": str(self.delete_time),
             "access": self.access

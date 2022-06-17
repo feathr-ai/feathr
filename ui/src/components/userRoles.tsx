@@ -33,21 +33,21 @@ const UserRoles: React.FC = () => {
 
   const columns = [
     {
-      title: <div>Scope</div>,
+      title: <div>Scope (Project/Global)</div>,
       dataIndex: "scope",
       key: "scope",
-      align: "center" as "center",
-    },
-    {
-      title: <div>User</div>,
-      dataIndex: "userName",
-      key: "userName",
       align: "center" as "center",
     },
     {
       title: <div style={{ userSelect: "none" }}>Role</div>,
       dataIndex: "roleName",
       key: "roleName",
+      align: "center" as "center",
+    },
+    {
+      title: <div>User</div>,
+      dataIndex: "userName",
+      key: "userName",
       align: "center" as "center",
     },
     {
@@ -67,6 +67,12 @@ const UserRoles: React.FC = () => {
           })}
         </>
       ),
+    },
+    {
+      title: <div>Create By</div>,
+      dataIndex: "createBy",
+      key: "createBy",
+      align: "center" as "center",
     },
     {
       title: <div>Create Reason</div>,

@@ -372,7 +372,7 @@ Create new derived feature in the project
 
 | Pre-Defined Role   | Access                             |
 | ------------------ | ---------------------------------- |
-| Admin              | Read, Write, Management            |
+| Admin              | Read, Write, Manage                |
 | Contributor        | Read, Write                        |
 | Viewer             | Read Only                          |
 | Default            | NA (configurable)                  |
@@ -391,35 +391,39 @@ Type: Object
 
 | Field        | Type      |
 | ------------ | --------- |
-| id           | `string`  |
 | scope        | `string`  |
 | userName     | `string`  |
 | roleName     | `string`  |
+| createBy     | `string`  |
 | createDate   | `datetime`|
 | createReason | `string`  |
 | deleteDate   | `datetime`|
 | deleteReason | `string`  |
+| deleteBy     | `string`  |
 | access       | `list`    |
+
++ Notes:
+  + For SQL Access Control Implementation, a IDENTITY(1,1) id auto generated to provide a view of record insert sequence.
 
 ## Access Control APIs
 
-### `GET/userroles`
+### `GET /userroles`
 
 List all user roles
 
 + Response Type: [`array<UserRoles>`](#userroles)
-+ Required Access: Management
++ Required Access: Manage
 
 ### `POST /users/{user}/userroles/add`
 
 Create a new user role
 
 + Request Type: [`UserRoles`](#userroles)
-+ Required Access: Management
++ Required Access: Manage
 
-### `POST /users/{user}/userroles/delete`
+### `DELETE /users/{user}/userroles/delete`
 
-Remove a user role assginment
+Remove a user role assignment
 
 + Request Type: [`UserRoles`](#userroles)
-+ Required Access: Management
++ Required Access: Manage

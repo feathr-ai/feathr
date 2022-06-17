@@ -3,6 +3,7 @@ import requests
 import jwt
 from jwt.algorithms import RSAAlgorithm
 
+BEARER_TOKEN = "BEARER "
 
 class AuthProvider():
     """This is the abstract class to decode JWT ID token.
@@ -31,11 +32,13 @@ class AuthProvider():
         kid = header_data['kid']
         return RSAAlgorithm.from_jwk(json.dumps(self.cert_set[kid]))
 
-    def decode_token(self, token: str):
+    def decode_token(self, bearer_token: str):
         """ Decode ID token with RA256 Algorithm
             Sample Usage with Azure ID token:
                 decoded = auth.decode_token(token)
                 username = decoded.get('preferred_username').lower()
         """
+        # TODO: Process Bearer Token more elegantly
+        token = bearer_token[len(BEARER_TOKEN):]
         return jwt.decode(token, self.get_public_key(token), algorithms=[
             "RS256"], audience=self.client_id)

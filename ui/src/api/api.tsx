@@ -1,15 +1,6 @@
 import Axios from "axios";
-import {
-  DataSource,
-  Feature,
-  FeatureLineage,
-  UserRole,
-  Role,
-} from "../models/model";
-import {
-  InteractionRequiredAuthError,
-  PublicClientApplication,
-} from "@azure/msal-browser";
+import { DataSource,Feature,FeatureLineage,UserRole,Role,} from "../models/model";
+import { PublicClientApplication,} from "@azure/msal-browser";
 import { getMsalConfig } from "../utils/utils";
 
 const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT + "/api/v1";
@@ -134,9 +125,9 @@ export const deleteFeature = async (qualifiedName: string) => {
 };
 
 export const listUserRole = async () => {
-  const token = await getIdToken(msalInstance);
-  return await Axios.get<UserRole[]>(
-    `${API_ENDPOINT}/userroles?code=${token}`,
+  const axios = await authAxios(msalInstance);
+  return await axios.get<UserRole[]>(
+    `${API_ENDPOINT}/userroles`,
     {}
   ).then((response) => {
     return response.data;
@@ -144,19 +135,15 @@ export const listUserRole = async () => {
 };
 
 export const addUserRole = async (role: Role) => {
-  console.log("aaaaa");
-  const token = await getIdToken(msalInstance);
-  console.log(`token ${token}`);
-  return await Axios.post(
+  const axios = await authAxios(msalInstance);
+  return await axios.post(
     `${API_ENDPOINT}/users/${role.userName}/userroles/add`,
     role,
     {
-      headers: { "Content-Type": "application/json;" },
       params: {
         project: role.scope,
         role: role.roleName,
         reason: role.reason,
-        code: token,
       },
     }
   )
@@ -169,13 +156,11 @@ export const addUserRole = async (role: Role) => {
 };
 
 export const deleteUserRole = async (userrole: UserRole) => {
-  const token = await getIdToken(msalInstance);
+  const axios = await authAxios(msalInstance);
   const reason = "Delete from management UI.";
-  return await Axios.post(
-    `${API_ENDPOINT}/users/${userrole.userName}/userroles/delete?code=${token}`,
-    userrole,
+  return await axios.delete(
+    `${API_ENDPOINT}/users/${userrole.userName}/userroles/delete`,
     {
-      headers: { "Content-Type": "application/json;" },
       params: {
         project: userrole.scope,
         role: userrole.roleName,
@@ -201,6 +186,18 @@ export const getIdToken = async (
     account: activeAccount || accounts[0],
   };
   // Silently acquire an token for a given set of scopes. Will use cached token if available, otherwise will attempt to acquire a new token from the network via refresh token.
+  // A known issue may cause token expire: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
   const authResult = await msalInstance.acquireTokenSilent(request);
   return authResult.idToken;
+};
+
+export const authAxios = async (msalInstance: PublicClientApplication) =>{
+  const token = await getIdToken(msalInstance);
+  return Axios.create({
+    headers: {
+      'Authorization': "Bearer "+ token,
+      'Content-Type': 'application/json',
+    },
+    baseURL: API_ENDPOINT,
+  });
 };

@@ -90,10 +90,10 @@ insert into edges (edge_id, from_id, to_id, conn_type) values ('23a05c64-b204-4c
 insert into edges (edge_id, from_id, to_id, conn_type) values ('3721c600-6423-4a38-a9b2-d85b426b6eaa', '226b42ee-0c34-4329-b935-744aecc63fb4', '103baca1-377a-4ddf-8429-5da91026c269', 'Consumes');
 insert into edges (edge_id, from_id, to_id, conn_type) values ('5f9b86fe-bdc9-4a76-b07c-876b9d7c1ee1', '103baca1-377a-4ddf-8429-5da91026c269', '226b42ee-0c34-4329-b935-744aecc63fb4', 'Produces');
 
-insert into userroles (project_name, user_name, role_name, create_reason, create_time) values ('global', 'abc@microsoft.com','admin', 'test data',  getutcdate())
-insert into userroles (project_name, user_name, role_name, create_reason, create_time) values ('global', 'efg@microsoft.com','admin', 'test data',  getutcdate())
-insert into userroles (project_name, user_name, role_name, create_reason, create_time) values ('feathr_ci_registry_12_33_182947', 'efg@microsoft.com','admin', 'test data',  getutcdate())
-insert into userroles (project_name, user_name, role_name, create_reason, create_time) values ('feathr_ci_registry_12_33_182947', 'hij@microsoft.com','consumer', 'test data',  getutcdate())
+insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time) values ('global', 'abc@microsoft.com','admin', 'test_data@microsoft.com', 'test data',  getutcdate())
+insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time) values ('global', 'efg@microsoft.com','admin', 'test_data@microsoft.com', 'test data',  getutcdate())
+insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time) values ('feathr_ci_registry_12_33_182947', 'efg@microsoft.com','admin','test_data@microsoft.com',  'test data',  getutcdate())
+insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time) values ('feathr_ci_registry_12_33_182947', 'hij@microsoft.com','consumer', 'test_data@microsoft.com', 'test data',  getutcdate())
  
 insert into access (project_name, access_name) values ('feathr_ci_registry_12_33_182947', 'read')
 insert into access (project_name, access_name) values ('feathr_ci_registry_12_33_182947', 'write')
