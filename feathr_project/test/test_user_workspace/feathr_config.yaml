@@ -105,7 +105,7 @@ feature_registry:
   purview:
     # Registry configs
     # register type system in purview during feathr client initialization. This is only required to be executed once.
-    type_system_initialization: true
+    type_system_initialization: false
     # configure the name of the purview endpoint
     purview_name: 'feathrazuretest3-purview1'
     # delimiter indicates that how the project/workspace name, feature names etc. are delimited. By default it will be '__'

@@ -687,6 +687,7 @@ derivations: {
         if self.type_system_initialization:
             self._register_feathr_feature_types()
             
+
         self._parse_features_from_context(
             workspace_path, anchor_list, derived_feature_list)
         # Upload all entities
@@ -863,7 +864,39 @@ derivations: {
         """        
         entities = self.purview_client.discovery.search_entities(searchTerm)
         return entities
-    
+
+    def _list_registered_entities_without_project_name(self, entity_type: Union[str, List[str]] = None, limit=1000, starting_offset=0) -> List[Dict]:
+        """
+        List all the registered entities without a project name. Only type is required.
+
+        If there is a project name, you should use `_list_registered_entities_with_details` which is a more scalable solution.
+        
+        returns a list of the result entities in a paging fashion, since there might be tons of list registered features. The caller of this function need to make sure it's paged correctly.
+        """
+        entity_type_list = [entity_type] if isinstance(
+            entity_type, str) else entity_type
+
+        for i in entity_type_list:
+            if i not in {TYPEDEF_SOURCE, TYPEDEF_DERIVED_FEATURE, TYPEDEF_ANCHOR, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_FEATHR_PROJECT}:
+                raise RuntimeError(
+                    f'only SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT are supported when listing the registered entities, {entity_type} is not one of them.')
+
+
+        # see syntax here: https://docs.microsoft.com/en-us/rest/api/purview/catalogdataplane/discovery/query#discovery_query_andornested
+        # this search queries all the entities that belong to a given type
+        query_filter = {
+            "or": [{"entityType": e} for e in entity_type_list]
+        }
+
+        result_entities = self.purview_client.discovery.query(search_filter=query_filter, limit = limit, offset=starting_offset)
+        
+        # append the guid list. Since we are using project_name + delimiter to search, all the result will be valid.
+        guid_list = [entity["id"] for entity in result_entities]
+
+        entity_res = [] if guid_list is None or len(guid_list)==0 else self.purview_client.get_entity(
+            guid=guid_list)["entities"]
+        return entity_res
+
     def _list_registered_entities_with_details(self, project_name: str, entity_type: Union[str, List[str]] = None, limit=1000, starting_offset=0,) -> List[Dict]:
         """
         List all the already registered entities. entity_type should be one of: SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT, or a list of those values
