@@ -81,7 +81,7 @@
     },
     "bacpacUrl": {
       "type": "string",
-      "defaultValue": "https://xchfeathrtest4sto.blob.core.windows.net/public/feathr-2022-6-16-18-16.bacpac",
+      "defaultValue": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-registry-schema.bacpac",
       "metadata": {
         "description": "This is the pre-created BACPAC file that contains required schemas by the registry server."
       }
