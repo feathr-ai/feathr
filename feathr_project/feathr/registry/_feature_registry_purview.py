@@ -49,12 +49,12 @@ class _FeatureRegistry(FeathrRegistry):
     - Initialize an Azure Purview Client
     - Initialize the GUID tracker, project name, etc.
     """
-    def __init__(self, project_name: str, azure_purview_name: str, registry_delimiter: str, project_tags: Dict[str, str] = None, credential=None, config_path=None,):
+    def __init__(self, project_name: str, azure_purview_name: str, registry_delimiter: str, project_tags: Dict[str, str] = None, credential=None, config_path=None, type_system_initialization=False):
         self.project_name = project_name
         self.registry_delimiter = registry_delimiter
         self.azure_purview_name = azure_purview_name
         self.project_tags = project_tags
-
+        self.type_system_initialization = type_system_initialization
         self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False) if credential is None else credential
         self.oauth = AzCredentialWrapper(credential=self.credential)
         self.purview_client = PurviewClient(
@@ -683,8 +683,10 @@ derivations: {
         if not from_context:
             raise RuntimeError("Currently Feathr only supports registering features from context (i.e. you must call FeathrClient.build_features() before calling this function).")
 
-        # register feature types each time when we register features.
-        self._register_feathr_feature_types()
+        # register feature types if type_system_initialization is set
+        if self.type_system_initialization:
+            self._register_feathr_feature_types()
+            
         self._parse_features_from_context(
             workspace_path, anchor_list, derived_feature_list)
         # Upload all entities
