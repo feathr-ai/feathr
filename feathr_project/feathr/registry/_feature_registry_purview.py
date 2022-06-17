@@ -767,7 +767,7 @@ derivations: {
         """
         return self.purview_client
 
-    def list_registered_features(self, project_name: str, limit=1000, starting_offset=0) -> List[Dict[str,str]]:
+    def list_registered_features(self, project_name: str) -> List[Dict[str,str]]:
         """
         List all the already registered features in a certain project.
         """
@@ -865,7 +865,7 @@ derivations: {
         entities = self.purview_client.discovery.search_entities(searchTerm)
         return entities
 
-    def _list_registered_entities_without_project_name(self, entity_type: Union[str, List[str]] = None, limit=1000, starting_offset=0) -> List[Dict]:
+    def _list_registered_entities_without_project_name(self, entity_type: Union[str, List[str]] = None, limit=100, starting_offset=0) -> List[Dict]:
         """
         List all the registered entities without a project name. Only type is required.
 
@@ -888,19 +888,20 @@ derivations: {
             "or": [{"entityType": e} for e in entity_type_list]
         }
 
-        result_entities = self.purview_client.discovery.query(search_filter=query_filter, limit = limit, offset=starting_offset)
-        
+        result = self.purview_client.discovery.query(filter=query_filter, limit = limit, offset=starting_offset)
+        result_entities = result['value']
         # append the guid list. Since we are using project_name + delimiter to search, all the result will be valid.
         guid_list = [entity["id"] for entity in result_entities]
 
-        entity_res = [] if guid_list is None or len(guid_list)==0 else self.purview_client.get_entity(
-            guid=guid_list)["entities"]
+        if guid_list is None or len(guid_list)==0:
+            entity_res = []  
+        else:
+            entity_res = self.purview_client.get_entity(guid=guid_list)['entities']
         return entity_res
 
-    def _list_registered_entities_with_details(self, project_name: str, entity_type: Union[str, List[str]] = None, limit=1000, starting_offset=0,) -> List[Dict]:
+    def _list_registered_entities_with_details(self, project_name: str) -> List[Dict]:
         """
-        List all the already registered entities. entity_type should be one of: SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT, or a list of those values
-        limit: a maximum 1000 will be enforced at the underlying API
+        List all the already registered entities in a project. 
         
         returns a list of the result entities.
         """
