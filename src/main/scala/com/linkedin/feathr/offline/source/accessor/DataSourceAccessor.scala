@@ -57,7 +57,7 @@ private[offline] object DataSourceAccessor {
     val dataLoaderFactory = DataLoaderFactory(ss, isStreaming, dataLoaderHandlers)
     if (isStreaming) {
       new StreamDataSourceAccessor(ss, dataLoaderFactory, source)
-    } else if (dateIntervalOpt.isEmpty || sourceType == SourceFormatType.FIXED_PATH || sourceType == SourceFormatType.LIST_PATH) {
+    } else if (dateIntervalOpt.isEmpty || source.location.isFileBasedLocation()) {
       // if no input interval, or the path is fixed or list, load whole dataset
       new NonTimeBasedDataSourceAccessor(ss, dataLoaderFactory, source, expectDatumType)
     } else {
