@@ -51,7 +51,27 @@ def test_feathr_register_features_e2e():
     assert 'f_trip_time_distance' in all_feature_names # make sure derived features are there  
 
     # Sync workspace from registry, will get all conf files back
-    client.get_features_from_registry(client.project_name)
+    all_feature_dict = client.get_features_from_registry(client.project_name)
+    assert 'request_features' in all_feature_dict # test anchor
+    assert 'aggregationFeatures' in all_feature_dict # test aggregation based anchor
+
+    assert 'f_trip_time_rounded' in all_feature_dict # make sure derived features are there
+    assert 'f_trip_time_rounded_plus' in all_feature_dict # make sure derived features based on other derived feature are there 
+    assert 'f_trip_time_distance' in all_feature_dict # make sure derived features are there  
+
+
+    # make sure features are available in the anchor feature list
+    request_features_anchor: FeatureAnchor = all_feature_dict['request_features']
+    feature_name_list = [f.name for f in request_features_anchor.features]
+    assert "f_trip_distance" in feature_name_list
+    assert "f_trip_time_duration" in feature_name_list
+    assert "f_is_long_trip_distance" in feature_name_list
+    assert "f_day_of_week" in feature_name_list
+
+    aggregation_anchor: FeatureAnchor = all_feature_dict['aggregationFeatures']
+    agg_feature_name_list = [f.name for f in aggregation_anchor.features]
+    assert "f_location_avg_fare" in agg_feature_name_list
+
 
     feature_query = FeatureQuery(
         feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance"], 
@@ -95,8 +115,10 @@ def test_feathr_register_features_partially():
 
     # after a full registration, another registration should not affect the registered anchor features.
     assert len(full_registration.items())==len(appended_registration.items())
-    
+
+@pytest.mark.skip(reason="this tests an internal method and all the test cases should be already covered by `test_feathr_register_features_e2e`. ")
 def test_get_feature_from_registry():
+    # TODO: we might want to update this test to test `get_features_from_registry` rather than `_search_input_anchor_features`
     registry = _FeatureRegistry("mock_project","mock_purview","mock_delimeter")
     derived_feature_with_multiple_inputs = {
             "guid": "derived_feature_with_multiple_input_anchors",
@@ -150,11 +172,11 @@ def test_get_feature_from_registry():
     def entity_array_to_dict(arr):
         return {x['guid']:x for x in arr}
 
-    inputs = registry.search_input_anchor_features(['derived_feature_with_multiple_input_anchors'],entity_array_to_dict(anchors+[derived_feature_with_multiple_inputs]))
+    inputs = registry._search_input_anchor_features(['derived_feature_with_multiple_input_anchors'],entity_array_to_dict(anchors+[derived_feature_with_multiple_inputs]))
     assert len(inputs)==2
     assert "input_anchorA" in inputs and "input_anchorB" in inputs
 
-    inputs = registry.search_input_anchor_features(['hierarchical_derived_feature'],entity_array_to_dict(anchors+[derived_feature_with_multiple_inputs,hierarchical_derived_feature]))
+    inputs = registry._search_input_anchor_features(['hierarchical_derived_feature'],entity_array_to_dict(anchors+[derived_feature_with_multiple_inputs,hierarchical_derived_feature]))
     assert len(inputs)==3
     assert "input_anchorA" in inputs and "input_anchorB" in inputs and "input_anchorC" in inputs
     

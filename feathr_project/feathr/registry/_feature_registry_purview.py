@@ -862,7 +862,7 @@ derivations: {
         entities = self.purview_client.discovery.search_entities(searchTerm)
         return entities
     
-    def _get_lineage_map(self, project_name: str, entity_type: Union[str, List[str]] = None, limit=1000, starting_offset=0,) -> List[Dict]:
+    def _list_registered_entities_with_details(self, project_name: str, entity_type: Union[str, List[str]] = None, limit=1000, starting_offset=0,) -> List[Dict]:
         """
         List all the already registered entities. entity_type should be one of: SOURCE, DERIVED_FEATURE, ANCHOR, ANCHOR_FEATURE, FEATHR_PROJECT, or a list of those values
         limit: a maximum 1000 will be enforced at the underlying API
@@ -887,6 +887,7 @@ derivations: {
         
 
         return lineage_map
+        
     def _reverse_relations(self, input_relations: List[Dict[str, str]], base_entity_guid):
         """Reverse the `fromEntityId` and `toEntityId` field, as currently we are using a bottom up way to store in Purview
         """
@@ -925,7 +926,7 @@ derivations: {
         Args:
             project_name (str): project name.
         """
-        lineage_result = self._get_lineage_map(project_name=project_name)
+        lineage_result = self._list_registered_entities_with_details(project_name=project_name)
         self.lineage_result = lineage_result
         # result['guidEntityMap'] should be a dict and we only care about the values (key will be the GUID of the entity)
         all_entities_in_project = []
@@ -963,7 +964,7 @@ derivations: {
             anchor_feature_guid = self._get_child_entity_with_type(derived_feature_entity_id['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_ANCHOR_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
             derived_feature_guid = self._get_child_entity_with_type(derived_feature_entity_id['guid'],lookup_dict=reversed_relations_lookup, type=TYPEDEF_DERIVED_FEATURE, guidEntityMap=lineage_result['guidEntityMap'])
             # for derived features, search all related input features.
-            input_features_guid = self.search_input_anchor_features(derived_feature_guid,feature_entity_guid_mapping)
+            input_features_guid = self._search_input_anchor_features(derived_feature_guid,feature_entity_guid_mapping)
             # chain the input features together
             # filter out features that is related with this derived feature 
             all_input_features = self._get_features_by_guid_or_entities(guid_list=input_features_guid+anchor_feature_guid, entity_list=all_entities_in_project) 
@@ -988,7 +989,7 @@ derivations: {
 
         return (anchor_list, derived_feature_list)
 
-    def search_input_anchor_features(self,derived_guids,feature_entity_guid_mapping) ->List[str]:
+    def _search_input_anchor_features(self,derived_guids,feature_entity_guid_mapping) ->List[str]:
         '''
         Iterate all derived features and its parent links, extract and aggregate all inputs
         '''
