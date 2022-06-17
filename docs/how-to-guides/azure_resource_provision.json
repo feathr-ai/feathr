@@ -83,7 +83,7 @@
       "type": "string",
       "defaultValue": "https://xchfeathrtest4sto.blob.core.windows.net/public/feathr-2022-6-16-18-16.bacpac",
       "metadata": {
-        "description": "Specifies the URL of the BACPAC file."
+        "description": "This is the pre-created BACPAC file that contains required schemas by the registry server."
       }
     }
   },
