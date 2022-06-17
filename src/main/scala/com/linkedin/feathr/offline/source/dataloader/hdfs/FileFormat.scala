@@ -93,7 +93,7 @@ object FileFormat {
         ss.read.format(PARQUET).load(existingHdfsPaths: _*)
       case _ =>
         // Allow dynamic config of the file format if users want to use one
-        if (ss.conf.get("spark.feathr.inputFormat").nonEmpty) ss.read.format(ss.conf.get("spark.feathr.inputFormat")).load(existingHdfsPaths: _*)
+        if (ss.conf.getOption("spark.feathr.inputFormat").nonEmpty) ss.read.format(ss.conf.get("spark.feathr.inputFormat")).load(existingHdfsPaths: _*)
         else throw new FeathrException(s"Unsupported data format $format and 'spark.feathr.inputFormat' not set.")
     }
     df
