@@ -30,7 +30,7 @@ class TestFeatureGenSpecParser extends TestNGSuite{
          |}
          |features: [${features.mkString(",")}]
       """.stripMargin
-    val res = FeatureGenSpec.parse(featureGenConfigStr, jobContext)
+    val res = FeatureGenSpec.parse(featureGenConfigStr, jobContext, List())
     assertEquals(res.getFeatures, Seq("f1", "f2"))
     assertEquals(res.getOutputProcessorConfigs.head.getName, "HDFS")
     assertEquals(res.offlineOperationalConfig.getName, "generateWithDefaultParams")

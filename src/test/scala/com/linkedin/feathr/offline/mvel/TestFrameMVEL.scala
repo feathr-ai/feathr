@@ -52,7 +52,7 @@ class TestFeathrMVEL extends TestFeathr {
     val trainingData = "testMVELFeatureWithNullValue-observations.csv"
     val keyedFeatureList = Seq(KeyedFeatureList(Seq("mId"), Seq("featureWithNull")))
     val joinConfig = FeatureJoinConfig(Map("mvelFeaturesWithNull" -> keyedFeatureList))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
     val feathrClient = FeathrClient.builder(ss).addFeatureDef(Some(FeathrMvelFixture.mvelFeatureWithNullValueConf)).build()
 
     val joined = feathrClient.joinFeatures(joinConfig, obsData)
@@ -72,7 +72,7 @@ class TestFeathrMVEL extends TestFeathr {
     val trainingData = "testMVELFeatureWithNullValue-observations.csv"
     val keyedFeatureList = Seq(KeyedFeatureList(Seq("mId"), Seq("featureWithNull2")))
     val joinConfig = FeatureJoinConfig(Map("mvelFeaturesWithNull" -> keyedFeatureList))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
     val feathrClient = FeathrClient.builder(ss).addFeatureDef(Some(FeathrMvelFixture.mvelFeatureWithNullValueConf)).build()
 
     val joined = feathrClient.joinFeatures(joinConfig, obsData)
@@ -96,7 +96,7 @@ class TestFeathrMVEL extends TestFeathr {
     val trainingData = "testMVELFeatureWithNullValue-observations.csv"
     val keyedFeatureList = Seq(KeyedFeatureList(Seq("mId"), Seq("featureWithNull3")))
     val joinConfig = FeatureJoinConfig(Map("mvelFeaturesWithNull" -> keyedFeatureList))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
     val feathrClient = FeathrClient.builder(ss).addFeatureDef(Some(FeathrMvelFixture.mvelFeatureWithNullValueConf)).build()
     try {
       feathrClient.joinFeatures(joinConfig, obsData)
@@ -123,7 +123,7 @@ class TestFeathrMVEL extends TestFeathr {
     val trainingData = "testMVELDerivedFeatureCheckingNull-observations.csv"
     val keyedFeatureList = Seq(KeyedFeatureList(Seq("mId"), Seq("checkingZero")), KeyedFeatureList(Seq("mId"), Seq("checkingEmpty")))
     val joinConfig = FeatureJoinConfig(Map("mvelDerivedFeatureWithNull" -> keyedFeatureList))
-    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData)
+    val obsData = LocalFeatureJoinJob.loadObservationAsFDS(ss, trainingData, List())
     val feathrClient = FeathrClient.builder(ss).addFeatureDef(Some(FeathrMvelFixture.mvelDerivedFeatureCheckingNullConf)).build()
 
     val joined = feathrClient.joinFeatures(joinConfig, obsData)

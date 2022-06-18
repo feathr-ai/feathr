@@ -13,7 +13,7 @@ import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import com.linkedin.feathr.offline.source.accessor.{DataSourceAccessor, NonTimeBasedDataSourceAccessor, TimeBasedDataSourceAccessor}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
-import com.linkedin.feathr.offline.transformation.{DataFrameBasedSqlEvaluator, FeatureColumnFormat, FeatureTypeAccumulator, WindowAggregationEvaluator}
+import com.linkedin.feathr.offline.transformation._
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils.tensorTypeToDataFrameSchema
 import com.linkedin.feathr.offline.util._
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
@@ -23,7 +23,8 @@ import com.linkedin.feathr.swj.aggregate.AggregationType
 import com.linkedin.feathr.{common, offline}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{col, _}
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
@@ -74,30 +75,12 @@ private[offline] object FeatureTransformation {
   // feature name, column prefix
   type FeatureNameAndColumnPrefix = (String, String)
 
-  def getFeatureJoinKey(sourceKeyExtractor: SourceKeyExtractor, withKeyColumnRDD: RDD[_]): Seq[String] = {
-    if (!sourceKeyExtractor.isInstanceOf[MVELSourceKeyExtractor]) {
-      throw new FeathrFeatureTransformationException(
-        ErrorLabel.FEATHR_USER_ERROR,
-        s"Cannot call apply ${sourceKeyExtractor} on RDD as it's expecting MVELSourceKeyExtractor.")
-    }
-    if (withKeyColumnRDD.isEmpty) {
-      sourceKeyExtractor.getKeyColumnNames(None)
-    } else {
-      sourceKeyExtractor.getKeyColumnNames(Some(withKeyColumnRDD.first()))
-    }
-  }
-
-  def getFeatureJoinKey(sourceKeyExtractor: SourceKeyExtractor, withKeyColumnDF: DataFrame): Seq[String] = {
-    // special handle MVEL source key extractor, which has two version of getKeyColumnNames()
-    sourceKeyExtractor match {
-      case extractor: MVELSourceKeyExtractor =>
-        if (withKeyColumnDF.head(1).isEmpty) {
-          extractor.getKeyColumnNames(None)
-        } else {
-          extractor.getKeyColumnNames(Some(withKeyColumnDF.first()))
-        }
-      case extractor => extractor.getKeyColumnNames()
-    }
+  def getFeatureJoinKey(sourceKeyExtractor: SourceKeyExtractor, withKeyColumnDF: DataFrame, featureExtractor: Option[AnyRef] = None): Seq[String] = {
+      if (withKeyColumnDF.head(1).isEmpty) {
+        sourceKeyExtractor.getKeyColumnNames(None)
+      } else {
+        sourceKeyExtractor.getKeyColumnNames(Some(withKeyColumnDF.first()))
+      }
   }
 
   // get the feature column prefix which will be appended to all feature columns of the dataframe returned by the transformer
@@ -186,24 +169,16 @@ private[offline] object FeatureTransformation {
     val featureNamePrefixPairs = requestedFeatureRefString.map((_, featureNamePrefix))
 
     // return the feature dataframe, the feature column format and the actual(inferred or user provided) feature types
+    val featureTypeConfigs = featureAnchorWithSource.featureAnchor.featureTypeConfigs
     val transformedFeatureData: TransformedResult = featureAnchorWithSource.featureAnchor.extractor match {
       case transformer: TimeWindowConfigurableAnchorExtractor =>
         WindowAggregationEvaluator.transform(transformer, df, featureNamePrefixPairs, featureAnchorWithSource, inputDateInterval)
       case transformer: SimpleAnchorExtractorSpark =>
         // transform from avro tensor to FDS format, avro tensor can be shared by online/offline
         // so that transformation logic can be written only once
-        DataFrameBasedSqlEvaluator.transform(transformer, df, featureNamePrefixPairs, featureAnchorWithSource)
-      case transformer: SimpleConfigurableAnchorExtractor =>
-        val featureFormat = FeatureColumnFormat.FDS_TENSOR
-        // features to calculate, if empty, will calculate all features defined in the extractor
-        val selectedFeatureNames = if (requestedFeatureRefString.nonEmpty) requestedFeatureRefString else transformer.getProvidedFeatureNames
-        val FeatureDataFrame(transformedDF, tranformedFeatureTypes) = transformer.transform(transformer, df, selectedFeatureNames)
-        TransformedResult(
-          // Re-compute the featureNamePrefixPairs because feature names can be coming from the extractor.
-          selectedFeatureNames.map((_, featureNamePrefix)),
-          transformedDF,
-          selectedFeatureNames.map(c => (c, featureFormat)).toMap,
-          tranformedFeatureTypes)
+        DataFrameBasedSqlEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs)
+      case transformer: AnchorExtractor[_] =>
+        DataFrameBasedRowEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs)
       case _ => throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, s"cannot find valid Transformer for ${featureAnchorWithSource}")
 
     }
@@ -329,7 +304,7 @@ private[offline] object FeatureTransformation {
     }
 
     val withKeyColumnDF = keyExtractor.appendKeyColumns(sourceDF)
-    val outputJoinKeyColumnNames = getFeatureJoinKey(keyExtractor, withKeyColumnDF)
+    val outputJoinKeyColumnNames = getFeatureJoinKey(keyExtractor, withKeyColumnDF, Some(anchorFeatureGroup.anchorsWithSameSource.head.featureAnchor.extractor))
     val filteredFactData = applyBloomFilter((keyExtractor, withKeyColumnDF), bloomFilter)
 
     // 1. apply all transformations on the dataframe in sequential order

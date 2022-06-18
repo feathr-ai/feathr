@@ -206,3 +206,10 @@ feathr_project/feathr_cli.egg-info/*
 
 #Local Build
 null/*
+
+# For Metal Server
+.metals/
+.bloop/
+project/.bloop
+metals.sbt
+.bsp/sbt.json

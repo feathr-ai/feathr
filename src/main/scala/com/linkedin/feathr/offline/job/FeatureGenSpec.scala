@@ -5,8 +5,9 @@ import com.linkedin.feathr.common.configObj.configbuilder.{FeatureGenConfigBuild
 import com.linkedin.feathr.common.configObj.generation.{FeatureGenConfig, OfflineOperationalConfig, OutputProcessorConfig}
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrDataOutputException}
 import com.linkedin.feathr.common.{DateParam, DateTimeParam, DateTimeUtils, RichConfig}
-import com.linkedin.feathr.offline.generation.outputProcessor.{PushToRedisOutputProcessor, WriteToHDFSOutputProcessor}
+import com.linkedin.feathr.offline.generation.outputProcessor.{FeatureMonitoringProcessor, PushToRedisOutputProcessor, WriteToHDFSOutputProcessor}
 import com.linkedin.feathr.offline.util.{FeatureGenConstants, IncrementalAggUtils}
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.sparkcommon.OutputProcessor
 import com.typesafe.config.ConfigFactory
 
@@ -16,7 +17,7 @@ import scala.collection.JavaConverters._
  * wrapper of generation config and context, also does not further processing on them.
 
  */
-class FeatureGenSpec(private val featureGenConfig: FeatureGenConfig) {
+class FeatureGenSpec(private val featureGenConfig: FeatureGenConfig, dataLoaderHandlers: List[DataLoaderHandler]) {
 
   require(
     featureGenConfig.getOperationalConfig.isInstanceOf[OfflineOperationalConfig],
@@ -49,11 +50,15 @@ class FeatureGenSpec(private val featureGenConfig: FeatureGenConfig) {
       case FeatureGenConstants.HDFS_OUTPUT_PROCESSOR_NAME =>
         val useOutputTimePath = config.getParams.getBooleanWithDefault(FeatureGenConstants.OUTPUT_TIME_PATH, default = true)
         val endTimeOpt = if (useOutputTimePath) Some(endTimeStr) else None
-        new WriteToHDFSOutputProcessor(config, endTimeOpt)
+        new WriteToHDFSOutputProcessor(config, endTimeOpt, dataLoaderHandlers)
       case FeatureGenConstants.REDIS_OUTPUT_PROCESSOR_NAME =>
         val params = config.getParams
         val decoratedConfig = OutputProcessorBuilder.build(config.getName, params)
         new PushToRedisOutputProcessor(decoratedConfig, None)
+      case FeatureGenConstants.MONITORING_OUTPUT_PROCESSOR_NAME =>
+        val params = config.getParams
+        val decoratedConfig = OutputProcessorBuilder.build(config.getName, params)
+        new FeatureMonitoringProcessor(decoratedConfig, None)
       case _ =>
         throw new FeathrDataOutputException(ErrorLabel.FEATHR_USER_ERROR, "Custom output processor is not yet supported.")
     }
@@ -84,10 +89,10 @@ object FeatureGenSpec {
    * @param featureGenJobContext feature generation context
    * @return Feature generation Specifications
    */
-  def parse(featureGenConfigStr: String, featureGenJobContext: FeatureGenJobContext): FeatureGenSpec = {
+  def parse(featureGenConfigStr: String, featureGenJobContext: FeatureGenJobContext, dataLoaderHandlers: List[DataLoaderHandler]): FeatureGenSpec = {
     val withParamsOverrideConfigStr = FeatureGenConfigOverrider.applyOverride(featureGenConfigStr, featureGenJobContext.paramsOverride)
     val withParamsOverrideConfig = ConfigFactory.parseString(withParamsOverrideConfigStr)
     val featureGenConfig = FeatureGenConfigBuilder.build(withParamsOverrideConfig)
-    new FeatureGenSpec(featureGenConfig)
+    new FeatureGenSpec(featureGenConfig, dataLoaderHandlers)
   }
 }

@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 from avro.io import BinaryEncoder, DatumWriter
 from confluent_kafka import Producer
-from feathr._envvariableutil import _EnvVaraibleUtil
+from feathr.utils._envvariableutil import _EnvVaraibleUtil
 """
 Produce some sample data for streaming feature using Kafka"""
 KAFKA_BROKER = "feathrazureci.servicebus.windows.net:9093"
@@ -40,7 +40,8 @@ def send_avro_record_to_kafka(topic, record):
     bytes_writer = io.BytesIO()
     encoder = BinaryEncoder(bytes_writer)
     writer.write(record, encoder)
-    sasl = _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
+    envutils = _EnvVaraibleUtil()
+    sasl = envutils.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
     conf = {
         'bootstrap.servers': KAFKA_BROKER,
         'security.protocol': 'SASL_SSL',

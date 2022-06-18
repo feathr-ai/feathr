@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.source.dataloader
 
 import com.linkedin.feathr.offline.config.location.SimplePath
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -8,7 +9,7 @@ import org.apache.spark.sql.SparkSession
  *
  * @param ss the spark session.
  */
-private[offline] class BatchDataLoaderFactory(ss: SparkSession) extends  DataLoaderFactory {
+private[offline] class BatchDataLoaderFactory(ss: SparkSession, dataLoaderHandlers: List[DataLoaderHandler]) extends  DataLoaderFactory {
 
   /**
    * create a data loader based on the file type.
@@ -18,6 +19,6 @@ private[offline] class BatchDataLoaderFactory(ss: SparkSession) extends  DataLoa
    */
   override def create(path: String): DataLoader = {
     log.info(s"Creating spark data loader for path: ${path}")
-    new BatchDataLoader(ss, SimplePath(path))
+    new BatchDataLoader(ss, SimplePath(path), dataLoaderHandlers)
   }
 }

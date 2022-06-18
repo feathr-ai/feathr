@@ -2,14 +2,15 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from feathr._materialization_utils import _to_materialization_config
+from feathr.definition._materialization_utils import _to_materialization_config
+from feathr import (BackfillTime, MaterializationSettings)
 from feathr import (BackfillTime, MaterializationSettings, FeatureQuery, 
                     ObservationSettings, SparkExecutionConfiguration)
-from feathr import RedisSink
-from feathr.anchor import FeatureAnchor
-from feathr.dtype import BOOLEAN, FLOAT, FLOAT_VECTOR, INT32, ValueType
-from feathr.feature import Feature
-from feathr.typed_key import TypedKey
+from feathr import RedisSink, HdfsSink
+from feathr import FeatureAnchor
+from feathr import BOOLEAN, FLOAT, FLOAT_VECTOR, INT32, ValueType
+from feathr import Feature
+from feathr import TypedKey
 from feathr import INPUT_CONTEXT
 from test_fixture import basic_test_setup
 from test_fixture import get_online_test_table_name
@@ -41,6 +42,32 @@ def test_feature_materialization_config():
         """
     assert ''.join(config.split()) == ''.join(expected_config.split())
 
+def test_feature_materialization_offline_config():
+    backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5,20), step=timedelta(days=1))
+    offlineSink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output/hdfs_test.avro")
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[offlineSink],
+                                       feature_names=["f_location_avg_fare", "f_location_max_fare"],
+                                       backfill_time=backfill_time)
+    config = _to_materialization_config(settings)
+    expected_config = """ 
+        operational: {
+            name: nycTaxiTable
+            endTime: "2020-05-20 00:00:00"
+            endTimeFormat: "yyyy-MM-dd HH:mm:ss"
+            resolution: DAILY
+            output:[
+                {
+                    name: HDFS
+                    params: {
+                        path: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output/hdfs_test.avro"
+                    }
+                }
+            ]
+        }
+        features: [f_location_avg_fare, f_location_max_fare]
+        """
+    assert ''.join(config.split()) == ''.join(expected_config.split())
 
 def test_feature_materialization_daily_schedule():
     """Test back fill cutoff time for a daily range"""
@@ -89,10 +116,10 @@ def test_build_feature_verbose():
     anchor = FeatureAnchor(name="request_features",
                            source=INPUT_CONTEXT,
                            features=features)
-    
+
     # Check pretty print
     client.build_features(anchor_list=[anchor], verbose=True)
-    
+
 def test_get_offline_features_verbose():
     """
     Test verbose for pretty printing feature query
@@ -106,7 +133,7 @@ def test_get_offline_features_verbose():
                             key_column_type=ValueType.INT32)
 
     feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=location_id)
-    
+
     settings = ObservationSettings(
         observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04",
         event_timestamp_column="lpep_dropoff_datetime",
@@ -114,7 +141,7 @@ def test_get_offline_features_verbose():
     )
 
     now = datetime.now()
-    
+
     # set output folder based on different runtime
     if client.spark_runtime == 'databricks':
         output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".parquet"])

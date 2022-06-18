@@ -4,13 +4,16 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from test_fixture import registry_test_setup_append, registry_test_setup_partially
+
 import pytest
 from click.testing import CliRunner
+from feathr import FeathrClient
 from feathr import (FeatureAnchor, FeatureQuery, ObservationSettings, TypedKey,
                     ValueType)
-from feathr._feature_registry import _FeatureRegistry
+from feathr.registry._feature_registry_purview import _FeatureRegistry
 from feathr.client import FeathrClient
-from feathr.feature_derivations import DerivedFeature
+from feathr.definition.feature_derivations import DerivedFeature
 from feathrcli.cli import init
 from numpy import equal
 
@@ -62,7 +65,36 @@ def test_feathr_register_features_e2e():
                                 output_path=output_path)
     client.wait_job_to_finish(timeout_sec=900)
 
+def test_feathr_register_features_partially():
+    """
+    This test will register full set of features into one project, then register another project in two partial registrations.
+    The length of the return value of get_features_from_registry should be identical.
+    """
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client: FeathrClient = registry_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client.register_features()
+    time.sleep(30)
+    full_registration = client.get_features_from_registry(client.project_name)
+    
+    now = datetime.now()
+    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
 
+    client: FeathrClient = registry_test_setup_partially(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    new_project_name = client.project_name
+    client.register_features()
+    time.sleep(30)
+
+
+    client: FeathrClient = registry_test_setup_append(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client.project_name = new_project_name
+    client.register_features()
+    time.sleep(30)
+
+    appended_registration = client.get_features_from_registry(client.project_name)
+
+    # after a full registration, another registration should not affect the registered anchor features.
+    assert len(full_registration.items())==len(appended_registration.items())
     
 def test_get_feature_from_registry():
     registry = _FeatureRegistry("mock_project","mock_purview","mock_delimeter")

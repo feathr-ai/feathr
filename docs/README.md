@@ -33,7 +33,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
 
-1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
+1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query id -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
 
 [Launch Cloud Shell](https://shell.azure.com/bash)
 
@@ -43,7 +43,7 @@ Feathr has native cloud integration. To use Feathr on Azure, you only need three
 
 3. Run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fproduct_recommendation_demo.ipynb)
 
 ## Installing Feathr Client Locally
 
@@ -129,7 +129,7 @@ Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linked
 
 ## Running Feathr Examples
 
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/nyc_driver_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
+Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
 
 
 ## Cloud Architecture
@@ -141,7 +141,7 @@ Feathr has native integration with Azure and other cloud services, and here's th
 
 ## Quickstart
 
-- [Quickstart](quickstart.md)
+- [Quickstart for Azure Synapse](quickstart_synapse.md)
 
 ## Concepts
 

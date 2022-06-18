@@ -7,7 +7,7 @@ import distutils.dir_util
 import subprocess
 import urllib.request
 from feathr.client import FeathrClient
-
+from feathr.registry._feature_registry_purview import _FeatureRegistry
 
 @click.group()
 @click.pass_context
@@ -69,6 +69,18 @@ def init(name, git):
                                'wiki to learn how to manage '
                                'your workspace with git.', fg='green'))
     click.echo(click.style('Feathr initialization completed.', fg='green'))
+
+
+@cli.command()
+@click.option('--save_to', default="./", help='Specify the path to save the output HOCON config(relative to current path).')
+def hocon(save_to):
+    """
+    Scan all Python-based feature definitions recursively under current directory,
+     convert them to HOCON config and save to a given path (relative to current directory).
+    """
+    scan_dir = Path.cwd()
+    save_to = Path(os.path.join(scan_dir, save_to))
+    _FeatureRegistry.save_to_feature_config(scan_dir, save_to)
 
 
 @cli.command()

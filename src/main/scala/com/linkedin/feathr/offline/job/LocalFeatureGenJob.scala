@@ -7,6 +7,8 @@ import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader}
 import com.linkedin.feathr.offline.generation.outputProcessor.WriteToHDFSOutputProcessor
 import com.linkedin.feathr.offline.util.FeathrTestUtils.createSparkSession
 import com.linkedin.feathr.offline.util.SparkFeaturizedDataset
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.log4j.{Level, Logger}
 
 /**
@@ -28,10 +30,10 @@ object LocalFeatureGenJob {
    * @param featureDefAsString
    * @return tagged feature name to SparkFeaturizedDataset
    */
-  def localFeatureGenerate(featureGenConfigStr: String, featureDefAsString: String): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+  def localFeatureGenerate(featureGenConfigStr: String, featureDefAsString: String, dataPathHandlers: List[DataPathHandler]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
     val workDir = "featureGen/localFeatureGenerate/"
     val jobContext = new FeatureGenJobContext(workDir)
-    localFeatureGenerate(featureGenConfigStr, featureDefAsString, jobContext)
+    localFeatureGenerate(featureGenConfigStr, featureDefAsString, jobContext, dataPathHandlers)
   }
 
   /**
@@ -41,22 +43,10 @@ object LocalFeatureGenJob {
    * @param featureDefAsString
    * @return
    */
-  def localFeatureGenerate(features: Seq[String], featureDefAsString: String): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+  def localFeatureGenerate(features: Seq[String], featureDefAsString: String, dataPathHandlers: List[DataPathHandler]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
     val configs = Seq(feathrConfigLoader.load(featureDefAsString))
     val outputDir = "featureGen/generateWithDefaultParams/"
     val jobContext = new FeatureGenJobContext(outputDir)
-
-//    val featureGenConfigStr =
-//      s"""
-//      |operational: {
-//      |  name: generateWithDefaultParams
-//      |  endTime: NOW
-//      |  endTimeFormat: "yyyy-MM-dd"
-//      |  resolution: DAILY
-//      |  output:[]
-//      |}
-//      |features: [${features.mkString(",")}]
-//      """.stripMargin
 
     val featureGenConfigStr =
       s"""
@@ -69,7 +59,7 @@ object LocalFeatureGenJob {
          |}
          |features: [${features.mkString(",")}]
       """.stripMargin
-    generateFeatures(featureGenConfigStr, configs, jobContext)
+    generateFeatures(featureGenConfigStr, configs, jobContext, dataPathHandlers)
   }
 
   /**
@@ -83,10 +73,11 @@ object LocalFeatureGenJob {
   private[offline] def localFeatureGenerate(
       featureGenConfigStr: String,
       featureDefAsString: String,
-      extraParams: Array[String]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+      extraParams: Array[String],
+      dataPathHandlers: List[DataPathHandler]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
     val defaultParams = Array("--work-dir", "featureGen/localFeatureGenerate/")
     val jobContext = FeatureGenJobContext.parse(defaultParams ++ extraParams)
-    localFeatureGenerate(featureGenConfigStr, featureDefAsString, jobContext)
+    localFeatureGenerate(featureGenConfigStr, featureDefAsString, jobContext, dataPathHandlers)
   }
 
   /**
@@ -100,11 +91,12 @@ object LocalFeatureGenJob {
   private[offline] def localFeatureGenerate(
       featureGenConfigStr: String,
       featureDefAsString: String,
-      jobContext: FeatureGenJobContext): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+      jobContext: FeatureGenJobContext,
+      dataPathHandlers: List[DataPathHandler]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
     Logger.getRootLogger.setLevel(Level.ERROR)
     val (overriddenFeatureDef, _) = FeatureGenConfigOverrider.overrideFeatureDefs(Some(featureDefAsString), None, jobContext)
     val configs = Seq(feathrConfigLoader.load(overriddenFeatureDef.get))
-    generateFeatures(featureGenConfigStr, configs, jobContext)
+    generateFeatures(featureGenConfigStr, configs, jobContext, dataPathHandlers)
   }
 
   /**
@@ -117,9 +109,14 @@ object LocalFeatureGenJob {
   private def generateFeatures(
       featureGenConfig: String,
       feathrConfigs: Seq[FeathrConfig],
-      jobContext: FeatureGenJobContext): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
-    val feathrClient = FeathrClient.builder(ss).addFeatureDefConfs(Some(feathrConfigs.toList)).build()
-    val featureGenSpec = FeatureGenSpec.parse(featureGenConfig, jobContext)
+      jobContext: FeatureGenJobContext,
+      dataPathHandlers: List[DataPathHandler]): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+    val feathrClient = FeathrClient.builder(ss)
+    .addFeatureDefConfs(Some(feathrConfigs.toList))
+    .addDataPathHandlers(dataPathHandlers)
+    .build()
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
+    val featureGenSpec = FeatureGenSpec.parse(featureGenConfig, jobContext, dataLoaderHandlers)
     val fdsOutputProcessors = featureGenSpec.getProcessorList.collect {
       case processor: WriteToHDFSOutputProcessor => processor
     }
