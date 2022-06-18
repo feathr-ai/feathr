@@ -26,13 +26,21 @@ trait InputLocation {
    * Backward Compatibility
    * Many existing codes expect a simple path
    * @return the `path` or `url` of the data source
+   *
+   * WARN: This method is deprecated, you must use match/case on InputLocation,
+   * and get `path` from `SimplePath` only
    */
+  @deprecated("Do not use this method in any new code, it will be removed soon")
   def getPath: String
 
   /**
    * Backward Compatibility
    * @return the `path` or `url` of the data source, wrapped in an List
+   *
+   * WARN: This method is deprecated, you must use match/case on InputLocation,
+   * and get `paths` from `PathList` only
    */
+  @deprecated("Do not use this method in any new code, it will be removed soon")
   def getPathList: List[String]
 
   /**
