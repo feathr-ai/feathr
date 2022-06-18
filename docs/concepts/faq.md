@@ -6,7 +6,11 @@ nav_order: 7
 
 This page covered the most asked questions that we've heard from end users.
 
+# when do you need a feature store and when do you don't?
 
+when you have entities/keys you usually need it (like for deep learning etc.)
+
+when you don't (say just doing regular image recognation task) you probably don't need feature store.
 # What is a key and which kind of features need this?
 
 For Feathr keys, think that every feature needs it by default, i.e. think each Feathr Feature is associated with a certain key. 
