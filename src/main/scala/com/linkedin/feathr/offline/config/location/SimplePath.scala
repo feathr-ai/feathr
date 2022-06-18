@@ -17,4 +17,6 @@ case class SimplePath(@JsonProperty("path") path: String) extends InputLocation 
   override def getPathList: List[String] = List(path)
 
   override def isFileBasedLocation(): Boolean = true
+
+  override def toString: String = s"SimplePath(path=${path})"
 }

@@ -722,6 +722,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
           case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
                                 s"Illegal setting for Kafka source ${node.toPrettyString()}, expected map")
         }
+      case "PASSTHROUGH" => SimplePath("PASSTHROUGH")
       case _ => Option(node.get("location")) match {
         case Some(field: ObjectNode) =>
           LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
