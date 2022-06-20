@@ -188,7 +188,10 @@ class FeathrClient(object):
 
         Some required information has to be set via environment variables so the client can work.
         """
-        for required_field in self.required_fields:
+        props = []
+        if hasattr(self, "system_properties"):
+            props = self.system_properties
+        for required_field in (self.required_fields + props):
             if required_field not in os.environ:
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
                                    f'variables are: {self.required_fields}.')
@@ -236,6 +239,14 @@ class FeathrClient(object):
         self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
+
+        # Check if data source used by every anchor requires additional system properties to be set
+        props = []
+        for anchor in self.anchor_list:
+            if hasattr(anchor.source, "get_required_properties"):
+                props.extend(anchor.source.get_required_properties())
+        if len(props)>0:
+            self.system_properties = props
 
         # Pretty print anchor_list
         if verbose and self.anchor_list:
@@ -494,7 +505,8 @@ class FeathrClient(object):
                 '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
-            configuration=execution_configuratons
+            configuration=execution_configuratons,
+            properties=self._get_system_properties()
         )
 
     def get_job_result_uri(self, block=True, timeout_sec=300) -> str:
@@ -611,6 +623,7 @@ class FeathrClient(object):
             arguments=arguments,
             reference_files_path=[],
             configuration=execution_configuratons,
+            properties=self._get_system_properties()
         )
 
 
@@ -742,6 +755,15 @@ class FeathrClient(object):
             KAFKA_SASL_JAAS_CONFIG: "{sasl}"
             """.format(sasl=sasl)
         return config_str
+
+    def _get_system_properties(self):
+        """Go through all data sources and fill all required system properties"""
+        prop_and_value = {}
+        if hasattr(self, "system_properties"):
+            for prop in self.system_properties:
+                prop_and_value[prop] = self.envutils.get_environment_variable_with_default(prop)
+            return prop_and_value
+        return None
 
     def get_features_from_registry(self, project_name: str) -> Dict[str, FeatureBase]:
         """

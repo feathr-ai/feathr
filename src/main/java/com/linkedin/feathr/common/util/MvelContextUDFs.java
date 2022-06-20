@@ -70,7 +70,9 @@ public class MvelContextUDFs {
 
   /**
    * Cast the input to double.
-   * If it's null, null is returned. If it's string, it will try to parse it. For other types, it will be coerced to double.
+   * If it's null, null is returned. If it's string, it will try to parse it.
+   * For number types, it will do standard conversion.
+   * For other types, it will be coerced to double.
    *
    */
   @ExportToMvel
@@ -80,6 +82,8 @@ public class MvelContextUDFs {
     }
     if (input instanceof String) {
       return Double.parseDouble((String)input);
+    } else if (input instanceof Number) {
+      return ((Number)input).doubleValue();
     } else {
       return (Double)input;
     }
@@ -87,7 +91,9 @@ public class MvelContextUDFs {
 
   /**
    * Cast the input to float.
-   * If it's null, null is returned. If it's string, it will try to parse it. For other types, it will be coerced to float.
+   * If it's null, null is returned. If it's string, it will try to parse it.
+   * For number types, it will do standard conversion.
+   * For other types, it will be coerced to float.
    *
    */
   @ExportToMvel
@@ -97,6 +103,8 @@ public class MvelContextUDFs {
     }
     if (input instanceof String) {
       return Float.parseFloat((String)input);
+    } else if (input instanceof Number) {
+      return ((Number)input).floatValue();
     } else {
       return (Float)input;
     }
@@ -104,7 +112,9 @@ public class MvelContextUDFs {
 
   /**
    * Cast the input to Integer.
-   * If it's null, null is returned. If it's string, it will try to parse it. For other types, it will be coerced to Integer.
+   * If it's null, null is returned. If it's string, it will try to parse it.
+   * For number types, it will do standard conversion.
+   * For other types, it will be coerced to Integer.
    *
    */
   @ExportToMvel
@@ -114,6 +124,8 @@ public class MvelContextUDFs {
     }
     if (input instanceof String) {
       return Integer.parseInt((String)input);
+    } else if (input instanceof Number) {
+      return ((Number)input).intValue();
     } else {
       return (Integer)input;
     }
