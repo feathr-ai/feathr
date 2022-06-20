@@ -119,3 +119,7 @@ So that only this module is accessbile for end users.
 ### Debug and Known Issues
 * `No module named xyz`: Readthedocs need to run the code to generated the docs. So if your dependency is not specified
 in the docs/requirements.txt, it will fail on this. To fix it, specify the dependency in requirements.txt.
+
+## Update the Documentation Links
+
+If your change will change the Python Doc url link, please remember to check and update related links in `feathr/docs` folder.
