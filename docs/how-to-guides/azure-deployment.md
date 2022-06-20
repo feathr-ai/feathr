@@ -15,10 +15,29 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
 1. Get the principal ID of your account by running `az ad signed-in-user show --query id -o tsv` in the link below (Select "Bash" if you are asked to choose one), and write down that value (will be something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
 
-
 [Launch Cloud Shell](https://shell.azure.com/bash)
 
-2. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
+
+2. To enable authentication on the Feathr UI (which gets created as part of the deployment script) we need to create an Azure Active Directory (AAD) application. Currently it is not possible to create one through ARM template but you can easily create one by running the following CLI commands on the Cloud Shell
+
+```bash
+# This is the prefix you want to name your resources with, make a note of it, you will need it during deployment.
+export prefix="YOUR_RESOURCE_PREFIX" 
+
+# Please don't change this name, a corresponding webapp with same name gets created in subsequent steps.
+export sitename="{prefix}webapp" 
+
+# Create Azure AD app
+az ad app create --display-name $sitename --sign-in-audience AzureADMyOrg --web-home-page-url "https://$sitename.azurewebsites.net/api/updates" --web-redirect-uris "https://$sitename.azurewebsites.net" --enable-id-token-issuance true 
+
+# Run following commands to get the Tenant Id and Client Id, please make a note of this you will need it during deployment
+az account tenant list --query [0].tenantId -o tsv #TenantId
+
+az ad app list --display-name $sitename --query [0].appId -o tsv #ClientId
+
+``` 
+
+3. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 

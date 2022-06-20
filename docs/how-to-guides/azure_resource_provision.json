@@ -46,7 +46,19 @@
       "metadata": {
         "description": "The flavor of the registry backend to deploy, current supported types are Azure Purview and Azure SQL"
       }
-    }
+    },
+    "aadClientId": {
+      "type": "String",
+      "metadata": {
+        "description": "Client Id of the Azure Active Directory (AAD) app provisioned for UI app authentication in the prior step."
+      }
+    },
+    "aadTenantId": {
+      "type": "String",
+      "metadata": {
+        "description": "Tenant Id of the Azure Active Directory (AAD) app provisioned for UI app authentication in the prior step."
+      }
+    } 
   },
   "variables": {
     "location": "[resourceGroup().location]",
@@ -317,7 +329,19 @@
             {
               "name": "DOCKER_REGISTRY_SERVER_URL",
               "value": "https://index.docker.io/v1"
-            }
+            },
+            {
+              "name": "AZURE_CLIENT_ID",
+              "value": "[parameters('aadClientId')]"
+            },
+            {
+              "name": "AZURE_TENANT_ID",
+              "value": "[parameters('aadTenantId')]"
+            },
+            {
+              "name": "CONNECTION_STR",
+              "value": "TODO_ONCE_SQL_PR_IS_MERGED"
+            }            
           ]
         }
       }
