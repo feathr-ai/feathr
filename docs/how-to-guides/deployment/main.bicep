@@ -8,7 +8,7 @@ targetScope = 'subscription'
 @minLength(3)
 param resourcePrefix string = 'feathr${take(newGuid(),5)}'
 
-@description('Specifies the principal ID assigned to the role. You can find it by logging into \'https://shell.azure.com/bash\' and run \'az ad signed-in-user show --query objectId -o tsv\' ')
+@description('Specifies the principal ID assigned to the role. You can find it by logging into \'https://shell.azure.com/bash\' and run \'az ad signed-in-user show --query id -o tsv\' ')
 param principalId string
 
 @description('Specifies whether to allow client IPs to connect to Synapse')

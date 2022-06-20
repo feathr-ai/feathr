@@ -23,7 +23,7 @@ First step is to provision required cloud resources if you want to use Feathr. F
 
 Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
 
-1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
+1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query id -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
 
 [Launch Cloud Shell](https://shell.azure.com/bash)
 
@@ -101,7 +101,7 @@ os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 
 In the self-contained [sample notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
 
-These values can also be reterived by using cloud key value store, such as [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/):
+These values can also be retrieved by using cloud key value store, such as [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/):
 
 ```python
 import os
@@ -110,6 +110,7 @@ os.environ['AZURE_CLIENT_ID'] = ''
 os.environ['AZURE_TENANT_ID'] = ''
 os.environ['AZURE_CLIENT_SECRET'] = ''
 ```
+Please refer to [A note on using azure key vault to store credentials](https://github.com/linkedin/feathr/blob/41e7496b38c43af6d7f8f1de842f657b27840f6d/docs/how-to-guides/feathr-configuration-and-env.md#a-note-on-using-azure-key-vault-to-store-credentials) for more details.
 
 ## Step 6: Create features with Python APIs
 

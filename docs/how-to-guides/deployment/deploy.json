@@ -21,16 +21,13 @@
     "principalId": {
       "type": "string",
       "metadata": {
-        "description": "Specifies the principal ID assigned to the role. You can find it by logging into 'https://shell.azure.com/bash' and run 'az ad signed-in-user show --query objectId -o tsv' "
+        "description": "Specifies the principal ID assigned to the role. You can find it by logging into 'https://shell.azure.com/bash' and run 'az ad signed-in-user show --query id -o tsv' "
       }
     },
     "allowAllConnections": {
       "type": "string",
       "defaultValue": "true",
-      "allowedValues": [
-        "true",
-        "false"
-      ],
+      "allowedValues": ["true", "false"],
       "metadata": {
         "description": "Specifies whether to allow client IPs to connect to Synapse"
       }
