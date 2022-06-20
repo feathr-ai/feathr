@@ -13,6 +13,13 @@ class FeathrBackendAbstract(ABC):
         '''
         pass
     
+    @abstractmethod
+    def GetProject(self,project_name):
+        '''
+        Get a project by its name.
+        '''
+        pass
+
     # feature-related
     @abstractmethod
     def ListFeatures(self,project_name):

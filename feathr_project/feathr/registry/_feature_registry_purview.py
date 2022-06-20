@@ -794,40 +794,7 @@ derivations: {
         List all the already registered features. If project_name is not provided or is None, it will return all the
         registered features; otherwise it will only return only features under this project
         """
-
-        feature_list = []
-
-        if not project_name:
-            raise RuntimeError("project_name must be specified.")
-
-        # get the corresponding features belongs to a certain project.
-        # note that we need to use "startswith" to filter out the features that don't belong to this project.
-        # see syntax here: https://docs.microsoft.com/en-us/rest/api/purview/catalogdataplane/discovery/query#discovery_query_andornested
-        query_filter = {
-            "and": [
-                {
-                    "or":
-                    [
-                        {"entityType": TYPEDEF_DERIVED_FEATURE},
-                        {"entityType": TYPEDEF_ANCHOR_FEATURE}
-                    ]
-                },
-                {
-                    "attributeName": "qualifiedName",
-                    "operator": "startswith",
-                    "attributeValue": project_name + self.registry_delimiter
-                }
-            ]
-        }
-        result = self.purview_client.discovery.query(filter=query_filter)
-
-        entities = result['value']
-        # entities = self.purview_client.discovery.search_entities(query = None, search_filter=query_filter, limit=limit)
-
-        for entity in entities:
-            feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
-
-        return feature_list
+        return self._list_registered_entities_with_details(project_name,entity_type=[TYPEDEF_ANCHOR_FEATURE,TYPEDEF_DERIVED_FEATURE])
    
     def get_feature_by_fqdn_type(self, qualifiedName, typeName):
         """
@@ -962,9 +929,9 @@ derivations: {
         # append the guid list. Since we are using project_name + delimiter to search, all the result will be valid.
         guid_list = [entity["id"] for entity in result_entities]
 
-        entity_res = [] if guid_list is None or len(guid_list)==0 else self.purview_client.get_entity(
-            guid=guid_list)["entities"]
-        return entity_res
+        guid_batches = [guid_list[i:i + limit] for i in range(starting_offset, len(guid_list), limit)]
+        entity_res = itertools.chain(*[[x for x in self.purview_client.get_entity(guid=batch)["entities"]] for batch in guid_batches])
+        return list(entity_res)
 
 
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
