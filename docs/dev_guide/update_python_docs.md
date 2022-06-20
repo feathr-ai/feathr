@@ -122,4 +122,4 @@ in the docs/requirements.txt, it will fail on this. To fix it, specify the depen
 
 ## Update the Documentation Links
 
-If your change will change the Python Doc url link, please remember to check and update related links in `feathr/docs` folder.
+If your change will affect the Python Doc url link, please remember to check and update related links in `feathr/docs` folder.
