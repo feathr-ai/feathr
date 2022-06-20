@@ -18,7 +18,7 @@ const GraphNodeDetails: React.FC = () => {
   const [feature, setFeature] = useState<Feature>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const isFeature = (featureType:string) => {
+  const isFeature = (featureType: string) => {
     return featureType === 'feathr_anchor_feature_v1' || featureType === 'feathr_derived_feature_v1'
   }
 
@@ -42,6 +42,7 @@ const GraphNodeDetails: React.FC = () => {
         loading
           ? (<Spin indicator={ <LoadingOutlined style={ { fontSize: 24 } } spin /> } />)
           : (<div style={ { margin: "2%" } }>
+            { !feature && <p>Click on node to show metadata and metric details</p> }
             { feature?.attributes.transformation &&
                 <Card title="Transformation">
                   { feature.attributes.transformation.transform_expr &&

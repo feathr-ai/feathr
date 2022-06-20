@@ -85,7 +85,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         elif src_parse_result.scheme.startswith('dbfs'):
             # passed a cloud path
             logger.info(
-                'Skipping file {} as the file starts with dbfs:/', local_path_or_http_path)
+                'Skip uploading file {} as the file starts with dbfs:/', local_path_or_http_path)
             returned_path = local_path_or_http_path
         elif src_parse_result.scheme.startswith(('wasb','s3','gs')):
             # if the path starts with a location that's not a local path
@@ -116,7 +116,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
         return returned_path
 
-    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = {}):
+    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = {}, properties: Dict[str, str] = {}):
         """
         submit the feathr job to databricks
         Refer to the databricks doc for more details on the meaning of the parameters:
@@ -124,10 +124,14 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         Args:
             main_file_path (str): main file paths, usually your main jar file
             main_class_name (str): name of your main class
-            arguments (str): all the arugments you want to pass into the spark job
-            job_tags (str): tags of the job, for exmaple you might want to put your user ID, or a tag with a certain information
+            arguments (str): all the arguments you want to pass into the spark job
+            job_tags (str): tags of the job, for example you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
+            properties (Dict[str, str]): Additional System Properties for the spark job
         """
+
+        if properties:
+            arguments.append("--system-properties=%s" % json.dumps(properties))
 
         if isinstance(self.config_template, str):
             # if the input is a string, load it directly
@@ -174,7 +178,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
 
         result = RunsApi(self.api_client).get_run(self.res_job_id)
         self.job_url = result['run_page_url']
-        logger.info('Feathr job Submitted Sucessfully. View more details here: {}', self.job_url)
+        logger.info('Feathr job Submitted Successfully. View more details here: {}', self.job_url)
 
         # return ID as the submission result
         return self.res_job_id
