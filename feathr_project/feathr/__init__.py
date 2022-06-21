@@ -45,6 +45,7 @@ __all__ = [
     'MaterializationSettings',
     'MonitoringSettings',
     'RedisSink',
+    'HdfsSink',
     'MonitoringSqlSink',
     'FeatureQuery',
     'LookupFeature',
