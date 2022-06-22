@@ -30,7 +30,7 @@ class DerivedFeature(FeatureBase):
                 ):
         super(DerivedFeature, self).__init__(name, feature_type, key=key, transform=transform, registry_tags=registry_tags)
         self.input_features = input_features if isinstance(input_features, List) else [input_features]
-        self.validate_feature()
+        # self.validate_feature()
 
     def validate_feature(self):
         """Validate the derived feature is valid"""

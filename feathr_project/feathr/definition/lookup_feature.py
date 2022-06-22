@@ -1,5 +1,6 @@
 from copy import copy, deepcopy
 from typing import List, Optional, Union, Dict
+from feathr.definition.feature_derivations import DerivedFeature
 
 from jinja2 import Template
 
@@ -9,7 +10,7 @@ from feathr.definition.transformation import RowTransformation
 from feathr.definition.typed_key import DUMMY_KEY, TypedKey
 from feathr.definition.aggregation import Aggregation
 
-class LookupFeature(FeatureBase):
+class LookupFeature(DerivedFeature):
     """A lookup feature is a feature defined on top of two other features, i.e. using the feature value of the base feature as key, to lookup the feature value from the expansion feature.
     e.g. a lookup feature user_purchased_item_avg_price could be key-ed by user_id, and computed by:
     base feature is user_purchased_item_ids. For a given user_id, it returns the item ids purchased by the user.
@@ -36,7 +37,7 @@ class LookupFeature(FeatureBase):
                 key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
                 registry_tags: Optional[Dict[str, str]] = None,
                 ):
-        super(LookupFeature, self).__init__(name, feature_type, key=key, registry_tags=registry_tags)
+        super(LookupFeature, self).__init__(name, feature_type, input_features=None, transform=None  ,key=key, registry_tags=registry_tags)
         self.base_feature = base_feature
         self.expansion_feature = expansion_feature
         self.aggregation = aggregation
