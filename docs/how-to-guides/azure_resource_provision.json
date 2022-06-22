@@ -339,9 +339,13 @@
               "value": "[parameters('aadTenantId')]"
             },
             {
+              "name": "API_BASE",
+              "value": "api/v1"
+            }
+            {
               "name": "CONNECTION_STR",
               "value": "TODO_ONCE_SQL_PR_IS_MERGED"
-            }            
+            }
           ]
         }
       }
