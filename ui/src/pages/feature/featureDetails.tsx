@@ -1,21 +1,18 @@
 import React from 'react';
-import { Alert, Button, Card, Col, Modal, Row, Space, Spin } from 'antd';
-import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Col, Row, Space, Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
 import { AxiosError } from 'axios';
-import { deleteFeature, fetchFeature } from '../../api';
+import { fetchFeature } from '../../api';
 import { Feature } from "../../models/model";
 
-const { confirm } = Modal;
-
-type Props = {};
 type Params = {
   project: string;
   featureId: string;
 }
 
-const FeatureDetails: React.FC<Props> = () => {
+const FeatureDetails: React.FC = () => {
   const { project, featureId } = useParams() as Params;
   const navigate = useNavigate();
   const loadingIcon = <LoadingOutlined style={ { fontSize: 24 } } spin />;
