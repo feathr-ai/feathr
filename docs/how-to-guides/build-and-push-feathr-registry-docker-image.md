@@ -18,10 +18,8 @@ Open terminal and go to root of this repository, run following command
 
 ```bash
 cd deploy
-docker build -t blrchen/feathr-sql-registry .
+docker build -t feathr/sql-registry .
 ```
-
-Note: this tutorial uses **blrchen/feathr-sql-registry** as an example. You should replace it with the image name you want to use. <user_name>/<image_name> is not a mandatory format for specifying the name of the docker image.
 
 ## Test docker image locally
 
@@ -34,7 +32,7 @@ docker images
 Run **docker run** command to test docker image locally
 
 ```bash
-docker run --env CONNECTION_STR=<__REPLACE_ME_WITH_SQL_CONNECTION_STRING__> --env API_BASE=api/v1 -it --rm -p 3000:80 blrchen/feathr-sql-registry
+docker run --env CONNECTION_STR=<__REPLACE_ME_WITH_SQL_CONNECTION_STRING__> --env API_BASE=api/v1 -it --rm -p 3000:80 feathr/sql-registry
 ```
 
 Open web browser and navigate to <https://localhost:3000>，verify you can see feathr ui and able to login successfully.
@@ -44,7 +42,7 @@ Open web browser and navigate to <https://localhost:3000>，verify you can see f
 Run **docker push** command to publish docker image to DockerHub
 
 ```bash
-docker push blrchen/feathr-sql-registry
+docker push feathr/sql-registry
 ```
 
 
