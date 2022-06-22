@@ -30,33 +30,12 @@ const FeatureDetails: React.FC<Props> = () => {
     navigate(lineageUrl);
   }
 
-  const onClickDeleteFeature = () => {
-    showConfirm();
-  };
-
-  const showConfirm = () => {
-    confirm({
-      title: 'Are you sure you want to delete this feature?',
-      icon: <ExclamationCircleOutlined />,
-      async onOk() {
-        await deleteFeature(featureId);
-        navigate('/features');
-      },
-      onCancel() {
-        console.log('Cancel clicked');
-      },
-    });
-  }
-
   const renderCommandButtons = () => {
     return (
       <div>
         <Space>
           <Button type="primary" onClick={ () => openLineageWindow() }>
             View Lineage
-          </Button>
-          <Button danger onClick={ onClickDeleteFeature }>
-            Delete Feature
           </Button>
         </Space>
       </div>

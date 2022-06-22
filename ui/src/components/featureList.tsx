@@ -58,17 +58,6 @@ const FeatureList: React.FC = () => {
                   navigate(`/projects/${ project }/features/${ row.guid }`)
                 } }>Edit</Button>
               </Menu.Item>
-              <Menu.Item key="delete">
-                <Popconfirm
-                  placement="left"
-                  title="Are you sure to delete?"
-                  onConfirm={ () => {
-                    onDelete(row.guid)
-                  } }
-                >
-                  Delete
-                </Popconfirm>
-              </Menu.Item>
             </Menu>
           )
         } }>
@@ -117,18 +106,6 @@ const FeatureList: React.FC = () => {
 
   const onClickSearch = () => {
     setPage(defaultPage);
-    fetchData(project);
-  };
-
-  const onDelete = async (id: string) => {
-    setLoading(true);
-    const res = await deleteFeature(id);
-    if (res.status === 200) {
-      message.success(`Feature ${ id } deleted`);
-    } else {
-      message.error("Failed to delete feature with id {id}");
-    }
-    setLoading(false);
     fetchData(project);
   };
 
