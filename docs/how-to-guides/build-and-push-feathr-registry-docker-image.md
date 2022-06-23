@@ -17,13 +17,12 @@ Follow the [instructions](https://docs.docker.com/get-docker) to setup docker lo
 Open terminal and go to root of this repository, run following command
 
 ```bash
-cd deploy
-docker build -t feathr/sql-registry .
+docker build -t feathrfeaturestore/sql-registry .
 ```
 
 ## Test docker image locally
 
-Run **docker images** command, see newly created image should be listed in output
+Run **docker images** command, you will see newly created image listed in output
 
 ```bash
 docker images
@@ -32,17 +31,18 @@ docker images
 Run **docker run** command to test docker image locally
 
 ```bash
-docker run --env CONNECTION_STR=<__REPLACE_ME_WITH_SQL_CONNECTION_STRING__> --env API_BASE=api/v1 -it --rm -p 3000:80 feathr/sql-registry
+docker run --env CONNECTION_STR=__REPLACE_ME_WITH_SQL_CONNECTION_STRING__ --env API_BASE=api/v1 -it --rm -p 3000:80 feathrfeaturestore/sql-registry
 ```
 
 Open web browser and navigate to <https://localhost:3000>，verify you can see feathr ui and able to login successfully.
 
-## Upload to Registry
+## Upload to DockerHub Registry
 
-Run **docker push** command to publish docker image to DockerHub
+Login with feathrfeaturestore account and then run **docker push** command to publish docker image to DockerHub
 
 ```bash
-docker push feathr/sql-registry
+docker login
+docker push feathrfeaturestore/sql-registry
 ```
 
 

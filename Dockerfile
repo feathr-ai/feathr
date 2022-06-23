@@ -23,6 +23,5 @@ COPY --from=ui-build /usr/src/ui/build /usr/share/nginx/html
 COPY ../deploy/nginx.conf /etc/nginx/nginx.conf
 
 # Start
-WORKDIR /usr/src/backend
 COPY ../deploy/env.sh .
-CMD ["/bin/sh", "-c", "./env.sh && nginx -g \"daemon off;\" && uvicorn main:app --host 0.0.0.0 --port 8000"]
+CMD ["/bin/sh", "-c", "./env.sh && nginx && uvicorn main:app --host 0.0.0.0 --port 8000"]
