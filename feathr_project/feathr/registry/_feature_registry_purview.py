@@ -35,7 +35,7 @@ from feathr.constants import *
 from feathr.definition.feature import Feature, FeatureType,FeatureBase
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.repo_definitions import RepoDefinitions
-from feathr.definition.source import HdfsSource, InputContext, Source
+from feathr.definition.source import HdfsSource, InputContext, JdbcSource, Source
 from feathr.definition.transformation import (ExpressionTransformation, Transformation,
                                    WindowAggTransformation)
 from feathr.definition.typed_key import TypedKey
@@ -93,6 +93,14 @@ class _FeatureRegistry(FeathrRegistry):
 
                 AtlasAttributeDef(
                     name="path", typeName="string", cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(
+                    name="url", typeName="string", cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(
+                    name="dbtable", typeName="string", cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(
+                    name="query", typeName="string", cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(
+                    name="auth", typeName="string", cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="event_timestamp_column",
                                   typeName="string", cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="timestamp_format",
@@ -289,7 +297,7 @@ class _FeatureRegistry(FeathrRegistry):
                 transformed_original_elements.setdefault(elem['qualifiedName'],elem)
             return list(transformed_original_elements.values())
             
-    def _parse_source(self, source: Union[Source, HdfsSource]) -> AtlasEntity:
+    def _parse_source(self, source: Union[Source, HdfsSource, JdbcSource]) -> AtlasEntity:
         """
         parse the input sources
         """
@@ -303,17 +311,35 @@ class _FeatureRegistry(FeathrRegistry):
         else:
             preprocessing_func = None
 
-        source_entity = AtlasEntity(
-            name=source.name,
-            qualified_name=self.project_name + self.registry_delimiter + source.name,
-            attributes={
+        attrs = {}
+        if isinstance(source, JdbcSource):
+            {
+                "type": INPUT_CONTEXT if input_context else urlparse(source.path).scheme,
+                "url": INPUT_CONTEXT if input_context else source.url,
+                "timestamp_format": source.timestamp_format,
+                "event_timestamp_column": source.event_timestamp_column,
+                "tags": source.registry_tags,
+                "preprocessing": preprocessing_func  # store the UDF as a string
+            }
+            if source.auth is not None:
+                attrs["auth"] = source.auth
+            if source.dbtable is not None:
+                attrs["dbtable"] = source.dbtable
+            if source.query is not None:
+                attrs["query"] = source.query
+        else:
+            attrs = {
                 "type": INPUT_CONTEXT if input_context else urlparse(source.path).scheme,
                 "path": INPUT_CONTEXT if input_context else source.path,
                 "timestamp_format": source.timestamp_format,
                 "event_timestamp_column": source.event_timestamp_column,
                 "tags": source.registry_tags,
                 "preprocessing": preprocessing_func  # store the UDF as a string
-            },
+            }
+        source_entity = AtlasEntity(
+            name=source.name,
+            qualified_name=self.project_name + self.registry_delimiter + source.name,
+            attributes=attrs,
             typeName=TYPEDEF_SOURCE,
             guid=self.guid.get_guid(),
         )

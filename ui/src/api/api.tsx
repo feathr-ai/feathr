@@ -98,20 +98,6 @@ export const updateFeature = async (feature: Feature, id: string) => {
   });
 };
 
-export const deleteFeature = async (qualifiedName: string) => {
-  const token = await getIdToken(msalInstance);
-  return await Axios
-    .delete(`${ API_ENDPOINT }/features/${ qualifiedName }?code=${ token }`,
-      {
-        headers: { "Content-Type": "application/json;" },
-        params: {},
-      }).then((response) => {
-      return response
-    }).catch((error) => {
-      return error.response
-    });
-};
-
 export const listUserRole = async () => {
   let data:UserRole[] = mockUserRole
   return data

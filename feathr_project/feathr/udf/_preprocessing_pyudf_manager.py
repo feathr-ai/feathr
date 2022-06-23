@@ -39,7 +39,7 @@ class _PreprocessingPyudfManager(object):
         os.remove(client_udf_repo_path) if os.path.exists(client_udf_repo_path) else None
         for anchor in anchor_list:
             # only support batch source preprocessing for now.
-            if not isinstance(anchor.source, HdfsSource):
+            if not hasattr(anchor.source, "preprocessing"):
                 continue
             preprocessing_func = anchor.source.preprocessing
             if preprocessing_func:

@@ -118,6 +118,67 @@ class HdfsSource(Source):
         return str(self.preprocessing) + '\n' + self.to_feature_config()
 
 
+class JdbcSource(Source):
+    def __init__(self, name: str, url: str = "", dbtable: Optional[str] = None, query: Optional[str] = None, auth: Optional[str] = None, preprocessing: Optional[Callable] = None                 ,event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch",registry_tags: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, event_timestamp_column, timestamp_format, registry_tags)
+        self.preprocessing = preprocessing
+        self.url = url
+        if dbtable is not None:
+            self.dbtable = dbtable
+        if query is not None:
+            self.query = query
+        if auth is not None:
+            self.auth = auth.upper()
+            if self.auth not in ["USERPASS", "TOKEN"]:
+                raise ValueError("auth must be None or one of following values: ['userpass', 'token']")
+
+    def get_required_properties(self):
+        if not hasattr(self, "auth"):
+            return []
+        if self.auth == "USERPASS":
+            return ["%s_USER" % self.name, "%s_PASSWORD" % self.name]
+        elif self.auth == "TOKEN":
+            return ["%s_TOKEN" % self.name]
+
+    def to_feature_config(self) -> str:
+        tm = Template("""  
+            {{source.name}}: {
+                location: {
+                    type: "jdbc"
+                    url: "{{source.url}}"
+                    {% if source.dbtable is defined %}
+                    dbtable: "{{source.dbtable}}"
+                    {% endif %}
+                    {% if source.query is defined %}
+                    query: "{{source.query}}"
+                    {% endif %}
+                    {% if source.auth is defined %}
+                        {% if source.auth == "USERPASS" %}
+                    user: "${{ "{" }}{{source.name}}_USER{{ "}" }}"
+                    password: "${{ "{" }}{{source.name}}_PASSWORD{{ "}" }}"
+                        {% else %}
+                    useToken: true
+                    token: "${{ "{" }}{{source.name}}_TOKEN{{ "}" }}"
+                        {% endif %}
+                    {% else %}
+                    anonymous: true
+                    {% endif %}
+                }
+                {% if source.event_timestamp_column is defined %}
+                    timeWindowParameters: {
+                        timestampColumn: "{{source.event_timestamp_column}}"
+                        timestampColumnFormat: "{{source.timestamp_format}}"
+                    }
+                {% endif %}
+            } 
+        """)
+        msg = tm.render(source=self)
+        return msg
+
+    def __str__(self):
+        return str(self.preprocessing) + '\n' + self.to_feature_config()
+
+
 class KafkaConfig:
     """Kafka config for a streaming source
 
