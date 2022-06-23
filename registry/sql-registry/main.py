@@ -80,32 +80,37 @@ def get_feature_lineage(feature: str) -> dict:
 
 @router.post("/projects")
 def new_project(definition: dict) -> UUID:
-    return registry.create_project(ProjectDef(**to_snake(definition)))
+    id = registry.create_project(ProjectDef(**to_snake(definition)))
+    return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/datasources")
 def new_project_datasource(project: str, definition: dict) -> UUID:
     project_id = registry.get_entity_id(project)
-    return registry.create_project_datasource(project_id, SourceDef(**to_snake(definition)))
+    id = registry.create_project_datasource(project_id, SourceDef(**to_snake(definition)))
+    return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/anchors")
 def new_project_anchor(project: str, definition: dict) -> UUID:
     project_id = registry.get_entity_id(project)
-    return registry.create_project_anchor(project_id, AnchorDef(**to_snake(definition)))
+    id = registry.create_project_anchor(project_id, AnchorDef(**to_snake(definition)))
+    return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/anchors/{anchor}/features")
 def new_project_anchor_feature(project: str, anchor: str, definition: dict) -> UUID:
     project_id = registry.get_entity_id(project)
     anchor_id = registry.get_entity_id(anchor)
-    return registry.create_project_anchor_feature(project_id, anchor_id, AnchorFeatureDef(**to_snake(definition)))
+    id = registry.create_project_anchor_feature(project_id, anchor_id, AnchorFeatureDef(**to_snake(definition)))
+    return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/derivedfeatures")
 def new_project_derived_feature(project: str, definition: dict) -> UUID:
     project_id = registry.get_entity_id(project)
-    return registry.create_project_derived_feature(project_id, DerivedFeatureDef(**to_snake(definition)))
+    id = registry.create_project_derived_feature(project_id, DerivedFeatureDef(**to_snake(definition)))
+    return {"guid": str(id)}
 
 
 app.include_router(prefix=rp, router=router)
