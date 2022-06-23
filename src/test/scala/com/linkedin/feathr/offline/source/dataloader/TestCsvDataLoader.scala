@@ -46,4 +46,23 @@ class TestCsvDataLoader extends TestFeathr {
     val expectedSchema = Schema.createRecord(expectedFields)
     assertEquals(schema.getFields, expectedSchema.getFields)
   }
+
+  @Test(description = "test loading dataframe with CsvDataLoader by specifying delimiter")
+  def testLoadDataFrameWithCsvDelimiterOption() : Unit = {
+    val sqlContext = ss.sqlContext
+    sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep", "\t")
+    val dataLoader = new CsvDataLoader(ss, "anchor1-source.tsv")
+
+    val df = dataLoader.loadDataFrame()
+    val expectedRows = Array(
+      Row("1", "apple", "10", "10", "0.1"),
+      Row("2", "orange", "10", "3", "0.1"),
+      Row("3", "banana", "10", "2", "0.9"),
+      Row("4", "apple", "10", "1", "0.7"),
+      Row("5", "apple", "11", "11", "1.0"),
+      Row("7", "banana", "2", "10", "81.27"),
+      Row("9", "banana", "4", "4", "0.4")
+    )
+    assertEquals(df.collect(), expectedRows)
+  }
 }
