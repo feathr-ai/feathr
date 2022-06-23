@@ -50,9 +50,11 @@ object FileFormat {
 
   // TODO: Complete a general loadDataFrame and replace current adhoc load data frame code
   def loadDataFrame(ss: SparkSession, path: String, format: String = CSV): DataFrame = {
+    val sqlContext = ss.sqlContext
+    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
     format match {
       case AVRO => new AvroJsonDataLoader(ss, path).loadDataFrame()
-      case CSV => ss.read.format("csv").option("header", "true").load(path)
+      case CSV => ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(path)
       case PARQUET => new ParquetDataLoader(ss, path).loadDataFrame()
       case _ => ???
     }
@@ -82,9 +84,11 @@ object FileFormat {
   }
 
   def loadHdfsDataFrame(format: String, existingHdfsPaths: Seq[String]): DataFrame = {
+    val sqlContext = ss.sqlContext
+    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
     val df = format match {
       case CSV =>
-        ss.read.format("csv").option("header", "true").load(existingHdfsPaths: _*)
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(existingHdfsPaths: _*)
       case AVRO =>
         ss.read.format(AVRO_DATASOURCE).load(existingHdfsPaths: _*)
       case ORC =>

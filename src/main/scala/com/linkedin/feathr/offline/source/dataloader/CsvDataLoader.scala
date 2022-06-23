@@ -34,7 +34,6 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
   override def loadDataFrame(): DataFrame = {
     val sqlContext = ss.sqlContext
     val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
-
     try {
       log.debug(s"Loading CSV path :${path}")
       val absolutePath = new File(path).getPath

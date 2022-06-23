@@ -61,6 +61,8 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParametersWithSplitSize = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize) ++ dataIOParameters
     log.info(s"Loading ${location.getPath} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
+    val sqlContext = ss.sqlContext
+    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
     try {
       if (location.getPath.startsWith("jdbc")){
         JdbcUtils.loadDataFrame(ss, location.getPath)
@@ -69,7 +71,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
       }
     } catch {
       case _: Throwable =>
-        ss.read.format("csv").option("header", "true").load(location.getPath)
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(location.getPath)
     }
   }
 }
