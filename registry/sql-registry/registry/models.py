@@ -6,7 +6,7 @@ import json
 import re
 
 
-def _to_snake(d, level: int = 0):
+def to_snake(d, level: int = 0):
     """
     Convert `string`, `list[string]`, or all keys in a `dict` into snake case
     The maximum length of input string or list is 100, or it will be truncated before being processed, for dict, the exception will be thrown if it has more than 100 keys.
@@ -19,10 +19,10 @@ def _to_snake(d, level: int = 0):
         return re.sub(r'([A-Z]\w+$)', r'_\1', d).lower()
     if isinstance(d, list):
         d = d[:100]
-        return [_to_snake(i, level + 1) if isinstance(i, (dict, list)) else i for i in d]
+        return [to_snake(i, level + 1) if isinstance(i, (dict, list)) else i for i in d]
     if len(d) > 100:
         raise ValueError("Dict has too many keys")
-    return {_to_snake(a, level + 1): _to_snake(b, level + 1) if isinstance(b, (dict, list)) else b for a, b in d.items()}
+    return {to_snake(a, level + 1): to_snake(b, level + 1) if isinstance(b, (dict, list)) else b for a, b in d.items()}
 
 
 def _to_type(value, type):
@@ -39,10 +39,10 @@ def _to_type(value, type):
         if hasattr(type, "new"):
             try:
                 # The convention is to use `new` method to create the object from a dict
-                return type.new(**_to_snake(value))
+                return type.new(**to_snake(value))
             except TypeError:
                 pass
-        return type(**_to_snake(value))
+        return type(**to_snake(value))
     if issubclass(type, Enum):
         try:
             n = int(value)
@@ -300,7 +300,7 @@ class Entity(ToDict):
             self.attributes = attributes
         else:
             self.attributes = Attributes.new(
-                entity_type, **_to_snake(attributes))
+                entity_type, **to_snake(attributes))
 
     def get_ref(self) -> EntityRef:
         return EntityRef(self.id,
@@ -632,9 +632,9 @@ class EntitiesAndRelations(ToDict):
 
 
 class ProjectDef:
-    def __init__(self, qualified_name: str, tags: dict = {}):
+    def __init__(self, name: str, qualified_name: str = "", tags: dict = {}):
+        self.name = name
         self.qualified_name = qualified_name
-        self.name = qualified_name
         self.tags = tags
     
     def to_attr(self) -> ProjectAttributes:

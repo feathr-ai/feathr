@@ -106,6 +106,7 @@ class DbRegistry(Registry):
         return list([EntityRef(**row) for row in rows])
 
     def create_project(self, definition: ProjectDef) -> UUID:
+        definition.qualified_name = definition.name
         with self.conn.transaction() as c:
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
@@ -119,7 +120,7 @@ class DbRegistry(Registry):
                     raise ValueError("Entity %s already exists" %
                                      definition.qualified_name)
                 # Just return the existing project id
-                return r[0]["entity_id"]
+                return _to_uuid(r[0]["entity_id"])
             id = uuid4()
             c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, 'feathr_workspace_v1', %s, %s)",
                       (str(id),
@@ -128,6 +129,8 @@ class DbRegistry(Registry):
             return id
 
     def create_project_datasource(self, project_id: UUID, definition: SourceDef) -> UUID:
+        project = self.get_entity(project_id)
+        definition.qualified_name = f"{project.qualified_name}__{definition.name}"
         with self.conn.transaction() as c:
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
@@ -150,7 +153,7 @@ class DbRegistry(Registry):
                         and attr.timestamp_format == definition.timestamp_format:
                     # Creating exactly same entity
                     # Just return the existing id
-                    return r[0]["entity_id"]
+                    return _to_uuid(r[0]["entity_id"])
                 raise ValueError("Entity %s already exists" %
                                  definition.qualified_name)
             id = uuid4()
@@ -163,6 +166,8 @@ class DbRegistry(Registry):
             return id
 
     def create_project_anchor(self, project_id: UUID, definition: AnchorDef) -> UUID:
+        project = self.get_entity(project_id)
+        definition.qualified_name = f"{project.qualified_name}__{definition.name}"
         with self.conn.transaction() as c:
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
@@ -181,7 +186,7 @@ class DbRegistry(Registry):
                         and attr.source.id == definition.source_id:
                     # Creating exactly same entity
                     # Just return the existing id
-                    return r[0]["entity_id"]
+                    return _to_uuid(r[0]["entity_id"])
                 raise ValueError("Entity %s already exists" %
                                  definition.qualified_name)
             c.execute("select entity_id, qualified_name from entities where entity_id = %s and entity_type = 'feathr_source_v1'", str(
@@ -206,6 +211,8 @@ class DbRegistry(Registry):
             return id
 
     def create_project_anchor_feature(self, project_id: UUID, anchor_id: UUID, definition: AnchorFeatureDef) -> UUID:
+        anchor = self.get_entity(anchor_id)
+        definition.qualified_name = f"{anchor.qualified_name}__{definition.name}"
         with self.conn.transaction() as c:
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
@@ -226,11 +233,10 @@ class DbRegistry(Registry):
                         and attr.key == definition.key:
                     # Creating exactly same entity
                     # Just return the existing id
-                    return r[0]["entity_id"]
+                    return _to_uuid(r[0]["entity_id"])
                 raise ValueError("Entity %s already exists" %
                                  definition.qualified_name)
-            anchor: AnchorAttributes = self.get_entity(anchor_id).attributes
-            source_id = anchor.source.id
+            source_id = anchor.attributes.source.id
             id = uuid4()
             c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, 'feathr_anchor_feature_v1', %s, %s)",
                       (str(id),
@@ -245,6 +251,8 @@ class DbRegistry(Registry):
             return id
 
     def create_project_derived_feature(self, project_id: UUID, definition: DerivedFeatureDef) -> UUID:
+        project = self.get_entity(project_id)
+        definition.qualified_name = f"{project.qualified_name}__{definition.name}"
         with self.conn.transaction() as c:
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
@@ -265,7 +273,7 @@ class DbRegistry(Registry):
                         and attr.key == definition.key:
                     # Creating exactly same entity
                     # Just return the existing id
-                    return r[0]["entity_id"]
+                    return _to_uuid(r[0]["entity_id"])
                 raise ValueError("Entity %s already exists" %
                                  definition.qualified_name)
             r1 = []
