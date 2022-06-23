@@ -276,6 +276,7 @@ class EntityRef(ToDict):
 class Attributes(ToDict):
     @staticmethod
     def new(entity_type: Union[str, EntityType], **kwargs):
+        print("YYY ", entity_type, kwargs)
         return {
             EntityType.Project: ProjectAttributes,
             EntityType.Source: SourceAttributes,
@@ -432,9 +433,9 @@ class AnchorAttributes(Attributes):
         self._source = None
         self._features = []
         # if source is not None:
-        #     self._source = source.get_ref()
-        # if len(features)>0:
-        #     self._set_feature(features)
+        #     self._source = _to_type(source, Entity).get_ref()
+        # if features:
+        #     self.features = features
         self.tags = tags
 
     @property
@@ -546,15 +547,20 @@ class DerivedFeatureAttributes(Attributes):
         return self._input_anchor_features + self._input_derived_features
 
     @input_features.setter
-    def input_features(self, v: Union[dict, Entity]):
+    def input_features(self, v: Union[dict, Entity, EntityRef]):
         self._input_anchor_features = []
         self._input_derived_features = []
         for f in v:
             e = None
-            if isinstance(f, Entity):
+            if isinstance(f, EntityRef):
                 e = f
+            elif isinstance(f, Entity):
+                e = f.get_ref()
             elif isinstance(f, dict):
-                e = _to_type(f, Entity)
+                try:
+                    e = _to_type(f, Entity).get_ref()
+                except:
+                    e = _to_type(f, EntityRef)
             else:
                 raise TypeError(f)
 
@@ -569,37 +575,9 @@ class DerivedFeatureAttributes(Attributes):
     def input_anchor_features(self):
         return self._input_anchor_features
 
-    # @input_anchor_features.setter
-    # def input_anchor_features(self, v):
-    #     self._input_anchor_features = []
-    #     for f in v:
-    #         if isinstance(f, Entity):
-    #             self._input_anchor_features.append(f.get_ref())
-    #         elif isinstance(f, EntityRef):
-    #             self._input_anchor_features.append(f)
-    #         elif isinstance(f, dict):
-    #             self._input_anchor_features.append(
-    #                 to_type(f, Entity).get_ref())
-    #         else:
-    #             raise TypeError(f)
-
     @property
     def input_derived_features(self):
         return self._input_derived_features
-
-    # @input_derived_features.setter
-    # def input_derived_features(self, v):
-    #     self._input_derived_features = []
-    #     for f in v:
-    #         if isinstance(f, Entity):
-    #             self._input_derived_features.append(f.get_ref())
-    #         elif isinstance(f, EntityRef):
-    #             self._input_derived_features.append(f)
-    #         elif isinstance(f, dict):
-    #             self._input_derived_features.append(
-    #                 to_type(f, Entity).get_ref())
-    #         else:
-    #             raise TypeError(f)
 
     def to_dict(self) -> dict:
         return {
@@ -608,8 +586,8 @@ class DerivedFeatureAttributes(Attributes):
             "type": self.type.to_dict(),
             "transformation": self.transformation.to_dict(),
             "key": list([k.to_dict() for k in self.key]),
-            "input_anchor_features": [e.get_ref().to_dict() for e in self.input_anchor_features],
-            "input_derived_features": [e.get_ref().to_dict() for e in self.input_derived_features],
+            "input_anchor_features": [e.to_dict() for e in self.input_anchor_features],
+            "input_derived_features": [e.to_dict() for e in self.input_derived_features],
             "tags": self.tags,
         }
 
@@ -658,6 +636,9 @@ class ProjectDef:
         self.qualified_name = qualified_name
         self.name = qualified_name
         self.tags = tags
+    
+    def to_attr(self) -> ProjectAttributes:
+        return ProjectAttributes(name=self.name, tags=self.tags)
 
 
 class SourceDef:
@@ -679,6 +660,15 @@ class SourceDef:
         self.timestamp_format = timestamp_format
         self.tags = tags
 
+    def to_attr(self) -> SourceAttributes:
+        return SourceAttributes(qualified_name=self.qualified_name,
+                                name=self.name,
+                                type=self.type,
+                                path=self.path,
+                                preprocessing=self.preprocessing,
+                                event_timestamp_column=self.event_timestamp_column,
+                                timestamp_format=self.timestamp_format,
+                                tags=self.tags)
 
 class AnchorDef:
     def __init__(self,
@@ -691,6 +681,12 @@ class AnchorDef:
         self.source_id = _to_uuid(source_id)
         self.tags = tags
 
+    def to_attr(self, source: EntityRef) -> AnchorAttributes:
+        attr = AnchorAttributes(qualified_name=self.qualified_name,
+                                name=self.name,
+                                tags=self.tags)
+        attr.source = source
+        return attr
 
 class AnchorFeatureDef:
     def __init__(self,
@@ -706,6 +702,14 @@ class AnchorFeatureDef:
         self.transformation = _to_type(transformation, Transformation)
         self.key = _to_type(key, TypedKey)
         self.tags = tags
+
+    def to_attr(self) -> AnchorFeatureAttributes:
+        return AnchorFeatureAttributes(qualified_name=self.qualified_name,
+                                name=self.name,
+                                type=self.feature_type,
+                                transformation=self.transformation,
+                                key=self.key,
+                                tags=self.tags)
 
 
 class DerivedFeatureDef:
@@ -726,3 +730,14 @@ class DerivedFeatureDef:
         self.input_anchor_features = _to_uuid(input_anchor_features)
         self.input_derived_features = _to_uuid(input_derived_features)
         self.tags = tags
+
+    def to_attr(self, input_features: list[EntityRef]) -> DerivedFeatureAttributes:
+        attr = DerivedFeatureAttributes(qualified_name=self.qualified_name,
+                                name=self.name,
+                                type=self.feature_type,
+                                transformation=self.transformation,
+                                key=self.key,
+                                tags=self.tags)
+        attr.input_features = input_features
+        return attr
+

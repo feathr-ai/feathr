@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
+import logging
 import threading
 from distutils.log import debug, warn
 import os
@@ -9,7 +11,7 @@ providers = []
 
 class DbConnection(ABC):
     @abstractmethod
-    def execute(self, sql: str, *args, **kwargs) -> list[dict]:
+    def query(self, sql: str, *args, **kwargs) -> list[dict]:
         pass
 
 def quote(id):
@@ -38,12 +40,15 @@ def parse_conn_str(s: str) -> dict:
 
 class MssqlConnection(DbConnection):
     @staticmethod
-    def connect(*args, **kwargs):
+    def connect(autocommit = True):
         conn_str = os.environ["CONNECTION_STR"]
         if "Server=" not in conn_str:
             debug("`CONNECTION_STR` is not in ADO connection string format")
             return None
-        return MssqlConnection(parse_conn_str(conn_str))
+        params = parse_conn_str(conn_str)
+        if not autocommit:
+            params["autocommit"] = False
+        return MssqlConnection(params)
 
     def __init__(self, params):
         self.params = params
@@ -53,8 +58,11 @@ class MssqlConnection(DbConnection):
     def make_connection(self):
         self.conn = pymssql.connect(**self.params)
 
-    def execute(self, sql: str, *args, **kwargs) -> list[dict]:
-        debug(f"SQL: `{sql}`")
+    def query(self, sql: str, *args, **kwargs) -> list[dict]:
+        """
+        Make SQL query and return result
+        """
+        warn(f"SQL: `{sql}`")
         # NOTE: Only one cursor is allowed at the same time
         retry = 0
         while True:
@@ -73,13 +81,43 @@ class MssqlConnection(DbConnection):
                     raise
                 pass
 
+    @contextmanager
+    def transaction(self):
+        """
+        Do NOT use self.query inside this block as they may reconnect
+        The minimal implementation could look like this if the provider doesn't support transaction
+        ```
+        @contextmanager
+        def transaction(self):
+            try:
+                c = self.create_or_get_connection(...)
+                yield c
+            finally:
+                c.close(...)
+        ```
+        """
+        conn = None
+        cursor = None
+        try:
+            conn = MssqlConnection.connect(autocommit=False).conn
+            cursor = conn.cursor(as_dict=True)
+            yield cursor
+        except Exception as e:
+            logging.warning(f"Exception: {e}")
+            if conn:
+                conn.rollback()
+            raise e
+        finally:
+            if conn:
+                conn.commit()
+
 
 providers.append(MssqlConnection)
 
 
-def connect():
+def connect(*args, **kargs):
     for p in providers:
-        ret = p.connect()
+        ret = p.connect(*args, **kargs)
         if ret is not None:
             return ret
     raise RuntimeError("Cannot connect to database")
