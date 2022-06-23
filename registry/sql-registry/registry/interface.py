@@ -1,9 +1,10 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractclassmethod, abstractmethod
 from typing import Union
 from uuid import UUID
 from registry.database import DbConnection
 
 from registry.models import *
+
 
 class Registry(ABC):
     @abstractmethod
@@ -33,7 +34,7 @@ class Registry(ABC):
         Get entity id by its name
         """
         pass
-    
+
     @abstractmethod
     def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
         """
@@ -67,3 +68,22 @@ class Registry(ABC):
         """
         pass
 
+    @abstractmethod
+    def create_project(self, definition: ProjectDef) -> UUID:
+        pass
+
+    @abstractmethod
+    def create_project_datasource(self, project_id: UUID, definition: SourceDef) -> UUID:
+        pass
+
+    @abstractmethod
+    def create_project_anchor(self, project_id: UUID, definition: AnchorDef) -> UUID:
+        pass
+
+    @abstractmethod
+    def create_project_anchor_feature(self, project_id: UUID, anchor_id: UUID, definition: AnchorFeatureDef) -> UUID:
+        pass
+
+    @abstractmethod
+    def create_project_derived_feature(self, project_id: UUID, definition: DerivedFeatureDef) -> UUID:
+        pass
