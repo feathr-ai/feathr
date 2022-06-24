@@ -18,7 +18,7 @@
     },
     "allowAllConnections": {
       "defaultValue": "true",
-      "allowedValues": ["true", "false"],
+      "allowedValues": [ "true", "false" ],
       "type": "String",
       "metadata": {
         "description": "Specifies whether to allow client IPs to connect to Synapse"
@@ -26,7 +26,7 @@
     },
     "provisionPurview": {
       "defaultValue": "true",
-      "allowedValues": ["true", "false"],
+      "allowedValues": [ "true", "false" ],
       "type": "String",
       "metadata": {
         "description": "Whether or not put purview in the provision script"
@@ -34,12 +34,77 @@
     },
     "provisionEventHub": {
       "defaultValue": "true",
-      "allowedValues": ["true", "false"],
+      "allowedValues": [ "true", "false" ],
       "type": "String",
       "metadata": {
         "description": "Whether or not to deploy eventhub provision script"
       }
-    }
+    },
+    "databaseServerName": {
+      "type": "string",
+      "defaultValue": "[concat('server-', uniqueString(resourceGroup().id, deployment().name))]",
+      "metadata": {
+        "description": "Specifies the name for the SQL server"
+      }
+    },
+    "databaseName": {
+      "type": "string",
+      "defaultValue": "[concat('db-', uniqueString(resourceGroup().id, deployment().name), '-1')]",
+      "metadata": {
+        "description": "Specifies the name for the SQL database under the SQL server"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Specifies the location for server and database"
+      }
+    },
+    "adminUser": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the username for admin"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Specifies the password for admin"
+      }
+    },
+    "storageAccountKey": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the key of the storage account where the BACPAC file is stored."
+      }
+    },
+    "bacpacUrl": {
+      "type": "string",
+      "defaultValue": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-registry-schema.bacpac",
+      "metadata": {
+        "description": "This is the pre-created BACPAC file that contains required schemas by the registry server."
+      }
+    },
+    "dockerImage": {
+      "defaultValue": "blrchen/feathr-sql-registry",
+      "type": "String",
+      "metadata": {
+        "description": "The flavor of the registry backend to deploy, current supported types are Azure Purview and Azure SQL"
+      }
+    },
+    "aadClientId": {
+      "type": "String",
+      "metadata": {
+        "description": "Client Id of the Azure Active Directory (AAD) app provisioned for UI app authentication in the prior step."
+      }
+    },
+    "aadTenantId": {
+      "type": "String",
+      "metadata": {
+        "description": "Tenant Id of the Azure Active Directory (AAD) app provisioned for UI app authentication in the prior step."
+      }
+    } 
   },
   "variables": {
     "location": "[resourceGroup().location]",
@@ -62,7 +127,11 @@
     "roleDefinitionIdForBlobContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
     "roleDefinitionIdForKeyVaultSecretsUser": "4633458b-17de-408a-b874-0445c86b69e6",
     "roleAssignmentNameForBlobContributor": "[guid(parameters('principalId'), variables('roleDefinitionIdForBlobContributor'), resourceGroup().id)]",
-    "roleAssignmentNameForKeyVaultSecretsUser": "[guid(parameters('principalId'), variables('roleDefinitionIdForKeyVaultSecretsUser'), resourceGroup().id)]"
+    "roleAssignmentNameForKeyVaultSecretsUser": "[guid(parameters('principalId'), variables('roleDefinitionIdForKeyVaultSecretsUser'), resourceGroup().id)]",
+    "webAppName": "[concat(parameters('resourcePrefix'),'webapp' )]",
+    "webAppPlanName": "[concat(parameters('resourcePrefix'),'appplan' )]",
+    "webAppPlanSku": "P1v2",
+    "webAppAPIVersion": "2021-03-01"
   },
   "functions": [],
   "resources": [
@@ -87,7 +156,7 @@
           "apiVersion": "2021-10-01",
           "name": "[concat(variables('keyVaultName'), '/FEATHR-PREFIX')]",
           "location": "[resourceGroup().location]",
-          "dependsOn": ["[variables('keyVault')]"],
+          "dependsOn": [ "[variables('keyVault')]" ],
           "properties": {
             "value": "[parameters('resourcePrefix')]"
           }
@@ -116,7 +185,7 @@
           "apiVersion": "2021-10-01",
           "name": "[concat(variables('keyVaultName'), '/FEATHR-ONLINE-STORE-CONN')]",
           "location": "[resourceGroup().location]",
-          "dependsOn": ["[variables('keyVault')]", "[variables('redisCache')]"],
+          "dependsOn": [ "[variables('keyVault')]", "[variables('redisCache')]" ],
           "properties": {
             "value": "[concat(variables('redisCacheName'),'.redis.cache.windows.net:6380,password=', listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey, ',ssl=True')]"
           }
@@ -126,7 +195,7 @@
           "apiVersion": "2021-10-01",
           "name": "[concat(variables('keyVaultName'), '/REDIS-PASSWORD')]",
           "location": "[resourceGroup().location]",
-          "dependsOn": ["[variables('keyVault')]", "[variables('redisCache')]"],
+          "dependsOn": [ "[variables('keyVault')]", "[variables('redisCache')]" ],
           "properties": {
             "value": "[listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey]"
           }
@@ -153,7 +222,7 @@
           "type": "blobServices/containers",
           "apiVersion": "2021-08-01",
           "name": "[concat('default/', variables('dlsFsName'))]",
-          "dependsOn": ["[variables('dlsName')]"],
+          "dependsOn": [ "[variables('dlsName')]" ],
           "properties": {
             "publicAccess": "None"
           }
@@ -196,7 +265,7 @@
           "type": "eventhubs",
           "apiVersion": "2021-11-01",
           "name": "[variables('eventhubName')]",
-          "dependsOn": ["[variables('eventhubNameSpace')]"],
+          "dependsOn": [ "[variables('eventhubNameSpace')]" ],
           "properties": {}
         },
         {
@@ -204,7 +273,6 @@
           "type": "Microsoft.KeyVault/vaults/secrets",
           "apiVersion": "2021-10-01",
           "name": "[concat(variables('keyVaultName'), '/EVENTHUB-POLICY-KEY')]",
-          "condition": "[equals(parameters('provisionEventHub'),'true')]",
           "location": "[resourceGroup().location]",
           "dependsOn": [
             "[variables('keyVault')]",
@@ -221,7 +289,7 @@
       "apiVersion": "2021-06-01",
       "name": "[variables('workspaceName')]",
       "location": "[variables('location')]",
-      "dependsOn": ["[variables('dlsName')]", "[variables('dlsFsName')]"],
+      "dependsOn": [ "[variables('dlsName')]", "[variables('dlsFsName')]" ],
       "identity": {
         "type": "SystemAssigned"
       },
@@ -238,7 +306,7 @@
           "apiVersion": "2021-06-01",
           "name": "allowAll",
           "location": "[variables('location')]",
-          "dependsOn": ["[variables('workspaceName')]"],
+          "dependsOn": [ "[variables('workspaceName')]" ],
           "properties": {
             "startIpAddress": "0.0.0.0",
             "endIpAddress": "255.255.255.255"
@@ -250,7 +318,7 @@
           "apiVersion": "2021-06-01",
           "name": "AllowAllWindowsAzureIps",
           "location": "[variables('location')]",
-          "dependsOn": ["[variables('workspaceName')]"],
+          "dependsOn": [ "[variables('workspaceName')]" ],
           "properties": {
             "startIpAddress": "0.0.0.0",
             "endIpAddress": "0.0.0.0"
@@ -261,7 +329,7 @@
           "apiVersion": "2021-06-01",
           "name": "default",
           "location": "[variables('location')]",
-          "dependsOn": ["[variables('workspaceName')]"],
+          "dependsOn": [ "[variables('workspaceName')]" ],
           "properties": {
             "grantSqlControlToManagedIdentity": {
               "desiredState": "Enabled"
@@ -271,11 +339,69 @@
       ]
     },
     {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "[variables('webAppAPIVersion')]",
+      "name": "[variables('webAppPlanName')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[variables('webAppPlanSku')]"
+      },
+      "kind": "linux",
+      "properties": {
+        "reserved": true
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "[variables('webAppAPIVersion')]",
+      "name": "[variables('webAppName')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName'))]"
+      ],
+      "kind": "app,linux,container",
+      "identity": {
+        "type": "systemAssigned"
+      },
+      "properties": {
+        "name": "[variables('webAppName')]",
+        "httpsOnly": "true",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName'))]",
+        "siteConfig": {
+          "linuxFxVersion": "[concat('DOCKER|', parameters('dockerImage'))]",
+          "alwaysOn": true,
+          "ftpsState": "Disabled",
+          "appSettings": [
+            {
+              "name": "DOCKER_REGISTRY_SERVER_URL",
+              "value": "https://index.docker.io/v1"
+            },
+            {
+              "name": "AZURE_CLIENT_ID",
+              "value": "[parameters('aadClientId')]"
+            },
+            {
+              "name": "AZURE_TENANT_ID",
+              "value": "[parameters('aadTenantId')]"
+            },
+            {
+              "name": "API_BASE",
+              "value": "api/v1"
+            },
+            {
+              "name": "CONNECTION_STR",
+              "value": "TODO_ONCE_SQL_PR_IS_MERGED"
+            }
+          ]
+        }
+      }
+    },
+    {
       "type": "Microsoft.Synapse/workspaces/bigDataPools",
       "apiVersion": "2021-06-01",
       "name": "[concat(variables('workspaceName'), '/', variables('sparkPoolName'))]",
       "location": "[variables('location')]",
-      "dependsOn": ["[variables('workspaceName')]"],
+      "dependsOn": [ "[variables('workspaceName')]" ],
       "properties": {
         "autoPause": {
           "delayInMinutes": 30,
@@ -296,7 +422,7 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-10-01-preview",
       "name": "[variables('roleAssignmentNameForBlobContributor')]",
-      "dependsOn": ["[variables('dlsAccount')]"],
+      "dependsOn": [ "[variables('dlsAccount')]" ],
       "properties": {
         "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForBlobContributor'))]",
         "principalId": "[parameters('principalId')]",
@@ -307,12 +433,65 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-10-01-preview",
       "name": "[variables('roleAssignmentNameForKeyVaultSecretsUser')]",
-      "dependsOn": ["[variables('keyVault')]"],
+      "dependsOn": [ "[variables('keyVault')]" ],
       "properties": {
         "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForKeyVaultSecretsUser'))]",
         "principalId": "[parameters('principalId')]",
         "scope": "[resourceGroup().id]"
       }
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[parameters('databaseServerName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "administratorLogin": "[parameters('adminUser')]",
+        "administratorLoginPassword": "[parameters('adminPassword')]",
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "type": "firewallrules",
+          "apiVersion": "2021-11-01-preview",
+          "name": "AllowAllAzureIps",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[parameters('databaseServerName')]"
+          ],
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[concat(string(parameters('databaseServerName')), '/', string(parameters('databaseName')))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Sql/servers/', parameters('databaseServerName'))]"
+      ],
+      "resources": [
+        {
+          "type": "extensions",
+          "apiVersion": "2021-11-01-preview",
+          "name": "Import",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers/databases', parameters('databaseServerName'), parameters('databaseName'))]"
+          ],
+          "properties": {
+            "storageKeyType": "StorageAccessKey",
+            "storageKey": "[parameters('storageAccountKey')]",
+            "storageUri": "[parameters('bacpacUrl')]",
+            "administratorLogin": "[parameters('adminUser')]",
+            "administratorLoginPassword": "[parameters('adminPassword')]",
+            "operationMode": "Import"
+          }
+        }
+      ]
     }
   ],
   "outputs": {}
