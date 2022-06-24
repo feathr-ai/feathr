@@ -159,7 +159,7 @@ def test_dbfs_path():
     if client.spark_runtime.casefold() == "databricks":
         # expect this raise an error since the result path is not in dbfs: format
         with pytest.raises(RuntimeError):
-            client.feathr_spark_laucher.download_result(result_path="wasb://res_url", local_folder="/tmp")
+            client.feathr_spark_launcher.download_result(result_path="wasb://res_url", local_folder="/tmp")
 
 
 def test_feathr_get_offline_features():
