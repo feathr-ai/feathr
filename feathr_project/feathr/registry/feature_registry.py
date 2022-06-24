@@ -9,21 +9,20 @@ class FeathrRegistry(ABC):
     """
 
     @abstractmethod
-    def register_features(self, from_context: bool = True):
+    def register_features(self, anchor_list: List[FeatureAnchor] =[], derived_feature_list: List[DerivedFeature]=[]):
         """Registers features based on the current workspace
 
                 Args:
-                from_context: If from_context is True (default), the features will be generated from
-                    the current context, with the previous built features in client.build(). Otherwise, the features will be generated from
-                    configuration files.
+                anchor_list: List of FeatureAnchors
+                derived_feature_list: List of DerivedFeatures
         """
         pass
 
 
     @abstractmethod
-    def list_registered_features(self, project_name: str = None) -> List[str]:
-        """List all the already registered features. If project_name is not provided or is None, it will return all
-        the registered features; otherwise it will only return features under this project
+    def list_registered_features(self, project_name: str) -> List[str]:
+        """List all the already registered features under the given project.
+        `project_name` must not be None or empty string because it violates the RBAC policy
         """
         pass
 

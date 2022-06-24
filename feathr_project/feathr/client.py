@@ -253,8 +253,8 @@ class FeathrClient(object):
                 FeaturePrinter.pretty_print_anchors(self.anchor_list)
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
-        """List all the already registered features. If project_name is not provided or is None, it will return all
-        the registered features; otherwise it will only return features under this project
+        """List all the already registered features under the given project.
+        `project_name` must not be None or empty string because it violates the RBAC policy
         """
         return self.registry.list_registered_features(project_name)
 
