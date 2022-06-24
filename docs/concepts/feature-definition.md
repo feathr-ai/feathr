@@ -28,14 +28,14 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
                           timestamp_format="yyyy-MM-dd HH:mm:ss")
 ```
 
-See the [Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.source.HdfsSource) to get the details on each input column.
+See the [Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSource) to get the details on each input column.
 
 ## Step2: Define Anchors and Features
 A feature is called an anchored feature when the feature is directly 
 extracted from the source data, rather than computed on top of other features. The latter case is called derived feature.
 
-Check [Feature Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.feature.Feature)
-and [Anchor Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.anchor.FeatureAnchor) to see more details.
+Check [Feature Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.Feature)
+and [Anchor Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeatureAnchor) to see more details.
 
 Here is a sample:
 
@@ -100,8 +100,7 @@ Feature(name="f_location_max_fare",
                                           window="90d"))
 ```
 
-
-Note that the `agg_func`([API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.aggregation.Aggregation)) should be any of these:
+Note that the `agg_func`([API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.Aggregation)) should be any of these:
 
 | Aggregation Type | Input Type | Description |
 | --- | --- | --- |
@@ -125,9 +124,9 @@ request_anchor = FeatureAnchor(name="request_features",
 Note that if the data source is from the observation data, the `source` section should be `INPUT_CONTEXT` to indicate the source of those defined anchors.
 
 ## Step3: Derived Features Section
-Derived features([Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.feature_derivations.DerivedFeature)) 
-are the features that are computed from other features. They could be computed from anchored features, or other derived features.
 
+Derived features([Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.DerivedFeature))
+are the features that are computed from other features. They could be computed from anchored features, or other derived features.
 
 ```python
 f_trip_distance = Feature(name="f_trip_distance",

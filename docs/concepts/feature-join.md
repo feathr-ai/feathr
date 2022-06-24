@@ -70,8 +70,9 @@ client.get_offline_features(observation_settings=settings,
                             output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
 
 ```
-([ObservationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.settings.ObservationSettings), 
-[client.get_offline_feature API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.client.FeathrClient.get_offline_features))
+
+([ObservationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.ObservationSettings),
+[client.get_offline_feature API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.get_offline_features))
 
 After you have defined the features (as described in the [Feature Definition](feature-definition.md)) part, you can define how you want to join them.
 

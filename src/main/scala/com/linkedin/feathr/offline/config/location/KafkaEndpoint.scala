@@ -34,6 +34,8 @@ case class KafkaEndpoint(@JsonProperty("brokers") brokers: List[String],
   override def getPath: String = "kafka://" + brokers.mkString(",")+":"+topics.mkString(",")
 
   override def getPathList: List[String] = ???
+
+  override def isFileBasedLocation(): Boolean = false
 }
 
 
