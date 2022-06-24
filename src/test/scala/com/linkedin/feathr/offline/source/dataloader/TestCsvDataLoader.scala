@@ -29,7 +29,6 @@ class TestCsvDataLoader extends TestFeathr {
     assertEquals(df.collect(), expectedRows)
   }
 
-
   @Test(description = "test loading Avro schema with CsvDataLoader")
   def testLoadSchema() : Unit = {
     val dataLoader = new CsvDataLoader(ss, "anchor1-source.csv")

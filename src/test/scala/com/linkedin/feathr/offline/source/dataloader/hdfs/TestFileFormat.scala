@@ -5,9 +5,6 @@ import org.apache.spark.sql.Row
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
-import java.io.File
-
-
 /**
  * unit tests for [[FileFormat]]
  */
