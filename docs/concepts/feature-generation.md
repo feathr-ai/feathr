@@ -8,11 +8,11 @@ parent: Feathr Concepts
 
 Feature generation (also known as feature materialization) is the process to create features from raw source data into a certain persisted storage in either offline store (for further reuse), or online store (for online inference).
 
-User could utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused (usually in offline setting). Feature generation is also useful in generating embedding features, where those embeddings distill information from large data and is usually more compact.
+User can utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused (usually in offline setting). Feature generation is also useful in generating embedding features, where those embeddings distill information from large data and is usually more compact.
 
 ## Generating Features to Online Store
 
-When we need to serve the models online, we also need to serve the features online. Feathr provides APIs to generate features to online storage for future consumption. For example:
+When the models are served in an online environment, we also need to serve the corresponding features in the same online environment as well. Feathr provides APIs to generate features to online storage for future consumption. For example:
 
 ```python
 client = FeathrClient()
@@ -51,7 +51,7 @@ Note that if you don't have features available in `now`, you'd better specify a 
 Also, Feathr will submit a materialization job for each of the step for performance reasons. I.e. if you have 
 `BackfillTime(start=datetime(2022, 2, 1), end=datetime(2022, 2, 20), step=timedelta(days=1))`, Feathr will submit 20 jobs to run in parallel for maximum performance.
 
-Refer to the docs below for more details:
+More reference on the APIs:
 
 - [BackfillTime API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.BackfillTime)
 - [client.materialize_features() API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.materialize_features)
@@ -70,7 +70,8 @@ res = client.get_online_features('nycTaxiDemoFeature', '265', [
                                      'f_location_avg_fare', 'f_location_max_fare'])
 ```
 
-Refer to [client.get_online_features API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.get_online_features) for more details.
+More reference on the APIs:
+- [client.get_online_features API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.get_online_features)
 
 ## Materializing Features to Offline Store
 
@@ -119,7 +120,7 @@ offlineSink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3s
 settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    sinks=[offlineSink],
                                    feature_names=["f_location_avg_fare", "f_location_max_fare"])
-client.materialize_features(settings, execution_configuratons={ "spark.feathr.outputFormat": "parquet"})
+client.materialize_features(settings, execution_configurations={ "spark.feathr.outputFormat": "parquet"})
 
 ```
 
@@ -131,7 +132,7 @@ path = "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/
 res = get_result_df(client=client, format="parquet", res_url=path)
 ```
 
-Refer to the following documentation for more details:
+More reference on the APIs:
 
 - [MaterializationSettings API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings)
 - [HdfsSink API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSink)

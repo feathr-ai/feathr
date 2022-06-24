@@ -410,7 +410,7 @@ class FeathrClient(object):
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
                              output_path: str,
-                             execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
+                             execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
                              udf_files = None,
                              verbose: bool = False
                              ):
@@ -420,7 +420,7 @@ class FeathrClient(object):
             observation_settings: settings of the observation data, e.g. timestamp columns, input path, etc.
             feature_query: features that are requested to add onto the observation data
             output_path: output path of job, i.e. the observation data with features attached.
-            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
         feature_names = []
@@ -457,9 +457,9 @@ class FeathrClient(object):
             FeaturePrinter.pretty_print_feature_query(feature_query)
 
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_path, execution_configuratons, udf_files=udf_files)
+        return self._get_offline_features_with_config(config_file_path, execution_configurations, udf_files=udf_files)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configuratons: Dict[str,str] = {}, udf_files=[]):
+    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configurations: Dict[str,str] = {}, udf_files=[]):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
@@ -475,8 +475,8 @@ class FeathrClient(object):
                                                        )
         job_tags = {OUTPUT_PATH_TAG:feature_join_job_params.job_output_path}
         # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
-        if execution_configuratons is not None and OUTPUT_FORMAT in execution_configuratons:
-            job_tags[OUTPUT_FORMAT]= execution_configuratons[OUTPUT_FORMAT]
+        if execution_configurations is not None and OUTPUT_FORMAT in execution_configurations:
+            job_tags[OUTPUT_FORMAT]= execution_configurations[OUTPUT_FORMAT]
         '''
         - Job tags are for job metadata and it's not passed to the actual spark job (i.e. not visible to spark job), more like a platform related thing that Feathr want to add (currently job tags only have job output URL and job output format, ). They are carried over with the job and is visible to every Feathr client. Think this more like some customized metadata for the job which would be weird to be put in the spark job itself.
         - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to 
@@ -505,7 +505,7 @@ class FeathrClient(object):
                 '--snowflake-config', self._get_snowflake_config_str()
             ],
             reference_files_path=[],
-            configuration=execution_configuratons,
+            configuration=execution_configurations,
             properties=self._get_system_properties()
         )
 
@@ -534,21 +534,21 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def monitor_features(self, settings: MonitoringSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
+    def monitor_features(self, settings: MonitoringSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
         """Create a offline job to generate statistics to monitor feature data
 
         Args:
             settings: Feature monitoring settings
-            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
-        self.materialize_features(settings, execution_configuratons, verbose)
+        self.materialize_features(settings, execution_configurations, verbose)
 
-    def materialize_features(self, settings: MaterializationSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
+    def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
         """Materialize feature data
 
         Args:
             settings: Feature materialization settings
-            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
         # produce materialization config
         for end in settings.get_backfill_cutoff_time():
@@ -568,7 +568,7 @@ class FeathrClient(object):
 
             udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
             # CLI will directly call this so the experiene won't be broken
-            self._materialize_features_with_config(config_file_path, execution_configuratons, udf_files)
+            self._materialize_features_with_config(config_file_path, execution_configurations, udf_files)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
 
@@ -576,7 +576,7 @@ class FeathrClient(object):
         if verbose and settings:
             FeaturePrinter.pretty_print_materialize_features(settings)
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configuratons: Dict[str,str] = {}, udf_files=[]):
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configurations: Dict[str,str] = {}, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
@@ -622,7 +622,7 @@ class FeathrClient(object):
             main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
             arguments=arguments,
             reference_files_path=[],
-            configuration=execution_configuratons,
+            configuration=execution_configurations,
             properties=self._get_system_properties()
         )
 
