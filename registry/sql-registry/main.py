@@ -69,7 +69,7 @@ def get_feature(feature: str) -> dict:
     if e.entity_type not in [EntityType.DerivedFeature, EntityType.AnchorFeature]:
         raise HTTPException(
             status_code=404, detail=f"Feature {feature} not found")
-    return e
+    return e.to_dict()
 
 
 @router.get("/features/{feature}/lineage")
