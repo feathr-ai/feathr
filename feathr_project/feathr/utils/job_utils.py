@@ -16,7 +16,7 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None)
     res_url: str = res_url or client.get_job_result_uri(block=True, timeout_sec=1200)
     format: str = format or client.get_job_tags().get(OUTPUT_FORMAT, "")
     tmp_dir = tempfile.TemporaryDirectory()
-    client.feathr_spark_laucher.download_result(result_path=res_url, local_folder=tmp_dir.name)
+    client.feathr_spark_launcher.download_result(result_path=res_url, local_folder=tmp_dir.name)
     dataframe_list = []
     # by default the result are in avro format
     if format:
