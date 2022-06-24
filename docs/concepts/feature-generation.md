@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Feathr Feature Generation
+title: Feathr Feature Generation and Materialization
 parent: Feathr Concepts
 ---
 
@@ -91,6 +91,21 @@ settings = MaterializationSettings("nycTaxiTable",
 
 This will generate features only for 2020/05/20 for me and it will be in folder:
 `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`
+
+You can also specify the format of the materilized features in the offline store:
+
+```python
+
+from feathr import HdfsSink
+offlineSink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data_xiaoyzhu/")
+# Materialize two features into a Offline store.
+settings = MaterializationSettings("nycTaxiMaterializationJob",
+                                   sinks=[offlineSink],
+                                   
+                                   feature_names=["f_location_avg_fare", "f_location_max_fare"])
+client.materialize_features(settings, execution_configuratons={ "spark.feathr.outputFormat": "parquet"},)
+
+```
 
 ([MaterializationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings),
 [HdfsSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSink))
