@@ -1,16 +1,19 @@
 ---
 layout: default
-title: Feathr Feature Generation and Materialization
+title: Feature Generation and Materialization
 parent: Feathr Concepts
 ---
 
-# Feature Generation
-Feature generation is the process to create features from raw source data into a certain persisted storage.
+# Feature Generation and Materialization
 
-User could utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused(usually in offline setting). Feature generation is also useful in generating embedding features. Embedding distill information from large data and it is usually more compact.
+Feature generation (also known as feature materialization) is the process to create features from raw source data into a certain persisted storage in either offline store (for further reuse), or online store (for online inference).
+
+User could utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused (usually in offline setting). Feature generation is also useful in generating embedding features, where those embeddings distill information from large data and is usually more compact.
 
 ## Generating Features to Online Store
-When we need to serve the models online, we also need to serve the features online. We provide APIs to generate features to online storage for future consumption. For example:
+
+When we need to serve the models online, we also need to serve the features online. Feathr provides APIs to generate features to online storage for future consumption. For example:
+
 ```python
 client = FeathrClient()
 redisSink = RedisSink(table_name="nycTaxiDemoFeature")
@@ -21,12 +24,16 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
 client.materialize_features(settings)
 ```
 
-([MaterializationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings),
-[RedisSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.RedisSink)
+More reference on the APIs:
+- [MaterializationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings)
+- [RedisSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.RedisSink)
 
 In the above example, we define a Redis table called `nycTaxiDemoFeature` and materialize two features called `f_location_avg_fare` and `f_location_max_fare` to Redis.
 
-It is also possible to backfill the features for a previous time range, like below. If the `BackfillTime` part is not specified, it's by default to `now()` (i.e. if not specified, it's equivilant to `BackfillTime(start=now, end=now, step=timedelta(days=1))`).
+
+## Feature Backfill
+
+It is also possible to backfill the features for a particular time range, like below. If the `BackfillTime` part is not specified, it's by default to `now()` (i.e. if not specified, it's equivalent to `BackfillTime(start=now, end=now, step=timedelta(days=1))`).
 
 ```python
 client = FeathrClient()
@@ -38,11 +45,15 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    backfill_time=backfill_time)
 client.materialize_features(settings)
 ```
+Refer to the docs below:
+-  [BackfillTime API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.BackfillTime)
+- [client.materialize_features() API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.materialize_features)
 
-([BackfillTime API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.BackfillTime),
-[client.materialize_features() API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.materialize_features))
+## Consuming features in online environment
 
-## Consuming the online features
+After the materialization job is finished, we can get the online features by querying the feature name, with the corresponding keys. In the example above, we query the online features called `f_location_avg_fare` and
+`f_location_max_fare`, and query with a key `265` (which is the location ID).
+
 
 ```python
 client.wait_job_to_finish(timeout_sec=600)
@@ -53,15 +64,12 @@ res = client.get_online_features('nycTaxiDemoFeature', '265', [
 
 ([client.get_online_features API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.get_online_features))
 
-After we finish running the materialization job, we can get the online features by querying the feature name, with the 
-corresponding keys. In the example above, we query the online features called `f_location_avg_fare` and 
-`f_location_max_fare`, and query with a key `265` (which is the location ID).
 
 ## Generating Features to Offline Store
 
-This is a useful when the feature transformation is computation intensive and features can be re-used. For example, you 
-have a feature that needs more than 24 hours to compute and the feature can be reused by more than one model training 
-pipeline. In this case, you should consider generate features to offline. Here is an API example:
+This is a useful when the feature transformation is computation intensive and features can be re-used. For example, you
+have a feature that needs more than 24 hours to compute and the feature can be reused by more than one model training
+pipeline. In this case, you should consider generating features to offline. Here is an API example:
 
 ```python
 client = FeathrClient()
@@ -73,10 +81,10 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
 client.materialize_features(settings)
 ```
 
-This will generate features on latest date(assuming it's `2022/05/21`) and output data to the following path: 
+This will generate features on latest date(assuming it's `2022/05/21`) and output data to the following path:
 `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2022/05/21`
 
-You can also specify a BackfillTime so the features will be generated for those dates. For example:
+You can also specify a `BackfillTime` so the features will be generated only for those dates. For example:
 
 ```Python
 backfill_time = BackfillTime(start=datetime(
@@ -92,20 +100,20 @@ settings = MaterializationSettings("nycTaxiTable",
 This will generate features only for 2020/05/20 for me and it will be in folder:
 `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`
 
-You can also specify the format of the materilized features in the offline store:
+You can also specify the format of the materialized features in the offline store by using `execution_configurations` like below. Please refer to the [documentation](../how-to-guides/feathr-job-configuration.md) here for those configuration details.
 
 ```python
 
 from feathr import HdfsSink
-offlineSink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data_xiaoyzhu/")
+offlineSink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_data/")
 # Materialize two features into a Offline store.
 settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    sinks=[offlineSink],
-                                   
                                    feature_names=["f_location_avg_fare", "f_location_max_fare"])
-client.materialize_features(settings, execution_configuratons={ "spark.feathr.outputFormat": "parquet"},)
+client.materialize_features(settings, execution_configuratons={ "spark.feathr.outputFormat": "parquet"})
 
 ```
 
-([MaterializationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings),
-[HdfsSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSink))
+Refer to the following documentation for more details:
+ - [MaterializationSettings API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings)
+- [HdfsSink API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSink)
