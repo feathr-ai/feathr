@@ -65,7 +65,10 @@ def submit_spark_job(feature_names_funcs):
     print("Submit_spark_job: dataframeFromSpark: ")
     print(dataframeFromSpark)
 
-    sql_ctx = SQLContext(spark)
+    # per comment https://stackoverflow.com/a/54738984, use explicit way to initialize SQLContext
+    # Otherwise it might fail when calling `DataFrame.collect()` or other APIs that's related with SQLContext
+    # do not use `sql_ctx = SQLContext(spark)`
+    sql_ctx = SQLContext(sparkContext=spark.sparkContext, sparkSession=spark)
     new_preprocessed_df_map = {}
     for feature_names, scala_dataframe in dataframeFromSpark.items():
         # Need to convert java DataFrame into python DataFrame
