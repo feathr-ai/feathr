@@ -5,33 +5,33 @@ import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
-from feathr.definition.feature import FeatureBase
+from .definition.feature import FeatureBase
 
 import redis
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from pyhocon import ConfigFactory
 
-from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
+from .spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
 
-from feathr.registry._feature_registry_purview import _FeatureRegistry
-from feathr.definition._materialization_utils import _to_materialization_config
-from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
-from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
-from feathr.constants import *
-from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
-from feathr.definition.feature_derivations import DerivedFeature
-from feathr.definition.materialization_settings import MaterializationSettings
-from feathr.definition.monitoring_settings import MonitoringSettings
-from feathr.protobuf.featureValue_pb2 import FeatureValue
-from feathr.definition.query_feature_list import FeatureQuery
-from feathr.definition.settings import ObservationSettings
-from feathr.definition.feature_derivations import DerivedFeature
-from feathr.definition.anchor import FeatureAnchor
-from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
-from feathr.utils._envvariableutil import _EnvVaraibleUtil
-from feathr.utils._file_utils import write_to_file
-from feathr.utils.feature_printer import FeaturePrinter
+from .registry._feature_registry_purview import _FeatureRegistry
+from .definition._materialization_utils import _to_materialization_config
+from .udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
+from .spark_provider._synapse_submission import _FeathrSynapseJobLauncher
+from .constants import *
+from .spark_provider.feathr_configurations import SparkExecutionConfiguration
+from .definition.feature_derivations import DerivedFeature
+from .definition.materialization_settings import MaterializationSettings
+from .definition.monitoring_settings import MonitoringSettings
+from .protobuf.featureValue_pb2 import FeatureValue
+from .definition.query_feature_list import FeatureQuery
+from .definition.settings import ObservationSettings
+from .definition.feature_derivations import DerivedFeature
+from .definition.anchor import FeatureAnchor
+from .spark_provider.feathr_configurations import SparkExecutionConfiguration
+from .utils._envvariableutil import _EnvVaraibleUtil
+from .utils._file_utils import write_to_file
+from .utils.feature_printer import FeaturePrinter
 
 
 class FeatureJoinJobParams:
@@ -489,7 +489,7 @@ class FeathrClient(object):
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             python_files=cloud_udf_paths,
             job_tags=job_tags,
-            main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
+            main_class_name='com.linkedin..offline.job.FeatureJoinJob',
             arguments=[
                 '--join-config', self.feathr_spark_laucher.upload_or_get_cloud_path(
                     feature_join_job_params.join_config_path),
@@ -619,7 +619,7 @@ class FeathrClient(object):
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             python_files=cloud_udf_paths,
-            main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
+            main_class_name='com.linkedin..offline.job.FeatureGenJob',
             arguments=arguments,
             reference_files_path=[],
             configuration=execution_configuratons,
