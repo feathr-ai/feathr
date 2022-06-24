@@ -4,9 +4,12 @@ import java.time.Duration
 import com.linkedin.feathr.common.{DateParam, DateTimeResolution}
 import com.linkedin.feathr.offline.source.SourceFormatType._
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
+import com.linkedin.feathr.offline.config.location.{PathList, SimplePath}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.util.SourceUtils
@@ -16,7 +19,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 /**
  * The primary responsibility of this class is to Map the anchored features to its DataFrame.
  */
-private[offline] class AnchorToDataSourceMapper {
+private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathHandler]) {
 
   /**
    * Get basic anchored feature to datasource mapping for feature join use case.
@@ -59,7 +62,13 @@ private[offline] class AnchorToDataSourceMapper {
               }
             }
         }
-        val timeSeriesSource = DataSourceAccessor(ss, source, dateInterval, Some(expectDatumType), failOnMissingPartition = failOnMissingPartition)
+        val timeSeriesSource = DataSourceAccessor(ss = ss,
+                                                  source = source, 
+                                                  dateIntervalOpt = dateInterval, 
+                                                  expectDatumType = Some(expectDatumType), 
+                                                  failOnMissingPartition = failOnMissingPartition,
+                                                  dataPathHandlers = dataPathHandlers)
+        
         anchorsWithDate.map(anchor => (anchor, timeSeriesSource))
     })
   }
@@ -84,24 +93,32 @@ private[offline] class AnchorToDataSourceMapper {
       timeDelays: Array[Duration],
       failOnMissingPartition: Boolean): DataFrame = {
 
-    val pathChecker = PathChecker(ss)
-    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker)
-    val pathInfo = pathAnalyzer.analyze(factDataSource.path)
-    val adjustedObsTimeRange = if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY)
-    {
-      obsTimeRange.adjustWithDateTimeResolution(DateTimeResolution.DAILY)
-    } else obsTimeRange
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
+
+    // Only file-based source has real "path", others are just single dataset
+    val adjustedObsTimeRange = if (factDataSource.location.isFileBasedLocation()) {
+      val pathChecker = PathChecker(ss)
+      val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
+      val pathInfo = pathAnalyzer.analyze(factDataSource.path)
+      if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY)
+      {
+        obsTimeRange.adjustWithDateTimeResolution(DateTimeResolution.DAILY)
+      } else obsTimeRange
+    } else {
+      obsTimeRange
+    }
 
     val timeInterval = OfflineDateTimeUtils.getFactDataTimeRange(adjustedObsTimeRange, window, timeDelays)
     val needCreateTimestampColumn = SlidingWindowFeatureUtils.needCreateTimestampColumnFromPartition(factDataSource)
     val timeSeriesSource =
       DataSourceAccessor(
-        ss,
-        factDataSource,
-        Some(timeInterval),
-        None,
+        ss = ss,
+        source = factDataSource,
+        dateIntervalOpt = Some(timeInterval),
+        expectDatumType = None,
         failOnMissingPartition = failOnMissingPartition,
-        addTimestampColumn = needCreateTimestampColumn)
+        addTimestampColumn = needCreateTimestampColumn,
+        dataPathHandlers = dataPathHandlers)
     timeSeriesSource.get()
   }
 
@@ -146,13 +163,15 @@ private[offline] class AnchorToDataSourceMapper {
         }
         val needCreateTimestampColumn = source.timePartitionPattern.nonEmpty && source.timeWindowParams.isEmpty
         val timeSeriesSource = DataSourceAccessor(
-          ss,
-          source,
-          dateIntervalOpt,
-          Some(expectDatumType),
+          ss = ss,
+          source = source,
+          dateIntervalOpt = dateIntervalOpt,
+          expectDatumType = Some(expectDatumType),
           failOnMissingPartition = failOnMissingPartition,
           addTimestampColumn = needCreateTimestampColumn,
-          isStreaming)
+          isStreaming = isStreaming,
+          dataPathHandlers = dataPathHandlers)
+          
         anchors.map(anchor => (anchor, timeSeriesSource))
     })
   }

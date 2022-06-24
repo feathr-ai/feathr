@@ -9,7 +9,7 @@ import java.util.Optional
 /**
  * A simple component to collect pretty-print result for local feature gen job.
  */
-class FeatureGenExperimentComponent {
+class FeatureGenExperimentComponent() {
   def prettyPrintFeatureGenResult(mockDataDir: String, featureNames: String, featureDefDir: String): String = {
     val genConf = s"""
                  |operational: {
@@ -37,7 +37,7 @@ class FeatureGenExperimentComponent {
       FeathrGenTestComponent.LocalGenConfString -> List(genConf),
       FeathrGenTestComponent.LocalConfPaths -> featureDefFiles)
     println(f"${Console.GREEN}Testing features in ${featureDefFiles.mkString(",")}${Console.RESET}")
-    val feathrGenTestComponent = new FeathrGenTestComponent(resourceLocations)
+    val feathrGenTestComponent = new FeathrGenTestComponent(resourceLocations, List()) //TODO: investigate FeatureExperimentEntryPoint instantation issue and re-add data path handlers
     val (validationRes, validationErrorMsg) = feathrGenTestComponent.validate(featureNames, mockDataDir)
 
     if (!validationRes) {

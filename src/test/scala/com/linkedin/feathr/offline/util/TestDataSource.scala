@@ -46,7 +46,7 @@ class TestDataSource extends TestFeathr {
       createIntervalFromLocalTime(date2018011001.plusMinutes(30L), date2018011002.plusMinutes(59L)),
       Duration.ofDays(1),
       simulateTimeDelays)
-    val anchorDF1 = DataSourceAccessor(ss, mockSource, Some(timeRange1), None, failOnMissingPartition = false).get()
+    val anchorDF1 = DataSourceAccessor(ss=ss, source=mockSource, dateIntervalOpt=Some(timeRange1), expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List()).get()
     assertEquals(anchorDF1.count(), 8)
 
     // test: get 1 day of data
@@ -56,7 +56,7 @@ class TestDataSource extends TestFeathr {
       createIntervalFromLocalTime(date2018011003.plusMinutes(30L), date2018011004.plusMinutes(59L)),
       Duration.ofDays(3),
       simulateTimeDelays)
-    val anchorDF2 = DataSourceAccessor(ss, mockSource, Some(timeRange2), None, failOnMissingPartition = false).get()
+    val anchorDF2 = DataSourceAccessor(ss=ss, source=mockSource, dateIntervalOpt=Some(timeRange2), expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List()).get()
     assertEquals(anchorDF2.count(), 13)
   }
 

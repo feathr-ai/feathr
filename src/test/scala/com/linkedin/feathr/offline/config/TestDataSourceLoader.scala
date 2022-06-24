@@ -2,11 +2,14 @@ package com.linkedin.feathr.offline.config
 
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.FeathrJacksonScalaModule
 import com.linkedin.feathr.offline.config.location.{Jdbc, LocationUtils}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import org.scalatest.FunSuite
+
+import scala.collection.mutable
 
 
 class TestDataSourceLoader extends FunSuite {
@@ -58,5 +61,15 @@ class TestDataSourceLoader extends FunSuite {
       }
       case _ => assert(false)
     }
+    assert(ds.timeWindowParams.nonEmpty)
+    assert(ds.timePartitionPattern.isEmpty)
+    assert(ds.timeWindowParams.get.timestampColumn=="lpep_dropoff_datetime")
+    assert(ds.timeWindowParams.get.timestampColumnFormat=="yyyy-MM-dd HH:mm:ss")
+  }
+
+  test("test SWA with dense vector feature") {
+    val sps = """{"nycTaxiBatchJdbcSource_USER": "user@host", "nycTaxiBatchJdbcSource_PASSWORD": "magic-word"}"""
+    val props = (new ObjectMapper()).registerModule(DefaultScalaModule).readValue(sps, classOf[mutable.HashMap[String, String]])
+    assert(props.get("nycTaxiBatchJdbcSource_PASSWORD")==Some("magic-word"))
   }
 }

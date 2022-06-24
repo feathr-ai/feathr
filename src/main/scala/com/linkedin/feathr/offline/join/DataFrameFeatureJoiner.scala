@@ -12,6 +12,7 @@ import com.linkedin.feathr.offline.join.algorithms._
 import com.linkedin.feathr.offline.join.util.{FrequentItemEstimatorFactory, FrequentItemEstimatorType}
 import com.linkedin.feathr.offline.join.workflow._
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan}
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.swa.SlidingWindowAggregationJoiner
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
@@ -29,9 +30,9 @@ import scala.collection.JavaConverters._
  * Joiner to join observation with feature data using Spark DataFrame API
  * @param logicalPlan analyzed feature info
  */
-private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan) extends Serializable {
+private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler]) extends Serializable {
   @transient lazy val log = Logger.getLogger(getClass.getName)
-  @transient lazy val anchorToDataSourceMapper = new AnchorToDataSourceMapper()
+  @transient lazy val anchorToDataSourceMapper = new AnchorToDataSourceMapper(dataPathHandlers)
   private val windowAggFeatureStages = logicalPlan.windowAggFeatureStages
   private val joinStages = logicalPlan.joinStages
   private val postJoinDerivedFeatures = logicalPlan.postJoinDerivedFeatures
@@ -222,7 +223,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan) e
     } else withAllBasicAnchoredFeatureDF
 
     // 6. Join Derived Features
-    val derivedFeatureEvaluator = DerivedFeatureEvaluator(ss, featureGroups)
+    val derivedFeatureEvaluator = DerivedFeatureEvaluator(ss=ss, featureGroups=featureGroups, dataPathHandlers=dataPathHandlers)
     val derivedFeatureJoinStep = DerivedFeatureJoinStep(derivedFeatureEvaluator)
     val FeatureDataFrameOutput(FeatureDataFrame(withDerivedFeatureDF, inferredDerivedFeatureTypes)) =
       derivedFeatureJoinStep.joinFeatures(allRequiredFeatures.filter {

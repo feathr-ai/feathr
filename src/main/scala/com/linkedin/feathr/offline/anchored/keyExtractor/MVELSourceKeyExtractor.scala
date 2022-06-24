@@ -6,6 +6,7 @@ import com.linkedin.feathr.offline.util.AnchorUtils.removeNonAlphaNumChars
 import com.linkedin.feathr.sparkcommon.SourceKeyExtractor
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 
 /**
@@ -36,14 +37,14 @@ private[feathr] class MVELSourceKeyExtractor(val anchorExtractorV1: AnchorExtrac
     val encoder = RowEncoder(outputSchema)
     dataFrame
       .map(row => {
-        val keys = anchorExtractorV1.getKey(row)
+        val keys = getKey(row.asInstanceOf[GenericRowWithSchema])
         Row.merge(row, Row.fromSeq(keys))
       })(encoder)
       .toDF()
   }
 
-  def getKey(datum: Any): Seq[String] = {
-    anchorExtractorV1.getKey(datum)
+  def getKey(datum: GenericRowWithSchema): Seq[String] = {
+    anchorExtractorV1.getKeyFromRow(datum)
   }
 
   /**
@@ -54,7 +55,7 @@ private[feathr] class MVELSourceKeyExtractor(val anchorExtractorV1: AnchorExtrac
    */
   override def getKeyColumnNames(datum: Option[Any]): Seq[String] = {
     if (datum.isDefined) {
-      val size = anchorExtractorV1.getKey(datum.get).size
+      val size = getKey(datum.get.asInstanceOf[GenericRowWithSchema]).size
       (1 to size).map(JOIN_KEY_PREFIX + _)
     } else {
       // return empty join key to signal empty dataset

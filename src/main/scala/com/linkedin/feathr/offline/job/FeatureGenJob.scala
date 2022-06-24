@@ -1,11 +1,15 @@
 package com.linkedin.feathr.offline.job
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.linkedin.feathr.common.TaggedFeatureName
 import com.linkedin.feathr.common.configObj.configbuilder.FeatureGenConfigBuilder
 import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeathrConfigLoader
 import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
 import com.linkedin.feathr.offline.job.FeatureJoinJob._
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.util.{CmdLineParser, FeathrUtils, OptionParam, SparkFeaturizedDataset}
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
@@ -16,6 +20,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 object FeatureGenJob {
 
@@ -45,11 +50,18 @@ object FeatureGenJob {
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
       "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
       "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", ""),
-      "kafka-config" -> OptionParam("kc", "Authentication config for Kafka", "KAFKA_CONFIG", "")
+      "monitoring-config" -> OptionParam("mc", "Feature monitoring related configs", "MONITORING_CONFIG", ""),
+      "kafka-config" -> OptionParam("kc", "Authentication config for Kafka", "KAFKA_CONFIG", ""),
+      "system-properties" -> OptionParam("sps", "Additional System Properties", "SYSTEM_PROPERTIES_CONFIG", "")
     )
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
 
     val cmdParser = new CmdLineParser(args, params, extraOptions)
+
+    // Set system properties passed via arguments
+    val sps = cmdParser.extractOptionalValue("system-properties").getOrElse("{}")
+    val props = (new ObjectMapper()).registerModule(DefaultScalaModule).readValue(sps, classOf[mutable.HashMap[String, String]])
+    props.foreach(e => scala.util.Properties.setProp(e._1, e._2))
 
     val applicationConfigPath = cmdParser.extractRequiredValue("generation-config")
     val featureDefinitionsInput = new FeatureDefinitionsInput(
@@ -63,6 +75,8 @@ object FeatureGenJob {
     val dataSourceConfigs = DataSourceConfigUtils.getConfigs(cmdParser)
     val featureGenJobContext = new FeatureGenJobContext(workDir, paramsOverride, featureConfOverride)
 
+    println("dataSourceConfigs: ")
+    println(dataSourceConfigs)
     (applicationConfigPath, featureDefinitionsInput, featureGenJobContext, dataSourceConfigs)
   }
 
@@ -120,7 +134,8 @@ object FeatureGenJob {
       featureGenConfig: String,
       featureDefConfig: Option[String],
       localFeatureConfig: Option[String],
-      jobContext: FeatureGenJobContext): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
+      jobContext: FeatureGenJobContext,
+      dataPathHandlers: List[DataPathHandler]=List()): Map[TaggedFeatureName, SparkFeaturizedDataset] = {
 
     logger.info(s"featureDefConfig : ${featureDefConfig}")
     logger.info(s"localFeatureConfig : ${localFeatureConfig}")
@@ -128,8 +143,9 @@ object FeatureGenJob {
         FeathrClient.builder(ss)
           .addFeatureDef(featureDefConfig)
           .addLocalOverrideDef(localFeatureConfig)
+          .addDataPathHandlers(dataPathHandlers)
           .build()
-    val featureGenSpec = parseFeatureGenApplicationConfig(featureGenConfig, jobContext)
+    val featureGenSpec = parseFeatureGenApplicationConfig(featureGenConfig, jobContext, dataPathHandlers)
     feathrClient.generateFeatures(featureGenSpec)
   }
 
@@ -139,11 +155,13 @@ object FeatureGenJob {
    * @param featureGenJobContext feature generation context
    * @return Feature generation Specifications
    */
-  private[feathr] def parseFeatureGenApplicationConfig(featureGenConfigStr: String, featureGenJobContext: FeatureGenJobContext): FeatureGenSpec = {
+  private[feathr] def parseFeatureGenApplicationConfig(featureGenConfigStr: String, featureGenJobContext: FeatureGenJobContext,
+      dataPathHandlers: List[DataPathHandler]=List()): FeatureGenSpec = {
     val withParamsOverrideConfigStr = overrideFeatureGeneration(featureGenConfigStr, featureGenJobContext.paramsOverride)
     val withParamsOverrideConfig = ConfigFactory.parseString(withParamsOverrideConfigStr)
     val featureGenConfig = FeatureGenConfigBuilder.build(withParamsOverrideConfig)
-    new FeatureGenSpec(featureGenConfig)
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
+    new FeatureGenSpec(featureGenConfig, dataLoaderHandlers)
   }
 
   private[feathr] def overrideFeatureGeneration(featureGenConfigStr: String, paramsOverride: Option[String]): String = {
@@ -198,6 +216,7 @@ object FeatureGenJob {
       val localFeatureConfig = featureDefs.feathrLocalFeatureDefPath.map(path => hdfsFileReader(sparkSession, path))
       val (featureConfigWithOverride, localFeatureConfigWithOverride) = overrideFeatureDefs(featureConfig, localFeatureConfig, jobContext)
 
+    //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val feathrClient =
       FeathrClient.builder(sparkSession)
         .addFeatureDef(featureConfig)
@@ -207,7 +226,7 @@ object FeatureGenJob {
 
     // Using AnchorToDataSourceMapper to load DataFrame for preprocessing
     val failOnMissing = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
-    val anchorToDataSourceMapper = new AnchorToDataSourceMapper()
+    val anchorToDataSourceMapper = new AnchorToDataSourceMapper(List()) //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val anchorsWithSource = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(
       sparkSession,
       allAnchoredFeatures.values.toSeq,

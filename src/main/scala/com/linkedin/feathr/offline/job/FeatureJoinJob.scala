@@ -1,5 +1,7 @@
 package com.linkedin.feathr.offline.job
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.linkedin.feathr.common
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrDataOutputException, FeathrInputDataException}
 import com.linkedin.feathr.common.{Header, JoiningFeatureParams}
@@ -9,6 +11,8 @@ import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.SourceFormatType
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.util.SourceUtils.getPathList
 import com.linkedin.feathr.offline.util._
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
@@ -24,6 +28,7 @@ import scala.collection.JavaConverters.mapAsScalaMapConverter
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success}
 import collection.JavaConverters._
+import scala.collection.mutable
 
 /**
  * Join features to some observations for training/testing
@@ -59,13 +64,19 @@ object FeatureJoinJob {
 
   val log: Logger = Logger.getLogger(getClass)
 
-  def run(ss: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext): Unit = {
+  def run(ss: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext, dataPathHandlers: List[DataPathHandler]): Unit = {
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
     val joinConfig = FeatureJoinConfig.parseJoinConfig(hdfsFileReader(ss, jobContext.joinConfig))
     print("join config is, ",joinConfig)
     // check read authorization for observation data, and write authorization for output path
-    checkAuthorization(ss, hadoopConf, jobContext)
+    checkAuthorization(ss, hadoopConf, jobContext, dataLoaderHandlers)
 
-    feathrJoinRun(ss, hadoopConf, joinConfig, jobContext.jobJoinContext, None)
+    feathrJoinRun(ss=ss,
+    hadoopConf=hadoopConf,
+    joinConfig=joinConfig,
+    jobContext=jobContext.jobJoinContext,
+    localTestConfig=None,
+    dataPathHandlers=dataPathHandlers)
   }
 
   // Log the feature names for bookkeeping. Global config may be merged with local config(s).
@@ -76,7 +87,7 @@ object FeatureJoinJob {
     ss.sparkContext.textFile(path).collect.mkString("\n")
   }
 
-  private def checkAuthorization(ss: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext): Unit = {
+  private def checkAuthorization(ss: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext, dataLoaderHandlers: List[DataLoaderHandler]): Unit = {
     AclCheckUtils.checkWriteAuthorization(hadoopConf, jobContext.jobJoinContext.outputPath) match {
       case Failure(e) =>
         throw new FeathrDataOutputException(ErrorLabel.FEATHR_USER_ERROR, s"No write permission for output path ${jobContext.jobJoinContext.outputPath}.", e)
@@ -84,7 +95,13 @@ object FeatureJoinJob {
     }
     jobContext.jobJoinContext.inputData.map(inputData => {
       val failOnMissing = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
-      val pathList = getPathList(inputData.sourceType, inputData.inputPath, ss, inputData.dateParam, None, failOnMissing)
+      val pathList = getPathList(sourceFormatType=inputData.sourceType,
+      sourcePath=inputData.inputPath,
+      ss=ss,
+      dateParam=inputData.dateParam,
+      targetDate=None,
+      failOnMissing=failOnMissing,
+      dataLoaderHandlers=dataLoaderHandlers)
       AclCheckUtils.checkReadAuthorization(hadoopConf, pathList) match {
         case Failure(e) => throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"No read permission on observation data $pathList.", e)
         case Success(_) => log.debug("Checked read authorization on observation data of the following paths:\n" + pathList.mkString("\n"))
@@ -109,15 +126,17 @@ object FeatureJoinJob {
       featureGroupings: Map[String, Seq[JoiningFeatureParams]],
       joinConfig: FeatureJoinConfig,
       jobContext: JoinJobContext,
+      dataPathHandlers: List[DataPathHandler],
       localTestConfigOpt: Option[LocalTestConfig] = None): (DataFrame, Header) = {
 
-    val feathrClient = getFeathrClient(ss, jobContext, localTestConfigOpt)
+    val feathrClient = getFeathrClient(ss, jobContext, dataPathHandlers, localTestConfigOpt)
     feathrClient.doJoinObsAndFeatures(joinConfig, jobContext, observations)
   }
 
   private[offline] def getFeathrClient(
     ss: SparkSession,
     jobContext: JoinJobContext,
+    dataPathHandlers: List[DataPathHandler],
     localTestConfigOpt: Option[LocalTestConfig] = None): FeathrClient = {
 
     localTestConfigOpt match {
@@ -125,11 +144,13 @@ object FeatureJoinJob {
         FeathrClient.builder(ss)
           .addFeatureDefPath(jobContext.feathrFeatureConfig)
           .addLocalOverrideDefPath(jobContext.feathrLocalConfig)
+          .addDataPathHandlers(dataPathHandlers)
           .build()
       case Some(localTestConfig) =>
         FeathrClient.builder(ss)
           .addFeatureDef(localTestConfig.featureConfig)
           .addLocalOverrideDef(localTestConfig.localConfig)
+          .addDataPathHandlers(dataPathHandlers)
           .build()
     }
   }
@@ -149,23 +170,23 @@ object FeatureJoinJob {
       hadoopConf: Configuration,
       joinConfig: FeatureJoinConfig,
       jobContext: JoinJobContext,
+      dataPathHandlers: List[DataPathHandler],
       localTestConfig: Option[LocalTestConfig] = None): (Option[RDD[GenericRecord]], Option[DataFrame]) = {
     val sparkConf = ss.sparkContext.getConf
-
+    val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
     val featureGroupings = joinConfig.featureGroupings
 
     /*
      * load FeathrClient and perform the Feature Join
      */
     val failOnMissing = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
-    val observationsDF = SourceUtils.loadObservationAsDF(ss, hadoopConf, jobContext.inputData.get, failOnMissing)
+    val observationsDF = SourceUtils.loadObservationAsDF(ss, hadoopConf, jobContext.inputData.get, dataLoaderHandlers, failOnMissing)
 
-    val (joinedDF, _) = getFeathrClientAndJoinFeatures(ss, observationsDF, featureGroupings, joinConfig, jobContext, localTestConfig)
+    val (joinedDF, _) = getFeathrClientAndJoinFeatures(ss, observationsDF, featureGroupings, joinConfig, jobContext, dataPathHandlers, localTestConfig)
 
     val parameters = Map(SparkIOUtils.OUTPUT_PARALLELISM -> jobContext.numParts.toString, SparkIOUtils.OVERWRITE_MODE -> "ALL")
 
-
-    SparkIOUtils.writeDataFrame(joinedDF, jobContext.outputPath, parameters)
+    SparkIOUtils.writeDataFrame(joinedDF, jobContext.outputPath, parameters, dataLoaderHandlers)
     (None, Some(joinedDF))
   }
 
@@ -201,12 +222,18 @@ object FeatureJoinJob {
       "adls-config" -> OptionParam("adlc", "Authentication config for ADLS (abfs)", "ADLS_CONFIG", ""),
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
       "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
-      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", "")
+      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", ""),
+      "system-properties" -> OptionParam("sps", "Additional System Properties", "SYSTEM_PROPERTIES_CONFIG", "")
     )
 
     val extraOptions = List(new CmdOption("LOCALMODE", "local-mode", false, "Run in local mode"))
 
     val cmdParser = new CmdLineParser(args, params, extraOptions)
+
+    // Set system properties passed via arguments
+    val sps = cmdParser.extractOptionalValue("system-properties").getOrElse("{}")
+    val props = (new ObjectMapper()).registerModule(DefaultScalaModule).readValue(sps, classOf[mutable.HashMap[String, String]])
+    props.foreach(e => scala.util.Properties.setProp(e._1, e._2))
 
     val joinConfig = cmdParser.extractRequiredValue("join-config")
 
@@ -274,15 +301,15 @@ object FeatureJoinJob {
     val jobContext = feathrJoinPreparationInfo.jobContext
 
     // check read authorization for observation data, and write authorization for output path
-    checkAuthorization(sparkSession, hadoopConf, jobContext)
+    checkAuthorization(sparkSession, hadoopConf, jobContext, List())
 
     // Doesn't support loading local test client for this yet
-    val feathrClient = getFeathrClient(sparkSession, jobContext.jobJoinContext)
+    val feathrClient = getFeathrClient(sparkSession, jobContext.jobJoinContext, List()) //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val allAnchoredFeatures = feathrClient.allAnchoredFeatures
 
     // Using AnchorToDataSourceMapper to load DataFrame for preprocessing
     val failOnMissing = FeathrUtils.getFeathrJobParam(sparkSession, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
-    val anchorToDataSourceMapper = new AnchorToDataSourceMapper()
+    val anchorToDataSourceMapper = new AnchorToDataSourceMapper(List()) //TODO: fix python errors for loadSourceDataFrame, add dataPathLoader Support
     val anchorsWithSource = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(
       sparkSession,
       allAnchoredFeatures.values.toSeq,
@@ -311,7 +338,7 @@ object FeatureJoinJob {
     logger.info("FeatureJoinJob args are: " + args)
     val feathrJoinPreparationInfo = prepareSparkSession(args)
 
-    run(feathrJoinPreparationInfo.sparkSession, feathrJoinPreparationInfo.hadoopConf, feathrJoinPreparationInfo.jobContext)
+    run(feathrJoinPreparationInfo.sparkSession, feathrJoinPreparationInfo.hadoopConf, feathrJoinPreparationInfo.jobContext, List()) //TODO: accept handlers instead of empty List
   }
 
   def prepareSparkSession(args: Array[String]): FeathrJoinPreparationInfo = {

@@ -9,6 +9,7 @@ import com.linkedin.feathr.offline.generation.outputProcessor.RedisOutputUtils
 import com.linkedin.feathr.offline.job.FeatureTransformation.getFeatureJoinKey
 import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
 import com.linkedin.feathr.offline.logical.FeatureGroups
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.transformation.{AnchorToDataSourceMapper, DataFrameBasedSqlEvaluator}
 import com.linkedin.feathr.sparkcommon.SimpleAnchorExtractorSpark
 import org.apache.avro.Schema
@@ -30,8 +31,8 @@ import scala.collection.convert.wrapAll._
 /**
  * Class to ingest streaming features
  */
-class StreamingFeatureGenerator {
-  @transient val anchorToDataFrameMapper = new AnchorToDataSourceMapper()
+class StreamingFeatureGenerator(dataPathHandlers: List[DataPathHandler]) {
+  @transient val anchorToDataFrameMapper = new AnchorToDataSourceMapper(dataPathHandlers)
 
   /**
    * Ingest streaming features
@@ -109,7 +110,7 @@ class StreamingFeatureGenerator {
           val withKeyColumnDF = keyExtractor.appendKeyColumns(rowDF)
           // Apply feature transformation
           val transformedResult = DataFrameBasedSqlEvaluator.transform(anchor.featureAnchor.extractor.asInstanceOf[SimpleAnchorExtractorSpark],
-            withKeyColumnDF, featureNamePrefixPairs, anchor)
+            withKeyColumnDF, featureNamePrefixPairs, anchor.featureAnchor.featureTypeConfigs)
           val outputJoinKeyColumnNames = getFeatureJoinKey(keyExtractor, withKeyColumnDF)
           val selectedColumns = outputJoinKeyColumnNames ++ anchor.selectedFeatures.filter(keyTaggedFeatures.map(_.featureName).contains(_))
           val cleanedDF = transformedResult.df.select(selectedColumns.head, selectedColumns.tail:_*)

@@ -6,14 +6,14 @@ import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.node._
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
-import com.linkedin.feathr.common._
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException, FeathrException}
+import com.linkedin.feathr.common.{AnchorExtractor, AnchorExtractorBase, FeathrJacksonScalaModule, FeatureDerivationFunctionBase, FeatureTypeConfig, FeatureTypes}
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
-import com.linkedin.feathr.offline.config.location.{InputLocation, KafkaEndpoint, LocationUtils, SimplePath}
+import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, KafkaEndpoint, LocationUtils, SimplePath}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWindowParams}
@@ -256,14 +256,12 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
 
     anchorExtractor match {
       case extractor: AnchorExtractorBase[_] =>
-        if (node.has("extractor")) {
           val extractorNode = node.get("extractor")
-          if (extractorNode.has("params")) {
+          if (extractorNode != null && extractorNode.get("params") != null) {
             // init the param into the extractor
             val config = ConfigFactory.parseString(extractorNode.get("params").toString)
             extractor.init(config)
           }
-        }
     }
 
     // cast the the extractor class to AnchorExtractor[Any]
@@ -394,13 +392,14 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
               val keyAlias = FeathrConfigLoader.extractStringListOpt(keyNode.get(KEY_ALIAS))
               new SQLSourceKeyExtractor(keys, keyAlias, lateralViewParameters)
             } else {
-              throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, s"No valid keys found for node ${node}")
+              val anchorExtractor = anchorExtractorBase.asInstanceOf[AnchorExtractor[Any]]
+              new MVELSourceKeyExtractor(anchorExtractor)
             }
           case None =>
-            if (!anchorExtractorBase.isInstanceOf[AnchorExtractor[_]]) {
+            if (!anchorExtractorBase.isInstanceOf[AnchorExtractorBase[_]]) {
               throw new FeathrException(
                 ErrorLabel.FEATHR_USER_ERROR,
-                s"In ${node}, ${anchorExtractorBase} with no key and no keyExtractor must be extends AnchorExtractor")
+                s"In ${node}, ${anchorExtractorBase} with no key and no keyExtractor must be extends AnchorExtractorBase")
             }
             val keyAlias = FeathrConfigLoader.extractStringListOpt(node.get(KEY_ALIAS))
             val anchorExtractor = anchorExtractorBase.asInstanceOf[AnchorExtractor[Any]]
@@ -714,15 +713,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
      *    since anchor defined pass-through features do not have path
      */
     val path: InputLocation = dataSourceType match {
-      case "HDFS" =>
-        Option(node.get("location")) match {
-          case Some(field: ObjectNode) =>
-            LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
-          case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
-                                s"Data location is not defined for HDFS source ${node.toPrettyString()}")
-          case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
-                                s"Illegal setting for location for HDFS source ${node.toPrettyString()}, expected map")
-        }
       case "KAFKA" =>
         Option(node.get("config")) match {
           case Some(field: ObjectNode) =>
@@ -732,8 +722,17 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
           case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
                                 s"Illegal setting for Kafka source ${node.toPrettyString()}, expected map")
         }
-      case _ => SimplePath("PASSTHROUGH")
+      case "PASSTHROUGH" => SimplePath("PASSTHROUGH")
+      case _ => Option(node.get("location")) match {
+        case Some(field: ObjectNode) =>
+          LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
+        case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+          s"Data location is not defined for data source ${node.toPrettyString()}")
+        case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+          s"Illegal setting for location for data source ${node.toPrettyString()}, expected map")
+      }
     }
+    println(s"Source location is: $path")
 
     // time window parameters for data aggregation
     val timeWindowParameterNode = Option(node.get("timeWindowParameters")) match {

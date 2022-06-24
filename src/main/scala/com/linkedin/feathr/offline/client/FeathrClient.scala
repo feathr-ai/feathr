@@ -9,6 +9,7 @@ import com.linkedin.feathr.offline.job._
 import com.linkedin.feathr.offline.join.DataFrameFeatureJoiner
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.source.DataSource
+import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.util.{FeathrUtils, _}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -26,7 +27,7 @@ import scala.util.{Failure, Success}
  *
  */
 class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: FeatureGroups, logicalPlanner: MultiStageJoinPlanner,
-  featureGroupsUpdater: FeatureGroupsUpdater) {
+  featureGroupsUpdater: FeatureGroupsUpdater, dataPathHandlers: List[DataPathHandler]) {
   private val log = Logger.getLogger(getClass)
 
   type KeyTagStringTuple = Seq[String]
@@ -83,14 +84,14 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
     val keyTaggedDerivedFeatures = FeatureGenKeyTagAnalyzer.inferKeyTagsForDerivedFeatures(featureGenSpec, featureGroups, keyTaggedAnchoredFeatures)
     val keyTaggedRequiredFeatures = keyTaggedAnchoredFeatures ++ keyTaggedDerivedFeatures
     if (isStreaming(featureGenSpec)) {
-      val streamingFeatureGenerator = new StreamingFeatureGenerator()
+      val streamingFeatureGenerator = new StreamingFeatureGenerator(dataPathHandlers=dataPathHandlers)
       streamingFeatureGenerator.generateFeatures(sparkSession, featureGenSpec, featureGroups, keyTaggedRequiredFeatures)
       Map()
     } else {
       // Get logical plan
       val logicalPlan = logicalPlanner.getLogicalPlan(featureGroups, keyTaggedRequiredFeatures)
       // This pattern is consistent with the join use case which uses DataFrameFeatureJoiner.
-      val dataFrameFeatureGenerator = new DataFrameFeatureGenerator(logicalPlan)
+      val dataFrameFeatureGenerator = new DataFrameFeatureGenerator(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers)
       val featureMap: Map[TaggedFeatureName, (DataFrame, Header)] =
         dataFrameFeatureGenerator.generateFeaturesAsDF(sparkSession, featureGenSpec, featureGroups, keyTaggedRequiredFeatures)
 
@@ -262,7 +263,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
           s"Please rename feature ${conflictFeatureNames} or rename the same field names in the observation data.")
     }
 
-    val joiner = new DataFrameFeatureJoiner(logicalPlan)
+    val joiner = new DataFrameFeatureJoiner(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers)
     joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, left, rowBloomFilterThreshold)
   }
 
@@ -335,6 +336,42 @@ object FeathrClient {
     private var featureDefPath: List[String] = List()
     private var localOverrideDefPath: List[String] = List()
     private var featureDefConfs: List[FeathrConfig] = List()
+    private var dataPathHandlers: List[DataPathHandler] = List()
+
+
+    /**
+     * Add a list of data path handlers to the builder. Used to handle accessing and loading paths caught by user's udf, validatePath
+     *
+     * @param dataPathHandlers custom data path handlers
+     * @return FeathrClient.Builder
+     */
+    def addDataPathHandlers(dataPathHandlers: List[DataPathHandler]): Builder = {
+      this.dataPathHandlers = dataPathHandlers ++ this.dataPathHandlers
+      this
+    }
+
+    /**
+     * Add a data path handler to the builder. Used to handle accessing and loading paths caught by user's udf, validatePath
+     *
+     * @param dataPathHandler custom data path handler
+     * @return FeathrClient.Builder
+     */
+    def addDataPathHandler(dataPathHandler: DataPathHandler): Builder = {
+      this.dataPathHandlers = dataPathHandler :: this.dataPathHandlers
+      this
+    }
+
+    /**
+     * Same as {@code addDataPathHandler(DataPathHandler)} but the input dataPathHandlers is optional and when it is missing,
+     * this method performs an no-op.
+     *
+     * @param dataPathHandler custom data path handler
+     * @return FeathrClient.Builder
+     */
+    def addDataPathHandler(dataPathHandler: Option[DataPathHandler]): Builder = {
+      if (dataPathHandler.isDefined) addDataPathHandler(dataPathHandler.get) else this
+    }
+
 
     /**
      * Add a feature definition config string to the builder.
@@ -492,7 +529,7 @@ object FeathrClient {
       featureDefConfigs = featureDefConfigs ++ featureDefConfs
 
       val featureGroups = FeatureGroupsGenerator(featureDefConfigs, Some(localDefConfigs)).getFeatureGroups()
-      val feathrClient = new FeathrClient(sparkSession, featureGroups, MultiStageJoinPlanner(), FeatureGroupsUpdater())
+      val feathrClient = new FeathrClient(sparkSession, featureGroups, MultiStageJoinPlanner(), FeatureGroupsUpdater(), dataPathHandlers)
 
       feathrClient
     }

@@ -1,45 +1,29 @@
-export interface Features {
-  features: IFeature[];
-}
-
-export interface IFeature {
+export interface Feature {
   id: string;
-  name: string;
-  qualifiedName: string;
-  description: string;
+  guid: string;
   status: string;
-  featureType: string;
-  dataSource: string;
-  owners: string;
-}
-
-export interface IFeatureDetail {
-  entity: IFeatureEntity;
-}
-
-export interface IFeatureEntity {
+  displayText: string;
+  typeName: string;
   attributes: FeatureAttributes;
 }
 
 export interface FeatureAttributes {
   qualifiedName: string;
   name: string;
-  type: string;
+  type: FeatureType;
   transformation: FeatureTransformation;
   key: FeatureKey[];
   window: string;
-  input_anchor_features: InputAnchorFeatures[];
-  input_derived_features: InputDerivedFeatures[]
+  _input_anchor_features: Feature[];
+  _input_derived_features: Feature[]
 }
 
-export interface InputAnchorFeatures {
-  uniqueAttributes: FeatureAttributes;
+export interface FeatureType {
+  type: string,
+  tensor_category: string,
+  dimension_type: string[],
+  val_type: string
 }
-
-export interface InputDerivedFeatures {
-  uniqueAttributes: FeatureAttributes;
-}
-
 export interface FeatureTransformation {
   transform_expr: string,
   filter: string,
@@ -58,7 +42,7 @@ export interface FeatureKey {
   key_column_type: string
 }
 
-export interface IDataSource {
+export interface DataSource {
   attributes: DataSourceAttributes;
 }
 
@@ -69,8 +53,25 @@ export interface DataSourceAttributes {
 }
 
 
-export interface IFeatureLineage {
+export interface FeatureLineage {
   guidEntityMap: any;
   relations: any;
 }
 
+export interface UserRole {
+  id: number;
+  scope: string;
+  userName: string;
+  roleName: string;
+  createTime: string;
+  createReason: string;
+  deleteTime?: any;
+  deleteReason?: any;
+}
+
+export interface Role {
+  scope: string;
+  userName: string;
+  roleName: string;
+  reason: string;
+}

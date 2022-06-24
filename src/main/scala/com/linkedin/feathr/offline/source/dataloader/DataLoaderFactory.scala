@@ -1,9 +1,12 @@
 package com.linkedin.feathr.offline.source.dataloader
 
 import com.linkedin.feathr.offline.config.location.InputLocation
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.log4j.Logger
 import org.apache.spark.customized.CustomGenericRowWithSchema
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.hadoop.mapred.JobConf
+
 
 /**
  * DataLoaderFactory trait that will create a data loader based on the type of the input.
@@ -26,14 +29,30 @@ private[offline] object DataLoaderFactory {
   /**
    * construct a specific loader factory based on whether the spark session is local or not.
    */
-  def apply(ss: SparkSession, streaming: Boolean = false): DataLoaderFactory = {
+  def apply(ss: SparkSession, streaming: Boolean = false, dataLoaderHandlers: List[DataLoaderHandler]): DataLoaderFactory = {
     if (streaming) {
       new StreamingDataLoaderFactory(ss)
-    } else if (ss.sparkContext.isLocal) {
+    }
+    else if (ss.sparkContext.isLocal) {
       // For test
-      new LocalDataLoaderFactory(ss)
+      new LocalDataLoaderFactory(ss, dataLoaderHandlers)
     } else {
-      new BatchDataLoaderFactory(ss)
+      new BatchDataLoaderFactory(ss, dataLoaderHandlers)
     }
   }
 }
+
+/**
+ * Class that encloses hooks for creating/writing data frames depends on the data/path type.
+ * @param validatePath used to validate if path should be routed to data handler
+ * @param createDataFrame  used to create a data frame given a path.
+ * @param createUnionDataFrame used to create a data frame given multiple paths
+ * @param writeDataFrame used to write a data frame to a path
+ */
+case class DataLoaderHandler(
+  validatePath: String => Boolean,
+  createDataFrame: (String, Map[String, String], JobConf) => DataFrame,
+  createUnionDataFrame: (Seq[String], Map[String, String], JobConf) => DataFrame,
+  writeDataFrame: (DataFrame, String,  Map[String, String]) => Unit,
+)
+

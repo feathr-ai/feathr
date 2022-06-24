@@ -5,6 +5,7 @@ import com.linkedin.feathr.offline.FeatureName
 import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.job.FeatureGenSpec
 import com.linkedin.feathr.offline.source.dataloader.BatchDataLoader
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.util.IncrementalAggUtils
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
 import org.apache.hadoop.conf.Configuration
@@ -43,8 +44,10 @@ private[offline] trait IncrementalAggSnapshotLoader {
    * @param featureGenSpec Feature Generation spec.
    * @return Incremental aggregation context.
    */
-  def load(featureGenSpec: FeatureGenSpec): IncrementalAggContext = {
-    load(featureGenSpec, FileSystem.get(new Configuration()))
+  def load(featureGenSpec: FeatureGenSpec, dataLoaderHandlers: List[DataLoaderHandler]): IncrementalAggContext = {
+    load(featureGenSpec=featureGenSpec,
+         fs=FileSystem.get(new Configuration()),
+         dataLoaderHandlers=dataLoaderHandlers)
   }
 
   /**
@@ -55,12 +58,12 @@ private[offline] trait IncrementalAggSnapshotLoader {
    * @param fs             Filesystem in which to look for the previously aggregated results.
    * @return Incremental aggregation context.
    */
-  private[generation] def load(featureGenSpec: FeatureGenSpec, fs: FileSystem): IncrementalAggContext
+  private[generation] def load(featureGenSpec: FeatureGenSpec, fs: FileSystem, dataLoaderHandlers: List[DataLoaderHandler]): IncrementalAggContext
 }
 
 private[offline] object IncrementalAggSnapshotLoader extends IncrementalAggSnapshotLoader {
   private val logger = Logger.getLogger(getClass)
-  private[generation] override def load(featureGenSpec: FeatureGenSpec, fs: FileSystem): IncrementalAggContext = {
+  private[generation] override def load(featureGenSpec: FeatureGenSpec, fs: FileSystem, dataLoaderHandlers: List[DataLoaderHandler]): IncrementalAggContext = {
     val isIncrementalAggEnabled = featureGenSpec.isEnableIncrementalAgg()
     if (!isIncrementalAggEnabled) {
       IncrementalAggContext(isIncrementalAggEnabled, None, Map.empty[FeatureName, DataFrame], Map.empty[FeatureName, String])
@@ -84,7 +87,10 @@ private[offline] object IncrementalAggSnapshotLoader extends IncrementalAggSnaps
             val endDate = OfflineDateTimeUtils.createTimeFromString(featureGenSpec.endTimeStr, featureGenSpec.endTimeFormat).toLocalDateTime
             val directory = IncrementalAggUtils.getLatestAggSnapshotDFPath(preAggRootDir, endDate).get
             val spark = SparkSession.builder().getOrCreate()
-            val preAggSnapshot = new BatchDataLoader(spark, SimplePath(directory)).loadDataFrame()
+            val preAggSnapshot = new BatchDataLoader(ss=spark,
+                                                     location=SimplePath(directory),
+                                                     dataLoaderHandlers=dataLoaderHandlers
+                                                    ).loadDataFrame()
             val features = params.getStringList(FeatureGenerationPathName.FEATURES).asScala
             // user may have added new features in this run
             val oldFeatures = features.filter(preAggSnapshot.columns.contains)
