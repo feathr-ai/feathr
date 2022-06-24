@@ -40,7 +40,7 @@ feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location
 # Observation dataset settings
 settings = ObservationSettings(
   observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
-  event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
+  event_timestamp_column="lpep_dropoff_datetime",           # Event timestamp field for your data, optional
   timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
 
 # Prepare training data by joining features to the input (observation) data.
@@ -99,7 +99,7 @@ batch_source = HdfsSource(
     name="nycTaxiBatchSource",                              # Source name to enrich your metadata
     path="abfss://green_tripdata_2020-04.csv",              # Path to your data
     event_timestamp_column="lpep_dropoff_datetime",         # Event timestamp for point-in-time correctness
-    timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various fromats inculding epoch
+    timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various formats including epoch
 ```
 
 ### Define features on top of other features - Derived Features
