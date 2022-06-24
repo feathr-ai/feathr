@@ -49,16 +49,16 @@ def get_project_datasources(project: str) -> list:
 
 @router.get("/projects/{project}/features")
 def get_project_features(project: str, keyword: Optional[str] = None) -> list:
-    if keyword is None:
-        p = registry.get_entity(project)
-        feature_ids = [s.id for s in p.attributes.anchor_features] + \
-            [s.id for s in p.attributes.derived_features]
-        features = registry.get_entities(feature_ids)
-        return list([e.to_dict() for e in features])
-    else:
+    if keyword:
         efs = registry.search_entity(
             keyword, [EntityType.AnchorFeature, EntityType.DerivedFeature])
         feature_ids = [ef.id for ef in efs]
+        features = registry.get_entities(feature_ids)
+        return list([e.to_dict() for e in features])
+    else:
+        p = registry.get_entity(project)
+        feature_ids = [s.id for s in p.attributes.anchor_features] + \
+            [s.id for s in p.attributes.derived_features]
         features = registry.get_entities(feature_ids)
         return list([e.to_dict() for e in features])
 
@@ -79,27 +79,27 @@ def get_feature_lineage(feature: str) -> dict:
 
 
 @router.post("/projects")
-def new_project(definition: dict) -> UUID:
+def new_project(definition: dict) -> dict:
     id = registry.create_project(ProjectDef(**to_snake(definition)))
     return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/datasources")
-def new_project_datasource(project: str, definition: dict) -> UUID:
+def new_project_datasource(project: str, definition: dict) -> dict:
     project_id = registry.get_entity_id(project)
     id = registry.create_project_datasource(project_id, SourceDef(**to_snake(definition)))
     return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/anchors")
-def new_project_anchor(project: str, definition: dict) -> UUID:
+def new_project_anchor(project: str, definition: dict) -> dict:
     project_id = registry.get_entity_id(project)
     id = registry.create_project_anchor(project_id, AnchorDef(**to_snake(definition)))
     return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/anchors/{anchor}/features")
-def new_project_anchor_feature(project: str, anchor: str, definition: dict) -> UUID:
+def new_project_anchor_feature(project: str, anchor: str, definition: dict) -> dict:
     project_id = registry.get_entity_id(project)
     anchor_id = registry.get_entity_id(anchor)
     id = registry.create_project_anchor_feature(project_id, anchor_id, AnchorFeatureDef(**to_snake(definition)))
@@ -107,7 +107,7 @@ def new_project_anchor_feature(project: str, anchor: str, definition: dict) -> U
 
 
 @router.post("/projects/{project}/derivedfeatures")
-def new_project_derived_feature(project: str, definition: dict) -> UUID:
+def new_project_derived_feature(project: str, definition: dict) -> dict:
     project_id = registry.get_entity_id(project)
     id = registry.create_project_derived_feature(project_id, DerivedFeatureDef(**to_snake(definition)))
     return {"guid": str(id)}

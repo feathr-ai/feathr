@@ -140,6 +140,12 @@ class FeatureType(ToDict):
         self.dimension_type = _to_type(dimension_type, ValueType)
         self.val_type = _to_type(val_type, ValueType)
 
+    def __eq__(self, o: object) -> bool:
+        return self.type == o.type \
+            and self.tensor_category == o.tensor_category \
+            and self.dimension_type == o.dimension_type \
+            and self.val_type == o.val_type
+
     def to_dict(self) -> dict:
         return {
             "type": self.type.name,
@@ -162,6 +168,13 @@ class TypedKey(ToDict):
         self.description = description
         self.key_column_alias = key_column_alias
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, TypedKey):
+            return False
+        return self.key_column == o.key_column \
+            and self.key_column_type == o.key_column_type \
+            and self.key_column_alias == o.key_column_alias
+    
     def to_dict(self) -> dict:
         ret = {
             "key_column": self.key_column,
@@ -193,6 +206,11 @@ class ExpressionTransformation(Transformation):
     def __init__(self, transform_expr: str):
         self.transform_expr = transform_expr
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, ExpressionTransformation):
+            return False
+        return self.transform_expr == o.transform_expr
+
     def to_dict(self) -> dict:
         return {
             "transform_expr": self.transform_expr
@@ -214,6 +232,16 @@ class WindowAggregationTransformation(Transformation):
         self.filter = filter
         self.limit = limit
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, WindowAggregationTransformation):
+            return False
+        return self.def_expr == o.def_expr \
+            and self.agg_func == o.agg_func \
+            and self.window == o.window \
+            and self.group_by == o.group_by \
+            and self.filter == o.filter \
+            and self.limit == o.limit
+
     def to_dict(self) -> dict:
         ret = {
             "def_expr": self.def_expr,
@@ -234,6 +262,11 @@ class WindowAggregationTransformation(Transformation):
 class UdfTransformation(Transformation):
     def __init__(self, name: str):
         self.name = name
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, UdfTransformation):
+            return False
+        return self.name == o.name
 
     def to_dict(self) -> dict:
         return {
@@ -276,7 +309,6 @@ class EntityRef(ToDict):
 class Attributes(ToDict):
     @staticmethod
     def new(entity_type: Union[str, EntityType], **kwargs):
-        print("YYY ", entity_type, kwargs)
         return {
             EntityType.Project: ProjectAttributes,
             EntityType.Source: SourceAttributes,
@@ -523,8 +555,8 @@ class DerivedFeatureAttributes(Attributes):
                  type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
                  key: list[Union[dict, TypedKey]],
-                 # input_anchor_features: list[Union[dict, EntityRef, Entity]] = [],
-                 # input_derived_features: list[Union[dict, EntityRef, Entity]] = [],
+                 input_anchor_features: list[Union[dict, EntityRef, Entity]] = [],
+                 input_derived_features: list[Union[dict, EntityRef, Entity]] = [],
                  tags: dict = {},
                  **kwargs):
         self.qualified_name = qualified_name
@@ -535,8 +567,6 @@ class DerivedFeatureAttributes(Attributes):
         self._input_anchor_features = []
         self._input_derived_features = []
         self.tags = tags
-        # self._set_input_anchor_features(input_anchor_features)
-        # self._set_input_derived_features(input_derived_features)
 
     @property
     def entity_type(self) -> EntityType:
@@ -547,27 +577,27 @@ class DerivedFeatureAttributes(Attributes):
         return self._input_anchor_features + self._input_derived_features
 
     @input_features.setter
-    def input_features(self, v: Union[dict, Entity, EntityRef]):
+    def input_features(self, input_features_list: Union[dict, Entity, EntityRef]):
         self._input_anchor_features = []
         self._input_derived_features = []
-        for f in v:
-            e = None
-            if isinstance(f, EntityRef):
-                e = f
-            elif isinstance(f, Entity):
-                e = f.get_ref()
-            elif isinstance(f, dict):
+        for feature in input_features_list:
+            entity = None
+            if isinstance(feature, EntityRef):
+                entity = feature
+            elif isinstance(feature, Entity):
+                entity = feature.get_ref()
+            elif isinstance(feature, dict):
                 try:
-                    e = _to_type(f, Entity).get_ref()
+                    entity = _to_type(feature, Entity).get_ref()
                 except:
-                    e = _to_type(f, EntityRef)
+                    entity = _to_type(feature, EntityRef)
             else:
-                raise TypeError(f)
+                raise TypeError(feature)
 
-            if e.entity_type == EntityType.AnchorFeature:
-                self._input_anchor_features.append(e)
-            elif e.entity_type == EntityType.DerivedFeature:
-                self._input_derived_features.append(e)
+            if entity.entity_type == EntityType.AnchorFeature:
+                self._input_anchor_features.append(entity)
+            elif entity.entity_type == EntityType.DerivedFeature:
+                self._input_derived_features.append(entity)
             else:
                 pass
 

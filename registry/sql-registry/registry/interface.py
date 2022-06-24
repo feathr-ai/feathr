@@ -70,20 +70,35 @@ class Registry(ABC):
 
     @abstractmethod
     def create_project(self, definition: ProjectDef) -> UUID:
+        """
+        Create a new project
+        """
         pass
 
     @abstractmethod
     def create_project_datasource(self, project_id: UUID, definition: SourceDef) -> UUID:
+        """
+        Create a new datasource under the project
+        """
         pass
 
     @abstractmethod
     def create_project_anchor(self, project_id: UUID, definition: AnchorDef) -> UUID:
+        """
+        Create a new anchor under the project
+        """
         pass
 
     @abstractmethod
     def create_project_anchor_feature(self, project_id: UUID, anchor_id: UUID, definition: AnchorFeatureDef) -> UUID:
+        """
+        Create a new anchor feature under the anchor in the project
+        """
         pass
 
     @abstractmethod
     def create_project_derived_feature(self, project_id: UUID, definition: DerivedFeatureDef) -> UUID:
+        """
+        Create a new derived feature under the project
+        """
         pass

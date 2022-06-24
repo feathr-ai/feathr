@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 import logging
 import threading
-from distutils.log import debug, warn
 import os
 import pymssql
 
@@ -43,7 +42,7 @@ class MssqlConnection(DbConnection):
     def connect(autocommit = True):
         conn_str = os.environ["CONNECTION_STR"]
         if "Server=" not in conn_str:
-            debug("`CONNECTION_STR` is not in ADO connection string format")
+            logging.debug("`CONNECTION_STR` is not in ADO connection string format")
             return None
         params = parse_conn_str(conn_str)
         if not autocommit:
@@ -62,7 +61,7 @@ class MssqlConnection(DbConnection):
         """
         Make SQL query and return result
         """
-        warn(f"SQL: `{sql}`")
+        logging.debug(f"SQL: `{sql}`")
         # NOTE: Only one cursor is allowed at the same time
         retry = 0
         while True:
@@ -72,7 +71,7 @@ class MssqlConnection(DbConnection):
                     c.execute(sql, *args, **kwargs)
                     return c.fetchall()
             except pymssql.OperationalError:
-                warn("Database error, retrying...")
+                logging.warning("Database error, retrying...")
                 # Reconnect
                 self.make_connection()
                 retry += 1
@@ -84,8 +83,13 @@ class MssqlConnection(DbConnection):
     @contextmanager
     def transaction(self):
         """
-        Do NOT use self.query inside this block as they may reconnect
-        The minimal implementation could look like this if the provider doesn't support transaction
+        Start a transaction so we can run multiple SQL in one batch.
+        User should use `with` with the returned value, look into db_registry.py for more real usage.
+        
+        NOTE: `self.query` and `self.execute` will use a different MSSQL connection so any change made
+        in this transaction will *not* be visible in these calls.
+        
+        The minimal implementation could look like this if the underlying engine doesn't support transaction.
         ```
         @contextmanager
         def transaction(self):
@@ -99,6 +103,7 @@ class MssqlConnection(DbConnection):
         conn = None
         cursor = None
         try:
+            # As one MssqlConnection has only one connection, we need to create a new one to disable `autocommit`
             conn = MssqlConnection.connect(autocommit=False).conn
             cursor = conn.cursor(as_dict=True)
             yield cursor

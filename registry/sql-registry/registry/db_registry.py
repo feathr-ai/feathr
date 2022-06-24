@@ -106,8 +106,10 @@ class DbRegistry(Registry):
         return list([EntityRef(**row) for row in rows])
 
     def create_project(self, definition: ProjectDef) -> UUID:
+        # Here we start a transaction, any following step failed, everything rolls back
         definition.qualified_name = definition.name
         with self.conn.transaction() as c:
+            # First we try to find existing entity with the same qualified name
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
             r = c.fetchall()
@@ -122,8 +124,9 @@ class DbRegistry(Registry):
                 # Just return the existing project id
                 return _to_uuid(r[0]["entity_id"])
             id = uuid4()
-            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, 'feathr_workspace_v1', %s, %s)",
+            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, %s, %s, %s)",
                       (str(id),
+                       str(EntityType.Project),
                        definition.qualified_name,
                        definition.to_attr().to_json()))
             return id
@@ -131,12 +134,15 @@ class DbRegistry(Registry):
     def create_project_datasource(self, project_id: UUID, definition: SourceDef) -> UUID:
         project = self.get_entity(project_id)
         definition.qualified_name = f"{project.qualified_name}__{definition.name}"
+        # Here we start a transaction, any following step failed, everything rolls back
         with self.conn.transaction() as c:
+            # First we try to find existing entity with the same qualified name
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
             r = c.fetchall()
             if r:
                 if len(r) > 1:
+                    # There are multiple entities with same qualified name， that means we already have errors in the db
                     assert False, "Data inconsistency detected, %d entities have same qualified_name %s" % (
                         len(r), definition.qualified_name)
                 # The entity with same name already exists but with different type
@@ -144,7 +150,7 @@ class DbRegistry(Registry):
                     raise ValueError("Entity %s already exists" %
                                      definition.qualified_name)
                 attr: SourceAttributes = _to_type(
-                    r[0]["attributes"], SourceAttributes)
+                    json.loads(r[0]["attributes"]), SourceAttributes)
                 if attr.name == definition.name \
                         and attr.type == definition.type \
                         and attr.path == definition.path \
@@ -157,8 +163,9 @@ class DbRegistry(Registry):
                 raise ValueError("Entity %s already exists" %
                                  definition.qualified_name)
             id = uuid4()
-            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, 'feathr_source_v1', %s, %s)",
+            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, %s, %s, %s)",
                       (str(id),
+                       str(EntityType.Source),
                        definition.qualified_name,
                        definition.to_attr().to_json()))
             self._create_edge(c, project_id, id, RelationshipType.Contains)
@@ -168,12 +175,15 @@ class DbRegistry(Registry):
     def create_project_anchor(self, project_id: UUID, definition: AnchorDef) -> UUID:
         project = self.get_entity(project_id)
         definition.qualified_name = f"{project.qualified_name}__{definition.name}"
+        # Here we start a transaction, any following step failed, everything rolls back
         with self.conn.transaction() as c:
+            # First we try to find existing entity with the same qualified name
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
             r = c.fetchall()
             if r:
                 if len(r) > 1:
+                    # There are multiple entities with same qualified name， that means we already have errors in the db
                     assert False, "Data inconsistency detected, %d entities have same qualified_name %s" % (
                         len(r), definition.qualified_name)
                 # The entity with same name already exists but with different type
@@ -181,16 +191,15 @@ class DbRegistry(Registry):
                     raise ValueError("Entity %s already exists" %
                                      definition.qualified_name)
                 attr: AnchorAttributes = _to_type(
-                    r[0]["attributes"], AnchorAttributes)
-                if attr.name == definition.name \
-                        and attr.source.id == definition.source_id:
+                    json.loads(r[0]["attributes"]), AnchorAttributes)
+                if attr.name == definition.name:
                     # Creating exactly same entity
                     # Just return the existing id
                     return _to_uuid(r[0]["entity_id"])
                 raise ValueError("Entity %s already exists" %
                                  definition.qualified_name)
-            c.execute("select entity_id, qualified_name from entities where entity_id = %s and entity_type = 'feathr_source_v1'", str(
-                definition.source_id))
+            c.execute("select entity_id, qualified_name from entities where entity_id = %s and entity_type = %s", (str(
+                definition.source_id), str(EntityType.Source)))
             r = c.fetchall()
             if not r:
                 raise ValueError("Source %s does not exist" %
@@ -198,12 +207,15 @@ class DbRegistry(Registry):
             ref = EntityRef(r[0]["entity_id"],
                             EntityType.Source, r[0]["qualified_name"])
             id = uuid4()
-            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, 'feathr_anchor_v1', %s, %s)",
+            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, %s, %s, %s)",
                       (str(id),
+                       str(EntityType.Anchor),
                        definition.qualified_name,
                        definition.to_attr(ref).to_json()))
+            # Add "Contains/BelongsTo" relations between anchor and project
             self._create_edge(c, project_id, id, RelationshipType.Contains)
             self._create_edge(c, id, project_id, RelationshipType.BelongsTo)
+            # Add "Consumes/Produces" relations between anchor and datasource
             self._create_edge(c, id, definition.source_id,
                               RelationshipType.Consumes)
             self._create_edge(c, definition.source_id, id,
@@ -213,12 +225,15 @@ class DbRegistry(Registry):
     def create_project_anchor_feature(self, project_id: UUID, anchor_id: UUID, definition: AnchorFeatureDef) -> UUID:
         anchor = self.get_entity(anchor_id)
         definition.qualified_name = f"{anchor.qualified_name}__{definition.name}"
+        # Here we start a transaction, any following step failed, everything rolls back
         with self.conn.transaction() as c:
+            # First we try to find existing entity with the same qualified name
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
             r = c.fetchall()
             if r:
                 if len(r) > 1:
+                    # There are multiple entities with same qualified name， that means we already have errors in the db
                     assert False, "Data inconsistency detected, %d entities have same qualified_name %s" % (
                         len(r), definition.qualified_name)
                 # The entity with same name already exists but with different type
@@ -226,7 +241,7 @@ class DbRegistry(Registry):
                     raise ValueError("Entity %s already exists" %
                                      definition.qualified_name)
                 attr: AnchorFeatureAttributes = _to_type(
-                    r[0]["attributes"], AnchorFeatureAttributes)
+                    json.loads(r[0]["attributes"]), AnchorFeatureAttributes)
                 if attr.name == definition.name \
                         and attr.type == definition.feature_type \
                         and attr.transformation == definition.transformation \
@@ -234,18 +249,23 @@ class DbRegistry(Registry):
                     # Creating exactly same entity
                     # Just return the existing id
                     return _to_uuid(r[0]["entity_id"])
+                # The existing entity has different definition, that's a conflict
                 raise ValueError("Entity %s already exists" %
                                  definition.qualified_name)
             source_id = anchor.attributes.source.id
             id = uuid4()
-            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, 'feathr_anchor_feature_v1', %s, %s)",
+            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, %s, %s, %s)",
                       (str(id),
+                       str(EntityType.AnchorFeature),
                        definition.qualified_name,
                        definition.to_attr().to_json()))
+            # Add "Contains/BelongsTo" relations between anchor feature and project
             self._create_edge(c, project_id, id, RelationshipType.Contains)
             self._create_edge(c, id, project_id, RelationshipType.BelongsTo)
+            # Add "Contains/BelongsTo" relations between anchor feature and anchor
             self._create_edge(c, anchor_id, id, RelationshipType.Contains)
             self._create_edge(c, id, anchor_id, RelationshipType.BelongsTo)
+            # Add "Consumes/Produces" relations between anchor feature and datasource used by anchor
             self._create_edge(c, id, source_id, RelationshipType.Consumes)
             self._create_edge(c, source_id, id, RelationshipType.Produces)
             return id
@@ -253,20 +273,23 @@ class DbRegistry(Registry):
     def create_project_derived_feature(self, project_id: UUID, definition: DerivedFeatureDef) -> UUID:
         project = self.get_entity(project_id)
         definition.qualified_name = f"{project.qualified_name}__{definition.name}"
+        # Here we start a transaction, any following step failed, everything rolls back
         with self.conn.transaction() as c:
+            # First we try to find existing entity with the same qualified name
             c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = %s''',
                       definition.qualified_name)
             r = c.fetchall()
             if r:
                 if len(r) > 1:
+                    # There are multiple entities with same qualified name， that means we already have errors in the db
                     assert False, "Data inconsistency detected, %d entities have same qualified_name %s" % (
                         len(r), definition.qualified_name)
-                # The entity with same name already exists but with different type
+                # The entity with same name already exists but with different type, that's conflict
                 if _to_type(r[0]["entity_type"], EntityType) != EntityType.DerivedFeature:
                     raise ValueError("Entity %s already exists" %
                                      definition.qualified_name)
                 attr: DerivedFeatureAttributes = _to_type(
-                    r[0]["attributes"], DerivedFeatureAttributes)
+                    json.loads(r[0]["attributes"]), DerivedFeatureAttributes)
                 if attr.name == definition.name \
                         and attr.type == definition.feature_type \
                         and attr.transformation == definition.transformation \
@@ -274,33 +297,39 @@ class DbRegistry(Registry):
                     # Creating exactly same entity
                     # Just return the existing id
                     return _to_uuid(r[0]["entity_id"])
+                # The existing entity has different definition, that's a conflict
                 raise ValueError("Entity %s already exists" %
                                  definition.qualified_name)
             r1 = []
+            # Fill `input_anchor_features`, from `definition` we have ids only, we still need qualified names
             if definition.input_anchor_features:
                 c.execute(
-                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in ({quote(definition.input_anchor_features)}) and entity_type = 'feathr_anchor_feature_v1' ''')
+                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in ({quote(definition.input_anchor_features)}) and entity_type = %s ''', str(EntityType.AnchorFeature))
                 r1 = c.fetchall()
                 if len(r1) != len(definition.input_anchor_features):
                     # TODO: More detailed error
                     raise(ValueError("Missing input anchor features"))
+            # Fill `input_derived_features`, from `definition` we have ids only, we still need qualified names
             r2 = []
             if definition.input_derived_features:
                 c.execute(
-                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in ({quote(definition.input_derived_features)}) and entity_type = 'feathr_derived_feature_v1' ''')
+                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in ({quote(definition.input_derived_features)}) and entity_type = %s ''', str(EntityType.DerivedFeature))
                 r2 = c.fetchall()
                 if len(r2) != len(definition.input_derived_features):
                     # TODO: More detailed error
                     raise(ValueError("Missing input derived features"))
             refs = list([EntityRef(r["entity_id"], r["entity_type"], r["qualified_name"]) for r in r1+r2])
             id = uuid4()
-            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, 'feathr_anchor_feature_v1', %s, %s)",
+            c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, %s, %s, %s)",
                       (str(id),
+                       str(EntityType.DerivedFeature),
                        definition.qualified_name,
                        definition.to_attr(refs).to_json()))
+            # Add "Contains/BelongsTo" relations between derived feature and project
             self._create_edge(c, project_id, id, RelationshipType.Contains)
             self._create_edge(c, id, project_id, RelationshipType.BelongsTo)
             for r in r1+r2:
+                # Add "Consumes/Produces" relations between derived feature and all its upstream
                 input_feature_id = r["entity_id"]
                 self._create_edge(c, id, input_feature_id,
                                   RelationshipType.Consumes)
@@ -309,6 +338,9 @@ class DbRegistry(Registry):
             return id
 
     def _create_edge(self, cursor, from_id: UUID, to_id: UUID, type: RelationshipType):
+        """
+        Create an edge with specified type between 2 entities, skip if the same connection already exists
+        """
         sql = r'''
         IF NOT EXISTS (SELECT 1 FROM edges WHERE from_id=%(from_id)s and to_id=%(to_id)s and conn_type=%(type)s)
                 BEGIN
@@ -384,7 +416,6 @@ class DbRegistry(Registry):
         ret = []
         for row in rows:
             row["attributes"] = json.loads(row["attributes"])
-            print("XXX", row)
             ret.append(Entity(**row))
         return ret
 
