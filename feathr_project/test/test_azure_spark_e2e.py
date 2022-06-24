@@ -28,7 +28,7 @@ def test_feathr_materialize_to_offline():
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
 
-    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -63,7 +63,7 @@ def test_feathr_online_store_agg_features():
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
 
-    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -80,11 +80,11 @@ def test_feathr_online_store_agg_features():
 
     res = client.get_online_features(online_test_table, '265', [
                                      'f_location_avg_fare', 'f_location_max_fare'])
-    # just assme there are values. We don't hard code the values for now for testing
-    # the correctness of the feature generation should be garunteed by feathr runtime.
+    # just assume there are values. We don't hard code the values for now for testing
+    # the correctness of the feature generation should be guaranteed by feathr runtime.
     # ID 239 and 265 are available in the `DOLocationID` column in this file:
     # https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv
-    # View more detials on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+    # View more details on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
     assert len(res) == 2
     assert res[0] != None
     assert res[1] != None
@@ -121,11 +121,11 @@ def test_feathr_online_store_non_agg_features():
 
     res = client.get_online_features(online_test_table, '111', ['f_gen_trip_distance', 'f_gen_is_long_trip_distance',
                                                                    'f1', 'f2', 'f3', 'f4', 'f5', 'f6'])
-    # just assme there are values. We don't hard code the values for now for testing
-    # the correctness of the feature generation should be garunteed by feathr runtime.
+    # just assume there are values. We don't hard code the values for now for testing
+    # the correctness of the feature generation should be guaranteed by feathr runtime.
     # ID 239 and 265 are available in the `DOLocationID` column in this file:
     # https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv
-    # View more detials on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+    # View more detail on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
     assert len(res) == 8
     assert res[0] != None

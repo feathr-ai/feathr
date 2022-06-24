@@ -25,11 +25,11 @@ client.materialize_features(settings)
 ```
 
 More reference on the APIs:
+
 - [MaterializationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings)
 - [RedisSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.RedisSink)
 
 In the above example, we define a Redis table called `nycTaxiDemoFeature` and materialize two features called `f_location_avg_fare` and `f_location_max_fare` to Redis.
-
 
 ## Feature Backfill
 
@@ -45,15 +45,23 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    backfill_time=backfill_time)
 client.materialize_features(settings)
 ```
-Refer to the docs below:
--  [BackfillTime API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.BackfillTime)
+
+Note that if you don't have features available in `now`, you'd better specify a `BackfillTime` range where you have features.
+
+Also, Feathr will submit a materialization job for each of the step for performance reasons. I.e. if you have 
+`BackfillTime(start=datetime(2022, 2, 1), end=datetime(2022, 2, 20), step=timedelta(days=1))`, Feathr will submit 20 jobs to run in parallel for maximum performance.
+
+Refer to the docs below for more details:
+
+- [BackfillTime API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.BackfillTime)
 - [client.materialize_features() API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.materialize_features)
+
+
 
 ## Consuming features in online environment
 
 After the materialization job is finished, we can get the online features by querying the feature name, with the corresponding keys. In the example above, we query the online features called `f_location_avg_fare` and
 `f_location_max_fare`, and query with a key `265` (which is the location ID).
-
 
 ```python
 client.wait_job_to_finish(timeout_sec=600)
@@ -62,14 +70,15 @@ res = client.get_online_features('nycTaxiDemoFeature', '265', [
                                      'f_location_avg_fare', 'f_location_max_fare'])
 ```
 
-([client.get_online_features API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.get_online_features))
+Refer to [client.get_online_features API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.get_online_features) for more details.
 
-
-## Generating Features to Offline Store
+## Materializing Features to Offline Store
 
 This is a useful when the feature transformation is computation intensive and features can be re-used. For example, you
 have a feature that needs more than 24 hours to compute and the feature can be reused by more than one model training
-pipeline. In this case, you should consider generating features to offline. Here is an API example:
+pipeline. In this case, you should consider generating features to offline.
+
+The API call is very similar to materializing features to online store, and here is an API example:
 
 ```python
 client = FeathrClient()
@@ -88,7 +97,7 @@ You can also specify a `BackfillTime` so the features will be generated only for
 
 ```Python
 backfill_time = BackfillTime(start=datetime(
-    2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+    2020, 5, 10), end=datetime(2020, 5, 20), step=timedelta(days=1))
 offline_sink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
 settings = MaterializationSettings("nycTaxiTable",
                                    sinks=[offline_sink],
@@ -97,8 +106,8 @@ settings = MaterializationSettings("nycTaxiTable",
                                    backfill_time=backfill_time)
 ```
 
-This will generate features only for 2020/05/20 for me and it will be in folder:
-`abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`
+This will generate features from `2020/05/10` to `2020/05/20` and the output will have 10 folders, from
+`abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/10` to `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`. Note that currently Feathr only supports materializing data in daily step (i.e. even if you specify an hourly step, the generated features in offline store will still be presented in a daily hierarchy).
 
 You can also specify the format of the materialized features in the offline store by using `execution_configurations` like below. Please refer to the [documentation](../how-to-guides/feathr-job-configuration.md) here for those configuration details.
 
@@ -114,6 +123,15 @@ client.materialize_features(settings, execution_configuratons={ "spark.feathr.ou
 
 ```
 
+For reading those materialized features, Feathr has a convenient helper function called `get_result_df` to help you view the data. For example, you can use the sample code below to read from the materialized result in offline store:
+
+```python
+
+path = "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20/"
+res = get_result_df(client=client, format="parquet", res_url=path)
+```
+
 Refer to the following documentation for more details:
- - [MaterializationSettings API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings)
+
+- [MaterializationSettings API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings)
 - [HdfsSink API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSink)
