@@ -5,7 +5,7 @@ import org.testng.Assert.assertTrue
 import org.testng.annotations.Test
 
 /**
- * unit tests for DataLoaderFactory
+ * unit tests for [[DataLoaderFactory]]
  */
 class TestDataLoaderFactory extends TestFeathr {
 

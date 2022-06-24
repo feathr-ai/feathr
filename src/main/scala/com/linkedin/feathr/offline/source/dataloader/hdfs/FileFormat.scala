@@ -38,6 +38,7 @@ object FileFormat {
     val p = path.toLowerCase()
     p match {
       case p if p.endsWith(".csv") => CSV
+      case p if p.endsWith(".tsv") => CSV
       case p if p.endsWith(".parquet") => PARQUET
       case p if p.endsWith(".orc") => ORC
       case p if p.endsWith(".avro.json") => AVRO_JSON

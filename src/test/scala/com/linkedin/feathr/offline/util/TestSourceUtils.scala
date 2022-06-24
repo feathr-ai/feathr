@@ -1,22 +1,26 @@
-package com.linkedin.feathr.offline.source.dataloader
+package com.linkedin.feathr.offline.util
 
 import com.linkedin.feathr.offline.TestFeathr
-import com.linkedin.feathr.offline.config.location.SimplePath
+import com.linkedin.feathr.offline.client.InputData
+import com.linkedin.feathr.offline.source.SourceFormatType
+import org.apache.hadoop.conf.Configuration
 import org.apache.spark.sql.Row
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
 /**
- * unit tests for [[BatchDataLoader]]
+ * unit tests for [[SourceUtils]]
  */
-class TestBatchDataLoader extends TestFeathr {
+class TestSourceUtils extends TestFeathr {
 
-  @Test(description = "test loading dataframe with BatchDataLoader")
-  def testBatchDataLoader() : Unit = {
+  @Test(description = "test loading dataframe with SourceUtils")
+  def testSourceUtils() : Unit = {
+    val conf: Configuration = new Configuration()
     val path = "anchor1-source.csv"
     val absolutePath = getClass.getClassLoader.getResource(path).getPath
-    val batchDataLoader = new BatchDataLoader(ss, SimplePath(absolutePath), List())
-    val df = batchDataLoader.loadDataFrame()
+    val inputData = InputData(absolutePath, SourceFormatType.FIXED_PATH)
+    val df = SourceUtils.loadObservationAsDF(ss, conf, inputData, List())
+
     val expectedRows = Array(
       Row("1", "apple", "10", "10", "0.1"),
       Row("2", "orange", "10", "3", "0.1"),
@@ -29,14 +33,16 @@ class TestBatchDataLoader extends TestFeathr {
     assertEquals(df.collect(), expectedRows)
   }
 
-  @Test(description = "test loading dataframe with BatchDataLoader by specifying delimiter")
-  def testBatchDataLoaderWithCsvDelimiterOption() : Unit = {
+  @Test(description = "test loading dataframe with SourceUtils  by specifying delimiter")
+  def testSourceUtilsWithCsvDelimiterOption() : Unit = {
+    val conf: Configuration = new Configuration()
     val path = "anchor1-source.tsv"
-    val absolutePath = getClass.getClassLoader.getResource(path).getPath
     val sqlContext = ss.sqlContext
     sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep", "\t")
-    val batchDataLoader = new BatchDataLoader(ss, SimplePath(absolutePath), List())
-    val df = batchDataLoader.loadDataFrame()
+    val absolutePath = getClass.getClassLoader.getResource(path).getPath
+    val inputData = InputData(absolutePath, SourceFormatType.FIXED_PATH)
+    val df = SourceUtils.loadObservationAsDF(ss, conf, inputData, List())
+
     val expectedRows = Array(
       Row("1", "apple", "10", "10", "0.1"),
       Row("2", "orange", "10", "3", "0.1"),
