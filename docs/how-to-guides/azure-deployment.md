@@ -32,8 +32,8 @@ az ad app create --display-name $sitename --sign-in-audience AzureADMyOrg --web-
 
 #Fetch the ClientId, TenantId and ObjectId for the created app
 aad_clientId=$(az ad app list --display-name $sitename --query [].appId -o tsv)
-aad_objectId=$(az ad app list --display-name $sitename --query [].id -o tsv)
 aad_tenantId=$(az account tenant list --query [].tenantId -o tsv)
+aad_objectId=$(az ad app list --display-name $sitename --query [].id -o tsv)
 
 # Updating the SPA app created above, currently there is no CLI support to add redirectUris to a SPA, so we have to patch manually via az rest
 az rest --method PATCH --uri "https://graph.microsoft.com/v1.0/applications/$aad_objectId" --headers "Content-Type=application/json" --body "{spa:{redirectUris:['https://$sitename.azurewebsites.net/.auth/login/aad/callback']}}"
