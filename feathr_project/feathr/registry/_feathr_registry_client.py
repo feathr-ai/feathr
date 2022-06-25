@@ -1,4 +1,6 @@
 import importlib
+import json
+import logging
 import os
 from pathlib import Path
 import sys
@@ -54,6 +56,9 @@ class _FeatureRegistry(FeathrRegistry):
         """
         if not from_context:
             raise RuntimeError("Currently Feathr only supports registering features from context (i.e. you must call FeathrClient.build_features() before calling this function).")
+        
+        # Before starting, create the project
+        self.project_id = self._create_project()
 
         for anchor in anchor_list:
             source = anchor.source
@@ -129,9 +134,12 @@ class _FeatureRegistry(FeathrRegistry):
         return id
 
     def _get(self, path: str) -> dict:
+        logging.debug("PATH: ", path)
         return check(requests.get(f"{self.endpoint}{path}", headers=self._get_auth_header())).json()
 
     def _post(self, path: str, body: dict) -> dict:
+        logging.debug("PATH: ", path)
+        print("XXX ", json.dumps(body, indent=2))
         return check(requests.post(f"{self.endpoint}{path}", headers=self._get_auth_header(), json=body)).json()
 
     def _get_auth_header(self) -> dict:
@@ -323,16 +331,22 @@ def check(r):
 
 def source_to_def(v: Source) -> dict:
     ret = {}
-    if isinstance(v, HdfsSource):
+    if v.name == "PASSTHROUGH":
+        return {
+            "name": "PASSTHROUGH",
+            "type": "PASSTHROUGH",
+            "path": "PASSTHROUGH",
+        }
+    elif isinstance(v, HdfsSource):
         ret = {
             "name": v.name,
-            "sourceType": urlparse(v.path).scheme,
+            "type": urlparse(v.path).scheme,
             "path": v.path,
         }
     elif isinstance(v, JdbcSource):
         ret = {
             "name": v.name,
-            "sourceType": "jdbc",
+            "type": "jdbc",
             "url": v.url,
         }
         if v.dbtable:
@@ -342,7 +356,7 @@ def source_to_def(v: Source) -> dict:
         if v.auth:
             ret["auth"] = v.auth
     else:
-        raise ValueError("Unsupported source type")
+        raise ValueError(f"Unsupported source type {v.__class__}")
     if v.preprocessing:
         ret["preprocessing"] = v.preprocessing
     if v.event_timestamp_column:
@@ -501,10 +515,10 @@ def feature_to_def(v: Feature) -> dict:
         "key": [typed_key_to_def(k) for k in v.key],
     }
     if v.transform:
-        ret["attributes"]["transformation"] = transformation_to_def(
+        ret["transformation"] = transformation_to_def(
             v.transform)
     if v.registry_tags:
-        ret["attributes"]["tags"] = v.registry_tags
+        ret["tags"] = v.registry_tags
     return ret
 
 
@@ -531,24 +545,17 @@ def _get_type_name(v: Any) -> str:
     raise TypeError("Invalid type")
 
 
-def _entity_to_ref(v: Any) -> dict:
-    return {
-        "guid": str(v._registry_id),
-        "typeName": _get_type_name(v),
-        "uniqueAttributes": {
-            "qualifiedName": v._qualified_name 
-        }
-    }
-
-
 def derived_feature_to_def(v: DerivedFeature) -> dict:
     ret = {
         "name": v.name,
         "featureType": feature_type_to_def(v.feature_type),
         "key": [typed_key_to_def(k) for k in v.key],
-        "inputAnchorFeatures": [_entity_to_ref(f) for f in v.input_features if not isinstance(f, DerivedFeature)],
-        "inputDerivedFeatures": [_entity_to_ref(f) for f in v.input_features if isinstance(f, DerivedFeature)],
+        "inputAnchorFeatures": [str(f._registry_id) for f in v.input_features if not isinstance(f, DerivedFeature)],
+        "inputDerivedFeatures": [str(f._registry_id) for f in v.input_features if isinstance(f, DerivedFeature)],
     }
+    if v.transform:
+        ret["transformation"] = transformation_to_def(v.transform)
+    return ret
 
 
 def dict_to_derived_feature(v: dict) -> DerivedFeature:

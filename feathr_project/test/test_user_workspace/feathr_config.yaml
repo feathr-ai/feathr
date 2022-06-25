@@ -102,6 +102,7 @@ online_store:
     ssl_enabled: True
 
 feature_registry:
+  endpoint: "https://feathr-sql-registry.azurewebsites.net/api/v1"
   purview:
     # Registry configs
     # register type system in purview during feathr client initialization. This is only required to be executed once.
