@@ -1,45 +1,81 @@
+import importlib
+import os
+from pathlib import Path
+import sys
+from urllib.parse import urlparse
+from uuid import UUID
 from azure.identity import DefaultAzureCredential
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
+from re import sub
+from jinja2 import Template
 
 import requests
 from feathr.definition.anchor import FeatureAnchor
+from feathr.definition.dtype import FeatureType, str_to_value_type, value_type_to_str
 from feathr.definition.feature import Feature
 from feathr.definition.feature_derivations import DerivedFeature
-from feathr.definition.source import Source
+from feathr.definition.repo_definitions import RepoDefinitions
+from feathr.definition.source import HdfsSource, InputContext, JdbcSource, Source
+from feathr.definition.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
+from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
+from feathr.utils._file_utils import write_to_file
 
 
-class _FeathrRegistryClient(FeathrRegistry):
-    def __init__(self, endpoint: str, credential=None, config_path=None):
-        self.endpoint = endpoint
-        self.credential = DefaultAzureCredential(exclude_interactive_browser_credential=False) if credential is None else credential
-        
+def to_camel(s):
+    if not s:
+        return s
+    if isinstance(s, str):
+        if "_" in s:
+            s = sub(r"(_)+", " ", s).title().replace(" ", "")
+            return ''.join([s[0].lower(), s[1:]])
+        return s
+    elif isinstance(s, list):
+        return [to_camel(i) for i in s]
+    elif isinstance(s, dict):
+        return dict([(to_camel(k), s[k]) for k in s])
     
-    def register_features(self, anchor_list: List[FeatureAnchor] =[], derived_feature_list: List[DerivedFeature]=[]):
+class _FeatureRegistry(FeathrRegistry):
+    def __init__(self, project_name: str, endpoint: str, project_tags: Dict[str, str] = None, credential=None, config_path=None):
+        self.project_name = project_name
+        self.project_tags = project_tags
+        self.endpoint = endpoint
+        self.credential = DefaultAzureCredential(
+            exclude_interactive_browser_credential=False) if credential is None else credential
+        self.project_id = None
+
+    def register_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
         """Registers features based on the current workspace
 
                 Args:
                 anchor_list: List of FeatureAnchors
                 derived_feature_list: List of DerivedFeatures
         """
-        pass
-
+        for anchor in anchor_list:
+            source = anchor.source
+            # 1. Create Source on the registry
+            if not hasattr(source, "_registry_id"):
+                source._registry_id = self._create_source(source)
+            # 2. Create Anchor on the registry
+            if not hasattr(anchor, "_registry_id"):
+                anchor._registry_id = self._create_anchor(anchor)
+            # 3. Create all features on the registry
+            for feature in anchor.features:
+                if not hasattr(feature, "_registry_id"):
+                    feature._registry_id = self._create_anchor_feature(
+                        anchor._registry_id, feature)
+        # 4. Create all derived features on the registry
+        for df in derived_feature_list:
+            if not hasattr(df, "_registry_id"):
+                df._registry_id = self._create_derived_feature(df)
 
     def list_registered_features(self, project_name: str) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
         the registered features; otherwise it will only return features under this project
         """
-        r = requests.get(f"{self.endpoint}/projects/{project_name}/features", headers=self._get_auth_header())
-        if not r.ok():
-            raise RuntimeError(f"Failed to retrieve features from registry, status is {r.status_code}, error is {r.text}")
-        resp = r.json()
-        return 
-        for f in r:
-            # r should be an array
-            if f["typeName"] == "feathr_anchor_feature_v1":
-                pass
-                
-        
+        resp = self._get(f"/projects/{project_name}/features")
+        # In V1 API resp should be an array, will be changed in V2 API
+        return [r["attributes"]["qualifiedName"] for r in resp]
 
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """
@@ -47,27 +83,537 @@ class _FeathrRegistryClient(FeathrRegistry):
 
         Args:
             project_name (str): project name.
-
-        Returns:
-            bool: Returns true if the job completed successfully, otherwise False
         """
-        pass
+        lineage = self._get(f"/projects/{project_name}")
+        return dict_to_project(lineage)
 
-    def _get_auth_header(self) -> str:
-        """
-        Returns {"Authorization": "Bearer JWTToken"}
-        """
-        # TODO:
-        return {}
+    def _create_project(self) -> UUID:
+        r = self._post(f"/projects", {"name": self.project_name})
+        self.project_id = UUID(r["guid"])
+        return self.project_id
 
-def _parse_source(v: dict) -> Source:
-    pass
+    def _create_source(self, s: Source) -> UUID:
+        r = self._post(
+            f"/projects/{self.project_id}/datasources", source_to_def(s))
+        id = UUID(r["guid"])
+        s._registry_id = id
+        s._qualified_name = f"{self.project_name}__{s.name}"
+        return id
 
-def _parse_anchor(v: dict) -> FeatureAnchor:
-    pass
+    def _create_anchor(self, s: FeatureAnchor) -> UUID:
+        r = self._post(
+            f"/projects/{self.project_id}/anchors", anchor_to_def(s))
+        id = UUID(r["guid"])
+        s._registry_id = id
+        s._qualified_name = f"{self.project_name}__{s.name}"
+        return id
 
-def _parse_anchor_feature(v: dict) -> Feature:
-    pass
+    def _create_anchor_feature(self, anchor_name: str, s: Feature) -> UUID:
+        r = self._post(
+            f"/projects/{self.project_id}/anchors/{anchor_name}/features", feature_to_def(s))
+        id = UUID(r["guid"])
+        s._registry_id = id
+        s._qualified_name = f"{self.project_name}__{anchor_name}__{s.name}"
+        return id
 
-def _parse_derived_feature(v: dict) -> DerivedFeature:
-    pass
+    def _create_derived_feature(self, s: DerivedFeature) -> UUID:
+        r = self._post(
+            f"/projects/{self.project_id}/derivedfeatures", derived_feature_to_def(s))
+        id = UUID(r["guid"])
+        s._registry_id = id
+        s._qualified_name = f"{self.project_name}__{s.name}"
+        return id
+
+    def _get(self, path: str) -> dict:
+        return check(requests.get(f"{self.endpoint}{path}", headers=self._get_auth_header())).json()
+
+    def _post(self, path: str, body: dict) -> dict:
+        return check(requests.post(f"{self.endpoint}{path}", headers=self._get_auth_header(), json=body)).json()
+
+    def _get_auth_header(self) -> dict:
+        return {"Authorization": f'Bearer {self.credential.get_token(".default")}'}
+    
+    @classmethod
+    def _get_py_files(self, path: Path) -> List[Path]:
+        """Get all Python files under path recursively, excluding __init__.py"""
+        py_files = []
+        for item in path.glob('**/*.py'):
+            if "__init__.py" != item.name:
+                py_files.append(item)
+        return py_files
+
+    @classmethod
+    def _convert_to_module_path(self, path: Path, workspace_path: Path) -> str:
+        """Convert a Python file path to its module path so that we can import it later"""
+        prefix = os.path.commonprefix(
+            [path.resolve(), workspace_path.resolve()])
+        resolved_path = str(path.resolve())
+        module_path = resolved_path[len(prefix): -len(".py")]
+        # Convert features under nested folder to module name
+        # e.g. /path/to/pyfile will become path.to.pyfile
+        return (
+            module_path
+            .lstrip('/')
+            .replace("/", ".")
+        )
+
+    @classmethod
+    def _extract_features_from_context(self, anchor_list, derived_feature_list, result_path: Path) -> RepoDefinitions:
+        """Collect feature definitions from the context instead of python files"""
+        definitions = RepoDefinitions(
+            sources=set(),
+            features=set(),
+            transformations=set(),
+            feature_anchors=set(),
+            derived_features=set()
+        )
+        for derived_feature in derived_feature_list:
+            if isinstance(derived_feature, DerivedFeature):
+                definitions.derived_features.add(derived_feature)
+                definitions.transformations.add(
+                    vars(derived_feature)["transform"])
+            else:
+                raise RuntimeError(
+                    "Object cannot be parsed. `derived_feature_list` should be a list of `DerivedFeature`.")
+
+        for anchor in anchor_list:
+            # obj is `FeatureAnchor`
+            definitions.feature_anchors.add(anchor)
+            # add the source section of this `FeatureAnchor` object
+            definitions.sources.add(vars(anchor)['source'])
+            for feature in vars(anchor)['features']:
+                # get the transformation object from `Feature` or `DerivedFeature`
+                if isinstance(feature, Feature):
+                    # feature is of type `Feature`
+                    definitions.features.add(feature)
+                    definitions.transformations.add(vars(feature)["transform"])
+                else:
+                    raise RuntimeError("Object cannot be parsed.")
+
+        return definitions
+
+    @classmethod
+    def _extract_features(self, workspace_path: Path) -> RepoDefinitions:
+        """Collect feature definitions from the python file, convert them into feature config and save them locally"""
+        os.chdir(workspace_path)
+        # Add workspace path to system path so that we can load features defined in Python via import_module
+        sys.path.append(str(workspace_path))
+        definitions = RepoDefinitions(
+            sources=set(),
+            features=set(),
+            transformations=set(),
+            feature_anchors=set(),
+            derived_features=set()
+        )
+        for py_file in self._get_py_files(workspace_path):
+            module_path = self._convert_to_module_path(py_file, workspace_path)
+            module = importlib.import_module(module_path)
+            for attr_name in dir(module):
+                obj = getattr(module, attr_name)
+                if isinstance(obj, Source):
+                    definitions.sources.add(obj)
+                elif isinstance(obj, Feature):
+                    definitions.features.add(obj)
+                elif isinstance(obj, DerivedFeature):
+                    definitions.derived_features.add(obj)
+                elif isinstance(obj, FeatureAnchor):
+                    definitions.feature_anchors.add(obj)
+                elif isinstance(obj, Transformation):
+                    definitions.transformations.add(obj)
+        return definitions
+
+    @classmethod
+    def save_to_feature_config(self, workspace_path: Path, config_save_dir: Path):
+        """Save feature definition within the workspace into HOCON feature config files"""
+        repo_definitions = self._extract_features(workspace_path)
+        self._save_request_feature_config(repo_definitions, config_save_dir)
+        self._save_anchored_feature_config(repo_definitions, config_save_dir)
+        self._save_derived_feature_config(repo_definitions, config_save_dir)
+
+    @classmethod
+    def save_to_feature_config_from_context(self, anchor_list, derived_feature_list, local_workspace_dir: Path):
+        """Save feature definition within the workspace into HOCON feature config files from current context, rather than reading from python files"""
+        repo_definitions = self._extract_features_from_context(
+            anchor_list, derived_feature_list, local_workspace_dir)
+        self._save_request_feature_config(repo_definitions, local_workspace_dir)
+        self._save_anchored_feature_config(repo_definitions, local_workspace_dir)
+        self._save_derived_feature_config(repo_definitions, local_workspace_dir)
+
+    @classmethod
+    def _save_request_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
+        config_file_name = "feature_conf/auto_generated_request_features.conf"
+        tm = Template(
+            """
+// THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
+anchors: {
+    {% for anchor in feature_anchors %}
+        {% if anchor.source.name == "PASSTHROUGH" %}
+            {{anchor.to_feature_config()}}
+        {% endif %}
+    {% endfor %}
+}
+"""
+        )
+
+        request_feature_configs = tm.render(
+            feature_anchors=repo_definitions.feature_anchors)
+        config_file_path = os.path.join(local_workspace_dir, config_file_name)
+        write_to_file(content=request_feature_configs,
+                      full_file_name=config_file_path)
+
+    @classmethod
+    def _save_anchored_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
+        config_file_name = "feature_conf/auto_generated_anchored_features.conf"
+        tm = Template(
+            """
+// THIS FILE IS AUTO GENERATED. PLEASE DO NOT EDIT.
+anchors: {
+    {% for anchor in feature_anchors %}
+        {% if not anchor.source.name == "PASSTHROUGH" %}
+            {{anchor.to_feature_config()}}
+        {% endif %}
+    {% endfor %}
+}
+
+sources: {
+    {% for source in sources%}
+        {% if not source.name == "PASSTHROUGH" %}
+            {{source.to_feature_config()}}
+        {% endif %}
+    {% endfor %}
+}
+"""
+        )
+        anchored_feature_configs = tm.render(feature_anchors=repo_definitions.feature_anchors,
+                                             sources=repo_definitions.sources)
+        config_file_path = os.path.join(local_workspace_dir, config_file_name)
+        write_to_file(content=anchored_feature_configs,
+                      full_file_name=config_file_path)
+
+    @classmethod
+    def _save_derived_feature_config(self, repo_definitions: RepoDefinitions, local_workspace_dir="./"):
+        config_file_name = "feature_conf/auto_generated_derived_features.conf"
+        tm = Template(
+            """
+anchors: {}
+derivations: {
+    {% for derived_feature in derived_features %}
+        {{derived_feature.to_feature_config()}}
+    {% endfor %}
+}
+"""
+        )
+        derived_feature_configs = tm.render(
+            derived_features=repo_definitions.derived_features)
+        config_file_path = os.path.join(local_workspace_dir, config_file_name)
+        write_to_file(content=derived_feature_configs,
+                      full_file_name=config_file_path)
+
+
+def check(r):
+    if not r.ok:
+        raise RuntimeError(
+            f"Failed to call registry API, status is {r.status_code}, error is {r.text}")
+    return r
+
+
+def source_to_def(v: Source) -> dict:
+    ret = {}
+    if isinstance(v, HdfsSource):
+        ret = {
+            "name": v.name,
+            "sourceType": urlparse(v.path).scheme,
+            "path": v.path,
+        }
+    elif isinstance(v, JdbcSource):
+        ret = {
+            "name": v.name,
+            "sourceType": "jdbc",
+            "url": v.url,
+        }
+        if v.dbtable:
+            ret["dbtable"] = v.dbtable
+        if v.query:
+            ret["query"] = v.query
+        if v.auth:
+            ret["auth"] = v.auth
+    else:
+        raise ValueError("Unsupported source type")
+    if v.preprocessing:
+        ret["preprocessing"] = v.preprocessing
+    if v.event_timestamp_column:
+        ret["eventTimestampColumn"] = v.event_timestamp_column
+    if v.timestamp_format:
+        ret["timestampFormat"] = v.timestamp_format
+    if v.registry_tags:
+        ret["tags"] = v.registry_tags
+    return ret
+
+
+def dict_to_source(v: dict) -> Source:
+    id = UUID(v["guid"])
+    type = v["attributes"]["type"]
+    source = None
+    if type == "PASSTHROUGH":
+        source = InputContext()
+    elif v["attributes"]["type"] in ("wasbs", "wasb", "hdfs"):
+        source = HdfsSource(name=v["attributes"]["name"],
+                            path=v["attributes"]["path"],
+                            preprocessing=_correct_function_indentation(
+                                v["attributes"].get("preprocessing")),
+                            event_timestamp_column=v["attributes"].get(
+                                "eventTimestampColumn"),
+                            timestamp_format=v["attributes"].get(
+                                "timestampFormat"),
+                            registry_tags=v["attributes"].get("tags", {}))
+    elif type == "jdbc":
+        source = JdbcSource(name=v["attributes"]["name"],
+                            url=v["attributes"].get("url"),
+                            dbtable=v["attributes"].get("dbtable"),
+                            query=v["attributes"].get("query"),
+                            auth=v["attributes"].get("auth"),
+                            preprocessing=_correct_function_indentation(
+                                v["attributes"].get("preprocessing")),
+                            event_timestamp_column=v["attributes"].get(
+                                "eventTimestampColumn"),
+                            timestamp_format=v["attributes"].get(
+                                "timestampFormat"),
+                            registry_tags=v["attributes"].get("tags", {}))
+    else:
+        raise ValueError(f"Invalid source format {type}")
+    source._registry_id = id
+    source._qualified_name = v["attributes"]["qualifiedName"]
+    return source
+
+
+def anchor_to_def(v: FeatureAnchor) -> dict:
+    source_id = v.source._registry_id
+    ret = {
+        "name": v.name,
+        "sourceId": str(source_id),
+    }
+    if v.registry_tags:
+        ret["tags"] = v.registry_tags
+    return ret
+
+
+def dict_to_anchor(v: dict) -> FeatureAnchor:
+    ret = FeatureAnchor(name=v["attributes"]["name"],
+                        source=None,
+                        features=[],
+                        registry_tags=v["attributes"].get("tags", {}),
+                        __no_validate=True)
+    ret._source_id = UUID(v["attributes"]["source"]["guid"])
+    ret._features = [UUID(f["guid"]) for f in v["attributes"]["features"]]
+    ret._qualified_name = v["attributes"]["qualifiedName"]
+    ret._registry_id = UUID(v["guid"])
+    return ret
+
+
+def transformation_to_def(v: Transformation) -> dict:
+    if isinstance(v, ExpressionTransformation):
+        return {
+            "transformExpr": v.expr
+        }
+    elif isinstance(v, WindowAggTransformation):
+        ret = {
+            "defExpr": v.def_expr,
+        }
+        if v.agg_func:
+            ret["aggFunc"] = v.agg_func
+        if v.window:
+            ret["window"] = v.window
+        if v.group_by:
+            ret["groupBy"] = v.group_by
+        if v.filter:
+            ret["filter"] = v.filter
+        if v.limit:
+            ret["limit"] = v.limit
+        return ret
+    raise ValueError("Unsupported Transformation type")
+
+
+def dict_to_transformation(v: dict) -> Transformation:
+    if v is None:
+        return None
+    v = to_camel(v)
+    if 'transformExpr' in v:
+        # it's ExpressionTransformation
+        return ExpressionTransformation(v['transformExpr'])
+    elif 'defExpr' in v:
+        return WindowAggTransformation(agg_expr=v['defExpr'],
+                                       agg_func=v.get('aggFunc'),
+                                       window=v.get('window'),
+                                       group_by=v.get('groupBy'),
+                                       filter=v.get('filter'),
+                                       limit=v.get('limit'))
+    raise ValueError(f"Invalid transformation format {v}")
+
+
+def feature_type_to_def(v: FeatureType) -> dict:
+    return {
+        "type": v.type,
+        "tensorCategory": v.tensor_category,
+        "dimensionType": [value_type_to_str(t) for t in v.dimension_type],
+        "valType": value_type_to_str(v.val_type),
+    }
+
+
+def dict_to_feature_type(v: dict) -> FeatureType:
+    return FeatureType(val_type=str_to_value_type(v["valType"]),
+                       dimension_type=[str_to_value_type(
+                           s) for s in v["dimensionType"]],
+                       tensor_category=v["tensorCategory"],
+                       type=v["type"])
+
+
+def typed_key_to_def(v: TypedKey) -> dict:
+    ret = {
+        "keyColumn": v.key_column,
+        "keyColumnType": value_type_to_str(v.key_column_type)
+    }
+    if v.full_name:
+        ret["fullName"] = v.full_name
+    if v.description:
+        ret["description"] = v.description
+    if v.key_column_alias:
+        ret["keyColumnAlias"] = v.key_column_alias
+    return ret
+
+
+def dict_to_typed_key(v: dict) -> TypedKey:
+    v = to_camel(v)
+    return TypedKey(key_column=v["keyColumn"],
+                    key_column_type=str_to_value_type(v["keyColumnType"]),
+                    full_name=v.get("fullName"),
+                    description=v.get("description"),
+                    key_column_alias=v.get("keyColumnAlias"))
+
+
+def feature_to_def(v: Feature) -> dict:
+    ret = {
+        "name": v.name,
+        "featureType": feature_type_to_def(v.feature_type),
+        "key": [typed_key_to_def(k) for k in v.key],
+    }
+    if v.transform:
+        ret["attributes"]["transformation"] = transformation_to_def(
+            v.transform)
+    if v.registry_tags:
+        ret["attributes"]["tags"] = v.registry_tags
+    return ret
+
+
+def dict_to_feature(v: dict) -> Feature:
+    ret = Feature(name=v["attributes"]["name"],
+                feature_type=dict_to_feature_type(v["attributes"]["type"]),
+                key=[dict_to_typed_key(k) for k in v["attributes"]["key"]],
+                transform=dict_to_transformation(v["attributes"].get("transformation")),
+                registry_tags=v["attributes"].get("tags", {}))
+    ret._qualified_name = v["attributes"]["qualifiedName"]
+    ret._registry_id = UUID(v["guid"])
+    return ret
+
+
+def _get_type_name(v: Any) -> str:
+    if isinstance(v, Source):
+        return "feathr_source_v1"
+    elif isinstance(v, FeatureAnchor):
+        return "feathr_anchor_v1"
+    elif isinstance(v, DerivedFeature):
+        return "feathr_derived_feature_v1"
+    elif isinstance(v, Feature):
+        return "feathr_anchor_feature_v1"
+    raise TypeError("Invalid type")
+
+
+def _entity_to_ref(v: Any) -> dict:
+    return {
+        "guid": str(v._registry_id),
+        "typeName": _get_type_name(v),
+        "uniqueAttributes": {
+            "qualifiedName": v._qualified_name 
+        }
+    }
+
+
+def derived_feature_to_def(v: DerivedFeature) -> dict:
+    ret = {
+        "name": v.name,
+        "featureType": feature_type_to_def(v.feature_type),
+        "key": [typed_key_to_def(k) for k in v.key],
+        "inputAnchorFeatures": [_entity_to_ref(f) for f in v.input_features if not isinstance(f, DerivedFeature)],
+        "inputDerivedFeatures": [_entity_to_ref(f) for f in v.input_features if isinstance(f, DerivedFeature)],
+    }
+
+
+def dict_to_derived_feature(v: dict) -> DerivedFeature:
+    v["attributes"] = to_camel(v["attributes"])
+    ret = DerivedFeature(name=v["attributes"]["name"],
+                          feature_type=dict_to_feature_type(v["attributes"]["type"]),
+                          input_features=[],
+                          key=[dict_to_typed_key(k) for k in v["attributes"]["key"]],
+                          transform=dict_to_transformation(v["attributes"]["transformation"]),
+                          registry_tags=v["attributes"].get("tags", {}),
+                          __no_validate=True)
+    ret._input_anchor_features = [UUID(f["guid"]) for f in v["attributes"]["inputAnchorFeatures"]]
+    ret._input_derived_features = [UUID(f["guid"]) for f in v["attributes"]["inputDerivedFeatures"]]
+    ret._qualified_name = v["attributes"]["qualifiedName"]
+    ret._registry_id = UUID(v["guid"])
+    return ret
+
+class Relation:
+    def __init__(self, v: dict):
+        self.f = UUID(v["fromEntityId"])
+        self.t = UUID(v["toEntityId"])
+        self.type = v["relationshipType"]
+
+def dict_to_project(v: dict) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
+    entities = v["guidEntityMap"]
+    # Step 1, Extract each entity
+    sources = dict([(UUID(k), dict_to_source(entities[k])) for k in entities if entities[k]["typeName"]=="feathr_source_v1"])
+    anchors = dict([(UUID(k), dict_to_anchor(entities[k])) for k in entities if entities[k]["typeName"]=="feathr_anchor_v1"])
+    features = dict([(UUID(k), dict_to_feature(entities[k])) for k in entities if entities[k]["typeName"]=="feathr_anchor_feature_v1"])
+    derived_features = dict([(UUID(k), dict_to_derived_feature(entities[k])) for k in entities if entities[k]["typeName"]=="feathr_derived_feature_v1"])
+    # Step 2, Setup connections between extracted entities
+    # Step 2-1, Set up anchors
+    for k in anchors:
+        anchor = anchors[k]
+        anchor.source = sources[anchor._source_id]
+        anchor.features = [features[id] for id in anchor._features]
+    # Step 2-1, Set up derived features
+    for k in derived_features:
+        df = derived_features[k]
+        input_anchor_features = [features[id] for id in df._input_anchor_features]
+        input_derived_features = [derived_features[id] for id in df._input_derived_features]
+        df.input_features = input_anchor_features + input_derived_features
+    return (list(anchors.values()), list(derived_features.values()))
+
+
+def _correct_function_indentation(user_func: str) -> str:
+    """
+    The function read from registry might have the wrong indentation. We need to correct those indentations.
+    More specifically, we are using the inspect module to copy the function body for UDF for further submission. In that case, there will be situations like this:
+
+    def feathr_udf1(df)
+        return df
+
+            def feathr_udf2(df)
+                return df
+
+    For example, in Feathr test cases, there are similar patterns for `feathr_udf2`, since it's defined in another function body (the registry_test_setup method).
+    This is not an ideal way of dealing with that, but we'll keep it here until we figure out a better way.
+    """
+    if user_func is None:
+        return None
+    # if user_func is a string, turn it into a list of strings so that it can be used below
+    temp_udf_source_code = user_func.split('\n')
+    # assuming the first line is the function name
+    leading_space_num = len(
+        temp_udf_source_code[0]) - len(temp_udf_source_code[0].lstrip())
+    # strip the lines to make sure the function has the correct indentation
+    udf_source_code_striped = [line[leading_space_num:]
+                               for line in temp_udf_source_code]
+    # append '\n' back since it was deleted due to the previous split
+    udf_source_code = [line+'\n' for line in udf_source_code_striped]
+    return " ".join(udf_source_code)

@@ -14,7 +14,7 @@ from pyhocon import ConfigFactory
 
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
 
-from feathr.registry._feature_registry_purview import _FeatureRegistry
+from feathr.registry._feathr_registry_client import _FeatureRegistry
 from feathr.definition._materialization_utils import _to_materialization_config
 from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
@@ -176,12 +176,9 @@ class FeathrClient(object):
 
 
         # initialize registry
-        self.registry_delimiter = self.envutils.get_environment_variable_with_default(
-            'feature_registry', 'purview', 'delimiter')
-        self.azure_purview_name = self.envutils.get_environment_variable_with_default(
-            'feature_registry', 'purview', 'purview_name')
+        registry_endpoint = self.envutils.get_environment_variable_with_default("feature_registry", "endpoint")
         # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
-        self.registry = _FeatureRegistry(self.project_name, self.azure_purview_name, self.registry_delimiter, project_registry_tag, config_path = config_path, credential=self.credential)
+        self.registry = _FeatureRegistry(self.project_name, endpoint=registry_endpoint, credential=self.credential)
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
