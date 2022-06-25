@@ -297,11 +297,11 @@ def test_create():
     
 
 if __name__ == "__main__":
-    # test_parse_source()
-    # test_parse_anchor()
-    # test_parse_feature()
-    # test_parse_derived_feature()
-    # test_parse_project()
-    # test_registry_client_list_features()
-    # test_registry_client_load()
+    test_parse_source()
+    test_parse_anchor()
+    test_parse_feature()
+    test_parse_derived_feature()
+    test_parse_project()
+    test_registry_client_list_features()
+    test_registry_client_load()
     test_create()
