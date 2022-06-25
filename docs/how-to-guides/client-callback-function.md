@@ -30,7 +30,7 @@ An example on how to use it:
 async def callback(params):
     import httpx
     async with httpx.AsyncClient() as client:
-        response = await client.post('https://some-endpoint', json = payload)
+        response = await client.post('https://some-endpoint', json = params)
         return response
 
 params = {"param1":"value1", "param2":"value2"}
