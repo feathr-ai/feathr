@@ -5,7 +5,7 @@ import sys
 from urllib.parse import urlparse
 from uuid import UUID
 from azure.identity import DefaultAzureCredential
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from re import sub
 from jinja2 import Template
 
@@ -44,13 +44,17 @@ class _FeatureRegistry(FeathrRegistry):
             exclude_interactive_browser_credential=False) if credential is None else credential
         self.project_id = None
 
-    def register_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
-        """Registers features based on the current workspace
-
-                Args:
-                anchor_list: List of FeatureAnchors
-                derived_feature_list: List of DerivedFeatures
+    def register_features(self, workspace_path: Optional[Path] = None, from_context: bool = True, anchor_list=[], derived_feature_list=[]):
+        """Register Features for the specified workspace. 
+        Args:
+            workspace_path (str, optional): path to a workspace. Defaults to None, not used in this implementation.
+            from_context: whether the feature is from context (i.e. end users has to callFeathrClient.build_features()) or the feature is from a pre-built config file. Currently Feathr only supports register features from context.
+            anchor_list: The anchor list after feature build
+            derived_feature_list: the derived feature list after feature build
         """
+        if not from_context:
+            raise RuntimeError("Currently Feathr only supports registering features from context (i.e. you must call FeathrClient.build_features() before calling this function).")
+
         for anchor in anchor_list:
             source = anchor.source
             # 1. Create Source on the registry
