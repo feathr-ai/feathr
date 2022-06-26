@@ -139,7 +139,7 @@ class _FeatureRegistry(FeathrRegistry):
 
     def _post(self, path: str, body: dict) -> dict:
         logging.debug("PATH: ", path)
-        print("XXX ", json.dumps(body, indent=2))
+        logging.debug("BODY: ", json.dumps(body, indent=2))
         return check(requests.post(f"{self.endpoint}{path}", headers=self._get_auth_header(), json=body)).json()
 
     def _get_auth_header(self) -> dict:
