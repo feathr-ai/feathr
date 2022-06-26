@@ -349,11 +349,11 @@ def source_to_def(v: Source) -> dict:
             "type": "jdbc",
             "url": v.url,
         }
-        if v.dbtable:
+        if hasattr(v, "dbtable") and v.dbtable:
             ret["dbtable"] = v.dbtable
-        if v.query:
+        if hasattr(v, "query") and v.query:
             ret["query"] = v.query
-        if v.auth:
+        if hasattr(v, "auth") and v.auth:
             ret["auth"] = v.auth
     else:
         raise ValueError(f"Unsupported source type {v.__class__}")
