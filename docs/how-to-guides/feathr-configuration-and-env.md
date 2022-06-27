@@ -28,7 +28,7 @@ Feathr will get the configurations in the following order:
 
 1. If the key is set in the environment variable, Feathr will use the value of that environment variable
 2. If it's not set in the environment, then a value is retrieved from the feathr_config.yaml file with the same config key.
-3. If it's not available in the feathr_config.yaml file, Feathr will try to reterive the value from a key vault service. Currently only Azure Key Vault is supported.
+3. If it's not available in the feathr_config.yaml file, Feathr will try to retrieve the value from a key vault service. Currently only Azure Key Vault is supported.
 
 # A list of environment variables that Feathr uses
 

@@ -18,7 +18,7 @@ If the feature transformation can't be accomplished with a short line of express
 
 # Usage Guide
 
-Your data transformation can be composed of one or a few smaller tasks. Divide and conquer! For each individual task, check the following sections on how to acheive them. Then combine them. For example, we have a trip mileage column but it's in string form. We want to compare if it's a long trip(> 30 miles). So we need to cast it into double and then compare with 30. We can do `cast_double(mile_column) > 30`.
+Your data transformation can be composed of one or a few smaller tasks. Divide and conquer! For each individual task, check the following sections on how to achieve them. Then combine them. For example, we have a trip mileage column but it's in string form. We want to compare if it's a long trip(> 30 miles). So we need to cast it into double and then compare with 30. We can do `cast_double(mile_column) > 30`.
 
 ## Field accessing
 
@@ -48,7 +48,7 @@ You can concatenate string with `concat(str1, str2)`. For exmample, `concat("app
 
 ## Arithmetic Operations
 
-For data of numeric types, you can use arithmetic operators to perform opterations. Here are the supported operators: `+,-,*,/`
+For data of numeric types, you can use arithmetic operators to perform operations. Here are the supported operators: `+,-,*,/`
 
 ## Logical Operators
 
