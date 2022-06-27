@@ -36,5 +36,4 @@ params = {"param1":"value1", "param2":"value2"}
 client = FeathrClient(config_path)
 client.get_offline_features(observation_settings,feature_query,output_path, callback, params)
 
-
 ```
