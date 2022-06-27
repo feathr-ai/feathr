@@ -1,0 +1,39 @@
+from typing import Any
+from xmlrpc.client import Boolean
+
+from fastapi import Depends, HTTPException, status
+from access_control.db_rbac import DbRBAC
+
+from access_control.models import SUPER_ADMIN_SCOPE, AccessType, RoleType, User
+from access_control.authorize import authorize
+
+rbac = DbRBAC()
+
+class ForbiddenAccess(HTTPException):
+    def __init__(self, detail: Any = None) -> None:
+        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail, headers={"WWW-Authenticate": "Bearer"})
+
+
+def get_user(user: User = Depends(authorize)) -> User:
+    return user
+
+def project_read_access(project: str, user: User = Depends(authorize)) -> User:
+    return _project_access(project, user, AccessType.READ)
+
+def project_write_access(project: str, user: User = Depends(authorize)) -> User:
+    return _project_access(project, user, AccessType.WRITE)
+
+def project_manage_access(project: str, user: User = Depends(authorize)) -> User:
+    return _project_access(project, user, AccessType.MANAGE) 
+
+def _project_access(project:str, user: User, access: str):
+    if rbac.validate_project_access_users(project, user.preferred_username, access):
+        return user
+    else:
+        raise ForbiddenAccess(f"{access} privileges for project {project} required for user {user.preferred_username}")
+
+def global_admin_access(user: User = Depends(authorize)):
+    if user.preferred_username in rbac.global_admin:
+        return user
+    else:
+        raise ForbiddenAccess('Admin privileges required')

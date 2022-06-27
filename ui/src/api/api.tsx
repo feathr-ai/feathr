@@ -7,9 +7,9 @@ const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT + "/api/v1";
 const msalInstance = getMsalConfig();
 
 export const fetchDataSources = async (project: string) => {
-  const token = await getIdToken(msalInstance);
-  return Axios.get<DataSource[]>(
-    `${API_ENDPOINT}/projects/${project}/datasources?code=${token}`,
+  const axios = await authAxios(msalInstance);
+  return axios.get<DataSource[]>(
+    `${API_ENDPOINT}/projects/${project}/datasources`,
     { headers: {} }
   ).then((response) => {
     return response.data;
@@ -17,8 +17,8 @@ export const fetchDataSources = async (project: string) => {
 };
 
 export const fetchProjects = async () => {
-  const token = await getIdToken(msalInstance);
-  return Axios.get<[]>(`${API_ENDPOINT}/projects?code=${token}`, {
+  const axios = await authAxios(msalInstance);
+  return axios.get<[]>(`${API_ENDPOINT}/projects`, {
     headers: {},
   }).then((response) => {
     return response.data;
@@ -31,9 +31,9 @@ export const fetchFeatures = async (
   limit: number,
   keyword: string
 ) => {
-  const token = await getIdToken(msalInstance);
-  return Axios.get<Feature[]>(
-    `${API_ENDPOINT}/projects/${project}/features?code=${token}`,
+  const axios = await authAxios(msalInstance);
+  return axios.get<Feature[]>(
+    `${API_ENDPOINT}/projects/${project}/features`,
     {
       params: { keyword: keyword, page: page, limit: limit },
       headers: {},
