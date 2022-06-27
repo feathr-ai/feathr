@@ -52,7 +52,7 @@ setup(
         # using a version lower than that to workaround this issue
         "azure-core<=1.22.1",
         "typing_extensions>=4.2.0",
-        "asyncio"
+        "mock"
     ],
     tests_require=[
         'pytest',
