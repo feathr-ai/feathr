@@ -4,17 +4,13 @@ title: How to use callback function in feathr client
 parent: Feathr How-to Guides
 ---
 
-# How to use callback function in feathr client
-
-This doc shows how to build feathr registry docker image locally and publish to registry
-
 ## What is a callback function
 
-A callback function is a function that is sent to another function as an argument. It can be used to extend the function as per thr user needs.
+A callback function is a function that is sent to another function as an argument. It can be used to extend the function as per the user needs.
 
 ## How to use callback functions
 
-Currently these functions in feathr client support callbacks
+Currently below functions in feathr client support callback 
 
 - get_online_features
 - multi_get_online_features
@@ -38,6 +34,5 @@ params = {"param1":"value1", "param2":"value2"}
 # inside the notebook
 client = FeathrClient(config_path)
 client.get_offline_features(observation_settings,feature_query,output_path, callback, params)
-
 
 ```
