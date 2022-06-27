@@ -316,6 +316,13 @@ class Entity(ToDict):
             "typeName": str(self.attributes.entity_type),
             "attributes": self.attributes.to_dict(),
         }
+    
+    def to_min_repr(self) -> dict:
+        return {
+            'qualifiedName':self.qualified_name,
+            'guid':str(self.id),
+            'typeName':str(self.attributes.entity_type),
+        }
 
 
 class ProjectAttributes(Attributes):
@@ -437,6 +444,8 @@ class AnchorAttributes(Attributes):
         # if features:
         #     self.features = features
         self.tags = tags
+        if 'source' in kwargs:
+            self._source = kwargs['source']
 
     @property
     def entity_type(self) -> EntityType:

@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, FastAPI, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from registry import *
-from registry.db_registry import DbRegistry
+from registry.purview_registry import PurviewRegistry
 from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
 
 rp = "/"
@@ -16,7 +16,7 @@ except:
     pass
 print("Using API BASE: ", rp)
 
-registry = DbRegistry()
+registry = PurviewRegistry()
 app = FastAPI()
 router = APIRouter()
 

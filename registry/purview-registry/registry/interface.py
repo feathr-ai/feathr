@@ -1,8 +1,6 @@
 from abc import ABC, abstractclassmethod, abstractmethod
 from typing import Union
 from uuid import UUID
-from registry.database import DbConnection
-
 from registry.models import *
 
 
@@ -15,7 +13,7 @@ class Registry(ABC):
         pass
 
     @abstractmethod
-    def get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
+    def get_entity(self, id_or_name: Union[str, UUID],recursive = False) -> Entity:
         """
         Get one entity by its id or qualified name
         """
