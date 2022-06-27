@@ -51,14 +51,11 @@ setup(
         # https://github.com/Azure/azure-sdk-for-python/pull/22891
         # using a version lower than that to workaround this issue
         "azure-core<=1.22.1",
-        "typing_extensions>=4.2.0",
-<<<<<<< HEAD
-        "mock"
-=======
->>>>>>> bc6b9c324c95c9b95d65e1b699abd9a982d9b9ec
+        "typing_extensions>=4.2.0"
     ],
     tests_require=[
         'pytest',
+        'mock'
     ],
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']

@@ -14,9 +14,5 @@ google>=3.0.0
 google-api-python-client>=2.41.0
 azure-keyvault-secrets
 confluent-kafka
-<<<<<<< HEAD
 azure-core<=1.22.1
 mock
-=======
-azure-core<=1.22.1
->>>>>>> bc6b9c324c95c9b95d65e1b699abd9a982d9b9ec
