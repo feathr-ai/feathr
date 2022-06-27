@@ -1,6 +1,6 @@
 import os
 import asyncio
-import mock
+import unittest.mock as mock
 import time
 from subprocess import call
 from datetime import datetime, timedelta

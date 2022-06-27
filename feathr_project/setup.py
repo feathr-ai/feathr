@@ -55,7 +55,6 @@ setup(
     ],
     tests_require=[
         'pytest',
-        'mock'
     ],
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
