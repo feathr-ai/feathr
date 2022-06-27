@@ -120,7 +120,7 @@ const FeatureList: React.FC = () => {
         </Select>
       </Form.Item>
       <Input placeholder="keyword" style={ { width: "10%", marginLeft: "5px" } }
-             onChange={ (e) => onKeywordChange(e.target.value) } onPressEnter={ fetchData } />
+             onChange={ (e) => onKeywordChange(e.target.value) } onPressEnter={ onClickSearch } />
       <Button onClick={ onClickSearch } type="primary" style={ { marginLeft: "5px" } }>Search</Button>
       <Table
         dataSource={ tableData }
