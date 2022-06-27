@@ -142,7 +142,7 @@ class PurviewRegistry(Registry):
         """
         Get a project and everything inside of it, both entities and edges
         """
-        pass
+        return self.get_entity(id_or_name,True)
 
     def search_entity(self,
                       keyword: str,
