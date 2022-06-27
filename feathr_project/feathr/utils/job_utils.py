@@ -23,7 +23,7 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None,
         tmp_dir = tempfile.TemporaryDirectory()
         local_dir_path = tmp_dir.name
         
-    client.feathr_spark_laucher.download_result(result_path=res_url, local_folder=local_dir_path)
+    client.feathr_spark_launcher.download_result(result_path=res_url, local_folder=local_dir_path)
     dataframe_list = []
     # by default the result are in avro format
     if format:
