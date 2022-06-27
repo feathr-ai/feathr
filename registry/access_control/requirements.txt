@@ -1,0 +1,4 @@
+pymssql
+fastapi
+uvicorn
+pyjwt
