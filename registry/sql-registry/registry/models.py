@@ -16,7 +16,7 @@ def to_snake(d, level: int = 0):
         raise ValueError("Too many nested levels")
     if isinstance(d, str):
         d = d[:100]
-        return re.sub(r'([A-Z]\w+$)', r'_\1', d).lower()
+        return re.sub(r'(?<!^)(?=[A-Z])', '_', d).lower()
     if isinstance(d, list):
         d = d[:100]
         return [to_snake(i, level + 1) if isinstance(i, (dict, list)) else i for i in d]
@@ -673,10 +673,10 @@ class ProjectDef:
 
 class SourceDef:
     def __init__(self,
-                 qualified_name: str,
                  name: str,
                  path: str,
                  type: str,
+                 qualified_name: str = "",
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
@@ -702,9 +702,9 @@ class SourceDef:
 
 class AnchorDef:
     def __init__(self,
-                 qualified_name: str,
                  name: str,
                  source_id: Union[str, UUID],
+                 qualified_name: str = "",
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
@@ -720,11 +720,11 @@ class AnchorDef:
 
 class AnchorFeatureDef:
     def __init__(self,
-                 qualified_name: str,
                  name: str,
                  feature_type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
                  key: list[Union[dict, TypedKey]],
+                 qualified_name: str = "",
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
@@ -744,13 +744,13 @@ class AnchorFeatureDef:
 
 class DerivedFeatureDef:
     def __init__(self,
-                 qualified_name: str,
                  name: str,
                  feature_type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
                  key: list[Union[dict, TypedKey]],
                  input_anchor_features: list[Union[str, UUID]],
                  input_derived_features: list[Union[str, UUID]],
+                 qualified_name: str = "",
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
