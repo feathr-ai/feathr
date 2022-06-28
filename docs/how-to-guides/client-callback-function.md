@@ -10,7 +10,13 @@ A callback function is a function that is sent to another function as an argumen
 
 ## How to use callback functions
 
-Currently the below functions in feathr client support passing a callback as an argument:
+We can pass a callback function when initializing the feathr client.
+
+```python
+client = FeathrClient(config_path, callback)
+```
+
+The below functions accept an optional parameters named **params**. params is a dictionary where user can pass the arguments for the callback function.
 
 - get_online_features
 - multi_get_online_features
@@ -18,19 +24,15 @@ Currently the below functions in feathr client support passing a callback as an 
 - monitor_features
 - materialize_features
 
-These functions accept two optional parameters named **callback** and **params**.
-callback is of type function and params is a dictionary where user can pass the arguments for the callback function.
-
 An example on how to use it:
 
 ```python
 # inside notebook
-client = FeathrClient(config_path)
-client.get_offline_features(observation_settings,feature_query,output_path, callback, params)
-
-# users can define their own callback function and params
+client = FeathrClient(config_path, callback)
 params = {"param1":"value1", "param2":"value2"}
+client.get_offline_features(observation_settings,feature_query,output_path, params)
 
+# users can define their own callback function
 async def callback(params):
     import httpx
     async with httpx.AsyncClient() as requestHandler:

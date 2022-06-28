@@ -46,7 +46,7 @@ def test_feathr_get_offline_features_with_parquet():
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path,
-                                execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"})
+                                execution_configurations=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"})
                                 )
 
     # assuming the job can successfully run; otherwise it will throw exception
@@ -91,7 +91,7 @@ def test_feathr_get_offline_features_with_delta_lake():
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path,
-                                execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "delta", "spark.feathr.outputFormat": "delta"})
+                                execution_configurations=SparkExecutionConfiguration({"spark.feathr.inputFormat": "delta", "spark.feathr.outputFormat": "delta"})
                                 )
 
     # assuming the job can successfully run; otherwise it will throw exception

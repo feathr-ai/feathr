@@ -153,7 +153,7 @@ def test_get_offline_features_verbose():
                                 observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path,
-                                execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}),
+                                execution_configurations=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}),
                                 verbose=True
                         )
 

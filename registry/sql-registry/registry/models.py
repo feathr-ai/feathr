@@ -6,7 +6,7 @@ import json
 import re
 
 
-def _to_snake(d, level: int = 0):
+def to_snake(d, level: int = 0):
     """
     Convert `string`, `list[string]`, or all keys in a `dict` into snake case
     The maximum length of input string or list is 100, or it will be truncated before being processed, for dict, the exception will be thrown if it has more than 100 keys.
@@ -16,13 +16,13 @@ def _to_snake(d, level: int = 0):
         raise ValueError("Too many nested levels")
     if isinstance(d, str):
         d = d[:100]
-        return re.sub(r'([A-Z]\w+$)', r'_\1', d).lower()
+        return re.sub(r'(?<!^)(?=[A-Z])', '_', d).lower()
     if isinstance(d, list):
         d = d[:100]
-        return [_to_snake(i, level + 1) if isinstance(i, (dict, list)) else i for i in d]
+        return [to_snake(i, level + 1) if isinstance(i, (dict, list)) else i for i in d]
     if len(d) > 100:
         raise ValueError("Dict has too many keys")
-    return {_to_snake(a, level + 1): _to_snake(b, level + 1) if isinstance(b, (dict, list)) else b for a, b in d.items()}
+    return {to_snake(a, level + 1): to_snake(b, level + 1) if isinstance(b, (dict, list)) else b for a, b in d.items()}
 
 
 def _to_type(value, type):
@@ -39,10 +39,10 @@ def _to_type(value, type):
         if hasattr(type, "new"):
             try:
                 # The convention is to use `new` method to create the object from a dict
-                return type.new(**_to_snake(value))
+                return type.new(**to_snake(value))
             except TypeError:
                 pass
-        return type(**_to_snake(value))
+        return type(**to_snake(value))
     if issubclass(type, Enum):
         try:
             n = int(value)
@@ -140,6 +140,12 @@ class FeatureType(ToDict):
         self.dimension_type = _to_type(dimension_type, ValueType)
         self.val_type = _to_type(val_type, ValueType)
 
+    def __eq__(self, o: object) -> bool:
+        return self.type == o.type \
+            and self.tensor_category == o.tensor_category \
+            and self.dimension_type == o.dimension_type \
+            and self.val_type == o.val_type
+
     def to_dict(self) -> dict:
         return {
             "type": self.type.name,
@@ -162,6 +168,13 @@ class TypedKey(ToDict):
         self.description = description
         self.key_column_alias = key_column_alias
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, TypedKey):
+            return False
+        return self.key_column == o.key_column \
+            and self.key_column_type == o.key_column_type \
+            and self.key_column_alias == o.key_column_alias
+    
     def to_dict(self) -> dict:
         ret = {
             "key_column": self.key_column,
@@ -193,6 +206,11 @@ class ExpressionTransformation(Transformation):
     def __init__(self, transform_expr: str):
         self.transform_expr = transform_expr
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, ExpressionTransformation):
+            return False
+        return self.transform_expr == o.transform_expr
+
     def to_dict(self) -> dict:
         return {
             "transform_expr": self.transform_expr
@@ -214,6 +232,16 @@ class WindowAggregationTransformation(Transformation):
         self.filter = filter
         self.limit = limit
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, WindowAggregationTransformation):
+            return False
+        return self.def_expr == o.def_expr \
+            and self.agg_func == o.agg_func \
+            and self.window == o.window \
+            and self.group_by == o.group_by \
+            and self.filter == o.filter \
+            and self.limit == o.limit
+
     def to_dict(self) -> dict:
         ret = {
             "def_expr": self.def_expr,
@@ -234,6 +262,11 @@ class WindowAggregationTransformation(Transformation):
 class UdfTransformation(Transformation):
     def __init__(self, name: str):
         self.name = name
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, UdfTransformation):
+            return False
+        return self.name == o.name
 
     def to_dict(self) -> dict:
         return {
@@ -299,7 +332,7 @@ class Entity(ToDict):
             self.attributes = attributes
         else:
             self.attributes = Attributes.new(
-                entity_type, **_to_snake(attributes))
+                entity_type, **to_snake(attributes))
 
     def get_ref(self) -> EntityRef:
         return EntityRef(self.id,
@@ -432,9 +465,9 @@ class AnchorAttributes(Attributes):
         self._source = None
         self._features = []
         # if source is not None:
-        #     self._source = source.get_ref()
-        # if len(features)>0:
-        #     self._set_feature(features)
+        #     self._source = _to_type(source, Entity).get_ref()
+        # if features:
+        #     self.features = features
         self.tags = tags
 
     @property
@@ -522,8 +555,8 @@ class DerivedFeatureAttributes(Attributes):
                  type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
                  key: list[Union[dict, TypedKey]],
-                 # input_anchor_features: list[Union[dict, EntityRef, Entity]] = [],
-                 # input_derived_features: list[Union[dict, EntityRef, Entity]] = [],
+                 input_anchor_features: list[Union[dict, EntityRef, Entity]] = [],
+                 input_derived_features: list[Union[dict, EntityRef, Entity]] = [],
                  tags: dict = {},
                  **kwargs):
         self.qualified_name = qualified_name
@@ -534,8 +567,6 @@ class DerivedFeatureAttributes(Attributes):
         self._input_anchor_features = []
         self._input_derived_features = []
         self.tags = tags
-        # self._set_input_anchor_features(input_anchor_features)
-        # self._set_input_derived_features(input_derived_features)
 
     @property
     def entity_type(self) -> EntityType:
@@ -546,22 +577,27 @@ class DerivedFeatureAttributes(Attributes):
         return self._input_anchor_features + self._input_derived_features
 
     @input_features.setter
-    def input_features(self, v: Union[dict, Entity]):
+    def input_features(self, input_features_list: Union[dict, Entity, EntityRef]):
         self._input_anchor_features = []
         self._input_derived_features = []
-        for f in v:
-            e = None
-            if isinstance(f, Entity):
-                e = f
-            elif isinstance(f, dict):
-                e = _to_type(f, Entity)
+        for feature in input_features_list:
+            entity = None
+            if isinstance(feature, EntityRef):
+                entity = feature
+            elif isinstance(feature, Entity):
+                entity = feature.get_ref()
+            elif isinstance(feature, dict):
+                try:
+                    entity = _to_type(feature, Entity).get_ref()
+                except:
+                    entity = _to_type(feature, EntityRef)
             else:
-                raise TypeError(f)
+                raise TypeError(feature)
 
-            if e.entity_type == EntityType.AnchorFeature:
-                self._input_anchor_features.append(e)
-            elif e.entity_type == EntityType.DerivedFeature:
-                self._input_derived_features.append(e)
+            if entity.entity_type == EntityType.AnchorFeature:
+                self._input_anchor_features.append(entity)
+            elif entity.entity_type == EntityType.DerivedFeature:
+                self._input_derived_features.append(entity)
             else:
                 pass
 
@@ -569,37 +605,9 @@ class DerivedFeatureAttributes(Attributes):
     def input_anchor_features(self):
         return self._input_anchor_features
 
-    # @input_anchor_features.setter
-    # def input_anchor_features(self, v):
-    #     self._input_anchor_features = []
-    #     for f in v:
-    #         if isinstance(f, Entity):
-    #             self._input_anchor_features.append(f.get_ref())
-    #         elif isinstance(f, EntityRef):
-    #             self._input_anchor_features.append(f)
-    #         elif isinstance(f, dict):
-    #             self._input_anchor_features.append(
-    #                 to_type(f, Entity).get_ref())
-    #         else:
-    #             raise TypeError(f)
-
     @property
     def input_derived_features(self):
         return self._input_derived_features
-
-    # @input_derived_features.setter
-    # def input_derived_features(self, v):
-    #     self._input_derived_features = []
-    #     for f in v:
-    #         if isinstance(f, Entity):
-    #             self._input_derived_features.append(f.get_ref())
-    #         elif isinstance(f, EntityRef):
-    #             self._input_derived_features.append(f)
-    #         elif isinstance(f, dict):
-    #             self._input_derived_features.append(
-    #                 to_type(f, Entity).get_ref())
-    #         else:
-    #             raise TypeError(f)
 
     def to_dict(self) -> dict:
         return {
@@ -608,8 +616,8 @@ class DerivedFeatureAttributes(Attributes):
             "type": self.type.to_dict(),
             "transformation": self.transformation.to_dict(),
             "key": list([k.to_dict() for k in self.key]),
-            "input_anchor_features": [e.get_ref().to_dict() for e in self.input_anchor_features],
-            "input_derived_features": [e.get_ref().to_dict() for e in self.input_derived_features],
+            "input_anchor_features": [e.to_dict() for e in self.input_anchor_features],
+            "input_derived_features": [e.to_dict() for e in self.input_derived_features],
             "tags": self.tags,
         }
 
@@ -654,18 +662,21 @@ class EntitiesAndRelations(ToDict):
 
 
 class ProjectDef:
-    def __init__(self, qualified_name: str, tags: dict = {}):
+    def __init__(self, name: str, qualified_name: str = "", tags: dict = {}):
+        self.name = name
         self.qualified_name = qualified_name
-        self.name = qualified_name
         self.tags = tags
+    
+    def to_attr(self) -> ProjectAttributes:
+        return ProjectAttributes(name=self.name, tags=self.tags)
 
 
 class SourceDef:
     def __init__(self,
-                 qualified_name: str,
                  name: str,
                  path: str,
                  type: str,
+                 qualified_name: str = "",
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
@@ -679,26 +690,41 @@ class SourceDef:
         self.timestamp_format = timestamp_format
         self.tags = tags
 
+    def to_attr(self) -> SourceAttributes:
+        return SourceAttributes(qualified_name=self.qualified_name,
+                                name=self.name,
+                                type=self.type,
+                                path=self.path,
+                                preprocessing=self.preprocessing,
+                                event_timestamp_column=self.event_timestamp_column,
+                                timestamp_format=self.timestamp_format,
+                                tags=self.tags)
 
 class AnchorDef:
     def __init__(self,
-                 qualified_name: str,
                  name: str,
                  source_id: Union[str, UUID],
+                 qualified_name: str = "",
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
         self.source_id = _to_uuid(source_id)
         self.tags = tags
 
+    def to_attr(self, source: EntityRef) -> AnchorAttributes:
+        attr = AnchorAttributes(qualified_name=self.qualified_name,
+                                name=self.name,
+                                tags=self.tags)
+        attr.source = source
+        return attr
 
 class AnchorFeatureDef:
     def __init__(self,
-                 qualified_name: str,
                  name: str,
                  feature_type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
                  key: list[Union[dict, TypedKey]],
+                 qualified_name: str = "",
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
@@ -707,16 +733,24 @@ class AnchorFeatureDef:
         self.key = _to_type(key, TypedKey)
         self.tags = tags
 
+    def to_attr(self) -> AnchorFeatureAttributes:
+        return AnchorFeatureAttributes(qualified_name=self.qualified_name,
+                                name=self.name,
+                                type=self.feature_type,
+                                transformation=self.transformation,
+                                key=self.key,
+                                tags=self.tags)
+
 
 class DerivedFeatureDef:
     def __init__(self,
-                 qualified_name: str,
                  name: str,
                  feature_type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
                  key: list[Union[dict, TypedKey]],
                  input_anchor_features: list[Union[str, UUID]],
                  input_derived_features: list[Union[str, UUID]],
+                 qualified_name: str = "",
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
@@ -726,3 +760,14 @@ class DerivedFeatureDef:
         self.input_anchor_features = _to_uuid(input_anchor_features)
         self.input_derived_features = _to_uuid(input_derived_features)
         self.tags = tags
+
+    def to_attr(self, input_features: list[EntityRef]) -> DerivedFeatureAttributes:
+        attr = DerivedFeatureAttributes(qualified_name=self.qualified_name,
+                                name=self.name,
+                                type=self.feature_type,
+                                transformation=self.transformation,
+                                key=self.key,
+                                tags=self.tags)
+        attr.input_features = input_features
+        return attr
+
