@@ -92,7 +92,6 @@ class PurviewRegistry(Registry):
         return [self.get_entity(x,recursive) for x in ids]
 
     def get_entity_id(self, id_or_name: Union[str, UUID]) -> UUID:
-        print(id_or_name)
         try:
             id = _to_uuid(id_or_name)
             return id
@@ -229,7 +228,7 @@ class PurviewRegistry(Registry):
         project_entity = self.get_entity(project_id)
         anchor_entity = self.get_entity(anchor_id)
         anchor_feature_entity = self.get_entity(anchor_feature_entity.guid)
-        source_entity = self.get_entity(anchor_entity.attributes.source['guid'])
+        source_entity = self.get_entity(anchor_entity.id)
 
         project_contains_feature_relation = self._generate_relation_pairs(
             project_entity, anchor_feature_entity, Label_Contains)

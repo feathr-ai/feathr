@@ -7,7 +7,7 @@ from registry import *
 from registry.purview_registry import PurviewRegistry
 from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
 
-rp = "/"
+rp = "/v1"
 try:
     rp = os.environ["API_BASE"]
     if rp[0] != '/':
@@ -16,7 +16,7 @@ except:
     pass
 print("Using API BASE: ", rp)
 
-registry = PurviewRegistry()
+registry = PurviewRegistry("feathrazuretest3-purview1")
 app = FastAPI()
 router = APIRouter()
 
@@ -50,10 +50,10 @@ def get_project_datasources(project: str) -> list:
 @router.get("/projects/{project}/features")
 def get_project_features(project: str, keyword: Optional[str] = None) -> list:
     if keyword is None:
-        p = registry.get_entity(project)
+        p = registry.get_entity(project,True)
         feature_ids = [s.id for s in p.attributes.anchor_features] + \
             [s.id for s in p.attributes.derived_features]
-        features = registry.get_entities(feature_ids)
+        features = registry.get_entities(feature_ids,True)
         return list([e.to_dict() for e in features])
     else:
         efs = registry.search_entity(
@@ -65,7 +65,7 @@ def get_project_features(project: str, keyword: Optional[str] = None) -> list:
 
 @router.get("/features/{feature}")
 def get_feature(feature: str) -> dict:
-    e = registry.get_entity(feature)
+    e = registry.get_entity(feature,True)
     if e.entity_type not in [EntityType.DerivedFeature, EntityType.AnchorFeature]:
         raise HTTPException(
             status_code=404, detail=f"Feature {feature} not found")
