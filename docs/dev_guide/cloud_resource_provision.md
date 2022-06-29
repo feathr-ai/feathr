@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Cloud Resource Provisioning
-parent: Feathr Developer Guides
+parent: Developer Guides
 ---
 # Cloud Resource Provisioning
 

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Cloud Integration Test/CI Pipeline
-parent: Feathr Developer Guides
+parent: Developer Guides
 ---
 # Cloud Integration Test/CI Pipeline
 

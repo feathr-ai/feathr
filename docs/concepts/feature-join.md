@@ -1,42 +1,41 @@
 ---
 layout: default
-title: Getting Historical Features in Feathr
+title: Getting Historical Features
 parent: Feathr Concepts
 ---
 
 # Feature Join
+
 ## Intuitions of Frame Join
-Observation dataset has 2 records as below, and we want to use it as the 'spine' dataset, joining two 
-features onto it:
 
-1) Feature 'page_view_count' from dataset 'page_view_data'
+Observation dataset has 2 records as below, and we want to use it as the 'spine' dataset, joining two features onto it:
 
-2) Feature 'like_count' from dataset 'like_count_data' 
+1) Feature `page_view_count` from dataset `page_view_data`
 
-The Feathr feature join in this case, will use the field 'id' as join key of the observation data, and also consider the timestamp of each row during the join, making sure the joined feature values are collected **before** the observation_time of each row.
+2) Feature `like_count` from dataset `like_count_data`
 
-| id | observe_time | Label 
-| --- | --- | --- 
-| 1 | 2022-01-01 | Yes 
-| 1 | 2022-01-02 | Yes 
-| 2 | 2022-01-02 | No 
+The Feathr feature join in this case, will use the field `id` as join key of the observation data, and also consider the timestamp of each row during the join, making sure the joined feature values are collected **before** the observation_time of each row.
 
+| id | observe_time | Label |
+| --- | --- | --- |
+| 1 | 2022-01-01 | Yes |
+| 1 | 2022-01-02 | Yes |
+| 2 | 2022-01-02 | No  |
 
-Dataset 'page_view_data' contains “page_view_count” of each user at a given time:
+Dataset `page_view_data` contains `page_view_count` of each user at a given time:
 
 | UserId | log_time | page_view_count |
-| --- | --- | --- | 
+| --- | --- | --- |
 |1 | 2022-01-01 | 101 |
 |1 | 2022-01-02 | 102 |
 |1 | 2022-01-03 | 103 |
 |2 | 2022-01-02 | 200 |
 |3 | 2022-01-02 | 300 |
 
-
-Dataset 'like_count_data' contains "like_count" of each user at a given time:
+Dataset `like_count_data` contains `like_count` of each user at a given time:
 
 | UserId | updated_time | 'like_count' |
-| --- | --- | --- | 
+| --- | --- | --- |
 |1 | 2022-01-01 | 11 |
 |1 | 2022-01-02 | 12 |
 |1 | 2022-01-03 | 13 |
@@ -51,8 +50,7 @@ The expected joined output, a.k.a. training dataset would be assuming feature:
 |1 | 2022-01-02 | Yes | 102 | 12 |
 |2 | 2022-01-02 | No | 200 | 20
 
-Note: In the above example, feature f_page_view_count and f_like_count are defined as simply a reference of field
-'page_view_count' and 'like_count' respectively. Timestamp in these 3 datasets are considered automatically.
+Note: In the above example, feature `f_page_view_count` and `f_like_count` are defined as simply a reference of field `page_view_count` and `like_count` respectively. Timestamp in these 3 datasets are considered automatically.
 
 ## Feature join config
 
@@ -91,4 +89,5 @@ List of feature names to be joined with the observation data. They must be pre-d
 The time information of the observation data used to compare with the feature's timestamp during the join.
 
 ## FeatureQuery
+
 After you have defined all the features, you probably don't want to use all of them in this particular program. In this case, instead of putting every features in this `FeatureQuery` part, you can just put a selected list of features. Note that they have to be of the same key.
