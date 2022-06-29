@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feathr Job Configuration
-parent: Feathr How-to Guides
+parent: How-to Guides
 ---
 
 # Feathr Job Configuration

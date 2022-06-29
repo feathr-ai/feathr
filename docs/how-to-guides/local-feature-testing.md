@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feathr Local Feature Testing Guide
-parent: Feathr How-to Guides
+parent: How-to Guides
 ---
 
 # Local Feature Testing Guide

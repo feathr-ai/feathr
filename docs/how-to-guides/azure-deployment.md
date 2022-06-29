@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Azure Resource Provisioning
-parent: Feathr How-to Guides
+parent: How-to Guides
 ---
 
 
