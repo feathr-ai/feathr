@@ -10,7 +10,7 @@ class BackfillTime:
     Attributes:
         start: start time of the backfill, inclusive.
         end: end time of the backfill, inclusive.
-        step: duration of each backfill step. e.g. if daily, use timedelta(days=1)
+        step: duration of each backfill step. e.g. if you want to materialize features on daily basis, use timedelta(days=1)
     """
     def __init__(self, start: datetime, end: datetime, step: timedelta):
         self.start = start

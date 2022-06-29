@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Input, Menu, message, Popconfirm, Select, Tooltip, Form, Table } from 'antd';
+import { Button, Dropdown, Input, Menu, Select, Tooltip, Form, Table } from 'antd';
 import { Feature } from "../models/model";
-import { deleteFeature, fetchProjects, fetchFeatures } from "../api";
+import { fetchProjects, fetchFeatures } from "../api";
 
 const FeatureList: React.FC = () => {
   const navigate = useNavigate();
@@ -58,17 +58,6 @@ const FeatureList: React.FC = () => {
                   navigate(`/projects/${ project }/features/${ row.guid }`)
                 } }>Edit</Button>
               </Menu.Item>
-              <Menu.Item key="delete">
-                <Popconfirm
-                  placement="left"
-                  title="Are you sure to delete?"
-                  onConfirm={ () => {
-                    onDelete(row.guid)
-                  } }
-                >
-                  Delete
-                </Popconfirm>
-              </Menu.Item>
             </Menu>
           )
         } }>
@@ -120,18 +109,6 @@ const FeatureList: React.FC = () => {
     fetchData(project);
   };
 
-  const onDelete = async (id: string) => {
-    setLoading(true);
-    const res = await deleteFeature(id);
-    if (res.status === 200) {
-      message.success(`Feature ${ id } deleted`);
-    } else {
-      message.error("Failed to delete feature with id {id}");
-    }
-    setLoading(false);
-    fetchData(project);
-  };
-
   return (
     <div>
       <Form.Item label="Select Project: "
@@ -143,7 +120,7 @@ const FeatureList: React.FC = () => {
         </Select>
       </Form.Item>
       <Input placeholder="keyword" style={ { width: "10%", marginLeft: "5px" } }
-             onChange={ (e) => onKeywordChange(e.target.value) } onPressEnter={ fetchData } />
+             onChange={ (e) => onKeywordChange(e.target.value) } onPressEnter={ onClickSearch } />
       <Button onClick={ onClickSearch } type="primary" style={ { marginLeft: "5px" } }>Search</Button>
       <Table
         dataSource={ tableData }
