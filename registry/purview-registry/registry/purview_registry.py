@@ -1,12 +1,14 @@
 
+from http.client import CONFLICT, HTTPException
 import itertools
 import re
-from typing import Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union
+from urllib.error import HTTPError
 from uuid import UUID
 
 from azure.identity import DefaultAzureCredential
 from loguru import logger
-from numpy import allclose
+from numpy import allclose, typename
 from pyapacheatlas.auth.azcredential import AzCredentialWrapper
 from pyapacheatlas.core import (AtlasEntity, AtlasProcess,
                                 PurviewClient)
@@ -15,7 +17,7 @@ from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
 
 from registry.interface import Registry
-from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, ProjectDef, RelationshipType, SourceDef, _to_uuid
+from registry.models import AnchorDef, AnchorFeatureDef, Attributes, DerivedFeatureDef, Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, ProjectDef, RelationshipType, SourceDef, _to_uuid
 Label_Contains = "CONTAINS"
 Label_BelongsTo = "BELONGSTO"
 Label_Consumes = "CONSUMES"
@@ -50,16 +52,7 @@ class PurviewRegistry(Registry):
         if not id:
             return None
         purview_entity =  self.purview_client.get_entity(id)['entities'][0]
-        entity_type = EntityType.new(purview_entity['typeName'])
-        if entity_type in [EntityType.AnchorFeature,EntityType.DerivedFeature]:
-            if "type" in purview_entity['attributes']:
-                conf = ConfigFactory.parse_string(purview_entity['attributes']['type'])
-                purview_entity['attributes']['type'] = dict(conf)
-        base_entity =  Entity(
-            purview_entity["guid"],
-            purview_entity['attributes']["qualifiedName"],
-            entity_type,
-            attributes={x:y for x, y in purview_entity['attributes'].items() if y})  
+        base_entity = self._atlasEntity_to_entity(purview_entity)  
         if recursive: 
             if base_entity.entity_type == EntityType.Project:
                 edges = self.get_neighbors(base_entity.id, RelationshipType.Contains)
@@ -83,6 +76,20 @@ class PurviewRegistry(Registry):
                 features = self.get_entities(feature_ids)
                 base_entity.attributes.input_features = features
                 return base_entity
+        return base_entity
+
+    def _atlasEntity_to_entity(self, purview_entity):
+        entity_type = EntityType.new(purview_entity['typeName'])
+        if entity_type in [EntityType.AnchorFeature,EntityType.DerivedFeature]:
+            if "type" in purview_entity['attributes']:
+                conf = ConfigFactory.parse_string(purview_entity['attributes']['type'])
+                purview_entity['attributes']['type'] = dict(conf)
+        base_entity =  Entity(
+            purview_entity["guid"],
+            purview_entity['attributes']["qualifiedName"],
+            entity_type,
+            attributes={x:y for x, y in purview_entity['attributes'].items() if y})
+            
         return base_entity
                 
     def get_entities(self, ids: list[UUID],recursive=False) -> list[Entity]:
@@ -156,7 +163,7 @@ class PurviewRegistry(Registry):
         attrs = definition.to_attr().to_dict()
         feathr_project_entity = AtlasEntity(
             name=attrs['name'],
-            qualified_name=attrs['qualifiedName'],
+            qualified_name=attrs['name'],
             attributes=attrs['tags'],
             typeName=str(EntityType.Project),
             guid=self.guid.get_guid())
@@ -165,10 +172,12 @@ class PurviewRegistry(Registry):
         return UUID(feathr_project_entity.guid)
 
     def create_project_datasource(self, project_id: UUID, definition: SourceDef) -> UUID:
+        project_entity = self.get_entity(project_id)
         attrs = definition.to_attr().to_dict()
+        qualified_name = self.registry_delimiter.join([project_entity.qualified_name,attrs['name']])
         source_entity = AtlasEntity(
             name=attrs['name'],
-            qualified_name=attrs['qualifiedName'],
+            qualified_name=qualified_name,
             attributes= {k:v for k,v in attrs.items() if k not in ['name','qualifiedName']},
             typeName=str(EntityType.Source),
             guid=self.guid.get_guid(),
@@ -189,9 +198,11 @@ class PurviewRegistry(Registry):
     def create_project_anchor(self, project_id: UUID, definition: AnchorDef) -> UUID:
         source_entity = self.get_entity(definition.source_id)
         attrs = definition.to_attr(source_entity).to_dict()
+        project_entity = self.get_entity(project_id)
+        qualified_name = self.registry_delimiter.join([project_entity.qualified_name,attrs['name']])
         anchor_entity = AtlasEntity(
             name=definition.name,
-            qualified_name=definition.qualified_name,
+            qualified_name=qualified_name,
             attributes= {k:v for k,v in attrs.items() if k not in ['name','qualifiedName']},
             typeName=str(EntityType.Anchor),
             guid=self.guid.get_guid(),
@@ -201,7 +212,6 @@ class PurviewRegistry(Registry):
             [anchor_entity])
 
         # change from AtlasEntity to Entity
-        project_entity = self.get_entity(project_id)
         anchor_entity = self.get_entity(anchor_entity.guid)
         
         project_contains_anchor_relation = self._generate_relation_pairs(
@@ -215,9 +225,15 @@ class PurviewRegistry(Registry):
 
     def create_project_anchor_feature(self, project_id: UUID, anchor_id: UUID, definition: AnchorFeatureDef) -> UUID:
         attrs = definition.to_attr().to_dict()
+        project_entity = self.get_entity(project_id)
+        anchor_entity = self.get_entity(anchor_id)
+        qualified_name = self.registry_delimiter.join([project_entity.qualified_name,
+                                                       anchor_entity.attributes.name,
+                                                        attrs['name']])
+
         anchor_feature_entity = AtlasEntity(
             name=definition.name,
-            qualified_name=definition.qualified_name,
+            qualified_name=qualified_name,
             attributes= {k:v for k,v in attrs.items() if k not in ['name','qualifiedName']},
             typeName=str(EntityType.AnchorFeature),
             guid=self.guid.get_guid())
@@ -225,8 +241,6 @@ class PurviewRegistry(Registry):
             [anchor_feature_entity])
 
         # change from AtlasEntity to Entity
-        project_entity = self.get_entity(project_id)
-        anchor_entity = self.get_entity(anchor_id)
         anchor_feature_entity = self.get_entity(anchor_feature_entity.guid)
         source_entity = self.get_entity(anchor_entity.id)
 
@@ -248,9 +262,11 @@ class PurviewRegistry(Registry):
     def create_project_derived_feature(self, project_id: UUID, definition: DerivedFeatureDef) -> UUID:
         input_features = self.get_entities(definition.input_anchor_features+definition.input_derived_features)
         attrs = definition.to_attr(input_features).to_dict()
+        project_entity = self.get_entity(project_id)
+        qualified_name = self.registry_delimiter.join([project_entity.qualified_name,attrs['name']])
         derived_feature_entity = AtlasEntity(
             name=definition.name,
-            qualified_name=definition.qualified_name,
+            qualified_name=qualified_name,
             attributes={k:v for k,v in attrs.items() if k not in ['name','qualifiedName']},
             typeName=str(EntityType.DerivedFeature),
             guid=self.guid.get_guid())
@@ -395,9 +411,10 @@ class PurviewRegistry(Registry):
     def _upload_entity_batch(self, entity_batch):
         for entity in entity_batch:
             logger.info(f"Creating {entity.qualifiedName} \t ({entity.typeName})")
-            if self.purview_client.get_entity(qualifiedName=entity.qualifiedName, typeName=entity.typeName):
-                #raise RuntimeError(f"entity with qualified name '{entity.qualifiedName}' and type '{entity.typeName}' already exist.")
-                pass
+            existing_entity = self.purview_client.get_entity(qualifiedName=entity.qualifiedName, typeName=entity.typeName)
+            if existing_entity:
+            # perform attribute check, return id if same, conflict when different.
+                raise HTTPException(CONFLICT,"Entity with same qualified name and type exists")
         results = self.purview_client.upload_entities(
             batch=entity_batch)
         if results:
@@ -405,8 +422,8 @@ class PurviewRegistry(Registry):
             for k, v in results['guidAssignments'].items():
                 dict[k].guid = v
         else:
-            raise RuntimeError("Feature registration failed.", results)
-
+            raise RuntimeError("Feature registration failed.", results)            
+            
     def _generate_fully_qualified_name(self, segments):
         return self.registry_delimiter.join(segments)
 
