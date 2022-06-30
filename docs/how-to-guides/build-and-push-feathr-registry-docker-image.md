@@ -1,7 +1,7 @@
 ---
 layout: default
 title: How to build and push feathr registry docker image
-parent: Feathr How-to Guides
+parent: How-to Guides
 ---
 
 # How to build and push feathr registry docker image

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feathr Python Project Developer Guide
-parent: Feathr Developer Guides
+parent: Developer Guides
 ---
 
 # Feathr Python Project Developer Guide

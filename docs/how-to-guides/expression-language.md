@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feathr Expression Language
-parent: Feathr How-to Guides
+parent: How-to Guides
 ---
 
 # Feathr Expression Language

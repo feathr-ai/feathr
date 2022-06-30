@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Feathr How-to Guides
+title: How-to Guides
 has_children: true
 permalink: docs/how-to-guides
 ---
 
-# Feathr How-to Guides
+# How-to Guides
 
 This folder includes important Feathr how-to guides.
