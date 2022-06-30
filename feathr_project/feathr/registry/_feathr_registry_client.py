@@ -12,6 +12,7 @@ from re import sub
 from jinja2 import Template
 
 import requests
+from feathr.constants import INPUT_CONTEXT, TYPEDEF_ANCHOR, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_DERIVED_FEATURE, TYPEDEF_SOURCE
 from feathr.definition.anchor import FeatureAnchor
 from feathr.definition.dtype import FeatureType, str_to_value_type, value_type_to_str
 from feathr.definition.feature import Feature
@@ -331,11 +332,11 @@ def check(r):
 
 def source_to_def(v: Source) -> dict:
     ret = {}
-    if v.name == "PASSTHROUGH":
+    if v.name == INPUT_CONTEXT:
         return {
-            "name": "PASSTHROUGH",
-            "type": "PASSTHROUGH",
-            "path": "PASSTHROUGH",
+            "name": INPUT_CONTEXT,
+            "type": INPUT_CONTEXT,
+            "path": INPUT_CONTEXT,
         }
     elif isinstance(v, HdfsSource):
         ret = {
@@ -372,7 +373,7 @@ def dict_to_source(v: dict) -> Source:
     id = UUID(v["guid"])
     type = v["attributes"]["type"]
     source = None
-    if type == "PASSTHROUGH":
+    if type == INPUT_CONTEXT:
         source = InputContext()
     elif v["attributes"]["type"] in ("wasbs", "wasb", "hdfs"):
         source = HdfsSource(name=v["attributes"]["name"],
@@ -535,13 +536,13 @@ def dict_to_feature(v: dict) -> Feature:
 
 def _get_type_name(v: Any) -> str:
     if isinstance(v, Source):
-        return "feathr_source_v1"
+        return TYPEDEF_SOURCE
     elif isinstance(v, FeatureAnchor):
-        return "feathr_anchor_v1"
+        return TYPEDEF_ANCHOR
     elif isinstance(v, DerivedFeature):
-        return "feathr_derived_feature_v1"
+        return TYPEDEF_DERIVED_FEATURE
     elif isinstance(v, Feature):
-        return "feathr_anchor_feature_v1"
+        return TYPEDEF_ANCHOR_FEATURE
     raise TypeError("Invalid type")
 
 
