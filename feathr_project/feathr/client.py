@@ -176,7 +176,7 @@ class FeathrClient(object):
 
 
         # initialize registry
-        registry_endpoint = self.envutils.get_environment_variable_with_default("feature_registry", "endpoint")
+        registry_endpoint = self.envutils.get_environment_variable_with_default("feature_registry", "api_endpoint")
         # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
         self.registry = _FeatureRegistry(self.project_name, endpoint=registry_endpoint, credential=self.credential)
 
