@@ -64,6 +64,8 @@ Here are the steps to build the API as a docker container, push it to Azure Cont
     $ cd feathr_project/feathr/api
 
     ```
+1.  Locate a SQL Server that is fully functional and accessible from both local and cloud environment. 
+    Use tools like [SSMS](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-ver16), and execute [This script](https://github.com/linkedin/feathr/blob/main/registry/sql-registry/scripts/schema.sql) to create necessary SQL tables
 
 1.  Build the docker container locally, you need to have docker installed locally and have it running. To set up docker on your machine follow the instructions [here](https://docs.docker.com/get-started/)  
     **Note: Note: <your_username>/image_name is not a mandatory format for specifying the name of the image.It’s just a useful convention to avoid tagging your image again when you need to push it to a registry. It can be anything you want in the format below**
@@ -114,6 +116,9 @@ Here are the steps to build the API as a docker container, push it to Azure Cont
    ![Container Image](../images/feathr_api_image_latest_deployment.png)
 
 1. You will get the notification that your app has been successfully deployed, click on **Go to Resource** button.
+
+1. Fill the connection string to the SQL Server into the configuration of Web App. 
+    ![Web App Configuration](../images/save_connection_to_webapp_config.jpg)
 
 1. On the App overview page go to the URL (https://<app_name>.azurewebsites.net/docs) for deployed app (it's under URL on the app overview page) and you should see the API documentation.
 
