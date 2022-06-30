@@ -196,5 +196,5 @@ client.multi_get_online_features("nycTaxiDemoFeature", ["239", "265"], ['f_locat
 
 - Run the [demo notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to understand the workflow of Feathr.
 - Read the [Feathr Documentation Page](https://linkedin.github.io/feathr/) page to understand the Feathr abstractions.
-- Read guide to understand [how to setup Feathr on Azure](../how-to-guides/azure-deployment.md).
+- Read guide to understand [how to setup Feathr on Azure](https://linkedin.github.io/feathr/how-to-guides/azure-deployment.html).
 - Read [Python API Documentation](https://feathr.readthedocs.io/en/latest/)
