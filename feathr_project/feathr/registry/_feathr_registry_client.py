@@ -15,7 +15,7 @@ import requests
 from feathr.constants import INPUT_CONTEXT, TYPEDEF_ANCHOR, TYPEDEF_ANCHOR_FEATURE, TYPEDEF_DERIVED_FEATURE, TYPEDEF_SOURCE
 from feathr.definition.anchor import FeatureAnchor
 from feathr.definition.dtype import FeatureType, str_to_value_type, value_type_to_str
-from feathr.definition.feature import Feature
+from feathr.definition.feature import Feature, FeatureBase
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.repo_definitions import RepoDefinitions
 from feathr.definition.source import HdfsSource, InputContext, JdbcSource, Source
@@ -37,6 +37,45 @@ def to_camel(s):
         return [to_camel(i) for i in s]
     elif isinstance(s, dict):
         return dict([(to_camel(k), s[k]) for k in s])
+
+
+def _topological_sort(derived_feature_list: List[DerivedFeature]) -> List[DerivedFeature]:
+    """
+    In the current registry implementation, we need to make sure all upstream are registered before registering one derived feature
+    Thus we need to sort derived features by the partial order of dependencies, upstream to downstream.
+    """
+    ret = []
+    # We don't want to destroy the input list
+    input = derived_feature_list.copy()
+    
+    # Each round add the most downstream features into `ret`, so `ret` is in reversed order
+    while input:
+        # Process all remaining features
+        current = input.copy()
+        
+        # In Python you should not alter content while iterating
+        current_copy = current.copy()
+        
+        # Go over all remaining features to see if some feature depends on others
+        for f in current_copy:
+            for i in f.input_features:
+                if i in current:
+                    # Someone depends on feature `i`, so `i` is **not** the most downstream
+                    current.remove(i)
+        
+        # Now `current` contains only the most downstream features in this round
+        ret.extend(current)
+        
+        # Remove one level of dependency from input
+        for f in current:
+            input.remove(f)
+    
+    # The ret was in a reversed order when it's generated
+    ret.reverse()
+    
+    if len(set(ret) != len (set(derived_feature_list))):
+        raise ValueError("Cyclic detected")
+    return ret
     
 class _FeatureRegistry(FeathrRegistry):
     def __init__(self, project_name: str, endpoint: str, project_tags: Dict[str, str] = None, credential=None, config_path=None):
@@ -75,7 +114,7 @@ class _FeatureRegistry(FeathrRegistry):
                     feature._registry_id = self._create_anchor_feature(
                         anchor._registry_id, feature)
         # 4. Create all derived features on the registry
-        for df in derived_feature_list:
+        for df in _topological_sort(derived_feature_list):
             if not hasattr(df, "_registry_id"):
                 df._registry_id = self._create_derived_feature(df)
 
