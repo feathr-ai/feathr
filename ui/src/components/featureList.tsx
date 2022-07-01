@@ -115,7 +115,7 @@ const FeatureList: React.FC = () => {
                  style={ { minWidth: "35%", float: "left", paddingLeft: "10px" } }
                  rules={ [{ required: true, message: "Please select a project to start." }] }>
         <Select options={ projects } defaultValue={ project } value={ project } optionFilterProp="label"
-                notFoundContent={ <LoadingOutlined style={ { fontSize: 24 } } spin /> }
+                notFoundContent={ <div>No projects found from server</div> }
                 showSearch={ true } onChange={ onProjectChange }>
         </Select>
       </Form.Item>
