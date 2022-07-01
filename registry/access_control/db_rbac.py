@@ -5,10 +5,9 @@ from access_control.interface import RBAC
 import os
 import logging
 
-
 class DbRBAC(RBAC):
     def __init__(self):
-        if not os.environ["CONNECTION_STR"]:
+        if not os.environ.get("CONNECTION_STR"):
             os.environ["CONNECTION_STR"] = config.CONNECTION_STR
         self.conn = connect()
         # cached user role records

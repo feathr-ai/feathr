@@ -40,9 +40,12 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
 
     async def __call__(self, request: Request) -> User:
         bearer_token: str = request.headers.get("authorization")
-        token = bearer_token[len(BEARER_TOKEN):]
-        decoded_token = self._decode_token(token)
-        return self._get_user_from_token(decoded_token)
+        if bearer_token:
+            token = bearer_token[len(BEARER_TOKEN):]
+            decoded_token = self._decode_token(token)
+            return self._get_user_from_token(decoded_token)
+        else:
+            raise InvalidAuthorization(detail='No authorization token was found')
 
     @staticmethod
     def _get_user_from_token(decoded_token: Mapping) -> User:
@@ -50,8 +53,7 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
             user_id = decoded_token['oid']
         except Exception as e:
             logging.debug(e)
-            raise InvalidAuthorization(
-                detail='Unable to extract user details from token')
+            raise InvalidAuthorization(detail='Unable to extract user details from token')
 
         return User(
             id=user_id,

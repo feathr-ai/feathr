@@ -2,7 +2,7 @@ import json
 from typing import Optional
 from fastapi import APIRouter, Depends
 import requests
-from access_control.access import global_admin_access, get_user, project_read_access, project_write_access
+from access_control.access import *
 from access_control.models import User
 from access_control.db_rbac import DbRBAC
 from access_control import config
@@ -23,7 +23,6 @@ async def get_project(project: str, requestor: User = Depends(project_read_acces
     return json.loads(response)
 
 
-
 @router.get("/projects/{project}/datasources", name="Get data sources of my project [Read Access Required]")
 def get_project_datasources(project: str, requestor: User = Depends(project_read_access)) -> list:
     response = requests.get(registry_url + "/projects/" + project + "/datasources").content.decode('utf-8')
@@ -36,11 +35,19 @@ def get_project_features(project: str, keyword: Optional[str] = None, requestor:
     return json.loads(response)
 
 
-@router.get("/features/{feature}/{project}", name="Get a single feature by feature Id [Read Access Required]")
-def get_feature(feature: str, requestor: User = Depends(project_read_access)) -> dict:
+@router.get("/features/{feature}", name="Get a single feature by feature Id [Read Access Required]")
+def get_feature(feature: str, project: str, requestor: User = Depends(project_read_access)) -> dict:
     response = requests.get(registry_url + "/features/" + feature).content.decode('utf-8')
     return json.loads(response)
 
+# To make sure the consistent experience of Registry API and Access Control Plugin.
+# Even if user doesn't provide the project name, the API can still work.
+@router.get("/features/{feature}", name="Get a single feature by feature Id [Read Access Required]")
+def get_feature(feature: str, requestor: User = Depends(get_user)) -> dict:
+    response = requests.get(registry_url + "/features/" + feature).content.decode('utf-8')
+    ret = json.loads(response)
+    validate_project_access_for_feature(ret["qualified_name"], requestor, AccessType.READ)
+    return ret
 
 @router.get("/features/{feature}/lineage/{project}", name="Get Feature Lineage [Read Access Required]")
 def get_feature_lineage(feature: str, requestor: User = Depends(project_read_access)) -> dict:

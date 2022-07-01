@@ -47,3 +47,12 @@ def global_admin_access(user: User = Depends(authorize)):
         return user
     else:
         raise ForbiddenAccess('Admin privileges required')
+
+def validate_project_access_for_feature(feature:str, user:str, access:str):
+    project = _get_project_from_feature(feature)
+    _project_access(project, user, access)
+
+
+def _get_project_from_feature(feature: str):
+    feature_delimiter = "__request_features__"
+    return feature.split(feature_delimiter)[0]

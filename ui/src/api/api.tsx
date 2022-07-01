@@ -58,7 +58,9 @@ export const fetchFeatures = async (
 export const fetchFeature = async (project: string, featureId: string) => {
   const axios = await authAxios(msalInstance);
   return axios
-    .get<Feature>(`${getApiBaseUrl()}/features/${featureId}/${project}`, {})
+    .get<Feature>(`${getApiBaseUrl()}/features/${featureId}`, { 
+      params: { project: project}
+    })
     .then((response) => {
       return response.data;
     });
@@ -116,7 +118,6 @@ export const updateFeature = async (feature: Feature, id: string) => {
 
 export const listUserRole = async () => {
   const token = await getIdToken(msalInstance);
-  console.log(token)
   const axios = await authAxios(msalInstance);
   return await axios
     .get<UserRole[]>(`${getApiBaseUrl()}/userroles`, {})
