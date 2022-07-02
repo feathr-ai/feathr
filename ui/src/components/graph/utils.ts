@@ -84,6 +84,7 @@ const generateNode = ({
     title: currentNode.displayText,
     subtitle: currentNode.typeName,
     featureId: currentNode.guid,
+    version: currentNode.version,
     borderColor: featureTypeColors[currentNode.typeName],
   },
 });
