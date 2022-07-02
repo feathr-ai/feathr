@@ -73,7 +73,7 @@ def _topological_sort(derived_feature_list: List[DerivedFeature]) -> List[Derive
     # The ret was in a reversed order when it's generated
     ret.reverse()
     
-    if len(set(ret) != len (set(derived_feature_list))):
+    if len(set(ret)) != len (set(derived_feature_list)):
         raise ValueError("Cyclic dependency detected")
     return ret
     
