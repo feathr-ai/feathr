@@ -1,14 +1,12 @@
 
 from http.client import CONFLICT, HTTPException
 import itertools
-import re
 from typing import Any, Optional, Tuple, Union
 from urllib.error import HTTPError
 from uuid import UUID
 
 from azure.identity import DefaultAzureCredential
 from loguru import logger
-from numpy import allclose, typename
 from pyapacheatlas.auth.azcredential import AzCredentialWrapper
 from pyapacheatlas.core import (AtlasEntity, AtlasProcess,
                                 PurviewClient)
@@ -17,7 +15,7 @@ from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
 
 from registry.interface import Registry
-from registry.models import AnchorDef, AnchorFeatureDef, Attributes, DerivedFeatureDef, Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, ProjectDef, RelationshipType, SourceDef, _to_uuid
+from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, ProjectDef, RelationshipType, SourceDef, _to_uuid
 Label_Contains = "CONTAINS"
 Label_BelongsTo = "BELONGSTO"
 Label_Consumes = "CONSUMES"
