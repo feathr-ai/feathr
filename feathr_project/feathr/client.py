@@ -2,6 +2,7 @@ import base64
 import logging
 import os
 import tempfile
+import asyncio
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -82,12 +83,13 @@ class FeathrClient(object):
         local_workspace_dir (str, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
         credential (optional): credential to access cloud resources,  most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
         project_registry_tag (Dict[str, str]): adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
+        callback: an async callback function that will be called after execution of the original logic. This callback should not block the thread. This is optional.
 
     Raises:
         RuntimeError: Fail to create the client since necessary environment variables are not set for Redis
         client creation.
     """
-    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_registry_tag: Dict[str, str]=None):
+    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_registry_tag: Dict[str, str]=None, callback:callable = None):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
@@ -182,6 +184,7 @@ class FeathrClient(object):
             'feature_registry', 'purview', 'purview_name')
         # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
         self.registry = _FeatureRegistry(self.project_name, self.azure_purview_name, self.registry_delimiter, project_registry_tag, config_path = config_path, credential=self.credential)
+        self.callback = callback
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
@@ -264,13 +267,15 @@ class FeathrClient(object):
         """
         return self.registry._get_registry_client()
 
-    def get_online_features(self, feature_table, key, feature_names):
-        """Fetches feature value for a certain key from a online feature table.
+    def get_online_features(self, feature_table, key, feature_names, params: dict = None):
+        """Fetches feature value for a certain key from a online feature table. There is an optional callback function
+        and the params to extend this function's capability.For eg. cosumer of the features.
 
         Args:
             feature_table: the name of the feature table.
             key: the key of the entity
             feature_names: list of feature names to fetch
+            params: a dictionary of parameters for the callback function
 
         Return:
             A list of feature values for this entity. It's ordered by the requested feature names.
@@ -283,15 +288,20 @@ class FeathrClient(object):
             """
         redis_key = self._construct_redis_key(feature_table, key)
         res = self.redis_clint.hmget(redis_key, *feature_names)
-        return self._decode_proto(res)
+        feature_values =  self._decode_proto(res)
+        if (self.callback is not None) and (params is not None):
+            event_loop = asyncio.get_event_loop()
+            event_loop.create_task(self.callback(params))
+        return feature_values
 
-    def multi_get_online_features(self, feature_table, keys, feature_names):
+    def multi_get_online_features(self, feature_table, keys, feature_names, params: dict = None):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
 
         Args:
             feature_table: the name of the feature table.
             keys: list of keys for the entities
             feature_names: list of feature names to fetch
+            params: a dictionary of parameters for the callback function
 
         Return:
             A list of feature values for the requested entities. It's ordered by the requested feature names. For
@@ -311,6 +321,10 @@ class FeathrClient(object):
         decoded_pipeline_result = []
         for feature_list in pipeline_result:
             decoded_pipeline_result.append(self._decode_proto(feature_list))
+
+        if (self.callback is not None) and (params is not None):
+            event_loop = asyncio.get_event_loop()
+            event_loop.create_task(self.callback(params))
 
         return dict(zip(keys, decoded_pipeline_result))
 
@@ -412,15 +426,18 @@ class FeathrClient(object):
                              output_path: str,
                              execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
                              udf_files = None,
-                             verbose: bool = False
+                             verbose: bool = False,
+                             params: dict = None
                              ):
         """
-        Get offline features for the observation dataset
+        Get offline features for the observation dataset. There is an optional callback function and the params 
+        to extend this function's capability.For eg. cosumer of the features.
         Args:
             observation_settings: settings of the observation data, e.g. timestamp columns, input path, etc.
             feature_query: features that are requested to add onto the observation data
             output_path: output path of job, i.e. the observation data with features attached.
-            execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            params: a dictionary of parameters for the callback function
         """
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
         feature_names = []
@@ -457,7 +474,11 @@ class FeathrClient(object):
             FeaturePrinter.pretty_print_feature_query(feature_query)
 
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_path, execution_configurations, udf_files=udf_files)
+        job_info = self._get_offline_features_with_config(config_file_path, execution_configurations, udf_files=udf_files)
+        if (self.callback is not None) and (params is not None):
+            event_loop = asyncio.get_event_loop()
+            event_loop.create_task(self.callback(params))
+        return job_info
 
     def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configurations: Dict[str,str] = {}, udf_files=[]):
         """Joins the features to your offline observation dataset based on the join config.
@@ -534,21 +555,28 @@ class FeathrClient(object):
         else:
             raise RuntimeError('Spark job failed.')
 
-    def monitor_features(self, settings: MonitoringSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
-        """Create a offline job to generate statistics to monitor feature data
+    def monitor_features(self, settings: MonitoringSettings, execution_configuratons: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False, params: dict = None):
+        """Create a offline job to generate statistics to monitor feature data. There is an optional 
+        callback function and the params to extend this function's capability.For eg. cosumer of the features.
 
         Args:
             settings: Feature monitoring settings
-            execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            params: a dictionary of parameters for the callback function.
         """
-        self.materialize_features(settings, execution_configurations, verbose)
+        self.materialize_features(settings, execution_configuratons, verbose)
+        if (self.callback is not None) and (params is not None):
+            event_loop = asyncio.get_event_loop()
+            event_loop.create_task(self.callback(params))
 
-    def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
-        """Materialize feature data
+    def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False, params: dict = None):
+        """Materialize feature data. There is an optional callback function and the params 
+        to extend this function's capability.For eg. cosumer of the feature store.
 
         Args:
             settings: Feature materialization settings
-            execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            execution_configuratons: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            params: a dictionary of parameters for the callback function
         """
         # produce materialization config
         for end in settings.get_backfill_cutoff_time():
@@ -575,6 +603,10 @@ class FeathrClient(object):
         # Pretty print feature_names of materialized features
         if verbose and settings:
             FeaturePrinter.pretty_print_materialize_features(settings)
+        
+        if (self.callback is not None) and (params is not None):
+            event_loop = asyncio.get_event_loop()
+            event_loop.create_task(self.callback(params))
 
     def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configurations: Dict[str,str] = {}, udf_files=[]):
         """Materializes feature data based on the feature generation config. The feature
