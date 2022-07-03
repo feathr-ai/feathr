@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Col, Radio, Row, Spin, Tabs } from 'antd';
+import { Card, Col, Radio, Row, Spin, Tabs, Typography } from 'antd';
 import { useParams, useSearchParams } from "react-router-dom";
 import { Elements } from 'react-flow-renderer';
 import Graph from "../../components/graph/graph";
@@ -8,6 +8,9 @@ import { fetchProjectLineages } from "../../api";
 import { FeatureLineage } from "../../models/model";
 import { LoadingOutlined } from "@ant-design/icons";
 import GraphNodeDetails from "../../components/graph/graphNodeDetails";
+
+const { Title } = Typography;
+const { TabPane } = Tabs;
 
 type Params = {
   project: string;
@@ -94,10 +97,11 @@ const LineageGraph: React.FC = () => {
       return type;
     });
   };
-  const { TabPane } = Tabs;
+
   return (
     <div className="page">
-      <Card title={ "Lineage" }>
+      <Card>
+        <Title level={ 3 }>Lineage {project}</Title>
         <div>
           <Radio.Group value={ featureType } onChange={ e => toggleFeatureType(e.target.value) }>
             <Radio.Button value="all_nodes">All Features</Radio.Button>
