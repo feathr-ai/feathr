@@ -1,4 +1,5 @@
 import importlib
+import inspect
 import json
 import logging
 import os
@@ -103,7 +104,8 @@ class _FeatureRegistry(FeathrRegistry):
         for anchor in anchor_list:
             source = anchor.source
             # 1. Create Source on the registry
-            if not hasattr(source, "_registry_id"):
+            # We always re-create INPUT_CONTEXT as lots of existing codes reuse the singleton in different projects
+            if (source.name == INPUT_CONTEXT) or (not hasattr(source, "_registry_id")):
                 source._registry_id = self._create_source(source)
             # 2. Create Anchor on the registry
             if not hasattr(anchor, "_registry_id"):
@@ -124,7 +126,11 @@ class _FeatureRegistry(FeathrRegistry):
         """
         resp = self._get(f"/projects/{project_name}/features")
         # In V1 API resp should be an array, will be changed in V2 API
-        return [r["attributes"]["qualifiedName"] for r in resp]
+        return [{
+            "name": r["name"],
+            "id": r["guid"],
+            "qualifiedName": r["qualifiedName"],
+        } for r in resp]
 
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """
@@ -397,8 +403,8 @@ def source_to_def(v: Source) -> dict:
             ret["auth"] = v.auth
     else:
         raise ValueError(f"Unsupported source type {v.__class__}")
-    if v.preprocessing:
-        ret["preprocessing"] = v.preprocessing
+    if hasattr(v, "preprocessing") and v.preprocessing:
+        ret["preprocessing"] = inspect.getsource(v.preprocessing)
     if v.event_timestamp_column:
         ret["eventTimestampColumn"] = v.event_timestamp_column
     if v.timestamp_format:
