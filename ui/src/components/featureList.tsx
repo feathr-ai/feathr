@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
+import { DownOutlined} from '@ant-design/icons';
 import { Button, Dropdown, Input, Menu, Select, Tooltip, Form, Table } from 'antd';
 import { Feature } from "../models/model";
 import { fetchProjects, fetchFeatures } from "../api";
