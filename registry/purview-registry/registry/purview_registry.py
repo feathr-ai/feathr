@@ -22,6 +22,9 @@ Label_Contains = "CONTAINS"
 Label_BelongsTo = "BELONGSTO"
 Label_Consumes = "CONSUMES"
 Label_Produces = "PRODUCES"
+TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_v1>"
+TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_v1>"
+TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_v1>"
 class PurviewRegistry(Registry):
     def __init__(self,azure_purview_name: str, registry_delimiter: str = "__", credential=None,register_types = False):
         self.registry_delimiter = registry_delimiter
@@ -325,15 +328,21 @@ class PurviewRegistry(Registry):
 
     def _register_feathr_feature_types(self):
         """
-        Register the feathr types if we haven't done so. Note that this only needs to be called once per provisioning
+         Register the feathr types if we haven't done so. Note that this only needs to be called once per provisioning
         a system. Basically this function registers all the feature type definition in a Atlas compatible system.
         """
-
+        # Since old version of entity type definitions already exist, this method will not be called by default. 
+        # Current schema is backward-compatible with existing. calling this method again will leads to "fail to delete def" error.
+        # In the future, if moving to V2, call this method in registry initialization. 
         # Each feature is registered under a certain Feathr project. The project should what we refer to, however for backward compatibility, the type name would be `feathr_workspace`
         type_feathr_project = EntityTypeDef(
             name=str(EntityType.Project),
             attributeDefs=[
                 # "anchor_features" and "derived_features" are removed, since we are moving to use process entity
+                AtlasAttributeDef(
+                    name="anchor_features", typeName=TYPEDEF_ARRAY_ANCHOR, cardinality=Cardinality.SET),
+                AtlasAttributeDef(
+                    name="derived_features", typeName=TYPEDEF_ARRAY_DERIVED_FEATURE, cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
             ],
@@ -381,6 +390,10 @@ class PurviewRegistry(Registry):
                 AtlasAttributeDef(name="type", typeName="string",
                                   cardinality=Cardinality.SINGLE),
                 # "input_anchor_features" and "input_derived_features" are deleted, use process entity instead
+                AtlasAttributeDef(name="input_anchor_features", typeName=TYPEDEF_ARRAY_ANCHOR_FEATURE,
+                                  cardinality=Cardinality.SET),
+                AtlasAttributeDef(name="input_derived_features", typeName=TYPEDEF_ARRAY_DERIVED_FEATURE,
+                                  cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="key", typeName="array<map<string,string>>",
                                   cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="transformation", typeName="map<string,string>",
@@ -396,6 +409,10 @@ class PurviewRegistry(Registry):
             attributeDefs=[
                 # "source" will be removed, use process entity instead
                 # "features" will be removed, use process entity instead
+                AtlasAttributeDef(
+                    name="source", typeName=str(EntityType.Source), cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(
+                    name="features", typeName=TYPEDEF_ARRAY_ANCHOR_FEATURE, cardinality=Cardinality.SET),
                 AtlasAttributeDef(name="tags", typeName="map<string,string>",
                                   cardinality=Cardinality.SINGLE),
             ],
