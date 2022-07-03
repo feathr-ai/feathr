@@ -16,7 +16,9 @@ except:
     pass
 print("Using API BASE: ", rp)
 
-registry = PurviewRegistry("feathrazuretest3-purview1")
+# os.environ['PURVIEW_NAME'] = "feathrazuretest3-purview1"
+purview_name = os.environ["PURVIEW_NAME"]
+registry = PurviewRegistry(purview_name)
 app = FastAPI()
 router = APIRouter()
 
