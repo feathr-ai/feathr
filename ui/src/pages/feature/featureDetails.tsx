@@ -10,16 +10,19 @@ import { Feature } from "../../models/model";
 const { Title } = Typography;
 
 function FeatureKey(props: { feature: Feature }) {
+
+  const keys = props.feature.attributes.key;
+  console.log(props.feature.attributes);
   return <>
-    { props.feature.attributes.key && props.feature.attributes.key.length > 0 &&
+    { keys && keys.length > 0 &&
         <Col span={ 24 }>
             <Card className="card">
                 <Title level={ 4 }>Key</Title>
-                <p>Full name: { props.feature.attributes.key[0].full_name }</p>
-                <p>Key column: { props.feature.attributes.key[0].key_column }</p>
-                <p>Description: { props.feature.attributes.key[0].description }</p>
-                <p>Key column alias: { props.feature.attributes.key[0].key_column_alias }</p>
-                <p>key column type: { props.feature.attributes.key[0].key_column_type }</p>
+                <p>Full Name: { keys[0].fullName }</p>
+                <p>Key Column: { keys[0].keyColumn }</p>
+                <p>Description: { keys[0].description }</p>
+                <p>Key Column Alias: { keys[0].keyColumnAlias }</p>
+                <p>Key Column Type: { keys[0].keyColumnType }</p>
             </Card>
         </Col>
     }
@@ -27,15 +30,16 @@ function FeatureKey(props: { feature: Feature }) {
 }
 
 function FeatureType(props: { feature: Feature }) {
+  const type = props.feature.attributes.type;
   return <>
-    { props.feature.attributes.type &&
+    { type &&
         <Col span={ 24 }>
             <Card className="card">
                 <Title level={ 4 }>Type</Title>
-                <p>Dimension Type: { props.feature.attributes.type.dimensionType }</p>
-                <p>Tensor Category: { props.feature.attributes.type.tensorCategory }</p>
-                <p>Type: { props.feature.attributes.type.type }</p>
-                <p>Value Type: { props.feature.attributes.type.valType }</p>
+                <p>Dimension Type: { type.dimensionType }</p>
+                <p>Tensor Category: { type.tensorCategory }</p>
+                <p>Type: { type.type }</p>
+                <p>Value Type: { type.valType }</p>
             </Card>
         </Col>
     }
@@ -43,25 +47,19 @@ function FeatureType(props: { feature: Feature }) {
 }
 
 function FeatureTransformation(props: { feature: Feature }) {
+  const transformation = props.feature.attributes.transformation;
   return <>
-    { props.feature.attributes.transformation &&
+    { transformation &&
         <Col span={ 24 }>
             <Card className="card">
                 <Title level={ 4 }>Transformation</Title>
-              { props.feature.attributes.transformation.transform_expr &&
-                  <p>Expression: { props.feature.attributes.transformation.transform_expr }</p> }
-              { props.feature.attributes.transformation.filter &&
-                  <p>Filter: { props.feature.attributes.transformation.filter }</p> }
-              { props.feature.attributes.transformation.agg_func &&
-                  <p>Aggregation: { props.feature.attributes.transformation.agg_func }</p> }
-              { props.feature.attributes.transformation.limit &&
-                  <p>Limit: { props.feature.attributes.transformation.limit }</p> }
-              { props.feature.attributes.transformation.group_by &&
-                  <p>Group By: { props.feature.attributes.transformation.group_by }</p> }
-              { props.feature.attributes.transformation.window &&
-                  <p>Window: { props.feature.attributes.transformation.window }</p> }
-              { props.feature.attributes.transformation.def_expr &&
-                  <p>Expression: { props.feature.attributes.transformation.def_expr }</p> }
+              { transformation.transformExpr && <p>Expression: { transformation.transformExpr }</p> }
+              { transformation.filter && <p>Filter: { transformation.filter }</p> }
+              { transformation.aggFunc && <p>Aggregation: { transformation.aggFunc }</p> }
+              { transformation.limit && <p>Limit: { transformation.limit }</p> }
+              { transformation.groupBy && <p>Group By: { transformation.groupBy }</p> }
+              { transformation.window && <p>Window: { transformation.window }</p> }
+              { transformation.defExpr && <p>Expression: { transformation.defExpr }</p> }
             </Card>
         </Col>
     }
@@ -70,8 +68,9 @@ function FeatureTransformation(props: { feature: Feature }) {
 
 function InputAnchorFeatures(props: { project: string, feature: Feature }) {
   const navigate = useNavigate();
+  const inputAnchorFeatures = props.feature.attributes.inputAnchorFeatures;
   return <>
-    { props.feature.attributes._input_anchor_features && props.feature.attributes._input_anchor_features.length > 0 &&
+    { inputAnchorFeatures && inputAnchorFeatures.length > 0 &&
         <Col span={ 24 }>
             <Card style={ {
               marginTop: "15px",
@@ -82,10 +81,10 @@ function InputAnchorFeatures(props: { project: string, feature: Feature }) {
             } }>
                 <Title level={ 4 }>Input Anchor Features</Title>
               {
-                props.feature.attributes._input_anchor_features.map((input_feature) =>
+                inputAnchorFeatures.map((input_feature) =>
                   <Button type="link" onClick={ () => {
-                    navigate(`/projects/${ props.project }/features/${ input_feature.id }`)
-                  } }>{ input_feature.attributes.name }</Button>)
+                    navigate(`/projects/${ props.project }/features/${ input_feature.guid }`)
+                  } }>{ input_feature.uniqueAttributes.qualifiedName }</Button>)
               }
             </Card>
         </Col>
@@ -95,8 +94,9 @@ function InputAnchorFeatures(props: { project: string, feature: Feature }) {
 
 function InputDerivedFeatures(props: { project: string, feature: Feature }) {
   const navigate = useNavigate();
+  const inputDerivedFeatures = props.feature.attributes.inputDerivedFeatures;
   return <>
-    { props.feature.attributes._input_derived_features && props.feature.attributes._input_derived_features.length > 0 &&
+    { inputDerivedFeatures && inputDerivedFeatures.length > 0 &&
         <Col span={ 24 }>
             <Card style={ {
               marginTop: "15px",
@@ -107,10 +107,10 @@ function InputDerivedFeatures(props: { project: string, feature: Feature }) {
             } }>
                 <Title level={ 4 }>Input Derived Features</Title>
               {
-                props.feature.attributes._input_derived_features.map((input_feature) =>
+                inputDerivedFeatures.map((input_feature) =>
                   <Button type="link" onClick={ () => {
-                    navigate(`/projects/${ props.project }/features/${ input_feature.id }`)
-                  } }>{ input_feature.attributes.name }</Button>)
+                    navigate(`/projects/${ props.project }/features/${ input_feature.guid }`)
+                  } }>{ input_feature.uniqueAttributes.qualifiedName }</Button>)
               }
             </Card>
         </Col>
