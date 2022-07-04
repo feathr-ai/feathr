@@ -129,7 +129,7 @@ class _FeatureRegistry(FeathrRegistry):
         return [{
             "name": r["attributes"]["name"],
             "id": r["guid"],
-            "qualifiedName": r["qualifiedName"],
+            "qualifiedName": r["attributes"]["qualifiedName"],
         } for r in resp]
 
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
