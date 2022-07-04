@@ -23,7 +23,7 @@ class DbRegistry(Registry):
 
     def get_projects(self) -> list[str]:
         ret = self.conn.query(
-            f"select qualified_name from entities where entity_type=%s", EntityType.Project)
+            f"select qualified_name from entities where entity_type=%s", str(EntityType.Project))
         return list([r["qualified_name"] for r in ret])
 
     def get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
@@ -40,7 +40,7 @@ class DbRegistry(Registry):
             pass
         # It is a name
         ret = self.conn.query(
-            f"select entity_id from entities where qualified_name=%s", id_or_name)
+            f"select entity_id from entities where qualified_name=%s", str(id_or_name))
         return ret[0]["entity_id"]
 
     def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
@@ -49,7 +49,7 @@ class DbRegistry(Registry):
             from edges
             where from_id = %s
             and conn_type = %s
-        ''', (self.get_entity_id(id_or_name), relationship.name))
+        ''', (str(self.get_entity_id(id_or_name)), relationship.name))
         return list([Edge(**row) for row in rows])
 
     def get_lineage(self, id_or_name: Union[str, UUID]) -> EntitiesAndRelations:
