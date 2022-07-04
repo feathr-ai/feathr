@@ -43,7 +43,7 @@ def _project_access(project: str, user: User, access: str):
 
 
 def global_admin_access(user: User = Depends(authorize)):
-    if user.preferred_username in rbac.global_admin:
+    if user.preferred_username in rbac.get_global_admin_users():
         return user
     else:
         raise ForbiddenAccess('Admin privileges required')

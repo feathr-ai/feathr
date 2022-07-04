@@ -122,7 +122,7 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
             raise InvalidAuthorization('The token is invalid')
         except Exception as e:
             logging.debug(f'Unexpected error: {e}')
-            raise InvalidAuthorization('Unable to decode token')
+            raise InvalidAuthorization('Unable to decode token, error: {e}')
 
 
 authorize = AzureADAuth()
