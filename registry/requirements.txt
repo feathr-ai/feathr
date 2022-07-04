@@ -3,3 +3,6 @@ fastapi
 uvicorn
 pyjwt
 pydantic
+requests
+rsa
+numpy
