@@ -19,10 +19,10 @@ export interface FeatureAttributes {
 }
 
 export interface FeatureType {
+  dimensionType: string[],
+  tensorCategory: string,
   type: string,
-  tensor_category: string,
-  dimension_type: string[],
-  val_type: string
+  valType: string
 }
 export interface FeatureTransformation {
   transform_expr: string,

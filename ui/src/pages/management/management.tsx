@@ -1,18 +1,17 @@
 import React from 'react';
-import { Card } from 'antd';
+import { Card, Typography } from 'antd';
 import UserRoles from '../../components/userRoles';
 
-type Props = {};
+const { Title } = Typography;
 
-const Management: React.FC<Props> = () => {
+const Management: React.FC = () => {
   return (
-    <>
-      <div className="home" style={{ margin: "2%" }}>
-        <Card style={{ minWidth: '1000px' }}>
-          <UserRoles />
-        </Card>
-      </div>
-    </>
+    <div className="page">
+      <Card style={ { minWidth: '1000px' } }>
+        <Title level={ 3 }>Management</Title>
+        <UserRoles />
+      </Card>
+    </div>
   );
 };
 

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LoadingOutlined } from "@ant-design/icons";
 import { Form, Select, Table } from "antd";
 import { DataSourceAttributes, DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
