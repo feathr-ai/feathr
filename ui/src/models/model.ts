@@ -63,10 +63,13 @@ export interface UserRole {
   scope: string;
   userName: string;
   roleName: string;
+  createBy: string;
   createTime: string;
   createReason: string;
+  deleteBy: string;
   deleteTime?: any;
   deleteReason?: any;
+  access?: string;
 }
 
 export interface Role {

@@ -1,0 +1,5 @@
+pymssql
+fastapi
+uvicorn
+pyjwt
+pydantic
