@@ -208,7 +208,7 @@ def test_parse_project():
 
 def test_registry_client_list_features():
     c = _FeatureRegistry(project_name="p", endpoint="https://feathr-sql-registry.azurewebsites.net/api/v1")
-    f = c.list_registered_features("feathr_ci_registry_12_33_182947")
+    f = [e["qualifiedName"] for e in c.list_registered_features("feathr_ci_registry_12_33_182947")]
     print(f)
     assert len(f)==9
     for i in f:
