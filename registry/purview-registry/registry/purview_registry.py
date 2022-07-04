@@ -158,7 +158,20 @@ class PurviewRegistry(Registry):
         """
         Search entities with specified type that also match the keyword in a project
         """
-        pass
+        query_result = self.purview_client.search_entities(keyword)
+        result = []
+        for entity in query_result:
+            qualified_name = entity["qualifiedName"]
+            entity_id = entity['id']
+            entity_type = entity['entityType']
+            if type and entity_type in [str(x) for x in type]:
+                if project:
+                    if not (qualified_name.startswith(project) or entity_id == str(project)):
+                        continue
+                result.append(EntityRef(UUID(entity_id),entity_type,qualified_name))
+        return result
+            
+
 
     def create_project(self, definition: ProjectDef) -> UUID:
         attrs = definition.to_attr().to_dict()
