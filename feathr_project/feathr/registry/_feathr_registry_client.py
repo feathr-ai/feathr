@@ -127,7 +127,7 @@ class _FeatureRegistry(FeathrRegistry):
         resp = self._get(f"/projects/{project_name}/features")
         # In V1 API resp should be an array, will be changed in V2 API
         return [{
-            "name": r["name"],
+            "name": r["attributes"]["name"],
             "id": r["guid"],
             "qualifiedName": r["qualifiedName"],
         } for r in resp]
