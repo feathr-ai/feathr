@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feathr Scala Project Developer Guide
-parent: Feathr Developer Guides
+parent: Developer Guides
 ---
 
 # Feathr Scala Project Developer Guide

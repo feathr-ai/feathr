@@ -1,18 +1,17 @@
 import React from 'react';
-import { Card } from 'antd';
+import { Card, Typography } from 'antd';
 import DataSourceList from "../../components/dataSourceList";
 
-type Props = {};
+const { Title } = Typography;
 
-const DataSources: React.FC<Props> = () => {
+const DataSources: React.FC = () => {
   return (
-    <>
-      <div className="home" style={ { margin: "2%" } }>
-        <Card style={ { minWidth: '1000px' } }>
-          <DataSourceList />
-        </Card>
-      </div>
-    </>
+    <div className="page" >
+      <Card>
+        <Title level={3}>Data Sources</Title>
+        <DataSourceList />
+      </Card>
+    </div>
   );
 };
 

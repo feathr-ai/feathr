@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LoadingOutlined } from "@ant-design/icons";
 import { Form, Select, Table } from "antd";
 import { DataSourceAttributes, DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
@@ -110,7 +109,7 @@ const DataSourceList: React.FC = () => {
                  style={ { minWidth: "35%", float: "left", paddingLeft: "10px" } }
                  rules={ [{ required: true, message: "Please select a project to start." }] }>
         <Select options={ projects } defaultValue={ project } value={ project } optionFilterProp="label"
-                notFoundContent={ <LoadingOutlined style={ { fontSize: 24 } } spin /> }
+                notFoundContent={ <div>No projects found from server</div> }
                 onChange={ onProjectChange }>
         </Select>
       </Form.Item>

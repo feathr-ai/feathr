@@ -19,10 +19,10 @@ export interface FeatureAttributes {
 }
 
 export interface FeatureType {
+  dimensionType: string[],
+  tensorCategory: string,
   type: string,
-  tensor_category: string,
-  dimension_type: string[],
-  val_type: string
+  valType: string
 }
 export interface FeatureTransformation {
   transform_expr: string,
@@ -63,10 +63,13 @@ export interface UserRole {
   scope: string;
   userName: string;
   roleName: string;
+  createBy: string;
   createTime: string;
   createReason: string;
+  deleteBy: string;
   deleteTime?: any;
   deleteReason?: any;
+  access?: string;
 }
 
 export interface Role {
