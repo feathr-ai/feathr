@@ -599,7 +599,7 @@ class DerivedFeatureAttributes(Attributes):
             elif entity.entity_type == EntityType.DerivedFeature:
                 self._input_derived_features.append(entity)
             else:
-                pass
+                raise TypeError("Unknown input feature {}".format(entity.to_dict()))
 
     @property
     def input_anchor_features(self):
