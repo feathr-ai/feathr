@@ -86,7 +86,7 @@ class DbRegistry(Registry):
                 anchor.id, RelationshipType.Consumes)[0].to_id
             anchor.attributes.source = child_map[source_id]
         for df in project.attributes.derived_features:
-            conn = self.get_neighbors(anchor.id, RelationshipType.Consumes)
+            conn = self.get_neighbors(df.id, RelationshipType.Consumes)
             input_ids = [e.to_id for e in conn]
             edges = edges.union(conn)
             features = list([child_map[id] for id in input_ids])
@@ -404,7 +404,10 @@ class DbRegistry(Registry):
             select entity_id, qualified_name, entity_type, attributes
             from entities
             where entity_id = %s
-        ''', self.get_entity_id(id_or_name))[0]
+        ''', self.get_entity_id(id_or_name))
+        if not row:
+            raise ValueError(f"Entity {id_or_name} not found")
+        row=row[0]
         row["attributes"] = json.loads(row["attributes"])
         return _to_type(row, Entity)
 
