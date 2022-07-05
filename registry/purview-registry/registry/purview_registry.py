@@ -133,7 +133,7 @@ class PurviewRegistry(Registry):
         result_edges.extend([Edge(
             x['guid'],
             str(entity.id),
-            x['displayText'].split(' to ')[0],
+            x['displayText'].split(' to ')[1],
             relation_lookup[x['attributes']['qualifiedName'].split(self.registry_delimiter)[0]])
              for x in out_edges])
         return result_edges
@@ -174,10 +174,8 @@ class PurviewRegistry(Registry):
             upstream_entities + downstream_entities,
             upstream_edges + downstream_edges)
 
-    def _get_edges(self, ids: list[UUID], types: list[RelationshipType] = []) -> list[Edge]:
+    def _get_edges(self, ids: list[UUID]) -> list[Edge]:
         all_edges = set()
-        if types ==[]:
-            types = [RelationshipType.BelongsTo,RelationshipType.Consumes,RelationshipType.Contains,RelationshipType.Produces]
         for id in ids:
             neighbours = self.get_all_neighbours(id)
             for neighbour in neighbours:
