@@ -1,4 +1,5 @@
 import os
+from re import sub
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, FastAPI, HTTPException
@@ -46,7 +47,7 @@ def get_project_datasources(project: str) -> list:
     p = registry.get_entity(project)
     source_ids = [s.id for s in p.attributes.sources]
     sources = registry.get_entities(source_ids)
-    return list([e.to_dict() for e in sources])
+    return list([to_camel(e.to_dict()) for e in sources])
 
 
 @router.get("/projects/{project}/features")
@@ -56,13 +57,13 @@ def get_project_features(project: str, keyword: Optional[str] = None) -> list:
         feature_ids = [s.id for s in p.attributes.anchor_features] + \
             [s.id for s in p.attributes.derived_features]
         features = registry.get_entities(feature_ids,True)
-        return list([e.to_dict() for e in features])
+        return list([to_camel(e.to_dict()) for e in features])
     else:
         efs = registry.search_entity(
             keyword, [EntityType.AnchorFeature, EntityType.DerivedFeature])
         feature_ids = [ef.id for ef in efs]
         features = registry.get_entities(feature_ids)
-        return list([e.to_dict() for e in features])
+        return list([to_camel(e.to_dict()) for e in features])
 
 
 @router.get("/features/{feature}")
@@ -77,7 +78,7 @@ def get_feature(feature: str) -> dict:
 @router.get("/features/{feature}/lineage")
 def get_feature_lineage(feature: str) -> dict:
     lineage = registry.get_lineage(feature)
-    return lineage.to_dict()
+    return to_camel(lineage.to_dict())
 
 
 @router.post("/projects")
