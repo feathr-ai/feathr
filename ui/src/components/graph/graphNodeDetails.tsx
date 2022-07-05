@@ -48,30 +48,30 @@ const GraphNodeDetails: React.FC = () => {
             { feature?.attributes.transformation &&
                 <Card>
                   <Title level={4}>Transformation</Title>
-                  { feature.attributes.transformation.transform_expr &&
-                      <p>Expression: { feature.attributes.transformation.transform_expr }</p> }
+                  { feature.attributes.transformation.transformExpr &&
+                      <p>Expression: { feature.attributes.transformation.transformExpr }</p> }
                   { feature.attributes.transformation.filter &&
                       <p>Filter { feature.attributes.transformation.filter }</p> }
-                  { feature.attributes.transformation.agg_func &&
-                      <p>Aggregation: { feature.attributes.transformation.agg_func }</p> }
+                  { feature.attributes.transformation.aggFunc &&
+                      <p>Aggregation: { feature.attributes.transformation.aggFunc }</p> }
                   { feature.attributes.transformation.limit &&
                       <p>Limit: { feature.attributes.transformation.limit }</p> }
-                  { feature.attributes.transformation.group_by &&
-                      <p>Group By: { feature.attributes.transformation.group_by }</p> }
+                  { feature.attributes.transformation.groupBy &&
+                      <p>Group By: { feature.attributes.transformation.groupBy }</p> }
                   { feature.attributes.transformation.window &&
                       <p>Window: { feature.attributes.transformation.window }</p> }
-                  { feature.attributes.transformation.def_expr &&
-                      <p>Expression: { feature.attributes.transformation.def_expr }</p> }
+                  { feature.attributes.transformation.defExpr &&
+                      <p>Expression: { feature.attributes.transformation.defExpr }</p> }
                 </Card>
             }
             { feature?.attributes.key && feature.attributes.key.length > 0 &&
                 <Card>
                     <Title level={4}>Key</Title>
-                    <p>Full name: { feature.attributes.key[0].full_name }</p>
+                    <p>Full name: { feature.attributes.key[0].fullName }</p>
                     <p>Description: { feature.attributes.key[0].description }</p>
-                    <p>Key column: { feature.attributes.key[0].key_column }</p>
-                    <p>Key column alias: { feature.attributes.key[0].key_column_alias }</p>
-                    <p>Key column type: { feature.attributes.key[0].key_column_type }</p>
+                    <p>Key column: { feature.attributes.key[0].keyColumn }</p>
+                    <p>Key column alias: { feature.attributes.key[0].keyColumnAlias }</p>
+                    <p>Key column type: { feature.attributes.key[0].keyColumnType }</p>
                 </Card>
             }
             { feature?.attributes.type &&
