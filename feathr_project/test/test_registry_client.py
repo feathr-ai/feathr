@@ -20,7 +20,7 @@ def test_parse_source():
             "name": "nycTaxiBatchSource",
             "path": "wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
             "preprocessing": "    def add_new_dropoff_and_fare_amount_column(df: DataFrame):\n        df = df.withColumn(\"new_lpep_dropoff_datetime\", col(\"lpep_dropoff_datetime\"))\n        df = df.withColumn(\"new_fare_amount\", col(\"fare_amount\") + 1000000)\n        return df\n",
-            "qualifiedName": "feathr_ci_registry_12_33_182947__nycTaxiBatchSource",
+            "qualifiedName": "feathr_getting_started__nycTaxiBatchSource",
             "tags": {
                 "for_test_purpose": "true"
             },
@@ -31,7 +31,7 @@ def test_parse_source():
         "labels": [],
         "lastModifiedTS": "1",
         "name": "nycTaxiBatchSource",
-        "qualifiedName": "feathr_ci_registry_12_33_182947__nycTaxiBatchSource",
+        "qualifiedName": "feathr_getting_started__nycTaxiBatchSource",
         "status": "Active",
         "typeName": "feathr_source_v1"
     }'''
@@ -40,7 +40,7 @@ def test_parse_source():
     assert source.name == "nycTaxiBatchSource"
     assert source.path == "wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv"
     assert source._registry_id == UUID("c4a0ae0f-09cc-43bf-94e9-21ff178fbda6")
-    assert source._qualified_name == "feathr_ci_registry_12_33_182947__nycTaxiBatchSource"
+    assert source._qualified_name == "feathr_getting_started__nycTaxiBatchSource"
 
 
 def test_parse_anchor():
@@ -51,24 +51,24 @@ def test_parse_anchor():
                     "guid": "2380fe5b-ce2a-401e-98bf-af8b98460f67",
                     "typeName": "feathr_anchor_feature_v1",
                     "uniqueAttributes": {
-                        "qualifiedName": "feathr_ci_registry_12_33_182947__request_features__f_day_of_week"
+                        "qualifiedName": "feathr_getting_started__request_features__f_day_of_week"
                     }
                 },
                 {
                     "guid": "103baca1-377a-4ddf-8429-5da91026c269",
                     "typeName": "feathr_anchor_feature_v1",
                     "uniqueAttributes": {
-                        "qualifiedName": "feathr_ci_registry_12_33_182947__request_features__f_trip_time_duration"
+                        "qualifiedName": "feathr_getting_started__request_features__f_trip_time_duration"
                     }
                 }
             ],
             "name": "request_features",
-            "qualifiedName": "feathr_ci_registry_12_33_182947__request_features",
+            "qualifiedName": "feathr_getting_started__request_features",
             "source": {
                 "guid": "a4cfbc03-c65d-4f32-be3d-1d11247c9cdd",
                 "typeName": "feathr_source_v1",
                 "uniqueAttributes": {
-                    "qualifiedName": "feathr_ci_registry_12_33_182947__PASSTHROUGH"
+                    "qualifiedName": "feathr_getting_started__PASSTHROUGH"
                 }
             },
             "tags": {
@@ -80,7 +80,7 @@ def test_parse_anchor():
         "labels": [],
         "lastModifiedTS": "1",
         "name": "request_features",
-        "qualifiedName": "feathr_ci_registry_12_33_182947__request_features",
+        "qualifiedName": "feathr_getting_started__request_features",
         "status": "Active",
         "typeName": "feathr_anchor_v1"
     }'''
@@ -88,7 +88,7 @@ def test_parse_anchor():
     # Parsed anchor is empty, features and source are added later
     assert anchor.name == "request_features"
     assert anchor._registry_id == UUID("260325a5-27f9-40d1-8697-c727feb1dbdc")
-    assert anchor._qualified_name == "feathr_ci_registry_12_33_182947__request_features"
+    assert anchor._qualified_name == "feathr_getting_started__request_features"
 
 
 def test_parse_feature():
@@ -104,7 +104,7 @@ def test_parse_feature():
                 }
             ],
             "name": "f_is_long_trip_distance",
-            "qualifiedName": "feathr_ci_registry_12_33_182947__request_features__f_is_long_trip_distance",
+            "qualifiedName": "feathr_getting_started__request_features__f_is_long_trip_distance",
             "tags": {},
             "transformation": {
                 "transformExpr": "cast_float(trip_distance)>30"
@@ -121,7 +121,7 @@ def test_parse_feature():
         "labels": [],
         "lastModifiedTS": "1",
         "name": "f_is_long_trip_distance",
-        "qualifiedName": "feathr_ci_registry_12_33_182947__request_features__f_is_long_trip_distance",
+        "qualifiedName": "feathr_getting_started__request_features__f_is_long_trip_distance",
         "status": "Active",
         "typeName": "feathr_anchor_feature_v1"
     }'''
@@ -134,7 +134,7 @@ def test_parse_feature():
     assert isinstance(f.transform, ExpressionTransformation)
     assert f.transform.expr == "cast_float(trip_distance)>30"
     # Hidden properties
-    assert f._qualified_name == "feathr_ci_registry_12_33_182947__request_features__f_is_long_trip_distance"
+    assert f._qualified_name == "feathr_getting_started__request_features__f_is_long_trip_distance"
     assert f._registry_id == UUID("dc24b1d5-206d-40db-b10a-606dd16a0297")
 
 
@@ -147,7 +147,7 @@ def test_parse_derived_feature():
                     "guid": "c626c41c-d6c2-4b16-a267-6cdeea497c52",
                     "typeName": "feathr_anchor_feature_v1",
                     "uniqueAttributes": {
-                        "qualifiedName": "feathr_ci_registry_12_33_182947__f_trip_time_rounded"
+                        "qualifiedName": "feathr_getting_started__f_trip_time_rounded"
                     }
                 }
             ],
@@ -161,7 +161,7 @@ def test_parse_derived_feature():
                 }
             ],
             "name": "f_trip_time_rounded_plus",
-            "qualifiedName": "feathr_ci_registry_12_33_182947__f_trip_time_rounded_plus",
+            "qualifiedName": "feathr_getting_started__f_trip_time_rounded_plus",
             "tags": {},
             "transformation": {
                 "transformExpr": "f_trip_time_rounded + 100"
@@ -178,7 +178,7 @@ def test_parse_derived_feature():
         "labels": [],
         "lastModifiedTS": "1",
         "name": "f_trip_time_rounded_plus",
-        "qualifiedName": "feathr_ci_registry_12_33_182947__f_trip_time_rounded_plus",
+        "qualifiedName": "feathr_getting_started__f_trip_time_rounded_plus",
         "status": "Active",
         "typeName": "feathr_derived_feature_v1"
     }'''
@@ -188,7 +188,7 @@ def test_parse_derived_feature():
     assert len(df.key) == 1
     assert df.key[0].key_column_type == ValueType.UNSPECIFIED
     # Hidden properties
-    assert df._qualified_name == "feathr_ci_registry_12_33_182947__f_trip_time_rounded_plus"
+    assert df._qualified_name == "feathr_getting_started__f_trip_time_rounded_plus"
     assert df._registry_id == UUID("479c6306-5fdb-4e06-9008-c18f68db52a4")
 
 def test_parse_project():
@@ -208,25 +208,25 @@ def test_parse_project():
 
 def test_registry_client_list_features():
     c = _FeatureRegistry(project_name="p", endpoint="https://feathr-sql-registry.azurewebsites.net/api/v1")
-    f = [e["qualifiedName"] for e in c.list_registered_features("feathr_ci_registry_12_33_182947")]
+    f = [e["qualifiedName"] for e in c.list_registered_features("feathr_getting_started")]
     print(f)
     assert len(f)==9
     for i in f:
-        assert i.startswith("feathr_ci_registry_12_33_182947__")
+        assert i.startswith("feathr_getting_started__")
         
 def test_registry_client_load():
     c = _FeatureRegistry(project_name="p", endpoint="https://feathr-sql-registry.azurewebsites.net/api/v1")
-    (anchors, derived_features) = c.get_features_from_registry("feathr_ci_registry_12_33_182947")
+    (anchors, derived_features) = c.get_features_from_registry("feathr_getting_started")
     assert len(anchors)==2
     request_features = [a for a in anchors if a.name=='request_features'][0]
     assert isinstance(request_features.source, InputContext)
     assert len(request_features.features)==4
     aggregationFeatures = [a for a in anchors if a.name=='aggregationFeatures'][0]
-    assert len(aggregationFeatures.features)==2
+    assert len(aggregationFeatures.features)==3
     assert isinstance(aggregationFeatures.source, HdfsSource)
     assert aggregationFeatures.source.name=="nycTaxiBatchSource"
-    assert aggregationFeatures.source.path=="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv"
-    assert len(derived_features)==3
+    assert aggregationFeatures.source.path=="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv"
+    assert len(derived_features)==2
 
 def test_create():
     project_name = f"feathr_registry_client_test_{int(time.time())}"
