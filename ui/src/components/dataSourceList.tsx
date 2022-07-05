@@ -45,8 +45,8 @@ const DataSourceList: React.FC = () => {
       key: 'attributes',
       align: 'center' as 'center',
       width: 80,
-      render: () => {
-        return "BatchFile"
+      render: (row: DataSourceAttributes) => {
+        return row.type;
       },
       onCell: () => {
         return {
