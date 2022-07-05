@@ -178,7 +178,7 @@ class TypedKey(ToDict):
     def to_dict(self) -> dict:
         ret = {
             "keyColumn": self.key_column,
-            "keyColumn_type": self.key_column_type.name,
+            "keyColumnType": self.key_column_type.name,
         }
         if self.full_name is not None:
             ret["fullName"] = self.full_name
