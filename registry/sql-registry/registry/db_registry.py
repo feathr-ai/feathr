@@ -312,7 +312,7 @@ class DbRegistry(Registry):
             r2 = []
             if definition.input_derived_features:
                 c.execute(
-                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in %s and entity_type = %s ''', (tuple([str(id) for id in definition.input_anchor_features]), str(EntityType.DerivedFeature)))
+                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in %s and entity_type = %s ''', (tuple([str(id) for id in definition.input_derived_features]), str(EntityType.DerivedFeature)))
                 r2 = c.fetchall()
                 if len(r2) != len(definition.input_derived_features):
                     # TODO: More detailed error
