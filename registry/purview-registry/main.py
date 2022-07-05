@@ -17,6 +17,20 @@ except:
     pass
 print("Using API BASE: ", rp)
 
+def to_camel(s):
+    if not s:
+        return s
+    if isinstance(s, str):
+        if "_" in s:
+            s = sub(r"(_)+", " ", s).title().replace(" ", "")
+            return ''.join([s[0].lower(), s[1:]])
+        return s
+    elif isinstance(s, list):
+        return [to_camel(i) for i in s]
+    elif isinstance(s, dict):
+        return dict([(to_camel(k), s[k]) for k in s])
+
+
 # os.environ['PURVIEW_NAME'] = "feathrazuretest3-purview1"
 purview_name = os.environ["PURVIEW_NAME"]
 registry = PurviewRegistry(purview_name)
