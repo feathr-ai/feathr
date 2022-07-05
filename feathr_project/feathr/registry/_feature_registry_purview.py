@@ -41,7 +41,7 @@ from feathr.definition.transformation import (ExpressionTransformation, Transfor
 from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
 
-class _FeatureRegistry(FeathrRegistry):
+class _PurviewRegistry(FeathrRegistry):
     """
     Initializes the feature registry, doing the following:
     - Use an DefaultAzureCredential() to communicate with Azure Purview

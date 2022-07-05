@@ -27,10 +27,12 @@ class DerivedFeature(FeatureBase):
                 transform: Union[str, RowTransformation],
                 key: Optional[Union[TypedKey, List[TypedKey]]] = [DUMMY_KEY],
                 registry_tags: Optional[Dict[str, str]] = None,
-                ):
+                **kwargs):
         super(DerivedFeature, self).__init__(name, feature_type, key=key, transform=transform, registry_tags=registry_tags)
         self.input_features = input_features if isinstance(input_features, List) else [input_features]
-        self.validate_feature()
+        # Add a hidden option to skip validation, Anchor could be half-constructed during the loading from registry
+        if not kwargs.get("__no_validate", False) :
+            self.validate_feature()
 
     def validate_feature(self):
         """Validate the derived feature is valid"""
