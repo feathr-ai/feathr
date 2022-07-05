@@ -28,8 +28,7 @@ def to_camel(s):
     elif isinstance(s, list):
         return [to_camel(i) for i in s]
     elif isinstance(s, dict):
-        return dict([(to_camel(k), s[k]) for k in s])
-
+        return dict([(to_camel(k), to_camel(s[k]) if isinstance(s[k],dict) or isinstance(s[k],list) else s[k]) for k in s])
 
 # os.environ['PURVIEW_NAME'] = "feathrazuretest3-purview1"
 purview_name = os.environ["PURVIEW_NAME"]
@@ -53,12 +52,12 @@ def get_projects() -> list[str]:
 
 @router.get("/projects/{project}")
 def get_projects(project: str) -> dict:
-    return registry.get_project(project).to_dict()
+    return to_camel(registry.get_project(project).to_dict())
 
 
 @router.get("/projects/{project}/datasources")
 def get_project_datasources(project: str) -> list:
-    p = registry.get_entity(project)
+    p = registry.get_entity(project,True)
     source_ids = [s.id for s in p.attributes.sources]
     sources = registry.get_entities(source_ids)
     return list([to_camel(e.to_dict()) for e in sources])
@@ -86,7 +85,7 @@ def get_feature(feature: str) -> dict:
     if e.entity_type not in [EntityType.DerivedFeature, EntityType.AnchorFeature]:
         raise HTTPException(
             status_code=404, detail=f"Feature {feature} not found")
-    return e
+    return to_camel(e.to_dict())
 
 
 @router.get("/features/{feature}/lineage")
