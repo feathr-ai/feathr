@@ -108,6 +108,35 @@ class PurviewRegistry(Registry):
         # It is a name
         return self._get_id_by_qualfiedName(id_or_name)
     
+    def get_all_neighbours(self,id_or_name: Union[str, UUID]) -> list[Edge]:
+        entity = self.get_entity(id_or_name)
+        relation_lookup = {x.name.upper():x for x in RelationshipType}
+        related_entities = self.purview_client.get_entity_lineage(str(entity.id),direction="BOTH")['guidEntityMap']        
+        process_entities = [v for _,v in related_entities.items() if v['typeName']=="Process"]
+
+        in_edges = []
+        out_edges=[]
+        result_edges = []
+        for process_entity in process_entities:
+            qualified_name_segs = process_entity['attributes']['qualifiedName'].split(self.registry_delimiter)
+            if qualified_name_segs[2]==str(entity.id):
+                in_edges.append(process_entity)
+            elif qualified_name_segs[1] == str(entity.id):
+                out_edges.append(process_entity)
+        
+        result_edges.extend([Edge(
+            x['guid'],
+            x['displayText'].split(' to ')[0],
+            str(entity.id),
+            relation_lookup[x['attributes']['qualifiedName'].split(self.registry_delimiter)[0]])
+             for x in in_edges])
+        result_edges.extend([Edge(
+            x['guid'],
+            str(entity.id),
+            x['displayText'].split(' to ')[1],
+            relation_lookup[x['attributes']['qualifiedName'].split(self.registry_delimiter)[0]])
+             for x in out_edges])
+        return result_edges
     def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
         """
         Get list of edges with specified type that connect to this entity.
@@ -145,11 +174,43 @@ class PurviewRegistry(Registry):
             upstream_entities + downstream_entities,
             upstream_edges + downstream_edges)
 
+    def _get_edges(self, ids: list[UUID]) -> list[Edge]:
+        all_edges = set()
+        for id in ids:
+            neighbours = self.get_all_neighbours(id)
+            for neighbour in neighbours:
+                if neighbour.from_id in ids \
+                    and neighbour.to_id in ids:
+                    all_edges.add(neighbour)
+        return list(all_edges)
+        
     def get_project(self, id_or_name: Union[str, UUID]) -> EntitiesAndRelations:
         """
         Get a project and everything inside of it, both entities and edges
         """
-        return self.get_entity(id_or_name,True)
+        project = self.get_entity(id_or_name)
+        edges = set(self.get_neighbors(id_or_name, RelationshipType.Contains))
+        ids = list([e.to_id for e in edges])
+        all_edges = self._get_edges(ids)
+        children = self.get_entities(ids)
+        child_map = dict([(e.id, e) for e in children])
+        project.attributes.children = children
+        for anchor in project.attributes.anchors:
+            conn = self.get_neighbors(anchor.id, RelationshipType.Contains)
+            feature_ids = [e.to_id for e in conn]
+            edges = edges.union(conn)
+            features = list([child_map[id] for id in feature_ids])
+            anchor.attributes.features = features
+            source_id = self.get_neighbors(
+                anchor.id, RelationshipType.Consumes)[0].to_id
+            anchor.attributes.source = child_map[source_id]
+        for df in project.attributes.derived_features:
+            conn = self.get_neighbors(anchor.id, RelationshipType.Consumes)
+            input_ids = [e.to_id for e in conn]
+            edges = edges.union(conn)
+            features = list([child_map[id] for id in input_ids])
+            df.attributes.input_features = features
+        return EntitiesAndRelations([project] + children, list(edges.union(all_edges)))
 
     def search_entity(self,
                       keyword: str,
@@ -158,7 +219,20 @@ class PurviewRegistry(Registry):
         """
         Search entities with specified type that also match the keyword in a project
         """
-        pass
+        query_result = self.purview_client.search_entities(keyword)
+        result = []
+        for entity in query_result:
+            qualified_name = entity["qualifiedName"]
+            entity_id = entity['id']
+            entity_type = entity['entityType']
+            if type and entity_type in [str(x) for x in type]:
+                if project:
+                    if not (qualified_name.startswith(project) or entity_id == str(project)):
+                        continue
+                result.append(EntityRef(UUID(entity_id),entity_type,qualified_name))
+        return result
+            
+
 
     def create_project(self, definition: ProjectDef) -> UUID:
         attrs = definition.to_attr().to_dict()
