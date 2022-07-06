@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
 import { AxiosError } from 'axios';
 import { fetchFeature } from '../../api';
 import { Feature } from "../../models/model";
+import { FeatureLineage } from "../../models/model";
+import { fetchFeatureLineages } from "../../api";
+import { generateEdge, generateNode } from "../../components/graph/utils";
+import { Elements } from 'react-flow-renderer';
+import Graph from "../../components/graph/graph";
 
 const { Title } = Typography;
 
@@ -118,6 +123,86 @@ function InputDerivedFeatures(props: { project: string, feature: Feature }) {
   </>;
 }
 
+function FeatureLineageGraph() {
+  const [searchParams] = useSearchParams();
+  const { featureId } = useParams() as Params;
+  const nodeId = searchParams.get('nodeId') as string;
+
+  const [lineageData, setLineageData] = useState<FeatureLineage>({ guidEntityMap: null, relations: null });
+  const [elements, setElements] = useState<Elements>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchLineageData = async () => {
+      setLoading(true);
+      const data = await fetchFeatureLineages(featureId);
+      setLineageData(data);
+      setLoading(false);
+    };
+    
+    fetchLineageData();
+  }, [featureId]);
+
+  // Generate graph data on client side, invoked after graphData or featureType is changed
+  useEffect(() => {
+    const generateGraphData = async () => {
+      if (lineageData.guidEntityMap === null && lineageData.relations === null) {
+        return;
+      }
+
+      const elements: Elements = [];
+      const elementObj: Record<string, string> = {};
+
+      for (let index = 0; index < Object.values(lineageData.guidEntityMap).length; index++) {
+        const currentNode: any = Object.values(lineageData.guidEntityMap)[index];
+
+        const nodeId = currentNode.guid;
+
+        const node = generateNode({
+          index,
+          nodeId,
+          currentNode
+        });
+
+        elementObj[nodeId] = index?.toString();
+        elements.push(node);
+      }
+
+      console.log(lineageData.relations.length);
+      for (let index = 0; index < lineageData.relations.length; index++) {
+        const { fromEntityId: to, toEntityId: from, relationshipType } = lineageData.relations[index];
+        const edge = generateEdge({ obj: elementObj, from, to });
+        if (edge?.source && edge?.target) {
+          if (relationshipType === "Consumes") {
+            elements.push(edge);
+          }
+        }
+      }
+
+      setElements(elements);
+    };
+
+    generateGraphData();
+  }, [lineageData])
+
+  return <>
+  {
+    loading
+    ? (
+      <Spin indicator={ <LoadingOutlined style={ { fontSize: 24 } } spin /> } />
+    )
+    : (
+      <Col span={ 24 }>
+        <Card className="card">
+          <Title level={ 4 }>Lineage</Title>
+          <Graph data={ elements } nodeId={ nodeId } />
+        </Card>
+      </Col>
+    )
+  }
+  </>;
+}
+
 type Params = {
   project: string;
   featureId: string;
@@ -193,6 +278,7 @@ const FeatureDetails: React.FC = () => {
                     <FeatureTransformation feature={ data } />
                     <FeatureKey feature={ data } />
                     <FeatureType feature={ data } />
+                    <FeatureLineageGraph />
                   </Row>
                 </div>
               </Card>
