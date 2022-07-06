@@ -2,8 +2,6 @@ from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 from enum import Enum
-from numpy import number
-
 
 class User(BaseModel):
     id: str
@@ -38,7 +36,7 @@ RoleAccessMapping = {
 
 class UserRole():
     def __init__(self,
-                 record_id: number,
+                 record_id: int,
                  project_name: str,
                  user_name: str,
                  role_name: str,
@@ -79,7 +77,7 @@ class UserRole():
 
 class Access():
     def __init__(self,
-                 record_id: number,
+                 record_id: int,
                  project_name: str,
                  access_name: str) -> None:
         self.record_id = record_id

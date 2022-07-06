@@ -1,10 +1,10 @@
 import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from access_control import config
+from rbac import config
 from api import router as api_router
 
-rp = config.API_BASE
+rp = config.RBAC_API_BASE
 
 def get_application() -> FastAPI:
     application = FastAPI()
