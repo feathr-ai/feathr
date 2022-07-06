@@ -4,16 +4,16 @@ envfile=/usr/share/nginx/html/env-config.js
 
 echo "window.environment = {" > $envfile
 
-if [[ -z "${AZURE_CLIENT_ID}" ]]; then
-    echo "Environment variable AZURE_CLIENT_ID is not defined, skipping"
+if [[ -z "${REACT_APP_AZURE_CLIENT_ID}" ]]; then
+    echo "Environment variable REACT_APP_AZURE_CLIENT_ID is not defined, skipping"
 else
-    echo "  \"azureClientId\": \"${AZURE_CLIENT_ID}\"," >> $envfile
+    echo "  \"azureClientId\": \"${REACT_APP_AZURE_CLIENT_ID}\"," >> $envfile
 fi
 
-if [[ -z "${AZURE_TENANT_ID}" ]]; then
-    echo "Environment variable AZURE_TENANT_ID is not defined, skipping"
+if [[ -z "${REACT_APP_AZURE_TENANT_ID}" ]]; then
+    echo "Environment variable REACT_APP_AZURE_TENANT_ID is not defined, skipping"
 else
-    echo "  \"azureTenantId\": \"${AZURE_TENANT_ID}\"," >> $envfile
+    echo "  \"azureTenantId\": \"${REACT_APP_AZURE_TENANT_ID}\"," >> $envfile
 fi
 
 echo "}" >> $envfile

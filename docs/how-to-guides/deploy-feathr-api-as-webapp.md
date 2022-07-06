@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feathr API Deployment
-parent: Feathr How-to Guides
+parent: How-to Guides
 ---
 
 # Feathr API

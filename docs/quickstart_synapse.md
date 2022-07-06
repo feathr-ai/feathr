@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Feathr Quick Start Guide With Azure Synapse
+title: Quick Start Guide With Azure Synapse
 nav_order: 2
 ---
 
-# Feathr Quickstart Guide
+# Feathr Quickstart Guide With Azure Synapse
 
 ## Overview
 
@@ -156,7 +156,7 @@ feature_query = FeatureQuery(feature_list=["f_location_avg_fare"], key=[location
 # Observation dataset settings
 settings = ObservationSettings(
     observation_path="abfss://green_tripdata_2020-04.csv",    # Path to your observation data
-    event_timestamp_column="lpep_dropoff_datetime",           # Event timepstamp field for your data, optional
+    event_timestamp_column="lpep_dropoff_datetime",           # Event timestamp field for your data, optional
     timestamp_format="yyyy-MM-dd HH:mm:ss")                   # Event timestamp format， optional
 
 # Prepare training data by joining features to the input (observation) data.
@@ -196,5 +196,5 @@ client.multi_get_online_features("nycTaxiDemoFeature", ["239", "265"], ['f_locat
 
 - Run the [demo notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to understand the workflow of Feathr.
 - Read the [Feathr Documentation Page](https://linkedin.github.io/feathr/) page to understand the Feathr abstractions.
-- Read guide to understand [how to setup Feathr on Azure](../how-to-guides/azure-deployment.md).
+- Read guide to understand [how to setup Feathr on Azure](https://linkedin.github.io/feathr/how-to-guides/azure-deployment.html).
 - Read [Python API Documentation](https://feathr.readthedocs.io/en/latest/)

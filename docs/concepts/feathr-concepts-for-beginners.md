@@ -1,27 +1,27 @@
 ---
 layout: default
-title: Feathr Concepts for Beginners
+title: Concepts for Beginners
 nav_order: 2
 ---
 
-# Feathr Concepts for Beginners
+# Concepts for Beginners
 
-In this guide, we will cover the high level concepts for Feathr. Don't treat this as a user manual, instead treat this as blogpost to cover the highlevel motivations on why Feathr introduces those concepts.
+In this guide, we will cover the high level concepts for **Feathr**. Don't treat this as a user manual, instead treat this as blog post to cover the high level motivations on why Feathr introduces those concepts.
 
 ## What are `Observation` data, and why does Feathr need `key(s)`, `Anchor`, `Source`?
 
-In order to fully utilize Feathr's power, we need to understand what Feathr is expecting. Let's take an example of building a recommendation system, where you have a user click streams and you want to add addtional features on top of this click streams, say user historical clicks in last 1 hour, and the user locations.
+In order to fully utilize Feathr's power, we need to understand what Feathr is expecting. Let's take an example of building a recommendation system, where you have a user click streams and you want to add additional features on top of this click streams, say user historical clicks in last 1 hour, and the user locations.
 
 ![Feature Feature Concept](../images/concept_illustration.jpg)
 
-In Feathr, always think that there is some `Observation` dataset (the above case will be the click streams) which is the central dataset that you will be using. The observation dataset will usually have at least two columns: 
+In Feathr, always think that there is some `Observation` dataset (the above case will be the click streams) which is the central dataset that you will be using. The observation dataset will usually have at least two columns:
 
-- a timestamp column (indicating when this event happened) 
+- a timestamp column (indicating when this event happened)
 - a column containing IDs, and with other possible fields.
 
 Think this `Observation Data` just as a set of IDs that you want to query on, and that is why some other feature store call this "Entity DataFrame". Also this observation data usually come with timestamp so you can do [point in time join](#point-in-time-joins-and-aggregations).
 
-Because the observation data just contains ID and timestamp, usually you will need addtional features to augment this `observation` dataset. For example, you want to augment the user click stream data by adding some historical features, such as total amount user spent in the last week. This additional dataset is usually stored in a different storage, say in your historical database, or data lake.
+Because the observation data just contains ID and timestamp, usually you will need additional features to augment this `observation` dataset. For example, you want to augment the user click stream data by adding some historical features, such as total amount user spent in the last week. This additional dataset is usually stored in a different storage, say in your historical database, or data lake.
 
 In this case, how would we "link" the `observation` dataset, and the "additional dataset"? In Feathr, think of this process as joining two tables.
 
@@ -54,7 +54,7 @@ request_anchor = FeatureAnchor(name="request_features",
 
 ## Motivation on `Derived Feature`
 
-That sounds all good, but what if we want to share a feature, and others want to build additional features on top of that feature? Thats's why there is a concept in Feathr called `derived feature`, which allows you to calculate features based on other features, with certain transformation support. 
+That sounds all good, but what if we want to share a feature, and others want to build additional features on top of that feature? Thats's why there is a concept in Feathr called `derived feature`, which allows you to calculate features based on other features, with certain transformation support.
 
 In practice, people can build features on top of other features. For example, you have a recommendation system, one of your teammates have built an embedding for users, and another team mate have built an embedding on items, and you can build an additional feature called "user_item_similarity" on those two features:
 
@@ -69,6 +69,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       input_features=[user_embedding, item_embedding],
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
+
 ## Motivation on "INPUT_CONTEXT"
 
 In many of the cases, we not only want to define features on the source data (`user_profile_table` and `user_historical_buying_table` in the above case), but also want to define features on the observation data (`user_click_stream_table` in the above case). `INPUT_CONTEXT` simply means that those features will be defined on `Observation Data` instead of `Source`. That is why you will see something like this in Feathr:
@@ -79,17 +80,17 @@ request_anchor = FeatureAnchor(name="request_features",
                                features=features)
 ```
 
-This is less recommended as it has many limitations (for example, you cannot define UDFs on top of `INPUT_CONTEXT`). 
+This is less recommended as it has many limitations (for example, you cannot define UDFs on top of `INPUT_CONTEXT`).
 
 ## Why does Feathr need `Feature Query`?
 
-After setting the above concept on `Anchors`, `Sources`, and `Features`, we want to explain the motivation on `feature query`. But before that, we also want to introduce the workflows that we usually see in organizations - the "feature producer" and "feature consumer" patttern, like below:
+After setting the above concept on `Anchors`, `Sources`, and `Features`, we want to explain the motivation on `feature query`. But before that, we also want to introduce the workflows that we usually see in organizations - the "feature producer" and "feature consumer" pattern, like below:
 
 ![Feature Producer and Consumer](../images/feature_store_producer_consumer.jpg)
 
 As you can see, there are usually "feature producers" where they will define features and put them in the feature registry. Those feature producers will use the `Anchors`, `Source`, and `Feature` that we talked above to produce (or define) the features.
 
-However, there are also a group of other people who will be the feature consumers. They don't care about how the features are defined, they "just know" that there are some features availble for use, for example a feature describing user activities, which they can reuse to predict whether it is a fraud activity or not. In this case, feature consumers can select which set of features they want to put in `FeatureQuery`, so that they can get the features and join them on the input observation data.
+However, there are also a group of other people who will be the feature consumers. They don't care about how the features are defined, they "just know" that there are some features available for use, for example a feature describing user activities, which they can reuse to predict whether it is a fraud activity or not. In this case, feature consumers can select which set of features they want to put in `FeatureQuery`, so that they can get the features and join them on the input observation data.
 
 Since this is a process where we are `joining` the observation data with the defined feature data, you need to specify the observation data location and the features you want to get, as well as the keys to join on; the result will be the observation data plus the additional features.
 
@@ -128,12 +129,9 @@ client.get_online_features(feature_table = "agg_features",
 An illustration of the concepts and process that we talked about is like this:
 ![Feature Join Process](../images/observation_data.jpg)
 
-
-
-
 ## Point in time joins and aggregations
 
-Assuming users are already familar with the "regular" joins, for example inner join or outer join, and in many of the use cases, we care about time.
+Assuming users are already familiar with the "regular" joins, for example inner join or outer join, and in many of the use cases, we care about time.
 
 For example, if we are building a recommendation system to predict whether a certain user will click on a item or not at 2:00. It's very important that we don't use features that's later than 2:00 in the model (which is called data leakage). This is a common problem for data scientists for building models, and that's why Feathr provides a capability called Point in time Join (and with other time based aggregations) to solve this problem. That is the motivation on why end users need to specify the timestamp column in data source, so that Feathr can take care of the point in time join.
 
@@ -141,4 +139,4 @@ For more details on how to utilize Feathr to perform point-in-time joins, refer 
 
 ## Next Steps
 
-After you are familar with the above concepts, please check out the [quick start guide](../quickstart_synapse.md) to get your hands dirty. Enjoy!
+After you are familiar with the above concepts, please check out the [quick start guide](../quickstart_synapse.md) to get your hands dirty. Enjoy!

@@ -11,10 +11,10 @@ import redis
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from pyhocon import ConfigFactory
+from feathr.registry.feature_registry import default_registry_client
 
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
 
-from feathr.registry._feature_registry_purview import _FeatureRegistry
 from feathr.definition._materialization_utils import _to_materialization_config
 from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
@@ -176,12 +176,7 @@ class FeathrClient(object):
 
 
         # initialize registry
-        self.registry_delimiter = self.envutils.get_environment_variable_with_default(
-            'feature_registry', 'purview', 'delimiter')
-        self.azure_purview_name = self.envutils.get_environment_variable_with_default(
-            'feature_registry', 'purview', 'purview_name')
-        # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
-        self.registry = _FeatureRegistry(self.project_name, self.azure_purview_name, self.registry_delimiter, project_registry_tag, config_path = config_path, credential=self.credential)
+        self.registry = default_registry_client(self.project_name, config_path=config_path, credential=self.credential)
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
@@ -207,7 +202,7 @@ class FeathrClient(object):
         if from_context:
             # make sure those items are in `self`
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
-                _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+                self.registry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
                 self.registry.register_features(self.local_workspace_dir, from_context=from_context, anchor_list=self.anchor_list, derived_feature_list=self.derived_feature_list)
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
@@ -253,8 +248,8 @@ class FeathrClient(object):
                 FeaturePrinter.pretty_print_anchors(self.anchor_list)
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
-        """List all the already registered features. If project_name is not provided or is None, it will return all
-        the registered features; otherwise it will only return features under this project
+        """List all the already registered features under the given project.
+        `project_name` must not be None or empty string because it violates the RBAC policy
         """
         return self.registry.list_registered_features(project_name)
 
@@ -448,7 +443,7 @@ class FeathrClient(object):
         # otherwise users will be confused on what are the available features
         # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
         if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
-            _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+            self.registry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
@@ -562,7 +557,7 @@ class FeathrClient(object):
             # otherwise users will be confused on what are the available features
             # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
-                _FeatureRegistry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+                self.registry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 

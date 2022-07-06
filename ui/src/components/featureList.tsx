@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
+import { DownOutlined} from '@ant-design/icons';
 import { Button, Dropdown, Input, Menu, Select, Tooltip, Form, Table } from 'antd';
 import { Feature } from "../models/model";
 import { fetchProjects, fetchFeatures } from "../api";
@@ -115,12 +115,12 @@ const FeatureList: React.FC = () => {
                  style={ { minWidth: "35%", float: "left", paddingLeft: "10px" } }
                  rules={ [{ required: true, message: "Please select a project to start." }] }>
         <Select options={ projects } defaultValue={ project } value={ project } optionFilterProp="label"
-                notFoundContent={ <LoadingOutlined style={ { fontSize: 24 } } spin /> }
+                notFoundContent={ <div>No projects found from server</div> }
                 showSearch={ true } onChange={ onProjectChange }>
         </Select>
       </Form.Item>
       <Input placeholder="keyword" style={ { width: "10%", marginLeft: "5px" } }
-             onChange={ (e) => onKeywordChange(e.target.value) } onPressEnter={ fetchData } />
+             onChange={ (e) => onKeywordChange(e.target.value) } onPressEnter={ onClickSearch } />
       <Button onClick={ onClickSearch } type="primary" style={ { marginLeft: "5px" } }>Search</Button>
       <Table
         dataSource={ tableData }
