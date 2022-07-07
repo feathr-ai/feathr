@@ -61,19 +61,20 @@ export interface DataSource {
   attributes: DataSourceAttributes;
   displayText: string;
   guid: string;
-  labels: string[];
-  name: string;
-  qualifiedName: string;
+  lastModifiedTS: string;
   status: string;
   typeName: string;
   version: string;
 }
 
 export interface DataSourceAttributes {
+  eventTimestampColumn: string;
   name: string;
   path: string;
+  preprocessing: string;
   qualifiedName: string;
   tags: string[];
+  timestampFormat: string;
   type: string;
 }
 
