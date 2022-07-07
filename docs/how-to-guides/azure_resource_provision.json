@@ -10,17 +10,6 @@
         "description": "Resource prefix for all the resource provisioned. This should be an alphanumeric string."
       }
     },
-    "allowAllConnections": {
-      "defaultValue": "true",
-      "allowedValues": [
-        "true",
-        "false"
-      ],
-      "type": "String",
-      "metadata": {
-        "description": "Specifies whether to allow client IPs to connect to Synapse"
-      }
-    },
     "provisionPurview": {
       "defaultValue": "true",
       "allowedValues": [
@@ -29,7 +18,7 @@
       ],
       "type": "String",
       "metadata": {
-        "description": "Whether or not put purview in the provision script"
+        "description": "Whether or not to provision purview as part of deployment script"
       }
     },
     "provisionEventHub": {
@@ -40,7 +29,7 @@
       ],
       "type": "String",
       "metadata": {
-        "description": "Whether or not to deploy eventhub provision script"
+        "description": "Whether or not to provision EventHub as part of deployment script"
       }
     },
     "sqlAdminUsername": {
@@ -55,11 +44,15 @@
         "description": "Specifies the password for admin"
       }
     },
-    "preBuiltFeathrUIDockerImage": {
-      "defaultValue": "feathrfeaturestore/sql-registry",
+    "registryBackend": {
+      "defaultValue": "Azure-SQL",
+      "allowedValues": [
+        "Azure-SQL",
+        "Azure-Purview"
+      ],
       "type": "String",
       "metadata": {
-        "description": "Pre-Built Docker Image of Feathr UI (from dockerhub) with support for specific registry backends. Current supported registry backends are Azure Purview and Azure SQL"
+        "description": "Backend for registry metadata storage. Current supported registry backends are Azure SQL and Azure Purview"
       }
     },
     "azureADClientId": {
@@ -107,7 +100,8 @@
     "sourceBacpacBlobUrl": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-registry-schema.bacpac",
     "bacpacBlobName": "feathr-registry-schema.bacpac",
     "destinationBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('bacpacBlobName'))]",
-    "deploymentScriptName": "CopyBacpacFile"
+    "deploymentScriptName": "CopyBacpacFile",
+    "preBuiltdockerImage": "feathrfeaturestore/sql-registry"
   },
   "functions": [],
   "resources": [
@@ -303,8 +297,7 @@
           "properties": {
             "startIpAddress": "0.0.0.0",
             "endIpAddress": "255.255.255.255"
-          },
-          "condition": "[equals(parameters('allowAllConnections'),'true')]"
+          }
         },
         {
           "type": "firewallrules",
@@ -366,7 +359,7 @@
         "httpsOnly": "true",
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName'))]",
         "siteConfig": {
-          "linuxFxVersion": "[concat('DOCKER|', parameters('preBuiltFeathrUIDockerImage'))]",
+          "linuxFxVersion": "[concat('DOCKER|', variables('preBuiltdockerImage'))]",
           "alwaysOn": true,
           "ftpsState": "Disabled",
           "appSettings": [

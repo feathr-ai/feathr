@@ -11,14 +11,9 @@ Due to the complexity of the possible cloud environment, it is almost impossible
 
 ## Method 1: Provision Azure Resources with Current User's Identity:
 
-Feathr has native cloud integration and getting started with Feathr is very straightforward. You only need three steps:
+Feathr has native cloud integration and getting started with Feathr is very straightforward. Here are the instructions:
 
-1. Get the principal ID of your account by running `az ad signed-in-user show --query id -o tsv` in the link below (Select "Bash" if you are asked to choose one), and write down that value (will be something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`)
-
-[Launch Cloud Shell](https://shell.azure.com/bash)
-
-
-2. To enable authentication on the Feathr UI (which gets created as part of the deployment script) we need to create an Azure Active Directory (AAD) application. Currently it is not possible to create one through ARM template but you can easily create one by running the following CLI commands in the [Cloud Shell](https://shell.azure.com/bash)
+1. To enable authentication on the Feathr UI (which gets created as part of the deployment script) we need to create an Azure Active Directory (AAD) application. Currently it is not possible to create one through ARM template but you can easily create one by running the following CLI commands in the [Cloud Shell](https://shell.azure.com/bash)
 
 ```bash
 # This is the prefix you want to name your resources with, make a note of it, you will need it during deployment.
@@ -43,7 +38,7 @@ echo "AAD_CLIENT_ID: $aad_clientId"
 echo "AZURE_TENANT_ID: $aad_tenantId"
 ``` 
 
-3. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
+2. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
