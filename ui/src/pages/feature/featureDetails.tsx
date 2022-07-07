@@ -170,10 +170,11 @@ function FeatureLineageGraph() {
 
       console.log(lineageData.relations.length);
       for (let index = 0; index < lineageData.relations.length; index++) {
-        const { fromEntityId: to, toEntityId: from, relationshipType } = lineageData.relations[index];
+        var { fromEntityId: from, toEntityId: to, relationshipType } = lineageData.relations[index];
+        if (relationshipType == "Consumes") [from, to] = [to, from];
         const edge = generateEdge({ obj: elementObj, from, to });
         if (edge?.source && edge?.target) {
-          if (relationshipType === "Consumes") {
+          if (relationshipType === "Consumes" || relationshipType == "Produces") {
             elements.push(edge);
           }
         }
