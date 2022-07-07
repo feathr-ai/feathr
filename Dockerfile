@@ -13,8 +13,15 @@ FROM python:3.9
 ## Install dependencies
 RUN apt-get update -y && apt-get install -y nginx
 
-WORKDIR /usr/src/backend
-COPY ./registry/sql-registry /usr/src/backend
+
+WORKDIR /usr/src/backend#
+
+# Copy Purview registry source code and build
+RUN if [ -z "$PURVIEW_NAME" ]; then COPY ./registry/purview-registry /usr/src/backend; fi
+
+# Copy SQL registry source code and build
+RUN if [ -z "$CONNECTION_STR" ]; then COPY ./registry/sql-registry /usr/src/backend; fi
+
 RUN pip install -r requirements.txt
 
 ## Remove default nginx index page and copy ui static bundle files
