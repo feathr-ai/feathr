@@ -497,15 +497,14 @@ class PurviewRegistry(Registry):
             force_update=True)
         logger.info("Feathr Feature Type System Initialized.")
 
-    def _upload_entity_batch(self, entity_batch):
+    def _upload_entity_batch(self, entity_batch:list[AtlasEntity]):
+        # we only support entity creation, update is not supported. 
+        # setting lastModifiedTS ==0 will ensure this, if another entity with ts>=1 exist
+        # upload funtion will fail with 412 Precondition fail.
         for entity in entity_batch:
-            logger.info(f"Creating {entity.qualifiedName} \t ({entity.typeName})")
-            existing_entity = self.purview_client.get_entity(qualifiedName=entity.qualifiedName, typeName=entity.typeName)
-            if existing_entity:
-            # perform attribute check, return id if same, conflict when different.
-                raise HTTPException(CONFLICT,"Entity with same qualified name and type exists")
-        results = self.purview_client.upload_entities(
-            batch=entity_batch)
+            entity.lastModifiedTS="0"
+            results = self.purview_client.upload_entities(
+                batch=entity_batch)
         if results:
             dict = {x.guid: x for x in entity_batch}
             for k, v in results['guidAssignments'].items():
