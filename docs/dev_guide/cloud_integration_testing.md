@@ -1,11 +1,11 @@
 ---
 layout: default
 title: Cloud Integration Test/CI Pipeline
-parent: Feathr Developer Guides
+parent: Developer Guides
 ---
 # Cloud Integration Test/CI Pipeline
 
-We use [GitHub Actions](../.github/workflows/scala.yml) to do cloud integration test. Currently the integration test has 4 jobs:
+We use [GitHub Actions](https://github.com/linkedin/feathr/tree/main/.github/workflows) to do cloud integration test. Currently the integration test has 4 jobs:
 
 - running `sbt test` to verify if the scala/spark related code has passed all the test
 - running `flake8` to lint python scripts and make sure there are no obvious syntax errors

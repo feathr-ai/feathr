@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Button, Card, Col, Row, Space, Spin } from 'antd';
+import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
@@ -7,11 +7,121 @@ import { AxiosError } from 'axios';
 import { fetchFeature } from '../../api';
 import { Feature } from "../../models/model";
 
+const { Title } = Typography;
+
+function FeatureKey(props: { feature: Feature }) {
+
+  const keys = props.feature.attributes.key;
+  console.log(props.feature.attributes);
+  return <>
+    { keys && keys.length > 0 &&
+        <Col span={ 24 }>
+            <Card className="card">
+                <Title level={ 4 }>Key</Title>
+                <p>Full Name: { keys[0].fullName }</p>
+                <p>Key Column: { keys[0].keyColumn }</p>
+                <p>Description: { keys[0].description }</p>
+                <p>Key Column Alias: { keys[0].keyColumnAlias }</p>
+                <p>Key Column Type: { keys[0].keyColumnType }</p>
+            </Card>
+        </Col>
+    }
+  </>;
+}
+
+function FeatureType(props: { feature: Feature }) {
+  const type = props.feature.attributes.type;
+  return <>
+    { type &&
+        <Col span={ 24 }>
+            <Card className="card">
+                <Title level={ 4 }>Type</Title>
+                <p>Dimension Type: { type.dimensionType }</p>
+                <p>Tensor Category: { type.tensorCategory }</p>
+                <p>Type: { type.type }</p>
+                <p>Value Type: { type.valType }</p>
+            </Card>
+        </Col>
+    }
+  </>;
+}
+
+function FeatureTransformation(props: { feature: Feature }) {
+  const transformation = props.feature.attributes.transformation;
+  return <>
+    { transformation &&
+        <Col span={ 24 }>
+            <Card className="card">
+                <Title level={ 4 }>Transformation</Title>
+              { transformation.transformExpr && <p>Expression: { transformation.transformExpr }</p> }
+              { transformation.filter && <p>Filter: { transformation.filter }</p> }
+              { transformation.aggFunc && <p>Aggregation: { transformation.aggFunc }</p> }
+              { transformation.limit && <p>Limit: { transformation.limit }</p> }
+              { transformation.groupBy && <p>Group By: { transformation.groupBy }</p> }
+              { transformation.window && <p>Window: { transformation.window }</p> }
+              { transformation.defExpr && <p>Expression: { transformation.defExpr }</p> }
+            </Card>
+        </Col>
+    }
+  </>;
+}
+
+function InputAnchorFeatures(props: { project: string, feature: Feature }) {
+  const navigate = useNavigate();
+  const inputAnchorFeatures = props.feature.attributes.inputAnchorFeatures;
+  return <>
+    { inputAnchorFeatures && inputAnchorFeatures.length > 0 &&
+        <Col span={ 24 }>
+            <Card style={ {
+              marginTop: "15px",
+              marginRight: "15px",
+              minWidth: "1000px",
+              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
+              borderRadius: "8px"
+            } }>
+                <Title level={ 4 }>Input Anchor Features</Title>
+              {
+                inputAnchorFeatures.map((input_feature) =>
+                  <Button type="link" onClick={ () => {
+                    navigate(`/projects/${ props.project }/features/${ input_feature.guid }`)
+                  } }>{ input_feature.uniqueAttributes.qualifiedName }</Button>)
+              }
+            </Card>
+        </Col>
+    }
+  </>;
+}
+
+function InputDerivedFeatures(props: { project: string, feature: Feature }) {
+  const navigate = useNavigate();
+  const inputDerivedFeatures = props.feature.attributes.inputDerivedFeatures;
+  return <>
+    { inputDerivedFeatures && inputDerivedFeatures.length > 0 &&
+        <Col span={ 24 }>
+            <Card style={ {
+              marginTop: "15px",
+              marginRight: "15px",
+              minWidth: "1000px",
+              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
+              borderRadius: "8px"
+            } }>
+                <Title level={ 4 }>Input Derived Features</Title>
+              {
+                inputDerivedFeatures.map((input_feature) =>
+                  <Button type="link" onClick={ () => {
+                    navigate(`/projects/${ props.project }/features/${ input_feature.guid }`)
+                  } }>{ input_feature.uniqueAttributes.qualifiedName }</Button>)
+              }
+            </Card>
+        </Col>
+    }
+  </>;
+}
+
 type Params = {
   project: string;
   featureId: string;
 }
-
 const FeatureDetails: React.FC = () => {
   const { project, featureId } = useParams() as Params;
   const navigate = useNavigate();
@@ -25,89 +135,6 @@ const FeatureDetails: React.FC = () => {
   const openLineageWindow = () => {
     const lineageUrl = `/projects/${ project }/lineage`;
     navigate(lineageUrl);
-  }
-
-  const renderCommandButtons = () => {
-    return (
-      <div>
-        <Space>
-          <Button type="primary" onClick={ () => openLineageWindow() }>
-            View Lineage
-          </Button>
-        </Space>
-      </div>
-    )
-  }
-
-  const renderFeature = (feature: Feature): JSX.Element => {
-    return (
-      <div className="site-card-wrapper">
-        <Row>
-          { feature.attributes.key && feature.attributes.key.length > 0 &&
-              <Col span={ 8 }>
-                  <Card title="Key" bordered={ false }>
-                      <p>full_name: { feature.attributes.key[0].full_name }</p>
-                      <p>key_column: { feature.attributes.key[0].key_column }</p>
-                      <p>description: { feature.attributes.key[0].description }</p>
-                      <p>key_column_alias: { feature.attributes.key[0].key_column_alias }</p>
-                      <p>key_column_type: { feature.attributes.key[0].key_column_type }</p>
-                  </Card>
-              </Col>
-          }
-          { feature.attributes.type &&
-              <Col span={ 8 }>
-                  <Card title="Type" bordered={ false }>
-                      <p>dimension_type: { feature.attributes.type.dimension_type }</p>
-                      <p>tensor_category: { feature.attributes.type.tensor_category }</p>
-                      <p>type: { feature.attributes.type.type }</p>
-                      <p>val_type: { feature.attributes.type.val_type }</p>
-                  </Card>
-              </Col>
-          }
-          { feature.attributes.transformation &&
-              <Col span={ 8 }>
-                  <Card title="Transformation" bordered={ false }>
-                      <p>transform_expr: { feature.attributes.transformation.transform_expr ?? "N/A" }</p>
-                      <p>filter: { feature.attributes.transformation.filter ?? "N/A" }</p>
-                      <p>agg_func: { feature.attributes.transformation.agg_func ?? "N/A" }</p>
-                      <p>limit: { feature.attributes.transformation.limit ?? "N/A" }</p>
-                      <p>group_by: { feature.attributes.transformation.group_by ?? "N/A" }</p>
-                      <p>window: { feature.attributes.transformation.window ?? "N/A" }</p>
-                      <p>def_expr: { feature.attributes.transformation.def_expr ?? "N/A" }</p>
-                  </Card>
-              </Col>
-          }
-        </Row>
-        <Row>
-          { feature.attributes._input_anchor_features && feature.attributes._input_anchor_features.length > 0 &&
-              <Col span={ 24 }>
-                  <Card title="Input Anchor Features" bordered={ false }>
-                    {
-                      feature.attributes._input_anchor_features.map((feature) =>
-                        <Button type="link" onClick={ () => {
-                          navigate(`/projects/${ project }/features/${ feature.id }`)
-                        } }>{ feature.attributes.name }</Button>)
-                    }
-                  </Card>
-              </Col>
-          }
-        </Row>
-        <Row>
-          { feature.attributes._input_derived_features && feature.attributes._input_derived_features.length > 0 &&
-              <Col span={ 24 }>
-                  <Card title="Input Derived Features" bordered={ false }>
-                    {
-                      feature.attributes._input_derived_features.map((feature) =>
-                        <Button type="link" onClick={ () => {
-                          navigate(`/projects/${ project }/features/${ feature.id }`)
-                        } }>{ feature.attributes.name }</Button>)
-                    }
-                  </Card>
-              </Col>
-          }
-        </Row>
-      </div>
-    )
   }
 
   const render = (status: QueryStatus): JSX.Element => {
@@ -149,17 +176,34 @@ const FeatureDetails: React.FC = () => {
           );
         } else {
           return (
-            <Card title={ data.displayText }>
-              { renderCommandButtons() }
-              { renderFeature(data) }
-            </Card>
+            <>
+              <Card>
+                <Title level={ 3 }>{ data.attributes.name }</Title>
+                <div>
+                  <Space>
+                    <Button type="primary" onClick={ () => openLineageWindow() }>
+                      View Lineage
+                    </Button>
+                  </Space>
+                </div>
+                <div>
+                  <Row>
+                    <InputAnchorFeatures project={ project } feature={ data } />
+                    <InputDerivedFeatures project={ project } feature={ data } />
+                    <FeatureTransformation feature={ data } />
+                    <FeatureKey feature={ data } />
+                    <FeatureType feature={ data } />
+                  </Row>
+                </div>
+              </Card>
+            </>
           );
         }
     }
   }
 
   return (
-    <div style={ { margin: "2%" } }>
+    <div className="page">
       { render(status) }
     </div>
   );

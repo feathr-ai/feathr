@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Getting Historical Features in Feathr
+title: Getting Historical Features
 parent: Feathr Concepts
 ---
 
@@ -15,7 +15,7 @@ features onto it:
 
 2. Feature 'like_count' from dataset 'like_count_data'
 
-The Feathr feature join in this case, will use the field 'id' as join key of the observation data, and also consider the timestamp of each row during the join, making sure the joined feature values are collected **before** the observation_time of each row.
+2) Feature `like_count` from dataset `like_count_data`
 
 | id  | observe_time | Label |
 | --- | ------------ | ----- |
@@ -23,7 +23,7 @@ The Feathr feature join in this case, will use the field 'id' as join key of the
 | 1   | 2022-01-02   | Yes   |
 | 2   | 2022-01-02   | No    |
 
-Dataset 'page_view_data' contains “page_view_count” of each user at a given time:
+Dataset `page_view_data` contains `page_view_count` of each user at a given time:
 
 | UserId | log_time   | page_view_count |
 | ------ | ---------- | --------------- |
@@ -51,8 +51,7 @@ The expected joined output, a.k.a. training dataset would be assuming feature:
 | 1   | 2022-01-02   | Yes   | 102               | 12           |
 | 2   | 2022-01-02   | No    | 200               | 20           |
 
-Note: In the above example, feature f_page_view_count and f_like_count are defined as simply a reference of field
-'page_view_count' and 'like_count' respectively. Timestamp in these 3 datasets are considered automatically.
+Note: In the above example, feature `f_page_view_count` and `f_like_count` are defined as simply a reference of field `page_view_count` and `like_count` respectively. Timestamp in these 3 datasets are considered automatically.
 
 ## Feature join config
 

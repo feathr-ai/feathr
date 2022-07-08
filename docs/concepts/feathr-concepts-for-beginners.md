@@ -1,24 +1,12 @@
 ---
 layout: default
-title: Feathr Concepts for Beginners
+title: Concepts for Beginners
 nav_order: 2
 ---
 
-# Feathr Concepts for Beginners
+# Concepts for Beginners
 
-In this guide, we will cover the high level concepts for Feathr. Don't treat this as a user manual, instead treat this as blog post to cover the high level motivations on why Feathr introduces those concepts.
-
-## First things first - when would you need a feature store?
-
-Feature store is a system that has gained a lot of attraction recently, and as the developers of Feathr, we are often asked - when would customers need a feature store?
-
-In short, the answer is simple - if you have something you care about (usually it's called "entity" or "key"), and there are usually multiple "dimensions" to describe it, then usually it makes sense to have a feature store. Otherwise you probably don't even need a feature store, if you only have one dimension to describe the data.
-
-One example that you need a feature store is in recommendation use case. In this case, you usually have an "item" entity which contains many "dimensions" of the data and those data can be turned into features, such as the total amount sold in last 10 days, item average price in last 30 days, whether a certain coupon can be applied, etc. You usually have another "user" entity that you care about as well, because that represents who will be recommended for those products, and you want to define features such as user login time in last 7 days, user's historical buying, etc. Because you are managing a lot "dimensions" of both users and items, you need a feature store to manage those "dimensions".
-
-A counter example that you probably don't need a feature store is, say, face recognition. In those use cases, you do have something that you keep in mind (i.e. the individual image), but there's only one dimension of describing it, i.e. the image itself. You probably don't need to use feature store if this is the only data source you have. 
-
-However, build on top of the above use case, if you are doing anti-abuse system, which requires you to tell whether it is a fraud login or not by considering all the "dimensions" or "factors" of a certain user, including the raw images from camera input, face recognition results returned from an external API, login patterns, last spending in 7 days, etc. In this use case, you definitely need a feature store to make your life easier.
+In this guide, we will cover the high level concepts for **Feathr**. Don't treat this as a user manual, instead treat this as blog post to cover the high level motivations on why Feathr introduces those concepts.
 
 ## What are `Observation` data, and why does Feathr need `key(s)`, `Anchor`, `Source`?
 

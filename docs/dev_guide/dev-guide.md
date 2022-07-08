@@ -1,9 +1,9 @@
 ---
 layout: default
-title: Feathr Developer Guides
+title: Developer Guides
 has_children: true
 permalink: docs/dev_guide
 ---
-# Feathr Developer Guide
+# Developer Guide
 
 This folder includes guides for Feathr developers. Users should refer to Feathr User Guide on how-to and the concepts

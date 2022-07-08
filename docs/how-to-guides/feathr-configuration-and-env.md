@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Configuration, environment variables, and store secrets in a secure way
-parent: Feathr How-to Guides
+parent: How-to Guides
 ---
 
 # Configuration and environment variables in Feathr

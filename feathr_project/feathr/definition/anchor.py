@@ -26,12 +26,14 @@ class FeatureAnchor(HoconConvertible):
                 source: Source,
                 features: List[Feature],
                 registry_tags: Optional[Dict[str, str]] = None,
-                ):
+                **kwargs):
         self.name = name
         self.features = features
         self.source = source
         self.registry_tags=registry_tags
-        self.validate_features()
+        # Add a hidden option to skip validation, Anchor could be half-constructed during the loading from registry
+        if not kwargs.get("__no_validate", False) :
+            self.validate_features()
 
     def validate_features(self):
         """Validate that anchor is non-empty and all its features share the same key"""

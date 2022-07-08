@@ -1,57 +1,82 @@
 export interface Feature {
-  id: string;
-  guid: string;
-  status: string;
-  displayText: string;
-  typeName: string;
   attributes: FeatureAttributes;
+  displayText: string;
+  guid: string;
+  labels: string[];
+  name: string;
+  qualifiedName: string;
+  status: string;
+  typeName: string;
+  version: string;
 }
 
 export interface FeatureAttributes {
-  qualifiedName: string;
-  name: string;
-  type: FeatureType;
-  transformation: FeatureTransformation;
+  inputAnchorFeatures: InputFeature[];
+  inputDerivedFeatures: InputFeature[];
   key: FeatureKey[];
-  window: string;
-  _input_anchor_features: Feature[];
-  _input_derived_features: Feature[]
+  name: string;
+  qualifiedName: string;
+  tags: string[];
+  transformation: FeatureTransformation;
+  type: FeatureType;
 }
 
 export interface FeatureType {
+  dimensionType: string[],
+  tensorCategory: string,
   type: string,
-  tensor_category: string,
-  dimension_type: string[],
-  val_type: string
+  valType: string
 }
+
 export interface FeatureTransformation {
-  transform_expr: string,
-  filter: string,
-  agg_func: string,
-  limit: string,
-  group_by: string,
-  window: string,
-  def_expr: string
+  transformExpr: string;
+  filter: string;
+  aggFunc: string;
+  limit: string;
+  groupBy: string;
+  window: string;
+  defExpr: string
 }
 
 export interface FeatureKey {
-  full_name: string,
-  key_column: string,
-  description: string,
-  key_column_alias: string,
-  key_column_type: string
+  description: string;
+  fullName: string;
+  keyColumn: string;
+  keyColumnAlias: string;
+  keyColumnType: string
+}
+
+export interface InputFeature {
+  guid: string;
+  typeName: string;
+  uniqueAttributes: InputFeatureAttributes;
+}
+
+export interface InputFeatureAttributes {
+  qualifiedName: string;
+  version: string;
 }
 
 export interface DataSource {
   attributes: DataSourceAttributes;
+  displayText: string;
+  guid: string;
+  lastModifiedTS: string;
+  status: string;
+  typeName: string;
+  version: string;
 }
 
 export interface DataSourceAttributes {
+  eventTimestampColumn: string;
   name: string;
-  qualifiedName: string;
   path: string;
+  preprocessing: string;
+  qualifiedName: string;
+  tags: string[];
+  timestampFormat: string;
+  type: string;
 }
-
 
 export interface FeatureLineage {
   guidEntityMap: any;
@@ -63,10 +88,13 @@ export interface UserRole {
   scope: string;
   userName: string;
   roleName: string;
+  createBy: string;
   createTime: string;
   createReason: string;
+  deleteBy: string;
   deleteTime?: any;
   deleteReason?: any;
+  access?: string;
 }
 
 export interface Role {
@@ -74,9 +102,4 @@ export interface Role {
   userName: string;
   roleName: string;
   reason: string;
-}
-
-export interface EnvConfig {
-  azureClientId?: string;
-  azureTenantId?: string;
 }

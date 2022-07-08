@@ -10,8 +10,9 @@ const GraphNode: FC<NodeProps> = (props: NodeProps) => {
   const navigate = useNavigate();
   const { project } = useParams<Params>();
 
-  const { data: { title, subtitle, featureId, borderColor, active } } = props;
-
+  const { data: { title, subtitle, featureId, version, borderColor, active } } = props;
+  const nodeTitle = version ? `${title} (v${version})` : title;
+  const nodeSubtitle = subtitle.replace("feathr_", "");
   const nodeColorStyle = {
     border: `2px solid ${ borderColor }`,
   };
@@ -28,11 +29,11 @@ const GraphNode: FC<NodeProps> = (props: NodeProps) => {
       <div className="lineage-node-box">
         <Handle type="target" position={ Position.Left } />
         <div>
-          <div className="lineage-node-title">{ title }
+          <div className="lineage-node-title">{ nodeTitle }
             { active && (<RightCircleOutlined className="lineage-navigate" onClick={ onNodeIconClick } />) }
           </div>
           <div className="lineage-node-subtitle">
-            { subtitle }
+            { nodeSubtitle }
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Streaming Source Ingestion
-parent: Feathr How-to Guides
+parent: How-to Guides
 ---
 # Streaming feature ingestion
 

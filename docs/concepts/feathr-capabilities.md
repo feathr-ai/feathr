@@ -1,13 +1,14 @@
 ---
 layout: default
-title: Feathr Capabilities
+title: Capabilities
 parent: Feathr Concepts
 ---
-# Feathr Capabilities
 
-Feathr is a scalable platform and below are some of the capabilities that Feathr has:
+# Capabilities
 
-### Defining Features with Transformation
+**Feathr** is a scalable platform and below are some of the capabilities it has:
+
+## Define Features with Transformation
 
 ```python
 features = [
@@ -26,7 +27,7 @@ anchor = FeatureAnchor(name="request_features",             # Features anchored 
                        features=features)
 ```
 
-### Accessing Features
+## Access Features
 
 ```python
 # Requested features to be joined
@@ -50,7 +51,7 @@ feathr_client.get_offline_features(observation_settings=settings,
                                    feature_query=feature_query)
 ```
 
-### Deploy Features to Online (Redis) Store
+## Deploy Features to Online (Redis) Store
 
 ```python
 client = FeathrClient()
@@ -75,7 +76,7 @@ client.multi_get_online_features(feature_table = "agg_features",
                                  feature_names = ['f_location_avg_fare', 'f_location_max_fare'])
 ```
 
-### Defining Window Aggregation Features
+## Define Window Aggregation Features
 
 ```python
 agg_features = [Feature(name="f_location_avg_fare",
@@ -92,7 +93,7 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            features=agg_features)
 ```
 
-### Defining Named Data Sources
+## Define Named Data Sources
 
 ```python
 batch_source = HdfsSource(
@@ -102,7 +103,7 @@ batch_source = HdfsSource(
     timestamp_format="yyyy-MM-dd HH:mm:ss")                 # Supports various formats including epoch
 ```
 
-### Define features on top of other features - Derived Features
+## Define features on top of other features - Derived Features
 
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
@@ -123,7 +124,7 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
                                       transform="cosine_similarity(user_embedding, item_embedding)")
 ```
 
-### Define streaming features
+## Define Streaming Features
 
 ```python
 # Define input data schema

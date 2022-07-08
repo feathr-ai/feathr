@@ -1,13 +1,14 @@
 import React from 'react';
-import { Card } from 'antd';
+import { Card, Typography } from 'antd';
 import RoleManagementForm from '../../components/roleManagementForm';
 
-type Props = {};
+const { Title } = Typography;
 
-const RoleManagement: React.FC<Props> = () => {
+const RoleManagement: React.FC = () => {
   return (
-    <div style={ { "margin": "2%" } }>
-      <Card title="Role Management">
+    <div className="page">
+      <Card>
+        <Title level={ 3 }>Role Management</Title>
         <RoleManagementForm isNew={ true } editMode={ true } />
       </Card>
     </div>

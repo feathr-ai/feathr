@@ -1,4 +1,5 @@
 import registry
+from registry.models import EntityType
 r=registry.DbRegistry()
 
 l=r.get_lineage('226b42ee-0c34-4329-b935-744aecc63fb4').to_dict()
@@ -15,3 +16,5 @@ p=r.get_project('feathr_ci_registry_12_33_182947')
 assert(len(p.to_dict()['guidEntityMap'])==14)
 
 es=r.search_entity("time", [registry.EntityType.DerivedFeature])
+qns=set([e.qualified_name for e in es])
+assert qns == set(['feathr_ci_registry_12_33_182947__f_trip_time_distance', 'feathr_ci_registry_12_33_182947__f_trip_time_rounded', 'feathr_ci_registry_12_33_182947__f_trip_time_rounded_plus'])
