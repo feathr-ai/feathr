@@ -12,9 +12,10 @@ FROM python:3.9
 
 ## Install dependencies
 RUN apt-get update -y && apt-get install -y nginx
-
-WORKDIR /usr/src/backend
-COPY ./registry/sql-registry /usr/src/backend
+COPY ./registry /usr/src/registry
+WORKDIR /usr/src/registry/sql-registry
+RUN pip install -r requirements.txt
+WORKDIR /usr/src/registry/purview-registry
 RUN pip install -r requirements.txt
 
 ## Remove default nginx index page and copy ui static bundle files
@@ -22,6 +23,7 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=ui-build /usr/src/ui/build /usr/share/nginx/html
 COPY ../deploy/nginx.conf /etc/nginx/nginx.conf
 
-# Start
-COPY ../deploy/env.sh .
-CMD ["/bin/sh", "-c", "./env.sh && nginx && uvicorn main:app --host 0.0.0.0 --port 8000"]
+## Start service and then start nginx
+WORKDIR /usr/src/registry
+COPY ./deploy/start.sh .
+CMD ["/bin/sh", "-c", "./start.sh"]
