@@ -126,7 +126,6 @@ function InputDerivedFeatures(props: { project: string, feature: Feature }) {
 function FeatureLineageGraph() {
   const [searchParams] = useSearchParams();
   const { featureId } = useParams() as Params;
-  const nodeId = searchParams.get('nodeId') as string;
 
   const [lineageData, setLineageData] = useState<FeatureLineage>({ guidEntityMap: null, relations: null });
   const [elements, setElements] = useState<Elements>([]);
@@ -143,7 +142,6 @@ function FeatureLineageGraph() {
     fetchLineageData();
   }, [featureId]);
 
-  // Generate graph data on client side, invoked after graphData or featureType is changed
   useEffect(() => {
     const generateGraphData = async () => {
       if (lineageData.guidEntityMap === null && lineageData.relations === null) {
@@ -168,13 +166,13 @@ function FeatureLineageGraph() {
         elements.push(node);
       }
 
-      console.log(lineageData.relations.length);
+
       for (let index = 0; index < lineageData.relations.length; index++) {
         var { fromEntityId: from, toEntityId: to, relationshipType } = lineageData.relations[index];
-        if (relationshipType == "Consumes") [from, to] = [to, from];
+        if (relationshipType === "Consumes") [from, to] = [to, from];
         const edge = generateEdge({ obj: elementObj, from, to });
         if (edge?.source && edge?.target) {
-          if (relationshipType === "Consumes" || relationshipType == "Produces") {
+          if (relationshipType === "Consumes" || relationshipType === "Produces") {
             elements.push(edge);
           }
         }
@@ -196,7 +194,7 @@ function FeatureLineageGraph() {
       <Col span={ 24 }>
         <Card className="card">
           <Title level={ 4 }>Lineage</Title>
-          <Graph data={ elements } nodeId={ nodeId } />
+          <Graph data={ elements } nodeId={ featureId }/>
         </Card>
       </Col>
     )
