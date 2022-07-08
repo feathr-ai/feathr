@@ -1,9 +1,9 @@
 from typing import Any
 from fastapi import Depends, HTTPException, status
-from access_control.db_rbac import DbRBAC
+from rbac.db_rbac import DbRBAC
 
-from access_control.models import AccessType, User
-from access_control.auth import authorize
+from rbac.models import AccessType, User
+from rbac.auth import authorize
 
 """
 All Access Validation Functions. Used as FastAPI Dependencies.
@@ -56,3 +56,8 @@ def validate_project_access_for_feature(feature:str, user:str, access:str):
 def _get_project_from_feature(feature: str):
     feature_delimiter = "__request_features__"
     return feature.split(feature_delimiter)[0]
+
+def get_api_header(requestor: User):
+    return {
+        "x-registry-requestor": requestor.preferred_username
+    }

@@ -1,15 +1,14 @@
-from linecache import cache
-from access_control import config
-from common.database import connect
-from access_control.models import AccessType, UserRole, RoleType, SUPER_ADMIN_SCOPE
-from access_control.interface import RBAC
+from rbac import config
+from rbac.database import connect
+from rbac.models import AccessType, UserRole, RoleType, SUPER_ADMIN_SCOPE
+from rbac.interface import RBAC
 import os
 import logging
 
 class DbRBAC(RBAC):
     def __init__(self):
-        if not os.environ.get("CONNECTION_STR"):
-            os.environ["CONNECTION_STR"] = config.CONNECTION_STR
+        if not os.environ.get("RBAC_CONNECTION_STR"):
+            os.environ["RBAC_CONNECTION_STR"] = config.RBAC_CONNECTION_STR
         self.conn = connect()
         self.get_userroles()
 
@@ -108,7 +107,7 @@ class DbRBAC(RBAC):
 
     def init_userrole(self, creator_name: str, project_name: str):
         """initialize user role relationship when a new project is created
-        TODO: Add init user role to every new project call
+        TODO: project name cannot be `global`.
         """
         create_by = "system"
         create_reason = "creator of project, get admin by default."

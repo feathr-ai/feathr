@@ -42,12 +42,12 @@ Admin roles can add or delete roles in management UI page or through management 
 
 | Variable| Description|
 |---|---|
-| CONNECTION_STR| Connection String of the SQL database that host access control tables|
-| API_BASE| Aligned API base|
-|REGISTRY_URL| The downstream Registry API Endpoint|
-| AAD_INSTANCE | Set to "https://login.microsoftonline.com" by default |
-| AAD_TENANT_ID| Used get auth url together with AAD_INSTANCE|
-|API_AUDIENCE| Used as audience to decode jwt tokens|
+| RBAC_CONNECTION_STR| Connection String of the SQL database that host access control tables, required.|
+| RBAC_API_BASE| Aligned API base, needs to start with `/`|
+| RBAC_REGISTRY_URL| The downstream Registry API Endpoint|
+| RBAC_AAD_INSTANCE | Set to "https://login.microsoftonline.com" by default |
+| RBAC_AAD_TENANT_ID| Used get auth url together with `RBAC_AAD_INSTANCE`, set to `common` by default|
+| RBAC_API_AUDIENCE| Used as audience to decode jwt tokens|
 
 ## Notes
 
