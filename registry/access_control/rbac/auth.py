@@ -8,8 +8,8 @@ from fastapi.security import OAuth2AuthorizationCodeBearer
 import jwt
 from jwt.exceptions import ExpiredSignatureError, PyJWKError
 
-import access_control.config as config
-from access_control.models import User
+from rbac import config
+from rbac.models import User
 
 
 log = logging.getLogger()
@@ -26,7 +26,7 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
     # cached AAD jwt keys
     aad_jwt_keys_cache: dict = {}
 
-    def __init__(self, aad_instance: str = config.AAD_INSTANCE, aad_tenant: str = config.AAD_TENANT_ID):
+    def __init__(self, aad_instance: str = config.RBAC_AAD_INSTANCE, aad_tenant: str = config.RBAC_AAD_TENANT_ID):
         self.base_auth_url: str = f"{aad_instance}/{aad_tenant}"
         super(AzureADAuth, self).__init__(
             authorizationUrl=f"{self.base_auth_url}/oauth2/v2.0/authorize",
@@ -34,7 +34,7 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
             refreshUrl=f"{self.base_auth_url}/oauth2/v2.0/token",
             scheme_name="oauth2",
             scopes={
-                f'api://{config.API_CLIENT_ID}/access_as_user': 'Access API as user',
+                f'api://{config.RBAC_API_CLIENT_ID}/access_as_user': 'Access API as user',
             }
         )
 
@@ -112,7 +112,7 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
         key = self._get_token_key(key_id)
         try:
             decode = jwt.decode(token, key=key, algorithms=[
-                                'RS256'], audience=config.API_AUDIENCE)
+                                'RS256'], audience=config.RBAC_API_AUDIENCE)
             return decode
         except ExpiredSignatureError as e:
             logging.debug(f'The token signature has expired: {e}')

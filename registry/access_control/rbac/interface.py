@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from access_control.models import UserRole
+from rbac.models import UserRole
 
 
 class RBAC(ABC):
