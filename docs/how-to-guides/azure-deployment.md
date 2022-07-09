@@ -208,7 +208,7 @@ external_ip=$(curl -s http://whatismyip.akamai.com/)
 echo "External IP is: ${external_ip}. Adding it to firewall rules"
 az synapse workspace firewall-rule create --name allowAll --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
 
-# sleep for a few seconds for the chagne to take effect
+# sleep for a few seconds for the change to take effect
 sleep 2
 az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $service_principal_name
 

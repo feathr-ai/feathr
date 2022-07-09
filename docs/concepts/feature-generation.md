@@ -48,15 +48,12 @@ client.materialize_features(settings)
 
 Note that if you don't have features available in `now`, you'd better specify a `BackfillTime` range where you have features.
 
-Also, Feathr will submit a materialization job for each of the step for performance reasons. I.e. if you have 
-`BackfillTime(start=datetime(2022, 2, 1), end=datetime(2022, 2, 20), step=timedelta(days=1))`, Feathr will submit 20 jobs to run in parallel for maximum performance.
+Also, Feathr will submit a materialization job for each of the step for performance reasons. I.e. if you have `BackfillTime(start=datetime(2022, 2, 1), end=datetime(2022, 2, 20), step=timedelta(days=1))`, Feathr will submit 20 jobs to run in parallel for maximum performance.
 
 More reference on the APIs:
 
 - [BackfillTime API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.BackfillTime)
 - [client.materialize_features() API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.materialize_features)
-
-
 
 ## Consuming features in online environment
 
@@ -67,6 +64,7 @@ res = client.get_online_features('nycTaxiDemoFeature', '265', ['f_location_avg_f
 ```
 
 More reference on the APIs:
+
 - [client.get_online_features API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeathrClient.get_online_features)
 
 ## Materializing Features to Offline Store

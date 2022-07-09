@@ -12,7 +12,7 @@ Feathr is the feature store that is used in production in LinkedIn for many year
 Feathr lets you:
 
 - **Define features** based on raw data sources (batch and streaming) using pythonic APIs.
-- **Register and get features by names** during model training and model inferencing.
+- **Register and get features by names** during model training and model inference.
 - **Share features** across your team and company.
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
@@ -151,7 +151,7 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 
 ## 🚀 Roadmap
 
-For a complete roadmap with esitmated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
+For a complete roadmap with estimated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
 
 - [x] Private Preview release
 - [x] Public Preview release

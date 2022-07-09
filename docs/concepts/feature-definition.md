@@ -110,7 +110,7 @@ Note that the `agg_func`([API doc](https://feathr.readthedocs.io/en/latest/feath
 | Aggregation Type | Input Type | Description |
 | --- | --- | --- |
 |SUM, COUNT, MAX, MIN, AVG	|Numeric|Applies the the numerical operation on the numeric inputs. |
-|MAX_POOLING, MIN_POOLING, AVG_POOLING	| Numeric Vector | Applies the max/min/avg operation on a per entry bassis for a given a collection of numbers.|
+|MAX_POOLING, MIN_POOLING, AVG_POOLING	| Numeric Vector | Applies the max/min/avg operation on a per entry basis for a given a collection of numbers.|
 |LATEST| Any |Returns the latest not-null values from within the defined time window |
 
 

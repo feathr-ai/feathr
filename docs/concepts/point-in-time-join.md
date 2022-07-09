@@ -18,10 +18,7 @@ The model will perform better during training(usually), but it will not perform 
 
 Point-in-time correctness ensures that no future data is used for training.
 
-Point-in-time correctness can be achieved via two approaches. If your observation data has a global timestamp for all observation events, then you can simply time-travel your feature dataset back to that timestamp. If your observation data has different timestamps for each observation events, then you need to point-in-time join for each events.
-
-- The first approach is easier to implement but have more restrictions (global timestamp).
-- The second approach provides better flexibility and no feature data is wasted. Feathr uses the second approach and can scale to large datasets.
+Point-in-time correctness can be achieved via two approaches. If your observation data has a global timestamp for all observation events, then you can simply time-travel your feature dataset back to that timestamp. If your observation data has different timestamps for each observation events, then you need to point-in-time join for each events. The first approach is easier to implement but have more restrictions(global timestamp). The second approach provides better flexibility and no feature data is wasted. Feathr uses the second approach and can scale to large datasets.
 
 ## Point-in-time Feature Lookup in Feathr
 
