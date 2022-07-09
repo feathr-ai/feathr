@@ -153,18 +153,14 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 
 For a complete roadmap with estimated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
 
-- [x] Private Preview release
-- [x] Public Preview release
-- [ ] Future release
-  - [x] Support streaming
-  - [x] Support common data sources
-  - [ ] Support online transformation
-  - [ ] Support feature versioning
-  - [ ] Support feature monitoring
-  - [ ] Support feature store UI
-    - [ ] Lineage
-    - [ ] Search
-  - [ ] Support feature data deletion and retention
+
+- [x] Support streaming
+- [x] Support common data sources
+- [ ] Support online transformation
+- [ ] Support feature versioning
+- [ ] Support feature monitoring
+- [ ] Support feature store UI, including Lineage and Search functionalities
+- [ ] Support feature data deletion and retention
 
 ## 👨‍👨‍👦‍👦 Community Guidelines
 
