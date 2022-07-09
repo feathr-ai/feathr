@@ -1,7 +1,6 @@
 ---
 layout: default
 title: Quick Start Guide With Databricks
-nav_order: 3
 ---
 
 # Feathr Quickstart Guide for Databricks
