@@ -1,4 +1,4 @@
-# Feathr – An Enterprise-Grade, High Performance Feature Store
+# An Enterprise-Grade, High Performance Feature Store - Feathr
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/linkedin/feathr/blob/main/LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/linkedin/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/linkedin/feathr/releases)
