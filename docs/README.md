@@ -33,7 +33,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 - For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
 - For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
-- For technical talks on Feathr, see the [slides here](./docs/talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
+- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
 
 ## 🛠️ Install Feathr Client Locally
 
@@ -53,8 +53,8 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 
 Feathr has native integrations with Databricks and Azure Synapse:
 
-- Please read the [Quick Start Guide for Feathr on Databricks](./docs/quickstart_databricks.md) to run Feathr with Databricks.
-- Please read the [Quick Start Guide for Feathr on Azure Synapse](./docs/quickstart_synapse.md) to run Feathr with Azure Synapse.
+- Please read the [Quick Start Guide for Feathr on Databricks](./quickstart_databricks.md) to run Feathr with Databricks.
+- Please read the [Quick Start Guide for Feathr on Azure Synapse](./quickstart_synapse.md) to run Feathr with Azure Synapse.
 
 ## 🔡 Feathr Examples
 
@@ -135,7 +135,7 @@ Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr
 
 ## ⚙️ Cloud Integrations and Architecture
 
-![Architecture Diagram](./docs/images/architecture.png)
+![Architecture Diagram](./images/architecture.png)
 
 | Feathr component                | Cloud Integrations                                                          |
 | ------------------------------- | --------------------------------------------------------------------------- |
