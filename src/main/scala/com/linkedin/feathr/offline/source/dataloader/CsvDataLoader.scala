@@ -32,17 +32,19 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
    * @return an dataframe
    */
   override def loadDataFrame(): DataFrame = {
+    val sqlContext = ss.sqlContext
+    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
     try {
       log.debug(s"Loading CSV path :${path}")
       val absolutePath = new File(path).getPath
       log.debug(s"Got absolute CSV path: ${absolutePath}, loading..")
-      ss.read.format("csv").option("header", "true").load(absolutePath)
+      ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(absolutePath)
     } catch {
       case _: Throwable =>
         log.debug(s"Loading CSV failed, retry with class loader..")
         val absolutePath = getClass.getClassLoader.getResource(path).getPath
         log.debug(s"Got absolution CSV path from class loader: ${absolutePath}, loading.. ")
-        ss.read.format("csv").option("header", "true").load(absolutePath)
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(absolutePath)
     }
   }
 

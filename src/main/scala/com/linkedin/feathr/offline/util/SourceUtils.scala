@@ -664,6 +664,8 @@ private[offline] object SourceUtils {
  failOnMissing: Boolean = true): DataFrame = {
     // TODO: Split isLocal case into Test Packages
     val format = FileFormat.getType(inputData.inputPath)
+    val sqlContext = ss.sqlContext
+    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
     log.info(s"loading ${inputData.inputPath} input Path as Format: ${format}")
     format match {
       case FileFormat.PATHLIST => {
@@ -689,7 +691,7 @@ private[offline] object SourceUtils {
         JdbcUtils.loadDataFrame(ss, inputData.inputPath)
       }
       case FileFormat.CSV => {
-        ss.read.format("csv").option("header", "true").load(inputData.inputPath)
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(inputData.inputPath)
       }
       case _ => {
         if (ss.sparkContext.isLocal){
