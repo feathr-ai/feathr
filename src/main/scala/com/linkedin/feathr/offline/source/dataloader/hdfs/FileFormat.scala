@@ -52,8 +52,11 @@ object FileFormat {
 
   // TODO: Complete a general loadDataFrame and replace current adhoc load data frame code
   def loadDataFrame(ss: SparkSession, path: String, format: String = CSV): DataFrame = {
-    val sqlContext = ss.sqlContext
-    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+
+    val csvDelimiterOption = ss.sparkContext.getConf.get("spark.feathr.inputFormat.csvOptions.sep", ",")
+
+    println(s"$csvDelimiterOption")
+
     format match {
       case AVRO => new AvroJsonDataLoader(ss, path).loadDataFrame()
       case CSV => ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(path)
@@ -78,8 +81,8 @@ object FileFormat {
       case p if p.endsWith(".avro") => AVRO
       case p if p.startsWith("jdbc:") => JDBC
       case _ =>
-      // if we cannot tell the file format from the file extensions, we should read from `spark.feathr.inputFormat` to get the format that's sepcified by user.
-      dataIOParameters.getOrElse(DATA_FORMAT, ss.conf.get("spark.feathr.inputFormat", AVRO)).toUpperCase
+        // if we cannot tell the file format from the file extensions, we should read from `spark.feathr.inputFormat` to get the format that's sepcified by user.
+        dataIOParameters.getOrElse(DATA_FORMAT, ss.conf.get("spark.feathr.inputFormat", AVRO)).toUpperCase
     }
 
 
