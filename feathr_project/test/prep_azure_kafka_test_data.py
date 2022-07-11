@@ -40,7 +40,8 @@ def send_avro_record_to_kafka(topic, record):
     bytes_writer = io.BytesIO()
     encoder = BinaryEncoder(bytes_writer)
     writer.write(record, encoder)
-    sasl = _EnvVaraibleUtil.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
+    envutils = _EnvVaraibleUtil()
+    sasl = envutils.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
     conf = {
         'bootstrap.servers': KAFKA_BROKER,
         'security.protocol': 'SASL_SSL',

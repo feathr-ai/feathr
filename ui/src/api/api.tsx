@@ -1,141 +1,201 @@
 import Axios from "axios";
-import { DataSource, Feature, FeatureLineage, UserRole, Role } from "../models/model";
-import mockUserRole from "./mock/userrole.json";
+import {
+  DataSource,
+  Feature,
+  FeatureLineage,
+  Role,
+  UserRole,
+} from "../models/model";
+import {PublicClientApplication,} from "@azure/msal-browser";
+import { getMsalConfig } from "../utils/utils";
 
-const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT + "/api/v1";
-const token = "mockAppServiceKey";
+const msalInstance = getMsalConfig();
+const getApiBaseUrl = () => {
+  let endpoint = process.env.REACT_APP_API_ENDPOINT;
+  if (!endpoint || endpoint === "") {
+    endpoint = window.location.protocol + "//" + window.location.host;
+  }
+  return endpoint + "/api/v1";
+};
 
 export const fetchDataSources = async (project: string) => {
-  return Axios
-    .get<DataSource[]>(`${ API_ENDPOINT }/projects/${ project }/datasources?code=${ token }`,
-      { headers: {} })
+  const axios = await authAxios(msalInstance);
+  return axios
+    .get<DataSource[]>(`${getApiBaseUrl()}/projects/${project}/datasources`, {
+      headers: {},
+    })
     .then((response) => {
       return response.data;
-    })
+    });
 };
 
 export const fetchProjects = async () => {
-  return Axios
-    .get<[]>(`${ API_ENDPOINT }/projects?code=${ token }`,
-      {
-        headers: {}
-      })
-    .then((response) => {
-      return response.data;
-    })
+  const axios = await authAxios(msalInstance);
+  return axios.get<[]>(`${getApiBaseUrl()}/projects`, {
+    headers: {},
+  }).then((response) => {
+    return response.data;
+  });
 };
 
-export const fetchFeatures = async (project: string, page: number, limit: number, keyword: string) => {
-  return Axios
-    .get<Feature[]>(`${ API_ENDPOINT }/projects/${ project }/features?code=${ token }`,
-      {
-        params: { 'keyword': keyword, 'page': page, 'limit': limit },
-        headers: {}
-      })
+export const fetchFeatures = async (
+  project: string,
+  page: number,
+  limit: number,
+  keyword: string
+) => {
+  const axios = await authAxios(msalInstance);
+  return axios
+    .get<Feature[]>(`${getApiBaseUrl()}/projects/${project}/features`, {
+      params: { keyword: keyword, page: page, limit: limit },
+      headers: {},
+    })
     .then((response) => {
       return response.data;
-    })
+    });
 };
 
 export const fetchFeature = async (project: string, featureId: string) => {
-  return Axios
-    .get<Feature>(`${ API_ENDPOINT }/features/${ featureId }?code=${ token }`, {})
+  const axios = await authAxios(msalInstance);
+  return axios
+    .get<Feature>(`${getApiBaseUrl()}/features/${featureId}`, { 
+      params: { project: project}
+    })
     .then((response) => {
       return response.data;
-    })
+    });
 };
 
 export const fetchProjectLineages = async (project: string) => {
-  return Axios
-    .get<FeatureLineage>(`${ API_ENDPOINT }/projects/${ project }?code=${ token }`, {})
+  const axios = await authAxios(msalInstance);
+  return axios
+    .get<FeatureLineage>(`${getApiBaseUrl()}/projects/${project}`, {})
     .then((response) => {
       return response.data;
-    })
+    });
 };
 
 export const fetchFeatureLineages = async (project: string) => {
-  return Axios
-    .get<FeatureLineage>(`${ API_ENDPOINT }/features/lineage/${ project }?code=${ token }`, {})
+  const axios = await authAxios(msalInstance);
+  return axios
+    .get<FeatureLineage>(`${getApiBaseUrl()}/features/lineage/${project}`, {})
     .then((response) => {
       return response.data;
-    })
+    });
 };
 
 // Following are place-holder code
 export const createFeature = async (feature: Feature) => {
-  return Axios
-    .post(`${ API_ENDPOINT }/features`, feature,
-      {
-        headers: { "Content-Type": "application/json;" },
-        params: {},
-      }).then((response) => {
-      return response;
-    }).catch((error) => {
-      return error.response;
-    });
-}
-
-export const updateFeature = async (feature: Feature, id: string) => {
-  feature.guid = id;
-  return await Axios.put(`${ API_ENDPOINT }/features/${ id }`, feature,
-    {
+  const axios = await authAxios(msalInstance);
+  return axios
+    .post(`${getApiBaseUrl()}/features`, feature, {
       headers: { "Content-Type": "application/json;" },
       params: {},
-    }).then((response) => {
-    return response
-  }).catch((error) => {
-    return error.response
-  });
+    })
+    .then((response) => {
+      return response;
+    })
+    .catch((error) => {
+      return error.response;
+    });
 };
 
-export const deleteFeature = async (qualifiedName: string) => {
-  return await Axios
-    .delete(`${ API_ENDPOINT }/features/${ qualifiedName }`,
-      {
-        headers: { "Content-Type": "application/json;" },
-        params: {},
-      }).then((response) => {
-      return response
-    }).catch((error) => {
-      return error.response
+export const updateFeature = async (feature: Feature, id: string) => {
+  const axios = await authAxios(msalInstance);
+  feature.guid = id;
+  return await axios
+    .put(`${getApiBaseUrl()}/features/${id}`, feature, {
+      headers: { "Content-Type": "application/json;" },
+      params: {},
+    })
+    .then((response) => {
+      return response;
+    })
+    .catch((error) => {
+      return error.response;
     });
 };
 
 export const listUserRole = async () => {
-  let data:UserRole[] = mockUserRole
-  return data
+  const token = await getIdToken(msalInstance);
+  const axios = await authAxios(msalInstance);
+  return await axios
+    .get<UserRole[]>(`${getApiBaseUrl()}/userroles`, {})
+    .then((response) => {
+      return response.data;
+    });
 };
 
 export const getUserRole = async (userName: string) => {
-  return await Axios
-  .get<UserRole>(`${ API_ENDPOINT }/user/${userName}/userroles?code=${ token }`, {})
-  .then((response) => {
-    return response.data;
-  })
-}
+  const axios = await authAxios(msalInstance);
+  return await axios
+    .get<UserRole>(`${getApiBaseUrl()}/user/${userName}/userroles`, {})
+    .then((response) => {
+      return response.data;
+    });
+};
 
 export const addUserRole = async (role: Role) => {
-  return await Axios
-  .post(`${ API_ENDPOINT }/user/${role.userName}/userroles/new`, role,
-      {
-        headers: { "Content-Type": "application/json;" },
-        params: {},
-      }).then((response) => {
+  const axios = await authAxios(msalInstance);
+  return await axios
+    .post(`${getApiBaseUrl()}/users/${role.userName}/userroles/add`, role, {
+      headers: { "Content-Type": "application/json;" },
+      params: {
+        project: role.scope,
+        role: role.roleName,
+        reason: role.reason,
+      },
+    })
+    .then((response) => {
       return response;
-    }).catch((error) => {
+    })
+    .catch((error) => {
       return error.response;
     });
-}
+};
 
-export const deleteUserRole = async (role: Role) => {
-  return await Axios
-  .post(`${ API_ENDPOINT }/user/${role.userName}/userroles/delete`, role,
-      {
-        headers: { "Content-Type": "application/json;" },
-        params: {},
-      }).then((response) => {
+export const deleteUserRole = async (userrole: UserRole) => {
+  const axios = await authAxios(msalInstance);
+  const reason = "Delete from management UI.";
+  return await axios
+    .delete(`${getApiBaseUrl()}/users/${userrole.userName}/userroles/delete`, {
+      headers: { "Content-Type": "application/json;" },
+      params: {
+        project: userrole.scope,
+        role: userrole.roleName,
+        reason: reason,
+      },
+    })
+    .then((response) => {
       return response;
-    }).catch((error) => {
+    })
+    .catch((error) => {
       return error.response;
     });
-}
+};
+
+export const getIdToken = async (
+  msalInstance: PublicClientApplication
+): Promise<string> => {
+  const activeAccount = msalInstance.getActiveAccount(); // This will only return a non-null value if you have logic somewhere else that calls the setActiveAccount API
+  const accounts = msalInstance.getAllAccounts();
+  const request = {
+    scopes: ["User.Read"],
+    account: activeAccount || accounts[0],
+  };
+  // Silently acquire an token for a given set of scopes. Will use cached token if available, otherwise will attempt to acquire a new token from the network via refresh token.
+  // A known issue may cause token expire: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
+  const authResult = await msalInstance.acquireTokenSilent(request);
+  return authResult.idToken;
+};
+
+export const authAxios = async (msalInstance: PublicClientApplication) => {
+  const token = await getIdToken(msalInstance);
+  return Axios.create({
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json",
+    },
+    baseURL: getApiBaseUrl(),
+  });
+};

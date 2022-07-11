@@ -1,23 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Input, Menu, message, Popconfirm, Select, Tooltip, Form, Table } from 'antd';
+import { DownOutlined} from '@ant-design/icons';
+import { Button, Dropdown, Input, Menu, Select, Tooltip, Form, Table } from 'antd';
 import { Feature } from "../models/model";
-import { deleteFeature, fetchProjects, fetchFeatures } from "../api";
+import { fetchProjects, fetchFeatures } from "../api";
 
 const FeatureList: React.FC = () => {
   const navigate = useNavigate();
   const columns = [
     {
-      title: <div style={ { userSelect: "none" } }>Name</div>,
-      dataIndex: 'displayText',
+      title: <div>Name</div>,
       key: 'name',
       width: 150,
       render: (name: string, row: Feature) => {
         return (
           <Button type="link" onClick={ () => {
             navigate(`/projects/${ project }/features/${ row.guid }`)
-          } }>{ name }</Button>
+          } }>{ row.displayText }</Button>
         )
       },
       onCell: () => {
@@ -29,11 +28,14 @@ const FeatureList: React.FC = () => {
       }
     },
     {
-      title: <div style={ { userSelect: "none" } }>Type</div>,
-      dataIndex: 'typeName',
+      title: <div>Type</div>,
       key: 'type',
-      align: 'center' as 'center',
-      width: 190,
+      width: 120,
+      render: (name: string, row: Feature) => {
+        return (
+          <div>{ row.typeName.replace('feathr_', '').replace('_v1', '')}</div>
+        )
+      },
       onCell: () => {
         return {
           style: {
@@ -43,9 +45,46 @@ const FeatureList: React.FC = () => {
       }
     },
     {
-      title: (<div style={ { userSelect: "none" } }>Action <Tooltip
-        title={ <Link style={ { color: "cyan" } } to="/help">Learn more</Link> }></Tooltip></div>),
-      dataIndex: 'action',
+      title: <div>Transformation</div>,
+      key: 'transformation',
+      width: 190,
+      render: (name: string, row: Feature) => {
+        return (
+          <div>{ row.attributes.transformation.transformExpr ?? row.attributes.transformation.defExpr }</div>
+        )
+      },
+      onCell: () => {
+        return {
+          style: {
+            maxWidth: 120,
+          }
+        }
+      }
+    },
+    {
+      title: <div>Aggregation</div>,
+      key: 'aggregation',
+      width: 150,
+      render: (name: string, row: Feature) => {
+        return (
+          <>
+            <div>{ row.attributes.transformation.aggFunc && `Type: ${ row.attributes.transformation.aggFunc }` }</div>
+            <div>{ row.attributes.transformation.aggFunc && `Window: ${ row.attributes.transformation.window }` }</div>
+            <div>{ row.attributes.transformation.aggFunc && `Key: ${ row.attributes.key[0].keyColumn }` }</div>
+          </>
+        )
+      },
+      onCell: () => {
+        return {
+          style: {
+            maxWidth: 120,
+          }
+        }
+      }
+    },
+    {
+      title: (
+        <div>Action <Tooltip title={ <Link style={ { color: "cyan" } } to="/help">Learn more</Link> }></Tooltip></div>),
       key: 'action',
       align: 'center' as 'center',
       width: 120,
@@ -57,17 +96,6 @@ const FeatureList: React.FC = () => {
                 <Button type="link" onClick={ () => {
                   navigate(`/projects/${ project }/features/${ row.guid }`)
                 } }>Edit</Button>
-              </Menu.Item>
-              <Menu.Item key="delete">
-                <Popconfirm
-                  placement="left"
-                  title="Are you sure to delete?"
-                  onConfirm={ () => {
-                    onDelete(row.guid)
-                  } }
-                >
-                  Delete
-                </Popconfirm>
               </Menu.Item>
             </Menu>
           )
@@ -120,30 +148,18 @@ const FeatureList: React.FC = () => {
     fetchData(project);
   };
 
-  const onDelete = async (id: string) => {
-    setLoading(true);
-    const res = await deleteFeature(id);
-    if (res.status === 200) {
-      message.success(`Feature ${ id } deleted`);
-    } else {
-      message.error("Failed to delete feature with id {id}");
-    }
-    setLoading(false);
-    fetchData(project);
-  };
-
   return (
     <div>
       <Form.Item label="Select Project: "
                  style={ { minWidth: "35%", float: "left", paddingLeft: "10px" } }
                  rules={ [{ required: true, message: "Please select a project to start." }] }>
         <Select options={ projects } defaultValue={ project } value={ project } optionFilterProp="label"
-                notFoundContent={ <LoadingOutlined style={ { fontSize: 24 } } spin /> }
+                notFoundContent={ <div>No projects found from server</div> }
                 showSearch={ true } onChange={ onProjectChange }>
         </Select>
       </Form.Item>
       <Input placeholder="keyword" style={ { width: "10%", marginLeft: "5px" } }
-             onChange={ (e) => onKeywordChange(e.target.value) } onPressEnter={ fetchData } />
+             onChange={ (e) => onKeywordChange(e.target.value) } onPressEnter={ onClickSearch } />
       <Button onClick={ onClickSearch } type="primary" style={ { marginLeft: "5px" } }>Search</Button>
       <Table
         dataSource={ tableData }

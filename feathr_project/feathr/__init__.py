@@ -9,6 +9,7 @@ from .definition.dtype import *
 from .definition.source import *
 from .definition.typed_key import *
 from .definition.materialization_settings import *
+from .definition.monitoring_settings import *
 from .definition.sink import *
 from .definition.query_feature_list import *
 from .definition.lookup_feature import *
@@ -19,7 +20,7 @@ from .utils.feature_printer import *
 from .api.app.core.feathr_api_exception import *
 
 # skipped class as they are internal methods:
-# RepoDefinitions, HoconConvertible, 
+# RepoDefinitions, HoconConvertible,
 # expose the modules so docs can build
 # referencee： https://stackoverflow.com/questions/15115514/how-do-i-document-classes-without-the-module-name/31594545#31594545
 
@@ -30,45 +31,46 @@ from .api.app.core.feathr_api_exception import *
 
 
 __all__ = [
-    'FeatureJoinJobParams', 
-    'FeatureGenerationJobParams', 
-    'FeathrClient', 
-    'DerivedFeature', 
-    'FeatureAnchor', 
-    'Feature', 
-    'ValueType', 
-    'WindowAggTransformation', 
-    'TypedKey', 
-    'DUMMYKEY', 
-    'BackfillTime', 
-    'MaterializationSettings', 
-    'RedisSink', 
-    'FeatureQuery', 
-    'LookupFeature', 
-    'Aggregation', 
-    'get_result_df', 
-    'AvroJsonSchema', 
-    'Source', 
-    'InputContext', 
-    'HdfsSource', 
+    'FeatureJoinJobParams',
+    'FeatureGenerationJobParams',
+    'FeathrClient',
+    'DerivedFeature',
+    'FeatureAnchor',
+    'Feature',
+    'ValueType',
+    'WindowAggTransformation',
+    'TypedKey',
+    'DUMMYKEY',
+    'BackfillTime',
+    'MaterializationSettings',
+    'MonitoringSettings',
+    'RedisSink',
+    'HdfsSink',
+    'MonitoringSqlSink',
+    'FeatureQuery',
+    'LookupFeature',
+    'Aggregation',
+    'get_result_df',
+    'AvroJsonSchema',
+    'Source',
+    'InputContext',
+    'HdfsSource',
     'KafkaConfig',
-    'KafKaSource', 
-    'ValueType', 
-    'BooleanFeatureType', 
-    'Int32FeatureType', 
-    'Int64FeatureType', 
-    'FloatFeatureType', 
-    'DoubleFeatureType', 
-    'StringFeatureType', 
+    'KafKaSource',
+    'ValueType',
+    'BooleanFeatureType',
+    'Int32FeatureType',
+    'Int64FeatureType',
+    'FloatFeatureType',
+    'DoubleFeatureType',
+    'StringFeatureType',
     'BytesFeatureType',
-    'FloatVectorFeatureType', 
-    'Int32VectorFeatureType', 
-    'Int64VectorFeatureType', 
-    'DoubleVectorFeatureType', 
-    'FeatureNameValidationError', 
-    'ObservationSettings', 
-    'FeaturePrinter', 
+    'FloatVectorFeatureType',
+    'Int32VectorFeatureType',
+    'Int64VectorFeatureType',
+    'DoubleVectorFeatureType',
+    'FeatureNameValidationError',
+    'ObservationSettings',
+    'FeaturePrinter',
     'SparkExecutionConfiguration',
  ]
-
-

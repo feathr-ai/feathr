@@ -11,7 +11,7 @@ from click.testing import CliRunner
 from feathr import FeathrClient
 from feathr import (FeatureAnchor, FeatureQuery, ObservationSettings, TypedKey,
                     ValueType)
-from feathr.registry._feature_registry_purview import _FeatureRegistry
+from feathr.registry._feathr_registry_client import _FeatureRegistry
 from feathr.client import FeathrClient
 from feathr.definition.feature_derivations import DerivedFeature
 from feathrcli.cli import init
@@ -76,6 +76,9 @@ def test_feathr_register_features_partially():
     client.register_features()
     time.sleep(30)
     full_registration = client.get_features_from_registry(client.project_name)
+    
+    now = datetime.now()
+    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
 
     client: FeathrClient = registry_test_setup_partially(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     new_project_name = client.project_name
@@ -93,6 +96,7 @@ def test_feathr_register_features_partially():
     # after a full registration, another registration should not affect the registered anchor features.
     assert len(full_registration.items())==len(appended_registration.items())
     
+@pytest.mark.skip(reason="Underlying implementation changed, not applicable")
 def test_get_feature_from_registry():
     registry = _FeatureRegistry("mock_project","mock_purview","mock_delimeter")
     derived_feature_with_multiple_inputs = {

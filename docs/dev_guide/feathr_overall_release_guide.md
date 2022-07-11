@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Developer Guide for Feathr Overall Release Guide
-parent: Feathr Developer Guides
+parent: Developer Guides
 ---
 
 # When to Release

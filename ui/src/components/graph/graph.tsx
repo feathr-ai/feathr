@@ -9,6 +9,7 @@ import ReactFlow, {
   isEdge,
   isNode,
   Node,
+  OnLoadParams,
   ReactFlowProvider
 } from 'react-flow-renderer';
 import { useSearchParams } from 'react-router-dom';
@@ -120,7 +121,12 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     }
   }, [nodeId]);
 
-  // When panel is clicked, reset all highlighted path, and remove the nodeId query string in url path.
+  // Fit the graph to the center of layout view when graph is initialized
+  const onLoad = (reactFlowInstance: OnLoadParams<unknown> | null) => {
+    reactFlowInstance?.fitView();
+  };
+
+  // Fired when panel is clicked, reset all highlighted path, and remove the nodeId query string in url path.
   const onPaneClick = useCallback(() => {
     resetHighlight();
     setURLSearchParams({});
@@ -145,6 +151,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
             snapToGrid
             snapGrid={ [15, 15] }
             zoomOnScroll={ false }
+            onLoad={onLoad}
             onPaneClick={ onPaneClick }
             onElementClick={ (_: ReactMouseEvent, element: Node | Edge): void => {
               if (isNode(element)) {

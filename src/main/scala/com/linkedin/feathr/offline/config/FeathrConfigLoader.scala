@@ -13,7 +13,7 @@ import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
-import com.linkedin.feathr.offline.config.location.{InputLocation, KafkaEndpoint, LocationUtils, SimplePath}
+import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, KafkaEndpoint, LocationUtils, SimplePath}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWindowParams}
@@ -713,15 +713,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
      *    since anchor defined pass-through features do not have path
      */
     val path: InputLocation = dataSourceType match {
-      case "HDFS" =>
-        Option(node.get("location")) match {
-          case Some(field: ObjectNode) =>
-            LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
-          case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
-                                s"Data location is not defined for HDFS source ${node.toPrettyString()}")
-          case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
-                                s"Illegal setting for location for HDFS source ${node.toPrettyString()}, expected map")
-        }
       case "KAFKA" =>
         Option(node.get("config")) match {
           case Some(field: ObjectNode) =>
@@ -731,8 +722,17 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
           case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
                                 s"Illegal setting for Kafka source ${node.toPrettyString()}, expected map")
         }
-      case _ => SimplePath("PASSTHROUGH")
+      case "PASSTHROUGH" => SimplePath("PASSTHROUGH")
+      case _ => Option(node.get("location")) match {
+        case Some(field: ObjectNode) =>
+          LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
+        case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+          s"Data location is not defined for data source ${node.toPrettyString()}")
+        case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+          s"Illegal setting for location for data source ${node.toPrettyString()}, expected map")
+      }
     }
+    println(s"Source location is: $path")
 
     // time window parameters for data aggregation
     val timeWindowParameterNode = Option(node.get("timeWindowParameters")) match {

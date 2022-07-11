@@ -28,12 +28,11 @@ Feathr automatically computes your feature values and joins them to your trainin
 - **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
 - **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
 
-
 ## Running Feathr on Azure with 3 Simple Steps
 
 Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
 
-1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query objectId -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
+1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query id -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
 
 [Launch Cloud Shell](https://shell.azure.com/bash)
 
@@ -50,7 +49,7 @@ Feathr has native cloud integration. To use Feathr on Azure, you only need three
 If you are not using the above Jupyter Notebook and want to install Feathr client locally, use this:
 
 ```bash
-pip install -U feathr
+pip install feathr
 ```
 
 Or use the latest code from GitHub:
@@ -120,37 +119,36 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ### Define Streaming Features
 
-Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming_source_ingestion.html) for more details.
+Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming-source-ingestion.html) for more details.
 
 ### Point in Time Joins
 
 Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linkedin.github.io/feathr/concepts/point-in-time-join.html) for more details.
 
-
 ## Running Feathr Examples
 
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
-
+Follow the [quick start Jupyter Notebook](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to try it out.
+There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart_synapse.html) containing a bit more explanation on the notebook.
 
 ## Cloud Architecture
 
 Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
 ![Architecture](images/architecture.png)
 
-# Next Steps
+## Next Steps
 
-## Quickstart
+### Quickstart
 
 - [Quickstart for Azure Synapse](quickstart_synapse.md)
 
-## Concepts
+### Concepts
 
 - [Feature Definition](concepts/feature-definition.md)
 - [Feature Generation](concepts/feature-generation.md)
 - [Feature Join](concepts/feature-join.md)
 - [Point-in-time Correctness](concepts/point-in-time-join.md)
 
-## How-to-guides
+### How-to-guides
 
 - [Azure Deployment](how-to-guides/azure-deployment.md)
 - [Local Feature Testing](how-to-guides/local-feature-testing.md)
@@ -159,4 +157,5 @@ Feathr has native integration with Azure and other cloud services, and here's th
 - [Feathr Job Configuration](how-to-guides/feathr-job-configuration.md)
 
 ## API Documentation
+
 - [Python API Documentation](https://feathr.readthedocs.io/en/latest/)
