@@ -8,47 +8,48 @@ parent: Feathr Concepts
 
 ## Intuitions of Frame Join
 
-Observation dataset has 2 records as below, and we want to use it as the 'spine' dataset, joining two features onto it:
+Observation dataset has 2 records as below, and we want to use it as the 'spine' dataset, joining two
+features onto it:
 
-1) Feature `page_view_count` from dataset `page_view_data`
+1. Feature 'page_view_count' from dataset 'page_view_data'
+
+2. Feature 'like_count' from dataset 'like_count_data'
 
 2) Feature `like_count` from dataset `like_count_data`
 
-The Feathr feature join in this case, will use the field `id` as join key of the observation data, and also consider the timestamp of each row during the join, making sure the joined feature values are collected **before** the observation_time of each row.
-
-| id | observe_time | Label |
-| --- | --- | --- |
-| 1 | 2022-01-01 | Yes |
-| 1 | 2022-01-02 | Yes |
-| 2 | 2022-01-02 | No  |
+| id  | observe_time | Label |
+| --- | ------------ | ----- |
+| 1   | 2022-01-01   | Yes   |
+| 1   | 2022-01-02   | Yes   |
+| 2   | 2022-01-02   | No    |
 
 Dataset `page_view_data` contains `page_view_count` of each user at a given time:
 
-| UserId | log_time | page_view_count |
-| --- | --- | --- |
-|1 | 2022-01-01 | 101 |
-|1 | 2022-01-02 | 102 |
-|1 | 2022-01-03 | 103 |
-|2 | 2022-01-02 | 200 |
-|3 | 2022-01-02 | 300 |
+| UserId | log_time   | page_view_count |
+| ------ | ---------- | --------------- |
+| 1      | 2022-01-01 | 101             |
+| 1      | 2022-01-02 | 102             |
+| 1      | 2022-01-03 | 103             |
+| 2      | 2022-01-02 | 200             |
+| 3      | 2022-01-02 | 300             |
 
-Dataset `like_count_data` contains `like_count` of each user at a given time:
+Dataset 'like_count_data' contains "like_count" of each user at a given time:
 
 | UserId | updated_time | 'like_count' |
-| --- | --- | --- |
-|1 | 2022-01-01 | 11 |
-|1 | 2022-01-02 | 12 |
-|1 | 2022-01-03 | 13 |
-|2 | 2022-01-02 | 20 |
-|3 | 2022-01-02 | 30 |
+| ------ | ------------ | ------------ |
+| 1      | 2022-01-01   | 11           |
+| 1      | 2022-01-02   | 12           |
+| 1      | 2022-01-03   | 13           |
+| 2      | 2022-01-02   | 20           |
+| 3      | 2022-01-02   | 30           |
 
 The expected joined output, a.k.a. training dataset would be assuming feature:
 
-| id | observe_time | Label | f_page_view_count | f_like_count|
-| --- | --- | --- | --- | --- |
-|1 | 2022-01-01 | Yes | 101 | 11 |
-|1 | 2022-01-02 | Yes | 102 | 12 |
-|2 | 2022-01-02 | No | 200 | 20
+| id  | observe_time | Label | f_page_view_count | f_like_count |
+| --- | ------------ | ----- | ----------------- | ------------ |
+| 1   | 2022-01-01   | Yes   | 101               | 11           |
+| 1   | 2022-01-02   | Yes   | 102               | 12           |
+| 2   | 2022-01-02   | No    | 200               | 20           |
 
 Note: In the above example, feature `f_page_view_count` and `f_like_count` are defined as simply a reference of field `page_view_count` and `like_count` respectively. Timestamp in these 3 datasets are considered automatically.
 
@@ -83,8 +84,8 @@ The path of a dataset as the 'spine' for the to-be-created training dataset. We 
 2. A column representing the event time of the row. By default, Feathr will make sure the feature values joined have a timestamp earlier than it, ensuring no data leakage in the resulting training dataset.
 
 3. Other columns will be simply pass through onto the output training dataset.
-The key fields from the observation data, which are used to joined with the feature data.
-List of feature names to be joined with the observation data. They must be pre-defined in the Python APIs.
+   The key fields from the observation data, which are used to joined with the feature data.
+   List of feature names to be joined with the observation data. They must be pre-defined in the Python APIs.
 
 The time information of the observation data used to compare with the feature's timestamp during the join.
 

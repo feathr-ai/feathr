@@ -45,10 +45,10 @@ def parse_conn_str(s: str) -> dict:
 class MssqlConnection(DbConnection):
     @staticmethod
     def connect(autocommit=True):
-        conn_str = os.environ["CONNECTION_STR"]
+        conn_str = os.environ["RBAC_CONNECTION_STR"]
         if "Server=" not in conn_str:
             logging.debug(
-                "`CONNECTION_STR` is not in ADO connection string format")
+                "`RBAC_CONNECTION_STR` is not in ADO connection string format")
             return None
         params = parse_conn_str(conn_str)
         if not autocommit:

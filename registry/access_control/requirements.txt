@@ -5,4 +5,3 @@ pyjwt
 pydantic
 requests
 rsa
-numpy
