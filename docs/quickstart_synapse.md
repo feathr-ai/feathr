@@ -1,9 +1,9 @@
 ---
 layout: default
-title: Quick Start Guide With Azure Synapse
+title: Feathr Quick Start Guide With Databricks
 ---
 
-# Feathr Quickstart Guide With Azure Synapse
+# Feathr Feathr Quick Start Guide With Databricks
 
 ## Overview
 

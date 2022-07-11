@@ -3,7 +3,7 @@ layout: default
 title: Quick Start Guide With Databricks
 ---
 
-# Feathr Quickstart Guide for Databricks
+# Feathr Quick Start Guide With Databricks
 
 For Databricks, you can simply upload [this notebook](./samples/databricks/databricks_quickstart_nyc_taxi_driver.ipynb) to your Databricks cluster and just run it in the Databricks cluster. It has been pre-configured to use the current Databricks cluster to submit jobs.
 
