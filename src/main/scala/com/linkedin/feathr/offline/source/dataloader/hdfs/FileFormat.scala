@@ -13,6 +13,7 @@ object FileFormat {
   // The each of the following are corresponding to one File format
   // Please update when new Format is supported
   val CSV = "CSV"
+  val TSV = "TSV"
   // This type is used for local test scenario of AVRO data source
   val AVRO_JSON = "AVRO_JSON"
   val AVRO = "AVRO"
@@ -38,7 +39,7 @@ object FileFormat {
     val p = path.toLowerCase()
     p match {
       case p if p.endsWith(".csv") => CSV
-      case p if p.endsWith(".tsv") => CSV
+      case p if p.endsWith(".tsv") => TSV
       case p if p.endsWith(".parquet") => PARQUET
       case p if p.endsWith(".orc") => ORC
       case p if p.endsWith(".avro.json") => AVRO_JSON
@@ -52,14 +53,15 @@ object FileFormat {
 
   // TODO: Complete a general loadDataFrame and replace current adhoc load data frame code
   def loadDataFrame(ss: SparkSession, path: String, format: String = CSV): DataFrame = {
-
-    val csvDelimiterOption = ss.sparkContext.getConf.get("spark.feathr.inputFormat.csvOptions.sep", ",")
+    val sqlContext = ss.sqlContext
+    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
 
     println(s"$csvDelimiterOption")
 
     format match {
       case AVRO => new AvroJsonDataLoader(ss, path).loadDataFrame()
       case CSV => ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(path)
+      case TSV => ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(path)
       case PARQUET => new ParquetDataLoader(ss, path).loadDataFrame()
       case _ => ???
     }
@@ -75,6 +77,7 @@ object FileFormat {
     val p = existingHdfsPaths.head.toLowerCase()
     p match {
       case p if p.endsWith(".csv") => CSV
+      case p if p.endsWith(".tsv") => TSV
       case p if p.endsWith(".parquet") => PARQUET
       case p if p.endsWith(".orc") => ORC
       case p if p.endsWith(".avro.json") => AVRO_JSON
@@ -91,8 +94,11 @@ object FileFormat {
   def loadHdfsDataFrame(format: String, existingHdfsPaths: Seq[String]): DataFrame = {
     val sqlContext = ss.sqlContext
     val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+
     val df = format match {
       case CSV =>
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(existingHdfsPaths: _*)
+      case TSV =>
         ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(existingHdfsPaths: _*)
       case AVRO =>
         ss.read.format(AVRO_DATASOURCE).load(existingHdfsPaths: _*)
