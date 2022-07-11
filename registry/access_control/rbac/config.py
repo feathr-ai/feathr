@@ -14,7 +14,7 @@ RBAC_API_BASE: str = _get_config("RBAC_API_BASE", default="/api/v1")
 RBAC_API_CLIENT_ID: str = _get_config("RBAC_API_CLIENT_ID", default="db8dc4b0-202e-450c-b38d-7396ad9631a5")
 RBAC_AAD_TENANT_ID: str = _get_config("RBAC_AAD_TENANT_ID", default="common")
 RBAC_AAD_INSTANCE: str = _get_config("RBAC_AAD_INSTANCE", default="https://login.microsoftonline.com")
-RBAC_API_AUDIENCE: str = _get_config("RBAC_API_AUDIENCE", default="db8dc4b0-202e-450c-b38d-7396ad9631a5")
+RBAC_API_AUDIENCE: str = _get_config("RBAC_API_AUDIENCE", default=RBAC_API_CLIENT_ID)
 
 # SQL Database
 RBAC_CONNECTION_STR: str = _get_config("RBAC_CONNECTION_STR", default= "")
