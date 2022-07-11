@@ -1,7 +1,6 @@
 ---
 layout: default
 title: Concepts for Beginners
-nav_order: 2
 ---
 
 # Concepts for Beginners
