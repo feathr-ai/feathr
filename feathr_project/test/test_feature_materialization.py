@@ -155,7 +155,7 @@ def test_get_offline_features_verbose():
                                 observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path,
-                                execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}),
+                                execution_configurations=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}),
                                 verbose=True
                         )
 
@@ -230,23 +230,21 @@ def test_delete_feature_from_redis():
                                        backfill_time=backfill_time)
     client.materialize_features(settings)
     
+    client.wait_job_to_finish(timeout_sec=900)
+    
     res = client.get_online_features(online_test_table, '2020-04-01 07:21:51', [
         'f_is_long_trip_distance', 'f_day_of_week'])
-    # just assme there are values. We don't hard code the values for now for testing
-    # the correctness of the feature generation should be garunteed by feathr runtime.
-    # ID 239 and 265 are available in the `DOLocationID` column in this file:
-    # https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv
-    # View more detials on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+
     assert len(res) == 2
-    print(res)
-    # assert res[0] != None
-    # assert res[1] != None
+
+    assert res[0] != None
+    assert res[1] != None
 
     # Delete online feature stored in Redis
     client.delete_feature_from_redis(online_test_table, '2020-04-01 07:21:51', 'f_is_long_trip_distance')
     
     # Check if the online feature is deleted successfully
     res = client.get_online_features(online_test_table, '265', ['f_location_avg_fare'])
-    print(res)
+
     assert len(res) == 1
     assert res[0] == None
