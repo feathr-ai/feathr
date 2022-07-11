@@ -101,7 +101,7 @@
     "bacpacBlobName": "feathr-registry-schema.bacpac",
     "destinationBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('bacpacBlobName'))]",
     "deploymentScriptName": "CopyBacpacFile",
-    "preBuiltdockerImage": "feathrfeaturestore/sql-registry"
+    "preBuiltdockerImage": "feathrfeaturestore/feathr-registry"
   },
   "functions": [],
   "resources": [
@@ -368,11 +368,11 @@
               "value": "https://index.docker.io/v1"
             },
             {
-              "name": "AZURE_CLIENT_ID",
+              "name": "REACT_APP_AZURE_CLIENT_ID",
               "value": "[parameters('azureADClientId')]"
             },
             {
-              "name": "AZURE_TENANT_ID",
+              "name": "REACT_APP_AZURE_TENANT_ID",
               "value": "[parameters('azureADTenantId')]"
             },
             {
@@ -380,6 +380,7 @@
               "value": "api/v1"
             },
             {
+            "condition": "[equals(parameters('registryBackend'),'Azure-SQL')]",
               "name": "CONNECTION_STR",
               "value": "[concat('Server=tcp:',reference(variables('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('sqlDatabaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlserverName')).administratorLogin,';Password=',parameters('sqlAdminPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
             }
