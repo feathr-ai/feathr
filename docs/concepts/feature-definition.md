@@ -6,10 +6,6 @@ parent: Feathr Concepts
 
 # Feature Definition
 
-## Prerequisite
-
-* [Feathr Expression Language](../how-to-guides/expression-language.md)
-
 ## Introduction
 
 In Feathr, a feature is viewed as a function, mapping from entity id or key, and timestamp to a feature value.
@@ -78,7 +74,7 @@ f_trip_time_duration = Feature(name="f_trip_time_duration",
                                transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
 ```
 
-Note that for `transform` section, you can put a simple expression to transform your features. For more information, please refer to [Feathr Expression Language](../how-to-guides/expression-language.md).
+Note that for `transform` section, you can put a simple expression to transform your features. For more information, please refer to [Feathr User Defined Functions (UDFs)](../how-to-guides/feathr-udfs.md).
 
 ### Window aggregation features
 
