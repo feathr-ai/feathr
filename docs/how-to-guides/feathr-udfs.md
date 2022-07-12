@@ -37,12 +37,12 @@ As you can see, there will be parts:
 
 ### What happened behind the scene and what is the limitation?
 
-What's happening behind the scene is, Feathr will copy the function and exexute the function in the corresponding Spark cluster. The execution order 
+What's happening behind the scene is, Feathr will copy the function and execute the function in the corresponding Spark cluster. The execution order 
 
-There are several limititions:
+There are several limitations:
 
 1. The functions should be "self-contained". I.e. Any package or functions you use, you should import it in the function body. Although Feathr imports all the built-in functions in `pyspark.sql.functions`, it is always a best practice to import the modules (might be other python modules you use, for example `time`, regex, etc.) in the UDF body, like the `from pyspark.sql.functions import dayofweek` line in the example below.
-2. The function should accept only one Spark Dataframe as input, and return one Spark Dataframe as the result. Multiple Dataframes are not supported. There's no limitation on names, and by convension it is usually called `df`, but you can use any name you want.
+2. The function should accept only one Spark Dataframe as input, and return one Spark Dataframe as the result. Multiple DataFrames are not supported. There's no limitation on names, and by convention it is usually called `df`, but you can use any name you want.
 3. As long as you give the UDF a dataframe as an input
 4. For all the feature definitions, you should use the output of the UDF as the definition (if you have changed the name of the columns). For example, you have the following code: 
 4. Currently, "chained" functions are not supported. I.e. the example below is not supported:
@@ -114,7 +114,7 @@ Feathr also supports using pandas to deal with the data. Behind the scene it's u
 Below is the template, note that:
 
 1. This is only available for Spark 3.2 and later, so make sure you submit to a spark cluster that has Spark 3.2 and later.
-2. You need to call something like `psdf = df.to_pandas_on_spark()` to convert a Spark dataframe to "pandas dataframe", and call `psdf.to_spark()` to conver the "pandas dataframe" to Spark dataframe.
+2. You need to call something like `psdf = df.to_pandas_on_spark()` to convert a Spark dataframe to "pandas dataframe", and call `psdf.to_spark()` to convert the "pandas dataframe" to Spark dataframe.
 
 
 ```python
@@ -136,6 +136,6 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
 
 ### When do I use UDFs?
 
-Those UDFs are totoally optional to use. For example, if you have an existing feature transformation pipeline, you don't have to use Feathr's preprocessing functions to rewrite your code. Instead, you can simply use your already transformed feature in Feathr, for point in time joins, or for feature registry and exploration.
+Those UDFs are totally optional to use. For example, if you have an existing feature transformation pipeline, you don't have to use Feathr's preprocessing functions to rewrite your code. Instead, you can simply use your already transformed feature in Feathr, for point in time joins, or for feature registry and exploration.
 
 But if you don't have an existing pipeline, Feathr's UDF does provide a good way for you to manage your feature engineering system from end to end. This decision is beyond the scope of this document.
