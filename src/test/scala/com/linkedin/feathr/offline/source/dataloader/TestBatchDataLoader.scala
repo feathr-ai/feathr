@@ -11,6 +11,11 @@ import org.testng.annotations.Test
  */
 class TestBatchDataLoader extends TestFeathr {
 
+  def escape(raw: String): String = {
+    import scala.reflect.runtime.universe._
+    Literal(Constant(raw)).toString
+  }
+
   @Test(description = "test loading dataframe with BatchDataLoader")
   def testBatchDataLoader() : Unit = {
     val path = "anchor1-source.csv"
@@ -35,6 +40,7 @@ class TestBatchDataLoader extends TestFeathr {
     val absolutePath = getClass.getClassLoader.getResource(path).getPath
     val sqlContext = ss.sqlContext
     sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep", "\t")
+    println(s"Postset config testBatchDataLoaderWithCsvDelimiterOption: ${ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep")}")
     val batchDataLoader = new BatchDataLoader(ss, SimplePath(absolutePath), List())
     val df = batchDataLoader.loadDataFrame()
     val expectedRows = Array(
@@ -47,6 +53,7 @@ class TestBatchDataLoader extends TestFeathr {
       Row("9", "banana", "4", "4", "0.4")
     )
     assertEquals(df.collect(), expectedRows)
+    sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep","")
   }
 
 }

@@ -30,6 +30,15 @@ object FileFormat {
   val DATA_FORMAT = "data.format"
 
   /**
+   * Convert string to special characters
+   * @return a String
+   */
+  def escape(raw: String): String = {
+    import scala.reflect.runtime.universe._
+    Literal(Constant(raw)).toString.replaceAll("\"", "")
+  }
+
+  /**
    * To define if the file is JDBC, Single File or Path list (default)
    * @param path
    * @return
@@ -51,8 +60,14 @@ object FileFormat {
 
   // TODO: Complete a general loadDataFrame and replace current adhoc load data frame code
   def loadDataFrame(ss: SparkSession, path: String, format: String = CSV): DataFrame = {
+
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
     val sqlContext = ss.sqlContext
-    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
+    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
+    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+
     format match {
       case AVRO => new AvroJsonDataLoader(ss, path).loadDataFrame()
       case CSV => ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(path)
@@ -86,8 +101,14 @@ object FileFormat {
   }
 
   def loadHdfsDataFrame(format: String, existingHdfsPaths: Seq[String]): DataFrame = {
+
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
     val sqlContext = ss.sqlContext
-    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
+    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
+    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+
     val df = format match {
       case CSV =>
         ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(existingHdfsPaths: _*)

@@ -52,6 +52,15 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
   }
 
   /**
+   * Convert string to special characters
+   * @return a String
+   */
+  def escape(raw: String): String = {
+    import scala.reflect.runtime.universe._
+    Literal(Constant(raw)).toString.replaceAll("\"", "")
+  }
+
+  /**
    * load the source data as dataframe.
    * @param dataIOParameters extra parameters
    * @param jobConf Hadoop JobConf to be passed
@@ -65,8 +74,12 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
 
     log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
 
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
     val sqlContext = ss.sqlContext
-    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
+    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
+    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
 
     try {
         import scala.util.control.Breaks._
