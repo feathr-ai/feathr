@@ -51,9 +51,11 @@ object FileFormat {
 
   // TODO: Complete a general loadDataFrame and replace current adhoc load data frame code
   def loadDataFrame(ss: SparkSession, path: String, format: String = CSV): DataFrame = {
+    val sqlContext = ss.sqlContext
+    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
     format match {
       case AVRO => new AvroJsonDataLoader(ss, path).loadDataFrame()
-      case CSV => ss.read.format("csv").option("header", "true").load(path)
+      case CSV => ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(path)
       case PARQUET => new ParquetDataLoader(ss, path).loadDataFrame()
       case _ => ???
     }
@@ -69,23 +71,26 @@ object FileFormat {
     val p = existingHdfsPaths.head.toLowerCase()
     p match {
       case p if p.endsWith(".csv") => CSV
+      case p if p.endsWith(".tsv") => CSV
       case p if p.endsWith(".parquet") => PARQUET
       case p if p.endsWith(".orc") => ORC
       case p if p.endsWith(".avro.json") => AVRO_JSON
       case p if p.endsWith(".avro") => AVRO
       case p if p.startsWith("jdbc:") => JDBC
       case _ =>
-      // if we cannot tell the file format from the file extensions, we should read from `spark.feathr.inputFormat` to get the format that's sepcified by user.
-      dataIOParameters.getOrElse(DATA_FORMAT, ss.conf.get("spark.feathr.inputFormat", AVRO)).toUpperCase
+        // if we cannot tell the file format from the file extensions, we should read from `spark.feathr.inputFormat` to get the format that's sepcified by user.
+        dataIOParameters.getOrElse(DATA_FORMAT, ss.conf.get("spark.feathr.inputFormat", AVRO)).toUpperCase
     }
 
 
   }
 
   def loadHdfsDataFrame(format: String, existingHdfsPaths: Seq[String]): DataFrame = {
+    val sqlContext = ss.sqlContext
+    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
     val df = format match {
       case CSV =>
-        ss.read.format("csv").option("header", "true").load(existingHdfsPaths: _*)
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(existingHdfsPaths: _*)
       case AVRO =>
         ss.read.format(AVRO_DATASOURCE).load(existingHdfsPaths: _*)
       case ORC =>
