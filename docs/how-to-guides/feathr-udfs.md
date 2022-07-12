@@ -6,14 +6,14 @@ parent: How-to Guides
 
 # Feathr User Defined Functions (UDFs)
 
-Feathr supports a wide range of user defined functions (UDFs) to allow flexible way of dealing with your data. There are two use cases that Feathr currently supports:
+Feathr supports a wide range of user defined functions (UDFs) to allow flexible way of dealing with your data. Feathr supports two use cases: 
 
-1. User defined functions at input sources (also known as preprocessing functions)
-2. User defined functions at individual features (using the `transform` parameters).
+1. [User defined functions at input sources (also known as preprocessing functions)](#user-defined-functions-at-input-sources-also-known-as-preprocessing-functions)
+2. [User defined functions at individual features (using the `transform` parameters)](#user-defined-functions-at-individual-features-using-the-transform-parameters)
 
 ## User defined functions at input sources (also known as preprocessing functions)
 
-One of the example is as below:
+Below is an example:
 
 ```python
 def add_new_dropoff_and_fare_amount_column(df: DataFrame):
@@ -37,7 +37,7 @@ As you can see, there will be parts:
 
 ### What happened behind the scene and what is the limitation?
 
-What's happening behind the scene is, Feathr will copy the function and execute the function in the corresponding Spark cluster. The execution order 
+What's happening behind the scene is, Feathr will copy the function (`add_new_dropoff_and_fare_amount_column` in this case) and execute the function in the corresponding Spark cluster. The execution order 
 
 There are several limitations:
 
@@ -73,6 +73,13 @@ def add_new_dropoff_and_fare_amount_column(df: DataFrame):
     df = df.withColumn("fare_amount_cents",  multiply_100("fare_amount"))
     return df
 ```
+
+### Best Practice
+1. One best practice is if you have multiple transformation that you want to define for one input source, you can define multiple UDFs. For example, you want to define
+
+See Illustration below:
+
+![Feathr UDF from input features](../images/feathr_udf.jpg)
 
 ### PySpark Support Examples
 
@@ -139,3 +146,11 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
 Those UDFs are totally optional to use. For example, if you have an existing feature transformation pipeline, you don't have to use Feathr's preprocessing functions to rewrite your code. Instead, you can simply use your already transformed feature in Feathr, for point in time joins, or for feature registry and exploration.
 
 But if you don't have an existing pipeline, Feathr's UDF does provide a good way for you to manage your feature engineering system from end to end. This decision is beyond the scope of this document.
+
+
+
+
+## User defined functions at individual features (using the `transform` parameters)
+
+
+note: derived feature isn't working well
