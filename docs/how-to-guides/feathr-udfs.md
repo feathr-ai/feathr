@@ -33,7 +33,7 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
 As you can see, there will be parts:
 
 1. A self-contained function
-2. Calling that function in `preprocessing`.
+2. Calling that function in `preprocessing` parameter.
 
 ### What happened behind the scene and what is the limitation?
 
