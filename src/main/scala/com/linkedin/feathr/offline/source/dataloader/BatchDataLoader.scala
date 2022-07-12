@@ -64,6 +64,10 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
     val dataPath = location.getPath
 
     log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
+
+    val sqlContext = ss.sqlContext
+    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+
     try {
         import scala.util.control.Breaks._
 
@@ -88,7 +92,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
         throw feathrException // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
       case e: Throwable => //TODO: Analyze all thrown exceptions, instead of swalling them all, and reading as a csv
         println(e.toString)
-        ss.read.format("csv").option("header", "true").load(dataPath)
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(dataPath)
     }
   }
 }
