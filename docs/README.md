@@ -164,7 +164,7 @@ For a complete roadmap with estimated dates, please [visit this page](https://gi
 
 ## 👨‍👨‍👦‍👦 Community Guidelines
 
-Build for the community and build by the community. Check out [Community Guidelines](CONTRIBUTING.md).
+Build for the community and build by the community. Check out [Community Guidelines](../CONTRIBUTING.md).
 
 ## 📢 Slack Channel
 
