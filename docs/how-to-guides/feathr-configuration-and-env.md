@@ -54,7 +54,7 @@ Feathr will get the configurations in the following order:
 | JDBC_TABLE                                            | If using JDBC endpoint as offline store, this config specifies the JDBC table to read from                                                                                                                                                                                         | Required if using JDBC sources as offline store                           |
 | JDBC_USER                                             | If using JDBC endpoint as offline store, this config specifies the JDBC user                                                                                                                                                                                                       | Required if using JDBC sources as offline store                           |
 | JDBC_PASSWORD                                         | If using JDBC endpoint as offline store, this config specifies the JDBC password                                                                                                                                                                                                   | Required if using JDBC sources as offline store                           |
-| KAFKA_SASL_JAAS_CONFIG                                | If using EventHub as a streaming input source, this configures the KAFKA stream. If using EventHub, read [here](https://github.com/Azure/azure-event-hubs-for-kafka#updating-your-kafka-client-configuration) for how to get this string from the existing string in Azure Portal. Basically the value will be something like:  `"org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"Endpoint=sb://feathrazureci.servicebus.windows.net/;SharedAccessKeyName=feathrcipolicy;SharedAccessKey=abcdefpHrBR0m6bqSEYfUmCGsJPzjm5OgKmA7nMA=\";"`
+| KAFKA_SASL_JAAS_CONFIG                                | see [here](#kafkasasljaasconfig) for more details.
 | Required if using Kafka/EventHub as streaming source input.               |
 | PROJECT_CONFIG__PROJECT_NAME                        | Configures the project name.                                                                                                                                                                                                                                                       | Required                                                                  |
 | OFFLINE_STORE__SNOWFLAKE__URL                         | Configures the Snowflake URL. Usually it's something like `dqllago-ol19457.snowflakecomputing.com`.                                                                                                                                                                                | Required if using Snowflake as an offline store.                          |
@@ -82,6 +82,15 @@ Feathr will get the configurations in the following order:
 | FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION | Controls whether the type system (think this as the "schema" for the registry) will be initialized or not. Usually this is only required to be set to `True` to initialize schema, and then you can set it to `False` to shorten the initialization time.                          | Required                                                                  |
 
 # Explanation for selected configurations
+
+## KAFKA_SASL_JAAS_CONFIG
+If using EventHub as a streaming input source, this configures the KAFKA stream. 
+
+Basically Feathr uses Kafka behind the scene and Kafka uses the Java Authentication and Authorization Service (JAAS) for SASL configuration. You must provide JAAS configurations for all SASL authentication. That's why users should specify `ConnectionString` as user name, and the password will be the exact content of the connection string.
+
+For Azure EventHub, read [here](https://github.com/Azure/azure-event-hubs-for-kafka#updating-your-kafka-client-configuration) for how to get this string from the existing string in Azure Portal. The value will be something like:  `"org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"Endpoint=sb://feathrazureci.servicebus.windows.net/;SharedAccessKeyName=feathrcipolicy;SharedAccessKey=aaabbbccc=\";"`, and the exact value of the `password` part (i.e. connection string) can be retrieved from the Azure portal like below:
+
+![EventHub Config](../images/eventhub_config.png)
 
 ## SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE
 
