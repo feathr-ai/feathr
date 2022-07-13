@@ -84,9 +84,10 @@ Feathr will get the configurations in the following order:
 # Explanation for selected configurations
 
 ## KAFKA_SASL_JAAS_CONFIG
-If using EventHub as a streaming input source, this configures the KAFKA stream. 
 
-Basically Feathr uses Kafka behind the scene and Kafka uses the Java Authentication and Authorization Service (JAAS) for SASL configuration. You must provide JAAS configurations for all SASL authentication. That's why users should specify `ConnectionString` as user name, and the password will be the exact content of the connection string.
+Feathr uses Kafka behind the scene for streaming input, and Kafka uses the Java Authentication and Authorization Service (JAAS) for SASL configuration. You must provide JAAS configurations for all SASL authentication. 
+
+For cloud services such as Azure EventHub or AWS Managed Streaming for Apache Kafka (MSK), they usually use `ConnectionString` as user name, and the password will be the exact content of the connection string.
 
 For Azure EventHub, read [here](https://github.com/Azure/azure-event-hubs-for-kafka#updating-your-kafka-client-configuration) for how to get this string from the existing string in Azure Portal. The value will be something like:  `"org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"Endpoint=sb://feathrazureci.servicebus.windows.net/;SharedAccessKeyName=feathrcipolicy;SharedAccessKey=aaabbbccc=\";"`, and the exact value of the `password` part (i.e. connection string) can be retrieved from the Azure portal like below:
 
