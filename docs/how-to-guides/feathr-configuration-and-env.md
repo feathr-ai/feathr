@@ -89,7 +89,11 @@ Feathr uses Kafka behind the scene for streaming input, and Kafka uses the Java 
 
 For cloud services such as Azure EventHub or AWS Managed Streaming for Apache Kafka (MSK), they usually use `ConnectionString` as user name, and the password will be the exact content of the connection string.
 
-For Azure EventHub, read [here](https://github.com/Azure/azure-event-hubs-for-kafka#updating-your-kafka-client-configuration) for how to get this string from the existing string in Azure Portal. The value will be something like:  `"org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"Endpoint=sb://feathrazureci.servicebus.windows.net/;SharedAccessKeyName=feathrcipolicy;SharedAccessKey=aaabbbccc=\";"`, and the exact value of the `password` part (i.e. connection string) can be retrieved from the Azure portal like below:
+For Azure EventHub, read [here](https://github.com/Azure/azure-event-hubs-for-kafka#updating-your-kafka-client-configuration) for how to get this string from the existing string in Azure Portal. The value will be something like:  `"org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"Endpoint=sb://feathrazureci.servicebus.windows.net/;SharedAccessKeyName=feathrcipolicy;SharedAccessKey=aaabbbccc=\";"`, 
+
+Note that for those escape characters, they are usually needed, as those environment variable will be passed to different services (databricks/synapse) etc. later, and those different services might have different ways of dealing with those strings, so it is recommended to put those escape characters for the quotes.
+
+In order to get the exact value of the `password` part (i.e. connection string), you can retrieve it from the Azure portal like below:
 
 ![EventHub Config](../images/eventhub_config.png)
 
