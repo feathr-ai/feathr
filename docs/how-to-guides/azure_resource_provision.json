@@ -10,23 +10,6 @@
         "description": "Resource prefix for all the resource provisioned. This should be an alphanumeric string."
       }
     },
-    "principalId": {
-      "type": "String",
-      "metadata": {
-        "description": "Specifies the principal ID assigned to the role. You can find it by logging into 'https://shell.azure.com/bash' and run 'az ad signed-in-user show --query id -o tsv'"
-      }
-    },
-    "allowAllConnections": {
-      "defaultValue": "true",
-      "allowedValues": [
-        "true",
-        "false"
-      ],
-      "type": "String",
-      "metadata": {
-        "description": "Specifies whether to allow client IPs to connect to Synapse"
-      }
-    },
     "provisionPurview": {
       "defaultValue": "true",
       "allowedValues": [
@@ -35,7 +18,7 @@
       ],
       "type": "String",
       "metadata": {
-        "description": "Whether or not put purview in the provision script"
+        "description": "Whether or not to provision purview as part of deployment script"
       }
     },
     "provisionEventHub": {
@@ -46,7 +29,7 @@
       ],
       "type": "String",
       "metadata": {
-        "description": "Whether or not to deploy eventhub provision script"
+        "description": "Whether or not to provision EventHub as part of deployment script"
       }
     },
     "sqlAdminUsername": {
@@ -61,24 +44,15 @@
         "description": "Specifies the password for admin"
       }
     },
-    "storageAccountKey": {
-      "type": "string",
-      "metadata": {
-        "description": "Specifies the key of the storage account where the BACPAC file is stored."
-      }
-    },
-    "bacpacFileUrl": {
-      "type": "string",
-      "defaultValue": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-registry-schema.bacpac",
-      "metadata": {
-        "description": "This is the pre-created BACPAC file that contains required schemas by the registry server."
-      }
-    },
-    "preBuiltFeathrUIDockerImage": {
-      "defaultValue": "feathrfeaturestore/sql-registry",
+    "registryBackend": {
+      "defaultValue": "Azure-SQL",
+      "allowedValues": [
+        "Azure-SQL",
+        "Azure-Purview"
+      ],
       "type": "String",
       "metadata": {
-        "description": "Pre-Built Docker Image of Feathr UI (from dockerhub) with support for specific registry backends. Current supported registry backends are Azure Purview and Azure SQL"
+        "description": "Backend for registry metadata storage. Current supported registry backends are Azure SQL and Azure Purview"
       }
     },
     "azureADClientId": {
@@ -112,16 +86,22 @@
     "dlsFsName": "[toLower(concat(parameters('resourcePrefix'),'fs'))]",
     "dlsAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('dlsName'))]",
     "purviewName": "[concat(parameters('resourcePrefix'),'purview' )]",
+    "identityName": "[concat(parameters('resourcePrefix'),'identity' )]",
     "roleDefinitionIdForBlobContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
     "roleDefinitionIdForKeyVaultSecretsUser": "4633458b-17de-408a-b874-0445c86b69e6",
-    "roleAssignmentNameForBlobContributor": "[guid(parameters('principalId'), variables('roleDefinitionIdForBlobContributor'), resourceGroup().id)]",
-    "roleAssignmentNameForKeyVaultSecretsUser": "[guid(parameters('principalId'), variables('roleDefinitionIdForKeyVaultSecretsUser'), resourceGroup().id)]",
+    "roleAssignmentNameForBlobContributor": "[guid(variables('roleDefinitionIdForBlobContributor'), resourceGroup().id)]",
+    "roleAssignmentNameForKeyVaultSecretsUser": "[guid(variables('roleDefinitionIdForKeyVaultSecretsUser'), resourceGroup().id)]",
     "webAppName": "[concat(parameters('resourcePrefix'),'webapp' )]",
     "webAppPlanName": "[concat(parameters('resourcePrefix'),'appplan' )]",
     "webAppPlanSku": "P1v2",
     "webAppAPIVersion": "2021-03-01",
     "sqlServerName": "[concat(parameters('resourcePrefix'),'dbserver' )]",
-    "sqlDatabaseName": "[concat(parameters('resourcePrefix'),'db' )]"
+    "sqlDatabaseName": "[concat(parameters('resourcePrefix'),'db' )]",
+    "sourceBacpacBlobUrl": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-registry-schema.bacpac",
+    "bacpacBlobName": "feathr-registry-schema.bacpac",
+    "destinationBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('bacpacBlobName'))]",
+    "deploymentScriptName": "CopyBacpacFile",
+    "preBuiltdockerImage": "feathrfeaturestore/feathr-registry"
   },
   "functions": [],
   "resources": [
@@ -317,8 +297,7 @@
           "properties": {
             "startIpAddress": "0.0.0.0",
             "endIpAddress": "255.255.255.255"
-          },
-          "condition": "[equals(parameters('allowAllConnections'),'true')]"
+          }
         },
         {
           "type": "firewallrules",
@@ -380,7 +359,7 @@
         "httpsOnly": "true",
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName'))]",
         "siteConfig": {
-          "linuxFxVersion": "[concat('DOCKER|', parameters('preBuiltFeathrUIDockerImage'))]",
+          "linuxFxVersion": "[concat('DOCKER|', variables('preBuiltdockerImage'))]",
           "alwaysOn": true,
           "ftpsState": "Disabled",
           "appSettings": [
@@ -389,11 +368,11 @@
               "value": "https://index.docker.io/v1"
             },
             {
-              "name": "AZURE_CLIENT_ID",
+              "name": "REACT_APP_AZURE_CLIENT_ID",
               "value": "[parameters('azureADClientId')]"
             },
             {
-              "name": "AZURE_TENANT_ID",
+              "name": "REACT_APP_AZURE_TENANT_ID",
               "value": "[parameters('azureADTenantId')]"
             },
             {
@@ -401,6 +380,7 @@
               "value": "api/v1"
             },
             {
+            "condition": "[equals(parameters('registryBackend'),'Azure-SQL')]",
               "name": "CONNECTION_STR",
               "value": "[concat('Server=tcp:',reference(variables('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('sqlDatabaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlserverName')).administratorLogin,';Password=',parameters('sqlAdminPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
             }
@@ -433,16 +413,25 @@
       }
     },
     {
+        "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+        "apiVersion": "2018-11-30",
+        "name": "[variables('identityName')]",
+        "location": "[variables('location')]"
+    },
+    {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-10-01-preview",
       "name": "[variables('roleAssignmentNameForBlobContributor')]",
       "dependsOn": [
-        "[variables('dlsAccount')]"
+        "[variables('dlsAccount')]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]"
       ],
       "properties": {
         "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForBlobContributor'))]",
-        "principalId": "[parameters('principalId')]",
-        "scope": "[resourceGroup().id]"
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName')), '2018-11-30').principalId]",
+        "scope": "[resourceGroup().id]",
+        "principalType": "ServicePrincipal"
+
       }
     },
     {
@@ -450,12 +439,16 @@
       "apiVersion": "2020-10-01-preview",
       "name": "[variables('roleAssignmentNameForKeyVaultSecretsUser')]",
       "dependsOn": [
-        "[variables('keyVault')]"
+        "[variables('keyVault')]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]"
+
       ],
       "properties": {
         "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForKeyVaultSecretsUser'))]",
-        "principalId": "[parameters('principalId')]",
-        "scope": "[resourceGroup().id]"
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName')), '2018-11-30').principalId]",
+        "scope": "[resourceGroup().id]",
+        "principalType": "ServicePrincipal"
+
       }
     },
     {
@@ -485,6 +478,31 @@
       ]
     },
     {
+    "type": "Microsoft.Resources/deploymentScripts",
+    "apiVersion": "2020-10-01",
+    "name": "[variables('deploymentScriptName')]",
+    "location": "[variables('location')]",
+    "kind": "AzureCLI",
+    "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+            "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]": {}
+        }
+    },
+    "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', variables('dlsName'), 'default', variables('dlsFsName'))]"
+    ],
+    "properties": {
+        "AzCliVersion": "2.2.0",
+        "timeout": "PT30M",
+        "arguments": "[concat(listKeys(variables('dlsAccount'),'2019-04-01').keys[0].value, ' ',variables('dlsName'), ' ', variables('bacpacBlobName'), ' ', variables('dlsFsName'),' ' ,variables('sourceBacpacBlobUrl'))]",
+        "scriptContent": "az storage blob copy start --account-key $1 --account-name $2 --destination-blob $3 --destination-container $4 --source-uri $5",
+        "cleanupPreference": "OnSuccess",
+        "retentionInterval": "P1D"
+    }
+},
+    {
       "type": "Microsoft.Sql/servers/databases",
       "apiVersion": "2021-11-01-preview",
       "name": "[concat(string(variables('sqlServerName')), '/', string(variables('sqlDatabaseName')))]",
@@ -498,12 +516,14 @@
           "apiVersion": "2021-11-01-preview",
           "name": "Import",
           "dependsOn": [
-            "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName'))]"
+            "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName'))]",
+            "[resourceId('Microsoft.Resources/deploymentScripts', variables('deploymentScriptName'))]"
+
           ],
           "properties": {
             "storageKeyType": "StorageAccessKey",
-            "storageKey": "[parameters('storageAccountKey')]",
-            "storageUri": "[parameters('bacpacFileUrl')]",
+            "storageKey": "[listKeys(variables('dlsAccount'),'2019-04-01').keys[0].value]",
+            "storageUri": "[variables('destinationBacpacBlobUrl')]",
             "administratorLogin": "[parameters('sqlAdminUsername')]",
             "administratorLoginPassword": "[parameters('sqlAdminPassword')]",
             "operationMode": "Import"
