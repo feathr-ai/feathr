@@ -53,6 +53,7 @@ else
     cd ../access_control
     export RBAC_REGISTRY_URL="http://127.0.0.1:18000/api/v1"
     export RBAC_API_BASE="${API_BASE}"
+    export RBAC_AAD_INSTANCE="https://login.microsoftonline.com"
     export RBAC_API_CLIENT_ID="${REACT_APP_AZURE_CLIENT_ID}"
     export RBAC_AAD_TENANT_ID="${REACT_APP_AZURE_TENANT_ID}"
     export RBAC_API_AUDIENCE="${REACT_APP_AZURE_CLIENT_ID}"
