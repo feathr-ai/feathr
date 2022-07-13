@@ -52,8 +52,7 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
         try:
             user_id = decoded_token['oid']
         except Exception as e:
-            logging.debug(e)
-            raise InvalidAuthorization(detail='Unable to extract user details from token')
+            raise InvalidAuthorization(detail=f'Unable to extract user details from token, {e}')
 
         return User(
             id=user_id,
@@ -115,14 +114,11 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
                                 'RS256'], audience=config.RBAC_API_AUDIENCE)
             return decode
         except ExpiredSignatureError as e:
-            logging.debug(f'The token signature has expired: {e}')
-            raise InvalidAuthorization('The token signature has expired')
+            raise InvalidAuthorization(f'The token signature has expired: {e}')
         except PyJWKError as e:
-            logging.debug(f'Invalid token: {e}')
-            raise InvalidAuthorization('The token is invalid')
+            raise InvalidAuthorization(f'The token is invalid: {e}')
         except Exception as e:
-            logging.debug(f'Unexpected error: {e}')
-            raise InvalidAuthorization('Unable to decode token, error: {e}')
+            raise InvalidAuthorization(f'Unable to decode token, error: {e}')
 
 
 authorize = AzureADAuth()
