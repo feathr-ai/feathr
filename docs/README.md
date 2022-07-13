@@ -29,6 +29,36 @@ Feathr automatically computes your feature values and joins them to your trainin
 - **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
 - **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
 
+## Running Feathr on Azure with few Simple Steps
+
+1. To enable authentication on the Feathr UI (which gets created as part of the deployment script) we need to create an Azure Active Directory (AAD) application. Currently it is not possible to create one through ARM template but you can easily create one by running the following CLI commands in the [Cloud Shell](https://shell.azure.com/bash)
+
+```bash
+# This is the prefix you want to name your resources with, make a note of it, you will need it during deployment.
+prefix="YOUR_RESOURCE_PREFIX" 
+
+# Please don't change this name, a corresponding webapp with same name gets created in subsequent steps.
+sitename="${prefix}webapp" 
+
+# This will create the Azure AD application, note that we need to create an AAD app of platform type Single Page Application(SPA). By default passing the redirect-uris with create command creates an app of type web. 
+az ad app create --display-name $sitename --sign-in-audience AzureADMyOrg --web-home-page-url "https://$sitename.azurewebsites.net" --enable-id-token-issuance true
+
+#Fetch the ClientId, TenantId and ObjectId for the created app
+aad_clientId=$(az ad app list --display-name $sitename --query [].appId -o tsv)
+aad_tenantId=$(az account tenant list --query [].tenantId -o tsv)
+aad_objectId=$(az ad app list --display-name $sitename --query [].id -o tsv)
+
+# Updating the SPA app created above, currently there is no CLI support to add redirectUris to a SPA, so we have to patch manually via az rest
+az rest --method PATCH --uri "https://graph.microsoft.com/v1.0/applications/$aad_objectId" --headers "Content-Type=application/json" --body "{spa:{redirectUris:['https://$sitename.azurewebsites.net/.auth/login/aad/callback']}}"
+
+# Make a note of the ClientId and TenantId, you will need it during deployment.
+echo "AAD_CLIENT_ID: $aad_clientId"
+echo "AZURE_TENANT_ID: $aad_tenantId"
+``` 
+
+2. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 ## 📓 Documentation
 
 - For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
@@ -164,7 +194,7 @@ For a complete roadmap with estimated dates, please [visit this page](https://gi
 
 ## 👨‍👨‍👦‍👦 Community Guidelines
 
-Build for the community and build by the community. Check out [Community Guidelines](CONTRIBUTING.md).
+Build for the community and build by the community. Check out [Community Guidelines](../CONTRIBUTING.md).
 
 ## 📢 Slack Channel
 
