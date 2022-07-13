@@ -22,8 +22,9 @@ const nodeTypes = {
 type Props = {
   data: Elements;
   nodeId: string;
+  isFeatureGraph: boolean;
 }
-const Graph: React.FC<Props> = ({ data, nodeId }) => {
+const Graph: React.FC<Props> = ({ data, nodeId, isFeatureGraph }) => {
   const [, setURLSearchParams] = useSearchParams();
 
   const { layoutedElements, elementMapping } = getLayoutedElements(data);
@@ -66,17 +67,21 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
 
   // calculate the height of the graph by finding the maximum y position of the nodes and adding some padding to take the size of the node into account
   const calculateHeight = () => {
-    var padding = 200;
-    var max = 0;
-    for (let index = 0; index < elements.length; index++) {
-      const element = elements[index];
-      if (isNode(element) && element.position.y > max) {
-        max = element.position.y
+    if (isFeatureGraph) {
+      var padding = 200;
+      var max = 0;
+      for (let index = 0; index < elements.length; index++) {
+        const element = elements[index];
+        if (isNode(element) && element.position.y > max) {
+          max = element.position.y
+        }
       }
+      return max + padding;
+    } else {
+      return window.innerHeight - 250;
     }
-    return max + padding;
   }
-
+  
   // Highlight path of selected node, including all linked up and down stream nodes
   const highlightPath = (node: Node, check: boolean): void => {
     const checkElements = check ? layoutedElements : elements;

@@ -75,10 +75,10 @@ export const fetchProjectLineages = async (project: string) => {
     });
 };
 
-export const fetchFeatureLineages = async (feature: string) => {
+export const fetchFeatureLineages = async (featureId: string) => {
   const axios = await authAxios(msalInstance);
   return axios
-    .get<FeatureLineage>(`${getApiBaseUrl()}/features/${feature}/lineage`, {})
+    .get<FeatureLineage>(`${getApiBaseUrl()}/features/${featureId}/lineage`, {})
     .then((response) => {
       return response.data;
     });

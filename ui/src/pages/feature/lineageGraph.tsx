@@ -3,11 +3,11 @@ import { Card, Col, Radio, Row, Spin, Tabs, Typography } from 'antd';
 import { useParams, useSearchParams } from "react-router-dom";
 import { Elements } from 'react-flow-renderer';
 import Graph from "../../components/graph/graph";
-import { generateEdge, generateNode } from "../../components/graph/utils";
 import { fetchProjectLineages } from "../../api";
 import { FeatureLineage } from "../../models/model";
 import { LoadingOutlined } from "@ant-design/icons";
 import GraphNodeDetails from "../../components/graph/graphNodeDetails";
+import useGraphHook from "./useGraphHook"
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -37,57 +37,9 @@ const LineageGraph: React.FC = () => {
     fetchLineageData();
   }, [project]);
 
+  
   // Generate graph data on client side, invoked after graphData or featureType is changed
-  useEffect(() => {
-    const generateGraphData = async () => {
-      if (lineageData.guidEntityMap === null && lineageData.relations === null) {
-        return;
-      }
-
-      const elements: Elements = [];
-      const elementObj: Record<string, string> = {};
-
-      for (let index = 0; index < Object.values(lineageData.guidEntityMap).length; index++) {
-        const currentNode: any = Object.values(lineageData.guidEntityMap)[index];
-
-        if (currentNode.typeName === "feathr_workspace_v1") {
-          continue; // Open issue: should project node get displayed as well?
-        }
-
-        const nodeId = currentNode.guid;
-
-        // If toggled feature type exists, skip other types
-        if (featureType && featureType !== "all_nodes" && currentNode.typeName !== featureType) {
-          continue;
-        }
-
-        const node = generateNode({
-          index,
-          nodeId,
-          currentNode
-        });
-
-        elementObj[nodeId] = index?.toString();
-
-        elements.push(node);
-      }
-
-      for (let index = 0; index < lineageData.relations.length; index++) {
-        const { fromEntityId: from, toEntityId: to, relationshipType } = lineageData.relations[index];
-        const edge = generateEdge({ obj: elementObj, from, to });
-        if (edge?.source && edge?.target) {
-          // Currently, API returns all relationships, filter out Contains, Consumes, etc
-          if (relationshipType === "Produces") {
-            elements.push(edge);
-          }
-        }
-      }
-
-      SetElements(elements);
-    };
-
-    generateGraphData();
-  }, [lineageData, featureType])
+  useGraphHook(lineageData, featureType, SetElements);
 
   const toggleFeatureType = (type: string) => {
     setFeatureType((prevType: string | null) => {
@@ -118,7 +70,7 @@ const LineageGraph: React.FC = () => {
               : (
                 <Row>
                   <Col flex="2">
-                    <Graph data={ elements } nodeId={ nodeId } />
+                    <Graph data={ elements } nodeId={ nodeId } isFeatureGraph={false} />
                   </Col>
                   <Col flex="1">
                     <Tabs defaultActiveKey="1">

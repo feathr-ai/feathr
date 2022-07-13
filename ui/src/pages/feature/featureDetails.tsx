@@ -8,9 +8,9 @@ import { fetchFeature } from '../../api';
 import { Feature } from "../../models/model";
 import { FeatureLineage } from "../../models/model";
 import { fetchFeatureLineages } from "../../api";
-import { generateEdge, generateNode } from "../../components/graph/utils";
 import { Elements } from 'react-flow-renderer';
 import Graph from "../../components/graph/graph";
+import useGraphHook from "./useGraphHook"
 
 const { Title } = Typography;
 
@@ -123,12 +123,11 @@ function InputDerivedFeatures(props: { project: string, feature: Feature }) {
   </>;
 }
 
-function FeatureLineageGraph() {
-  const [searchParams] = useSearchParams();
-  const { featureId } = useParams() as Params;
 
+function FeatureLineageGraph() {
+  const { featureId } = useParams() as Params;
   const [lineageData, setLineageData] = useState<FeatureLineage>({ guidEntityMap: null, relations: null });
-  const [elements, setElements] = useState<Elements>([]);
+  const [elements, SetElements] = useState<Elements>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -142,47 +141,8 @@ function FeatureLineageGraph() {
     fetchLineageData();
   }, [featureId]);
 
-  useEffect(() => {
-    const generateGraphData = async () => {
-      if (lineageData.guidEntityMap === null && lineageData.relations === null) {
-        return;
-      }
-
-      const elements: Elements = [];
-      const elementObj: Record<string, string> = {};
-
-      for (let index = 0; index < Object.values(lineageData.guidEntityMap).length; index++) {
-        const currentNode: any = Object.values(lineageData.guidEntityMap)[index];
-
-        const nodeId = currentNode.guid;
-
-        const node = generateNode({
-          index,
-          nodeId,
-          currentNode
-        });
-
-        elementObj[nodeId] = index?.toString();
-        elements.push(node);
-      }
-
-
-      for (let index = 0; index < lineageData.relations.length; index++) {
-        var { fromEntityId: from, toEntityId: to, relationshipType } = lineageData.relations[index];
-        if (relationshipType === "Consumes") [from, to] = [to, from];
-        const edge = generateEdge({ obj: elementObj, from, to });
-        if (edge?.source && edge?.target) {
-          if (relationshipType === "Consumes" || relationshipType === "Produces") {
-            elements.push(edge);
-          }
-        }
-      }
-
-      setElements(elements);
-    };
-
-    generateGraphData();
-  }, [lineageData])
+  // Generate graph data on client side, invoked after graphData or featureType is changed
+  useGraphHook(lineageData, "all_nodes", SetElements);
 
   return <>
   {
@@ -194,7 +154,7 @@ function FeatureLineageGraph() {
       <Col span={ 24 }>
         <Card className="card">
           <Title level={ 4 }>Lineage</Title>
-          <Graph data={ elements } nodeId={ featureId }/>
+          <Graph data={ elements } nodeId={ featureId } isFeatureGraph={true}/>
         </Card>
       </Col>
     )
