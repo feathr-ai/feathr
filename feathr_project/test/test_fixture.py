@@ -152,7 +152,7 @@ def kafka_test_setup(config_path: str):
                                                         key=driver_id),
                                                 Feature(name="f_modified_streaming_count2",
                                                         feature_type=INT32,
-                                                        transform="trips_today + 2",
+                                                        transform="trips_today + randn() * cos(trips_today)", # make sure the supported SQL functions are tested
                                                         key=driver_id)]
                                       )
     client.build_features(anchor_list=[kafkaAnchor])
