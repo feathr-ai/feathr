@@ -25,14 +25,38 @@ cat $envfile
 nginx
 
 # Start API app
-API_PORT="8000"
+LISTENING_PORT="8000"
 
-if [ "x$PURVIEW_NAME" == "x" ]; then
-    echo "PurView flag is not configured, run SQL registry"
-    cd sql-registry
-    uvicorn main:app --host 0.0.0.0 --port $API_PORT 
+if [ "x$ENABLE_RBAC" == "x" ]; then
+    echo "RBAC flag not configured, only launch registry app"
+    if [ "x$PURVIEW_NAME" == "x" ]; then
+        echo "Purview flag is not configured, run SQL registry"
+        cd sql-registry
+        uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
+    else
+        echo "Purview flag is configured, run Purview registry"
+        cd purview-registry
+        uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
+    fi
 else
-    echo "PurView flag is configured, run PurView registry"
-    cd purview-registry
-    uvicorn main:app --host 0.0.0.0 --port $API_PORT 
+    echo "RBAC flag configured, launch both rbac and reigstry apps"
+    if [ "x$PURVIEW_NAME" == "x" ]; then
+        echo "Purview flag is not configured, run SQL registry"
+        cd sql-registry
+        nohup uvicorn main:app --host 0.0.0.0 --port 18000 &
+    else
+        echo "Purview flag is configured, run Purview registry"
+        cd purview-registry
+        nohup uvicorn main:app --host 0.0.0.0 --port 18000 &
+    fi
+    echo "Run rbac app"
+    cd ../access_control
+    export RBAC_REGISTRY_URL="http://127.0.0.1:18000/api/v1"
+    export RBAC_API_BASE="${API_BASE}"
+    export RBAC_AAD_INSTANCE="https://login.microsoftonline.com"
+    export RBAC_API_CLIENT_ID="${REACT_APP_AZURE_CLIENT_ID}"
+    export RBAC_AAD_TENANT_ID="${REACT_APP_AZURE_TENANT_ID}"
+    export RBAC_API_AUDIENCE="${REACT_APP_AZURE_CLIENT_ID}"
+    export RBAC_CONNECTION_STR="${CONNECTION_STR}"
+    uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
 fi

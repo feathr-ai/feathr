@@ -4,7 +4,13 @@ from starlette.middleware.cors import CORSMiddleware
 from rbac import config
 from api import router as api_router
 
-rp = config.RBAC_API_BASE
+rp = "/"
+try:
+    rp = config.RBAC_API_BASE
+    if rp[0] != '/':
+        rp = '/' + rp
+except:
+    pass
 
 def get_application() -> FastAPI:
     application = FastAPI()
