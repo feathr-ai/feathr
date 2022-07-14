@@ -7,7 +7,7 @@ import { fetchProjectLineages } from "../../api";
 import { FeatureLineage } from "../../models/model";
 import { LoadingOutlined } from "@ant-design/icons";
 import GraphNodeDetails from "../../components/graph/graphNodeDetails";
-import useGraphHook from "./useGraphHook"
+import { getElements } from "../../components/graph/utils"
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -37,9 +37,14 @@ const LineageGraph: React.FC = () => {
     fetchLineageData();
   }, [project]);
 
-  
   // Generate graph data on client side, invoked after graphData or featureType is changed
-  useGraphHook(lineageData, featureType, SetElements);
+  useEffect(() => {
+    const generateGraphData = async () => {
+      SetElements(getElements(lineageData, featureType)!);
+    };
+
+    generateGraphData();
+  }, [lineageData, featureType])
 
   const toggleFeatureType = (type: string) => {
     setFeatureType((prevType: string | null) => {
@@ -70,7 +75,7 @@ const LineageGraph: React.FC = () => {
               : (
                 <Row>
                   <Col flex="2">
-                    <Graph data={ elements } nodeId={ nodeId } isFeatureGraph={false} />
+                    <Graph data={ elements } nodeId={ nodeId } height={window.innerHeight - 250}/>
                   </Col>
                   <Col flex="1">
                     <Tabs defaultActiveKey="1">

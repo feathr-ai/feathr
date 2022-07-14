@@ -8,9 +8,10 @@ import { fetchFeature } from '../../api';
 import { Feature } from "../../models/model";
 import { FeatureLineage } from "../../models/model";
 import { fetchFeatureLineages } from "../../api";
-import { Elements } from 'react-flow-renderer';
+import { Elements, isNode } from 'react-flow-renderer';
 import Graph from "../../components/graph/graph";
-import useGraphHook from "./useGraphHook"
+import { getElements } from "../../components/graph/utils"
+import { getLayoutedElements } from "../../components/graph/utils"
 
 const { Title } = Typography;
 
@@ -142,7 +143,27 @@ function FeatureLineageGraph() {
   }, [featureId]);
 
   // Generate graph data on client side, invoked after graphData or featureType is changed
-  useGraphHook(lineageData, "all_nodes", SetElements);
+  useEffect(() => {
+    const generateGraphData = async () => {
+      SetElements(getElements(lineageData, "all_nodes")!);
+    };
+
+    generateGraphData();
+  }, [lineageData]);
+
+
+  const calculateHeight = () => {
+    const { layoutedElements } = getLayoutedElements(elements);
+    var padding = 200;
+    var max = 0;
+    for (let index = 0; index < layoutedElements.length; index++) {
+      const element = layoutedElements[index];
+      if (isNode(element) && element.position.y > max) {
+        max = element.position.y
+      }
+    }
+    return max + padding;
+  }
 
   return <>
   {
@@ -154,7 +175,7 @@ function FeatureLineageGraph() {
       <Col span={ 24 }>
         <Card className="card">
           <Title level={ 4 }>Lineage</Title>
-          <Graph data={ elements } nodeId={ featureId } isFeatureGraph={true}/>
+          <Graph data={ elements } nodeId={ featureId } height={calculateHeight()}/>
         </Card>
       </Col>
     )
