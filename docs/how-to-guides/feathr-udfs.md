@@ -89,9 +89,7 @@ def add_new_dropoff_and_fare_amount_column(df: DataFrame):
 
 ### Best Practices
 
-1. One best practice is if you have multiple transformation that you want to define for one input source, you can define multiple UDFs. For example, as shown below, for the same input source, you can define different input UDFs and define completely different features over those two UDFs.
-
-![Feathr UDF from input features](../images/feathr_udf.jpg)
+1. One best practice is if you have multiple transformation that you want to define for one input source, you can define multiple UDFs. For example, as shown below, for the same input source, you can define different input UDFs and define completely different features over those two UDFs. Refer to [Illustration on How Feathr UDF works](#illustration-on-how-feathr-udf-works) for an illustration.
 
 ### UDF with PySpark Support
 
