@@ -91,10 +91,10 @@ def get_userroles(requestor: User = Depends(global_admin_access)) -> list:
 
 @router.post("/users/{user}/userroles/add", name="Add a new user role [Global Admin Required]")
 def add_userrole(project: str, user: str, role: str, reason: str, requestor: User = Depends(global_admin_access)):
-    return rbac.add_userrole(project, user, role, reason, requestor.preferred_username)
+    return rbac.add_userrole(project, user, role, reason, requestor.username)
 
 
 @router.delete("/users/{user}/userroles/delete", name="Delete a user role [Global Admin Required]")
 def delete_userrole(project: str, user: str, role: str, reason: str, requestor: User = Depends(global_admin_access)):
-    return rbac.delete_userrole(project, user, role, reason, requestor.preferred_username)
+    return rbac.delete_userrole(project, user, role, reason, requestor.username)
 
