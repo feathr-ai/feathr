@@ -55,6 +55,17 @@
         "description": "Backend for registry metadata storage. Current supported registry backends are Azure SQL and Azure Purview"
       }
     },
+    "enableRBAC": {
+      "defaultValue": "Yes",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "type": "String",
+      "metadata": {
+        "description": "Whether or not to enable RBAC as part of deployment script"
+      }
+    },
     "azureADClientId": {
       "type": "String",
       "metadata": {
@@ -380,9 +391,16 @@
               "value": "api/v1"
             },
             {
-            "condition": "[equals(parameters('registryBackend'),'Azure-SQL')]",
               "name": "CONNECTION_STR",
               "value": "[concat('Server=tcp:',reference(variables('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('sqlDatabaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlserverName')).administratorLogin,';Password=',parameters('sqlAdminPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+            },
+            {
+              "name": "ENABLE_RBAC",
+              "value": "[if(equals(parameters('enableRBAC'),'Yes'),json('true'),json('null'))]"
+            },
+            {
+              "name": "PURVIEW_NAME",
+              "value": "[if(equals(parameters('registryBackend'),'Azure-Purview'),variables('purviewName'),json('null'))]"
             }
           ]
         }
@@ -403,8 +421,8 @@
         },
         "autoScale": {
           "enabled": true,
-          "minNodeCount": 1,
-          "maxNodeCount": 3
+          "minNodeCount": 3,
+          "maxNodeCount": 5
         },
         "sparkVersion": "3.1",
         "nodeCount": 3,
