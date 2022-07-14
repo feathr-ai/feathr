@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
-import com.linkedin.feathr.offline.config.location.InputLocation
+import com.linkedin.feathr.offline.config.location.DataLocation
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.log4j.Logger
 import org.apache.spark.customized.CustomGenericRowWithSchema
@@ -21,7 +21,7 @@ private[offline] trait DataLoaderFactory {
    */
   def create(path: String): DataLoader
 
-  def createFromLocation(input: InputLocation): DataLoader = create(input.getPath)
+  def createFromLocation(input: DataLocation): DataLoader = create(input.getPath)
 }
 
 private[offline] object DataLoaderFactory {

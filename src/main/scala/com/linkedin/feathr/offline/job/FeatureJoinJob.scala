@@ -9,6 +9,7 @@ import com.linkedin.feathr.offline._
 import com.linkedin.feathr.offline.client._
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
+import com.linkedin.feathr.offline.config.location.{DataLocation, SimplePath}
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.SourceFormatType
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
@@ -88,11 +89,18 @@ object FeatureJoinJob {
   }
 
   private def checkAuthorization(ss: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext, dataLoaderHandlers: List[DataLoaderHandler]): Unit = {
-    AclCheckUtils.checkWriteAuthorization(hadoopConf, jobContext.jobJoinContext.outputPath) match {
-      case Failure(e) =>
-        throw new FeathrDataOutputException(ErrorLabel.FEATHR_USER_ERROR, s"No write permission for output path ${jobContext.jobJoinContext.outputPath}.", e)
-      case Success(_) => log.debug("Checked write authorization on output path: " + jobContext.jobJoinContext.outputPath)
+
+    jobContext.jobJoinContext.outputPath match {
+      case SimplePath(path) => {
+        AclCheckUtils.checkWriteAuthorization(hadoopConf, path) match {
+          case Failure(e) =>
+            throw new FeathrDataOutputException(ErrorLabel.FEATHR_USER_ERROR, s"No write permission for output path ${jobContext.jobJoinContext.outputPath}.", e)
+          case Success(_) => log.debug("Checked write authorization on output path: " + jobContext.jobJoinContext.outputPath)
+        }
+      }
+      case _ => {}
     }
+
     jobContext.jobJoinContext.inputData.map(inputData => {
       val failOnMissing = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
       val pathList = getPathList(sourceFormatType=inputData.sourceType,
@@ -255,13 +263,13 @@ object FeatureJoinJob {
       }
     }
 
-    val joinJobContext = {
-      val feathrLocalConfig = cmdParser.extractOptionalValue("feathr-config")
-      val feathrFeatureConfig = cmdParser.extractOptionalValue("feature-config")
-      val localOverrideAll = cmdParser.extractRequiredValue("local-override-all")
-      val outputPath = cmdParser.extractRequiredValue("output")
-      val numParts = cmdParser.extractRequiredValue("num-parts").toInt
+    val feathrLocalConfig = cmdParser.extractOptionalValue("feathr-config")
+    val feathrFeatureConfig = cmdParser.extractOptionalValue("feature-config")
+    val localOverrideAll = cmdParser.extractRequiredValue("local-override-all")
+    val outputPath = DataLocation(cmdParser.extractRequiredValue("output"))
+    val numParts = cmdParser.extractRequiredValue("num-parts").toInt
 
+    val joinJobContext = {
       JoinJobContext(
         feathrLocalConfig,
         feathrFeatureConfig,
@@ -359,7 +367,10 @@ object FeatureJoinJob {
     DataSourceConfigUtils.setupHadoopConf(sparkSession, jobContext.dataSourceConfigs)
 
     FeathrUdfRegistry.registerUdf(sparkSession)
-    HdfsUtils.deletePath(jobContext.jobJoinContext.outputPath, recursive = true, conf)
+    jobContext.jobJoinContext.outputPath match {
+      case SimplePath(path) => HdfsUtils.deletePath(path, recursive = true, conf)
+      case _ => {}
+    }
 
     val enableDebugLog = FeathrUtils.getFeathrJobParam(sparkConf, FeathrUtils.ENABLE_DEBUG_OUTPUT).toBoolean
     if (enableDebugLog) {

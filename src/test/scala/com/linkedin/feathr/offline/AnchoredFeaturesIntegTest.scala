@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.common.configObj.configbuilder.ConfigBuilderException
 import com.linkedin.feathr.common.exception.FeathrConfigException
+import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
@@ -142,7 +143,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
 
     // create a data source from anchorAndDerivations/nullValueSource.avro.json
     val df = new AvroJsonDataLoader(ss, "nullValueSource.avro.json").loadDataFrame()
-    SparkIOUtils.writeDataFrame(df, mockDataFolder + "/nullValueSource", parameters=Map(), dataLoaderHandlers=List())
+    SparkIOUtils.writeDataFrame(df, SimplePath(mockDataFolder + "/nullValueSource"), parameters=Map(), dataLoaderHandlers=List())
   }
 
   /**
