@@ -151,20 +151,6 @@ function FeatureLineageGraph() {
     generateGraphData();
   }, [lineageData]);
 
-
-  const calculateHeight = () => {
-    const { layoutedElements } = getLayoutedElements(elements);
-    var padding = 200;
-    var max = 0;
-    for (let index = 0; index < layoutedElements.length; index++) {
-      const element = layoutedElements[index];
-      if (isNode(element) && element.position.y > max) {
-        max = element.position.y
-      }
-    }
-    return max + padding;
-  }
-
   return <>
   {
     loading
@@ -175,7 +161,7 @@ function FeatureLineageGraph() {
       <Col span={ 24 }>
         <Card className="card">
           <Title level={ 4 }>Lineage</Title>
-          <Graph data={ elements } nodeId={ featureId } height={calculateHeight()}/>
+          <Graph data={ elements } nodeId={ featureId }/>
         </Card>
       </Col>
     )

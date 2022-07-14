@@ -75,7 +75,7 @@ const LineageGraph: React.FC = () => {
               : (
                 <Row>
                   <Col flex="2">
-                    <Graph data={ elements } nodeId={ nodeId } height={window.innerHeight - 250}/>
+                    <Graph data={ elements } nodeId={ nodeId }/>
                   </Col>
                   <Col flex="1">
                     <Tabs defaultActiveKey="1">

@@ -22,9 +22,8 @@ const nodeTypes = {
 type Props = {
   data: Elements;
   nodeId: string;
-  height: number;
 }
-const Graph: React.FC<Props> = ({ data, nodeId, height }) => {
+const Graph: React.FC<Props> = ({ data, nodeId }) => {
   const [, setURLSearchParams] = useSearchParams();
 
   const { layoutedElements, elementMapping } = getLayoutedElements(data);
@@ -147,7 +146,7 @@ const Graph: React.FC<Props> = ({ data, nodeId, height }) => {
     <div className="lineage-graph">
         <ReactFlowProvider>
           <ReactFlow
-            style={ { height: height, width: "100%" } }
+            style={ { height: window.innerHeight - 250, width: "100%" } }
             elements={ elements }
             snapToGrid
             snapGrid={ [15, 15] }
