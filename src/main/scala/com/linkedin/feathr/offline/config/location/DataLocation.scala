@@ -9,7 +9,7 @@ import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.{FeathrJacksonScalaModule, Header}
 import com.linkedin.feathr.offline.config.DataSourceLoader
 import com.linkedin.feathr.offline.source.DataSource
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigException}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.JavaConverters._
@@ -121,7 +121,7 @@ object DataLocation {
       val location = jackson.readValue(cfg, classOf[DataLocation])
       location
     } catch {
-      case _: JacksonException => SimplePath(cfg)
+      case _ @ (_: ConfigException | _: JacksonException) => SimplePath(cfg)
     }
   }
 
