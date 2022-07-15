@@ -2,11 +2,16 @@ package com.linkedin.feathr.offline.config.location
 
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
+import com.linkedin.feathr.common.exception.FeathrException
 import net.minidev.json.annotate.JsonIgnore
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 @CaseClassDeserialize()
-case class GenericLocation(format: String, @JsonIgnore options: collection.mutable.Map[String, String] = collection.mutable.Map[String, String]()) extends DataLocation {
+case class GenericLocation(format: String,
+                           mode: Option[String] = None,
+                           @JsonIgnore options: collection.mutable.Map[String, String] = collection.mutable.Map[String, String](),
+                           @JsonIgnore conf: collection.mutable.Map[String, String] = collection.mutable.Map[String, String]()
+                          ) extends DataLocation {
   /**
    * Backward Compatibility
    * Many existing codes expect a simple path
@@ -35,8 +40,11 @@ case class GenericLocation(format: String, @JsonIgnore options: collection.mutab
    * @return
    */
   override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String]): DataFrame = {
+    conf.foreach(e => {
+      ss.conf.set(e._1, e._2)
+    })
     ss.read.format(format)
-      .options(getOptions)
+      .options(options)
       .load()
   }
 
@@ -47,9 +55,30 @@ case class GenericLocation(format: String, @JsonIgnore options: collection.mutab
    * @param df DataFrame to write
    */
   override def writeDf(ss: SparkSession, df: DataFrame): Unit = {
-    df.write.format(format)
-      .options(getOptions)
-      .save()
+    conf.foreach(e => {
+      ss.conf.set(e._1, e._2)
+    })
+    val keyDf = if (!df.columns.contains("id")) {
+      if(df.columns.contains("key0")) {
+        df.withColumnRenamed("key0", "id")
+      } else {
+        throw new FeathrException("DataFrame doesn't have id column")
+      }
+    } else {
+      df
+    }
+    val w = mode match {
+      case Some(m) => {
+        keyDf.write.format(format)
+          .options(options)
+          .mode(m)
+      }
+      case None => {
+        keyDf.write.format(format)
+          .options(options)
+      }
+    }
+    w.save()
   }
 
   /**
@@ -59,12 +88,12 @@ case class GenericLocation(format: String, @JsonIgnore options: collection.mutab
    */
   override def isFileBasedLocation(): Boolean = false
 
-  def getOptions(): Map[String, String] = {
-    options.map(e => e._1 -> LocationUtils.envSubstitute(e._2)).toMap
-  }
-
   @JsonAnySetter
   def setOption(key: String, value: Any) = {
-    options += (key -> value.toString)
+    if (key.startsWith("__conf__")) {
+      conf += (key.stripPrefix("__conf__").replace("__", ".") -> LocationUtils.envSubstitute(value.toString))
+    } else {
+      options += (key.replace("__", ".") -> LocationUtils.envSubstitute(value.toString))
+    }
   }
 }

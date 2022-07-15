@@ -44,7 +44,9 @@ val localAndCloudCommonDependencies = Seq(
     "net.snowflake" % "spark-snowflake_2.12" % "2.10.0-spark_3.2",
     "org.apache.commons" % "commons-lang3" % "3.12.0",
     "org.xerial" % "sqlite-jdbc" % "3.36.0.3",
-    "com.github.changvvb" %% "jackson-module-caseclass" % "1.1.1"
+    "com.github.changvvb" %% "jackson-module-caseclass" % "1.1.1",
+    "com.azure.cosmos.spark" % "azure-cosmos-spark_3-1_2-12" % "4.11.1",
+    "org.eclipse.jetty" % "jetty-util" % "9.3.24.v20180605"
 ) // Common deps
 
 val jdbcDrivers = Seq(

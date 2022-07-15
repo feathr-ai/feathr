@@ -31,7 +31,7 @@ private[offline] class NonTimeBasedDataSourceAccessor(
       case SimplePath(path) => List(path).map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
       case PathList(paths) => paths.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
       case Jdbc(_, _, _, _, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
-      case GenericLocation(_, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
+      case GenericLocation(_, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
       case _ => fileLoaderFactory.createFromLocation(source.location).loadDataFrame()
     }
 
