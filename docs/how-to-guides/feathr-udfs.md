@@ -50,12 +50,12 @@ There are several limitations:
 1. The functions should be "self-contained". I.e. If you use any python module or Spark function, you should import the python module in the UDF function body. Although Feathr already imports all the [Spark SQL built-in functions](https://spark.apache.org/docs/latest/api/sql/index.html) in `pyspark.sql.functions` namespace, it is always a best practice to import the modules in the UDF body. They might be other python modules you use, for example `time`, regex, etc., or Spark SQL functions, such as the `from pyspark.sql.functions import dayofweek` line in the example below.
 2. The function should accept only one Spark Dataframe as input, and return one Spark Dataframe as the result. Multiple DataFrames are not supported. There's no limitation on names, and by convention it is usually called `df`, but you can use any name you want.
 3. The "contract" between users and Feathr here is - as long as you give the UDF a dataframe as an input and the output is a dataframe, then Feathr will accept and run this UDF function.
-4. For all the feature definitions, you should use the output of the UDF as the new column name (if you have changed the name of the columns). For example, you have the following code, then you won't be able to use `fare_amount_cents` in your feature definition, since it is not in the output dataframe of this UDF. However, you will be able to use `day_of_week` in this UDF.
+4. For all the feature definitions, you should use the output of the UDF as the new column name (if you have changed the name of the columns). For example, you have the following code, then you won't be able to use `fare_amount_cents` in your feature definition, since it is not in the output dataframe of this UDF because it's dropped from the result dataframe. However, you will be able to use `f_day_of_week` in your feature definition, since it is a column that is created in the result dataframe..
 
 ```python
 def add_new_dropoff_and_fare_amount_column(df: DataFrame):
     from pyspark.sql.functions import dayofweek
-    df = df.withColumn("day_of_week", dayofweek("lpep_dropoff_datetime"))
+    df = df.withColumn("f_day_of_week", dayofweek("lpep_dropoff_datetime"))
     df = df.drop("fare_amount_cents")
     return df
 ```
