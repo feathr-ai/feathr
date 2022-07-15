@@ -118,8 +118,13 @@ object DataLocation {
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       .registerModule(new SimpleModule().addDeserializer(classOf[DataSource], new DataSourceLoader))
     try {
-      val location = jackson.readValue(cfg, classOf[DataLocation])
-      location
+      // Cfg is either a plain path or a JSON object
+      if (cfg.trim.startsWith("{")) {
+        val location = jackson.readValue(cfg, classOf[DataLocation])
+        location
+      } else {
+        SimplePath(cfg)
+      }
     } catch {
       case _ @ (_: ConfigException | _: JacksonException) => SimplePath(cfg)
     }
