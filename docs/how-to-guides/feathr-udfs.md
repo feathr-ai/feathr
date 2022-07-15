@@ -8,10 +8,10 @@ parent: How-to Guides
 
 Feathr supports a wide range of user defined functions (UDFs) to allow flexible way of dealing with your data. Feathr supports two use cases:
 
-1. [User defined functions at input sources (also known as preprocessing functions)](#user-defined-functions-at-input-sources-also-known-as-preprocessing-functions)
-2. [User defined functions at individual features (using the `transform` parameters)](#user-defined-functions-at-individual-features-using-the-transform-parameters)
+1. [UDFs at input sources (also known as preprocessing functions)](#udfs-at-input-sources-also-known-as-preprocessing-functions)
+2. [UDFs at individual features (using the `transform` parameters)](#udfs-at-individual-features-using-the-transform-parameters)
 
-## User defined functions at input sources (also known as preprocessing functions)
+## UDFs at input sources (also known as preprocessing functions)
 
 Below is an example:
 
@@ -89,7 +89,7 @@ def add_new_dropoff_and_fare_amount_column(df: DataFrame):
 
 ### Best Practices
 
-1. One best practice is if you have multiple transformation that you want to define for one input source, you can define multiple UDFs. For example, as shown below, for the same input source, you can define different input UDFs and define completely different features over those two UDFs. Refer to [Illustration on How Feathr UDF works](#illustration-on-how-feathr-udf-works) for an illustration.
+One best practice is if you have multiple transformation that you want to define for one input source, you can define multiple UDFs. For example, for the same input source, you can define different input UDFs and define completely different features over those two UDFs. Refer to [Illustration on How Feathr UDF works](#illustration-on-how-feathr-udf-works) for an illustration.
 
 ### UDF with PySpark Support
 
@@ -157,7 +157,7 @@ Those UDFs are totally optional to use. For example, if you have an existing fea
 
 But if you don't have an existing pipeline, Feathr's UDF does provide a good way for you to manage your feature engineering system from end to end. This decision is beyond the scope of this document.
 
-## User defined functions at individual features (using the `transform` parameters)
+## UDFs at individual features (using the `transform` parameters)
 
 Other than the UDF in the input level, Feathr also allows some level of customizations in the individual feature level. This is very useful if users want to do some last mile transformation, or for derived features where users might want to compose a new feature based on a few existing features with some calculation.
 
