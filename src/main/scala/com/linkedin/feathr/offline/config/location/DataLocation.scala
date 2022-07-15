@@ -6,11 +6,12 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.caseclass.mapper.CaseClassObjectMapper
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
-import com.linkedin.feathr.common.FeathrJacksonScalaModule
+import com.linkedin.feathr.common.{FeathrJacksonScalaModule, Header}
 import com.linkedin.feathr.offline.config.DataSourceLoader
 import com.linkedin.feathr.offline.source.DataSource
 import com.typesafe.config.Config
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import scala.collection.JavaConverters._
 
 /**
@@ -62,7 +63,7 @@ trait DataLocation {
    * @param ss SparkSession
    * @param df DataFrame to write
    */
-  def writeDf(ss: SparkSession, df: DataFrame)
+  def writeDf(ss: SparkSession, df: DataFrame, header: Option[Header])
 
   /**
    * Tell if this location is file based

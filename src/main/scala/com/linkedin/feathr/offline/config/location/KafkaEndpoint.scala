@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.config.location
 
 import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
+import com.linkedin.feathr.common.Header
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.codehaus.jackson.annotate.JsonProperty
 
@@ -31,7 +32,7 @@ case class KafkaEndpoint(@JsonProperty("brokers") brokers: List[String],
                          @JsonProperty("schema") schema: KafkaSchema) extends DataLocation {
   override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String] = Map()): DataFrame = ???
 
-  override def writeDf(ss: SparkSession, df: DataFrame): Unit = ???
+  override def writeDf(ss: SparkSession, df: DataFrame, header: Option[Header]): Unit = ???
 
   override def getPath: String = "kafka://" + brokers.mkString(",")+":"+topics.mkString(",")
 

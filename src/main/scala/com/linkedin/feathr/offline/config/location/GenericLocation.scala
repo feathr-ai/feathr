@@ -2,9 +2,12 @@ package com.linkedin.feathr.offline.config.location
 
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
+import com.linkedin.feathr.common.Header
 import com.linkedin.feathr.common.exception.FeathrException
+import com.linkedin.feathr.offline.generation.FeatureGenUtils
 import net.minidev.json.annotate.JsonIgnore
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions.monotonically_increasing_id
+import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 
 @CaseClassDeserialize()
 case class GenericLocation(format: String,
@@ -40,12 +43,7 @@ case class GenericLocation(format: String,
    * @return
    */
   override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String]): DataFrame = {
-    conf.foreach(e => {
-      ss.conf.set(e._1, e._2)
-    })
-    ss.read.format(format)
-      .options(options)
-      .load()
+    GenericLocationFixes.readDf(ss, this)
   }
 
   /**
@@ -54,31 +52,8 @@ case class GenericLocation(format: String,
    * @param ss SparkSession
    * @param df DataFrame to write
    */
-  override def writeDf(ss: SparkSession, df: DataFrame): Unit = {
-    conf.foreach(e => {
-      ss.conf.set(e._1, e._2)
-    })
-    val keyDf = if (!df.columns.contains("id")) {
-      if(df.columns.contains("key0")) {
-        df.withColumnRenamed("key0", "id")
-      } else {
-        throw new FeathrException("DataFrame doesn't have id column")
-      }
-    } else {
-      df
-    }
-    val w = mode match {
-      case Some(m) => {
-        keyDf.write.format(format)
-          .options(options)
-          .mode(m)
-      }
-      case None => {
-        keyDf.write.format(format)
-          .options(options)
-      }
-    }
-    w.save()
+  override def writeDf(ss: SparkSession, df: DataFrame, header: Option[Header]): Unit = {
+    GenericLocationFixes.writeDf(ss, df, header, this)
   }
 
   /**
@@ -94,6 +69,77 @@ case class GenericLocation(format: String,
       conf += (key.stripPrefix("__conf__").replace("__", ".") -> LocationUtils.envSubstitute(value.toString))
     } else {
       options += (key.replace("__", ".") -> LocationUtils.envSubstitute(value.toString))
+    }
+  }
+}
+
+/**
+ * Some Spark connectors need extra actions before read or write, namely CosmosDb and ElasticSearch
+ * Need to run specific fixes base on `format`
+ */
+object GenericLocationFixes {
+  def readDf(ss: SparkSession, location: GenericLocation): DataFrame = {
+    location.conf.foreach(e => {
+      ss.conf.set(e._1, e._2)
+    })
+    ss.read.format(location.format)
+      .options(location.options)
+      .load()
+  }
+
+  def writeDf(ss: SparkSession, df: DataFrame, header: Option[Header], location: GenericLocation) = {
+    location.conf.foreach(e => {
+      ss.conf.set(e._1, e._2)
+    })
+
+    location.format.toLowerCase() match {
+      case "cosmos.oltp" =>
+        // Ensure the database and the table exist before writing
+        val endpoint = location.options.getOrElse("spark.cosmos.accountEndpoint", throw new FeathrException("Missing spark__cosmos__accountEndpoint"))
+        val key = location.options.getOrElse("spark.cosmos.accountKey", throw new FeathrException("Missing spark__cosmos__accountKey"))
+        val databaseName = location.options.getOrElse("spark.cosmos.database", throw new FeathrException("Missing spark__cosmos__database"))
+        val tableName = location.options.getOrElse("spark.cosmos.container", throw new FeathrException("Missing spark__cosmos__container"))
+        ss.conf.set("spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog")
+        ss.conf.set("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountEndpoint", endpoint)
+        ss.conf.set("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", key)
+        ss.sql(s"CREATE DATABASE IF NOT EXISTS cosmosCatalog.${databaseName};")
+        ss.sql(s"CREATE TABLE IF NOT EXISTS cosmosCatalog.${databaseName}.${tableName} using cosmos.oltp TBLPROPERTIES(partitionKeyPath = '/id')")
+
+        // CosmosDb requires the column `id` to exist and be the primary key
+        val keyDf = if (!df.columns.contains("id")) {
+          header match {
+            case Some(h) => {
+              // We have the header info, copy the 1st key column to `id`, which is required by CosmosDb
+              val key = FeatureGenUtils.getKeyColumnsFromHeader(h).head
+              // Copy key column to `id`
+              df.withColumn("id", df.col(key))
+            }
+            case None => {
+              // If there is no key column, we use a auto-generated monotonic id.
+              // but in this case the result could be duplicated if you run job for multiple times
+              // This function is for offline-storage usage, ideally user should create a new container for every run
+              df.withColumn("id", monotonically_increasing_id())
+            }
+          }
+        } else {
+          // We already have an `id` column
+          // TODO: Should we do anything here?
+          //  A corner case is that the `id` column exists but not unique, then the output will be incomplete as
+          //  CosmosDb will overwrite the old entry with the new one with same `id`.
+          //  We can either rename the existing `id` column and use header/autogen key column, or we can tell user
+          //  to avoid using `id` column for non-unique data, but both workarounds have pros and cons.
+          df
+        }
+        keyDf.write.format(location.format)
+          .options(location.options)
+          .mode(location.mode.getOrElse("append")) // CosmosDb doesn't support ErrorIfExist mode in batch mode
+          .save()
+      case _ =>
+        // Normal writing procedure, just set format and options then write
+        df.write.format(location.format)
+          .options(location.options)
+          .mode(location.mode.getOrElse("default"))
+          .save()
     }
   }
 }

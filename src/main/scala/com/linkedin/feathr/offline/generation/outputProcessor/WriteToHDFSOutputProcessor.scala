@@ -153,7 +153,7 @@ private[offline] class WriteToHDFSOutputProcessor(val config: OutputProcessorCon
     location match {
       case Some(l) => {
         // We have a DataLocation to write the df
-        l.writeDf(ss, augmentedDF)
+        l.writeDf(ss, augmentedDF, Some(header))
         (augmentedDF, header)
       }
       case None => {

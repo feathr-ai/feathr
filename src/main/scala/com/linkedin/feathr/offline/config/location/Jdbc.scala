@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.config.location
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
+import com.linkedin.feathr.common.Header
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils.DBTABLE_CONF
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -47,7 +48,7 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
     }
   }
 
-  override def writeDf(ss: SparkSession, df: DataFrame): Unit = {
+  override def writeDf(ss: SparkSession, df: DataFrame, header: Option[Header]): Unit = {
     println(s"Jdbc.writeDf, location is ${this}")
     if (StringUtil.isBlank(user) && StringUtil.isBlank(password) && !anonymous && !useToken) {
       // Fallback to global JDBC credential

@@ -77,7 +77,7 @@ object SparkIOUtils {
           outputDF.write.mode(SaveMode.Overwrite).format(output_format).save(path)
           outputDF
         }
-        case _ => outputLocation.writeDf(SparkSession.builder().getOrCreate(), outputDF)
+        case _ => outputLocation.writeDf(SparkSession.builder().getOrCreate(), outputDF, None)
       }
     }
     outputDF
