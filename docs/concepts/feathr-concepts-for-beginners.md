@@ -51,6 +51,10 @@ request_anchor = FeatureAnchor(name="request_features",
                                features=features)
 ```
 
+### A bit more on `Observation Data`
+
+The "Observation Data" is a concept that is a bit confusing for some beginners, and simply think it as an immutable dataset, but this dataset could be enhanced by other dataset. For example, you usually cannot drop a column for your "observation data", but you can add additional columns to it.
+
 ## Motivation on `Derived Feature`
 
 That sounds all good, but what if we want to share a feature, and others want to build additional features on top of that feature? Thats's why there is a concept in Feathr called `derived feature`, which allows you to calculate features based on other features, with certain transformation support.
