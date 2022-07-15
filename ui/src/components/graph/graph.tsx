@@ -146,7 +146,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     <div className="lineage-graph">
         <ReactFlowProvider>
           <ReactFlow
-            style={ { height: "700px", width: "100%" } }
+            style={ { height: window.innerHeight - 250, width: "100%" } }
             elements={ elements }
             snapToGrid
             snapGrid={ [15, 15] }
