@@ -6,12 +6,12 @@ parent: How-to Guides
 
 # Feathr User Defined Functions (UDFs)
 
-Feathr supports a wide range of user defined functions (UDFs) to allow flexible way of dealing with your data. Feathr supports two use cases:
+Feathr supports a wide range of user defined functions (UDF) to allow flexible way of dealing with your data. Feathr supports two use cases:
 
-1. [UDFs at input sources (also known as preprocessing functions)](#udfs-at-input-sources-also-known-as-preprocessing-functions)
-2. [UDFs at individual features (using the `transform` parameters)](#udfs-at-individual-features-using-the-transform-parameters)
+1. [UDF at input sources (also known as preprocessing functions)](#udfs-at-input-sources-also-known-as-preprocessing-functions)
+2. [UDF at individual features (using the `transform` parameters)](#udfs-at-individual-features-using-the-transform-parameters)
 
-## UDFs at input sources (also known as preprocessing functions)
+## UDF at input sources (also known as preprocessing functions)
 
 Below is an example:
 
@@ -157,7 +157,7 @@ Those UDFs are totally optional to use. For example, if you have an existing fea
 
 But if you don't have an existing pipeline, Feathr's UDF does provide a good way for you to manage your feature engineering system from end to end. This decision is beyond the scope of this document.
 
-## UDFs at individual features (using the `transform` parameters)
+## UDF at individual features (using the `transform` parameters)
 
 Other than the UDF in the input level, Feathr also allows some level of customizations in the individual feature level. This is very useful if users want to do some last mile transformation, or for derived features where users might want to compose a new feature based on a few existing features with some calculation.
 
