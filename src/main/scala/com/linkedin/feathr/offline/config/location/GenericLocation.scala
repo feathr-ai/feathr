@@ -105,20 +105,20 @@ object GenericLocationFixes {
         ss.sql(s"CREATE DATABASE IF NOT EXISTS cosmosCatalog.${databaseName};")
         ss.sql(s"CREATE TABLE IF NOT EXISTS cosmosCatalog.${databaseName}.${tableName} using cosmos.oltp TBLPROPERTIES(partitionKeyPath = '/id')")
 
-        // CosmosDb requires the column `id` to exist and be the primary key
+        // CosmosDb requires the column `id` to exist and be the primary key, and `id` must be in `string` type
         val keyDf = if (!df.columns.contains("id")) {
           header match {
             case Some(h) => {
               // We have the header info, copy the 1st key column to `id`, which is required by CosmosDb
               val key = FeatureGenUtils.getKeyColumnsFromHeader(h).head
               // Copy key column to `id`
-              df.withColumn("id", df.col(key))
+              df.withColumn("id", df.col(key).cast("string"))
             }
             case None => {
               // If there is no key column, we use a auto-generated monotonic id.
               // but in this case the result could be duplicated if you run job for multiple times
               // This function is for offline-storage usage, ideally user should create a new container for every run
-              df.withColumn("id", monotonically_increasing_id())
+              df.withColumn("id", (monotonically_increasing_id().cast("string")))
             }
           }
         } else {
