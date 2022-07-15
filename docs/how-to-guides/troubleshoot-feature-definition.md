@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feature Definition Troubleshooting Guide
-parent: Feathr How-to Guides
+parent: How-to Guides
 ---
 
 # Feature Definition Troubleshooting Guide
@@ -20,9 +20,9 @@ The guide is pretty comprehensive and covers quite diverse errors. To use this g
 - The error message sometimes maybe pretty verbose. Just focus on the line that follows `Caused by: `.
 - Read the headlines of each section and understand what problems each section is trying to troubleshoot.
 - Use some keywords(one or two) followed by `Caused by` in your error message to search the error you want to troubleshoot.
-- You don't have to read this guide all at once. But over time, try to read this guide a few times more throughly so it will be helpful to debug future issues.
+- You don't have to read this guide all at once. But over time, try to read this guide a few times more thoroughly so it will be helpful to debug future issues.
 
-# Basic Config Issue in Feature Fefinition
+# Basic Config Issue in Feature Definition
 
 You may mis-spell a keyword, or a source etc in your feature config. When that happens, you will get a config error. For example, I mis-spelled my source as nycTaxiBatchSource3 and then I got:
 
@@ -49,7 +49,7 @@ Caused by: java.lang.NullPointerException
 	...
 ```
 
-Let's look at one other exmaple. I come up with this feature definition:
+Let's look at one other example. I come up with this feature definition:
 
 ```
   aggregationFeatures: {
@@ -71,7 +71,7 @@ And then I tested with `feathr test` but instead of getting features I want, I a
 Caused by: com.linkedin.feathr.common.exception.FeathrConfigException: [FEATHR_USER_ERROR] Trying to deserialize the config into TimeWindowFeatureDefinition.Aggregation type AVG3 is not supported. Supported types are: SUM, COUNT, AVG, MAX, TIMESINCE.Please use a supported aggregation type.
 ```
 
-You figure out that you mistyped your aggregfation as `SVG` but instead it should be `AVG`.
+You figure out that you mistyped your aggregation as `SVG` but instead it should be `AVG`.
 
 # Feature Transformation Expression Troubleshooting
 
@@ -79,7 +79,7 @@ The above errors are usually easier to troubleshoot. Feature transformation expr
 
 ## Row-lelve Transformation
 
-For non-aggregation feature, the feature transformation part and the key part are just row-level transforamtion. For row-level transformations, you only transform one row at a time.
+For non-aggregation feature, the feature transformation part and the key part are just row-level transformation. For row-level transformations, you only transform one row at a time.
 
 ```
   nonAggFeatures: {
@@ -179,12 +179,12 @@ For aggregation transformation debug, usually the problem comes from the timesta
   }
 ```
 
-For local feature testing, we set the generation config time to NOW. So you need to ensure that your data falls in [NOW - window, NOW]. For example, if NOW is 2022/02/20(yyyy-MM-dd). Then your local mock data(at least one row) should fall between [2022/02/17(yyyy-MM-dd), 2022/02/20(yyyy-MM-dd)] to ensure a window exsit and aggregation can then happen.
+For local feature testing, we set the generation config time to NOW. So you need to ensure that your data falls in [NOW - window, NOW]. For example, if NOW is 2022/02/20(yyyy-MM-dd). Then your local mock data(at least one row) should fall between [2022/02/17(yyyy-MM-dd), 2022/02/20(yyyy-MM-dd)] to ensure a window exists and aggregation can then happen.
 
-If there are no such overlapping, then you will see a error/warning message in your `feathre start` or `feathr test` like this:
+If there are no such overlapping, then you will see a error/warning message in your `feathr start` or `feathr test` like this:
 
 ```
-There doesnt seem to have any data in the window you defined. Please check your window configurations.
+There does not seem to have any data in the window you defined. Please check your window configurations.
 ```
 
 If you see this, please try to fix your mock data timestamp fields or expand the window size so it falls into the right window.

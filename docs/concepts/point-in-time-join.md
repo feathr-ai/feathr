@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Point-in-time Join in Feathr
+title: Point-in-time Join
 parent: Feathr Concepts
 ---
 
-# Point-in-time Correctness and Point-in-time Join in Feathr
+# Point-in-time Correctness and Point-in-time Join
 
 If your feature doesn't change over time in your modeling, like an adult's height, then point-in-time is not an issue. In reality, most features change over time, and you should care about point-in-time correctness. Like a person's salary, a person's purchases on the website. They all change over time. We call those features time-series features. For time-series features, point-in-time correctness is critical.
 
@@ -16,15 +16,15 @@ The model will perform better during training(usually), but it will not perform 
 
 ## Point-in-time Correctness
 
-Point-in-time corretness ensures that no future data is used for training.
+Point-in-time correctness ensures that no future data is used for training.
 
-Point-in-time correctness can be achieved via two approaches. If your observation data has a global timestamp for all observation events, then you can simply time-travel your feature dataset back to that timestamp. If your observation data has different timestamps for each observation events, then you need to point-in-time join for each events. The first approach is easier to implement but have more restrictions(global timestamp). The second appraoche provides better flexiblity and no feature data is wasted. Feathr uses the second approach and can scale to large datasets.
+Point-in-time correctness can be achieved via two approaches. If your observation data has a global timestamp for all observation events, then you can simply time-travel your feature dataset back to that timestamp. If your observation data has different timestamps for each observation events, then you need to point-in-time join for each events. The first approach is easier to implement but have more restrictions(global timestamp). The second approach provides better flexibility and no feature data is wasted. Feathr uses the second approach and can scale to large datasets.
 
 ## Point-in-time Feature Lookup in Feathr
 
 To illustrate the power of point-in-time feature lookup in Feathr, consider the following (dummy) scenario, where:
 
-- the label(observation) data spanned across multiple days
+- the label (observation) data spanned across multiple days
 - the feature data also spanned across multiple days
 - In the label data, there might be multiple occurrences of the same `UserId` with different labels(responses), due to the fact that the same users might have had multiple responses at different time. In the example below, both user 1 and user 3 are duplicated (and have tracking id of 4 and 5):
 

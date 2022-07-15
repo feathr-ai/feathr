@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Developer Guide for publishing to maven
-parent: Feathr Developer Guides
+parent: Developer Guides
 ---
 # Developer Guide for publishing to maven
 

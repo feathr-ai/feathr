@@ -29,14 +29,14 @@ npm start
 This should launch [http://localhost:3000](http://localhost:3000) on your web browser. The page will reload when you make code changes and save.
 
 #### [Optional] Override configurations for local development 
-- **Point to a different backend endpoint**: by default, UI talks to live backend API at (https://feathr-registry.azurewebsites.net/docs). To point to a custom backend API (e.g. running locally), create a .env.local in this directory and set REACT_APP_API_ENDPOINT, for example:
+- **Point to a different backend endpoint**: by default, UI talks to live backend API at https://feathr-sql-registry.azurewebsites.net. To point to a custom backend API (e.g. running locally), create a .env.local in this directory and set REACT_APP_API_ENDPOINT, for example:
 ```
 REACT_APP_API_ENDPOINT=http://localhost:8080
 ```
-- **Use different authentication settings**: by default, UI authenticates with an Azure AD application with multiple tenants authentication enabled. To change to use a different Azure AD application, create a .env.local in this directory and set REACT_APP_AAD_APP_CLIENT_ID and REACT_APP_AAD_APP_AUTHORITY, for example:
+- **Use different authentication settings**: by default, UI authenticates with an Azure AD application with multiple tenants authentication enabled. To change to use a different Azure AD application, create a .env.local in this directory and set REACT_APP_AZURE_CLIENT_ID and REACT_APP_AZURE_TENANT_ID, for example:
 ```
-REACT_APP_AAD_APP_CLIENT_ID=<REPLACE_WITH_YOUR_APPLICATION_CLIENT_ID>>
-REACT_APP_AAD_APP_AUTHORITY=https://login.microsoftonline.com/<>REPLACE_WITH_YOUR_TENANT_ID>
+REACT_APP_AZURE_CLIENT_ID=<REPLACE_WITH_YOUR_AZURE_CLIENT_ID>
+REACT_APP_AZURE_TENANT_ID=<REPLACE_WITH_YOUR_TENANT_ID>
 ```
 
 ### Deploying

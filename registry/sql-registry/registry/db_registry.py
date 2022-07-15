@@ -23,7 +23,7 @@ class DbRegistry(Registry):
 
     def get_projects(self) -> list[str]:
         ret = self.conn.query(
-            f"select qualified_name from entities where entity_type='{EntityType.Project}'")
+            f"select qualified_name from entities where entity_type=%s", str(EntityType.Project))
         return list([r["qualified_name"] for r in ret])
 
     def get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
@@ -40,16 +40,16 @@ class DbRegistry(Registry):
             pass
         # It is a name
         ret = self.conn.query(
-            f"select entity_id from entities where qualified_name='{id_or_name}'")
+            f"select entity_id from entities where qualified_name=%s", str(id_or_name))
         return ret[0]["entity_id"]
 
     def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
         rows = self.conn.query(fr'''
             select edge_id, from_id, to_id, conn_type
             from edges
-            where from_id = '{self.get_entity_id(id_or_name)}'
-            and conn_type = '{relationship.name}'
-        ''')
+            where from_id = %s
+            and conn_type = %s
+        ''', (str(self.get_entity_id(id_or_name)), relationship.name))
         return list([Edge(**row) for row in rows])
 
     def get_lineage(self, id_or_name: Union[str, UUID]) -> EntitiesAndRelations:
@@ -86,7 +86,7 @@ class DbRegistry(Registry):
                 anchor.id, RelationshipType.Consumes)[0].to_id
             anchor.attributes.source = child_map[source_id]
         for df in project.attributes.derived_features:
-            conn = self.get_neighbors(anchor.id, RelationshipType.Consumes)
+            conn = self.get_neighbors(df.id, RelationshipType.Consumes)
             input_ids = [e.to_id for e in conn]
             edges = edges.union(conn)
             features = list([child_map[id] for id in input_ids])
@@ -100,9 +100,8 @@ class DbRegistry(Registry):
         """
         WARN: This search function is implemented via `like` operator, which could be extremely slow.
         """
-        types = ",".join([quote(str(t)) for t in type])
-        sql = fr'''select entity_id as id, qualified_name, entity_type as type from entities where qualified_name like %s and entity_type in ({types})'''
-        rows = self.conn.query(sql, ('%' + keyword + '%', ))
+        sql = fr'''select entity_id as id, qualified_name, entity_type as type from entities where qualified_name like %s and entity_type in %s'''
+        rows = self.conn.query(sql, ('%' + keyword + '%', tuple([str(t) for t in type])))
         return list([EntityRef(**row) for row in rows])
 
     def create_project(self, definition: ProjectDef) -> UUID:
@@ -304,7 +303,7 @@ class DbRegistry(Registry):
             # Fill `input_anchor_features`, from `definition` we have ids only, we still need qualified names
             if definition.input_anchor_features:
                 c.execute(
-                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in ({quote(definition.input_anchor_features)}) and entity_type = %s ''', str(EntityType.AnchorFeature))
+                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in %s and entity_type = %s ''', (tuple([str(id) for id in definition.input_anchor_features]), str(EntityType.AnchorFeature)))
                 r1 = c.fetchall()
                 if len(r1) != len(definition.input_anchor_features):
                     # TODO: More detailed error
@@ -313,7 +312,7 @@ class DbRegistry(Registry):
             r2 = []
             if definition.input_derived_features:
                 c.execute(
-                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in ({quote(definition.input_derived_features)}) and entity_type = %s ''', str(EntityType.DerivedFeature))
+                    fr'''select entity_id, entity_type, qualified_name from entities where entity_id in %s and entity_type = %s ''', (tuple([str(id) for id in definition.input_derived_features]), str(EntityType.DerivedFeature)))
                 r2 = c.fetchall()
                 if len(r2) != len(definition.input_derived_features):
                     # TODO: More detailed error
@@ -387,22 +386,28 @@ class DbRegistry(Registry):
 
     def _get_edges(self, ids: list[UUID], types: list[RelationshipType] = []) -> list[Edge]:
         sql = fr"""select edge_id, from_id, to_id, conn_type from edges
-        where from_id in ({quote(ids)})
-        and to_id in ({quote(ids)})"""
+        where from_id in %(ids)s
+        and to_id in %(ids)s"""
         if len(types) > 0:
             sql = fr"""select edge_id, from_id, to_id, conn_type from edges
-            where conn_type in ({quote(types)})
-            and from_id in ({quote(ids)})
-            and to_id in ({quote(ids)})"""
-        rows = self.conn.query(sql)
+            where conn_type in %(types)s
+            and from_id in %(ids)s
+            and to_id in %(ids)s"""
+        rows = self.conn.query(sql, {
+            "ids": tuple([str(id) for id in ids]),
+            "types": tuple([str(t) for t in types]),
+        })
         return list([_to_type(row, Edge) for row in rows])
 
     def _get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
         row = self.conn.query(fr'''
             select entity_id, qualified_name, entity_type, attributes
             from entities
-            where entity_id = '{self.get_entity_id(id_or_name)}'
-        ''')[0]
+            where entity_id = %s
+        ''', self.get_entity_id(id_or_name))
+        if not row:
+            raise ValueError(f"Entity {id_or_name} not found")
+        row=row[0]
         row["attributes"] = json.loads(row["attributes"])
         return _to_type(row, Entity)
 
@@ -411,8 +416,8 @@ class DbRegistry(Registry):
             return []
         rows = self.conn.query(fr'''select entity_id, qualified_name, entity_type, attributes
             from entities
-            where entity_id in ({quote(ids)})
-        ''')
+            where entity_id in %s
+        ''', (tuple([str(id) for id in ids]), ))
         ret = []
         for row in rows:
             row["attributes"] = json.loads(row["attributes"])
@@ -448,5 +453,5 @@ class DbRegistry(Registry):
         Returns all edges that connect to node ids the next step
         """
         ids = list([id["to_id"] for id in ids])
-        sql = fr"""select edge_id, from_id, to_id, conn_type from edges where conn_type = '{conn_type.name}' and from_id in ({quote(ids)})"""
-        return self.conn.query(sql)
+        sql = fr"""select edge_id, from_id, to_id, conn_type from edges where conn_type = %s and from_id in %s"""
+        return self.conn.query(sql, (conn_type.name, tuple([str(id) for id in ids])))

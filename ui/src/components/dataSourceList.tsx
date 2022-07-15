@@ -1,19 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LoadingOutlined } from "@ant-design/icons";
 import { Form, Select, Table } from "antd";
-import { DataSourceAttributes, DataSource } from "../models/model";
+import { DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
 
 const DataSourceList: React.FC = () => {
   const columns = [
     {
       title: <div style={ { userSelect: "none" } }>Name</div>,
-      dataIndex: 'attributes',
       key: 'name',
       align: 'center' as 'center',
       width: 120,
-      render: (row: DataSourceAttributes) => {
-        return row.name;
+      render: (row: DataSource) => {
+        return row.attributes.name;
       },
       onCell: () => {
         return {
@@ -24,30 +22,12 @@ const DataSourceList: React.FC = () => {
       }
     },
     {
-      title: <div style={ { userSelect: "none" } }>QualifiedName</div>,
-      dataIndex: 'attributes',
-      key: 'qualifiedName',
-      align: 'center' as 'center',
-      width: 120,
-      render: (row: DataSourceAttributes) => {
-        return row.qualifiedName;
-      },
-      onCell: () => {
-        return {
-          style: {
-            maxWidth: 120
-          }
-        }
-      }
-    },
-    {
-      title: <div style={ { userSelect: "none" } }>Type</div>,
-      dataIndex: 'attributes',
-      key: 'attributes',
+      title: <div>Type</div>,
+      key: 'type',
       align: 'center' as 'center',
       width: 80,
-      render: () => {
-        return "BatchFile"
+      render: (row: DataSource) => {
+        return row.attributes.type;
       },
       onCell: () => {
         return {
@@ -58,13 +38,60 @@ const DataSourceList: React.FC = () => {
       }
     },
     {
-      title: <div style={ { userSelect: "none" } }>Path</div>,
-      dataIndex: 'attributes',
-      key: 'attributes',
+      title: <div>Path</div>,
+      key: 'path',
       align: 'center' as 'center',
       width: 190,
-      render: (row: DataSourceAttributes) => {
-        return row.path;
+      render: (row: DataSource) => {
+        return row.attributes.path;
+      },
+      onCell: () => {
+        return {
+          style: {
+            maxWidth: 120
+          }
+        }
+      }
+    },
+    {
+      title: <div>Pre Processing</div>,
+      key: 'preprocessing',
+      align: 'center' as 'center',
+      width: 190,
+      render: (row: DataSource) => {
+        return row.attributes.preprocessing;
+      },
+      onCell: () => {
+        return {
+          style: {
+            maxWidth: 120
+          }
+        }
+      }
+    },
+    {
+      title: <div>Event Timestamp Column</div>,
+      key: 'eventTimestampColumn',
+      align: 'center' as 'center',
+      width: 190,
+      render: (row: DataSource) => {
+        return row.attributes.eventTimestampColumn;
+      },
+      onCell: () => {
+        return {
+          style: {
+            maxWidth: 120
+          }
+        }
+      }
+    },
+    {
+      title: <div>Timestamp Format</div>,
+      key: 'timestampFormat',
+      align: 'center' as 'center',
+      width: 190,
+      render: (row: DataSource) => {
+        return row.attributes.timestampFormat;
       },
       onCell: () => {
         return {
@@ -110,7 +137,7 @@ const DataSourceList: React.FC = () => {
                  style={ { minWidth: "35%", float: "left", paddingLeft: "10px" } }
                  rules={ [{ required: true, message: "Please select a project to start." }] }>
         <Select options={ projects } defaultValue={ project } value={ project } optionFilterProp="label"
-                notFoundContent={ <LoadingOutlined style={ { fontSize: 24 } } spin /> }
+                notFoundContent={ <div>No projects found from server</div> }
                 onChange={ onProjectChange }>
         </Select>
       </Form.Item>

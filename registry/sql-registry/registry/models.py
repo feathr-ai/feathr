@@ -177,15 +177,15 @@ class TypedKey(ToDict):
     
     def to_dict(self) -> dict:
         ret = {
-            "key_column": self.key_column,
-            "key_column_type": self.key_column_type.name,
+            "keyColumn": self.key_column,
+            "keyColumnType": self.key_column_type.name,
         }
         if self.full_name is not None:
-            ret["full_name"] = self.full_name
+            ret["fullName"] = self.full_name
         if self.description is not None:
             ret["description"] = self.full_name
         if self.key_column_alias is not None:
-            ret["key_column_alias"] = self.key_column_alias
+            ret["keyColumnAlias"] = self.key_column_alias
         return ret
 
 
@@ -213,7 +213,7 @@ class ExpressionTransformation(Transformation):
 
     def to_dict(self) -> dict:
         return {
-            "transform_expr": self.transform_expr
+            "transformExpr": self.transform_expr
         }
 
 
@@ -244,14 +244,14 @@ class WindowAggregationTransformation(Transformation):
 
     def to_dict(self) -> dict:
         ret = {
-            "def_expr": self.def_expr,
+            "defExpr": self.def_expr,
         }
         if self.agg_func is not None:
-            ret["agg_func"] = self.agg_func
+            ret["aggFunc"] = self.agg_func
         if self.window is not None:
             ret["window"] = self.window
         if self.group_by is not None:
-            ret["group_by"] = self.group_by
+            ret["groupBy"] = self.group_by
         if self.filter is not None:
             ret["filter"] = self.filter
         if self.limit is not None:
@@ -406,8 +406,8 @@ class ProjectAttributes(Attributes):
             "name": self.name,
             "sources": list([e.get_ref().to_dict() for e in self.sources]),
             "anchors": list([e.get_ref().to_dict() for e in self.anchors]),
-            "anchor_features": list([e.get_ref().to_dict() for e in self.anchor_features]),
-            "derived_features": list([e.get_ref().to_dict() for e in self.derived_features]),
+            "anchorFeatures": list([e.get_ref().to_dict() for e in self.anchor_features]),
+            "derivedFeatures": list([e.get_ref().to_dict() for e in self.derived_features]),
             "tags": self.tags,
         }
 
@@ -599,7 +599,7 @@ class DerivedFeatureAttributes(Attributes):
             elif entity.entity_type == EntityType.DerivedFeature:
                 self._input_derived_features.append(entity)
             else:
-                pass
+                raise TypeError("Unknown input feature {}".format(entity.to_dict()))
 
     @property
     def input_anchor_features(self):
@@ -616,8 +616,8 @@ class DerivedFeatureAttributes(Attributes):
             "type": self.type.to_dict(),
             "transformation": self.transformation.to_dict(),
             "key": list([k.to_dict() for k in self.key]),
-            "input_anchor_features": [e.to_dict() for e in self.input_anchor_features],
-            "input_derived_features": [e.to_dict() for e in self.input_derived_features],
+            "inputAnchorFeatures": [e.to_dict() for e in self.input_anchor_features],
+            "inputDerivedFeatures": [e.to_dict() for e in self.input_derived_features],
             "tags": self.tags,
         }
 
