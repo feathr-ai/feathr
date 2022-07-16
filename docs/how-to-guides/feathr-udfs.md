@@ -107,7 +107,7 @@ def add_new_dropoff_and_fare_amount_column(df: DataFrame):
 
 Feathr also supports using a SQL dialect to deal with your data. Below is the template, note that:
 
-1. you should declare a global "spark" session so that it can be called later
+1. You should declare a global "spark" session so that it can be called later
 2. You should call `createOrReplaceTempView` so that you can refer to this view in your SQL code
 
 ```python
@@ -161,9 +161,9 @@ But if you don't have an existing pipeline, Feathr's UDF does provide a good way
 
 Other than the UDF in the input level, Feathr also allows some level of customizations in the individual feature level. This is very useful if users want to do some last mile transformation, or for derived features where users might want to compose a new feature based on a few existing features with some calculation.
 
-For those row-level transformations, [Spark SQL built-in functions](https://spark.apache.org/docs/latest/api/sql/index.html) are supported. For example you can call `dayofmonth`, `xpath_double`, or `percent_rank` etc. in the Spark SQL built-in functions.
+For those row-level transformations, [Spark SQL built-in functions](https://spark.apache.org/docs/latest/api/sql/index.html) are supported. For example you can call [`dayofmonth`](https://spark.apache.org/docs/latest/api/sql/index.html#dayofmonth), [`xpath_double`](https://spark.apache.org/docs/latest/api/sql/index.html#xpath_double), or [`percent_rank`](https://spark.apache.org/docs/latest/api/sql/index.html#percent_rank) etc. in the Spark SQL built-in functions in the `transformation` parameter for Feathr.
 
-Some examples are shown below. Note that usually they are row level transformations, and if you want to do some aggregations across rows, please check out [](../concepts/feature-definition.md#window-aggregation-features)
+Some examples are shown below. Note that usually they are row level transformations, and if you want to do some aggregations across rows, please check out [Window aggregation features](../concepts/feature-definition.md#window-aggregation-features).
 
 ```python
 derived_feature = DerivedFeature(name="f_trip_time_distance",
