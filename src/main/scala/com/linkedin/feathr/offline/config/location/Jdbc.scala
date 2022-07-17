@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.config.location
 
-import com.fasterxml.jackson.annotation.JsonAlias
+import com.fasterxml.jackson.annotation.{JsonAlias, JsonIgnoreProperties}
 import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
 import com.linkedin.feathr.common.Header
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
@@ -9,7 +9,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.eclipse.jetty.util.StringUtil
 
 @CaseClassDeserialize()
-case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: String = "", password: String = "", token: String = "", useToken: Boolean = false, anonymous: Boolean = false) extends DataLocation {
+@JsonIgnoreProperties(ignoreUnknown = true)
+case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: String = "", password: String = "", token: String = "") extends DataLocation {
   override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String] = Map()): DataFrame = {
     println(s"Jdbc.loadDf, location is ${this}")
     var reader = ss.read.format("jdbc")
@@ -26,21 +27,14 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
         reader = reader.option("dbtable", q)
       }
     }
-    if (useToken) {
+    if (!StringUtil.isBlank(token)) {
       reader.option("accessToken", LocationUtils.envSubstitute(token))
         .option("hostNameInCertificate", "*.database.windows.net")
         .option("encrypt", true)
         .load
     } else {
       if (StringUtil.isBlank(user) && StringUtil.isBlank(password)) {
-        if (anonymous) {
-          reader.load()
-        } else {
-          // Fallback to global JDBC credential
-          println("Fallback to default credential")
-          ss.conf.set(DBTABLE_CONF, dbtable)
-          JdbcUtils.loadDataFrame(ss, url)
-        }
+        reader.load()
       } else {
         reader.option("user", LocationUtils.envSubstitute(user))
           .option("password", LocationUtils.envSubstitute(password))
@@ -50,11 +44,6 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
 
   override def writeDf(ss: SparkSession, df: DataFrame, header: Option[Header]): Unit = {
     println(s"Jdbc.writeDf, location is ${this}")
-    if (StringUtil.isBlank(user) && StringUtil.isBlank(password) && !anonymous && !useToken) {
-      // Fallback to global JDBC credential
-      println("Fallback to default credential")
-      ss.conf.set(DBTABLE_CONF, dbtable)
-    }
     df.write.format("jdbc")
       .options(getOptions(ss))
       .save()
@@ -67,7 +56,7 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
   override def isFileBasedLocation(): Boolean = false
 
   // These members don't contain actual secrets
-  override def toString: String = s"Jdbc(url=$url, dbtable=$dbtable, useToken=$useToken, anonymous=$anonymous, user=$user, password=$password, token=$token)"
+  override def toString: String = s"Jdbc(url=$url, dbtable=$dbtable, user=$user, password=$password, token=$token)"
 
   def getOptions(ss: SparkSession): Map[String, String] = {
     val options = collection.mutable.Map[String, String]()
@@ -85,7 +74,7 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
         options += ("dbtable" -> q)
       }
     }
-    if (useToken) {
+    if (!StringUtil.isBlank(token)) {
       options += ("accessToken" -> LocationUtils.envSubstitute(token))
       options += ("hostNameInCertificate" -> "*.database.windows.net")
       options += ("encrypt" -> "true")
@@ -111,7 +100,7 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
      * @param password
      * @return Newly created InputLocation instance
      */
-    def apply(url: String, dbtable: String, user: String, password: String): Jdbc = Jdbc(url, dbtable, user = user, password = password, useToken = false)
+    def apply(url: String, dbtable: String, user: String, password: String): Jdbc = Jdbc(url, dbtable, user = user, password = password)
 
     /**
      * Create JDBC InputLocation with required info and OAuth token auth
@@ -121,7 +110,7 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
      * @param token
      * @return Newly created InputLocation instance
      */
-    def apply(url: String, dbtable: String, token: String): Jdbc = Jdbc(url, dbtable, token = token, useToken = true)
+    def apply(url: String, dbtable: String, token: String): Jdbc = Jdbc(url, dbtable, token = token)
 
     /**
      * Create JDBC InputLocation with required info and OAuth token auth
@@ -132,5 +121,5 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
      * @param dbtable
      * @return Newly created InputLocation instance
      */
-    def apply(url: String, dbtable: String): Jdbc = Jdbc(url, dbtable, useToken = false)
+    def apply(url: String, dbtable: String): Jdbc = Jdbc(url, dbtable)
   }
