@@ -22,10 +22,10 @@ export interface FeatureAttributes {
 }
 
 export interface FeatureType {
-  dimensionType: string[],
-  tensorCategory: string,
-  type: string,
-  valType: string
+  dimensionType: string[];
+  tensorCategory: string;
+  type: string;
+  valType: string;
 }
 
 export interface FeatureTransformation {
@@ -35,7 +35,7 @@ export interface FeatureTransformation {
   limit: string;
   groupBy: string;
   window: string;
-  defExpr: string
+  defExpr: string;
 }
 
 export interface FeatureKey {
@@ -43,7 +43,7 @@ export interface FeatureKey {
   fullName: string;
   keyColumn: string;
   keyColumnAlias: string;
-  keyColumnType: string
+  keyColumnType: string;
 }
 
 export interface InputFeature {
