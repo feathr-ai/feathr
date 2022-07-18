@@ -52,8 +52,6 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
         except Exception as e:
             raise InvalidAuthorization(detail=f'Unable to extract subject as unique id from token, {e}')
 
-        print(decoded_token)
-
         aad_user_key = "preferred_username"
         aad_app_key = "appid"
         common_user_key = "email"
