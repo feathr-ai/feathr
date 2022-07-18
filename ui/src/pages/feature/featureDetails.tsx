@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
 import { AxiosError } from 'axios';
 import { fetchFeature } from '../../api';
 import { Feature } from "../../models/model";
+import { FeatureLineage } from "../../models/model";
+import { fetchFeatureLineages } from "../../api";
+import { Elements, isNode } from 'react-flow-renderer';
+import Graph from "../../components/graph/graph";
+import { getElements } from "../../components/graph/utils"
+import { getLayoutedElements } from "../../components/graph/utils"
 
 const { Title } = Typography;
 
@@ -118,6 +124,51 @@ function InputDerivedFeatures(props: { project: string, feature: Feature }) {
   </>;
 }
 
+
+function FeatureLineageGraph() {
+  const { featureId } = useParams() as Params;
+  const [lineageData, setLineageData] = useState<FeatureLineage>({ guidEntityMap: null, relations: null });
+  const [elements, SetElements] = useState<Elements>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchLineageData = async () => {
+      setLoading(true);
+      const data = await fetchFeatureLineages(featureId);
+      setLineageData(data);
+      setLoading(false);
+    };
+    
+    fetchLineageData();
+  }, [featureId]);
+
+  // Generate graph data on client side, invoked after graphData or featureType is changed
+  useEffect(() => {
+    const generateGraphData = async () => {
+      SetElements(getElements(lineageData, "all_nodes")!);
+    };
+
+    generateGraphData();
+  }, [lineageData]);
+
+  return <>
+  {
+    loading
+    ? (
+      <Spin indicator={ <LoadingOutlined style={ { fontSize: 24 } } spin /> } />
+    )
+    : (
+      <Col span={ 24 }>
+        <Card className="card">
+          <Title level={ 4 }>Lineage</Title>
+          <Graph data={ elements } nodeId={ featureId }/>
+        </Card>
+      </Col>
+    )
+  }
+  </>;
+}
+
 type Params = {
   project: string;
   featureId: string;
@@ -193,6 +244,7 @@ const FeatureDetails: React.FC = () => {
                     <FeatureTransformation feature={ data } />
                     <FeatureKey feature={ data } />
                     <FeatureType feature={ data } />
+                    <FeatureLineageGraph />
                   </Row>
                 </div>
               </Card>
