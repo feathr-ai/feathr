@@ -1,12 +1,18 @@
-from typing import List, Optional
+from abc import abstractmethod
+import json
+from typing import Dict, List, Optional
 from jinja2 import Template
+from pymysql import paramstyle
 from feathr.definition.feathrconfig import HoconConvertible
 
 
 class Sink(HoconConvertible):
     """A data sink.
     """
-    pass
+    
+    @abstractmethod
+    def to_argument(self):
+        pass
 
 class MonitoringSqlSink(Sink):
     """SQL-based sink that stores feature monitoring results.
@@ -29,6 +35,9 @@ class MonitoringSqlSink(Sink):
         """)
         msg = tm.render(source=self)
         return msg
+
+    def to_argument(self):
+        raise TypeError("MonitoringSqlSink cannot be used as output argument")
 
 class RedisSink(Sink):
     """Redis-based sink use to store online feature data, can be used in batch job or streaming job.
@@ -61,6 +70,9 @@ class RedisSink(Sink):
         """)
         msg = tm.render(source=self)
         return msg
+
+    def to_argument(self):
+        raise TypeError("RedisSink cannot be used as output argument")
 
 
 class HdfsSink(Sink):
@@ -101,3 +113,60 @@ class HdfsSink(Sink):
         """)
         hocon_config = tm.render(sink=self)
         return hocon_config
+
+    def to_argument(self):
+        return self.output_path
+
+    
+class GenericSink(Sink):
+    def __init__(self, format: str, mode: Optional[str] = None, options: Dict[str, str] = {}) -> None:
+        self.format = format
+        self.mode = mode
+        self.options = dict([(o.replace(".", "__"), options[o]) for o in options])
+    
+    def to_feature_config(self) -> str:
+        ret = {
+            "name": "HDFS",
+            "params": self._to_dict()
+        }
+        return json.dumps(ret, indent=4)
+    
+    def _to_dict(self) -> dict[str, str]:
+        ret = self.options.copy()
+        ret["type"] = "generic"
+        ret["format"] = self.format
+        if self.mode:
+            ret["mode"] = self.mode
+        return ret        
+    
+    def get_required_properties(self):
+        ret = []
+        for option in self.options:
+            start = option.find("${")
+            if start >= 0:
+                end = option[start:].find("}")
+                if end >= 0:
+                    ret.append(option[start+2:start+end])
+        return ret
+
+    def to_argument(self):
+        """
+        One-line JSON string, used by job submitter
+        """
+        return json.dumps(self._to_dict())
+    
+class CosmosDbSink(GenericSink):
+    def __init__(self, name: str, endpoint: str, database: str, collection: str):        
+        super().__init__(format = "cosmos.oltp", mode="APPEND", options={
+            "spark.cosmos.accountEndpoint": endpoint,
+            'spark.cosmos.accountKey': "${%s_KEY}" % name,
+            "spark.cosmos.database": database,
+            "spark.cosmos.container": collection
+        })
+        self.name = name
+        self.endpoint = endpoint
+        self.database = database
+        self.collection = collection
+        
+    def get_required_properties(self) -> List[str]:
+        return [self.name + "_KEY"]

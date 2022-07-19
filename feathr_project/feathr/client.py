@@ -5,12 +5,16 @@ import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
+
+from numpy import isin
 from feathr.definition.feature import FeatureBase
 
 import redis
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from pyhocon import ConfigFactory
+from feathr.definition.sink import GenericSink, Sink
+from feathr.definition.source import GenericSource, Source
 from feathr.registry.feature_registry import default_registry_client
 
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
@@ -45,10 +49,25 @@ class FeatureJoinJobParams:
     """
 
     def __init__(self, join_config_path, observation_path, feature_config, job_output_path):
+        self.secrets = []
         self.join_config_path = join_config_path
-        self.observation_path = observation_path
+        if isinstance(observation_path, str):
+            self.observation_path = observation_path
+        elif isinstance(observation_path, Source):
+            self.observation_path = observation_path.to_argument()
+            if hasattr(observation_path, "get_required_properties"):
+                self.secrets.extend(observation_path.get_required_properties())
+        else:
+            raise TypeError("observation_path must be a string or a Sink")
         self.feature_config = feature_config
-        self.job_output_path = job_output_path
+        if isinstance(job_output_path, str):
+            self.job_output_path = job_output_path
+        elif isinstance(job_output_path, Sink):
+            self.job_output_path = job_output_path.to_argument()
+            if hasattr(job_output_path, "get_required_properties"):
+                self.secrets.extend(job_output_path.get_required_properties())
+        else:
+            raise TypeError("job_output_path must be a string or a Sink")
 
 
 class FeatureGenerationJobParams:
@@ -59,9 +78,10 @@ class FeatureGenerationJobParams:
         feature_config: Path to the features config.
     """
 
-    def __init__(self, generation_config_path, feature_config):
+    def __init__(self, generation_config_path, feature_config, secrets=[]):
         self.generation_config_path = generation_config_path
         self.feature_config = feature_config
+        self.secrets = secrets
 
 
 
@@ -174,6 +194,7 @@ class FeathrClient(object):
 
         self._construct_redis_client()
 
+        self.secret_names = []
 
         # initialize registry
         self.registry = default_registry_client(self.project_name, config_path=config_path, credential=self.credential)
@@ -183,9 +204,7 @@ class FeathrClient(object):
 
         Some required information has to be set via environment variables so the client can work.
         """
-        props = []
-        if hasattr(self, "system_properties"):
-            props = self.system_properties
+        props = self.secret_names
         for required_field in (self.required_fields + props):
             if required_field not in os.environ:
                 raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
@@ -240,8 +259,8 @@ class FeathrClient(object):
         for anchor in self.anchor_list:
             if hasattr(anchor.source, "get_required_properties"):
                 props.extend(anchor.source.get_required_properties())
-        if len(props)>0:
-            self.system_properties = props
+        # Reset `system_properties`
+        self.secret_names = props
 
         # Pretty print anchor_list
         if verbose and self.anchor_list:
@@ -501,7 +520,7 @@ class FeathrClient(object):
             ],
             reference_files_path=[],
             configuration=execution_configurations,
-            properties=self._get_system_properties()
+            properties=self._collect_secrets(feature_join_job_params.secrets)
         )
 
     def get_job_result_uri(self, block=True, timeout_sec=300) -> str:
@@ -545,6 +564,13 @@ class FeathrClient(object):
             settings: Feature materialization settings
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
+        
+        # Collect secrets from sinks
+        secrets = []
+        for sink in settings.sinks:
+            if hasattr(sink, "get_required_properties"):
+                secrets.extend(sink.get_required_properties())
+        
         # produce materialization config
         for end in settings.get_backfill_cutoff_time():
             settings.backfill_time.end = end
@@ -563,7 +589,7 @@ class FeathrClient(object):
 
             udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
             # CLI will directly call this so the experiene won't be broken
-            self._materialize_features_with_config(config_file_path, execution_configurations, udf_files)
+            self._materialize_features_with_config(config_file_path, execution_configurations, udf_files, secrets)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
 
@@ -571,7 +597,7 @@ class FeathrClient(object):
         if verbose and settings:
             FeaturePrinter.pretty_print_materialize_features(settings)
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configurations: Dict[str,str] = {}, udf_files=[]):
+    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configurations: Dict[str,str] = {}, udf_files=[], secrets=[]):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
@@ -618,7 +644,7 @@ class FeathrClient(object):
             arguments=arguments,
             reference_files_path=[],
             configuration=execution_configurations,
-            properties=self._get_system_properties()
+            properties=self._collect_secrets(secrets)
         )
 
 
@@ -751,14 +777,12 @@ class FeathrClient(object):
             """.format(sasl=sasl)
         return config_str
 
-    def _get_system_properties(self):
-        """Go through all data sources and fill all required system properties"""
+    def _collect_secrets(self, additional_secrets=[]):
+        """Collect all values corresponding to the secret names."""
         prop_and_value = {}
-        if hasattr(self, "system_properties"):
-            for prop in self.system_properties:
-                prop_and_value[prop] = self.envutils.get_environment_variable_with_default(prop)
-            return prop_and_value
-        return None
+        for prop in self.secret_names + additional_secrets:
+            prop_and_value[prop] = self.envutils.get_environment_variable_with_default(prop)
+        return prop_and_value
 
     def get_features_from_registry(self, project_name: str) -> Dict[str, FeatureBase]:
         """
