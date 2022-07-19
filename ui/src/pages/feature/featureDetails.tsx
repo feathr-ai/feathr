@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
 import { AxiosError } from 'axios';
 import { fetchFeature } from '../../api';
 import { Feature } from "../../models/model";
 import { FeatureLineage } from "../../models/model";
 import { fetchFeatureLineages } from "../../api";
-import { Elements, isNode } from 'react-flow-renderer';
+import { Elements } from 'react-flow-renderer';
 import Graph from "../../components/graph/graph";
 import { getElements } from "../../components/graph/utils"
-import { getLayoutedElements } from "../../components/graph/utils"
 
 const { Title } = Typography;
 
