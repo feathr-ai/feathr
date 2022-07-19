@@ -68,11 +68,11 @@ The path of a dataset as the 'spine' for the to-be-created training dataset. We 
 
 1. **Entity ID Column:** Column(s) representing entity id(s), which will be used as the join key to query feature value.
 
-2. **Timestamp Column:** A column representing the event time of the row. By default, Feathr will make sure the feature values queried have a timestamp earlier than the timestamp in observation data, ensuring no data leakage in the resulting training dataset. This tim
+2. **Timestamp Column:** A column representing the event time of the row. By default, Feathr will make sure the feature values queried have a timestamp earlier than the timestamp in observation data, ensuring no data leakage in the resulting training dataset. Refer to [Point in time Joins](./point-in-time-join.md) for more details.
 
 3. **Other columns** will be simply pass through to the output training dataset, which can be treated as immutable columns.
 
-## More on `Feature Query`ß
+## More on `Feature Query`
 
 After you have defined all the features, you probably don't want to use all of them in this particular program. In this case, instead of putting every features in this `FeatureQuery` part, you can just put a selected list of features. Note that they have to be of the same key.
 
@@ -82,4 +82,4 @@ It is sometimes confusing between "getting offline features" in this document an
 
 1. For `get_offline_features` API, feature consumers usually need to have a central `observation data` so they can use `Feature Query` to query different features for different entities from different tables. For `materialize_features` API, feature consumers don't have the `observation data`, because they don't need to query from existing feature definitions. In this case, feature consumers only need to specify for a specific entity (say `user_id`), which features they want to materialize to offline or online store. Note that for a feature table in the materialization settings, feature consumers can only materialize features for the same key for the same table.
 
-2. For 
+2. For the timestamps, `get_offline_features` API, Feathr will make sure the feature values queried have a timestamp earlier than the timestamp in observation data, ensuring no data leakage in the resulting training dataset. For `materialize_features` API, Feathr will always materialize the latest feature available in the dataset.
