@@ -1,5 +1,4 @@
 
-from html.entities import entitydefs
 from http.client import CONFLICT, HTTPException
 import itertools
 from typing import Any, Optional, Tuple, Union
