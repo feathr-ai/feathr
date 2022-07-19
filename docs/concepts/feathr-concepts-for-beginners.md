@@ -126,7 +126,7 @@ client.get_online_features(feature_table = "agg_features",
 ## Illustration
 
 An illustration of the concepts and process that we talked about is like this:
-![Feature Join Process](../images/observation_data.jpg)
+![Observation Data and Feature Query Process](../images/observation_data.jpg)
 
 ## Miscellaneous topics
 
