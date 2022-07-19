@@ -1,4 +1,5 @@
 
+from html.entities import entitydefs
 from http.client import CONFLICT, HTTPException
 import itertools
 from typing import Any, Optional, Tuple, Union
@@ -494,9 +495,11 @@ class PurviewRegistry(Registry):
         new_entitydefs = [type_feathr_anchor_features, type_feathr_anchors,
                         type_feathr_derived_features, type_feathr_sources, type_feathr_project]
         new_entitydefs_names = [entity.name for entity in new_entitydefs]
-        existing_entitydefs = self.purview_client.get_all_typedefs()['entityDefs']
-        existing_entitydefs_names = [entity['name'] for entity in existing_entitydefs]
-        if any(name in new_entitydefs_names for name in existing_entitydefs_names):
+        existing_defs = self.purview_client.get_all_typedefs()
+        existing_entitydefs_names = [entity['name'] for entity in existing_defs['entityDefs']] \
+            if 'entityDefs' in existing_defs else []
+        if existing_entitydefs_names \
+            and any(name in new_entitydefs_names for name in existing_entitydefs_names):
             logger.warning(f"EntityTypeDefs Exists: {new_entitydefs_names}. Registration Skipped.")
             logger.info("Feathr Feature Type System Initialized.")
             return
