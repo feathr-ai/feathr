@@ -76,7 +76,7 @@ The path of a dataset as the 'spine' for the to-be-created training dataset. We 
 
 After you have defined all the features, you probably don't want to use all of them in this particular program. In this case, instead of putting every features in this `FeatureQuery` part, you can just put a selected list of features. Note that they have to be of the same key.
 
-## Difference between materializing features and get offline features
+## Difference between `materialize_features` and `get_offline_features` API
 
 It is sometimes confusing between "getting offline features" in this document and the "[getting materialized features](./materializing-features.md)" part, given they both seem to "get features and put it somewhere". However there are some differences and you should know when to use which:
 
