@@ -6,11 +6,11 @@ parent: Feathr Concepts
 
 # Feature Generation and Materialization
 
-Feature generation (also known as feature materialization) is the process to create features from raw source data into a certain persisted storage in either offline store (for further reuse), or online store (for online inference).
+Feature materialization (also known as feature generation) is the process to create features for a certain entity from raw source data into a certain persisted storage in either offline store (for further reuse), or online store (for online inference).
 
-User can utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused (usually in offline setting). Feature generation is also useful in generating embedding features, where those embeddings distill information from large data and is usually more compact.
+User can utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused (usually in offline setting). Feature generation is also useful in generating embedding features, where those embeddings distill information from large data and is usually more compact. Also, please note that you can only materialize features for a specific entity/key in the same `materialize_features` call.
 
-## Generating Features to Online Store
+## Materializing Features to Online Store
 
 When the models are served in an online environment, we also need to serve the corresponding features in the same online environment as well. Feathr provides APIs to generate features to online storage for future consumption. For example:
 
