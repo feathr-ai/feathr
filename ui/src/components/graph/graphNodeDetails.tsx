@@ -36,7 +36,7 @@ const GraphNodeDetails: React.FC = () => {
     };
 
     fetchFeatureData();
-  }, [nodeId]);
+  }, [featureType, project, nodeId]);
 
   return (
     <>
