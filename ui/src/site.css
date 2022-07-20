@@ -50,3 +50,10 @@
     padding: 4px 12px 7px;
 }
 
+.feature-container {
+    column-count: 3;
+}
+
+.feature-container p {
+    break-inside: avoid-column;
+}
