@@ -54,7 +54,7 @@ We've provided a self-contained [sample notebook](https://github.com/linkedin/fe
 
 ## Step 4: Update Feathr config
 
-In the sample notebook, you will see some settings like below. You should update those settings based on your environment, for exmaple the spark runtime, synapse/databricks endpoint, etc.
+In the sample notebook, you will see some settings like below. You should update those settings based on your environment, for example the spark runtime, synapse/databricks endpoint, etc.
 
 ```yaml
 # DO NOT MOVE OR DELETE THIS FILE
