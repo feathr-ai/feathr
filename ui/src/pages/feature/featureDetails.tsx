@@ -23,11 +23,13 @@ function FeatureKey(props: { feature: Feature }) {
         <Col span={ 24 }>
             <Card className="card">
                 <Title level={ 4 }>Key</Title>
-                <p>Full Name: { keys[0].fullName }</p>
-                <p>Key Column: { keys[0].keyColumn }</p>
-                <p>Description: { keys[0].description }</p>
-                <p>Key Column Alias: { keys[0].keyColumnAlias }</p>
-                <p>Key Column Type: { keys[0].keyColumnType }</p>
+                <div className="feature-container">
+                  <p>Full Name: { keys[0].fullName }</p>
+                  <p>Key Column: { keys[0].keyColumn }</p>
+                  <p>Description: { keys[0].description }</p>
+                  <p>Key Column Alias: { keys[0].keyColumnAlias }</p>
+                  <p>Key Column Type: { keys[0].keyColumnType }</p>
+                </div>
             </Card>
         </Col>
     }
@@ -41,10 +43,12 @@ function FeatureType(props: { feature: Feature }) {
         <Col span={ 24 }>
             <Card className="card">
                 <Title level={ 4 }>Type</Title>
-                <p>Dimension Type: { type.dimensionType }</p>
-                <p>Tensor Category: { type.tensorCategory }</p>
-                <p>Type: { type.type }</p>
-                <p>Value Type: { type.valType }</p>
+                <div className="feature-container">
+                  <p>Dimension Type: { type.dimensionType }</p>
+                  <p>Tensor Category: { type.tensorCategory }</p>
+                  <p>Type: { type.type }</p>
+                  <p>Value Type: { type.valType }</p>
+                </div>
             </Card>
         </Col>
     }
@@ -58,13 +62,15 @@ function FeatureTransformation(props: { feature: Feature }) {
         <Col span={ 24 }>
             <Card className="card">
                 <Title level={ 4 }>Transformation</Title>
-              { transformation.transformExpr && <p>Expression: { transformation.transformExpr }</p> }
-              { transformation.filter && <p>Filter: { transformation.filter }</p> }
-              { transformation.aggFunc && <p>Aggregation: { transformation.aggFunc }</p> }
-              { transformation.limit && <p>Limit: { transformation.limit }</p> }
-              { transformation.groupBy && <p>Group By: { transformation.groupBy }</p> }
-              { transformation.window && <p>Window: { transformation.window }</p> }
-              { transformation.defExpr && <p>Expression: { transformation.defExpr }</p> }
+                <div className="feature-container">
+                  { transformation.transformExpr && <p>Expression: { transformation.transformExpr }</p> }
+                  { transformation.filter && <p>Filter: { transformation.filter }</p> }
+                  { transformation.aggFunc && <p>Aggregation: { transformation.aggFunc }</p> }
+                  { transformation.limit && <p>Limit: { transformation.limit }</p> }
+                  { transformation.groupBy && <p>Group By: { transformation.groupBy }</p> }
+                  { transformation.window && <p>Window: { transformation.window }</p> }
+                  { transformation.defExpr && <p>Expression: { transformation.defExpr }</p> }
+                </div>
             </Card>
         </Col>
     }
