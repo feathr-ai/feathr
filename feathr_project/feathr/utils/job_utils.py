@@ -51,13 +51,16 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None,
                 dataframe_list.append(pdx.read_avro(file))
             result_df = pd.concat(dataframe_list, axis=0)
         elif format.casefold()=="csv":
-            try:
-                df = pd.read_csv(file, index_col=None, header=None)
-            except EmptyDataError:
-                # in case there are empty files
-                df = pd.DataFrame()
-            dataframe_list.append(df)
+            for file in glob.glob(os.path.join(local_dir_path, '*.csv')):
+                try:
+                    df = pd.read_csv(file, index_col=None, header=None)
+                except EmptyDataError:
+                    # in case there are empty files
+                    df = pd.DataFrame()
+                dataframe_list.append(df)
             result_df = pd.concat(dataframe_list, axis=0)
+            # Reset index to avoid duplicated indices
+            result_df.reset_index(drop=True)
         else:
             raise RuntimeError(f"{format} is currently not supported in get_result_df. Please consider writing a customized function to read the result.")
 
