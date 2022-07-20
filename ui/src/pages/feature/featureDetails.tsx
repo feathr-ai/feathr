@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from "react-router-dom";
@@ -6,6 +6,11 @@ import { QueryStatus, useQuery } from "react-query";
 import { AxiosError } from 'axios';
 import { fetchFeature } from '../../api';
 import { Feature } from "../../models/model";
+import { FeatureLineage } from "../../models/model";
+import { fetchFeatureLineages } from "../../api";
+import { Elements } from 'react-flow-renderer';
+import Graph from "../../components/graph/graph";
+import { getElements } from "../../components/graph/utils"
 
 const { Title } = Typography;
 
@@ -18,11 +23,13 @@ function FeatureKey(props: { feature: Feature }) {
         <Col span={ 24 }>
             <Card className="card">
                 <Title level={ 4 }>Key</Title>
-                <p>Full Name: { keys[0].fullName }</p>
-                <p>Key Column: { keys[0].keyColumn }</p>
-                <p>Description: { keys[0].description }</p>
-                <p>Key Column Alias: { keys[0].keyColumnAlias }</p>
-                <p>Key Column Type: { keys[0].keyColumnType }</p>
+                <div className="feature-container">
+                  <p>Full Name: { keys[0].fullName }</p>
+                  <p>Key Column: { keys[0].keyColumn }</p>
+                  <p>Description: { keys[0].description }</p>
+                  <p>Key Column Alias: { keys[0].keyColumnAlias }</p>
+                  <p>Key Column Type: { keys[0].keyColumnType }</p>
+                </div>
             </Card>
         </Col>
     }
@@ -36,10 +43,12 @@ function FeatureType(props: { feature: Feature }) {
         <Col span={ 24 }>
             <Card className="card">
                 <Title level={ 4 }>Type</Title>
-                <p>Dimension Type: { type.dimensionType }</p>
-                <p>Tensor Category: { type.tensorCategory }</p>
-                <p>Type: { type.type }</p>
-                <p>Value Type: { type.valType }</p>
+                <div className="feature-container">
+                  <p>Dimension Type: { type.dimensionType }</p>
+                  <p>Tensor Category: { type.tensorCategory }</p>
+                  <p>Type: { type.type }</p>
+                  <p>Value Type: { type.valType }</p>
+                </div>
             </Card>
         </Col>
     }
@@ -53,13 +62,15 @@ function FeatureTransformation(props: { feature: Feature }) {
         <Col span={ 24 }>
             <Card className="card">
                 <Title level={ 4 }>Transformation</Title>
-              { transformation.transformExpr && <p>Expression: { transformation.transformExpr }</p> }
-              { transformation.filter && <p>Filter: { transformation.filter }</p> }
-              { transformation.aggFunc && <p>Aggregation: { transformation.aggFunc }</p> }
-              { transformation.limit && <p>Limit: { transformation.limit }</p> }
-              { transformation.groupBy && <p>Group By: { transformation.groupBy }</p> }
-              { transformation.window && <p>Window: { transformation.window }</p> }
-              { transformation.defExpr && <p>Expression: { transformation.defExpr }</p> }
+                <div className="feature-container">
+                  { transformation.transformExpr && <p>Expression: { transformation.transformExpr }</p> }
+                  { transformation.filter && <p>Filter: { transformation.filter }</p> }
+                  { transformation.aggFunc && <p>Aggregation: { transformation.aggFunc }</p> }
+                  { transformation.limit && <p>Limit: { transformation.limit }</p> }
+                  { transformation.groupBy && <p>Group By: { transformation.groupBy }</p> }
+                  { transformation.window && <p>Window: { transformation.window }</p> }
+                  { transformation.defExpr && <p>Expression: { transformation.defExpr }</p> }
+                </div>
             </Card>
         </Col>
     }
@@ -115,6 +126,51 @@ function InputDerivedFeatures(props: { project: string, feature: Feature }) {
             </Card>
         </Col>
     }
+  </>;
+}
+
+
+function FeatureLineageGraph() {
+  const { featureId } = useParams() as Params;
+  const [lineageData, setLineageData] = useState<FeatureLineage>({ guidEntityMap: null, relations: null });
+  const [elements, SetElements] = useState<Elements>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchLineageData = async () => {
+      setLoading(true);
+      const data = await fetchFeatureLineages(featureId);
+      setLineageData(data);
+      setLoading(false);
+    };
+    
+    fetchLineageData();
+  }, [featureId]);
+
+  // Generate graph data on client side, invoked after graphData or featureType is changed
+  useEffect(() => {
+    const generateGraphData = async () => {
+      SetElements(getElements(lineageData, "all_nodes")!);
+    };
+
+    generateGraphData();
+  }, [lineageData]);
+
+  return <>
+  {
+    loading
+    ? (
+      <Spin indicator={ <LoadingOutlined style={ { fontSize: 24 } } spin /> } />
+    )
+    : (
+      <Col span={ 24 }>
+        <Card className="card">
+          <Title level={ 4 }>Lineage</Title>
+          <Graph data={ elements } nodeId={ featureId }/>
+        </Card>
+      </Col>
+    )
+  }
   </>;
 }
 
@@ -193,6 +249,7 @@ const FeatureDetails: React.FC = () => {
                     <FeatureTransformation feature={ data } />
                     <FeatureKey feature={ data } />
                     <FeatureType feature={ data } />
+                    <FeatureLineageGraph />
                   </Row>
                 </div>
               </Card>

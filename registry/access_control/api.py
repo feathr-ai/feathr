@@ -34,26 +34,23 @@ def get_project_features(project: str, keyword: Optional[str] = None, requestor:
     response = requests.get(registry_url + "/projects/" + project + "/features", headers = get_api_header(requestor)).content.decode('utf-8')
     return json.loads(response)
 
-
-@router.get("/features/{feature}", name="Get a single feature by feature Id [Read Access Required]")
-def get_feature(feature: str, project: str, requestor: User = Depends(project_read_access)) -> dict:
-    response = requests.get(registry_url + "/features/" + feature, headers = get_api_header(requestor)).content.decode('utf-8')
-    return json.loads(response)
-
-# To make sure the consistent experience of Registry API and Access Control Plugin.
-# Even if user doesn't provide the project name, the API can still work.
 @router.get("/features/{feature}", name="Get a single feature by feature Id [Read Access Required]")
 def get_feature(feature: str, requestor: User = Depends(get_user)) -> dict:
     response = requests.get(registry_url + "/features/" + feature, headers = get_api_header(requestor)).content.decode('utf-8')
     ret = json.loads(response)
-    validate_project_access_for_feature(ret["qualified_name"], requestor, AccessType.READ)
+
+    feature_qualifiedName = ret['attributes']['qualifiedName']
+    validate_project_access_for_feature(feature_qualifiedName, requestor, AccessType.READ)
     return ret
 
-@router.get("/features/{feature}/lineage/{project}", name="Get Feature Lineage [Read Access Required]")
-def get_feature_lineage(feature: str, requestor: User = Depends(project_read_access)) -> dict:
+@router.get("/features/{feature}/lineage", name="Get Feature Lineage [Read Access Required]")
+def get_feature_lineage(feature: str, requestor: User = Depends(get_user)) -> dict:
     response = requests.get(registry_url + "/features/" + feature + "/lineage", headers = get_api_header(requestor)).content.decode('utf-8')
-    return json.loads(response)
+    ret = json.loads(response)
 
+    feature_qualifiedName = ret['guidEntityMap'][feature]['attributes']['qualifiedName']
+    validate_project_access_for_feature(feature_qualifiedName, requestor, AccessType.READ)
+    return ret
 
 @router.post("/projects", name="Create new project with definition [Auth Required]")
 def new_project(definition: dict, requestor: User = Depends(get_user)) -> dict:
@@ -91,10 +88,10 @@ def get_userroles(requestor: User = Depends(global_admin_access)) -> list:
 
 @router.post("/users/{user}/userroles/add", name="Add a new user role [Global Admin Required]")
 def add_userrole(project: str, user: str, role: str, reason: str, requestor: User = Depends(global_admin_access)):
-    return rbac.add_userrole(project, user, role, reason, requestor.preferred_username)
+    return rbac.add_userrole(project, user, role, reason, requestor.username)
 
 
 @router.delete("/users/{user}/userroles/delete", name="Delete a user role [Global Admin Required]")
 def delete_userrole(project: str, user: str, role: str, reason: str, requestor: User = Depends(global_admin_access)):
-    return rbac.delete_userrole(project, user, role, reason, requestor.preferred_username)
+    return rbac.delete_userrole(project, user, role, reason, requestor.username)
 

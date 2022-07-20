@@ -6,9 +6,15 @@ from enum import Enum
 class User(BaseModel):
     id: str
     name: str
-    preferred_username: str
+    username: str
+    type: str
     roles: List[str]
 
+class UserType(str, Enum):
+    AAD_USER = "aad_user",
+    AAD_APP = "aad_application",
+    COMMON_USER = "common_user",
+    UNKNOWN = "unknown",
 
 SUPER_ADMIN_SCOPE = "global"
 

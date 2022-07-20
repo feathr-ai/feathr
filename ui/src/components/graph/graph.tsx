@@ -31,10 +31,10 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
 
   useEffect(() => {
     setElements(layoutedElements);
-  }, [data, nodeId]);
+  }, [layoutedElements, data, nodeId]);
 
   // Reset all node highlight status
-  const resetHighlight = (): void => {
+  const resetHighlight = useCallback((): void => {
     if (!elements || elements.length === 0) {
       return;
     }
@@ -62,10 +62,10 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     }
 
     setElements(values);
-  };
+  }, [elements]);
 
   // Highlight path of selected node, including all linked up and down stream nodes
-  const highlightPath = (node: Node, check: boolean): void => {
+  const highlightPath = useCallback((node: Node, check: boolean): void => {
     const checkElements = check ? layoutedElements : elements;
 
     const incomerIds = new Set([...getIncomers(node, checkElements).map((i) => i.id)]);
@@ -109,7 +109,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     }
 
     setElements(values);
-  };
+  }, [elements, layoutedElements]);
 
   useEffect(() => {
     if (nodeId) {
@@ -119,7 +119,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
         highlightPath(node, !!nodeId);
       }
     }
-  }, [nodeId]);
+  }, [highlightPath, layoutedElements, resetHighlight, nodeId]);
 
   // Fit the graph to the center of layout view when graph is initialized
   const onLoad = (reactFlowInstance: OnLoadParams<unknown> | null) => {
@@ -130,7 +130,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
   const onPaneClick = useCallback(() => {
     resetHighlight();
     setURLSearchParams({});
-  }, []);
+  }, [resetHighlight, setURLSearchParams]);
 
   const onNodeDragStop = (_: ReactMouseEvent, node: Node) => {
     const nodePosition = elementMapping[node.data?.id];
@@ -146,7 +146,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     <div className="lineage-graph">
         <ReactFlowProvider>
           <ReactFlow
-            style={ { height: "700px", width: "100%" } }
+            style={ { height: window.innerHeight - 250, width: "100%" } }
             elements={ elements }
             snapToGrid
             snapGrid={ [15, 15] }
