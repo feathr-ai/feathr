@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Feature Generation and Materialization
+title: Feature Materialization (also known as feature generation)
 parent: Feathr Concepts
 ---
 
-# Feature Generation and Materialization
+# Feature Materialization (also known as feature generation)
 
 Feature materialization (also known as feature generation) is the process to create features for a certain entity from raw source data into a certain persisted storage in either offline store (for further reuse), or online store (for online inference).
 
@@ -119,7 +119,7 @@ client.materialize_features(settings, execution_configurations={ "spark.feathr.o
 For reading those materialized features, Feathr has a convenient helper function called `get_result_df` to help you view the data. For example, you can use the sample code below to read from the materialized result in offline store:
 
 ```python
-
+from feathr import get_result_df
 path = "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20/"
 res = get_result_df(client=client, format="parquet", res_url=path)
 ```
