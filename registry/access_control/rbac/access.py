@@ -54,7 +54,7 @@ def validate_project_access_for_feature(feature:str, user:str, access:str):
 
 
 def _get_project_from_feature(feature: str):
-    feature_delimiter = "__request_features__"
+    feature_delimiter = "__"
     return feature.split(feature_delimiter)[0]
 
 def get_api_header(requestor: User):
