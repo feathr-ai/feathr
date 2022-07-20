@@ -5,6 +5,8 @@ from feathr.constants import OUTPUT_FORMAT
 from loguru import logger
 import pandas as pd
 import tempfile
+from pandas.errors import EmptyDataError
+
 
 
 def get_result_df(client: FeathrClient, format: str = None, res_url: str = None, local_folder: str = None) -> pd.DataFrame:
@@ -38,16 +40,27 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None,
             delta = DeltaTable(local_dir_path)
             if not client.spark_runtime == 'azure_synapse':
                 # don't detect for synapse result with Delta as there's a problem with underlying system
-                # Issues are trached here: https://github.com/delta-io/delta-rs/issues/582
+                # Issues are tracked here: https://github.com/delta-io/delta-rs/issues/582
                 result_df = delta.to_pyarrow_table().to_pandas()
             else:
-                logger.info("Please use Azure Synapse to read the result in the Azure Synapse cluster. Reading local results is not supported for Azure Synapse. Emtpy DataFrame is returned.")
+                logger.info("Please use Azure Synapse to read the result in the Azure Synapse cluster. Reading local results is not supported for Azure Synapse. Empty DataFrame is returned.")
                 result_df = pd.DataFrame()
         elif format.casefold()=="avro":
             import pandavro as pdx
             for file in glob.glob(os.path.join(local_dir_path, '*.avro')):
                 dataframe_list.append(pdx.read_avro(file))
             result_df = pd.concat(dataframe_list, axis=0)
+        elif format.casefold()=="csv":
+            try:
+                df = pd.read_csv(file, index_col=None, header=None)
+            except EmptyDataError:
+                # in case there are empty files
+                df = pd.DataFrame()
+            dataframe_list.append(df)
+            result_df = pd.concat(dataframe_list, axis=0)
+        else:
+            raise RuntimeError(f"{format} is currently not supported in get_result_df. Please consider writing a customized function to read the result.")
+
     else:
         # by default use avro
         import pandavro as pdx
