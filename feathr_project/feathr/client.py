@@ -562,7 +562,7 @@ class FeathrClient(object):
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
             udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
-            # CLI will directly call this so the experiene won't be broken
+            # CLI will directly call this so the experience won't be broken
             self._materialize_features_with_config(config_file_path, execution_configurations, udf_files)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
