@@ -31,7 +31,10 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 ## Running Feathr on Azure with few Simple Steps
 
-Follow the [feathr deployment guide ](./how-to-guides/azure-deployment.md) to run feathr on Azure.
+Follow the [Feathr ARM deployment guide ](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
+
+If you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
+
 
 ## 📓 Documentation
 
