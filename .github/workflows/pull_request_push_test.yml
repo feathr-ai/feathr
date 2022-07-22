@@ -4,19 +4,22 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - 'docs/**'
-      - '**/README.md'
+      - "docs/**"
+      - "**/README.md"
+
   pull_request:
     branches: [main]
     paths-ignore:
-      - 'docs/**'
-      - '**/README.md'
+      - "docs/**"
+      - "**/README.md"
+
   pull_request_target:
     branches: [main]
     types: [labeled, edited, opened, synchronize]
     paths-ignore:
-      - 'docs/**'
-      - '**/README.md'
+      - "docs/**"
+      - "**/README.md"
+
 jobs:
   sbt_test:
     runs-on: ubuntu-latest
@@ -32,6 +35,7 @@ jobs:
           distribution: "temurin"
       - name: Run tests
         run: sbt clean && sbt test
+
   python_lint:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
@@ -51,7 +55,7 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      
+
   databricks_test:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
@@ -119,10 +123,10 @@ jobs:
           pytest -n 6 feathr_project/test/
 
   azure_synapse_test:
-      # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
-      runs-on: ubuntu-latest
-      if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
-      steps:
+    # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -184,5 +188,3 @@ jobs:
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
           pytest -n 6 feathr_project/test/
-
-
