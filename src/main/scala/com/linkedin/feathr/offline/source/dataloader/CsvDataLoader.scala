@@ -28,21 +28,39 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
   }
 
   /**
+   * Convert string to special characters
+   * @return a String
+   */
+  def escape(raw: String): String = {
+    import scala.reflect.runtime.universe._
+    Literal(Constant(raw)).toString.replaceAll("\"", "")
+  }
+
+
+  /**
    * load the source data as dataframe.
    * @return an dataframe
    */
   override def loadDataFrame(): DataFrame = {
+
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
+    val sqlContext = ss.sqlContext
+    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
+    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
+    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+
     try {
       log.debug(s"Loading CSV path :${path}")
       val absolutePath = new File(path).getPath
       log.debug(s"Got absolute CSV path: ${absolutePath}, loading..")
-      ss.read.format("csv").option("header", "true").load(absolutePath)
+      ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(absolutePath)
     } catch {
       case _: Throwable =>
         log.debug(s"Loading CSV failed, retry with class loader..")
         val absolutePath = getClass.getClassLoader.getResource(path).getPath
         log.debug(s"Got absolution CSV path from class loader: ${absolutePath}, loading.. ")
-        ss.read.format("csv").option("header", "true").load(absolutePath)
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(absolutePath)
     }
   }
 
