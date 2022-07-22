@@ -64,22 +64,31 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
 2. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+    [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
-Known Issues/Workaround
-1. For SQL Resitry backend and RBAC, we create the database using a backup file and it might sometimes time out, [as documented here](https://docs.microsoft.com/en-us/azure/azure-sql/database/database-import-export-hang?view=azuresql).  Suggested workaround is to manually run the sql queries to create the table schema for SQL Registry backend and/or RBAC.
+3. If you are using Purview registry there is an additional step required for the deployment to work. Registry Server authenticates with Azure Purview using Managed Identity that was created by ARM template. The Managed Identity needs to be added to Azure Purview Collections as a __Data Curator__. For more details, please refer to [Access Control in Azure Documentation](https://docs.microsoft.com/en-us/azure/purview/catalog-permissions)
+    ![purview data curator role add](../images/purview_permission_setting.png)
+
+    Only collection admins can perform the above operation, the user who created this Purview account is already one. If you want to add additional admins, you can do so by clicking on _Root collection permission_ option on Azure Purview page.
+
+
+
+## Known Issues/Workaround
+1. For SQL Registry backend and RBAC, we create the database using a backup file and it might sometimes time out, [as documented here](https://docs.microsoft.com/en-us/azure/azure-sql/database/database-import-export-hang?view=azuresql).  Suggested workaround is to manually run the sql queries to create the table schema for SQL Registry backend and/or RBAC.
 
     - In Azure Portal, you can directly go to the database that was created as part of the template and click on __Query Editor__. 
     This will allow you to run queries directly on the database. 
-    ![sql-query-editor](../images/sql-query-editor.png)
+    ![sql-query-editor](../images/sqldb-query-editor.png)
 
-    - The next screen will ask for credentials, put in the SQL username and password that you passed to the template. You might have to whitelist your IP and add it to the firewall, the screen will prompt you for this if required.    
+    - For credentials, put in the SQL username and password that you passed to the template. You might have to whitelist your IP and add it to the firewall, the screen will prompt you for this if required. Select OK  
     ![sql-query-editor-auth](../images/sql-query-editor-auth.png)
 
-    - Run the below queries in the editor and create the rquired schema.
-        
-        - [SQL Registry DB Schema](https://github.com/linkedin/feathr/blob/main/registry/sql-registry/scripts/schema.sql)
+    - Once the login is successful, you will see the query editor screen. Run the below queries in the editor and create the rquired schema.
 
-        - [RBAC DB Schema](https://github.com/linkedin/feathr/blob/main/registry/access_control/scripts/schema.sql)
+        ![sql-query-editor-auth](../images/sql-query-editor-open.png)
+
+    - [SQL Registry DB Schema](https://github.com/linkedin/feathr/blob/main/registry/sql-registry/scripts/schema.sql)
+
+    - [RBAC DB Schema](https://github.com/linkedin/feathr/blob/main/registry/access_control/scripts/schema.sql)
 
 
