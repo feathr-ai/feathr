@@ -66,6 +66,15 @@ private[offline] object SourceUtils {
   val firstRecordName = "topLevelRecord"
 
   /**
+   * Convert string to special characters
+   * @return a String
+   */
+  def escape(raw: String): String = {
+    import scala.reflect.runtime.universe._
+    Literal(Constant(raw)).toString.replaceAll("\"", "")
+  }
+
+  /**
    * get AVRO datum type of a dataset we should use to load,
    * it is determined by the expect datatype from a set of anchor transformers
    * @param transformers  transformers that uses the dataset
@@ -665,6 +674,14 @@ private[offline] object SourceUtils {
     // TODO: Split isLocal case into Test Packages
     val format = FileFormat.getType(inputData.inputPath)
     log.info(s"loading ${inputData.inputPath} input Path as Format: ${format}")
+
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
+    val sqlContext = ss.sqlContext
+    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
+    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
+    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+
     format match {
       case FileFormat.PATHLIST => {
         val pathList = getPathList(sourceFormatType=inputData.sourceType,
@@ -689,7 +706,7 @@ private[offline] object SourceUtils {
         JdbcUtils.loadDataFrame(ss, inputData.inputPath)
       }
       case FileFormat.CSV => {
-        ss.read.format("csv").option("header", "true").load(inputData.inputPath)
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(inputData.inputPath)
       }
       case _ => {
         if (ss.sparkContext.isLocal){
