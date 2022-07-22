@@ -53,7 +53,7 @@ class TestBatchDataLoader extends TestFeathr {
       Row("9", "banana", "4", "4", "0.4")
     )
     assertEquals(df.collect(), expectedRows)
-    sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep","")
+    sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep", "")
   }
 
 }
