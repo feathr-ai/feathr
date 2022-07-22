@@ -7,7 +7,7 @@
       "maxLength": 15,
       "type": "String",
       "metadata": {
-        "description": "Resource prefix for all the resource provisioned. This should be an alphanumeric string."
+        "description": "Resource prefix for all the resource provisioned. This should be an alphanumeric string. Note: please keep the `resourcePrefix` short, since some of the Azure resources need the full name to be less than 24 characters. It's recommended that to keep `resource_prefix` less than 15 characters."
       }
     },
     "provisionPurview": {
@@ -55,6 +55,17 @@
         "description": "Backend for registry metadata storage. Current supported registry backends are Azure SQL and Azure Purview"
       }
     },
+    "enableRBAC": {
+      "defaultValue": "Yes",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "type": "String",
+      "metadata": {
+        "description": "Whether or not to enable RBAC as part of deployment script"
+      }
+    },
     "azureADClientId": {
       "type": "String",
       "metadata": {
@@ -87,9 +98,7 @@
     "dlsAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('dlsName'))]",
     "purviewName": "[concat(parameters('resourcePrefix'),'purview' )]",
     "identityName": "[concat(parameters('resourcePrefix'),'identity' )]",
-    "roleDefinitionIdForBlobContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
     "roleDefinitionIdForKeyVaultSecretsUser": "4633458b-17de-408a-b874-0445c86b69e6",
-    "roleAssignmentNameForBlobContributor": "[guid(variables('roleDefinitionIdForBlobContributor'), resourceGroup().id)]",
     "roleAssignmentNameForKeyVaultSecretsUser": "[guid(variables('roleDefinitionIdForKeyVaultSecretsUser'), resourceGroup().id)]",
     "webAppName": "[concat(parameters('resourcePrefix'),'webapp' )]",
     "webAppPlanName": "[concat(parameters('resourcePrefix'),'appplan' )]",
@@ -97,10 +106,16 @@
     "webAppAPIVersion": "2021-03-01",
     "sqlServerName": "[concat(parameters('resourcePrefix'),'dbserver' )]",
     "sqlDatabaseName": "[concat(parameters('resourcePrefix'),'db' )]",
-    "sourceBacpacBlobUrl": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-registry-schema.bacpac",
-    "bacpacBlobName": "feathr-registry-schema.bacpac",
-    "destinationBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('bacpacBlobName'))]",
-    "deploymentScriptName": "CopyBacpacFile",
+    "sourceRegistryBacpacBlobUrl": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-registry-schema.bacpac",
+    "sourceRbacBacpacBlobUrl": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-rbac-schema.bacpac",
+    "registryBacpacBlobName": "feathr-registry-schema.bacpac",
+    "rbacBacpacBlobName": "feathr-rbac-schema.bacpac",
+    "destinationRegistryBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('registryBacpacBlobName'))]",
+    "destinationRbacBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('rbacBacpacBlobName'))]",
+    "registryDeploymentScriptName": "CopyRegistryBacpacFile",
+    "rbacDeploymentScriptName": "CopyRbacBacpacFile",
+    "registryDbExtensionName": "registryDbImport",
+    "rbacDbExtensionName": "registryRbacImport",
     "preBuiltdockerImage": "feathrfeaturestore/feathr-registry"
   },
   "functions": [],
@@ -348,7 +363,8 @@
       "location": "[variables('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName'))]",
-        "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName'))]"
+        "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName'))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]"
       ],
       "kind": "app,linux,container",
       "identity": {
@@ -380,9 +396,16 @@
               "value": "api/v1"
             },
             {
-            "condition": "[equals(parameters('registryBackend'),'Azure-SQL')]",
               "name": "CONNECTION_STR",
               "value": "[concat('Server=tcp:',reference(variables('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('sqlDatabaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlserverName')).administratorLogin,';Password=',parameters('sqlAdminPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+            },
+            {
+              "name": "ENABLE_RBAC",
+              "value": "[if(equals(parameters('enableRBAC'),'Yes'),json('true'),json('null'))]"
+            },
+            {
+              "name": "PURVIEW_NAME",
+              "value": "[if(equals(parameters('registryBackend'),'Azure-Purview'),variables('purviewName'),json('null'))]"
             }
           ]
         }
@@ -403,8 +426,8 @@
         },
         "autoScale": {
           "enabled": true,
-          "minNodeCount": 1,
-          "maxNodeCount": 3
+          "minNodeCount": 3,
+          "maxNodeCount": 5
         },
         "sparkVersion": "3.1",
         "nodeCount": 3,
@@ -413,26 +436,10 @@
       }
     },
     {
-        "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-        "apiVersion": "2018-11-30",
-        "name": "[variables('identityName')]",
-        "location": "[variables('location')]"
-    },
-    {
-      "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2020-10-01-preview",
-      "name": "[variables('roleAssignmentNameForBlobContributor')]",
-      "dependsOn": [
-        "[variables('dlsAccount')]",
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]"
-      ],
-      "properties": {
-        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitionIdForBlobContributor'))]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName')), '2018-11-30').principalId]",
-        "scope": "[resourceGroup().id]",
-        "principalType": "ServicePrincipal"
-
-      }
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2018-11-30",
+      "name": "[variables('identityName')]",
+      "location": "[variables('location')]"
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
@@ -478,30 +485,55 @@
       ]
     },
     {
-    "type": "Microsoft.Resources/deploymentScripts",
-    "apiVersion": "2020-10-01",
-    "name": "[variables('deploymentScriptName')]",
-    "location": "[variables('location')]",
-    "kind": "AzureCLI",
-    "identity": {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2020-10-01",
+      "name": "[variables('registryDeploymentScriptName')]",
+      "location": "[variables('location')]",
+      "kind": "AzureCLI",
+      "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
-            "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]": {}
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]": {}
         }
-    },
-    "dependsOn": [
+      },
+      "dependsOn": [
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', variables('dlsName'), 'default', variables('dlsFsName'))]"
-    ],
-    "properties": {
+      ],
+      "properties": {
         "AzCliVersion": "2.2.0",
         "timeout": "PT30M",
-        "arguments": "[concat(listKeys(variables('dlsAccount'),'2019-04-01').keys[0].value, ' ',variables('dlsName'), ' ', variables('bacpacBlobName'), ' ', variables('dlsFsName'),' ' ,variables('sourceBacpacBlobUrl'))]",
+        "arguments": "[concat(listKeys(variables('dlsAccount'),'2019-04-01').keys[0].value, ' ',variables('dlsName'), ' ', variables('registryBacpacBlobName'), ' ', variables('dlsFsName'),' ' ,variables('sourceRegistryBacpacBlobUrl'))]",
         "scriptContent": "az storage blob copy start --account-key $1 --account-name $2 --destination-blob $3 --destination-container $4 --source-uri $5",
         "cleanupPreference": "OnSuccess",
         "retentionInterval": "P1D"
-    }
-},
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2020-10-01",
+      "name": "[variables('rbacDeploymentScriptName')]",
+      "location": "[variables('location')]",
+      "kind": "AzureCLI",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]": {}
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', variables('dlsName'), 'default', variables('dlsFsName'))]"
+      ],
+      "properties": {
+        "AzCliVersion": "2.2.0",
+        "timeout": "PT30M",
+        "arguments": "[concat(listKeys(variables('dlsAccount'),'2019-04-01').keys[0].value, ' ',variables('dlsName'), ' ', variables('rbacBacpacBlobName'), ' ', variables('dlsFsName'),' ' ,variables('sourceRbacBacpacBlobUrl'))]",
+        "scriptContent": "az storage blob copy start --account-key $1 --account-name $2 --destination-blob $3 --destination-container $4 --source-uri $5",
+        "cleanupPreference": "OnSuccess",
+        "retentionInterval": "P1D"
+      }
+    },
     {
       "type": "Microsoft.Sql/servers/databases",
       "apiVersion": "2021-11-01-preview",
@@ -514,16 +546,34 @@
         {
           "type": "extensions",
           "apiVersion": "2021-11-01-preview",
-          "name": "Import",
+          "name": "[variables('registryDbExtensionName')]",
           "dependsOn": [
             "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName'))]",
-            "[resourceId('Microsoft.Resources/deploymentScripts', variables('deploymentScriptName'))]"
+            "[resourceId('Microsoft.Resources/deploymentScripts', variables('registryDeploymentScriptName'))]"
 
           ],
           "properties": {
             "storageKeyType": "StorageAccessKey",
             "storageKey": "[listKeys(variables('dlsAccount'),'2019-04-01').keys[0].value]",
-            "storageUri": "[variables('destinationBacpacBlobUrl')]",
+            "storageUri": "[variables('destinationRegistryBacpacBlobUrl')]",
+            "administratorLogin": "[parameters('sqlAdminUsername')]",
+            "administratorLoginPassword": "[parameters('sqlAdminPassword')]",
+            "operationMode": "Import"
+          }
+        },
+        {
+          "type": "extensions",
+          "apiVersion": "2021-11-01-preview",
+          "name": "[variables('rbacDbExtensionName')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName'))]",
+            "[resourceId('Microsoft.Resources/deploymentScripts', variables('rbacDeploymentScriptName'))]",
+            "[resourceId('Microsoft.Sql/servers/databases/extensions', variables('sqlServerName'), variables('sqlDatabaseName'), variables('registryDbExtensionName'))]"
+          ],
+          "properties": {
+            "storageKeyType": "StorageAccessKey",
+            "storageKey": "[listKeys(variables('dlsAccount'),'2019-04-01').keys[0].value]",
+            "storageUri": "[variables('destinationRbacBacpacBlobUrl')]",
             "administratorLogin": "[parameters('sqlAdminUsername')]",
             "administratorLoginPassword": "[parameters('sqlAdminPassword')]",
             "operationMode": "Import"

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Azure Resource Provisioning
+title: Azure Resource Provisioning through Azure CLI
 parent: How-to Guides
 ---
 
@@ -9,54 +9,15 @@ parent: How-to Guides
 
 Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. We have a quick start guide below that will facilitate this process.
 
-## Method 1: Provision Azure Resources with Current User's Identity:
 
-Feathr has native cloud integration and getting started with Feathr is very straightforward. Here are the instructions:
-
-1. To enable authentication on the Feathr UI (which gets created as part of the deployment script) we need to create an Azure Active Directory (AAD) application. Currently it is not possible to create one through ARM template but you can easily create one by running the following CLI commands in the [Cloud Shell](https://shell.azure.com/bash)
-
-```bash
-# This is the prefix you want to name your resources with, make a note of it, you will need it during deployment.
-prefix="YOUR_RESOURCE_PREFIX" 
-
-# Please don't change this name, a corresponding webapp with same name gets created in subsequent steps.
-sitename="${prefix}webapp" 
-
-# This will create the Azure AD application, note that we need to create an AAD app of platform type Single Page Application(SPA). By default passing the redirect-uris with create command creates an app of type web. 
-az ad app create --display-name $sitename --sign-in-audience AzureADMyOrg --web-home-page-url "https://$sitename.azurewebsites.net" --enable-id-token-issuance true
-
-#Fetch the ClientId, TenantId and ObjectId for the created app
-aad_clientId=$(az ad app list --display-name $sitename --query [].appId -o tsv)
-aad_tenantId=$(az account tenant list --query [].tenantId -o tsv)
-aad_objectId=$(az ad app list --display-name $sitename --query [].id -o tsv)
-
-# Updating the SPA app created above, currently there is no CLI support to add redirectUris to a SPA, so we have to patch manually via az rest
-az rest --method PATCH --uri "https://graph.microsoft.com/v1.0/applications/$aad_objectId" --headers "Content-Type=application/json" --body "{spa:{redirectUris:['https://$sitename.azurewebsites.net']}}"
-
-# Make a note of the ClientId and TenantId, you will need it during deployment.
-echo "AAD_CLIENT_ID: $aad_clientId"
-echo "AZURE_TENANT_ID: $aad_tenantId"
-``` 
-
-2. Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
-
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
-
-
-## Note on the Template above
-
-The above way will work if you have owner access to some of the resources. [According to the Azure Documentation](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#all), only the "Owner" role of a subscription will have permissions to assign roles in Azure RBAC, which is used in the above Azure Template.
-
-However, if you don't have Owner permission in your subscription, you can ask your IT team to run the above template for you and give you the permissions for those resources; Or you can use the way described below, provision a service principal to access all the resources.
-
-## Method 2: Provision Azure Resources with Service Principals:
+## Provision Azure Resources using CLI:
 
 1. Use the content below as a detailed explanation of [Azure resource provisioning script](./azure_resource_provision.sh). **DO NOT** run that script directly given the complexity of cloud environment setup. Instead, follow the steps in this documentation so you can always go back and check your step in case of some failures.
 2. We provide an [Azure resource provisioning script](./azure_resource_provision.sh) which can be used to automate the process
 3. Make sure you have sufficient permission for creating resources or add roles.
 4. Tailor this script based on the IT setup in your specific environment.
 
-## Prerequesities
+## Prerequisites
 
 This documentation assumes users have some basic knowledge of Azure. More specifically, users should:
 
@@ -128,7 +89,7 @@ Setup all the resource names which will be used later.
 
 ```bash
 service_principal_name="$resource_prefix-sp"
-resoruce_group_name="$resource_prefix-rg"
+resource_group_name="$resource_prefix-rg"
 storage_account_name="$resource_prefix"sto
 storage_file_system_name="$resource_prefix"fs
 synapse_workspace_name="$resource_prefix"spark
@@ -147,24 +108,18 @@ az account set -s $subscription_id
 You can simply think an Azure Service Principal is an account that can be used for automation (so you don't have to use your own account to perform all the actions), though it can do much more than that. We will use a service principal for the steps below, but you can also use your own Azure account for all those actions as long as you have sufficient permission.
 
 ```bash
-sp_password=$(az ad sp create-for-rbac --name $service_principal_name --role Contributor --query "[password]"  --output tsv)
-sp_objectid=$(az ad sp list --display-name $service_principal_name --query "[].{objectId:objectId}" --output tsv)
+# Create a resource group to group all the resources that will be used later
+az group create -l $location -n $resource_group_name
+
+sp_password=$(az ad sp create-for-rbac --name $service_principal_name --role Contributor --scopes /subscriptions/$subscription_id/resourceGroups/$resource_group_name --query "[password]" --output tsv)
 sp_appid=$(az ad sp list --display-name $service_principal_name --query "[].{appId:appId}" --output tsv)
-sp_tenantid=$(az ad sp list --display-name $service_principal_name --query "[].{appOwnerTenantId:appOwnerTenantId}" --output tsv)
+sp_tenantid=$(az ad sp list --display-name $service_principal_name --query "[].{appOwnerOrganizationId:appOwnerOrganizationId}" --output tsv)
 echo "AZURE_CLIENT_ID: $sp_appid"
 echo "AZURE_TENANT_ID: $sp_tenantid"
 echo "AZURE_CLIENT_SECRET: $sp_password"
+This will give three variables: AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_CLIENT_SECRET. You will need them later.
 ```
-
-This will give three variables: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID` and `AZURE_CLIENT_SECRET`. You will need them later.
-
-**You should save `AZURE_CLIENT_SECRET` because you will only see it once here**
-
-## Create a resource group to group all the resources that will be used later
-
-```bash
-az group create -l $location -n $resoruce_group_name
-```
+__You should save AZURE_CLIENT_SECRET because you will only see it once here__
 
 ## Create a storage account
 
@@ -175,11 +130,11 @@ Next, we need to:
 - assign the Service Principal we just created to the `Storage Blob Data Contributor` role to this storage account, so it can upload and download files accordingly.
 
 ```bash
-az storage account create --name $storage_account_name  --resource-group $resoruce_group_name --location $location --enable-hierarchical-namespace
+az storage account create --name $storage_account_name  --resource-group $resource_group_name --location $location --enable-hierarchical-namespace
 
 az storage fs create -n $storage_file_system_name --account-name $storage_account_name
 
-az role assignment create --role "Storage Blob Data Contributor" --assignee "$sp_objectid" --scope "/subscriptions/$subscription_id/resourceGroups/$resoruce_group_name/providers/Microsoft.Storage/storageAccounts/$storage_account_name"
+az role assignment create --role "Storage Blob Data Contributor" --assignee "$sp_objectid" --scope "/subscriptions/$subscription_id/resourceGroups/$resource_group_name/providers/Microsoft.Storage/storageAccounts/$storage_account_name"
 ```
 
 ## Create a Synapse cluster:
@@ -194,14 +149,14 @@ The script below helps you to:
 
 ```bash
 # Create Synapse Cluster
-az synapse workspace create --name $synapse_workspace_name --resource-group $resoruce_group_name  --storage-account $storage_account_name --file-system $storage_file_system_name --sql-admin-login-user $synapse_sql_admin_name --sql-admin-login-password $synapse_sql_admin_password --location $location
+az synapse workspace create --name $synapse_workspace_name --resource-group $resource_group_name  --storage-account $storage_account_name --file-system $storage_file_system_name --sql-admin-login-user $synapse_sql_admin_name --sql-admin-login-password $synapse_sql_admin_password --location $location
 
-az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $synapse_workspace_name  --resource-group $resoruce_group_name --spark-version 2.4 --node-count 3 --node-size Medium --enable-auto-pause true --delay 30
+az synapse spark pool create --name $synapse_sparkpool_name --workspace-name $synapse_workspace_name  --resource-group $resource_group_name --spark-version 2.4 --node-count 3 --node-size Medium --enable-auto-pause true --delay 30
 
 # depending on your preference, you can set a narrow range of IPs (like below) or a broad range of IPs to allow client access to Synapse clusters
 external_ip=$(curl -s http://whatismyip.akamai.com/)
 echo "External IP is: ${external_ip}. Adding it to firewall rules"
-az synapse workspace firewall-rule create --name allowAll --workspace-name $synapse_workspace_name --resource-group $resoruce_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
+az synapse workspace firewall-rule create --name allowAll --workspace-name $synapse_workspace_name --resource-group $resource_group_name --start-ip-address "$external_ip" --end-ip-address "$external_ip"
 
 # sleep for a few seconds for the change to take effect
 sleep 2
@@ -248,14 +203,14 @@ You should also record the password which will be used later.
 
 ```bash
 echo "Creating Redis Cluster..."
-az redis create --location $location --name $redis_cluster_name --resource-group $resoruce_group_name  --sku Basic --vm-size c0 --redis-version 6
+az redis create --location $location --name $redis_cluster_name --resource-group $resource_group_name  --sku Basic --vm-size c0 --redis-version 6
 
 # Alternatively for production setting you can use the template below:
 
-# az redis create --location $location --name $redis_cluster_name --resource-group $resoruce_group_name  --sku Premium --vm-size p5 --redis-version 6 --replicas-per-master 3 --zones 1 2 3
+# az redis create --location $location --name $redis_cluster_name --resource-group $resource_group_name  --sku Premium --vm-size p5 --redis-version 6 --replicas-per-master 3 --zones 1 2 3
 
 echo "Record this Redis Key which you will use later:"
-redis_password=$(az redis list-keys --name $redis_cluster_name --resource-group $resoruce_group_name  --query "[primaryKey]" --out tsv)
+redis_password=$(az redis list-keys --name $redis_cluster_name --resource-group $resource_group_name  --query "[primaryKey]" --out tsv)
 echo "REDIS_PASSWORD: $redis_password"
 ```
 
@@ -266,7 +221,7 @@ echo "REDIS_PASSWORD: $redis_password"
 ```bash
 echo "creating purview account"
 az extension add --name purview
-az purview account create --location $location --account-name $purview_account_name --resource-group $resoruce_group_name
+az purview account create --location $location --account-name $purview_account_name --resource-group $resource_group_name
 ```
 
 You should also grant the service principal the `Data Curator` to your Purview collection manually. For more details, please refer to [Access control in Azure Purview documentation](https://docs.microsoft.com/en-us/azure/purview/catalog-permissions)
@@ -290,6 +245,6 @@ az storage fs file upload --account-name $storage_account_name --file-system $st
 You can optionally delete all the resources based on the policy of your organization, like below:
 
 ```bash
-az group delete -n $resoruce_group_name --yes
+az group delete -n $resource_group_name --yes
 az ad sp delete --id $sp_objectid
 ```
