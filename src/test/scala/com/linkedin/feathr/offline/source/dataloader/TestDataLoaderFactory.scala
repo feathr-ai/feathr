@@ -14,6 +14,11 @@ class TestDataLoaderFactory extends TestFeathr {
     val localDataLoaderFactory = new LocalDataLoaderFactory(ss, dataLoaderHandlers=List())
     val csvLoader = localDataLoaderFactory.create("anchor1-source.csv")
     assertTrue(csvLoader.isInstanceOf[CsvDataLoader])
+    val sqlContext = ss.sqlContext
+    sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep", "\t")
+    val csvLoaderWithDelimiter = localDataLoaderFactory.create("anchor1-source.tsv")
+    assertTrue(csvLoaderWithDelimiter.isInstanceOf[BatchDataLoader])
+    sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep", "")
     val avroJsonLoader = localDataLoaderFactory.create("anchor5-source.avro.json")
     assertTrue(avroJsonLoader.isInstanceOf[AvroJsonDataLoader])
     val jsonWithSchemaLoader = localDataLoaderFactory.create("simple-obs2") // the mock data folder exists.
