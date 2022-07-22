@@ -66,6 +66,15 @@ private[offline] object SourceUtils {
   val firstRecordName = "topLevelRecord"
 
   /**
+   * Convert string to special characters
+   * @return a String
+   */
+  def escape(raw: String): String = {
+    import scala.reflect.runtime.universe._
+    Literal(Constant(raw)).toString.replaceAll("\"", "")
+  }
+
+  /**
    * get AVRO datum type of a dataset we should use to load,
    * it is determined by the expect datatype from a set of anchor transformers
    * @param transformers  transformers that uses the dataset
@@ -96,13 +105,13 @@ private[offline] object SourceUtils {
   }
 
   def getPathList(
-      sourceFormatType: SourceFormatType,
-      sourcePath: String,
-      ss: SparkSession,
-      dateParam: Option[DateParam],
-      dataLoaderHandlers: List[DataLoaderHandler],
-      targetDate: Option[String] = None,
-      failOnMissing: Boolean = true): Seq[String] = {
+                   sourceFormatType: SourceFormatType,
+                   sourcePath: String,
+                   ss: SparkSession,
+                   dateParam: Option[DateParam],
+                   dataLoaderHandlers: List[DataLoaderHandler],
+                   targetDate: Option[String] = None,
+                   failOnMissing: Boolean = true): Seq[String] = {
     sourceFormatType match {
       case SourceFormatType.FIXED_PATH => Seq(HdfsUtils.getLatestPath(sourcePath, ss.sparkContext.hadoopConfiguration))
       case SourceFormatType.TIME_PATH =>
@@ -357,35 +366,35 @@ private[offline] object SourceUtils {
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     var dataIOParameters = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize)
 
-      val fileName = new File(factDataSourcePath).getName
-      if (fileName.endsWith("daily") || fileName.endsWith("hourly")) { // when source is pure HDFS with time partitions
-        // HDFS path with time partitions should have the following format:
-        // [source directory]/[daily/hourly]/YYYY/MM/dd/hh/
-        // In Feathr configuration, only [source directory]/[daily/hourly] needs to be given.
-        // The rest section is constructed using `HdfsUtils.getPaths`.
-        val isDaily = fileName.endsWith("daily") // TODO: better handling for extracting "daily" or "hourly"
-        val (factDataStartTime, factDataEndTime) = getFactDataTimeRange(obsDataStartTime, obsDataEndTime, window, isDaily, timeDelayMapOpt)
-        // getPaths is left-inclusive
-        val hdfsPaths = if (isDaily) {
-          HdfsUtils.getPaths(factDataSourcePath, factDataStartTime, factDataEndTime.plusDays(1), ChronoUnit.DAYS)
-        } else {
-          HdfsUtils.getPaths(factDataSourcePath, factDataStartTime, factDataEndTime.plusHours(1), ChronoUnit.HOURS)
-        }
-        val existingHdfsPaths = hdfsPaths.filter(HdfsUtils.exists(_))
-        if (existingHdfsPaths.isEmpty) {
-          throw new FeathrInputDataException(
-            ErrorLabel.FEATHR_USER_ERROR,
-            s"Trying to load feature data in HDFS. No available date partition exist in HDFS for path. " +
-              s"$factDataSourcePath between $factDataStartTime and $factDataEndTime. Please make sure there is needed " +
-              s"data for that time range.")
-        }
-        log.info(s"Loading HDFS path ${existingHdfsPaths} as union DataFrame for sliding window aggregation, using parameters ${dataIOParameters}")
-        SparkIOUtils.createUnionDataFrame(existingHdfsPaths, dataIOParameters, new JobConf(), dataLoaderHandlers)
+    val fileName = new File(factDataSourcePath).getName
+    if (fileName.endsWith("daily") || fileName.endsWith("hourly")) { // when source is pure HDFS with time partitions
+      // HDFS path with time partitions should have the following format:
+      // [source directory]/[daily/hourly]/YYYY/MM/dd/hh/
+      // In Feathr configuration, only [source directory]/[daily/hourly] needs to be given.
+      // The rest section is constructed using `HdfsUtils.getPaths`.
+      val isDaily = fileName.endsWith("daily") // TODO: better handling for extracting "daily" or "hourly"
+      val (factDataStartTime, factDataEndTime) = getFactDataTimeRange(obsDataStartTime, obsDataEndTime, window, isDaily, timeDelayMapOpt)
+      // getPaths is left-inclusive
+      val hdfsPaths = if (isDaily) {
+        HdfsUtils.getPaths(factDataSourcePath, factDataStartTime, factDataEndTime.plusDays(1), ChronoUnit.DAYS)
       } else {
-        // Load a single folder
-        log.info(s"Loading HDFS path ${factDataSourcePath} as DataFrame for sliding window aggregation, using parameters ${dataIOParameters}")
-        SparkIOUtils.createDataFrame(SimplePath(factDataSourcePath), dataIOParameters, new JobConf(), dataLoaderHandlers)
+        HdfsUtils.getPaths(factDataSourcePath, factDataStartTime, factDataEndTime.plusHours(1), ChronoUnit.HOURS)
       }
+      val existingHdfsPaths = hdfsPaths.filter(HdfsUtils.exists(_))
+      if (existingHdfsPaths.isEmpty) {
+        throw new FeathrInputDataException(
+          ErrorLabel.FEATHR_USER_ERROR,
+          s"Trying to load feature data in HDFS. No available date partition exist in HDFS for path. " +
+            s"$factDataSourcePath between $factDataStartTime and $factDataEndTime. Please make sure there is needed " +
+            s"data for that time range.")
+      }
+      log.info(s"Loading HDFS path ${existingHdfsPaths} as union DataFrame for sliding window aggregation, using parameters ${dataIOParameters}")
+      SparkIOUtils.createUnionDataFrame(existingHdfsPaths, dataIOParameters, new JobConf(), dataLoaderHandlers)
+    } else {
+      // Load a single folder
+      log.info(s"Loading HDFS path ${factDataSourcePath} as DataFrame for sliding window aggregation, using parameters ${dataIOParameters}")
+      SparkIOUtils.createDataFrame(SimplePath(factDataSourcePath), dataIOParameters, new JobConf(), dataLoaderHandlers)
+    }
   }
 
   /**
@@ -404,13 +413,13 @@ private[offline] object SourceUtils {
    *
    */
   private[feathr] def getFactDataTimeRange(
-                                           obsDataStartTime: LocalDateTime,
-                                           obsDataEndTime: LocalDateTime,
-                                           window: Duration,
-                                           isDaily: Boolean,
-                                           timeDelayMap: Map[String, Duration]): (LocalDateTime, LocalDateTime) = {
+                                            obsDataStartTime: LocalDateTime,
+                                            obsDataEndTime: LocalDateTime,
+                                            window: Duration,
+                                            isDaily: Boolean,
+                                            timeDelayMap: Map[String, Duration]): (LocalDateTime, LocalDateTime) = {
 
-  val minTimeDelay = timeDelayMap.values.size match {
+    val minTimeDelay = timeDelayMap.values.size match {
       case 0 => Duration.ZERO
       case _ => timeDelayMap.values.min
     }
@@ -629,7 +638,7 @@ private[offline] object SourceUtils {
    * @return
    */
   def loadAsUnionDataFrame(ss: SparkSession, inputPath: Seq[String],
-                            dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
+                           dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParameters = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize)
@@ -645,7 +654,7 @@ private[offline] object SourceUtils {
    * @return
    */
   def loadAsDataFrame(ss: SparkSession, location: InputLocation,
-                            dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
+                      dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParameters = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize)
@@ -661,22 +670,28 @@ private[offline] object SourceUtils {
    * @return
    */
   def loadObservationAsDF(ss: SparkSession, conf: Configuration, inputData: InputData, dataLoaderHandlers: List[DataLoaderHandler],
- failOnMissing: Boolean = true): DataFrame = {
+                          failOnMissing: Boolean = true): DataFrame = {
     // TODO: Split isLocal case into Test Packages
     val format = FileFormat.getType(inputData.inputPath)
-    val sqlContext = ss.sqlContext
-    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
     log.info(s"loading ${inputData.inputPath} input Path as Format: ${format}")
+
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
+    val sqlContext = ss.sqlContext
+    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
+    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
+    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+
     format match {
       case FileFormat.PATHLIST => {
         val pathList = getPathList(sourceFormatType=inputData.sourceType,
-        sourcePath=inputData.inputPath,
-        ss=ss,
-        dateParam=inputData.dateParam,
-        targetDate=None, 
-        failOnMissing=failOnMissing, 
-        dataLoaderHandlers=dataLoaderHandlers
-      )
+          sourcePath=inputData.inputPath,
+          ss=ss,
+          dateParam=inputData.dateParam,
+          targetDate=None,
+          failOnMissing=failOnMissing,
+          dataLoaderHandlers=dataLoaderHandlers
+        )
         if (ss.sparkContext.isLocal) { // for test
           try {
             loadAsUnionDataFrame(ss, pathList, dataLoaderHandlers)
@@ -924,10 +939,10 @@ private[offline] object SourceUtils {
    * @return a sequence of (dataframe of one day, the date of this dataframe)
    */
   private[feathr] def loadTimeSeriesAvroJson(
-                                             ss: SparkSession,
-                                             paths: Seq[String],
-                                             basePath: String,
-                                             isSeparateAvroJson: Boolean = false): Seq[(DataFrame, Interval)] = {
+                                              ss: SparkSession,
+                                              paths: Seq[String],
+                                              basePath: String,
+                                              isSeparateAvroJson: Boolean = false): Seq[(DataFrame, Interval)] = {
     if (ss.sparkContext.isLocal && !paths.head.startsWith(HDFS_PREFIX)) {
       // If runs locally and source is not HDFS, this is for local test API
       // Assume feature data file always named as "data.avro.json", this is similar to hadoop names output as part-00000.avro

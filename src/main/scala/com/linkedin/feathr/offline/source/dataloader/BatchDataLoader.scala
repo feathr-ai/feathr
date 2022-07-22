@@ -4,6 +4,8 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataExceptio
 import com.linkedin.feathr.offline.config.location.InputLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
+import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
@@ -50,6 +52,15 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
   }
 
   /**
+   * Convert string to special characters
+   * @return a String
+   */
+  def escape(raw: String): String = {
+    import scala.reflect.runtime.universe._
+    Literal(Constant(raw)).toString.replaceAll("\"", "")
+  }
+
+  /**
    * load the source data as dataframe.
    * @param dataIOParameters extra parameters
    * @param jobConf Hadoop JobConf to be passed
@@ -62,28 +73,32 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
     val dataPath = location.getPath
 
     log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
-    
-    val sqlContext = ss.sqlContext
-    val csvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
-    
-    try {
-        import scala.util.control.Breaks._
 
-        var dfOpt: Option[DataFrame] = None
-        breakable {
-          for(dataLoaderHandler <- dataLoaderHandlers) {
-            println(s"Applying dataLoaderHandler ${dataLoaderHandler}")
-            if (dataLoaderHandler.validatePath(dataPath)) {
-              dfOpt = Some(dataLoaderHandler.createDataFrame(dataPath, dataIOParametersWithSplitSize, jobConf))
-              break
-            } 
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
+    val sqlContext = ss.sqlContext
+    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
+    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
+    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
+    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+
+    try {
+      import scala.util.control.Breaks._
+
+      var dfOpt: Option[DataFrame] = None
+      breakable {
+        for(dataLoaderHandler <- dataLoaderHandlers) {
+          println(s"Applying dataLoaderHandler ${dataLoaderHandler}")
+          if (dataLoaderHandler.validatePath(dataPath)) {
+            dfOpt = Some(dataLoaderHandler.createDataFrame(dataPath, dataIOParametersWithSplitSize, jobConf))
+            break
           }
         }
-        val df = dfOpt match {
-          case Some(df) => df
-          case _ => location.loadDf(ss, dataIOParametersWithSplitSize)
-        }
-        df
+      }
+      val df = dfOpt match {
+        case Some(df) => df
+        case _ => location.loadDf(ss, dataIOParametersWithSplitSize)
+      }
+      df
     } catch {
       case feathrException: FeathrInputDataException =>
         println(feathrException.toString)

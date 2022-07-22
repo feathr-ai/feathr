@@ -53,6 +53,7 @@ class TestSourceUtils extends TestFeathr {
       Row("9", "banana", "4", "4", "0.4")
     )
     assertEquals(df.collect(), expectedRows)
+    sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep", "")
   }
 
 }
