@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.caseclass.annotation.CaseClassDeserialize
 import com.linkedin.feathr.common.Header
 import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.generation.FeatureGenUtils
+import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import net.minidev.json.annotate.JsonIgnore
 import org.apache.spark.sql.functions.monotonically_increasing_id
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
@@ -109,10 +110,10 @@ object GenericLocationFixes {
         val keyDf = if (!df.columns.contains("id")) {
           header match {
             case Some(h) => {
-              // We have the header info, copy the 1st key column to `id`, which is required by CosmosDb
-              val key = FeatureGenUtils.getKeyColumnsFromHeader(h).head
-              // Copy key column to `id`
-              df.withColumn("id", df.col(key).cast("string"))
+              // Generate key column from header info, which is required by CosmosDb
+              val (keyCol, keyedDf) = DataFrameKeyCombiner().combine(df, FeatureGenUtils.getKeyColumnsFromHeader(h))
+              // Rename key column to `id`
+              keyedDf.withColumnRenamed(keyCol, "id")
             }
             case None => {
               // If there is no key column, we use a auto-generated monotonic id.
