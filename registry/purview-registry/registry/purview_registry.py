@@ -504,13 +504,13 @@ class PurviewRegistry(Registry):
         for entity in entity_batch:
             entity.lastModifiedTS="0"
             results = self.purview_client.upload_entities(
-                batch=entity_batch)
-        if results:
-            dict = {x.guid: x for x in entity_batch}
-            for k, v in results['guidAssignments'].items():
-                dict[k].guid = v
-        else:
-            raise RuntimeError("Feature registration failed.", results)            
+                batch=entity)
+            if results:
+                dict = {x.guid: x for x in entity_batch}
+                for k, v in results['guidAssignments'].items():
+                    dict[k].guid = v
+            else:
+                raise RuntimeError("Feature registration failed.", results)            
             
     def _generate_fully_qualified_name(self, segments):
         return self.registry_delimiter.join(segments)

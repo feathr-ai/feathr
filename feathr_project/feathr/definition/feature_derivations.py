@@ -36,14 +36,13 @@ class DerivedFeature(FeatureBase):
 
     def validate_feature(self):
         """Validate the derived feature is valid"""
-        # Validate key alias
+        
         input_feature_key_alias = []
         for feature in self.input_features:
-            input_feature_key_alias.extend(feature.key_alias)
+            input_feature_key_alias.extend([x['keyColumnAlias'] for x in feature['attributes']['key']] if isinstance(feature,dict) else feature.key_alias)
         for key_alias in self.key_alias:
             assert key_alias in input_feature_key_alias, "key alias {} in derived feature {} must come from " \
                    "its input features key alias list {}".format(key_alias, self.name, input_feature_key_alias)
-
 
     def to_feature_config(self) -> str:
         tm = Template("""
