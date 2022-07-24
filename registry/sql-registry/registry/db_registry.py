@@ -96,12 +96,32 @@ class DbRegistry(Registry):
 
     def search_entity(self,
                       keyword: str,
-                      type: list[EntityType]) -> list[EntityRef]:
+                      type: list[EntityType],
+                      project: Optional[Union[str, UUID]] = None,
+                      start: Optional[int] = None,
+                      size: Optional[int] = None) -> list[EntityRef]:
         """
         WARN: This search function is implemented via `like` operator, which could be extremely slow.
         """
-        sql = fr'''select entity_id as id, qualified_name, entity_type as type from entities where qualified_name like %s and entity_type in %s'''
-        rows = self.conn.query(sql, ('%' + keyword + '%', tuple([str(t) for t in type])))
+        
+        top_clause = ""
+        if start is not None and size is not None:
+            top_clause = f"TOP({int(start) + int(size)})"
+            
+        if project:
+            project_id = self.get_entity_id(project)
+            sql = fr'''select {top_clause} entity_id as id, qualified_name, entity_type as type
+                from entities
+                inner join edges on entity_id=edges.from_id and edges.conn_type='BelongsTo'
+                where
+                edges.to_id=%s and qualified_name like %s and entity_type in %s
+                order by qualified_name'''
+            rows = self.conn.query(sql, (str(project_id), '%' + keyword + '%', tuple([str(t) for t in type])))
+        else:
+            sql = fr'''select {top_clause} entity_id as id, qualified_name, entity_type as type from entities where qualified_name like %s and entity_type in %s order by qualified_name'''
+            rows = self.conn.query(sql, ('%' + keyword + '%', tuple([str(t) for t in type])))
+        if size:
+            rows = rows[-size:]
         return list([EntityRef(**row) for row in rows])
 
     def create_project(self, definition: ProjectDef) -> UUID:
