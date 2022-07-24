@@ -14,6 +14,7 @@ Check out the latest Feathr Feature Store UI live demo [here](https://aka.ms/fea
 ### Prerequisites
 
 1. Install latest [Node](https://nodejs.org/en/) v16.x. Run `node --version` to verify installed Node versions.
+2. If you are using Visual Studio Code, install [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) extension to enable auto code formatting support.
 
 ### Build and run locally
 
