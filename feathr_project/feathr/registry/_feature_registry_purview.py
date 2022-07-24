@@ -710,6 +710,11 @@ derivations: {
         return guid
 
     def upload_single_entity_to_purview(self,entity:Union[AtlasEntity,AtlasProcess]):
+        '''
+        Upload a single entity to purview, could be a process entity or atlasentity. 
+        If the eneity already exists, return the existing entity's GUID.
+        Otherwise, return the new entity GUID.
+        '''
         try:
             entity.lastModifiedTS="0"
             result = self.purview_client.upload_entities([entity])
