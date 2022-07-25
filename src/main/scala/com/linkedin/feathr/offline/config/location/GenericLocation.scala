@@ -7,15 +7,16 @@ import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.generation.FeatureGenUtils
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import net.minidev.json.annotate.JsonIgnore
+import org.apache.log4j.Logger
 import org.apache.spark.sql.functions.monotonically_increasing_id
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 
 @CaseClassDeserialize()
-case class GenericLocation(format: String,
-                           mode: Option[String] = None,
-                           @JsonIgnore options: collection.mutable.Map[String, String] = collection.mutable.Map[String, String](),
-                           @JsonIgnore conf: collection.mutable.Map[String, String] = collection.mutable.Map[String, String]()
-                          ) extends DataLocation {
+case class GenericLocation(format: String, mode: Option[String] = None) extends DataLocation {
+  val log: Logger = Logger.getLogger(getClass)
+  val options: collection.mutable.Map[String, String] = collection.mutable.Map[String, String]()
+  val conf: collection.mutable.Map[String, String] = collection.mutable.Map[String, String]()
+
   /**
    * Backward Compatibility
    * Many existing codes expect a simple path
@@ -65,11 +66,25 @@ case class GenericLocation(format: String,
   override def isFileBasedLocation(): Boolean = false
 
   @JsonAnySetter
-  def setOption(key: String, value: Any) = {
+  def setOption(key: String, value: Any): Unit = {
+    println(s"GenericLocation.setOption(key: $key, value: $value)")
+    if (key == null) {
+      log.warn("Got null key, skipping")
+      return
+    }
+    if (value == null) {
+      log.warn(s"Got null value for key '$key', skipping")
+      return
+    }
+    val v = value.toString
+    if (v == null) {
+      log.warn(s"Got invalid value for key '$key', skipping")
+      return
+    }
     if (key.startsWith("__conf__")) {
-      conf += (key.stripPrefix("__conf__").replace("__", ".") -> LocationUtils.envSubstitute(value.toString))
+      conf += (key.stripPrefix("__conf__").replace("__", ".") -> LocationUtils.envSubstitute(v))
     } else {
-      options += (key.replace("__", ".") -> LocationUtils.envSubstitute(value.toString))
+      options += (key.replace("__", ".") -> LocationUtils.envSubstitute(v))
     }
   }
 }
