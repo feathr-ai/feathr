@@ -41,10 +41,7 @@ from feathr.definition.transformation import (ExpressionTransformation, Transfor
                                    WindowAggTransformation)
 from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
-Label_Contains = "CONTAINS"
-Label_BelongsTo = "BELONGSTO"
-Label_Consumes = "CONSUMES"
-Label_Produces = "PRODUCES"
+
 class _PurviewRegistry(FeathrRegistry):
     """
     Initializes the feature registry, doing the following:
@@ -727,7 +724,7 @@ derivations: {
         return UUID(entity.guid)
     
     def _generate_relation_pairs(self, from_entity:dict, to_entity:dict, relation_type):
-        type_lookup = {Label_Contains: Label_BelongsTo, Label_Consumes: Label_Produces}
+        type_lookup = {RELATION_CONTAINS: RELATION_BELONGSTO, RELATION_CONSUMES: RELATION_PRODUCES}
 
         forward_relation =  AtlasProcess(
             name=str(from_entity["guid"]) + " to " + str(to_entity["guid"]),
@@ -772,7 +769,7 @@ derivations: {
         source_entity = self.purview_client.get_entity(source_id)['entities'][0]
 
         project_contains_source_relation = self._generate_relation_pairs(
-            project_entity, source_entity, Label_Contains)
+            project_entity, source_entity, RELATION_CONTAINS)
         [self.upload_single_entity_to_purview(x) for x in project_contains_source_relation]
         return source_id
 
@@ -796,9 +793,9 @@ derivations: {
 
         
         project_contains_anchor_relation = self._generate_relation_pairs(
-            project_entity, anchor_entity, Label_Contains)
+            project_entity, anchor_entity, RELATION_CONTAINS)
         anchor_consumes_source_relation = self._generate_relation_pairs(
-            anchor_entity,source_entity, Label_Consumes)
+            anchor_entity,source_entity, RELATION_CONSUMES)
         [self.upload_single_entity_to_purview(x) for x in project_contains_anchor_relation + anchor_consumes_source_relation]
 
         return anchor_id
@@ -826,11 +823,11 @@ derivations: {
         anchor_feature_entity = self.purview_client.get_entity(anchor_feature_id)['entities'][0]
 
         project_contains_feature_relation = self._generate_relation_pairs(
-            project_entity, anchor_feature_entity, Label_Contains)
+            project_entity, anchor_feature_entity, RELATION_CONTAINS)
         anchor_contains_feature_relation = self._generate_relation_pairs(
-            anchor_entity, anchor_feature_entity, Label_Contains)
+            anchor_entity, anchor_feature_entity, RELATION_CONTAINS)
         feature_consumes_source_relation = self._generate_relation_pairs(
-            anchor_feature_entity, source_entity, Label_Consumes)
+            anchor_feature_entity, source_entity, RELATION_CONSUMES)
 
         [self.upload_single_entity_to_purview(x) for x in  
         project_contains_feature_relation
@@ -858,12 +855,12 @@ derivations: {
         derived_feature_entity = self.purview_client.get_entity(derived_feature_id)['entities'][0]
 
         feature_project_contain_belong_pairs = self._generate_relation_pairs(
-            project_entity, derived_feature_entity, Label_Contains)
+            project_entity, derived_feature_entity, RELATION_CONTAINS)
 
         consume_produce_pairs = []
         for input_feature in input_features:
             consume_produce_pairs += self._generate_relation_pairs(
-                    derived_feature_entity, input_feature,Label_Consumes)
+                    derived_feature_entity, input_feature,RELATION_CONSUMES)
         
         [self.upload_single_entity_to_purview(x) for x in  
         feature_project_contain_belong_pairs
@@ -1160,11 +1157,11 @@ derivations: {
         all_lineages = self.purview_client.get_entity_lineage(project_entity['guid'])
         single_direction_process = [x for _,x in self.purview_client.get_entity_lineage(project_entity['guid'])['guidEntityMap'].items() \
             if x['typeName']=='Process' and \
-                (x['attributes']['qualifiedName'].startswith(Label_Contains) \
-                    or x['attributes']['qualifiedName'].startswith(Label_Consumes))]
-        contain_relations = [x['displayText'].split(' to ') for x in single_direction_process if x['attributes']['qualifiedName'].startswith(Label_Contains)]
+                (x['attributes']['qualifiedName'].startswith(RELATION_CONTAINS) \
+                    or x['attributes']['qualifiedName'].startswith(RELATION_CONSUMES))]
+        contain_relations = [x['displayText'].split(' to ') for x in single_direction_process if x['attributes']['qualifiedName'].startswith(RELATION_CONTAINS)]
 
-        consume_relations = [x['displayText'].split(' to ') for x in single_direction_process if x['attributes']['qualifiedName'].startswith(Label_Consumes)]
+        consume_relations = [x['displayText'].split(' to ') for x in single_direction_process if x['attributes']['qualifiedName'].startswith(RELATION_CONSUMES)]
 
         entities_under_project = [self.purview_client.get_entity(x[1])['entities'][0] for x in contain_relations if x[0]== project_entity['guid']]
         if not entities_under_project:
