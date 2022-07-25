@@ -14,6 +14,9 @@ Check out the latest Feathr Feature Store UI live demo [here](https://aka.ms/fea
 ### Prerequisites
 
 1. Install latest [Node](https://nodejs.org/en/) v16.x. Run `node --version` to verify installed Node versions.
+2. Recommended for Visual Studio Code users: install following two extensions to enable auto code formatting support.
+   - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+   - [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 
 ### Build and run locally
 
@@ -49,28 +52,33 @@ REACT_APP_AZURE_TENANT_ID=<REPLACE_WITH_YOUR_TENANT_ID>
 - For static file based deployment, run `npm run build` and upload `build/` to your server.
 - For docker image based deployment, run `docker -t <image_name> .` to build image and push to your container registry.
 
-### Linting & Formatting
+### Code Linting & Formatting
+
+Following tools are used to lint and format code:
+  * [**eslint**](https://eslint.org/)
+  * [**prettier**](https://prettier.io/)
 
 #### Linting
 
-To lint ts and tsx code, run:
+If ESLint plugin is installed, vscode will pickup configuration from [.eslintrc](.eslintrc) and automatically lint the code on save. To lint code for entire code base, simply run:
 
 ```
 npm run lint:fix
 ```
 
-This command will Automatically fix all problems that can be fixed, and list the rest problems requires manual fix.
-Linting rules are configured in [.eslintrc](.eslintrc) file. [Read More](https://eslint.org/docs/rules/).
+This command will automatically fix all problems that can be fixed, and list the rest problems requires manual fix.
 
 #### Formatting
 
-[Prettier](https://prettier.io/) is being used to format the UI code. Currently, the [default options](https://prettier.io/docs/en/options.html) are being used.
-
-To format the code, run:
+If Prettier is installed, vscode will pick up configuration from [.prettierrc](.prettierrc) file and automatically format code on save. To format code for entire code base, simply run:
 
 ```
 npm run format
 ```
+
+#### Formatting automatically on commit
+
+[Husky](https://github.com/typicode/husky) is used to lint commit changes as a git hook. Prettier is configured to run on staged files in husky git hook. This prevents anything with formatting errors to be committed.
 
 ### Project Structure
 
