@@ -22,4 +22,4 @@ def test_feature_monitoring():
     client.monitor_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=1800)

@@ -19,4 +19,4 @@ def test_feathr_kafa_streaming_features():
                                    feature_names=['f_modified_streaming_count']
                                    )
     client.materialize_features(settings)
-    client.wait_job_to_finish(timeout_sec=600)
+    client.wait_job_to_finish(timeout_sec=1800)

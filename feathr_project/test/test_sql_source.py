@@ -130,7 +130,7 @@ def test_feathr_get_offline_features():
                                 output_path=output_path)
 
     # assuming the job can successfully run; otherwise it will throw exception
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=1800)
 
     # download result and just assert the returned result is not empty
     res_df = get_result_df(client)

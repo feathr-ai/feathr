@@ -230,7 +230,7 @@ def test_delete_feature_from_redis():
                                        backfill_time=backfill_time)
     client.materialize_features(settings)
     
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=1800)
     
     res = client.get_online_features(online_test_table, '2020-04-01 07:21:51', [
         'f_is_long_trip_distance', 'f_day_of_week'])

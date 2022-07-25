@@ -50,7 +50,7 @@ def test_feathr_get_offline_features_with_parquet():
                                 )
 
     # assuming the job can successfully run; otherwise it will throw exception
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=1800)
     
     # download result and just assert the returned result is not empty
     res_df = get_result_df(client)
@@ -95,7 +95,7 @@ def test_feathr_get_offline_features_with_delta_lake():
                                 )
 
     # assuming the job can successfully run; otherwise it will throw exception
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=1800)
     
     # wait for a few secs for the resource to come up in the databricks API
     time.sleep(5)
