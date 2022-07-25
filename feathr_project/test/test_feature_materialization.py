@@ -8,12 +8,14 @@ from feathr import (BackfillTime, MaterializationSettings, FeatureQuery,
                     ObservationSettings, SparkExecutionConfiguration)
 from feathr import RedisSink, HdfsSink
 from feathr import FeatureAnchor
-from feathr import BOOLEAN, FLOAT, FLOAT_VECTOR, INT32, ValueType
+from feathr import BOOLEAN, FLOAT, INT32, ValueType
 from feathr import Feature
 from feathr import TypedKey
-from feathr import INPUT_CONTEXT
+from feathr import INPUT_CONTEXT, HdfsSource
 from test_fixture import basic_test_setup
 from test_fixture import get_online_test_table_name
+from pyspark.sql import DataFrame
+from pyspark.sql.functions import col
 
 def test_feature_materialization_config():
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5,20), step=timedelta(days=1))
@@ -170,3 +172,79 @@ def test_materialize_features_verbose():
                                            "f_location_avg_fare", "f_location_max_fare"],
                                        backfill_time=backfill_time)
     client.materialize_features(settings, verbose=True)
+
+def add_new_fare_amount(df: DataFrame) -> DataFrame:
+    df = df.withColumn("fare_amount_new", col("fare_amount") + 8000000)
+
+    return df
+
+def test_delete_feature_from_redis():
+    """
+    Test FeathrClient() delete_feature_from_redis to remove feature from Redis.
+    """
+
+    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
+
+    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    batch_source = HdfsSource(name="nycTaxiBatchSource_add_new_fare_amount",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
+                              preprocessing=add_new_fare_amount,
+                              event_timestamp_column="lpep_dropoff_datetime",
+                              timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+    pickup_time_as_id = TypedKey(key_column="lpep_pickup_datetime",
+                                 key_column_type=ValueType.INT32,
+                                 description="location id in NYC",
+                                 full_name="nyc_taxi.location_id")
+
+    features = [
+        Feature(name="f_is_long_trip_distance",
+                key=pickup_time_as_id,
+                feature_type=FLOAT,
+                transform="fare_amount_new"),
+        Feature(name="f_day_of_week",
+                key=pickup_time_as_id,
+                feature_type=INT32,
+                transform="dayofweek(lpep_dropoff_datetime)"),
+    ]
+
+    regular_anchor = FeatureAnchor(name="request_features_add_new_fare_amount",
+                                   source=batch_source,
+                                   features=features,
+                                   )
+
+    client.build_features(anchor_list=[regular_anchor])
+
+    online_test_table = get_online_test_table_name('nycTaxiCITable')
+
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+    redisSink = RedisSink(table_name=online_test_table)
+    settings = MaterializationSettings(name="py_udf",
+                                       sinks=[redisSink],
+                                       feature_names=[
+                                           "f_is_long_trip_distance",
+                                           "f_day_of_week"
+                                       ],
+                                       backfill_time=backfill_time)
+    client.materialize_features(settings)
+    
+    client.wait_job_to_finish(timeout_sec=900)
+    
+    res = client.get_online_features(online_test_table, '2020-04-01 07:21:51', [
+        'f_is_long_trip_distance', 'f_day_of_week'])
+
+    assert len(res) == 2
+
+    assert res[0] != None
+    assert res[1] != None
+
+    # Delete online feature stored in Redis
+    client.delete_feature_from_redis(online_test_table, '2020-04-01 07:21:51', 'f_is_long_trip_distance')
+    
+    # Check if the online feature is deleted successfully
+    res = client.get_online_features(online_test_table, '265', ['f_location_avg_fare'])
+
+    assert len(res) == 1
+    assert res[0] == None
