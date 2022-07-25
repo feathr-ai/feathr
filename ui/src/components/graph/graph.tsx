@@ -85,8 +85,8 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
           && (incomerIds.has(element.target) || node.id === element.target);
 
         highlight = highlight || animated;
-      }
-
+      }     
+      
       if (isNode(element)) {
         values.push({
           ...element,
@@ -96,10 +96,10 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
           },
           data: {
             ...element.data,
-            active: element.id === node.id,
+            active: element.id === node.id && isFeature(element.data?.subtitle),
           },
         });
-      }
+      } 
       if (isEdge(element)) {
         values.push({
           ...element,
@@ -142,6 +142,10 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     setElements(values);
   };
 
+  const isFeature = (featureType: string) => {
+    return featureType === 'feathr_anchor_feature_v1' || featureType === 'feathr_derived_feature_v1'
+  }
+
   return (
     <div className="lineage-graph">
         <ReactFlowProvider>
@@ -155,9 +159,11 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
             onPaneClick={ onPaneClick }
             onElementClick={ (_: ReactMouseEvent, element: Node | Edge): void => {
               if (isNode(element)) {
-                resetHighlight();
-                highlightPath(element, false);
-                setURLSearchParams({ nodeId: element.data.id, featureType: element.data.subtitle });
+                resetHighlight();    
+                highlightPath(element, false);   
+                if (isFeature(element.data?.subtitle)) {
+                  setURLSearchParams({ nodeId: element.data.id, featureType: element.data.subtitle });
+                }
               }
             } }
             onNodeDragStop={ onNodeDragStop }
