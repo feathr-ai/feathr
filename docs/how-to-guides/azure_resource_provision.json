@@ -107,17 +107,10 @@
       "sqlServerName": "[concat(parameters('resourcePrefix'),'dbserver' )]",
       "sqlDatabaseName": "[concat(parameters('resourcePrefix'),'db' )]",
       "sourceBacpacBlobUrl": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-registry-rbac-schema.bacpac",
-
-      // "sourceRbacBacpacBlobUrl": "https://azurefeathrstorage.blob.core.windows.net/public/feathr-rbac-schema.bacpac",
       "bacpacBlobName": "feathr-registry-schema.bacpac",
-      // "rbacBacpacBlobName": "feathr-rbac-schema.bacpac",
       "destinationBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('bacpacBlobName'))]",
-
-      // "destinationRbacBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('rbacBacpacBlobName'))]",
       "bacpacDeploymentScriptName": "CopyBacpacFile",
-      // "rbacDeploymentScriptName": "CopyRbacBacpacFile",
       "bacpacDbExtensionName": "registryRbacDbImport",
-      // "rbacDbExtensionName": "registryRbacImport",
       "preBuiltdockerImage": "feathrfeaturestore/feathr-registry"
     },
     "functions": [],
