@@ -4,6 +4,7 @@ import { fetchFeature } from "../../api";
 import { Feature } from "../../models/model";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Card, Spin, Typography } from "antd";
+import { isFeature } from "./utils";
 
 const { Title } = Typography;
 
@@ -19,13 +20,6 @@ const GraphNodeDetails: React.FC = () => {
   const featureType = searchParams.get("featureType") as string;
   const [feature, setFeature] = useState<Feature>();
   const [loading, setLoading] = useState<boolean>(false);
-
-  const isFeature = (featureType: string) => {
-    return (
-      featureType === "feathr_anchor_feature_v1" ||
-      featureType === "feathr_derived_feature_v1"
-    );
-  };
 
   useEffect(() => {
     const fetchFeatureData = async () => {

@@ -182,7 +182,22 @@ const generateEdge = ({ obj, from, to }: GenerateEdgeProps): Edge => {
   };
 };
 
-export { generateEdge, generateNode, getLayoutedElements, getElements };
+const enum NodeTypes {
+  AllNodes = "all_nodes",
+  Source = "feathr_source_v1",
+  Anchor = "feathr_anchor_v1",
+  AnchorFeature = "feathr_anchor_feature_v1",
+  DerivedFeature = "feathr_derived_feature_v1"
+};
+
+const isFeature = (featureType: string) => {
+  return (
+    featureType === NodeTypes.AnchorFeature ||
+    featureType === NodeTypes.DerivedFeature
+  );
+};
+
+export { generateEdge, generateNode, getLayoutedElements, getElements, NodeTypes, isFeature };
 
 export const findNodeInElement = (
   nodeId: string | null,

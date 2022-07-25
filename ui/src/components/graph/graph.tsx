@@ -19,7 +19,7 @@ import ReactFlow, {
 } from "react-flow-renderer";
 import { useSearchParams } from "react-router-dom";
 import LineageNode from "./graphNode";
-import { findNodeInElement, getLayoutedElements } from "./utils";
+import { findNodeInElement, getLayoutedElements, isFeature } from "./utils";
 
 const nodeTypes = {
   "custom-node": LineageNode,
@@ -37,10 +37,6 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
   useEffect(() => {
     setElements(layoutedElements);
   }, [layoutedElements, data, nodeId]);
-
-  const isFeature = (featureType: string) => {
-    return featureType === 'feathr_anchor_feature_v1' || featureType === 'feathr_derived_feature_v1'
-  }
 
   // Reset all node highlight status
   const resetHighlight = useCallback((): void => {
