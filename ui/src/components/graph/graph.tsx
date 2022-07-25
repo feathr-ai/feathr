@@ -38,6 +38,10 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     setElements(layoutedElements);
   }, [layoutedElements, data, nodeId]);
 
+  const isFeature = (featureType: string) => {
+    return featureType === 'feathr_anchor_feature_v1' || featureType === 'feathr_derived_feature_v1'
+  }
+
   // Reset all node highlight status
   const resetHighlight = useCallback((): void => {
     if (!elements || elements.length === 0) {
@@ -108,7 +112,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
             },
             data: {
               ...element.data,
-              active: element.id === node.id,
+              active: element.id === node.id && isFeature(element.data?.subtitle)
             },
           });
         }
@@ -164,8 +168,8 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
           snapGrid={[15, 15]}
           zoomOnScroll={false}
           onLoad={onLoad}
-          onPaneClick={onPaneClick}
-          onElementClick={(_: ReactMouseEvent, element: Node | Edge): void => {
+          onPaneClick={onPaneClick}         
+          onElementClick={(_: ReactMouseEvent, element: Node | Edge): void => {           
             if (isNode(element)) {
               resetHighlight();
               highlightPath(element, false);
@@ -175,6 +179,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
               });
             }
           }}
+          
           onNodeDragStop={onNodeDragStop}
           connectionLineType={ConnectionLineType.SmoothStep}
           nodeTypes={nodeTypes}

@@ -47,7 +47,7 @@ const GraphNodeDetails: React.FC = () => {
         <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
       ) : (
         <div style={{ margin: "2%" }}>
-          {!feature && <p>Click on node to show metadata and metric details</p>}
+          {!feature && <p>Click on feature node to show metadata and metric details</p>}
           {feature?.attributes.transformation && (
             <Card>
               <Title level={4}>Transformation</Title>

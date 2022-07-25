@@ -221,6 +221,7 @@ const FeatureList: React.FC = () => {
         onPressEnter={onClickSearch}
       />
       <Button
+        disabled={!project}
         onClick={onClickSearch}
         type="primary"
         style={{ marginLeft: "5px" }}
