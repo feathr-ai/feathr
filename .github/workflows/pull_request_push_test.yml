@@ -5,12 +5,14 @@ on:
     branches: [main]
     paths-ignore:
       - "docs/**"
+      - "ui/**"
       - "**/README.md"
 
   pull_request:
     branches: [main]
     paths-ignore:
       - "docs/**"
+      - "ui/**"
       - "**/README.md"
 
   pull_request_target:
@@ -18,6 +20,7 @@ on:
     types: [labeled, edited, opened, synchronize]
     paths-ignore:
       - "docs/**"
+      - "ui/**"
       - "**/README.md"
 
 jobs:
