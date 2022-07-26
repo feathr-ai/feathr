@@ -6,6 +6,7 @@ import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnch
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.MVELSourceKeyExtractor
 import com.linkedin.feathr.offline.client.DataFrameColName
+import com.linkedin.feathr.offline.client.plugins.FeathrUdfPluginContext
 import com.linkedin.feathr.offline.config.{MVELFeatureDefinition, TimeWindowFeatureDefinition}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
 import com.linkedin.feathr.offline.job.FeatureJoinJob.FeatureName
@@ -23,7 +24,6 @@ import com.linkedin.feathr.swj.aggregate.AggregationType
 import com.linkedin.feathr.{common, offline}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -179,8 +179,18 @@ private[offline] object FeatureTransformation {
         DataFrameBasedSqlEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs)
       case transformer: AnchorExtractor[_] =>
         DataFrameBasedRowEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs)
-      case _ => throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, s"cannot find valid Transformer for ${featureAnchorWithSource}")
-
+      case transformer =>
+        val transformerClass = transformer.getClass
+        if (FeathrUdfPluginContext.isRegisteredRowWiseAnchorExtractorType(transformerClass)) {
+          val adapter = FeathrUdfPluginContext.getRowWiseAnchorExtractorAdaptor(transformerClass)
+          // Question: Can this be made to work for cases like Frame's GenericAnchorExtractorSpark and SpecificRecordSourceKeyExtractor too?
+          DataFrameBasedRowEvaluator.transform(adapter.adaptUdf(transformer), df, featureNamePrefixPairs, featureTypeConfigs)
+        } else if (FeathrUdfPluginContext.isRegisteredDfWiseAnchorExtractorType(transformerClass)) {
+          val adapter = FeathrUdfPluginContext.getDfWiseAnchorExtractorAdaptor(transformerClass)
+          DataFrameBasedSqlEvaluator.transform(adapter.adaptUdf(transformer), df, featureNamePrefixPairs, featureTypeConfigs)
+        } else {
+          throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, s"cannot find valid Transformer for ${featureAnchorWithSource}")
+        }
     }
     // Check for whether there are duplicate columns in the transformed DataFrame, typically this is because
     // the feature name is the same as some field name

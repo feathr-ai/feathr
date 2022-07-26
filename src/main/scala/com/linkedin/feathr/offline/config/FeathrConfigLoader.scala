@@ -13,6 +13,7 @@ import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
+import com.linkedin.feathr.offline.client.plugins.FeathrUdfPluginContext
 import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, KafkaEndpoint, LocationUtils, SimplePath}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
@@ -254,14 +255,24 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
     // if it is UDF, no extra information other than the class name is required
     val anchorExtractor: AnyRef = codec.treeToValue(node, extractorClass).asInstanceOf[AnyRef]
 
-    anchorExtractor match {
-      case extractor: AnchorExtractorBase[_] =>
-          val extractorNode = node.get("extractor")
-          if (extractorNode != null && extractorNode.get("params") != null) {
-            // init the param into the extractor
-            val config = ConfigFactory.parseString(extractorNode.get("params").toString)
-            extractor.init(config)
+    val extractorNode = node.get("extractor")
+    if (extractorNode != null && extractorNode.get("params") != null) {
+      // init the param into the extractor
+      val config = ConfigFactory.parseString(extractorNode.get("params").toString)
+      anchorExtractor match {
+        case aebExtractor: AnchorExtractorBase[_] =>
+          aebExtractor.init(config)
+        case otherExtractor =>
+          if (FeathrUdfPluginContext.isRegisteredDfWiseAnchorExtractorType(extractorClass)) {
+            FeathrUdfPluginContext.getDfWiseAnchorExtractorAdaptor(extractorClass).adaptUdf(otherExtractor)
+              .init(config)
+          } else if (FeathrUdfPluginContext.isRegisteredRowWiseAnchorExtractorType(extractorClass)) {
+            FeathrUdfPluginContext.getRowWiseAnchorExtractorAdaptor(extractorClass).adaptUdf(otherExtractor)
+              .init(config)
+          } else {
+            throw new FeathrConfigException(ErrorLabel.FEATHR_ERROR, s"Unknown extractor type ${extractorClass}")
           }
+      }
     }
 
     // cast the the extractor class to AnchorExtractor[Any]
