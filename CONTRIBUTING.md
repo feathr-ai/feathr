@@ -16,7 +16,7 @@ Please read existing Github issues or development work that is in progress or in
 
 If it's a simple bug fix(less than 20 lines) or documentation change, you can just submit your pull request(PR) without Github issues. For any other PRs, a Github issue is required.
 
-If you want to contribute something new and it's not tracked in exsiting Github issues, please create a new Github issue and the community will help review the idea. Please state `why` in your Github issue. If you already have a short design in mind, you can provide a one pager in the Github issue. If the idea in general make sense, then we can proceed to the design or development work. If the change is not small, an [RFC](https://en.wikipedia.org/wiki/Request_for_Comments) should be reviewed and approved by the team.
+If you want to contribute something new and it's not tracked in existing Github issues, please create a new Github issue and the community will help review the idea. Please state `why` in your Github issue. If you already have a short design in mind, you can provide a one pager in the Github issue. If the idea in general make sense, then we can proceed to the design or development work. If the change is not small, an [RFC](https://en.wikipedia.org/wiki/Request_for_Comments) should be reviewed and approved by the team.
 
 If you have any feature request, please create a new Github issue and the community will collect your feature request and work on it.
 
