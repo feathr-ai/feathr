@@ -42,6 +42,8 @@ from feathr.definition.transformation import (ExpressionTransformation, Transfor
 from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
 
+from feathr.constants import *
+
 class _PurviewRegistry(FeathrRegistry):
     """
     Initializes the feature registry, doing the following:
@@ -697,6 +699,9 @@ derivations: {
                       full_file_name=config_file_path)
                       
     def _create_project(self) -> UUID:
+        ''' 
+        create a project entity
+        ''' 
         predefined_guid = self.guid.get_guid()
         feathr_project_entity = AtlasEntity(
             name=self.project_name,
@@ -709,8 +714,11 @@ derivations: {
     def upload_single_entity_to_purview(self,entity:Union[AtlasEntity,AtlasProcess]):
         '''
         Upload a single entity to purview, could be a process entity or atlasentity. 
+        Since this is used for migration existing project, ignore Atlas PreconditionFail (412)
         If the eneity already exists, return the existing entity's GUID.
         Otherwise, return the new entity GUID.
+        The entity itself will also be modified, fill the GUID with real GUID in Purview.
+        In order to avoid having concurrency issue, and provide clear guidance, this method only allows entity uploading once at a time.
         '''
         try:
             entity.lastModifiedTS="0"
@@ -753,6 +761,10 @@ derivations: {
         }
 
     def _create_source(self, s: Source) -> UUID:
+        '''
+        create a data source under a project.
+        this will create the data source entity, together with the relation entity
+        '''
         project_entity = self.purview_client.get_entity(qualifiedName=self.project_name,typeName=TYPEDEF_FEATHR_PROJECT)['entities'][0]
         attrs = source_to_def(s)
         qualified_name = self.registry_delimiter.join([project_entity['attributes']['qualifiedName'],attrs['name']])
@@ -768,12 +780,17 @@ derivations: {
         # change from AtlasEntity to Entity
         source_entity = self.purview_client.get_entity(source_id)['entities'][0]
 
+        # Project contains source, source belongs to project
         project_contains_source_relation = self._generate_relation_pairs(
             project_entity, source_entity, RELATION_CONTAINS)
         [self.upload_single_entity_to_purview(x) for x in project_contains_source_relation]
         return source_id
 
     def _create_anchor(self, s: FeatureAnchor) -> UUID:
+        '''
+        Create anchor under project ,and based on the data source
+        This will also create two relation pairs 
+        '''
         project_entity = self.purview_client.get_entity(qualifiedName=self.project_name,typeName=TYPEDEF_FEATHR_PROJECT)['entities'][0]
         source_entity = self.purview_client.get_entity(qualifiedName=self.registry_delimiter.join([self.project_name,s.source.name]),typeName=TYPEDEF_SOURCE)['entities'][0]
         attrs = anchor_to_def(s)
@@ -792,6 +809,7 @@ derivations: {
         anchor_entity = self.purview_client.get_entity(anchor_id)['entities'][0]
 
         
+        # project contians anchor, anchor belongs to project.
         project_contains_anchor_relation = self._generate_relation_pairs(
             project_entity, anchor_entity, RELATION_CONTAINS)
         anchor_consumes_source_relation = self._generate_relation_pairs(
@@ -801,6 +819,10 @@ derivations: {
         return anchor_id
 
     def _create_anchor_feature(self, anchor_id: str, source:Source,s: Feature) -> UUID:
+        '''
+        Create anchor feature under anchor. 
+        This will also create three relation pairs
+        '''
         project_entity = self.purview_client.get_entity(qualifiedName=self.project_name,typeName=TYPEDEF_FEATHR_PROJECT)['entities'][0]
         anchor_entity = self.purview_client.get_entity(anchor_id)['entities'][0]
         source_entity = self.purview_client.get_entity(qualifiedName=self.registry_delimiter.join([self.project_name,source.name]),typeName=TYPEDEF_SOURCE)['entities'][0]
@@ -822,6 +844,7 @@ derivations: {
         # change from AtlasEntity to Entity
         anchor_feature_entity = self.purview_client.get_entity(anchor_feature_id)['entities'][0]
 
+        # Project contains AnchorFeature, AnchorFeature belongs to Project
         project_contains_feature_relation = self._generate_relation_pairs(
             project_entity, anchor_feature_entity, RELATION_CONTAINS)
         anchor_contains_feature_relation = self._generate_relation_pairs(
@@ -837,6 +860,10 @@ derivations: {
         return anchor_feature_id
 
     def _create_derived_feature(self, s: DerivedFeature) -> UUID:
+        '''
+        Create DerivedFeature.
+        This will also create multiple relations.
+        '''
         input_features = [self.purview_client.get_entity(x._registry_id)['entities'][0] for x in s.input_features]
         attrs = derived_feature_to_def(s)
         attrs['type'] = attrs['featureType']
@@ -854,10 +881,12 @@ derivations: {
         # change from AtlasEntity to Entity
         derived_feature_entity = self.purview_client.get_entity(derived_feature_id)['entities'][0]
 
+        # Project contains DerivedFeature, DerivedFeature belongs to Project.
         feature_project_contain_belong_pairs = self._generate_relation_pairs(
             project_entity, derived_feature_entity, RELATION_CONTAINS)
 
         consume_produce_pairs = []
+        # Each input feature produces DerivedFeature, DerivedFeatures consumes from each input feature.
         for input_feature in input_features:
             consume_produce_pairs += self._generate_relation_pairs(
                     derived_feature_entity, input_feature,RELATION_CONSUMES)
@@ -867,7 +896,8 @@ derivations: {
             + consume_produce_pairs]
         
         return derived_feature_id
-    def register_features(self, workspace_path: Optional[Path] = None, from_context: bool = True, anchor_list=[], derived_feature_list=[]):
+
+    def register_features(self, workspace_path: Optional[Path] = None, from_context: bool = True, anchor_list:List[FeatureAnchor]=[], derived_feature_list:List[DerivedFeature]=[]):
         """Register Features for the specified workspace. 
 
         Args:
@@ -1154,11 +1184,10 @@ derivations: {
         """
         project_entity = self.purview_client.get_entity(qualifiedName=project_name,typeName=TYPEDEF_FEATHR_PROJECT)['entities'][0]
         
-        all_lineages = self.purview_client.get_entity_lineage(project_entity['guid'])
-        single_direction_process = [x for _,x in self.purview_client.get_entity_lineage(project_entity['guid'])['guidEntityMap'].items() \
-            if x['typeName']=='Process' and \
-                (x['attributes']['qualifiedName'].startswith(RELATION_CONTAINS) \
-                    or x['attributes']['qualifiedName'].startswith(RELATION_CONSUMES))]
+        single_direction_process = [entity for _,entity in self.purview_client.get_entity_lineage(project_entity['guid'])['guidEntityMap'].items() \
+            if entity['typeName']=='Process' and \
+                (entity['attributes']['qualifiedName'].startswith(RELATION_CONTAINS) \
+                    or entity['attributes']['qualifiedName'].startswith(RELATION_CONSUMES))]
         contain_relations = [x['displayText'].split(' to ') for x in single_direction_process if x['attributes']['qualifiedName'].startswith(RELATION_CONTAINS)]
 
         consume_relations = [x['displayText'].split(' to ') for x in single_direction_process if x['attributes']['qualifiedName'].startswith(RELATION_CONSUMES)]
@@ -1178,22 +1207,14 @@ derivations: {
             for key in derived_feature_entity["attributes"]["key"]:
                 derived_feature_key_list.append(TypedKey(key_column=key["keyColumn"], key_column_type=key["keyColumnType"], full_name=key["fullName"], description=key["description"], key_column_alias=key["keyColumnAlias"]))
             
-            def search_for_input_feature(current_bfs_step_entities, full_relations,full_entities):
-                if len(current_bfs_step_entities)==0:
-                    return []
-                result = []
-                next_round =[]
-                for elem in current_bfs_step_entities:
-                    matching_relations = [x for x in full_relations if x[0]==elem['guid']]
-                    target_entities = [full_entities[x[1]] for x in matching_relations]
-                    anchor_features = [x for x in target_entities if x['typeName']==TYPEDEF_ANCHOR_FEATURE]
-                    derived_features = [x for x in target_entities if x['typeName']==TYPEDEF_DERIVED_FEATURE]
-                    result+=anchor_features
-                    next_round+= derived_features
-                result+=search_for_input_feature(derived_features,full_relations,full_entities)
-                return result
+            def search_for_input_feature(elem, full_relations,full_entities):
+                matching_relations = [x for x in full_relations if x[0]==elem['guid']]
+                target_entities = [full_entities[x[1]] for x in matching_relations]
+                input_features = [x for x in target_entities if x['typeName']==TYPEDEF_ANCHOR_FEATURE \
+                    or x['typeName']==TYPEDEF_DERIVED_FEATURE]
+                return input_features
 
-            all_input_features = search_for_input_feature([derived_feature_entity],consume_relations,entities_dict)
+            all_input_features = search_for_input_feature(derived_feature_entity,consume_relations,entities_dict)
             derived_feature_list.append(DerivedFeature(name=derived_feature_entity["attributes"]["name"],
                                 feature_type=self._get_feature_type_from_hocon(derived_feature_entity["attributes"]["type"]),
                                 transform=self._get_transformation_from_dict(derived_feature_entity["attributes"]['transformation']),
