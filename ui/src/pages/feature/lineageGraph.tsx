@@ -8,6 +8,7 @@ import { FeatureLineage } from "../../models/model";
 import { LoadingOutlined } from "@ant-design/icons";
 import GraphNodeDetails from "../../components/graph/graphNodeDetails";
 import { getElements } from "../../components/graph/utils";
+import { FeatureType } from "../../utils/utils";
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -67,13 +68,13 @@ const LineageGraph: React.FC = () => {
             value={featureType}
             onChange={(e) => toggleFeatureType(e.target.value)}
           >
-            <Radio.Button value="all_nodes">All Features</Radio.Button>
-            <Radio.Button value="feathr_source_v1"> Source </Radio.Button>
-            <Radio.Button value="feathr_anchor_v1">Anchor</Radio.Button>
-            <Radio.Button value="feathr_anchor_feature_v1">
+            <Radio.Button value={FeatureType.AllNodes}>All Nodes</Radio.Button>
+            <Radio.Button value={FeatureType.Source}> Source </Radio.Button>
+            <Radio.Button value={FeatureType.Anchor}>Anchor</Radio.Button>
+            <Radio.Button value={FeatureType.AnchorFeature}>
               Anchor Feature
             </Radio.Button>
-            <Radio.Button value="feathr_derived_feature_v1">
+            <Radio.Button value={FeatureType.DerivedFeature}>
               Derived Feature
             </Radio.Button>
           </Radio.Group>

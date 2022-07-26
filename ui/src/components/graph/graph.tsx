@@ -19,7 +19,8 @@ import ReactFlow, {
 } from "react-flow-renderer";
 import { useSearchParams } from "react-router-dom";
 import LineageNode from "./graphNode";
-import { findNodeInElement, getLayoutedElements, isFeature } from "./utils";
+import { findNodeInElement, getLayoutedElements } from "./utils";
+import { isFeature } from "../../utils/utils";
 
 const nodeTypes = {
   "custom-node": LineageNode,
@@ -108,7 +109,8 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
             },
             data: {
               ...element.data,
-              active: element.id === node.id && isFeature(element.data?.subtitle)
+              active:
+                element.id === node.id && isFeature(element.data?.subtitle),
             },
           });
         }
@@ -164,8 +166,8 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
           snapGrid={[15, 15]}
           zoomOnScroll={false}
           onLoad={onLoad}
-          onPaneClick={onPaneClick}         
-          onElementClick={(_: ReactMouseEvent, element: Node | Edge): void => {           
+          onPaneClick={onPaneClick}
+          onElementClick={(_: ReactMouseEvent, element: Node | Edge): void => {
             if (isNode(element)) {
               resetHighlight();
               highlightPath(element, false);
@@ -175,7 +177,6 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
               });
             }
           }}
-          
           onNodeDragStop={onNodeDragStop}
           connectionLineType={ConnectionLineType.SmoothStep}
           nodeTypes={nodeTypes}
