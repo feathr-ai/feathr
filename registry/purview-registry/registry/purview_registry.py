@@ -491,6 +491,8 @@ class PurviewRegistry(Registry):
             superTypes=["DataSet"],
         )
 
+        # Check if any of these type definitiones are already registered. 
+        # If so this registration will be skipped.
         new_entitydefs = [type_feathr_anchor_features, type_feathr_anchors,
                         type_feathr_derived_features, type_feathr_sources, type_feathr_project]
         new_entitydefs_names = [entity.name for entity in new_entitydefs]
