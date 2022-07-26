@@ -29,7 +29,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 - **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
 - **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
 
-## Running Feathr on Azure with few Simple Steps
+## Running Feathr on Azure with few simple steps
 
 Follow the [Feathr ARM deployment guide ](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
 
