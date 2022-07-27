@@ -58,20 +58,29 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
         name = decoded_token.get("name", "")
 
         if aad_user_key in decoded_token:
+            # Id Tokens from browser
             username = decoded_token.get(aad_user_key)
             type = UserType.AAD_USER
-        elif aad_app_key in decoded_token.keys:
-            username = decoded_token.get(aad_app_key)
-            name = decoded_token.get("app_displayname", "")
-            type = UserType.AAD_APP
-        elif common_user_key in decoded_token.keys:
+        elif aad_app_key in decoded_token:
+            appid = decoded_token.get(aad_app_key)
+            # Azure CLI User Impersonation token
+            if decoded_token.get("scp") == "user_impersonation":
+                username = decoded_token.get("upn")
+                type = UserType.USER_IMPERSONATION
+            # Other AAD App token
+            else:
+                username = appid
+                name = decoded_token.get("app_displayname", "")
+                type = UserType.AAD_APP
+        elif common_user_key in decoded_token:
             username = decoded_token.get(common_user_key)
             type = UserType.COMMON_USER
         else:
             log.debug(f"unknown user type {decoded_token}")
             username = user_id
             type = UserType.UNKNOWN
-
+        
+        log.info(f"username: {username}, name: {name}, token type: {str(type)} ")
         return User(
             id=user_id,
             name=name,
@@ -130,7 +139,7 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
         key = self._get_token_key(key_id)
         try:
             decode = jwt.decode(token, key=key, algorithms=[
-                                'RS256'], audience=config.RBAC_API_AUDIENCE)
+                                'RS256'], audience=["https://management.azure.com",config.RBAC_API_AUDIENCE])
             return decode
         except ExpiredSignatureError as e:
             raise InvalidAuthorization(f'The token signature has expired: {e}')
