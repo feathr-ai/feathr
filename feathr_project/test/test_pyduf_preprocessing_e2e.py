@@ -17,7 +17,7 @@ from feathr import TypedKey
 from feathr import WindowAggTransformation
 from feathr.utils.job_utils import get_result_df
 from test_fixture import (snowflake_test_setup, get_online_test_table_name, basic_test_setup)
-from test_utils import Constants
+from test_utils.constants import Constants
 
 
 def trip_distance_preprocessing(df: DataFrame):

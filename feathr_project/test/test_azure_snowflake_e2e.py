@@ -10,7 +10,7 @@ from feathr import TypedKey
 from feathr import ValueType
 from feathr.utils.job_utils import get_result_df
 from test_fixture import (snowflake_test_setup, get_online_test_table_name)
-from test_utils import Constants
+from test_utils.constants import Constants
 
 
 def test_feathr_online_store_agg_features():
