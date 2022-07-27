@@ -27,7 +27,7 @@ The architecture diagram demonstrates how different Azure components interact wi
 
 Feathr has native cloud integration and getting started with Feathr is very straightforward. Here are the instructions:
 
-1. The very first step is to create an Azure Active Directory (AAD) application to enable authentication on the Feathr UI (which gets created as part of the deployment script). Currently it is not possible to create one through ARM template but you can easily create one by running the following CLI commands in the [Cloud Shell](https://shell.azure.com/bash)
+1. The very first step is to create an Azure Active Directory (AAD) application to enable authentication on the Feathr UI (which gets created as part of the deployment script). Currently it is not possible to create one through ARM template but you can easily create one by running the following CLI commands in the [Cloud Shell](https://shell.azure.com/bash).
 
     ```bash
     # This is the prefix you want to name your resources with, make a note of it, you will need it during deployment.
@@ -42,12 +42,15 @@ Feathr has native cloud integration and getting started with Feathr is very stra
     
     # This will create the Azure AD application, note that we need to create an AAD app of platform type Single Page Application(SPA). By default passing the redirect-uris with create command creates an app of type web. Setting Sign in audience to AzureADMyOrg limits the application access to just your tenant.
     az ad app create --display-name $sitename --sign-in-audience AzureADMyOrg --web-home-page-url "https://$sitename.azurewebsites.net" --enable-id-token-issuance true
+    ```
+    After the above step, an AAD application will be created. Note that it will take a few minutes to complete, so make sure the `aad_clientId`, `aad_objectId`, and `aad_tenantId` below are not empty. If they are empty, re-run the three commands to refresh the values for `aad_clientId`, `aad_objectId`, and `aad_tenantId`, as they will be required later.
 
+    ```bash
     # Fetch the ClientId, TenantId and ObjectId for the created app
     aad_clientId=$(az ad app list --display-name $sitename --query [].appId -o tsv)
 
     # We just use the homeTenantId since a user could have access to multiple tenants
-    aad_tenantId=$(az account  show --query "[homeTenantId]" -o tsv)
+    aad_tenantId=$(az account show --query "[homeTenantId]" -o tsv)
 
     #Fetch the objectId of AAD app to patch it and add redirect URI in next step.
     aad_objectId=$(az ad app list --display-name $sitename --query [].id -o tsv)
