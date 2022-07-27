@@ -29,12 +29,16 @@ Feathr automatically computes your feature values and joins them to your trainin
 - **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
 - **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
 
-## Running Feathr on Azure with few simple steps
+## ☁️ Running Feathr on Cloud with a few simple steps
+
+Feathr has native integrations with Databricks and Azure Synapse:
 
 Follow the [Feathr ARM deployment guide ](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
 
 If you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
 
+- Please read the [Quick Start Guide for Feathr on Databricks](./quickstart_databricks.md) to run Feathr with Databricks.
+- Please read the [Quick Start Guide for Feathr on Azure Synapse](./quickstart_synapse.md) to run Feathr with Azure Synapse.
 
 ## 📓 Documentation
 
@@ -55,13 +59,6 @@ Or use the latest code from GitHub:
 ```bash
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
-
-## ☁️ Running Feathr on Cloud
-
-Feathr has native integrations with Databricks and Azure Synapse:
-
-- Please read the [Quick Start Guide for Feathr on Databricks](./quickstart_databricks.md) to run Feathr with Databricks.
-- Please read the [Quick Start Guide for Feathr on Azure Synapse](./quickstart_synapse.md) to run Feathr with Azure Synapse.
 
 ## 🔡 Feathr Examples
 
@@ -159,7 +156,6 @@ Follow the [quick start Jupyter Notebook](../feathr_project/feathrcli/data/feath
 ## 🚀 Roadmap
 
 For a complete roadmap with estimated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
-
 
 - [x] Support streaming
 - [x] Support common data sources
