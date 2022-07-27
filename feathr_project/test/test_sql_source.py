@@ -1,22 +1,19 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
-from click.testing import CliRunner
-from feathr import BOOLEAN, FLOAT, INT32, ValueType
-from feathr import FeathrClient
-from feathr import JdbcSource
-from feathr import ValueType, Feature, FeatureAnchor, DerivedFeature, WindowAggTransformation, INPUT_CONTEXT
-from feathr.utils.job_utils import get_result_df
-from feathr import (BackfillTime, MaterializationSettings)
-from feathr import FeatureQuery
-from feathr import ObservationSettings
-from feathr import RedisSink, HdfsSink
-from feathr import TypedKey
-from feathrcli.cli import init
 import pytest
 
+from feathr import BOOLEAN, FLOAT, INT32
+from feathr import FeathrClient
+from feathr import FeatureQuery
+from feathr import JdbcSource
+from feathr import ObservationSettings
+from feathr import TypedKey
+from feathr import ValueType, Feature, FeatureAnchor, DerivedFeature, WindowAggTransformation, INPUT_CONTEXT
+from feathr.utils.job_utils import get_result_df
 from test_fixture import get_online_test_table_name
+from test_utils.constants import Constants
 
 def basic_test_setup(config_path: str):
     """
@@ -130,7 +127,7 @@ def test_feathr_get_offline_features():
                                 output_path=output_path)
 
     # assuming the job can successfully run; otherwise it will throw exception
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
     # download result and just assert the returned result is not empty
     res_df = get_result_df(client)

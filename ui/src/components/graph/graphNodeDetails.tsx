@@ -4,6 +4,7 @@ import { fetchFeature } from "../../api";
 import { Feature } from "../../models/model";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Card, Spin, Typography } from "antd";
+import { isFeature } from "../../utils/utils";
 
 const { Title } = Typography;
 
@@ -19,13 +20,6 @@ const GraphNodeDetails: React.FC = () => {
   const featureType = searchParams.get("featureType") as string;
   const [feature, setFeature] = useState<Feature>();
   const [loading, setLoading] = useState<boolean>(false);
-
-  const isFeature = (featureType: string) => {
-    return (
-      featureType === "feathr_anchor_feature_v1" ||
-      featureType === "feathr_derived_feature_v1"
-    );
-  };
 
   useEffect(() => {
     const fetchFeatureData = async () => {
@@ -47,7 +41,9 @@ const GraphNodeDetails: React.FC = () => {
         <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
       ) : (
         <div style={{ margin: "2%" }}>
-          {!feature && <p>Click on node to show metadata and metric details</p>}
+          {!feature && (
+            <p>Click on feature node to show metadata and metric details</p>
+          )}
           {feature?.attributes.transformation && (
             <Card>
               <Title level={4}>Transformation</Title>

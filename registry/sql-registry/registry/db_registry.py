@@ -405,6 +405,8 @@ class DbRegistry(Registry):
         return e
 
     def _get_edges(self, ids: list[UUID], types: list[RelationshipType] = []) -> list[Edge]:
+        if not ids or not types:
+            return []
         sql = fr"""select edge_id, from_id, to_id, conn_type from edges
         where from_id in %(ids)s
         and to_id in %(ids)s"""

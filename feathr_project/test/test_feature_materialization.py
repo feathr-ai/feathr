@@ -2,20 +2,21 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from feathr.definition._materialization_utils import _to_materialization_config
-from feathr import (BackfillTime, MaterializationSettings)
-from feathr import (BackfillTime, MaterializationSettings, FeatureQuery, 
-                    ObservationSettings, SparkExecutionConfiguration)
-from feathr import RedisSink, HdfsSink
-from feathr import FeatureAnchor
-from feathr import BOOLEAN, FLOAT, INT32, ValueType
-from feathr import Feature
-from feathr import TypedKey
-from feathr import INPUT_CONTEXT, HdfsSource
-from test_fixture import basic_test_setup
-from test_fixture import get_online_test_table_name
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
+
+from feathr import BOOLEAN, FLOAT, INT32, ValueType
+from feathr import (BackfillTime, MaterializationSettings, FeatureQuery,
+                    ObservationSettings, SparkExecutionConfiguration)
+from feathr import Feature
+from feathr import FeatureAnchor
+from feathr import INPUT_CONTEXT, HdfsSource
+from feathr import RedisSink, HdfsSink
+from feathr import TypedKey
+from feathr.definition._materialization_utils import _to_materialization_config
+from test_fixture import basic_test_setup
+from test_fixture import get_online_test_table_name
+from test_utils.constants import Constants
 
 def test_feature_materialization_config():
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5,20), step=timedelta(days=1))
@@ -230,7 +231,7 @@ def test_delete_feature_from_redis():
                                        backfill_time=backfill_time)
     client.materialize_features(settings)
     
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
     
     res = client.get_online_features(online_test_table, '2020-04-01 07:21:51', [
         'f_is_long_trip_distance', 'f_day_of_week'])

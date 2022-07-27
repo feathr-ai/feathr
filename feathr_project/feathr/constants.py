@@ -7,7 +7,10 @@ REDIS_PASSWORD = 'REDIS_PASSWORD'
 MB_BYTES = 1048576
 
 INPUT_CONTEXT="PASSTHROUGH"
-
+RELATION_CONTAINS = "CONTAINS"
+RELATION_BELONGSTO = "BELONGSTO"
+RELATION_CONSUMES = "CONSUMES"
+RELATION_PRODUCES = "PRODUCES"
 # For use in registry. 
 # For type definition, think it's like a schema of a table. 
 # This version field is mainly to smooth possible future upgrades, 

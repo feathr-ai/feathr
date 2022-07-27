@@ -21,3 +21,18 @@ export const getMsalConfig = () => {
 
   return new PublicClientApplication(msalConfig);
 };
+
+export const enum FeatureType {
+  AllNodes = "all_nodes",
+  Source = "feathr_source_v1",
+  Anchor = "feathr_anchor_v1",
+  AnchorFeature = "feathr_anchor_feature_v1",
+  DerivedFeature = "feathr_derived_feature_v1",
+}
+
+export const isFeature = (featureType: string) => {
+  return (
+    featureType === FeatureType.AnchorFeature ||
+    featureType === FeatureType.DerivedFeature
+  );
+};
