@@ -69,11 +69,20 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
     [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
-3. If you are using Purview registry there is an additional step required for the deployment to work. Registry Server authenticates with Azure Purview using Managed Identity that was created by ARM template. The Managed Identity needs to be added to Azure Purview Collections as a __Data Curator__. For more details, please refer to [Access Control in Azure Documentation](https://docs.microsoft.com/en-us/azure/purview/catalog-permissions)
+3. If you are using Purview registry there is an additional step required for the deployment to work. Registry Server authenticates with Azure Purview using Managed Identity that was created by ARM template. The Managed Identity needs to be added to Azure Purview Collections as a __Data Curator__. For more details, please refer to [Access control in the Microsoft Purview governance portal](https://docs.microsoft.com/en-us/azure/purview/catalog-permissions)
     ![purview data curator role add](../images/purview_permission_setting.png)
 
     Only collection admins can perform the above operation, the user who created this Purview account is already one. If you want to add additional admins, you can do so by clicking on _Root collection permission_ option on Azure Purview page.
 
+Congratulations, you have successfully deployed Feathr on Azure. You can access your resources by going to the resource group that you created for the deployment. A good first test would be to access Feathr UI, you can access it by clicking on App Service URL.
+
+![app service url](../images/app-service-url.png)
+
+
+![feathr ui landing page](../images/feathr-ui-landingpage.png)
+
+## Next Steps - run a sample notebook
+Follow the quick start guide [here](https://linkedin.github.io/feathr/quickstart_synapse.html) to try out a notebook example.
 
 
 ## Known Issues/Workaround
