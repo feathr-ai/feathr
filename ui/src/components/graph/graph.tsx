@@ -20,6 +20,7 @@ import ReactFlow, {
 import { useSearchParams } from "react-router-dom";
 import LineageNode from "./graphNode";
 import { findNodeInElement, getLayoutedElements } from "./utils";
+import { isFeature } from "../../utils/utils";
 
 const nodeTypes = {
   "custom-node": LineageNode,
@@ -108,7 +109,8 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
             },
             data: {
               ...element.data,
-              active: element.id === node.id,
+              active:
+                element.id === node.id && isFeature(element.data?.subtitle),
             },
           });
         }
