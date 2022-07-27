@@ -373,8 +373,8 @@ class FeathrClient(object):
         """
         
         redis_key = self._construct_redis_key(feature_table, key)
-        if self.redis_clint.hexists(redis_key, feature_name):
-            self.redis_clint.delete(redis_key, feature_name)
+        if self.redis_client.hexists(redis_key, feature_name):
+            self.redis_client.delete(redis_key, feature_name)
             print(f'Deletion successful. {feature_name} is deleted from Redis.')
         else:
             raise RuntimeError(f'Deletion failed. {feature_name} not found in Redis.')
