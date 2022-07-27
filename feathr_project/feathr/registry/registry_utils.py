@@ -26,6 +26,8 @@ def to_camel(s):
         return dict([(to_camel(k), s[k]) for k in s])
                                   
 def source_to_def(v: Source) -> dict:
+    # Note that after this method, attributes are Camel cased (eventTimestampColumn). 
+    # If the old logic works with snake case (event_timestamp_column), make sure you handle them manually. 
     ret = {}
     if v.name == INPUT_CONTEXT:
         return {
@@ -64,6 +66,8 @@ def source_to_def(v: Source) -> dict:
     return ret
     
 def anchor_to_def(v: FeatureAnchor) -> dict:
+    # Note that after this method, attributes are Camel cased (eventTimestampColumn). 
+    # If the old logic works with snake case (event_timestamp_column), make sure you handle them manually. 
     source_id = v.source._registry_id
     ret = {
         "name": v.name,
@@ -96,6 +100,8 @@ def transformation_to_def(v: Transformation) -> dict:
     raise ValueError("Unsupported Transformation type")
 
 def feature_type_to_def(v: FeatureType) -> dict:
+    # Note that after this method, attributes are Camel cased (eventTimestampColumn). 
+    # If the old logic works with snake case (event_timestamp_column), make sure you handle them manually. 
     return {
         "type": v.type,
         "tensorCategory": v.tensor_category,
@@ -130,6 +136,8 @@ def feature_to_def(v: Feature) -> dict:
     return ret
 
 def derived_feature_to_def(v: DerivedFeature) -> dict:
+    # Note that after this method, attributes are Camel cased (eventTimestampColumn). 
+    # If the old logic works with snake case (event_timestamp_column), make sure you handle them manually. 
     ret = {
         "name": v.name,
         "featureType": feature_type_to_def(v.feature_type),

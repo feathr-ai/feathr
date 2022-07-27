@@ -38,6 +38,8 @@ class DerivedFeature(FeatureBase):
         """Validate the derived feature is valid"""
         
         input_feature_key_alias = []
+        # for new entity in Purview, the attributes are Camel cases, while the old logic works as snake cases. 
+        # Modify the conversion to work with both schema.
         for feature in self.input_features:
             input_feature_key_alias.extend([x['keyColumnAlias'] for x in feature['attributes']['key']] if isinstance(feature,dict) else feature.key_alias)
         for key_alias in self.key_alias:
