@@ -4,7 +4,7 @@ from pathlib import Path
 from feathr import MonitoringSettings
 from feathr import MonitoringSqlSink
 from test_fixture import (basic_test_setup, get_online_test_table_name)
-from test_utils import Constants
+from test_utils.constants import Constants
 
 
 def test_feature_monitoring():

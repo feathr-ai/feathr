@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from feathr import MaterializationSettings, RedisSink
 from test_fixture import kafka_test_setup
-from test_utils import Constants
+from test_utils.constants import Constants
 
 @pytest.mark.skipif(os.environ.get('SPARK_CONFIG__SPARK_CLUSTER') != "azure_synapse",
                     reason="skip for databricks, as it cannot stop streaming job automatically for now.")

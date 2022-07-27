@@ -16,8 +16,7 @@ from feathr import TypedKey
 from feathr.definition._materialization_utils import _to_materialization_config
 from test_fixture import basic_test_setup
 from test_fixture import get_online_test_table_name
-from test_utils import Constants
-
+from test_utils.constants import Constants
 
 def test_feature_materialization_config():
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5,20), step=timedelta(days=1))
