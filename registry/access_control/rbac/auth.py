@@ -43,14 +43,16 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
             decoded_token = self._decode_token(token)
             return self._get_user_from_token(decoded_token)
         else:
-            raise InvalidAuthorization(detail='No authorization token was found')
+            raise InvalidAuthorization(
+                detail='No authorization token was found')
 
     @staticmethod
     def _get_user_from_token(decoded_token: Mapping) -> User:
         try:
             user_id = decoded_token['sub']
         except Exception as e:
-            raise InvalidAuthorization(detail=f'Unable to extract subject as unique id from token, {e}')
+            raise InvalidAuthorization(
+                detail=f'Unable to extract subject as unique id from token, {e}')
 
         aad_user_key = "preferred_username"
         aad_app_key = "appid"
@@ -64,7 +66,7 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
         elif aad_app_key in decoded_token:
             appid = decoded_token.get(aad_app_key)
             # Azure CLI User Impersonation token
-            if decoded_token.get("scp") == "user_impersonation":
+            if decoded_token.get("scp") == str(UserType.USER_IMPERSONATION):
                 username = decoded_token.get("upn")
                 type = UserType.USER_IMPERSONATION
             # Other AAD App token
@@ -79,13 +81,14 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
             log.debug(f"unknown user type {decoded_token}")
             username = user_id
             type = UserType.UNKNOWN
-        
-        log.info(f"username: {username}, name: {name}, token type: {str(type)} ")
+
+        log.info(
+            f"username: {username}, name: {name}, token type: {str(type)} ")
         return User(
             id=user_id,
             name=name,
             username=username,
-            type = type,
+            type=type,
             roles=decoded_token.get('roles', [])
         )
 
@@ -135,11 +138,12 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
     def _decode_token(self, token: str) -> Mapping:
         key_id = self._get_key_id(token)
         if not key_id:
-            raise InvalidAuthorization(f'The token does not contain kid: {token}')
+            raise InvalidAuthorization(
+                f'The token does not contain kid: {token}')
         key = self._get_token_key(key_id)
         try:
             decode = jwt.decode(token, key=key, algorithms=[
-                                'RS256'], audience=["https://management.azure.com",config.RBAC_API_AUDIENCE])
+                                'RS256'], audience=["https://management.azure.com", config.RBAC_API_AUDIENCE])
             return decode
         except ExpiredSignatureError as e:
             raise InvalidAuthorization(f'The token signature has expired: {e}')
