@@ -81,7 +81,7 @@ Congratulations, you have successfully deployed Feathr on Azure. You can access 
 
 ![feathr ui landing page](../images/feathr-ui-landingpage.png)
 
-## Next Steps - run a sample notebook
+## Next Steps
 Follow the quick start guide [here](https://linkedin.github.io/feathr/quickstart_synapse.html) to try out a notebook example.
 
 
