@@ -13,7 +13,7 @@ import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
-import com.linkedin.feathr.offline.client.plugins.FeathrUdfPluginContext
+import com.linkedin.feathr.offline.client.plugins.{AnchorExtractorAdaptor, FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor, SimpleAnchorExtractorSparkAdaptor, SourceKeyExtractorAdaptor}
 import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, KafkaEndpoint, LocationUtils, SimplePath}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
@@ -263,14 +263,13 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
         case aebExtractor: AnchorExtractorBase[_] =>
           aebExtractor.init(config)
         case otherExtractor =>
-          if (FeathrUdfPluginContext.isRegisteredDfWiseAnchorExtractorType(extractorClass)) {
-            FeathrUdfPluginContext.getDfWiseAnchorExtractorAdaptor(extractorClass).adaptUdf(otherExtractor)
-              .init(config)
-          } else if (FeathrUdfPluginContext.isRegisteredRowWiseAnchorExtractorType(extractorClass)) {
-            FeathrUdfPluginContext.getRowWiseAnchorExtractorAdaptor(extractorClass).adaptUdf(otherExtractor)
-              .init(config)
-          } else {
-            throw new FeathrConfigException(ErrorLabel.FEATHR_ERROR, s"Unknown extractor type ${extractorClass}")
+          FeathrUdfPluginContext.getRegisteredUdfAdaptor(extractorClass) match {
+            case Some(adaptor: SimpleAnchorExtractorSparkAdaptor) =>
+              adaptor.adaptUdf(otherExtractor).init(config)
+            case Some(adaptor: AnchorExtractorAdaptor) =>
+              adaptor.adaptUdf(otherExtractor).init(config)
+            case _ =>
+              throw new FeathrConfigException(ErrorLabel.FEATHR_ERROR, s"Unknown extractor type ${extractorClass}")
           }
       }
     }
@@ -373,8 +372,13 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
                               anchorExtractorBase: AnyRef,
                               lateralViewParameters: Option[LateralViewParams]): SourceKeyExtractor = {
     Option(node.get("keyExtractor")).map(_.textValue) match {
-      case Some(keyExtractor) =>
-        Class.forName(keyExtractor).newInstance().asInstanceOf[SourceKeyExtractor]
+      case Some(keyExtractorClassName) =>
+        val keyExtractorClass = Class.forName(keyExtractorClassName)
+        val newInstance = keyExtractorClass.getDeclaredConstructor().newInstance().asInstanceOf[AnyRef]
+        FeathrUdfPluginContext.getRegisteredUdfAdaptor(keyExtractorClass) match {
+          case Some(adaptor: SourceKeyExtractorAdaptor) => adaptor.adaptUdf(newInstance)
+          case _ => newInstance.asInstanceOf[SourceKeyExtractor]
+        }
       case _ =>
         Option(node.get("key")) match {
           case Some(keyNode) =>
@@ -556,8 +560,16 @@ private[offline] class DerivationLoader extends JsonDeserializer[DerivedFeature]
           loadAdvancedDerivedFeature(x, codec)
         } else if (x.has("class")) {
           val config = codec.treeToValue(x, classOf[CustomDerivedFeatureConfig])
-          val derivationFunction = config.`class`.newInstance().asInstanceOf[AnyRef]
+          val derivationFunctionClass = config.`class`
+          val derivationFunction = derivationFunctionClass.getDeclaredConstructor().newInstance().asInstanceOf[AnyRef]
+          // possibly "adapt" the derivation function, in case it doesn't implement Feathr's FeatureDerivationFunction,
+          // using FeathrUdfPluginContext
+          val maybeAdaptedDerivationFunction = FeathrUdfPluginContext.getRegisteredUdfAdaptor(derivationFunctionClass) match {
+            case Some(adaptor: FeatureDerivationFunctionAdaptor) => adaptor.adaptUdf(derivationFunction)
+            case _ => derivationFunction
+          }
           val consumedFeatures = config.inputs.map(x => ErasedEntityTaggedFeature(x.key.map(config.key.zipWithIndex.toMap), x.feature)).toIndexedSeq
+
           // consumedFeatures and parameterNames have same order, since they are all from config.inputs
           DerivedFeature(consumedFeatures, producedFeatures, derivationFunction, config.parameterNames, featureTypeConfigMap)
         } else if (x.has("join")) { // when the derived feature config is a seqJoin config
