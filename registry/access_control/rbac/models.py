@@ -12,6 +12,7 @@ class User(BaseModel):
 
 class UserType(str, Enum):
     AAD_USER = "aad_user",
+    USER_IMPERSONATION = "user_impersonation"
     AAD_APP = "aad_application",
     COMMON_USER = "common_user",
     UNKNOWN = "unknown",
