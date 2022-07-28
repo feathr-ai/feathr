@@ -74,7 +74,10 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
     Only collection admins can perform the above operation, the user who created this Purview account is already one. If you want to add additional admins, you can do so by clicking on _Root collection permission_ option on Azure Purview page.
 
-Congratulations, you have successfully deployed Feathr on Azure. You can access your resources by going to the resource group that you created for the deployment. A good first test would be to access Feathr UI, you can access it by clicking on App Service URL. The URL would have the following format: https://{prefix}webapp.azurewebsites.net
+Congratulations, you have successfully deployed Feathr on Azure. You can access your resources by going to the resource group that you created for the deployment. A good first test would be to access Feathr UI, you can access it by clicking on App Service URL. The URL would have the following format: 
+```bash
+https://{prefix}webapp.azurewebsites.net
+```
 
 ![app service url](../images/app-service-url.png)
 
