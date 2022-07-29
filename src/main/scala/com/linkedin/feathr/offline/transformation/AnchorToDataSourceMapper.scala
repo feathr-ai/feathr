@@ -97,7 +97,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
 
     // Only file-based source has real "path", others are just single dataset
     val adjustedObsTimeRange = if (factDataSource.location.isFileBasedLocation()) {
-      val pathChecker = PathChecker(ss)
+      val pathChecker = PathChecker(ss, dataLoaderHandlers)
       val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
       val pathInfo = pathAnalyzer.analyze(factDataSource.path)
       if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY)
