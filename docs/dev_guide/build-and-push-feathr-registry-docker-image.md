@@ -17,7 +17,7 @@ Follow the [instructions](https://docs.docker.com/get-docker) to setup docker lo
 Open terminal and go to root of this repository, run following command:
 
 ```bash
-docker build -t feathrfeaturestore/sql-registry .
+docker build -f FeathrRegistry.Dockerfile -t feathrfeaturestore/feathr-registry .
 ```
 
 ## Test docker image locally
