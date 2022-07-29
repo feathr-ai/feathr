@@ -32,8 +32,10 @@ You can ping your questions in the community Slack channel and Feathr developers
 * "I am not familiar with Scala, but I want to start to contribute to Scala code. Can someone give me some guidance?"
 * "I am not sure how to setup the cluster and test my code. Can someone help me out?"
 
-## My pull request(PR) requires testing against the database or cluster that I dont' have, how can i fix this?
-(We are still working on this. Stay tuned.)
+## My pull request(PR) requires testing against the database or cluster that I dont' have, how can I test?
+Develop your implementation locally first and use unit tests to ensure correctness. Later, you can ask PR reviewers to label them with `safe to test` so Github will kick off a integration test in our test cluster with your code.
+
+If you need more assistance regarding testing your code or development, reach out in our Slack channel.
 
 ## Technical Architecture
 Feathr contains multiple components so you can learn and contribute to various things:
