@@ -8,6 +8,7 @@ declare global {
       REACT_APP_AZURE_CLIENT_ID: string;
       REACT_APP_AZURE_TENANT_ID: string;
       REACT_APP_API_ENDPOINT: string;
+      REACR_APP_ENABLE_RBAC: boolean;
     }
   }
 
