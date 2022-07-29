@@ -24,13 +24,13 @@ If you are familiar with this project, you can just start to pick up our github 
 If you are willing to learn, no problem at all!
 
 You can ping your questions in the community Slack channel and Feathr developers will give you more guidance. For example:
-* "I am not familiar with Scala, but I want to start to contirbute to Scala code. Can someone give me some guidance?"
+* "I am not familiar with Scala, but I want to start to contribute to Scala code. Can someone give me some guidance?"
 * "I am not sure how to setup the cluster and test my code. Can someone help me out?"
 
 ## My pull request(PR) requires testing against the database or cluster that I dont' have, how can i fix this?
 (We are still working on this. Stay tuned.)
 
-## Technical Architecutre
+## Technical Architecture
 Feathr contains multiple components so you can learn and contribute to various things:
 * Python Feathr Client
   * This is the client users use to interact with most of our API. Mostly written in Python.
