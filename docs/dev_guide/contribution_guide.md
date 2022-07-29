@@ -16,7 +16,12 @@ All forms of contributions are welcome, including and not limited to:
 * For any other forms of contribution and collaboration, don't hesitate to reach out to us.
 
 # I am interested, how can I start?
-If you are new to this project, we recommend start with [`good-first-issue`](https://github.com/linkedin/feathr/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+If you are new to this project, we recommend start with [`good-first-issue`](https://github.com/linkedin/feathr/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
+The issues are also labled with what types of programming language the task need. 
+* [`good-first-issue` and `Python`](https://github.com/linkedin/feathr/issues?q=is%3Aopen+label%3A%22good+first+issue%22+label%3Apython)
+* [`good-first-issue` and `Scala`](https://github.com/linkedin/feathr/issues?q=is%3Aopen+label%3A%22good+first+issue%22+label%3Ascala)
+* [`good-first-issue` and `Java`](https://github.com/linkedin/feathr/issues?q=is%3Aopen+label%3A%22good+first+issue%22+label%3Ajava)
 
 If you are familiar with this project, you can just start to pick up our github issues.
 
