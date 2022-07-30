@@ -1,23 +1,20 @@
 import glob
 import os
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-
-from test_fixture import registry_test_setup_append, registry_test_setup_partially
 
 import pytest
 from click.testing import CliRunner
-from feathr import FeathrClient
-from feathr import (FeatureAnchor, FeatureQuery, ObservationSettings, TypedKey,
-                    ValueType)
-from feathr.registry._feathr_registry_client import _FeatureRegistry
-from feathr.client import FeathrClient
-from feathr.definition.feature_derivations import DerivedFeature
-from feathrcli.cli import init
-from numpy import equal
 
-from test_fixture import basic_test_setup, registry_test_setup
+from feathr import (FeatureQuery, ObservationSettings, TypedKey,
+                    ValueType)
+from feathr.client import FeathrClient
+from feathr.registry._feathr_registry_client import _FeatureRegistry
+from feathrcli.cli import init
+from test_fixture import registry_test_setup
+from test_fixture import registry_test_setup_append, registry_test_setup_partially
+from test_utils.constants import Constants
 
 
 def test_feathr_register_features_e2e():
@@ -63,7 +60,7 @@ def test_feathr_register_features_e2e():
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path)
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
 def test_feathr_register_features_partially():
     """

@@ -277,7 +277,7 @@ class FeathrClient(object):
             [None, b'4.0', b'31.0', b'23.0'].
             """
         redis_key = self._construct_redis_key(feature_table, key)
-        res = self.redis_clint.hmget(redis_key, *feature_names)
+        res = self.redis_client.hmget(redis_key, *feature_names)
         return self._decode_proto(res)
 
     def multi_get_online_features(self, feature_table, keys, feature_names):
@@ -297,7 +297,7 @@ class FeathrClient(object):
             doesn't exist, then a None is returned for that feature. For example: {'12': [None, b'4.0', b'31.0',
             b'23.0'], '24': [b'true', b'4.0', b'31.0', b'23.0']}.
         """
-        with self.redis_clint.pipeline() as redis_pipeline:
+        with self.redis_client.pipeline() as redis_pipeline:
             for key in keys:
                 redis_key = self._construct_redis_key(feature_table, key)
                 redis_pipeline.hmget(redis_key, *feature_names)
@@ -361,6 +361,23 @@ class FeathrClient(object):
             else:
                 typed_result.append(raw_feature)
         return typed_result
+    
+    def delete_feature_from_redis(self, feature_table, key, feature_name) -> None:
+        """
+        Delete feature from Redis
+
+        Args:
+            feature_table: the name of the feature table
+            key: the key of the entity
+            feature_name: feature name to be deleted
+        """
+        
+        redis_key = self._construct_redis_key(feature_table, key)
+        if self.redis_client.hexists(redis_key, feature_name):
+            self.redis_client.delete(redis_key, feature_name)
+            print(f'Deletion successful. {feature_name} is deleted from Redis.')
+        else:
+            raise RuntimeError(f'Deletion failed. {feature_name} not found in Redis.')
 
     def _clean_test_data(self, feature_table):
         """
@@ -375,10 +392,10 @@ class FeathrClient(object):
         ns_keys = feature_table + '*'
         while cursor != 0:
             # 5000 count at a scan seems reasonable faster for our testing data
-            cursor, keys = self.redis_clint.scan(
+            cursor, keys = self.redis_client.scan(
                 cursor=cursor, match=ns_keys, count=5000)
             if keys:
-                self.redis_clint.delete(*keys)
+                self.redis_client.delete(*keys)
 
     def _construct_redis_key(self, feature_table, key):
         return feature_table + self._KEY_SEPARATOR + key
@@ -392,13 +409,13 @@ class FeathrClient(object):
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
 
-        redis_clint = redis.Redis(
+        redis_client = redis.Redis(
             host=host,
             port=port,
             password=password,
             ssl=ssl_enabled)
         self.logger.info('Redis connection is successful and completed.')
-        self.redis_clint = redis_clint
+        self.redis_client = redis_client
 
 
     def get_offline_features(self,
@@ -474,7 +491,7 @@ class FeathrClient(object):
             job_tags[OUTPUT_FORMAT]= execution_configurations[OUTPUT_FORMAT]
         '''
         - Job tags are for job metadata and it's not passed to the actual spark job (i.e. not visible to spark job), more like a platform related thing that Feathr want to add (currently job tags only have job output URL and job output format, ). They are carried over with the job and is visible to every Feathr client. Think this more like some customized metadata for the job which would be weird to be put in the spark job itself.
-        - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to 
+        - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to
         - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
@@ -548,7 +565,7 @@ class FeathrClient(object):
         # produce materialization config
         for end in settings.get_backfill_cutoff_time():
             settings.backfill_time.end = end
-            config = _to_materialization_config(settings)
+            config = _to_materialization_config(settings)         
             config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
             config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
             write_to_file(content=config, full_file_name=config_file_path)
@@ -586,7 +603,7 @@ class FeathrClient(object):
             feature_config=os.path.join(self.local_workspace_dir, "feature_conf/"))
         '''
         - Job tags are for job metadata and it's not passed to the actual spark job (i.e. not visible to spark job), more like a platform related thing that Feathr want to add (currently job tags only have job output URL and job output format, ). They are carried over with the job and is visible to every Feathr client. Think this more like some customized metadata for the job which would be weird to be put in the spark job itself.
-        - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to 
+        - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to
         - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''

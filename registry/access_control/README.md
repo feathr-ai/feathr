@@ -40,13 +40,15 @@ Admin roles can add or delete roles in management UI page or through management 
 
 ### Environment Settings
 
+`ENABLE_RBAC` needs to be set to deploy a registry backend with access control plugin.
+
 | Variable| Description|
 |---|---|
 | RBAC_CONNECTION_STR| Connection String of the SQL database that host access control tables, required.|
-| RBAC_API_BASE| Aligned API base, needs to start with `/`|
+| RBAC_API_BASE| Aligned API base|
 | RBAC_REGISTRY_URL| The downstream Registry API Endpoint|
-| RBAC_AAD_INSTANCE | Set to "https://login.microsoftonline.com" by default |
-| RBAC_AAD_TENANT_ID| Used get auth url together with `RBAC_AAD_INSTANCE`, set to `common` by default|
+| RBAC_AAD_INSTANCE | Instance like "https://login.microsoftonline.com" |
+| RBAC_AAD_TENANT_ID| Used get auth url together with `RBAC_AAD_INSTANCE`|
 | RBAC_API_AUDIENCE| Used as audience to decode jwt tokens|
 
 ## Notes
@@ -58,7 +60,7 @@ Supported scenarios status are tracked below:
   - [x] API Spec Contents for Access Control Management APIs
   - [x] API Spec Contents for Registry API Access Control
   - [x] Separate Registry API and Access Control into different implementation
-  - [ ] A docker file to contain all required component for deployments
+  - [x] A docker file to contain all required component for deployments
 - SQL Implementation:
   - [x] `userroles` table CRUD through FastAPI
   - [x] `userroles` table schema & test data, could be used to make `.bacpac` file for SQL table initialize.
@@ -68,6 +70,8 @@ Supported scenarios status are tracked below:
   - [x] Hidden page `../management` for global admin to make CUD requests to `userroles` table
   - [x] Use id token in Management API Request headers to identify requestor
 - Future Enhancements:
+  - [x] Support AAD Application token  
+  - [x] Support OAuth tokens with `email` attributes
   - [ ] Functional in Feathr Client
   - [ ] Support AAD Groups
   - [ ] Support Other OAuth Providers

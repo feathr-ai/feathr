@@ -6,17 +6,13 @@ parent: Feathr Concepts
 
 # Feature Definition
 
-## Prerequisite
-
-* [Feathr Expression Language](../how-to-guides/expression-language.md)
-
 ## Introduction
 
 In Feathr, a feature is viewed as a function, mapping from entity id or key, and timestamp to a feature value.
 
-1) The entity key (a.k.a. entity id) identifies the subject of feature, e.g. a user id, 123.
-2) The feature name is the aspect of the entity that the feature is indicating, e.g. the age of the user.
-3) The feature value is the actual value of that aspect at a particular time, e.g. the value is 30 at year 2022.
+1. The entity key (a.k.a. entity id) identifies the subject of feature, e.g. a user id, 123.
+2. The feature name is the aspect of the entity that the feature is indicating, e.g. the age of the user.
+3. The feature value is the actual value of that aspect at a particular time, e.g. the value is 30 at year 2022.
 
 The feature definition has three sections, including sources, anchors and derivations.
 
@@ -36,8 +32,7 @@ See the [Python API documentation](https://feathr.readthedocs.io/en/latest/feath
 
 ## Step2: Define Anchors and Features
 
-A feature is called an anchored feature when the feature is directly 
-extracted from the source data, rather than computed on top of other features. The latter case is called derived feature.
+A feature is called an anchored feature when the feature is directly extracted from the source data, rather than computed on top of other features. The latter case is called derived feature.
 
 Check [Feature Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.Feature)
 and [Anchor Python API documentation](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.FeatureAnchor) to see more details.
@@ -65,12 +60,11 @@ request_anchor = FeatureAnchor(name="request_features",
                                features=features)
 ```
 
-
 For the features field above, there are two different types, simple anchored features and window aggregation features.
 
 ### Simple anchored features
 
-1) For simple anchored features, see the example below:
+1. For simple anchored features, see the example below:
 
 ```python
 f_trip_time_duration = Feature(name="f_trip_time_duration",
@@ -78,11 +72,11 @@ f_trip_time_duration = Feature(name="f_trip_time_duration",
                                transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
 ```
 
-Note that for `transform` section, you can put a simple expression to transform your features. For more information, please refer to [Feathr Expression Language](../how-to-guides/expression-language.md).
+Note that for `transform` section, you can put a simple expression to transform your features. For more information, please refer to [Feathr User Defined Functions (UDFs)](../how-to-guides/feathr-udfs.md).
 
 ### Window aggregation features
 
-2) For window aggregation features, see the supported fields below:
+2. For window aggregation features, see the supported fields below:
 
 ```python
 
@@ -107,12 +101,11 @@ Feature(name="f_location_max_fare",
 
 Note that the `agg_func`([API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.Aggregation)) should be any of these:
 
-| Aggregation Type | Input Type | Description |
-| --- | --- | --- |
-|SUM, COUNT, MAX, MIN, AVG	|Numeric|Applies the the numerical operation on the numeric inputs. |
-|MAX_POOLING, MIN_POOLING, AVG_POOLING	| Numeric Vector | Applies the max/min/avg operation on a per entry basis for a given a collection of numbers.|
-|LATEST| Any |Returns the latest not-null values from within the defined time window |
-
+| Aggregation Type                      | Input Type     | Description                                                                                 |
+| ------------------------------------- | -------------- | ------------------------------------------------------------------------------------------- |
+| SUM, COUNT, MAX, MIN, AVG             | Numeric        | Applies the the numerical operation on the numeric inputs.                                  |
+| MAX_POOLING, MIN_POOLING, AVG_POOLING | Numeric Vector | Applies the max/min/avg operation on a per entry basis for a given a collection of numbers. |
+| LATEST                                | Any            | Returns the latest not-null values from within the defined time window                      |
 
 After you have defined features and sources, bring them together to build an anchor:
 

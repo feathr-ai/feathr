@@ -48,10 +48,15 @@ def get_project_datasources(project: str) -> list:
 
 
 @router.get("/projects/{project}/features")
-def get_project_features(project: str, keyword: Optional[str] = None) -> list:
+def get_project_features(project: str, keyword: Optional[str] = None, page: Optional[int] = None, limit: Optional[int] = None) -> list:
     if keyword:
+        start =  None
+        size = None
+        if page is not None and limit is not None:
+            start = (page - 1) * limit
+            size = limit 
         efs = registry.search_entity(
-            keyword, [EntityType.AnchorFeature, EntityType.DerivedFeature])
+            keyword, [EntityType.AnchorFeature, EntityType.DerivedFeature], project=project, start=start, size=size)
         feature_ids = [ef.id for ef in efs]
         features = registry.get_entities(feature_ids)
         return list([e.to_dict() for e in features])

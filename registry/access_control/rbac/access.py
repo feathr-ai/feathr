@@ -35,15 +35,15 @@ def project_manage_access(project: str, user: User = Depends(authorize)) -> User
 
 
 def _project_access(project: str, user: User, access: str):
-    if rbac.validate_project_access_users(project, user.preferred_username, access):
+    if rbac.validate_project_access_users(project, user.username, access):
         return user
     else:
         raise ForbiddenAccess(
-            f"{access} privileges for project {project} required for user {user.preferred_username}")
+            f"{access} privileges for project {project} required for user {user.username}")
 
 
 def global_admin_access(user: User = Depends(authorize)):
-    if user.preferred_username in rbac.get_global_admin_users():
+    if user.username in rbac.get_global_admin_users():
         return user
     else:
         raise ForbiddenAccess('Admin privileges required')
@@ -54,10 +54,10 @@ def validate_project_access_for_feature(feature:str, user:str, access:str):
 
 
 def _get_project_from_feature(feature: str):
-    feature_delimiter = "__request_features__"
+    feature_delimiter = "__"
     return feature.split(feature_delimiter)[0]
 
 def get_api_header(requestor: User):
     return {
-        "x-registry-requestor": requestor.preferred_username
+        "x-registry-requestor": requestor.username
     }
