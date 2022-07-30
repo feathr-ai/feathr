@@ -74,7 +74,6 @@ private[offline] class WriteToHDFSOutputProcessor(val config: OutputProcessorCon
     val allFeatureList = featureData.keySet.map(_.getFeatureName).toSeq
     val featureListToJoin = config.getParams().getStringListOpt(FeatureGenerationPathName.FEATURES)
     val storeName = config.getParams().getStringOpt(FeatureGenerationPathName.STORE_NAME)
-    print("val featureListToJoin",  featureListToJoin)
     if (featureListToJoin.isDefined) {
       val selectedFeatureNames = featureListToJoin.getOrElse(allFeatureList)
       // filter unwanted feature
