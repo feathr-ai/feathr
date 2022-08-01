@@ -37,10 +37,10 @@ Users needs to create a `userroles` table with [schema.sql](scripts/schema.sql) 
 In current version, user needs to manually initialize `userroles` table admins in SQL table.
 At least one `global admin` is needed to use rbac features. You can add `[your-email-account]` as global admin with the following SQL script in [Azure portal query editor](https://docs.microsoft.com/en-us/azure/azure-sql/database/connect-query-portal?view=azuresql)
 ```SQL
-insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time) values ('global', '[your-email-account]','admin', '[your-email-account]', 'test data',  getutcdate())
+insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time) values ('global', '[your-email-account]','admin', '[your-email-account]', 'Initialize First Global Admin',  getutcdate())
 ```
 When `create_registry` and `create_project` API is enabled, default admin role will be assigned to the creator.
-Admin roles can add or delete roles in management UI page or through management API.
+Admin roles can add or delete roles in management UI page or through management API under certain scope.
 
 ### Environment Settings
 
