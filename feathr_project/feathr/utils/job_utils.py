@@ -69,7 +69,7 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None,
         # Reset index to avoid duplicated indices
         result_df.reset_index(drop=True)
     else:
-        raise RuntimeError(f"{format} is currently not supported in get_result_df. Please consider writing a customized function to read the result.")
+        raise RuntimeError(f"{format} is currently not supported in get_result_df. Currently only parquet, delta, avro, and csv are supported, please consider writing a customized function to read the result.")
 
     
     if local_folder is None:
