@@ -26,7 +26,7 @@ This documentation assumes users have some basic knowledge of Azure. More specif
 
 ## Cost of the setup
 
-The cost of this demo setup should be minimal, given that all the resources used in this guide are either configured as automatically deleted (such as Synpase Spark cluster), pay-as-you-go (like Azure Storage), or with small scale (like Redis cluster).
+The cost of this demo setup should be minimal, given that all the resources used in this guide are either configured as automatically deleted (such as Synapse Spark cluster), pay-as-you-go (like Azure Storage), or with small scale (like Redis cluster).
 
 ## Architecture
 
