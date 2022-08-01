@@ -12,7 +12,7 @@ from pandas.errors import EmptyDataError
 def get_result_df(client: FeathrClient, format: str = None, res_url: str = None, local_folder: str = None) -> pd.DataFrame:
     """Download the job result dataset from cloud as a Pandas dataframe to make it easier for the client to read.
 
-    format: format to read the downloaded files. Currently support `paruqet`, `delta`, `avro`, and `csv`. Default to `avro` if not specified.
+    format: format to read the downloaded files. Currently support `parquet`, `delta`, `avro`, and `csv`. Default to `avro` if not specified.
     res_url: output URL to download files. Note that this will not block the job so you need to make sure the job is finished and result URL contains actual data.
     local_folder: optional parameter to specify the absolute download path. if the user does not provide this, function will create a temporary directory and delete it after reading the dataframe.
     """
@@ -21,9 +21,11 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None,
     if res_url is None:
         raise RuntimeError("res_url is None. Please make sure either you provide a res_url or make sure the job finished in FeathrClient has a valid result URI.")
 
-    # use a format if it's provided by the user, otherwise use the one provided by the job 
+    # use user provided format, if there isn't one, then otherwise use the one provided by the job; 
+    # if none of them is available, "avro" is the default format.
     format: str = format or client.get_job_tags().get(OUTPUT_FORMAT, "")
-    format = "avro" if format is None else format
+    if format is None or format is "":
+        format = "avro"
 
     # if local_folder params is not provided then create a temporary folder
     if local_folder is not None:

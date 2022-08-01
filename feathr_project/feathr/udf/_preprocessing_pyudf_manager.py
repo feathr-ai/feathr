@@ -90,7 +90,7 @@ class _PreprocessingPyudfManager(object):
         """persist the pyspark UDF to a file in `local_workspace_dir` for later usage.
         The user_func could be either a string that represents a function body, or a callable object.
         The reason being - if we are defining a regular Python function, it will be a callable object;
-        however if we reterive features from registry, the current implementation is to use plain strings to store the function body. In that case, the user_fuc will be string.
+        however if we retrieve features from registry, the current implementation is to use plain strings to store the function body. In that case, the user_fuc will be string.
         """
         if isinstance(user_func, str):
             udf_source_code = [user_func]
