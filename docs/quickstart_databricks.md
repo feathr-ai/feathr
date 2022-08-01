@@ -17,7 +17,7 @@ For Databricks, you can simply upload [this notebook](./samples/databricks/datab
 
 3. Run the whole notebook. It will automatically install Feathr in your cluster and run the feature ingestion jobs.
 
-# Authoring Feathr jobs in local environment and submit to remote Databricks cluster
+## Authoring Feathr jobs in local environment and submit to remote Databricks cluster
 
 Although Databricks Notebooks are great tools, there are also large developer communities that prefer the usage of Visual Studio Code, where [it has native support for Python and Jupyter Notebooks](https://code.visualstudio.com/docs/datascience/jupyter-notebooks) with many great features such as syntax highlight and IntelliSense.
 
@@ -36,7 +36,7 @@ This is the only part you need to change to author the Feathr job in local envir
 ```python
 # Authoring Feathr jobs in local environment and submit to remote Databricks cluster
 host_name = 'https://<replace_with_your_databricks_host>.azuredatabricks.net/'
-host_token = '<replace_with_your_databrick_token>'
+host_token = '<replace_with_your_databricks_token>'
 ```
 
 And that's it! Feathr will automatically submit the job to the cluster you specified.
