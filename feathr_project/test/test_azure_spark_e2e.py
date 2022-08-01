@@ -23,8 +23,6 @@ def test_feathr_materialize_to_offline():
     """
     Test FeathrClient() HdfsSink.
     """
-
-    online_test_table = get_online_test_table_name("nycTaxiCITable")
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
@@ -106,7 +104,7 @@ def test_feathr_online_store_non_agg_features():
         __file__).parent.resolve() / "test_user_workspace"
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
-    online_test_table = get_online_test_table_name('nycTaxiCITable')
+    online_test_table = get_online_test_table_name('nycTaxiCITableNonAggFeature')
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
     redisSink = RedisSink(table_name=online_test_table)

@@ -25,7 +25,7 @@ def test_feathr_online_store_agg_features():
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
     redisSink = RedisSink(table_name=online_test_table)
-    settings = MaterializationSettings("nycTaxiTable",
+    settings = MaterializationSettings("TestJobName",
                                        sinks=[redisSink],
                                        feature_names=[
                                            "f_location_avg_fare", "f_location_max_fare"],
