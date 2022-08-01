@@ -46,8 +46,8 @@ class TestPathChecker extends TestFeathr with MockitoSugar {
     assertEquals(localPathChecker.exists("non-existing_path"), false)
   }
 
-  @Test(description = "test isHdfs method for LocalPathChecker")
-  def testLocalPathCheckerIsHdfs() : Unit = {
+  @Test(description = "test isExternalDataSource method for LocalPathChecker")
+  def testLocalPathCheckerIsExternalDataSource() : Unit = {
     val mockCreateDataFrame = (path: String, daliParameters: Map[String, String], jobConf: JobConf) => mock[DataFrame]
 
     val mockUnionDataFrame = (
@@ -68,7 +68,7 @@ class TestPathChecker extends TestFeathr with MockitoSugar {
     )
     val mockDataLoaderHandlers = List(mockDataLoaderHandler)
     val localPathChecker = new LocalPathChecker(new Configuration(), mockDataLoaderHandlers)
-    assertTrue(!localPathChecker.isHdfs("xyz://"))
-    assertTrue(localPathChecker.isHdfs("file://"))
+    assertTrue(localPathChecker.isExternalDataSource("xyz://"))
+    assertTrue(!localPathChecker.isExternalDataSource("file://"))
   }
 }

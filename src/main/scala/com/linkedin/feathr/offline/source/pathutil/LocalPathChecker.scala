@@ -22,23 +22,23 @@ private[offline] class LocalPathChecker(hadoopConf: Configuration, dataLoaderHan
   }
 
   /**
-   * check whether the input path is an Hdfs path. Neesd to have separate function, as there are class conflicts with Breaks.getClass
+   * check whether the input path is an external data source. Needs to have separate function, as there are class conflicts with Breaks.getClass
    * @param path input path.
-   * @return true if the path is an Hdfs path.
+   * @return true if the path is an external data source.
    */
-  def isHdfs(path: String): Boolean = {
+  def isExternalDataSource(path: String): Boolean = {
     import scala.util.control.Breaks._
 
-    var isHdfsFlag: Boolean = true
+    var isExternalDataSourceFlag: Boolean = false
     breakable {
       for(dataLoaderHandler <- dataLoaderHandlers) {
         if (dataLoaderHandler.validatePath(path)) {
-          isHdfsFlag = false
+          isExternalDataSourceFlag = true
           break
         } 
       }
     }
-    isHdfsFlag
+    isExternalDataSourceFlag
   }
 
   /**
@@ -47,7 +47,7 @@ private[offline] class LocalPathChecker(hadoopConf: Configuration, dataLoaderHan
    * @return true if the path exists.
    */
   override def exists(path: String): Boolean = {
-    if (isHdfs(path) && HdfsUtils.exists(path)) return true
+    if (!isExternalDataSource(path) && HdfsUtils.exists(path)) return true
     if (LocalFeatureJoinUtils.getMockPathIfExist(path, hadoopConf, None).isDefined) return true
     if (getClass.getClassLoader.getResource(path) != null) return true
     if (getClass.getClassLoader.getResource(path + TEST_AVRO_JSON_FILE) != null) return true
