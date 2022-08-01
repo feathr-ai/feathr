@@ -33,7 +33,7 @@ class TestSourceUtils extends TestFeathr {
     assertEquals(df.collect(), expectedRows)
   }
 
-  @Test(description = "test loading dataframe with SourceUtils  by specifying delimiter")
+  @Test(description = "test loading dataframe with SourceUtils by specifying delimiter")
   def testSourceUtilsWithCsvDelimiterOption() : Unit = {
     val conf: Configuration = new Configuration()
     val path = "anchor1-source.tsv"
