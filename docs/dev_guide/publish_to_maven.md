@@ -19,7 +19,7 @@ parent: Developer Guides
                 "Central Repo Test <central@example.com>"
             Change (N)ame, (E)mail, or (O)kay/(Q)uit? O
             ```
-     * Verify your gpg metadata
+     * Verify your gpg metadata, and not the uid. In this example it is `CA925CD6C9E8D064FF05B4728190C4130ABA0F98`
         *   ```
             $ gpg --list-keys
             /home/mylocaluser/.gnupg/pubring.kbx
@@ -31,9 +31,9 @@ parent: Developer Guides
             ```
     * Upload gpg keys to a key server
         * [Recommended] Upload manually
-            * Run the following command to generated the ASCII-armored public key needed by the key server
+            * Run the following command to generated the ASCII-armored public key needed by the key server. Replaced the {uid} with the uid noted from the earlier step.
                 *   ```
-                    gpg --armor --export user-id > pubkey.asc
+                    gpg --armor --export {uid} > pubkey.asc
                     ```
             * upload to http://keyserver.ubuntu.com/ via `submit key`
 
