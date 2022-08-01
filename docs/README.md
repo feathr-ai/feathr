@@ -33,7 +33,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 Feathr has native integrations with Databricks and Azure Synapse:
 
-Follow the [Feathr ARM deployment guide ](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
+Follow the [Feathr ARM deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
 
 If you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
 
@@ -63,6 +63,12 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 ## 🔡 Feathr Examples
 
 Please read [Feathr Capabilities](https://linkedin.github.io/feathr/concepts/feathr-capabilities.html) for more examples. Below are a few selected ones:
+
+### Feathr UI
+
+Feathr provides an intuitive UI so you can search and explore all the available features and their corresponding lineages. For more information on the Feathr UI, please refer to [Feathr Feature Registry](./concepts/feature-registry.md)
+
+![Feathr UI](./images/feathr-ui.png)
 
 ### Rich UDF Support
 
@@ -159,10 +165,10 @@ For a complete roadmap with estimated dates, please [visit this page](https://gi
 
 - [x] Support streaming
 - [x] Support common data sources
+- [X] Support feature store UI, including Lineage and Search functionalities
 - [ ] Support online transformation
 - [ ] Support feature versioning
 - [ ] Support feature monitoring
-- [ ] Support feature store UI, including Lineage and Search functionalities
 - [ ] Support feature data deletion and retention
 
 ## 👨‍👨‍👦‍👦 Community Guidelines
