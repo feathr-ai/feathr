@@ -128,14 +128,15 @@ client.get_online_features(feature_table = "agg_features",
 An illustration of the concepts and process that we talked about is like this:
 ![Observation Data and Feature Query Process](../images/observation_data.jpg)
 
-## Miscellaneous topics
+## FAQs on the Concepts
 
 ### A bit more on `Observation Data`
 
 The "Observation Data" is a concept that is a bit confusing for some beginners, and simply think it as an immutable dataset, but this dataset could be enhanced by other dataset. For example, you usually cannot drop a column for your "observation data", but you can add additional columns to it.
 
 ### What's the relationship between `Source` and `Anchor`?
-Usually an Anchor can only have one source, but one source can be consumed by different anchors. From `Source` to `Anchor`, there might be an intermediate step, which is the "preprocessing" function and allows you to customize the input a bit. 
+
+Usually an Anchor can only have one source, but one source can be consumed by different anchors. From `Source` to `Anchor`, there might be an intermediate step, which is the "preprocessing" function and allows you to customize the input a bit.
 
 ### Point in time joins and aggregations - why we need them?
 

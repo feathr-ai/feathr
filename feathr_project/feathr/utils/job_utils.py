@@ -70,6 +70,7 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None,
         for file in glob.glob(os.path.join(local_dir_path, '*.avro')):
             dataframe_list.append(pdx.read_avro(file))
         result_df = pd.concat(dataframe_list, axis=0)
+    
     if local_folder is None:
         tmp_dir.cleanup()
     return result_df
