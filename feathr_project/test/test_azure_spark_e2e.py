@@ -59,7 +59,7 @@ def test_feathr_online_store_agg_features():
     Test FeathrClient() get_online_features and batch_get can get data correctly.
     """
 
-    online_test_table = get_online_test_table_name("nycTaxiCITable")
+    online_test_table = get_online_test_table_name("nycTaxiCITableSparkE2E")
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)

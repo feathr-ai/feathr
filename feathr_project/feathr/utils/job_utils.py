@@ -24,7 +24,7 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None,
     # use user provided format, if there isn't one, then otherwise use the one provided by the job; 
     # if none of them is available, "avro" is the default format.
     format: str = format or client.get_job_tags().get(OUTPUT_FORMAT, "")
-    if format is None or format is "":
+    if format is None or format == "":
         format = "avro"
 
     # if local_folder params is not provided then create a temporary folder

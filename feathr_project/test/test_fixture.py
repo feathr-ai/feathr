@@ -196,6 +196,7 @@ def registry_test_setup_append(config_path: str):
 
 def generate_entities():
     def add_new_dropoff_and_fare_amount_column(df: DataFrame):
+        from pyspark.sql.functions import col
         df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
         df = df.withColumn("new_fare_amount", col("fare_amount") + 1000000)
         return df
@@ -269,7 +270,7 @@ def generate_entities():
     derived_feature_list = [
                         f_trip_time_distance, f_trip_time_rounded, f_trip_time_rounded_plus]
     
-    # shuffule the order to make sure they can be parsed correctly
+    # shuffle the order to make sure they can be parsed correctly
     # Those input derived features can be in arbitrary order, but in order to parse the right dependencies, we need to reorder them internally in a certain order. 
     # This shuffle is to make sure that each time we have random shuffle for the input and make sure the internal sorting algorithm works (we are using topological sort).
     random.shuffle(derived_feature_list)
@@ -285,6 +286,7 @@ def registry_test_setup_append(config_path: str):
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
 
     def add_new_dropoff_and_fare_amount_column(df: DataFrame):
+        from pyspark.sql.functions import col
         df = df.withColumn("new_lpep_dropoff_datetime", col("lpep_dropoff_datetime"))
         df = df.withColumn("new_fare_amount", col("fare_amount") + 1000000)
         return df
@@ -364,7 +366,7 @@ def registry_test_setup_append(config_path: str):
     derived_feature_list = [
                         f_trip_time_distance, f_trip_time_rounded, f_trip_time_rounded_plus]
     
-    # shuffule the order to make sure they can be parsed correctly
+    # shuffle the order to make sure they can be parsed correctly
     # Those input derived features can be in arbitrary order, but in order to parse the right dependencies, we need to reorder them internally in a certain order. 
     # This shuffle is to make sure that each time we have random shuffle for the input and make sure the internal sorting algorithm works (we are using topological sort).
     random.shuffle(derived_feature_list)
