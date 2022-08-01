@@ -77,6 +77,9 @@ Feathr will get the configurations in the following order:
 | ONLINE_STORE__REDIS__SSL_ENABLED                      | Whether SSL is enabled to access Redis cluster.                                                                                                                                                                                                                                    | Required if using Redis as online store.                                  |
 | REDIS_PASSWORD                                        | Password for the Redis cluster.                                                                                                                                                                                                                                                    | Required if using Redis as online store.                                  |
 | FEATURE_REGISTRY__API_ENDPOINT                        | Specifies registry endpoint.                                                                                                                                                                                                                                                       | Required if using registry service.                                       |
+| FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME               | [Deprecated Soon] Configure the name of the purview endpoint.                                                                                                                                                                                                                                        | Required if using Purview as the endpoint.                                |
+| FEATURE_REGISTRY__PURVIEW__DELIMITER                  | [Deprecated Soon] See [here](#FEATURE_REGISTRY__PURVIEW__DELIMITER) for more details.                                                                                                                                                                                                                     | Required                                                                  |
+| FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION | [Deprecated Soon] Controls whether the type system (think this as the "schema" for the registry) will be initialized or not. Usually this is only required to be set to `True` to initialize schema, and then you can set it to `False` to shorten the initialization time.                          | Required                                                                  |
 
 # Explanation for selected configurations
 
@@ -118,6 +121,10 @@ Another use case is to use `instance_pool_id`, where instead of creating the Spa
 ```
 
 Other advanced settings includes `idempotency_token` to guarantee the idempotency of job run requests, etc.
+
+## FEATURE_REGISTRY__PURVIEW__DELIMITER
+
+Delimiter indicates that how the project name, feature names etc. are delimited. By default it will be '__'. this is for global reference (mainly for feature sharing). For example, when we setup a project called foo, and we have an anchor called 'taxi_driver' and the feature name is called 'f_daily_trips'. the feature will have a global unique name called 'foo__taxi_driver__f_daily_trips'
 
 # A note on using Azure Key Vault to store credentials
 
