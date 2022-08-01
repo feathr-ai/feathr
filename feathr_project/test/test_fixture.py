@@ -376,4 +376,6 @@ def registry_test_setup_append(config_path: str):
 def get_online_test_table_name(table_name: str):
     # use different time for testing to avoid write conflicts
     now = datetime.now()
-    return '_'.join([table_name, str(now.minute), str(now.second)])
+    res_table = '_'.join([table_name, str(now.minute), str(now.second)])
+    print("The online Redis table is", res_table)
+    return res_table
