@@ -10,73 +10,73 @@ parent: Developer Guides
 
 1. Set up GPG for signing artifacts.
     * Generate the key, use the name and email you would like to use to identify who uploaded the artifacts. An example email address would be your github email, and name could be `Feathr Developer`, `Feathr Contributor`, your real name, etc.
-```
-$ gpg --gen-key
-...
-Real name: Central Repo Test
-Email address: central@example.com
-You selected this USER-ID:
-    "Central Repo Test <central@example.com>"
-Change (N)ame, (E)mail, or (O)kay/(Q)uit? O
-```
-    * Verify your gpg metadata
-```
-$ gpg --list-keys
-/home/mylocaluser/.gnupg/pubring.kbx
-...
-pub   rsa3072 2021-06-23 [SC] [expires: 2023-06-23]
-      CA925CD6C9E8D064FF05B4728190C4130ABA0F98
-uid           [ultimate] Central Repo Test <central@example.com>
-sub   rsa3072 2021-06-23 [E] [expires: 2023-06-23]
-```
+        *   ```
+            $ gpg --gen-key
+            ...
+            Real name: Central Repo Test
+            Email address: central@example.com
+            You selected this USER-ID:
+                "Central Repo Test <central@example.com>"
+            Change (N)ame, (E)mail, or (O)kay/(Q)uit? O
+            ```
+     * Verify your gpg metadata
+        *   ```
+            $ gpg --list-keys
+            /home/mylocaluser/.gnupg/pubring.kbx
+            ...
+            pub   rsa3072 2021-06-23 [SC] [expires: 2023-06-23]
+                CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+            uid           [ultimate] Central Repo Test <central@example.com>
+            sub   rsa3072 2021-06-23 [E] [expires: 2023-06-23]
+            ```
     * Upload gpg keys to a key server
         * [Recommended] Upload manually
             * Run the following command to generated the ASCII-armored public key needed by the key server
-```
-gpg --armor --export user-id > pubkey.asc
-```
+                *   ```
+                    gpg --armor --export user-id > pubkey.asc
+                    ```
             * upload to http://keyserver.ubuntu.com/ via `submit key`
 
         * Upload via command line. Currently this hasn't succeeded, if succeeded, please alter the steps here with your fix.
-```
-$ gpg --keyserver keyserver.ubuntu.com --recv-keys CA925CD6C9E8D064FF05B4728190C4130ABA0F98
-```
+            *   ```
+                $ gpg --keyserver keyserver.ubuntu.com --recv-keys CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+                ```
 ---
 
 2.  Set up `Sonatype` credentials
     * Get account details to login to https://oss.sonatype.org/. Reachout to feathr team, such as @jaymo001 or @hangfei
     * Setup the credentials locally
         * Create sonatype configuration file
-```
-vim $HOME/.sbt/1.0/sonatype.sbt
-```
+            *   ```
+                vim $HOME/.sbt/1.0/sonatype.sbt
+                ```
         * Paste the following with the sonatype credentials
-```
-credentials += Credentials("Sonatype Nexus Repository Manager",
-        "oss.sonatype.org",
-        "(Sonatype user name)",
-        "(Sonatype password)")
-```
+            *   ```
+                credentials += Credentials("Sonatype Nexus Repository Manager",
+                        "oss.sonatype.org",
+                        "(Sonatype user name)",
+                        "(Sonatype password)")
+                ```
 ---
 
 3. Publish to sonatype/maven via sbt
     * In your feathr directory, clear your cache to prevent stale errors
-```
-rm -rf target/sonatype-staging/
-```
+        *   ```
+            rm -rf target/sonatype-staging/
+            ```
     * Start sbt console by running
-```
-sbt
-```
+        *   ```
+            sbt
+            ```
         * if experiencing java issues try setting the java version like so:
-```
-sbt -java-home /Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home
-```
+            *   ```
+                sbt -java-home /Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home
+                ```
     * Execute command in sbt console to publish to maven
-```
-reload
- ; publishSigned; sonatypeBundleRelease
-```
+        *   ```
+            reload
+            ; publishSigned; sonatypeBundleRelease
+            ```
 ---
 
 4. "Upon release, your component will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to four hours."
