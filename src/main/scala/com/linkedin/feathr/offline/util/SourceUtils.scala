@@ -66,11 +66,10 @@ private[offline] object SourceUtils {
   val firstRecordName = "topLevelRecord"
 
   /**
-   * Convert string to special characters
-   * @return a String
+   * Convert delimiter to an escape character (e.g. "   " -> "\t")
    */
   def escape(raw: String): String = {
-    import scala.reflect.runtime.universe._
+    import scala.reflect.runtime.universe.{Literal, Constant}
     Literal(Constant(raw)).toString.replaceAll("\"", "")
   }
 

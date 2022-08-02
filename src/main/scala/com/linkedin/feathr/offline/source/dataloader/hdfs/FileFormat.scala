@@ -30,11 +30,10 @@ object FileFormat {
   val DATA_FORMAT = "data.format"
 
   /**
-   * Convert string to special characters
-   * @return a String
+   * Convert delimiter to an escape character (e.g. "   " -> "\t")
    */
   def escape(raw: String): String = {
-    import scala.reflect.runtime.universe._
+    import scala.reflect.runtime.universe.{Literal, Constant}
     Literal(Constant(raw)).toString.replaceAll("\"", "")
   }
 
@@ -86,6 +85,7 @@ object FileFormat {
     val p = existingHdfsPaths.head.toLowerCase()
     p match {
       case p if p.endsWith(".csv") => CSV
+      // Tab-separated Format will be treated as CSV (Enum) here but with tab as the delimiter
       case p if p.endsWith(".tsv") => CSV
       case p if p.endsWith(".parquet") => PARQUET
       case p if p.endsWith(".orc") => ORC

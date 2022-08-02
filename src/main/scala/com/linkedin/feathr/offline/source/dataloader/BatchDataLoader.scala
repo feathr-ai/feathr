@@ -52,8 +52,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
   }
 
   /**
-   * Convert string to special characters
-   * @return a String
+   * Convert delimiter to an escape character (e.g. "   " -> "\t")
    */
   def escape(raw: String): String = {
     import scala.reflect.runtime.universe.{Literal, Constant}
