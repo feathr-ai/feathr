@@ -75,7 +75,7 @@ Click the button below to deploy a minimal set of Feathr resources. This is not 
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
-### 3. Assign the right permissions to selected users (Optional)
+### 3. Grant Key Vault and Synapse access to selected users (Optional)
 
 YOu will need to assign the right permission to users in order for them to access Azure key vault, permission to access the Storage Blob as a Contributor, and permission to submit jobs to Synapse cluster.
 
