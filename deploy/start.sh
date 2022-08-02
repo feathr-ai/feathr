@@ -16,6 +16,12 @@ else
     echo "  \"azureTenantId\": \"${REACT_APP_AZURE_TENANT_ID}\"," >> $envfile
 fi
 
+if [[ -z "${REACT_APP_ENABLE_RBAC}" ]]; then
+    echo "Environment variable REACT_APP_ENABLE_RBAC is not defined, skipping"
+else
+    echo "  \"enableRBAC\": \"${REACT_APP_ENABLE_RBAC}\"," >> $envfile
+fi
+
 echo "}" >> $envfile
 
 echo "Successfully generated ${envfile} with following content"
