@@ -4,8 +4,8 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataExceptio
 import com.linkedin.feathr.offline.config.location.InputLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
+import com.linkedin.feathr.offline.util.DelimiterUtils.escape
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
@@ -49,14 +49,6 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
    */
   override def loadDataFrame(): DataFrame = {
     loadDataFrame(Map(), new JobConf(ss.sparkContext.hadoopConfiguration))
-  }
-
-  /**
-   * Convert delimiter to an escape character (e.g. "   " -> "\t")
-   */
-  def escape(raw: String): String = {
-    import scala.reflect.runtime.universe.{Literal, Constant}
-    Literal(Constant(raw)).toString.replaceAll("\"", "")
   }
 
   /**
