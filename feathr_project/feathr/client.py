@@ -115,9 +115,24 @@ class FeathrClient(object):
         self.redis_ssl_enabled = self.envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'ssl_enabled')
 
+        # Offline store enabled configs
+        self.s3_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 's3', 's3_enabled')
+        self.adls_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 'adls', 'adls_enabled')
+        self.wasb_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 'wasb', 'wasb_enabled')
+        self.jdbc_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 'jdbc', 'jdbc_enabled')
+        self.snowflake_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 'snowflake', 'snowflake_enabled')
+        if not (self.s3_enabled or self.adls_enabled or self.wasb_enabled or self.jdbc_enabled or self.snowflake_enabled):
+            self.logger.warning("No offline storage enabled.")
+
         # S3 configs
-        self.s3_endpoint = self.envutils.get_environment_variable_with_default(
-            'offline_store', 's3', 's3_endpoint')
+        if self.s3_enabled:
+            self.s3_endpoint = self.envutils.get_environment_variable_with_default(
+                'offline_store', 's3', 's3_endpoint')
 
         # spark configs
         self.output_num_parts = self.envutils.get_environment_variable_with_default(
@@ -665,6 +680,8 @@ class FeathrClient(object):
     def _get_s3_config_str(self):
         """Construct the S3 config string. The endpoint, access key, secret key, and other parameters can be set via
         environment variables."""
+        if not self.s3_enabled:
+            return ""
         endpoint = self.s3_endpoint
         # if s3 endpoint is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
@@ -681,6 +698,8 @@ class FeathrClient(object):
     def _get_adls_config_str(self):
         """Construct the ADLS config string for abfs(s). The Account, access key and other parameters can be set via
         environment variables."""
+        if not self.adls_enabled:
+            return ""
         account = self.envutils.get_environment_variable('ADLS_ACCOUNT')
         # if ADLS Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
@@ -695,6 +714,8 @@ class FeathrClient(object):
     def _get_blob_config_str(self):
         """Construct the Blob config string for wasb(s). The Account, access key and other parameters can be set via
         environment variables."""
+        if not self.wasb_enabled:
+            return ""
         account = self.envutils.get_environment_variable('BLOB_ACCOUNT')
         # if BLOB Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
@@ -709,6 +730,8 @@ class FeathrClient(object):
     def _get_sql_config_str(self):
         """Construct the SQL config string for jdbc. The dbtable (query), user, password and other parameters can be set via
         environment variables."""
+        if not self.jdbc_enabled:
+            return ""
         table = self.envutils.get_environment_variable('JDBC_TABLE')
         user = self.envutils.get_environment_variable('JDBC_USER')
         password = self.envutils.get_environment_variable('JDBC_PASSWORD')
@@ -745,6 +768,8 @@ class FeathrClient(object):
     def _get_snowflake_config_str(self):
         """Construct the Snowflake config string for jdbc. The url, user, role and other parameters can be set via
         yaml config. Password can be set via environment variables."""
+        if not self.snowflake_enabled:
+            return ""
         sf_url = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'url')
         sf_user = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'user')
         sf_role = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'role')
