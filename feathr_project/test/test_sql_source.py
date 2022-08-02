@@ -100,7 +100,6 @@ def test_feathr_get_offline_features():
     These 2 variables will be passed to the Spark job in `--system-properties` parameter so Spark can access the database
     """
 
-    online_test_table = get_online_test_table_name("nycTaxiCITable")
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)

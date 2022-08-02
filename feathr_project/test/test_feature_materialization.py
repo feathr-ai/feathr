@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+from feathr.client import FeathrClient
 
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
@@ -161,10 +162,10 @@ def test_get_offline_features_verbose():
                         )
 
 def test_materialize_features_verbose():
-    online_test_table = get_online_test_table_name("nycTaxiCITable")
+    online_test_table = get_online_test_table_name("nycTaxiCITableMaterializeVerbose")
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
 
-    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
     redisSink = RedisSink(table_name=online_test_table)
     settings = MaterializationSettings("nycTaxiTable",
@@ -186,7 +187,7 @@ def test_delete_feature_from_redis():
 
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
 
-    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     batch_source = HdfsSource(name="nycTaxiBatchSource_add_new_fare_amount",
                               path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
@@ -217,7 +218,7 @@ def test_delete_feature_from_redis():
 
     client.build_features(anchor_list=[regular_anchor])
 
-    online_test_table = get_online_test_table_name('nycTaxiCITable')
+    online_test_table = get_online_test_table_name('nycTaxiCITableDeletion')
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))

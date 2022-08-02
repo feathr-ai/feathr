@@ -22,7 +22,7 @@ First step is to provision required cloud resources if you want to use Feathr. F
 
 Feathr has native cloud integration. Here are the steps to use Feathr on Azure:
 
-1. Follow the [Feathr ARM deployment guide ](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template. Alternatively, if you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
+1. Follow the [Feathr ARM deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template. Alternatively, if you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
 
 2. Once the deployment is complete,run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
 
@@ -43,11 +43,12 @@ pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_proje
 ```
 
 ## Step 3: Run the sample notebook
+
 We've provided a self-contained [sample notebook](./samples/product_recommendation_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
 
 ## Step 4: Update Feathr config
 
-In the sample notebook, you will see some settings like below. You should update those settings based on your environment, for exmaple the spark runtime, synapse/databricks endpoint, etc.
+In the sample notebook, you will see some settings like below. You should update those settings based on your environment, for example the spark runtime, synapse/databricks endpoint, etc.
 
 ```yaml
 # DO NOT MOVE OR DELETE THIS FILE
@@ -89,7 +90,7 @@ Or set this in python:
 os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 ```
 
-## Step 5: Setup environment variables.
+## Step 5: Setup environment variables
 
 In the self-contained [sample notebook](./samples/product_recommendation_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
 
@@ -102,6 +103,7 @@ os.environ['AZURE_CLIENT_ID'] = ''
 os.environ['AZURE_TENANT_ID'] = ''
 os.environ['AZURE_CLIENT_SECRET'] = ''
 ```
+
 Please refer to [A note on using azure key vault to store credentials](https://github.com/linkedin/feathr/blob/41e7496b38c43af6d7f8f1de842f657b27840f6d/docs/how-to-guides/feathr-configuration-and-env.md#a-note-on-using-azure-key-vault-to-store-credentials) for more details.
 
 ## Step 6: Create features with Python APIs
