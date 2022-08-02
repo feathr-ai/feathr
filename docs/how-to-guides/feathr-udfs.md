@@ -60,7 +60,7 @@ def add_new_dropoff_and_fare_amount_column(df: DataFrame):
     return df
 ```
 
-4. Currently, "chained" functions are not supported. I.e. the example below is not supported:
+5. Currently, "chained" functions are not supported. I.e. the example below is not supported:
 
 ```python
 def multiply_100(input_val):
@@ -126,7 +126,7 @@ def feathr_udf_filter_location_id(df: DataFrame) -> DataFrame:
   return sqlDF
 ```
 
-### UDF with Pandas Example:
+### UDF with Pandas Example
 
 Feathr also supports using pandas to deal with the data. Behind the scene it's using pandas-on-spark so some limitation applies here. Please refer to [Pandas-on-Spark's Best Practice](https://spark.apache.org/docs/latest/api/python/user_guide/pandas_on_spark/best_practices.html#best-practices) for more details.
 
@@ -174,7 +174,7 @@ derived_feature = DerivedFeature(name="f_trip_time_distance",
 
  feature = Feature(name="f_day_of_week",
             feature_type=INT32,
-            transform="dayofweek(lpep_dropoff_datetime)") 
+            transform="dayofweek(lpep_dropoff_datetime)")
 ```
 
 ## Illustration on How Feathr UDF works

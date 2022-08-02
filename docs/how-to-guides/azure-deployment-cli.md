@@ -4,13 +4,11 @@ title: Azure Resource Provisioning through Azure CLI
 parent: How-to Guides
 ---
 
-
 # Azure Resource Provisioning
 
 Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. We have a quick start guide below that will facilitate this process.
 
-
-## Provision Azure Resources using CLI:
+## Provision Azure Resources using CLI
 
 1. Use the content below as a detailed explanation of [Azure resource provisioning script](./azure_resource_provision.sh). **DO NOT** run that script directly given the complexity of cloud environment setup. Instead, follow the steps in this documentation so you can always go back and check your step in case of some failures.
 2. We provide an [Azure resource provisioning script](./azure_resource_provision.sh) which can be used to automate the process
@@ -83,7 +81,7 @@ else
 fi
 ```
 
-# Setup all the resource names
+## Setup all the resource names
 
 Setup all the resource names which will be used later.
 
@@ -103,7 +101,7 @@ And then set the current subscription ID:
 az account set -s $subscription_id
 ```
 
-# Create a Service Principal which you can automate later
+## Create a Service Principal which you can automate later
 
 You can simply think an Azure Service Principal is an account that can be used for automation (so you don't have to use your own account to perform all the actions), though it can do much more than that. We will use a service principal for the steps below, but you can also use your own Azure account for all those actions as long as you have sufficient permission.
 
@@ -119,7 +117,8 @@ echo "AZURE_TENANT_ID: $sp_tenantid"
 echo "AZURE_CLIENT_SECRET: $sp_password"
 This will give three variables: AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_CLIENT_SECRET. You will need them later.
 ```
-__You should save AZURE_CLIENT_SECRET because you will only see it once here__
+
+Note: **You should save AZURE_CLIENT_SECRET because you will only see it once here**
 
 ## Create a storage account
 
@@ -137,7 +136,7 @@ az storage fs create -n $storage_file_system_name --account-name $storage_accoun
 az role assignment create --role "Storage Blob Data Contributor" --assignee "$sp_objectid" --scope "/subscriptions/$subscription_id/resourceGroups/$resource_group_name/providers/Microsoft.Storage/storageAccounts/$storage_account_name"
 ```
 
-## Create a Synapse cluster:
+## Create a Synapse cluster
 
 Next, we need to create an Azure Synapse Workspace. You can learn more about Azure Synapse in the [documentation page](https://azure.microsoft.com/en-us/services/synapse-analytics/). In a nutshell, in a Synapse Workspace, you can get a managed Apache Spark Pool which you can stop at anytime, as well as an enterprise datawarehouse.
 
@@ -145,7 +144,7 @@ The script below helps you to:
 
 - Create a Synapse Workspace
 - Create a Synapse Spark Pool
-- Assign the right permssion to this Spark Pool
+- Assign the right permission to this Spark Pool
 
 ```bash
 # Create Synapse Cluster
@@ -197,7 +196,7 @@ This config is only for demo purpose. For production scenario, you should consid
 - using a Premium SKU with larger VM
 - enable multiple zones
 - use more replicas
-  Please refer to the article [Enable zone redundancy for Azure Cache for Redis](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-how-to-zone-redundancy) for more information on enabling zone redundency.
+  Please refer to the article [Enable zone redundancy for Azure Cache for Redis](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-how-to-zone-redundancy) for more information on enabling zone redundancy.
 
 You should also record the password which will be used later.
 
