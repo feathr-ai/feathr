@@ -43,7 +43,7 @@ class WindowAggTransformation(Transformation):
         agg_func: aggregation function. Available values: `SUM`, `COUNT`, `MAX`, `MIN`, `AVG`, `MAX_POOLING`, `MIN_POOLING`, `AVG_POOLING`, `LATEST`
         window: Time window length to apply the aggregation. support 4 type of units: d(day), h(hour), m(minute), s(second). The example value are "7d' or "5h" or "3m" or "1s"
         group_by: Feathr expressions applied after the `agg_expr` transformation as groupby field, before aggregation, same as 'group by' in SQL
-        filter: Feathr expression applied to each row as a filter before aggregation
+        filter: Feathr expression applied to each row as a filter before aggregation. This should be a string and a valid Spark SQL Expression. For example: filter = 'age > 3'. This is similar to PySpark filter operation and more details can be learned here: https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.filter.html
     """
     def __init__(self, agg_expr: str, agg_func: str, window: str, group_by: Optional[str] = None, filter: Optional[str] = None, limit: Optional[int] = None) -> None:
         super().__init__()
