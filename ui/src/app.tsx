@@ -10,6 +10,7 @@ import Features from "./pages/feature/features";
 import NewFeature from "./pages/feature/newFeature";
 import FeatureDetails from "./pages/feature/featureDetails";
 import DataSources from "./pages/dataSource/dataSources";
+import DataSourceDetails from "./pages/dataSource/dataSourceDetails";
 import Jobs from "./pages/jobs/jobs";
 import Monitoring from "./pages/monitoring/monitoring";
 import LineageGraph from "./pages/feature/lineageGraph";
@@ -32,6 +33,7 @@ const App: React.FC = () => {
                 <Header />
                 <Routes>
                   <Route path="/dataSources" element={<DataSources />} />
+                  <Route path="/dataSourceDetails" element={<DataSourceDetails />} />
                   <Route path="/features" element={<Features />} />
                   <Route path="/new-feature" element={<NewFeature />} />
                   <Route
