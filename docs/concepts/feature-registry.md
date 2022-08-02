@@ -63,10 +63,8 @@ feature_registry:
 ### Register Features
 
 ```python
+client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
 client.register_features()
-# Allow purview to process a bit
-time.sleep(5)
-# in CI test, the project name is set by the CI pipeline so we read it here
 all_features = client.list_registered_features(project_name=client.project_name)
 ```
 ### Reuse Features from Existing Registry
