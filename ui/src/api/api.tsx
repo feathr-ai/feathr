@@ -212,11 +212,25 @@ export const getIdToken = async (
 
 export const authAxios = async (msalInstance: PublicClientApplication) => {
   const token = await getIdToken(msalInstance);
-  return Axios.create({
+  const axios = Axios.create({
     headers: {
       Authorization: "Bearer " + token,
       "Content-Type": "application/json",
     },
     baseURL: getApiBaseUrl(),
   });
+
+  axios.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    (error) => {
+      if (error.response?.status === 403) {
+        const detail = error.response.data.detail;
+        window.location.href = "/responseErrors/403/" + detail;
+      }
+      //TODO: handle other response errors
+    }
+  );
+  return axios;
 };

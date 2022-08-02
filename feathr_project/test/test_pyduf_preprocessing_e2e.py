@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+from feathr.client import FeathrClient
 
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
@@ -59,7 +60,7 @@ def test_non_swa_feature_gen_with_offline_preprocessing():
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
 
-    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client:FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     batch_source = HdfsSource(name="nycTaxiBatchSource_add_new_fare_amount",
                               path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
@@ -90,7 +91,7 @@ def test_non_swa_feature_gen_with_offline_preprocessing():
 
     client.build_features(anchor_list=[regular_anchor])
 
-    online_test_table = get_online_test_table_name('nycTaxiCITable')
+    online_test_table = get_online_test_table_name('nycTaxiCITableOfflineProcessing')
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -151,7 +152,7 @@ def test_feature_swa_feature_gen_with_preprocessing():
 
     client.build_features(anchor_list=[agg_anchor])
 
-    online_test_table = get_online_test_table_name('nycTaxiCITable')
+    online_test_table = get_online_test_table_name('nycTaxiCITableSWAFeatureMaterialization')
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
