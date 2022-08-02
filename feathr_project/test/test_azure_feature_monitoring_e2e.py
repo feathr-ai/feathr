@@ -8,13 +8,13 @@ from test_utils.constants import Constants
 
 
 def test_feature_monitoring():
-    online_test_table = get_online_test_table_name("nycTaxiCITable")
+    monitor_sink_table = get_online_test_table_name("nycTaxiCITableMonitoring")
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
 
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
-    monitor_sink = MonitoringSqlSink(table_name=online_test_table)
+    monitor_sink = MonitoringSqlSink(table_name=monitor_sink_table)
     settings = MonitoringSettings("monitoringSetting",
                                   sinks=[monitor_sink],
                                   feature_names=[
