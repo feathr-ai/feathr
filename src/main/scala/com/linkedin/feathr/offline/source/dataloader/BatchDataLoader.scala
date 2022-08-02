@@ -56,7 +56,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
    * @return a String
    */
   def escape(raw: String): String = {
-    import scala.reflect.runtime.universe._
+    import scala.reflect.runtime.universe.{Literal, Constant}
     Literal(Constant(raw)).toString.replaceAll("\"", "")
   }
 
