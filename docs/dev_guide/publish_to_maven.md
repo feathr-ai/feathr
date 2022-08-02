@@ -3,6 +3,7 @@ layout: default
 title: Developer Guide for publishing to maven
 parent: Developer Guides
 ---
+
 # Developer Guide for publishing to maven
 
 ## Manual Publishing
@@ -99,4 +100,3 @@ https://www.linuxbabe.com/security/a-practical-guide-to-gpg-part-1-generate-your
 https://central.sonatype.org/publish/publish-guide/#deployment
 
 https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html
-
