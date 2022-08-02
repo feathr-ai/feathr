@@ -3,13 +3,15 @@ layout: default
 title: Developer Guide for publishing to maven
 parent: Developer Guides
 ---
+
 # Developer Guide for publishing to maven
 
 ## Manual Publishing
 
 1. Get account details to login to https://oss.sonatype.org/
 2. Install GPG, setup keys, and export to a key server
-```
+
+```bash
 $ gpg --gen-key
 ...
 Real name: Central Repo Test
@@ -32,37 +34,46 @@ $ gpg --keyserver keyserver.ubuntu.com --recv-keys CA925CD6C9E8D064FF05B4728190C
 if failing to programmatically export to key server, you can export it manually and upload to http://keyserver.ubuntu.com/ via `submit key`
 
 run the following command to generated the ASCII-armored public key needed by the key server
+
 ```
 gpg --armor --export user-id > pubkey.asc
 ```
+
 https://www.linuxbabe.com/security/a-practical-guide-to-gpg-part-1-generate-your-keypair
 
 3. Setup your credentials locally at `$HOME/.sbt/0.13/sonatype.sbt`
+
 ```
 credentials += Credentials("Sonatype Nexus Repository Manager",
         "oss.sonatype.org",
         "(Sonatype user name)",
         "(Sonatype password)")
 ```
+
 (ref, https://github.com/xerial/sbt-sonatype)
 
 4. Publish to maven via sbt
-In your feathr directory, clear your cache to prevent stale errors
+   In your feathr directory, clear your cache to prevent stale errors
+
 ```
 rm -rf target/sonatype-staging/
 ```
+
 Start sbt console by running
+
 ```
 sbt -java-home /Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home
 ```
+
 Execute command in sbt console to publish to maven
+
 ```
 reload
  ; publishSigned; sonatypeBundleRelease
 ```
 
 5. "Upon release, your component will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to four hours."
-https://central.sonatype.org/publish/publish-guide/#releasing-to-central
+   https://central.sonatype.org/publish/publish-guide/#releasing-to-central
 
 6. After new version is released via Maven, use the released version to run a test to ensure it actually works. You can do this by running a codebase that imports Feathr scala code.
 
@@ -72,9 +83,6 @@ https://central.sonatype.org/publish/publish-guide/#releasing-to-central
 
 ### References
 
-
-
 https://central.sonatype.org/publish/publish-guide/#deployment
 
 https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html
-
