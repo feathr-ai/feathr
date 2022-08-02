@@ -1,12 +1,13 @@
-import React from 'react';
-import { Card} from 'antd';
+import React from "react";
+import { Card, Typography } from "antd";
 
-type Props = {};
+const { Title } = Typography;
 
-const Jobs: React.FC<Props> = () => {
+const Jobs: React.FC = () => {
   return (
-    <div className="home" style={ { margin: "2%" } }>
-      <Card style={ { minWidth: '1000px' } }>
+    <div className="page">
+      <Card style={{ minWidth: "1000px" }}>
+        <Title level={3}>Jobs</Title>
         Under construction
       </Card>
     </div>

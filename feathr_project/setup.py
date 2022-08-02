@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-# Use the README.md in root project
+# Use the README.md from /docs
 root_path = Path(__file__).resolve().parent.parent
-long_description = (root_path / "README.md").read_text()
+long_description = (root_path / "docs/README.md").read_text()
 
 setup(
     name='feathr',
