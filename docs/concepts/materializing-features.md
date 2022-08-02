@@ -1,16 +1,16 @@
 ---
 layout: default
-title: Feature Generation and Materialization
+title: Feature Materialization (also known as feature generation)
 parent: Feathr Concepts
 ---
 
-# Feature Generation and Materialization
+# Feature Materialization (also known as feature generation)
 
-Feature generation (also known as feature materialization) is the process to create features from raw source data into a certain persisted storage in either offline store (for further reuse), or online store (for online inference).
+Feature materialization (also known as feature generation) is the process to create features for a certain entity from raw source data into a certain persisted storage in either offline store (for further reuse), or online store (for online inference).
 
-User can utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused (usually in offline setting). Feature generation is also useful in generating embedding features, where those embeddings distill information from large data and is usually more compact.
+User can utilize feature generation to pre-compute and materialize pre-defined features to online and/or offline storage. This is desirable when the feature transformation is computation intensive or when the features can be reused (usually in offline setting). Feature generation is also useful in generating embedding features, where those embeddings distill information from large data and is usually more compact. Also, please note that you can only materialize features for a specific entity/key in the same `materialize_features` call.
 
-## Generating Features to Online Store
+## Materializing Features to Online Store
 
 When the models are served in an online environment, we also need to serve the corresponding features in the same online environment as well. Feathr provides APIs to generate features to online storage for future consumption. For example:
 
@@ -119,7 +119,7 @@ client.materialize_features(settings, execution_configurations={ "spark.feathr.o
 For reading those materialized features, Feathr has a convenient helper function called `get_result_df` to help you view the data. For example, you can use the sample code below to read from the materialized result in offline store:
 
 ```python
-
+from feathr import get_result_df
 path = "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20/"
 res = get_result_df(client=client, format="parquet", res_url=path)
 ```

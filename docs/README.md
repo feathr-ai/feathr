@@ -136,6 +136,7 @@ Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.
 - [Introduction to Feathr - Beginner's guide](https://www.youtube.com/watch?v=gZg01UKQMTY)
 - [Document Intelligence using Azure Feature Store (Feathr) and SynapseML
   ](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
+- [Notebook tutorial: Build a Product Recommendation Machine Learning Model with Feathr Feature Store](https://www.youtube.com/watch?v=2KSM-NLfvY0)
 
 ## ⚙️ Cloud Integrations and Architecture
 
