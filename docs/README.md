@@ -60,9 +60,9 @@ Or use the latest code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## 🔡 Feathr Examples
+## 🔡 Feathr Highlighted Capabilities
 
-Please read [Feathr Capabilities](https://linkedin.github.io/feathr/concepts/feathr-capabilities.html) for more examples. Below are a few selected ones:
+Please read [Feathr Full Capabilities](./concepts/feathr-capabilities.md) for more examples. Below are a few selected ones:
 
 ### Feathr UI
 
@@ -87,7 +87,7 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
                         timestamp_format="yyyy-MM-dd HH:mm:ss")
 ```
 
-### Defining Window Aggregation Features
+### Defining Window Aggregation Features with Point-in-time correctness
 
 ```python
 agg_features = [Feature(name="f_location_avg_fare",
