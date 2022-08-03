@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.source.pathutil
 
 import org.apache.spark.sql.SparkSession
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 
 /**
  * Common path utility functions
@@ -25,8 +26,8 @@ private[offline] trait PathChecker {
  * It will construct a specific path checker according to the spark session.
  */
 private[offline] object PathChecker {
-  def apply(ss : SparkSession): PathChecker = {
-    if (ss.sparkContext.isLocal) new LocalPathChecker(ss.sparkContext.hadoopConfiguration)
+  def apply(ss : SparkSession, dataLoaderHandlers: List[DataLoaderHandler]): PathChecker = {
+    if (ss.sparkContext.isLocal) new LocalPathChecker(ss.sparkContext.hadoopConfiguration, dataLoaderHandlers)
     else new HdfsPathChecker()
   }
 }
