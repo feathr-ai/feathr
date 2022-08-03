@@ -16,6 +16,12 @@ else
     echo "  \"azureTenantId\": \"${REACT_APP_AZURE_TENANT_ID}\"," >> $envfile
 fi
 
+if [[ -z "${REACT_APP_ENABLE_RBAC}" ]]; then
+    echo "Environment variable REACT_APP_ENABLE_RBAC is not defined, skipping"
+else
+    echo "  \"enableRBAC\": \"${REACT_APP_ENABLE_RBAC}\"," >> $envfile
+fi
+
 echo "}" >> $envfile
 
 echo "Successfully generated ${envfile} with following content"
@@ -27,7 +33,7 @@ nginx
 # Start API app
 LISTENING_PORT="8000"
 
-if [ "x$ENABLE_RBAC" == "x" ]; then
+if [ "x$REACT_APP_ENABLE_RBAC" == "x" ]; then
     echo "RBAC flag not configured, only launch registry app"
     if [ "x$PURVIEW_NAME" == "x" ]; then
         echo "Purview flag is not configured, run SQL registry"
