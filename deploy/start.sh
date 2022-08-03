@@ -33,7 +33,7 @@ nginx
 # Start API app
 LISTENING_PORT="8000"
 
-if [ "x$ENABLE_RBAC" == "x" ]; then
+if [ "x$REACT_APP_ENABLE_RBAC" == "x" ]; then
     echo "RBAC flag not configured, only launch registry app"
     if [ "x$PURVIEW_NAME" == "x" ]; then
         echo "Purview flag is not configured, run SQL registry"

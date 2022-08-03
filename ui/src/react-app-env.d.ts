@@ -19,7 +19,7 @@ declare global {
   interface EnvironmentConfig {
     azureClientId: string;
     azureTenantId: string;
-    enableRbac: boolean;
+    enableRBAC: boolean;
   }
 }
 

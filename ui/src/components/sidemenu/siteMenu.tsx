@@ -12,9 +12,10 @@ const { Title } = Typography;
 const { Sider } = Layout;
 
 const SideMenu = () => {
-  const showManagement =
-    window.environment?.enableRbac ??
-    process.env.REACT_APP_ENABLE_RBAC === "true";
+  const enableRBAC = window.environment?.enableRBAC;
+  const showManagement = enableRBAC
+    ? enableRBAC
+    : process.env.REACT_APP_ENABLE_RBAC;
 
   return (
     <Sider theme="dark">
@@ -63,7 +64,7 @@ const SideMenu = () => {
         >
           <Link to="/monitoring">Monitoring</Link>
         </Menu.Item>
-        {showManagement && (
+        {showManagement === "true" && (
           <Menu.Item
             key="/management"
             icon={
