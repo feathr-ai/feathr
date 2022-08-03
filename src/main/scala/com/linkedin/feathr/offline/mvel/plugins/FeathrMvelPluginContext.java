@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.mvel.plugins;
 
 import com.linkedin.feathr.common.FeatureValue;
+import com.linkedin.feathr.common.InternalApi;
 import org.mvel2.ConversionHandler;
 import org.mvel2.DataConversion;
 
@@ -34,7 +35,7 @@ public class FeathrMvelPluginContext {
    * @param <T> type parameter for the "other" feature value class
    */
   @SuppressWarnings("unchecked")
-  public <T> void addFeatureTypeAdaptor(Class<T> clazz, FeatureValueTypeAdaptor<T> typeAdaptor) {
+  public static <T> void addFeatureTypeAdaptor(Class<T> clazz, FeatureValueTypeAdaptor<T> typeAdaptor) {
     // TODO: MAKE SURE clazz IS NOT ONE OF THE CLASSES ALREADY COVERED IN org.mvel2.DataConversion.CONVERTERS!
     //       IF WE OVERRIDE ANY OF THOSE, IT MIGHT CAUSE MVEL TO BEHAVE IN STRANGE AND UNEXPECTED WAYS!
     TYPE_ADAPTORS.put(clazz, typeAdaptor);
