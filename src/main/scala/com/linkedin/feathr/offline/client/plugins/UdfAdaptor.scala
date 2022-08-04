@@ -48,6 +48,6 @@ trait SimpleAnchorExtractorSparkAdaptor extends UdfAdaptor[SimpleAnchorExtractor
 trait FeatureDerivationFunctionAdaptor extends UdfAdaptor[FeatureDerivationFunction]
 
 /**
- * An adaptor that can "tell Feathr how to use" a UDF type that can act in place of [[FeatureDerivationFunction]]
+ * An adaptor that can "tell Feathr how to use" a UDF type that can act in place of [[SourceKeyExtractor]]
  */
 trait SourceKeyExtractorAdaptor extends UdfAdaptor[SourceKeyExtractor]
