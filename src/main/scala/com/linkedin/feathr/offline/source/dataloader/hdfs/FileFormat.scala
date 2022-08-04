@@ -5,6 +5,7 @@ import com.linkedin.feathr.offline.source.dataloader._
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
+import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
 
 
 object FileFormat {
@@ -30,14 +31,6 @@ object FileFormat {
   val DATA_FORMAT = "data.format"
 
   /**
-   * Convert delimiter to an escape character (e.g. "   " -> "\t")
-   */
-  def escape(raw: String): String = {
-    import scala.reflect.runtime.universe.{Literal, Constant}
-    Literal(Constant(raw)).toString.replaceAll("\"", "")
-  }
-
-  /**
    * To define if the file is JDBC, Single File or Path list (default)
    * @param path
    * @return
@@ -60,12 +53,8 @@ object FileFormat {
   // TODO: Complete a general loadDataFrame and replace current adhoc load data frame code
   def loadDataFrame(ss: SparkSession, path: String, format: String = CSV): DataFrame = {
 
-    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
-    val sqlContext = ss.sqlContext
-    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
-    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
-    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
-    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSv)
+    val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
 
     format match {
       case AVRO => new AvroJsonDataLoader(ss, path).loadDataFrame()
@@ -102,12 +91,8 @@ object FileFormat {
 
   def loadHdfsDataFrame(format: String, existingHdfsPaths: Seq[String]): DataFrame = {
 
-    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
-    val sqlContext = ss.sqlContext
-    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
-    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
-    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
-    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSv)
+    val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
 
     val df = format match {
       case CSV =>

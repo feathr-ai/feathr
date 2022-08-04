@@ -51,6 +51,7 @@ import scala.collection.JavaConverters._
 import scala.io.Source
 import scala.reflect.ClassTag
 import scala.util.Try
+import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
 
 /**
  * Load "raw" not-yet-featurized data from HDFS data sets
@@ -64,14 +65,6 @@ private[offline] object SourceUtils {
   val FEATURE_MP_DEF_CONFIG_BASE_PATH = "feathr-feature-configs/config/offline"
   val FEATURE_MP_DEF_CONFIG_SUFFIX = ".conf"
   val firstRecordName = "topLevelRecord"
-
-  /**
-   * Convert delimiter to an escape character (e.g. "   " -> "\t")
-   */
-  def escape(raw: String): String = {
-    import scala.reflect.runtime.universe.{Literal, Constant}
-    Literal(Constant(raw)).toString.replaceAll("\"", "")
-  }
 
   /**
    * get AVRO datum type of a dataset we should use to load,
@@ -674,12 +667,8 @@ private[offline] object SourceUtils {
     val format = FileFormat.getType(inputData.inputPath)
     log.info(s"loading ${inputData.inputPath} input Path as Format: ${format}")
 
-    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
-    val sqlContext = ss.sqlContext
-    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
-    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
-    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
-    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSv)
+    val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
 
     format match {
       case FileFormat.PATHLIST => {

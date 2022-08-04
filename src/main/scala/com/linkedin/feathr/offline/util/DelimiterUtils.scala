@@ -1,4 +1,5 @@
 package com.linkedin.feathr.offline.util
+import scala.reflect.runtime.universe.{Literal, Constant}
 
 object DelimiterUtils {
 
@@ -6,8 +7,14 @@ object DelimiterUtils {
    * Convert delimiter to an escape character (e.g. "   " -> "\t")
    */
   def escape(raw: String): String = {
-    import scala.reflect.runtime.universe.{Literal, Constant}
     Literal(Constant(raw)).toString.replaceAll("\"", "")
+  }
+
+  /**
+   * If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
+   */
+  def checkDelimiterOption(csvDelimiterOption: String): String = {
+    if (escape(csvDelimiterOption).trim.isEmpty) "," else csvDelimiterOption
   }
 
 }

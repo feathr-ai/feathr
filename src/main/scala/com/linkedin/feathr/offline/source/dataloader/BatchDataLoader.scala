@@ -5,7 +5,7 @@ import com.linkedin.feathr.offline.config.location.InputLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
-import com.linkedin.feathr.offline.util.DelimiterUtils.escape
+import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
@@ -65,12 +65,8 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
 
     log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
 
-    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
-    val sqlContext = ss.sqlContext
-    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
-    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
-    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
-    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSv)
+    val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
 
     try {
       import scala.util.control.Breaks._

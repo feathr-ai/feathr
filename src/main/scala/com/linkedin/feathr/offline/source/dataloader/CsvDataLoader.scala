@@ -10,6 +10,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import java.io.File
 import scala.collection.JavaConverters._
 import scala.collection.convert.wrapAll._
+import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
+
 import scala.io.Source
 
 /**
@@ -28,26 +30,13 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
   }
 
   /**
-   * Convert delimiter to an escape character (e.g. "   " -> "\t")
-   */
-  def escape(raw: String): String = {
-    import scala.reflect.runtime.universe.{Literal, Constant}
-    Literal(Constant(raw)).toString.replaceAll("\"", "")
-  }
-
-
-  /**
    * load the source data as dataframe.
    * @return an dataframe
    */
   override def loadDataFrame(): DataFrame = {
 
-    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep
-    val sqlContext = ss.sqlContext
-    // Get rawCsvDelimiterOption from spark.feathr.inputFormat.csvOptions.sep
-    val rawCsvDelimiterOption = sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ",")
-    // If rawCsvDelimiterOption is not properly set, defaults to "," as the delimiter else csvDelimiterOption
-    val csvDelimiterOption = if (escape(rawCsvDelimiterOption).trim.isEmpty) "," else rawCsvDelimiterOption
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSv)
+    val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
 
     try {
       log.debug(s"Loading CSV path :${path}")
