@@ -1,7 +1,7 @@
 name: Bug Report
-description: Create a bug report to help us reproduce and correct the bug
-labels: 'bug'
-title: '[BUG]'
+description: Use this template for feature requests.
+labels: 'enhancement'
+title: '[FR]'
 
 body:
   - type: markdown
@@ -21,49 +21,32 @@ body:
     validations:
       required: true
 
-  - type: input
+  - type: textarea
+    attributes:
+      label: Feature Request Proposal
+      description: |
+        Provide a clear high-level description of feature request proposal
     validations:
       required: true
-    attributes:
-      label: Feathr version
-      description: Feathr version
 
   - type: textarea
     attributes:
-      label: System information
+      label: Motivation
       description: |
-        Describe the system where you encountered the bug.
+        What would this Feature request help Feathr users?
       value: |
-        - **OS Platform and Distribution (e.g., Linux Ubuntu 20.0)**:
-        - **Python version**:
-        - **yarn version, if running the dev UI**:
+        > #### What is the use case for this feature?
     validations:
       required: true
+
   - type: textarea
     attributes:
-      label: Describe the problem
+      label: Details
       description: |
-        Describe the problem clearly here. Include descriptions of the expected behavior and the actual behavior if it is a bug report.
-    validations:
-      required: true
-  - type: textarea
-    attributes:
-      label: Tracking information
-      description: |
-        Please provide the logs and erros for reproducibility.
+        Give a clear description here.
     validations:
       required: false
-  - type: textarea
-    attributes:
-      label: Code to reproduce bug
-      description: |
-        Provide a reproducible test case that is the bare minimum necessary to generate the problem.
-      placeholder: |
-        ```python
-        # code to reproduce bug
-        ```
-    validations:
-      required: false
+
   - type: checkboxes
     id: component
     attributes:

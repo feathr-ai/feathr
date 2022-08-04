@@ -1,7 +1,10 @@
 ## Description
 <!--
-- Describe what this PR changes.
-- Describe why we need the change.
+Hey! Thank you for the contribution! Please go through https://github.com/linkedin/feathr/blob/main/docs/dev_guide/pull_request_guideline.md for more information.
+
+Describe
+- What changes to make and why you are making these changes.
+- How are you going to achieve your goal Describe what testings you have done, for example, performance testing etc.
 
 If this PR resolves an issue be sure to include "Resolves #XXX" to correctly link and close the issue upon merge.
 -->
@@ -20,3 +23,13 @@ If no, choose 'No'.
 -->
 - [ ] No. You can skip the rest of this section.
 - [ ] Yes. Make sure to clarify your proposed changes.
+
+## Dependencies
+<!--
+Please list the new dependencies in the PR description with
+
+- What's their license
+- Are they compatible with our license
+-->
+- [ ] No. You can skip the rest of this section.
+- [ ] Yes. Make sure to list all the dependencies and licenses.
