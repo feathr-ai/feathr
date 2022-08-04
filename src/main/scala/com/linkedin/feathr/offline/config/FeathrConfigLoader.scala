@@ -253,25 +253,25 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
     // SimpleConfigurableAnchorExtractor will extract the feature type if defined
 
     // if it is UDF, no extra information other than the class name is required
-    val anchorExtractor: AnyRef = codec.treeToValue(node, extractorClass).asInstanceOf[AnyRef]
-
-    val extractorNode = node.get("extractor")
-    if (extractorNode != null && extractorNode.get("params") != null) {
-      // init the param into the extractor
-      val config = ConfigFactory.parseString(extractorNode.get("params").toString)
-      anchorExtractor match {
-        case aebExtractor: AnchorExtractorBase[_] =>
-          aebExtractor.init(config)
-        case otherExtractor =>
-          FeathrUdfPluginContext.getRegisteredUdfAdaptor(extractorClass) match {
-            case Some(adaptor: SimpleAnchorExtractorSparkAdaptor) =>
-              adaptor.adaptUdf(otherExtractor).init(config)
-            case Some(adaptor: AnchorExtractorAdaptor) =>
-              adaptor.adaptUdf(otherExtractor).init(config)
-            case _ =>
-              throw new FeathrConfigException(ErrorLabel.FEATHR_ERROR, s"Unknown extractor type ${extractorClass}")
-          }
+    val anchorExtractor: AnyRef = {
+      val extractor = codec.treeToValue(node, extractorClass).asInstanceOf[AnyRef]
+      FeathrUdfPluginContext.getRegisteredUdfAdaptor(extractorClass) match {
+        case None => extractor
+        case Some(adaptor: SimpleAnchorExtractorSparkAdaptor) =>
+          adaptor.adaptUdf(extractor)
+        case Some(adaptor: AnchorExtractorAdaptor) =>
+          adaptor.adaptUdf(extractor)
       }
+    }
+
+    anchorExtractor match {
+      case extractor: AnchorExtractorBase[_] =>
+          val extractorNode = node.get("extractor")
+          if (extractorNode != null && extractorNode.get("params") != null) {
+            // init the param into the extractor
+            val config = ConfigFactory.parseString(extractorNode.get("params").toString)
+            extractor.init(config)
+          }
     }
 
     // cast the the extractor class to AnchorExtractor[Any]
