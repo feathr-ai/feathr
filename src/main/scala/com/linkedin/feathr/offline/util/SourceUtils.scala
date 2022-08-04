@@ -667,7 +667,7 @@ private[offline] object SourceUtils {
     val format = FileFormat.getType(inputData.inputPath)
     log.info(s"loading ${inputData.inputPath} input Path as Format: ${format}")
 
-    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSv)
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSV)
     val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
 
     format match {

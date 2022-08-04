@@ -35,7 +35,7 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
    */
   override def loadDataFrame(): DataFrame = {
 
-    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSv)
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSV)
     val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
 
     try {

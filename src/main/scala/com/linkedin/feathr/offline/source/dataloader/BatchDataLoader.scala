@@ -65,7 +65,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation
 
     log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
 
-    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSv)
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSV)
     val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
 
     try {
