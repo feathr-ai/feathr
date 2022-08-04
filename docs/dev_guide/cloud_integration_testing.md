@@ -10,7 +10,7 @@ We use [GitHub Actions](https://github.com/linkedin/feathr/tree/main/.github/wor
 - running `sbt test` to verify if the scala/spark related code has passed all the test
 - running `flake8` to lint python scripts and make sure there are no obvious syntax errors
 - running the built jar in databricks environment with end to end test to make sure it passed the end to end test
-- running the built jar in azure synpase environment with end to end test to make sure it passed the end to end test
+- running the built jar in Azure Synapse environment with end to end test to make sure it passed the end to end test
 
 The above 4 jobs will ran in parallel, and if any one of them fails, the integration test will fail.
 
