@@ -77,9 +77,9 @@ Feathr will get the configurations in the following order:
 | ONLINE_STORE__REDIS__SSL_ENABLED                      | Whether SSL is enabled to access Redis cluster.                                                                                                                                                                                                                                    | Required if using Redis as online store.                                  |
 | REDIS_PASSWORD                                        | Password for the Redis cluster.                                                                                                                                                                                                                                                    | Required if using Redis as online store.                                  |
 | FEATURE_REGISTRY__API_ENDPOINT                        | Specifies registry endpoint.                                                                                                                                                                                                                                                       | Required if using registry service.                                       |
-| FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME               | [Deprecated Soon] Configure the name of the purview endpoint.                                                                                                                                                                                                                                        | Required if using Purview as the endpoint.                                |
-| FEATURE_REGISTRY__PURVIEW__DELIMITER                  | [Deprecated Soon] See [here](#FEATURE_REGISTRY__PURVIEW__DELIMITER) for more details.                                                                                                                                                                                                                     | Required                                                                  |
-| FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION | [Deprecated Soon] Controls whether the type system (think this as the "schema" for the registry) will be initialized or not. Usually this is only required to be set to `True` to initialize schema, and then you can set it to `False` to shorten the initialization time.                          | Required                                                                  |
+| FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME               | Configure the name of the purview endpoint.                                                                                                                                                                                                                                        | Required if using Purview directly without registry service. Deprecate soon, see [here](#deprecation) for more details.|
+| FEATURE_REGISTRY__PURVIEW__DELIMITER                  | See [here](#FEATURE_REGISTRY__PURVIEW__DELIMITER) for more details.                                                                                                                                                                                                                | Required if using Purview directly without registry service. Deprecate soon, see [here](#deprecation) for more details.|
+| FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION | Controls whether the type system (think this as the "schema" for the registry) will be initialized or not. Usually this is only required to be set to `True` to initialize schema, and then you can set it to `False` to shorten the initialization time.                          | Required if using Purview directly without registry service. Deprecate soon, see [here](#deprecation) for more details.|
 
 # Explanation for selected configurations
 
@@ -121,6 +121,11 @@ Another use case is to use `instance_pool_id`, where instead of creating the Spa
 ```
 
 Other advanced settings includes `idempotency_token` to guarantee the idempotency of job run requests, etc.
+
+## Deprecation
+
+This section is about deprecation of some features in Feathr. Deprecated features are still available but planned for removal. Please migrate to the supported features as early as possible.
+- Connect to Purview directly without registry service is deprecated soon. Please use registry service to connect to Purview.
 
 ## FEATURE_REGISTRY__PURVIEW__DELIMITER
 
