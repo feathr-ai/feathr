@@ -124,8 +124,8 @@ Other advanced settings includes `idempotency_token` to guarantee the idempotenc
 
 ## Deprecation
 
-This section is about deprecation of some features in Feathr. Deprecated features are still available but planned for removal. Please migrate to the supported features as early as possible.
-- Connect to Purview directly without registry service is deprecated soon. Please use registry service to connect to Purview.
+This section is about feature deprecation in Feathr. Deprecated features are still available but planned for removal. Please migrate to the supported features as early as possible.
+- Connect to Purview directly without registry service is deprecated soon. Please migrate to use registry service and select Purview as registry provider.
 
 ## FEATURE_REGISTRY__PURVIEW__DELIMITER
 
