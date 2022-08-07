@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import List, Optional, Union
 import pickle
+from feathr.definition.anchor import FeatureAnchor
 from jinja2 import Template
 from feathr.definition.source import HdfsSource
 import ast
@@ -24,7 +25,7 @@ class _PreprocessingPyudfManager(object):
     """This class manages Pyspark UDF preprocessing related artifacts, like UDFs from users, the pyspark_client etc.
     """
     @staticmethod
-    def build_anchor_preprocessing_metadata(anchor_list, local_workspace_dir):
+    def build_anchor_preprocessing_metadata(anchor_list: List[FeatureAnchor], local_workspace_dir):
         """When the client build features, UDFs and features that need preprocessing will be stored as metadata. Those
         metadata will later be used when uploading the Pyspark jobs.
         """
@@ -35,8 +36,10 @@ class _PreprocessingPyudfManager(object):
         # preprocessing for requested features.
         features_with_preprocessing = []
         client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
+        metadata_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_METADATA)
         # delete the file if it already exists to avoid caching previous results
         os.remove(client_udf_repo_path) if os.path.exists(client_udf_repo_path) else None
+        os.remove(metadata_path) if os.path.exists(metadata_path) else None
         for anchor in anchor_list:
             # only support batch source preprocessing for now.
             if not hasattr(anchor.source, "preprocessing"):
@@ -105,16 +108,10 @@ class _PreprocessingPyudfManager(object):
         client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
 
         # the directory may actually not exist yet, so create the directory first
-        file_name_start = client_udf_repo_path.rfind("/")
-        if file_name_start > 0:
-            dir_name = client_udf_repo_path[:file_name_start]
-            Path(dir_name).mkdir(parents=True, exist_ok=True)
+        Path(local_workspace_dir).mkdir(parents=True, exist_ok=True)
 
-        if Path(client_udf_repo_path).is_file():
-            with open(client_udf_repo_path, "a") as handle:
-                print("".join(lines), file=handle)
-        else:
-            with open(client_udf_repo_path, "w") as handle:
+        # Append to file, Create it if doesn't exist
+        with open(client_udf_repo_path, "a+") as handle:
                 print("".join(lines), file=handle)
 
     @staticmethod
@@ -134,7 +131,8 @@ feature_names_funcs = {
         new_file = tm.render(func_maps=feature_names_to_func_mapping)
 
         full_file_name = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
-        with open(full_file_name, "a") as text_file:
+        # Append to file, Create it if doesn't exist
+        with open(full_file_name, "a+") as text_file:
             print(new_file, file=text_file)
 
     @staticmethod
