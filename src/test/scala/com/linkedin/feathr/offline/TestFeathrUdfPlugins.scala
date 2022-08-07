@@ -10,7 +10,7 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
 
   @Test
   def testMvelUdfPluginSupport: Unit = {
-    FeathrMvelPluginContext.addFeatureTypeAdaptor(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor())
+    FeathrMvelPluginContext.builder().addFeatureTypeAdaptor(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor()).build().installTypeAdaptorsIntoMvelRuntime()
 
     val df = runLocalFeatureJoinForTest(
       joinConfigAsString = """

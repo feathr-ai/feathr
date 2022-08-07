@@ -1,10 +1,10 @@
 package com.linkedin.feathr.offline
 
 import java.io.Serializable
-
 import com.linkedin.feathr.common
 import com.linkedin.feathr.common.{FeatureTypes, FeatureValue}
 import com.linkedin.feathr.offline.exception.FeatureTransformationException
+import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext
 import com.linkedin.feathr.offline.mvel.{FeatureVariableResolverFactory, MvelContext}
 import com.linkedin.feathr.offline.transformation.MvelDefinition
 import com.linkedin.feathr.offline.util.{CoercionUtilsScala, FeaturizedDatasetUtils}
@@ -129,7 +129,7 @@ private[offline] object PostTransformationUtil {
       featureType: FeatureTypes): Try[FeatureValue] = Try {
     val args = Map(featureName -> Some(featureValue))
     val variableResolverFactory = new FeatureVariableResolverFactory(args)
-    val transformedValue = MvelContext.executeExpressionWithPluginSupport(compiledExpression, featureValue, variableResolverFactory)
+    val transformedValue = MvelContext.executeExpressionWithPluginSupport(FeathrMvelPluginContext.getInstalledContext, compiledExpression, featureValue, variableResolverFactory)
     CoercionUtilsScala.coerceToFeatureValue(transformedValue, featureType)
   }
 

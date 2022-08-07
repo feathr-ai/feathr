@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.mvel
 
+import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.mvel2.integration.VariableResolverFactory
@@ -17,7 +18,7 @@ private[offline] object MvelUtils {
   // (We might not want to check for null explicitly everywhere)
   def executeExpression(compiledExpression: Any, input: Any, resolverFactory: VariableResolverFactory, featureName: String = ""): Option[AnyRef] = {
     try {
-      Option(MvelContext.executeExpressionWithPluginSupport(compiledExpression, input, resolverFactory))
+      Option(MvelContext.executeExpressionWithPluginSupport(FeathrMvelPluginContext.getInstalledContext, compiledExpression, input, resolverFactory))
     } catch {
       case e: RuntimeException =>
         log.debug(s"Expression $compiledExpression on input record $input threw exception", e)

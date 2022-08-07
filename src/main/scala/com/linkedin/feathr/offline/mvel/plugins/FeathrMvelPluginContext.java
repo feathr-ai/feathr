@@ -1,12 +1,14 @@
 package com.linkedin.feathr.offline.mvel.plugins;
 
 import com.linkedin.feathr.common.FeatureValue;
-import com.linkedin.feathr.common.InternalApi;
 import org.mvel2.ConversionHandler;
 import org.mvel2.DataConversion;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -16,37 +18,73 @@ import java.util.concurrent.ConcurrentMap;
  * some previous versions of Feathr whose FeatureValue representations had a different class name, while preserving
  * compatibility with feature definitions written against those older versions of Feathr.
  */
-public class FeathrMvelPluginContext {
-  // TODO: Does this need to be "translated" into a different pattern whereby we track the CLASSNAME of the type adaptors
-  //       instead of the instance, such that the class mappings can be broadcasted via Spark and then reinitialized on
-  //       executor hosts?
-  private static final ConcurrentMap<Class<?>, FeatureValueTypeAdaptor<?>> TYPE_ADAPTORS;
+public class FeathrMvelPluginContext implements Serializable {
+  private static final AtomicReference<FeathrMvelPluginContext> INSTALLED_CONTEXT = new AtomicReference<>();
 
-  static {
-    TYPE_ADAPTORS = new ConcurrentHashMap<>();
-    DataConversion.addConversionHandler(FeatureValue.class, new FeathrFeatureValueConversionHandler());
+  private final Map<Class<?>, FeatureValueTypeAdaptor<?>> _typeAdaptors;
+
+  private FeathrMvelPluginContext(Map<Class<?>, FeatureValueTypeAdaptor<?>> _typeAdaptors) {
+    this._typeAdaptors = _typeAdaptors;
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static FeathrMvelPluginContext getInstalledContext() {
+    return INSTALLED_CONTEXT.get();
+  }
+
+  public static void ensureInstalledIfDefined(FeathrMvelPluginContext pluginContext) {
+    if (pluginContext != null) {
+      pluginContext.installTypeAdaptorsIntoMvelRuntime();
+    }
   }
 
   /**
-   * Add a type adaptor to Feathr's MVEL runtime, that will enable Feathr's expressions to support some alternative
-   * class representation of {@link FeatureValue} via coercion.
-   * @param clazz the class of the "other" alternative representation of feature value
-   * @param typeAdaptor the type adaptor that can convert between the "other" representation and {@link FeatureValue}
-   * @param <T> type parameter for the "other" feature value class
+   * Installs this FeathrMvelPluginContext into the MVEL runtime of this JVM.
+   *
+   * (Calling this more than once should be safe, and should have the same effect as calling it once. However,
+   * calling it concurrently would be dangerous due to non-threadsafe constructs in the MVEL runtime.)
    */
-  @SuppressWarnings("unchecked")
-  public static <T> void addFeatureTypeAdaptor(Class<T> clazz, FeatureValueTypeAdaptor<T> typeAdaptor) {
-    // TODO: MAKE SURE clazz IS NOT ONE OF THE CLASSES ALREADY COVERED IN org.mvel2.DataConversion.CONVERTERS!
-    //       IF WE OVERRIDE ANY OF THOSE, IT MIGHT CAUSE MVEL TO BEHAVE IN STRANGE AND UNEXPECTED WAYS!
-    TYPE_ADAPTORS.put(clazz, typeAdaptor);
-    DataConversion.addConversionHandler(clazz, new ExternalFeatureValueConversionHandler(typeAdaptor));
+  public void installTypeAdaptorsIntoMvelRuntime() {
+    if (!iAmInstalled()) {
+      synchronized (FeathrMvelPluginContext.class) {
+        if (!iAmInstalled()) {
+          if (INSTALLED_CONTEXT.get() != null) {
+            throw new RuntimeException("Tried to install plugin context " + this + " but a different one is already " +
+                    "installed: " + INSTALLED_CONTEXT.get());
+          }
+          doInstall();
+          INSTALLED_CONTEXT.set(this);
+        }
+      }
+    }
   }
 
-  static class FeathrFeatureValueConversionHandler implements ConversionHandler {
+  @Override
+  public String toString() {
+    return "FeathrMvelPluginContext{" +
+            "_typeAdaptors=" + _typeAdaptors +
+            '}';
+  }
+
+  private void doInstall() {
+    DataConversion.addConversionHandler(FeatureValue.class, new FeathrFeatureValueConversionHandler());
+    _typeAdaptors.forEach((clazz, typeAdaptor) -> {
+      DataConversion.addConversionHandler(clazz, new ExternalFeatureValueConversionHandler(typeAdaptor));
+    });
+  }
+
+  private boolean iAmInstalled() {
+    return INSTALLED_CONTEXT.get() == this;
+  }
+
+  class FeathrFeatureValueConversionHandler implements ConversionHandler {
     @Override
     @SuppressWarnings("unchecked")
     public Object convertFrom(Object in) {
-      FeatureValueTypeAdaptor<Object> adaptor = (FeatureValueTypeAdaptor<Object>) TYPE_ADAPTORS.get(in.getClass());
+      FeatureValueTypeAdaptor<Object> adaptor = (FeatureValueTypeAdaptor<Object>) _typeAdaptors.get(in.getClass());
       if (adaptor == null) {
         throw new IllegalArgumentException("Can't convert to Feathr FeatureValue from " + in);
       }
@@ -55,7 +93,7 @@ public class FeathrMvelPluginContext {
 
     @Override
     public boolean canConvertFrom(Class cls) {
-      return TYPE_ADAPTORS.containsKey(cls);
+      return _typeAdaptors.containsKey(cls);
     }
   }
 
@@ -74,6 +112,35 @@ public class FeathrMvelPluginContext {
     @Override
     public boolean canConvertFrom(Class cls) {
       return FeatureValue.class.equals(cls);
+    }
+  }
+
+  public static class Builder {
+    private final Map<Class<?>, FeatureValueTypeAdaptor<?>> _typeAdaptors = new HashMap<>();
+
+    /**
+     * Add a type adaptor that will enable Feathr's MVEL expressions to support some alternative class representation
+     * of {@link FeatureValue} via coercion.
+     *
+     * @param clazz the class of the "other" alternative representation of feature value
+     * @param typeAdaptor the type adaptor that can convert between the "other" representation and {@link FeatureValue}
+     * @param <T> type parameter for the "other" feature value class
+     * @return this builder
+     */
+    @SuppressWarnings("unchecked")
+    public <T> Builder addFeatureTypeAdaptor(Class<T> clazz, FeatureValueTypeAdaptor<T> typeAdaptor) {
+      // TODO: MAKE SURE clazz IS NOT ONE OF THE CLASSES ALREADY COVERED IN org.mvel2.DataConversion.CONVERTERS!
+      //       IF WE OVERRIDE ANY OF THOSE, IT MIGHT CAUSE MVEL TO BEHAVE IN STRANGE AND UNEXPECTED WAYS!
+      _typeAdaptors.put(clazz, typeAdaptor);
+      return this;
+    }
+
+    /**
+     * Builds a {@link FeathrMvelPluginContext} which can be used to actually install the adaptors into the MVEL runtime.
+     * @return the plugin context object
+     */
+    public FeathrMvelPluginContext build() {
+      return new FeathrMvelPluginContext(Collections.unmodifiableMap(new HashMap<>(_typeAdaptors)));
     }
   }
 }

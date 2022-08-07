@@ -6,6 +6,7 @@ import com.linkedin.feathr.common.util.CoercionUtils
 import com.linkedin.feathr.common.{AnchorExtractor, FeatureTypeConfig, FeatureTypes, FeatureValue, SparkRowExtractor}
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.config.MVELFeatureDefinition
+import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext
 import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.util.FeatureValueTypeValidator
 import org.apache.log4j.Logger
@@ -73,7 +74,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
     // be more strict for resolving keys (don't swallow exceptions)
     keyExpression.map(k =>
       try {
-        Option(MvelContext.executeExpressionWithPluginSupport(k, datum)) match {
+        Option(MvelContext.executeExpressionWithPluginSupport(FeathrMvelPluginContext.getInstalledContext, k, datum)) match {
           case None => null
           case Some(keys) => keys.toString
         }

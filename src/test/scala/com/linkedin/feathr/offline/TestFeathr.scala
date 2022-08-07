@@ -29,7 +29,9 @@ abstract class TestFeathr extends TestNGSuite {
 
   @BeforeClass
   def setup(): Unit = {
-    FeathrMvelPluginContext.addFeatureTypeAdaptor(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor)
+    // (The purpose of installing the plugin for all integration tests, is to ensure that the presence of the plugins
+    // does not disrupt regular behavior for all the other test cases that are NOT relying on plugin behavior)
+    // FeathrMvelPluginContext.builder().addFeatureTypeAdaptor(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor()).build().installTypeAdaptorsIntoMvelRuntime()
     setupSpark()
   }
 

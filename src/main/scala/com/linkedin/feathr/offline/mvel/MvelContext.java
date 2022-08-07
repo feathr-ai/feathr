@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.linkedin.feathr.common.FeatureValue;
 import com.linkedin.feathr.common.util.MvelContextUDFs;
+import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext;
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -114,7 +115,8 @@ public class MvelContext {
    * {@link com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext}. (Output objects that can be converted
    * to {@link FeatureValue} via plugins, will be converted after MVEL returns.)
    */
-  public static Object executeExpressionWithPluginSupport(Object compiledExpression, Object ctx) {
+  public static Object executeExpressionWithPluginSupport(FeathrMvelPluginContext pluginContext, Object compiledExpression, Object ctx) {
+    FeathrMvelPluginContext.ensureInstalledIfDefined(pluginContext);
     Object output = MVEL.executeExpression(compiledExpression, ctx);
     return coerceToFeatureValueViaMvelDataConversionPlugins(output);
   }
@@ -124,8 +126,9 @@ public class MvelContext {
    * {@link com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext}. (Output objects that can be converted
    * to {@link FeatureValue} via plugins, will be converted after MVEL returns.)
    */
-  public static Object executeExpressionWithPluginSupport(Object compiledExpression, Object ctx,
+  public static Object executeExpressionWithPluginSupport(FeathrMvelPluginContext pluginContext, Object compiledExpression, Object ctx,
       VariableResolverFactory variableResolverFactory) {
+    FeathrMvelPluginContext.ensureInstalledIfDefined(pluginContext);
     Object output = MVEL.executeExpression(compiledExpression, ctx, variableResolverFactory);
     return coerceToFeatureValueViaMvelDataConversionPlugins(output);
   }
