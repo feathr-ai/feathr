@@ -170,6 +170,7 @@ feature_names_funcs = {
             client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
             # write pyspark_driver_template_abs_path and then client_udf_repo_path
             filenames = [pyspark_driver_template_abs_path, client_udf_repo_path]
+            # will always overwrite the old files so it's fine not removing it
             with open(pyspark_driver_path, 'w') as outfile:
                 for fname in filenames:
                     with open(fname) as infile:
