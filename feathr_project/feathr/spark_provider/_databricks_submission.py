@@ -149,7 +149,14 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             configuration['spark.executor.extraJavaOptions'] = '-Djava.security.properties='
             configuration['spark.driver.extraJavaOptions'] = '-Djava.security.properties='
             submission_params['new_cluster']['spark_conf'] = configuration
-            submission_params['new_cluster']['custom_tags'] = job_tags
+
+            if job_tags:
+                custom_tags = submission_params['new_cluster'].get('custom_tags', {})
+                for tag, value in job_tags.items():
+                    custom_tags[tag] = value
+
+                submission_params['new_cluster']['custom_tags'] = custom_tags
+
         # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
         if not main_jar_path:
             logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
