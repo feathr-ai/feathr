@@ -112,7 +112,7 @@ class _PreprocessingPyudfManager(object):
 
         # Append to file, Create it if doesn't exist
         with open(client_udf_repo_path, "a+") as handle:
-                print("".join(lines), file=handle)
+            print("".join(lines), file=handle)
 
     @staticmethod
     def write_feature_names_to_udf_name_file(feature_names_to_func_mapping, local_workspace_dir):
