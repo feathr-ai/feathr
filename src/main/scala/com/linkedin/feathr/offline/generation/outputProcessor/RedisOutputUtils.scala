@@ -24,7 +24,7 @@ object RedisOutputUtils {
     val outputKeyColumnName = "feature_key"
     val decoratedDf = encodedDf.withColumn(outputKeyColumnName, newColExpr)
       .drop(keyColumns: _*)
-
+    print(decoratedDf.show())
     // set the host/post/auth/ssl configs in Redis again in the output directly
     // otherwise, in some environment (like databricks), the configs from the active spark session is not passed here.
     decoratedDf.write

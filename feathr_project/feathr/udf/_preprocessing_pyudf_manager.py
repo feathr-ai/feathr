@@ -37,9 +37,13 @@ class _PreprocessingPyudfManager(object):
         features_with_preprocessing = []
         client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
         metadata_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_METADATA)
+        pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)
+
         # delete the file if it already exists to avoid caching previous results
-        os.remove(client_udf_repo_path) if os.path.exists(client_udf_repo_path) else None
-        os.remove(metadata_path) if os.path.exists(metadata_path) else None
+        for f in [client_udf_repo_path, metadata_path,  pyspark_driver_path]:
+            if os.path.exists(f):
+                os.remove(f) 
+
         for anchor in anchor_list:
             # only support batch source preprocessing for now.
             if not hasattr(anchor.source, "preprocessing"):
@@ -156,7 +160,7 @@ feature_names_funcs = {
         if not features_with_preprocessing:
             return py_udf_files
 
-        # Figure out if we need to preprocessing via UDFs for requested features.
+        # Figure out if we need to preprocess via UDFs for requested features.
         # Only if the requested features contain preprocessing logic, we will load Pyspark. Otherwise just use Scala
         # spark.
         has_py_udf_preprocessing = False
@@ -171,6 +175,9 @@ feature_names_funcs = {
             # write pyspark_driver_template_abs_path and then client_udf_repo_path
             filenames = [pyspark_driver_template_abs_path, client_udf_repo_path]
             # will always overwrite the old files so it's fine not removing it
+            if os.path.exists(pyspark_driver_path):
+                os.remove(pyspark_driver_path) 
+                
             with open(pyspark_driver_path, 'w') as outfile:
                 for fname in filenames:
                     with open(fname) as infile:

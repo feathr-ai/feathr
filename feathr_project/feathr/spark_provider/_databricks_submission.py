@@ -139,7 +139,6 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         else:
             # otherwise users might have missed the quotes in the config.
             submission_params = self.config_template
-            logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
 
         submission_params['run_name'] = job_name
         if 'existing_cluster_id' not in submission_params:
@@ -161,6 +160,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # this is a pyspark job. definition here: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--sparkpythontask
             # the first file is the pyspark driver code. we only need the driver code to execute pyspark
             param_and_file_dict = {"parameters": arguments, "python_file": self.upload_or_get_cloud_path(python_files[0])}
+            # indicates this is a pyspark job
             submission_params.setdefault('spark_python_task',param_and_file_dict)
         else:
             # this is a scala spark job
