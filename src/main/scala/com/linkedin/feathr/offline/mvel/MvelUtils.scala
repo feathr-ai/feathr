@@ -17,7 +17,7 @@ private[offline] object MvelUtils {
   // (We might not want to check for null explicitly everywhere)
   def executeExpression(compiledExpression: Any, input: Any, resolverFactory: VariableResolverFactory, featureName: String = ""): Option[AnyRef] = {
     try {
-      Option(MVEL.executeExpression(compiledExpression, input, resolverFactory))
+      Option(MvelContext.executeExpressionWithPluginSupport(compiledExpression, input, resolverFactory))
     } catch {
       case e: RuntimeException =>
         log.debug(s"Expression $compiledExpression on input record $input threw exception", e)

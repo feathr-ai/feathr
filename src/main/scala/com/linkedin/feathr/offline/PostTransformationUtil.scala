@@ -129,7 +129,7 @@ private[offline] object PostTransformationUtil {
       featureType: FeatureTypes): Try[FeatureValue] = Try {
     val args = Map(featureName -> Some(featureValue))
     val variableResolverFactory = new FeatureVariableResolverFactory(args)
-    val transformedValue = MVEL.executeExpression(compiledExpression, featureValue, variableResolverFactory)
+    val transformedValue = MvelContext.executeExpressionWithPluginSupport(compiledExpression, featureValue, variableResolverFactory)
     CoercionUtilsScala.coerceToFeatureValue(transformedValue, featureType)
   }
 
