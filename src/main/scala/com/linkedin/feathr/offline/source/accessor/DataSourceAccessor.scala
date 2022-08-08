@@ -101,7 +101,7 @@ private[offline] object DataSourceAccessor {
       failOnMissingPartition: Boolean,
       addTimestampColumn: Boolean,
       dataLoaderHandlers: List[DataLoaderHandler]): DataSourceAccessor = {
-    val pathChecker = PathChecker(ss)
+    val pathChecker = PathChecker(ss, dataLoaderHandlers)
     val fileLoaderFactory = DataLoaderFactory(ss = ss, dataLoaderHandlers = dataLoaderHandlers)
     val partitionLimiter = new PartitionLimiter(ss)
     val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)

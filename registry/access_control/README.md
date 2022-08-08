@@ -34,20 +34,27 @@ Users needs to create a `userroles` table with [schema.sql](scripts/schema.sql) 
 
 ### Initialize `userroles` records
 
-In current version, user needs to manually initialize `userroles` table admins in SQL table.
-When `create_registry` and `create_project` API is enabled, default admin role will be assigned to the creator.
-Admin roles can add or delete roles in management UI page or through management API.
+In current version, user needs to manually initialize `userroles` table in SQL database with [schema.sql](scripts/schema.sql) and insert global admin roles.
+You can add `[your-email-account]` as global admin with the following SQL script in [Azure portal query editor](https://docs.microsoft.com/en-us/azure/azure-sql/database/connect-query-portal?view=azuresql)
+```SQL
+insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time) values ('global', '[your-email-account]','admin', '[your-email-account]', 'Initialize First Global Admin',  getutcdate())
+```
+
+When a feathr project is created though rbac protected registry API, default project admin role will be assigned to the creator.
+Admin roles can add or delete roles in management UI page or through management API under certain scope.
 
 ### Environment Settings
 
-| Variable| Description|
-|---|---|
-| CONNECTION_STR| Connection String of the SQL database that host access control tables|
-| API_BASE| Aligned API base|
-|REGISTRY_URL| The downstream Registry API Endpoint|
-| AAD_INSTANCE | Set to "https://login.microsoftonline.com" by default |
-| AAD_TENANT_ID| Used get auth url together with AAD_INSTANCE|
-|API_AUDIENCE| Used as audience to decode jwt tokens|
+`ENABLE_RBAC` needs to be set to deploy a registry backend with access control plugin.
+
+| Variable            | Description                                                                      |
+| ------------------- | -------------------------------------------------------------------------------- |
+| RBAC_CONNECTION_STR | Connection String of the SQL database that host access control tables, required. |
+| RBAC_API_BASE       | Aligned API base                                                                 |
+| RBAC_REGISTRY_URL   | The downstream Registry API Endpoint                                             |
+| RBAC_AAD_INSTANCE   | Instance like "https://login.microsoftonline.com"                                |
+| RBAC_AAD_TENANT_ID  | Used get auth url together with `RBAC_AAD_INSTANCE`                              |
+| RBAC_API_AUDIENCE   | Used as audience to decode jwt tokens                                            |
 
 ## Notes
 
@@ -58,17 +65,19 @@ Supported scenarios status are tracked below:
   - [x] API Spec Contents for Access Control Management APIs
   - [x] API Spec Contents for Registry API Access Control
   - [x] Separate Registry API and Access Control into different implementation
-  - [ ] A docker file to contain all required component for deployments
+  - [x] A docker file to contain all required component for deployments
 - SQL Implementation:
   - [x] `userroles` table CRUD through FastAPI
   - [x] `userroles` table schema & test data, could be used to make `.bacpac` file for SQL table initialize.
   - [x] Initialize default Project Admin role for project creator
   - [ ] Initialize default Global Admin Role for workspace creator
 - UI Experience
-  - [x] Hidden page `../management` for global admin to make CUD requests to `userroles` table
+  - [x] Hidden page `../management` for project admin to make CUD requests to `userroles` table
   - [x] Use id token in Management API Request headers to identify requestor
 - Future Enhancements:
-  - [ ] Functional in Feathr Client
+  - [x] Support AAD Application token  
+  - [x] Support OAuth tokens with `email` attributes
+  - [x] Functional in Feathr Client
   - [ ] Support AAD Groups
   - [ ] Support Other OAuth Providers
   
