@@ -14,13 +14,9 @@ on:
     - cron: '55 23 * * *'
   
   push:
-    # Sequence of patterns matched against refs/heads
-    branches:    
-      - main
-      - 'releases/**'
     # Sequence of patterns matched against refs/tags
     tags:        
-      - v*
+      - 'v*'
 
 jobs:
   push_to_registry:
