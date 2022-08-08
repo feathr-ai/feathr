@@ -2,11 +2,14 @@ package com.linkedin.feathr.offline.mvel;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.linkedin.feathr.common.FeatureValue;
 import com.linkedin.feathr.common.util.MvelContextUDFs;
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
+import org.mvel2.DataConversion;
+import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
 import org.mvel2.integration.PropertyHandler;
@@ -104,6 +107,35 @@ public class MvelContext {
    */
   public static ParserContext newParserContext() {
     return new ParserContext(PARSER_CONFIG);
+  }
+
+  /**
+   * Evaluate MVEL expression as per {@link MVEL#executeExpression(Object, Object)}, with added support for
+   * {@link com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext}. (Output objects that can be converted
+   * to {@link FeatureValue} via plugins, will be converted after MVEL returns.)
+   */
+  public static Object executeExpressionWithPluginSupport(Object compiledExpression, Object ctx) {
+    Object output = MVEL.executeExpression(compiledExpression, ctx);
+    return coerceToFeatureValueViaMvelDataConversionPlugins(output);
+  }
+
+  /**
+   * Evaluate MVEL expression as per {@link MVEL#executeExpression(Object, Object, VariableResolverFactory)}, with added support for
+   * {@link com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext}. (Output objects that can be converted
+   * to {@link FeatureValue} via plugins, will be converted after MVEL returns.)
+   */
+  public static Object executeExpressionWithPluginSupport(Object compiledExpression, Object ctx,
+      VariableResolverFactory variableResolverFactory) {
+    Object output = MVEL.executeExpression(compiledExpression, ctx, variableResolverFactory);
+    return coerceToFeatureValueViaMvelDataConversionPlugins(output);
+  }
+
+  private static Object coerceToFeatureValueViaMvelDataConversionPlugins(Object input) {
+    if (input != null && DataConversion.canConvert(FeatureValue.class, input.getClass())) {
+      return DataConversion.convert(input, FeatureValue.class);
+    } else {
+      return input;
+    }
   }
 
   /**

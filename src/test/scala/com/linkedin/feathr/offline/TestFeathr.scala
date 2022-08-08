@@ -4,6 +4,8 @@ import com.linkedin.feathr.common
 import com.linkedin.feathr.common.JoiningFeatureParams
 import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader}
+import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext
+import com.linkedin.feathr.offline.plugins.{AlienFeatureValue, AlienFeatureValueTypeAdaptor}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
@@ -27,6 +29,7 @@ abstract class TestFeathr extends TestNGSuite {
 
   @BeforeClass
   def setup(): Unit = {
+    FeathrMvelPluginContext.addFeatureTypeAdaptor(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor)
     setupSpark()
   }
 
