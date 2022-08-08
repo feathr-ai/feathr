@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import List, Optional, Union
 import pickle
+from feathr.definition.anchor import FeatureAnchor
 from jinja2 import Template
 from feathr.definition.source import HdfsSource
 import ast
@@ -24,7 +25,7 @@ class _PreprocessingPyudfManager(object):
     """This class manages Pyspark UDF preprocessing related artifacts, like UDFs from users, the pyspark_client etc.
     """
     @staticmethod
-    def build_anchor_preprocessing_metadata(anchor_list, local_workspace_dir):
+    def build_anchor_preprocessing_metadata(anchor_list: List[FeatureAnchor], local_workspace_dir):
         """When the client build features, UDFs and features that need preprocessing will be stored as metadata. Those
         metadata will later be used when uploading the Pyspark jobs.
         """
@@ -35,8 +36,14 @@ class _PreprocessingPyudfManager(object):
         # preprocessing for requested features.
         features_with_preprocessing = []
         client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
+        metadata_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_METADATA)
+        pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)
+
         # delete the file if it already exists to avoid caching previous results
-        os.remove(client_udf_repo_path) if os.path.exists(client_udf_repo_path) else None
+        for f in [client_udf_repo_path, metadata_path,  pyspark_driver_path]:
+            if os.path.exists(f):
+                os.remove(f) 
+
         for anchor in anchor_list:
             # only support batch source preprocessing for now.
             if not hasattr(anchor.source, "preprocessing"):
@@ -105,17 +112,11 @@ class _PreprocessingPyudfManager(object):
         client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
 
         # the directory may actually not exist yet, so create the directory first
-        file_name_start = client_udf_repo_path.rfind("/")
-        if file_name_start > 0:
-            dir_name = client_udf_repo_path[:file_name_start]
-            Path(dir_name).mkdir(parents=True, exist_ok=True)
+        Path(local_workspace_dir).mkdir(parents=True, exist_ok=True)
 
-        if Path(client_udf_repo_path).is_file():
-            with open(client_udf_repo_path, "a") as handle:
-                print("".join(lines), file=handle)
-        else:
-            with open(client_udf_repo_path, "w") as handle:
-                print("".join(lines), file=handle)
+        # Append to file, Create it if doesn't exist
+        with open(client_udf_repo_path, "a+") as handle:
+            print("".join(lines), file=handle)
 
     @staticmethod
     def write_feature_names_to_udf_name_file(feature_names_to_func_mapping, local_workspace_dir):
@@ -134,7 +135,8 @@ feature_names_funcs = {
         new_file = tm.render(func_maps=feature_names_to_func_mapping)
 
         full_file_name = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
-        with open(full_file_name, "a") as text_file:
+        # Append to file, Create it if doesn't exist
+        with open(full_file_name, "a+") as text_file:
             print(new_file, file=text_file)
 
     @staticmethod
@@ -158,7 +160,7 @@ feature_names_funcs = {
         if not features_with_preprocessing:
             return py_udf_files
 
-        # Figure out if we need to preprocessing via UDFs for requested features.
+        # Figure out if we need to preprocess via UDFs for requested features.
         # Only if the requested features contain preprocessing logic, we will load Pyspark. Otherwise just use Scala
         # spark.
         has_py_udf_preprocessing = False
@@ -172,6 +174,7 @@ feature_names_funcs = {
             client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
             # write pyspark_driver_template_abs_path and then client_udf_repo_path
             filenames = [pyspark_driver_template_abs_path, client_udf_repo_path]
+                
             with open(pyspark_driver_path, 'w') as outfile:
                 for fname in filenames:
                     with open(fname) as infile:

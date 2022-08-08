@@ -131,6 +131,13 @@ Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linked
 
 Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart_synapse.html) containing a bit more explanation on the notebook.
 
+### Feathr UI
+
+You can use Feathr UI to search features, identify data sources, track feature lineages and manage access controls. Check out the latest live demo [here](https://aka.ms/feathrdemo) to see what Feathr UI can do for you. Use one of following accounts when you are prompted to login:
+
+- A work or school organization account, includes Office 365 subscribers.
+- Microsoft personal account, this means an account can access to Skype, Outlook.com, OneDrive, and Xbox LIVE.
+
 ## 🗣️ Tech Talks on Feathr
 
 - [Introduction to Feathr - Beginner's guide](https://www.youtube.com/watch?v=gZg01UKQMTY)
