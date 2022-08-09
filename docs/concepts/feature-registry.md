@@ -103,7 +103,7 @@ Feature Detailed Page where you can view the detailed information for a feature:
 ![Feature Detailed Page](../images/feature-details.png)
 
 Feature Lineage Page where you can view all the lineage info for features in a project.
-![Feature Lineage Page](../images/feature-ui.png)
+![Feature Lineage Page](../images/feathr-ui.png)
 
 Access Control Management Page (if RBAC is enabled) where you can manage access control for users.
 ![Access Control Management Page](../images/access-control-management.png)
