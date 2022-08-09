@@ -491,9 +491,22 @@ class PurviewRegistry(Registry):
             superTypes=["DataSet"],
         )
 
+        # Check if any of these type definitiones are already registered. 
+        # If so this registration will be skipped.
+        new_entitydefs = [type_feathr_anchor_features, type_feathr_anchors,
+                        type_feathr_derived_features, type_feathr_sources, type_feathr_project]
+        new_entitydefs_names = [entity.name for entity in new_entitydefs]
+        existing_defs = self.purview_client.get_all_typedefs()
+        existing_entitydefs_names = [entity['name'] for entity in existing_defs['entityDefs']] \
+            if 'entityDefs' in existing_defs else []
+        if existing_entitydefs_names \
+            and any(name in new_entitydefs_names for name in existing_entitydefs_names):
+            logger.warning(f"EntityTypeDefs Exists: {new_entitydefs_names}. Registration Skipped.")
+            logger.info("Feathr Feature Type System Initialized.")
+            return
+
         def_result = self.purview_client.upload_typedefs(
-            entityDefs=[type_feathr_anchor_features, type_feathr_anchors,
-                        type_feathr_derived_features, type_feathr_sources, type_feathr_project],
+            entityDefs=new_entitydefs,
             force_update=True)
         logger.info("Feathr Feature Type System Initialized.")
 
@@ -504,13 +517,13 @@ class PurviewRegistry(Registry):
         for entity in entity_batch:
             entity.lastModifiedTS="0"
             results = self.purview_client.upload_entities(
-                batch=entity_batch)
-        if results:
-            dict = {x.guid: x for x in entity_batch}
-            for k, v in results['guidAssignments'].items():
-                dict[k].guid = v
-        else:
-            raise RuntimeError("Feature registration failed.", results)            
+                batch=entity)
+            if results:
+                dict = {x.guid: x for x in entity_batch}
+                for k, v in results['guidAssignments'].items():
+                    dict[k].guid = v
+            else:
+                raise RuntimeError("Feature registration failed.", results)            
             
     def _generate_fully_qualified_name(self, segments):
         return self.registry_delimiter.join(segments)

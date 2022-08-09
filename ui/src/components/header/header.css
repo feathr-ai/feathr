@@ -1,31 +1,31 @@
 .dropdown-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 2px;
-    padding:2px 4px;
-    transition: all .3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  padding: 2px 4px;
+  transition: all 0.3s;
 }
 
 .dropdown-trigger:hover {
-    cursor: pointer;
-    background: rgba(0,0,0,.025);
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.025);
 }
 
 .layout-header {
-    background-color: #fff;
-    justify-content: space-between;
-    display: flex;
-    height: auto;
-    line-height: 48px;
-    padding: 0 25px;
-    flex-wrap: wrap;
-    align-items: center;
+  background-color: #fff;
+  justify-content: space-between;
+  display: flex;
+  height: auto;
+  line-height: 48px;
+  padding: 0 25px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .layout-header-right {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
 }

@@ -1,9 +1,17 @@
+from fastapi import HTTPException, status
+from typing import Any
 from rbac import config
 from rbac.database import connect
 from rbac.models import AccessType, UserRole, RoleType, SUPER_ADMIN_SCOPE
 from rbac.interface import RBAC
 import os
 import logging
+
+class BadRequest(HTTPException):
+    def __init__(self, detail: Any = None) -> None:
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST,
+                         detail=detail, headers={"WWW-Authenticate": "Bearer"})
+
 
 class DbRBAC(RBAC):
     def __init__(self):
@@ -31,7 +39,7 @@ class DbRBAC(RBAC):
 
     def get_global_admin_users(self) -> list[str]:
         self.get_userroles()
-        return [u.user_name for u in self.userroles if (u.project_name == SUPER_ADMIN_SCOPE and u.role_name == RoleType.ADMIN)]
+        return [u.user_name for u in self.userroles if (u.project_name == SUPER_ADMIN_SCOPE and u.role_name == RoleType.ADMIN.value)]
 
     def validate_project_access_users(self, project: str, user: str, access: str = AccessType.READ) -> bool:
         self.get_userroles()
@@ -48,9 +56,9 @@ class DbRBAC(RBAC):
             where delete_reason is null and user_name ='%s'"""
         if role_name:
             query += fr"and role_name = '%s'"
-            rows = self.conn.query(query%(user_name, role_name))
+            rows = self.conn.query(query % (user_name, role_name))
         else:
-            rows = self.conn.query(query%(user_name))
+            rows = self.conn.query(query % (user_name))
         ret = []
         for row in rows:
             ret.append(UserRole(**row))
@@ -64,13 +72,25 @@ class DbRBAC(RBAC):
             where delete_reason is null and project_name ='%s'"""
         if role_name:
             query += fr"and role_name = '%s'"
-            rows = self.conn.query(query%(project_name, role_name))
+            rows = self.conn.query(query % (project_name, role_name))
         else:
-            rows = self.conn.query(query%(project_name))
+            rows = self.conn.query(query % (project_name))
         ret = []
         for row in rows:
             ret.append(UserRole(**row))
         return ret
+
+    def list_userroles(self, user_name: str) -> list[UserRole]:
+        ret = []
+        if user_name in self.get_global_admin_users():
+            return list([r.to_dict() for r in self.userroles])
+        else:
+            admin_roles = self.get_userroles_by_user(
+                user_name, RoleType.ADMIN.value)
+            ret = []
+            for r in admin_roles:
+                ret.extend(self.get_userroles_by_project(r.project_name))
+        return list([r.to_dict() for r in ret])
 
     def add_userrole(self, project_name: str, user_name: str, role_name: str, create_reason: str, by: str):
         """insert new user role relationship into sql table
@@ -86,8 +106,10 @@ class DbRBAC(RBAC):
         # insert new record
         query = fr"""insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time)
             values ('%s','%s','%s','%s' ,'%s', getutcdate())"""
-        self.conn.update(query%(project_name, user_name, role_name, by, create_reason))
-        logging.info(f"Userrole added with query: {query%(project_name, user_name, role_name, by, create_reason)}")
+        self.conn.update(query % (project_name, user_name,
+                         role_name, by, create_reason))
+        logging.info(
+            f"Userrole added with query: {query%(project_name, user_name, role_name, by, create_reason)}")
         self.get_userroles()
         return
 
@@ -100,19 +122,41 @@ class DbRBAC(RBAC):
             [delete_time] = getutcdate()
             WHERE [user_name] = '%s' and [project_name] = '%s' and [role_name] = '%s'
             and [delete_time] is null"""
-        self.conn.update(query%(by, delete_reason, user_name, project_name, role_name))
-        logging.info(f"Userrole removed with query: {query%(by, delete_reason, user_name, project_name, role_name)}")
+        self.conn.update(query % (by, delete_reason,
+                         user_name, project_name, role_name))
+        logging.info(
+            f"Userrole removed with query: {query%(by, delete_reason, user_name, project_name, role_name)}")
         self.get_userroles()
         return
 
-    def init_userrole(self, creator_name: str, project_name: str):
-        """initialize user role relationship when a new project is created
-        TODO: project name cannot be `global`.
+    def init_userrole(self, creator_name: str, project_name:str):
+        """Project name validation and project admin initialization
+        """
+        # project name cannot be `global`
+        if project_name.casefold() == SUPER_ADMIN_SCOPE.casefold():
+            raise BadRequest(f"{SUPER_ADMIN_SCOPE} is keyword for Global Admin (admin of all projects), please try other project name.")
+        else:
+            # check if project already exist (have valid rbac records)
+            # no 400 exception to align the registry api behaviors
+            query = fr"""select project_name, user_name, role_name, create_by, create_reason, create_time, delete_reason, delete_time
+                from userroles
+                where delete_reason is null and project_name ='%s'"""
+            rows = self.conn.query(query%(project_name))
+            if len(rows) > 0:
+                logging.warning(f"{project_name} already exist, please pick another name.")
+                return
+            else:
+                # initialize project admin if project not exist: 
+                self.init_project_admin(creator_name, project_name)
+            
+
+    def init_project_admin(self, creator_name: str, project_name: str):
+        """initialize the creator as project admin when a new project is created
         """
         create_by = "system"
         create_reason = "creator of project, get admin by default."
         query = fr"""insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time)
             values ('%s','%s','%s','%s','%s', getutcdate())"""
-        self.conn.update(query%(project_name, creator_name, RoleType.ADMIN, create_by, create_reason))
-        logging.info(f"Userrole initialized with query: {query%(project_name, creator_name, RoleType.ADMIN, create_by, create_reason)}")
+        self.conn.update(query % (project_name, creator_name, RoleType.ADMIN.value, create_by, create_reason))
+        logging.info(f"Userrole initialized with query: {query%(project_name, creator_name, RoleType.ADMIN.value, create_by, create_reason)}")
         return self.get_userroles()
