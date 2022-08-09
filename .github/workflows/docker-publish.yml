@@ -11,7 +11,7 @@ name: Publish Docker image
 
 on:
   schedule:
-    - cron: '30 5 * * *'
+    - cron: '34 6 * * *'
   
   push:
     # Sequence of patterns matched against refs/tags
