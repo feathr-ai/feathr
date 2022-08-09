@@ -241,34 +241,6 @@ class PurviewRegistry(Registry):
                         
         return EntitiesAndRelations(list(finalGuidEntityMap.values()), list(edges))
 
-    def get_project_bac(self, id_or_name: Union[str, UUID]) -> EntitiesAndRelations:
-        """
-        Get a project and everything inside of it, both entities and edges
-        """
-        project = self.get_entity(id_or_name)
-        edges = set(self.get_neighbors(id_or_name, RelationshipType.Contains))
-        ids = list([e.to_id for e in edges])
-        all_edges = self._get_edges(ids)
-        children = self.get_entities(ids)
-        child_map = dict([(e.id, e) for e in children])
-        project.attributes.children = children
-        for anchor in project.attributes.anchors:
-            conn = self.get_neighbors(anchor.id, RelationshipType.Contains)
-            feature_ids = [e.to_id for e in conn]
-            edges = edges.union(conn)
-            features = list([child_map[id] for id in feature_ids])
-            anchor.attributes.features = features
-            source_id = self.get_neighbors(
-                anchor.id, RelationshipType.Consumes)[0].to_id
-            anchor.attributes.source = child_map[source_id]
-        for df in project.attributes.derived_features:
-            conn = self.get_neighbors(anchor.id, RelationshipType.Consumes)
-            input_ids = [e.to_id for e in conn]
-            edges = edges.union(conn)
-            features = list([child_map[id] for id in input_ids])
-            df.attributes.input_features = features
-        return EntitiesAndRelations([project] + children, list(edges.union(all_edges)))
-
     def search_entity(self,
                       keyword: str,
                       type: list[EntityType],
