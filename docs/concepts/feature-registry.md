@@ -10,7 +10,7 @@ Feature registry is an important component of a feature store. This documentatio
 
 ## Introduction
 
-Feathr UI and Feathr Registry are two optional components to use Feathr, but
+Feathr UI and Feathr Registry are two optional components to use Feathr, but usually they are recommended to be provisioned so that Feathr users can explore features that are already registered in the registry, and reuse those features.
 
 ## Deployment
 
@@ -38,15 +38,13 @@ Note that if you choose to enable Role-based Access Control (RBAC), you still ne
 
 ## Architecture
 
+The overall Feathr architecture is like below. The registry and UI part is illustrated on the top where there are three components for Feathr feature registry:
+
 ![Architecture Diagram](../images/architecture.png)
 
-The architecture is as above. More specifically, there are three components for Feathr feature registry:
-
-- Feathr UI, a react based application
-- Feathr REST API, which provides abstraction for different registry providers, as well as role-based access control (RBAC)
+- Feathr UI, a React based application
+- Feathr REST API, which provides abstraction for different registry providers, as well as role-based access control (RBAC). Both the Feathr UI and the Feathr Python Client interact with the Feathr REST API service. The REST API service then detect if the user has the right access, and route the corresponding request to the registry providers.
 - Different feature registry backends. Currently only Azure Purview and SQL based registry are supported, but more registry providers from the community are welcome.
-
-Both the Feathr UI and the Feathr Python Client interact with the Feathr REST API service. The REST API service then detect if the user has the right access, and route the corresponding request to the registry providers.
 
 ## Accessing Registry in Feathr Python Client
 
@@ -60,9 +58,9 @@ feature_registry:
   api_endpoint: "https://feathr-sql-registry.azurewebsites.net/api/v1"
 ```
 
-### Register and Listing Features
+### Register and List Features
 
-You can register your features in the centralized registry and share it with other team members who want to consume those features and for further use. You can also use `list_registered_features` to verify if they have been registered successfully.
+You can register your features in the centralized registry and share the corresponding project with other team members who want to consume those features and for further use. You can also use `list_registered_features` to verify if they have been registered successfully.
 
 ```python
 client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
@@ -72,7 +70,7 @@ all_features = client.list_registered_features(project_name=client.project_name)
 
 ### Reuse Features from Existing Registry
 
-For feature consumers, they can reuse existing features from the registry. The whole project can be retrieved to local environment by calling this API `client.get_features_from_registry` with a project name. This encourage feature reuse across organizations. For example, end users of a feature just need to read all feature definitions from the existing projects, then use a few features from the projects and join those features with a new dataset you have.
+The feature producers can just let the feature consumers know which features exist so the feature consumers can reuse them. For feature consumers, they can reuse existing features from the registry. The whole project can be retrieved to local environment by calling this API `client.get_features_from_registry` with a project name. This encourage feature reuse across organizations. For example, end users of a feature just need to read all feature definitions from the existing projects, then use a few features from the projects and join those features with a new dataset you have.
 
 For example, in the [product recommendation demo notebook](./../samples/product_recommendation_demo.ipynb), some other team members have already defined a few features, such as `feature_user_gift_card_balance` and `feature_user_has_valid_credit_card`. If we want to reuse those features for anti-abuse purpose in a new dataset, what you can do is like this, i.e. just call `get_features_from_registry` to get the features, then put the features you want to query to the anti-abuse dataset you have.
 

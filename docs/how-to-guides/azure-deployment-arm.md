@@ -77,7 +77,7 @@ Click the button below to deploy a minimal set of Feathr resources. This is not 
 
 ### 3. Grant Key Vault and Synapse access to selected users (Optional)
 
-YOu will need to assign the right permission to users in order for them to access Azure key vault, permission to access the Storage Blob as a Contributor, and permission to submit jobs to Synapse cluster.
+You will need to assign the right permission to users in order for them to access Azure key vault, permission to access the Storage Blob as a Contributor, and permission to submit jobs to Synapse cluster.
 
 Skip this step if you have already given yourself the access. Otherwise, run the following lines of command in the [Cloud Shell](https://shell.azure.com/bash).
 
