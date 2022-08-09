@@ -72,36 +72,37 @@ all_features = client.list_registered_features(project_name=client.project_name)
 
 ### Reuse Features from Existing Registry
 
-For feature consumers, they can reuse existing features from the registry. The whole project can be retrieved to local environment by calling this API `client.get_features_from_registry` with a project name, like below:
+For feature consumers, they can reuse existing features from the registry. The whole project can be retrieved to local environment by calling this API `client.get_features_from_registry` with a project name. This encourage feature reuse across organizations. For example, end users of a feature just need to read all feature definitions from the existing projects, then use a few features from the projects and join those features with a new dataset you have.
+
+For example, in the [product recommendation demo notebook](./../samples/product_recommendation_demo.ipynb), some other team members have already defined a few features, such as `feature_user_gift_card_balance` and `feature_user_has_valid_credit_card`. If we want to reuse those features for anti-abuse purpose in a new dataset, what you can do is like this, i.e. just call `get_features_from_registry` to get the features, then put the features you want to query to the anti-abuse dataset you have.
 
 ```python
 registered_features_dict = client.get_features_from_registry(client.project_name)
 
 # Features that we want to request
-feature_query = FeatureQuery(feature_list=["feature_user_age", 
-                                           "feature_user_tax_rate", 
-                                           "feature_user_gift_card_balance", 
-                                           "feature_user_has_valid_credit_card", 
-                                           "feature_user_total_purchase_in_90days",
-                                           "feature_user_purchasing_power"], 
+feature_query = FeatureQuery(feature_list=[ "feature_user_gift_card_balance",
+                                           "feature_user_has_valid_credit_card", ],
                              key=user_id)
 settings = ObservationSettings(
-    observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/product_recommendation_sample/user_observation_mock_data.csv",
+    observation_path="some_anti_abuse_dataset_path",
     event_timestamp_column="event_timestamp",
     timestamp_format="yyyy-MM-dd")
 feathr_client.get_offline_features(observation_settings=settings,
                             feature_query=feature_query,
                             output_path=output_path)
-feathr_client.wait_job_to_finish(timeout_sec=500)
 ```
-
-There are two types of use cases:
-
-1. Just read all feature definitions from the existing projects, then use a few features from the projects and 
-
-For example, in the [product recommendation demo notebook](./../samples/product_recommendation_demo.ipynb), some other team members have already defined a few features, such as `feature_user_gift_card_balance` and `feature_user_has_valid_credit_card`. If we want to reuse those features on a new observation dataset for anti-abuse purpose, 
-
 
 ## Accessing Feathr UI
 
-Feathr UI should be straightforward to use, including 
+Feathr UI should be straightforward to use. Currently there are a few pages, including:
+
+Feature Summary page:
+![Feature Summary](../images/feature-summary.png)
+
+Feature Detailed Page:
+![Feature Detailed Page](../images/feature-details.png)
+Feature Lineage Page:
+![Feature Lineage Page](../images/feature-ui.png)
+
+Access Control Management Page (if RBAC is enabled):
+![Access Control Management Page](../images/access-control-management.png)
