@@ -1,25 +1,23 @@
-import base64
+import copy
 import json
 import os
 import time
-
 from collections import namedtuple
 from os.path import basename
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
 import requests
+from databricks_cli.dbfs.api import DbfsApi
+from databricks_cli.runs.api import RunsApi
+from databricks_cli.sdk.api_client import ApiClient
+from feathr.constants import *
+from feathr.spark_provider._abc import SparkJobLauncher
 from loguru import logger
 from requests.structures import CaseInsensitiveDict
-from tqdm import tqdm
 
-from feathr.spark_provider._abc import SparkJobLauncher
-from feathr.constants import *
-from databricks_cli.dbfs.api import DbfsApi
-from databricks_cli.sdk.api_client import ApiClient
-from databricks_cli.runs.api import RunsApi
 
 class _FeathrDatabricksJobLauncher(SparkJobLauncher):
     """Class to interact with Databricks Spark cluster
@@ -137,9 +135,10 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # if the input is a string, load it directly
             submission_params = json.loads(self.config_template)
         else:
-            # otherwise users might have missed the quotes in the config.
-            submission_params = self.config_template
-            logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
+            # otherwise users might have missed the quotes in the config. Treat them as dict
+            # Note that we need to use deep copy here, in order to make `self.config_template` immutable
+            # Otherwise, since we need to change submission_params later, which will modify `self.config_template` and cause unexpected behaviors
+            submission_params = copy.deepcopy(self.config_template) 
 
         submission_params['run_name'] = job_name
         if 'existing_cluster_id' not in submission_params:
@@ -168,6 +167,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # this is a pyspark job. definition here: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--sparkpythontask
             # the first file is the pyspark driver code. we only need the driver code to execute pyspark
             param_and_file_dict = {"parameters": arguments, "python_file": self.upload_or_get_cloud_path(python_files[0])}
+            # indicates this is a pyspark job
+            # `setdefault` method will get the value of the "spark_python_task" item, if the "spark_python_task" item does not exist, insert "spark_python_task" with the value "param_and_file_dict":
             submission_params.setdefault('spark_python_task',param_and_file_dict)
         else:
             # this is a scala spark job

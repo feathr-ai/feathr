@@ -30,6 +30,9 @@ private[offline] case class DerivedFeature(
    * get the row-based FeatureDerivationFunction, note that some of the derivations that derive from FeatureDerivationFunctionBase
    * are not subclass of FeatureDerivationFunction, e.g, [[FeatureDerivationFunctionSpark]], in such cases, this function will
    * throw exception, make sure you will not call this function for such cases.
+   *
+   * TODO: The above described condition is bad; ideally this class should capture the information about what type of
+   *       derivation function this is in a type-safe way.
    */
   def getAsFeatureDerivationFunction(): FeatureDerivationFunction = derivation.asInstanceOf[FeatureDerivationFunction]
 
