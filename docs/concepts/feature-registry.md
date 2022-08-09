@@ -84,3 +84,5 @@ client.get_offline_features(observation_settings=settings,
                             output_path=output_path)
 ```
 ## Accessing Feathr UI
+
+Feathr UI should be straightforward to use, including 

@@ -99,7 +99,7 @@ If you are using Purview registry there is an additional step required for the d
 
 ![purview data curator role add](../images/purview_permission_setting.png)
 
-Only collection admins can perform the above operation, the user who created this Purview account is already one. If you want to add additional admins, you can do so by clicking on _Root collection permission_ option on Azure Purview page.
+Only collection admins can perform the above operation, the user who created this Purview account is already one. If you want to add additional admins, you can do so by clicking on _Root collection permission_ option on Azure Purview page. The name is usually called `{prefix}identity`.
 
 Congratulations, you have successfully deployed Feathr on Azure. You can access your resources by going to the resource group that you created for the deployment. A good first test would be to access Feathr UI, you can access it by clicking on App Service URL. The URL would have the following format:
 
