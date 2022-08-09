@@ -4,6 +4,7 @@ import {
   DatabaseOutlined,
   EyeOutlined,
   RocketOutlined,
+  ControlOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 
@@ -11,6 +12,11 @@ const { Title } = Typography;
 const { Sider } = Layout;
 
 const SideMenu = () => {
+  const enableRBAC = window.environment?.enableRBAC;
+  const showManagement = enableRBAC
+    ? enableRBAC
+    : process.env.REACT_APP_ENABLE_RBAC;
+
   return (
     <Sider theme="dark">
       <Title
@@ -58,6 +64,16 @@ const SideMenu = () => {
         >
           <Link to="/monitoring">Monitoring</Link>
         </Menu.Item>
+        {showManagement === "true" && (
+          <Menu.Item
+            key="/management"
+            icon={
+              <ControlOutlined style={{ fontSize: "20px", color: "#6495ed" }} />
+            }
+          >
+            <Link to="/management">Management</Link>
+          </Menu.Item>
+        )}
       </Menu>
     </Sider>
   );

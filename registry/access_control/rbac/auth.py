@@ -66,8 +66,12 @@ class AzureADAuth(OAuth2AuthorizationCodeBearer):
         elif aad_app_key in decoded_token:
             appid = decoded_token.get(aad_app_key)
             # Azure CLI User Impersonation token
-            if decoded_token.get("scp") == str(UserType.USER_IMPERSONATION):
-                username = decoded_token.get("upn")
+            if decoded_token.get("scp") == str(UserType.USER_IMPERSONATION.value):
+                if "upn" in decoded_token:
+                    username = decoded_token.get("upn")
+                # live.com account token doesn't have upn
+                else:
+                    username = decoded_token.get("email")
                 type = UserType.USER_IMPERSONATION
             # Other AAD App token
             else:

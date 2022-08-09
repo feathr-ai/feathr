@@ -42,7 +42,7 @@ docker run --env PURVIEW_NAME=<REPLACE_ME> --env AZURE_CLIENT_ID=<REPLACE_ME> --
 
 ### Test SQL registry + RBAC
 ```bash
-docker run --env ENABLE_RBAC=true --env REACT_APP_AZURE_CLIENT_ID=<REPLACE_ME> --env REACT_APP_AZURE_TENANT_ID=<REPLACE_ME> --env CONNECTION_STR=<REPLACE_ME> --env API_BASE=api/v1 -it --rm -p 3000:80 feathrfeaturestore/feathr-registry
+docker run --env REACT_APP_ENABLE_RBAC=true --env REACT_APP_AZURE_CLIENT_ID=<REPLACE_ME> --env REACT_APP_AZURE_TENANT_ID=<REPLACE_ME> --env CONNECTION_STR=<REPLACE_ME> --env API_BASE=api/v1 -it --rm -p 3000:80 feathrfeaturestore/feathr-registry
 ```
 
 After docker image launched, open web browser and navigate to <https://localhost:3000>，verify both UI and backend api can work correctly.

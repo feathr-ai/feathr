@@ -357,7 +357,7 @@ class _PurviewRegistry(FeathrRegistry):
             ts (TopologicalSorter): a topological sorter by python
 
         Returns:
-            None. The topo sorter will maitain a static topo sorted order.
+            None. The topological sorter will maintain a static topological sorted order.
         """
         # return if the list is empty
         if derived_features is None:
@@ -366,7 +366,7 @@ class _PurviewRegistry(FeathrRegistry):
         for derived_feature in derived_features:
             # make sure the input is derived feature
             if isinstance(derived_feature, DerivedFeature):
-                # add this derived feature in the topo sort graph without any precessesors
+                # add this derived feature in the topological sort graph without any predecessors
                 # since regardless we need it
                 ts.add(derived_feature)
                 for input_feature in derived_feature.input_features:
@@ -394,12 +394,12 @@ class _PurviewRegistry(FeathrRegistry):
         ts = TopologicalSorter()
 
         self._add_all_derived_features(derived_features, ts)
-        # topo sort the derived features to make sure that we can correctly refer to them later in the registry
+        # topological sort the derived features to make sure that we can correctly refer to them later in the registry
         toposorted_derived_feature_list: List[DerivedFeature] = list(ts.static_order())
         
         for derived_feature in toposorted_derived_feature_list:
             # get the corresponding Atlas entity by searching feature name
-            # Since this list is topo sorted, so you can always find the corresponding name
+            # Since this list is topological sorted, so you can always find the corresponding name
             input_feature_entity_list: List[AtlasEntity] = [
                 self.global_feature_entity_dict[f.name] for f in derived_feature.input_features]
             key_list = []
@@ -713,9 +713,9 @@ derivations: {
 
     def upload_single_entity_to_purview(self,entity:Union[AtlasEntity,AtlasProcess]):
         '''
-        Upload a single entity to purview, could be a process entity or atlasentity. 
+        Upload a single entity to purview, could be a process entity or AtlasEntity. 
         Since this is used for migration existing project, ignore Atlas PreconditionFail (412)
-        If the eneity already exists, return the existing entity's GUID.
+        If the entity already exists, return the existing entity's GUID.
         Otherwise, return the new entity GUID.
         The entity itself will also be modified, fill the GUID with real GUID in Purview.
         In order to avoid having concurrency issue, and provide clear guidance, this method only allows entity uploading once at a time.
@@ -809,7 +809,7 @@ derivations: {
         anchor_entity = self.purview_client.get_entity(anchor_id)['entities'][0]
 
         
-        # project contians anchor, anchor belongs to project.
+        # project contains anchor, anchor belongs to project.
         project_contains_anchor_relation = self._generate_relation_pairs(
             project_entity, anchor_entity, RELATION_CONTAINS)
         anchor_consumes_source_relation = self._generate_relation_pairs(
@@ -946,7 +946,7 @@ derivations: {
 
     def _delete_all_feathr_types(self):
         """
-        Delete all the corresonding type definitions for feathr registry. For internal use only
+        Delete all the corresponding type definitions for feathr registry. For internal use only
         """
         typedefs = self.purview_client.get_all_typedefs()
 
@@ -967,18 +967,18 @@ derivations: {
 
     def _delete_all_feathr_entities(self):
         """
-        Delete all the corresonding entity for feathr registry. For internal use only
+        Delete all the corresponding entity for feathr registry. For internal use only
 
         :param guid: The guid or guids you want to remove.
         """
         # should not be large than this, otherwise the backend might throw out error
-        batch_delte_size = 100
+        batch_delete_size = 100
 
-        # use the `query` API so that it can return immediatelly (don't use the search_entity API as it will try to return all the results in a single request)
+        # use the `query` API so that it can return immediately (don't use the search_entity API as it will try to return all the results in a single request)
 
         while True:
             result = self.purview_client.discovery.query(
-                "feathr", limit=batch_delte_size)
+                "feathr", limit=batch_delete_size)
             logger.info("Total number of entities:",result['@search.count'] )
 
             # if no results, break:
@@ -987,7 +987,7 @@ derivations: {
             entities = result['value']
             guid_list = [entity["id"] for entity in entities]
             self.purview_client.delete_entity(guid=guid_list)
-            logger.info("{} feathr entities deleted", batch_delte_size)
+            logger.info("{} feathr entities deleted", batch_delete_size)
             # sleep here, otherwise backend might throttle
             # process the next batch after sleep
             sleep(1)
@@ -1237,7 +1237,7 @@ derivations: {
                                     name=source_entity["attributes"]["name"],
                                     event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
                                     timestamp_format=source_entity["attributes"]["timestamp_format"],
-                                    preprocessing=self._correct_function_identation(source_entity["attributes"]["preprocessing"]),
+                                    preprocessing=self._correct_function_indentation(source_entity["attributes"]["preprocessing"]),
                                     path=source_entity["attributes"]["path"],
                                     registry_tags=source_entity["attributes"]["tags"]
                                     ),
@@ -1264,9 +1264,9 @@ derivations: {
         return result
 
 
-    def _correct_function_identation(self, user_func: str) -> str:
+    def _correct_function_indentation(self, user_func: str) -> str:
         """
-        The function read from registry might have the wrong identation. We need to correct those identations.
+        The function read from registry might have the wrong indentation. We need to correct those indentation.
         More specifically, we are using the inspect module to copy the function body for UDF for further submission. In that case, there will be situations like this:
 
         def feathr_udf1(df)
@@ -1302,7 +1302,7 @@ derivations: {
         return HdfsSource(name=source_entity["attributes"]["name"],
                 event_timestamp_column=source_entity["attributes"]["event_timestamp_column"],
                 timestamp_format=source_entity["attributes"]["timestamp_format"],
-                preprocessing=self._correct_function_identation(source_entity["attributes"]["preprocessing"]),
+                preprocessing=self._correct_function_indentation(source_entity["attributes"]["preprocessing"]),
                 path=source_entity["attributes"]["path"],
                 registry_tags=source_entity["attributes"]["tags"]
                 )

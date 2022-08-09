@@ -398,7 +398,7 @@
                 "value": "[concat('Server=tcp:',reference(variables('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('sqlDatabaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlserverName')).administratorLogin,';Password=',parameters('sqlAdminPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
               },
               {
-                "name": "ENABLE_RBAC",
+                "name": "REACT_APP_ENABLE_RBAC",
                 "value": "[if(equals(parameters('enableRBAC'),'Yes'),json('true'),json('null'))]"
               },
               {

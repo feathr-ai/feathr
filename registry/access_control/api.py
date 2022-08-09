@@ -66,29 +66,29 @@ def get_feature_lineage(feature: str, requestor: User = Depends(get_user)) -> di
 
 @router.post("/projects", name="Create new project with definition [Auth Required]")
 def new_project(definition: dict, requestor: User = Depends(get_user)) -> dict:
-    rbac.init_userrole(requestor, definition["name"])
-    response = requests.post(url=f"{registry_url}/projects", params=definition,
+    rbac.init_userrole(requestor.username, definition["name"])
+    response = requests.post(url=f"{registry_url}/projects", json=definition,
                              headers=get_api_header(requestor)).content.decode('utf-8')
     return json.loads(response)
 
 
 @router.post("/projects/{project}/datasources", name="Create new data source of my project [Write Access Required]")
 def new_project_datasource(project: str, definition: dict, requestor: User = Depends(project_write_access)) -> dict:
-    response = requests.post(url=f"{registry_url}/projects/{project}/datasources", params=definition, headers=get_api_header(
+    response = requests.post(url=f"{registry_url}/projects/{project}/datasources", json=definition, headers=get_api_header(
         requestor)).content.decode('utf-8')
     return json.loads(response)
 
 
 @router.post("/projects/{project}/anchors", name="Create new anchors of my project [Write Access Required]")
 def new_project_anchor(project: str, definition: dict, requestor: User = Depends(project_write_access)) -> dict:
-    response = requests.post(url=f"{registry_url}/projects/{project}/anchors", params=definition, headers=get_api_header(
+    response = requests.post(url=f"{registry_url}/projects/{project}/anchors", json=definition, headers=get_api_header(
         requestor)).content.decode('utf-8')
     return json.loads(response)
 
 
 @router.post("/projects/{project}/anchors/{anchor}/features", name="Create new anchor features of my project [Write Access Required]")
 def new_project_anchor_feature(project: str, anchor: str, definition: dict, requestor: User = Depends(project_write_access)) -> dict:
-    response = requests.post(url=f"{registry_url}/projects/{project}/anchors/{anchor}/features", params=definition, headers=get_api_header(
+    response = requests.post(url=f"{registry_url}/projects/{project}/anchors/{anchor}/features", json=definition, headers=get_api_header(
         requestor)).content.decode('utf-8')
     return json.loads(response)
 
@@ -96,12 +96,10 @@ def new_project_anchor_feature(project: str, anchor: str, definition: dict, requ
 @router.post("/projects/{project}/derivedfeatures", name="Create new derived features of my project [Write Access Required]")
 def new_project_derived_feature(project: str, definition: dict, requestor: User = Depends(project_write_access)) -> dict:
     response = requests.post(url=f"{registry_url}/projects/{project}/derivedfeatures",
-                             params=definition, headers=get_api_header(requestor)).content.decode('utf-8')
+                             json=definition, headers=get_api_header(requestor)).content.decode('utf-8')
     return json.loads(response)
 
 # Below are access control management APIs
-
-
 @router.get("/userroles", name="List all active user role records [Project Manage Access Required]")
 def get_userroles(requestor: User = Depends(get_user)) -> list:
     return rbac.list_userroles(requestor.username)

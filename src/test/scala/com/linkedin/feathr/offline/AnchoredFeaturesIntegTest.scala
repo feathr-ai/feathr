@@ -4,6 +4,8 @@ import com.linkedin.feathr.common.configObj.configbuilder.ConfigBuilderException
 import com.linkedin.feathr.common.exception.FeathrConfigException
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
+import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext
+import com.linkedin.feathr.offline.plugins.{AlienFeatureValue, AlienFeatureValueTypeAdaptor}
 import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.spark.sql.Row
