@@ -96,13 +96,14 @@ feathr_client.get_offline_features(observation_settings=settings,
 
 Feathr UI should be straightforward to use. Currently there are a few pages, including:
 
-Feature Summary page:
+Feature Summary page where you can see a list of all the features in a project:
 ![Feature Summary](../images/feature-summary.png)
 
-Feature Detailed Page:
+Feature Detailed Page where you can view the detailed information for a feature:
 ![Feature Detailed Page](../images/feature-details.png)
-Feature Lineage Page:
+
+Feature Lineage Page where you can view all the lineage info for features in a project.
 ![Feature Lineage Page](../images/feature-ui.png)
 
-Access Control Management Page (if RBAC is enabled):
+Access Control Management Page (if RBAC is enabled) where you can manage access control for users.
 ![Access Control Management Page](../images/access-control-management.png)
