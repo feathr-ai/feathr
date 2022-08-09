@@ -136,8 +136,9 @@ const UserRoles: React.FC = () => {
         <div style={{ flex: 1 }}>
           <>
             <p style={{ width: "80%" }}>
-              This page is protected by Feathr Access Control. Only Global Admin
-              can retrieve management details and grant or delete user roles.
+              This page is protected by Feathr Access Control. Only Project
+              Admins can retrieve management details and grant or delete user
+              roles.
             </p>
           </>
         </div>
