@@ -113,9 +113,18 @@ class EntityType(Enum):
 class RelationshipType(Enum):
     Contains = 1
     BelongsTo = 2
-    Consumes = 3
-    Produces = 4
+    Consumes = 4
+    Produces = 8
 
+    @staticmethod
+    def new(r):
+        return {
+            "CONTAINS": RelationshipType.Contains,
+            "CONTAIN": RelationshipType.Contains,
+            "BELONGSTO": RelationshipType.BelongsTo,
+            "CONSUMES": RelationshipType.Consumes,
+            "PRODUCES": RelationshipType.Produces,
+        }[r]
 
 class ToDict(ABC):
     """
@@ -522,8 +531,10 @@ class AnchorAttributes(Attributes):
             "features": list([e.get_ref().to_dict() for e in self.features]),
             "tags": self.tags,
         }
-        if self.source is not None:
-            ret["source"] = self.source.get_ref().to_dict()
+        if self.source is not None and isinstance(self.source, Attributes):
+            source_ref = self.source.get_ref()
+            if source_ref is not None:
+                ret["source"] = source_ref.to_dict() 
         return ret
 
 
@@ -655,6 +666,7 @@ class Edge(ToDict):
             "fromEntityId": str(self.from_id),
             "toEntityId": str(self.to_id),
             "relationshipType": self.conn_type.name,
+            "relationshipTypeValue": self.conn_type.value,
         }
 
 
