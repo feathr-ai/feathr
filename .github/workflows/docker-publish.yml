@@ -1,17 +1,13 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+# This workflow builds the docker container and publishes to dockerhub with appropriate tag
+# It has two triggers, 
+#   1. daily i.e. runs everyday at specific time.
+#   2. Anytime a new branch is created under releases
 
-# GitHub recommends pinning actions to a commit SHA.
-# To get a newer version, you will need to update the SHA.
-# You can also reference a tag or branch, but the action may change without warning.
-
-name: Publish Docker image
+name: Publish Feathr Docker image to DockerHub
 
 on:
   schedule:
-    - cron: '34 6 * * *'
+    - cron: '44 6 * * *'
   
   push:
     # Sequence of patterns matched against refs/tags
