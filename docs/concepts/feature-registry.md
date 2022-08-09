@@ -34,7 +34,7 @@ https://{prefix}webapp.azurewebsites.net/api/v1
 
 Feathr supports two types of backends for Feature Registry - Azure Purview (Apache Atlas compatible service) and ANSI SQL. Depending on your IT setup, you might choose either of those in the above deployment steps.
 
-Note that if you choose to enable Role-based Access Control (RBAC), you also need to use a SQL service (such as Azure SQL) to store all the RBAC related information.
+Note that if you choose to enable Role-based Access Control (RBAC), you still need to use a SQL service (such as Azure SQL) to store all the RBAC related information.
 
 ## Architecture
 
@@ -52,7 +52,7 @@ Both the Feathr UI and the Feathr Python Client interact with the Feathr REST AP
 
 In the Feathr python client, if you want to access the registry, you should set the `FEATURE_REGISTRY__API_ENDPOINT` environment variable. The full [document is here](../how-to-guides/feathr-configuration-and-env.md#a-list-of-environment-variables-that-feathr-uses).
 
-Alternatively, you can set the feature registry and the API endpoint in the YAML file:
+Alternatively, you can set the feature registry and the API endpoint in the configuration YAML file:
 
 ```yaml
 feature_registry:
@@ -60,29 +60,48 @@ feature_registry:
   api_endpoint: "https://feathr-sql-registry.azurewebsites.net/api/v1"
 ```
 
-### Register Features
+### Register and Listing Features
+
+You can register your features in the centralized registry and share it with other team members who want to consume those features and for further use. You can also use `list_registered_features` to verify if they have been registered successfully.
 
 ```python
 client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
 client.register_features()
 all_features = client.list_registered_features(project_name=client.project_name)
 ```
+
 ### Reuse Features from Existing Registry
 
-```python
-client.get_features_from_registry(client.project_name)
+For feature consumers, they can reuse existing features from the registry. The whole project can be retrieved to local environment by calling this API `client.get_features_from_registry` with a project name, like below:
 
-feature_query = FeatureQuery(
-    feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance"], 
-    key=TypedKey(key_column="DOLocationID",key_column_type=ValueType.INT32))
+```python
+registered_features_dict = client.get_features_from_registry(client.project_name)
+
+# Features that we want to request
+feature_query = FeatureQuery(feature_list=["feature_user_age", 
+                                           "feature_user_tax_rate", 
+                                           "feature_user_gift_card_balance", 
+                                           "feature_user_has_valid_credit_card", 
+                                           "feature_user_total_purchase_in_90days",
+                                           "feature_user_purchasing_power"], 
+                             key=user_id)
 settings = ObservationSettings(
-    observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
-    event_timestamp_column="lpep_dropoff_datetime",
-    timestamp_format="yyyy-MM-dd HH:mm:ss")
-client.get_offline_features(observation_settings=settings,
+    observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/product_recommendation_sample/user_observation_mock_data.csv",
+    event_timestamp_column="event_timestamp",
+    timestamp_format="yyyy-MM-dd")
+feathr_client.get_offline_features(observation_settings=settings,
                             feature_query=feature_query,
                             output_path=output_path)
+feathr_client.wait_job_to_finish(timeout_sec=500)
 ```
+
+There are two types of use cases:
+
+1. Just read all feature definitions from the existing projects, then use a few features from the projects and 
+
+For example, in the [product recommendation demo notebook](./../samples/product_recommendation_demo.ipynb), some other team members have already defined a few features, such as `feature_user_gift_card_balance` and `feature_user_has_valid_credit_card`. If we want to reuse those features on a new observation dataset for anti-abuse purpose, 
+
+
 ## Accessing Feathr UI
 
 Feathr UI should be straightforward to use, including 

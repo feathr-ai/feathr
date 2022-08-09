@@ -161,7 +161,7 @@ You can use Feathr UI to search features, identify data sources, track feature l
 | Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
 | Streaming Source                | Kafka, EventHub                                                             |
 | Online store                    | Azure Cache for Redis                                                       |
-| Feature Registry and Governance | Azure Purview                                                               |
+| Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                      |
 | Compute Engine                  | Azure Synapse Spark Pools, Databricks                                       |
 | Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook               |
 | File Format                     | Parquet, ORC, Avro, JSON, Delta Lake                                        |
@@ -173,7 +173,7 @@ For a complete roadmap with estimated dates, please [visit this page](https://gi
 
 - [x] Support streaming
 - [x] Support common data sources
-- [X] Support feature store UI, including Lineage and Search functionalities
+- [x] Support feature store UI, including Lineage and Search functionalities
 - [ ] Support online transformation
 - [ ] Support feature versioning
 - [ ] Support feature monitoring
