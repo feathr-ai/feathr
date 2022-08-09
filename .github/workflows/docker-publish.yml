@@ -7,7 +7,7 @@ name: Publish Feathr Docker image to DockerHub
 
 on:
   schedule:
-    - cron: '44 6 * * *'
+    - cron: '00 22 * * *'
   
   push:
     # Sequence of patterns matched against refs/tags
