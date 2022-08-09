@@ -208,15 +208,15 @@ def test_parse_project():
 
 def test_registry_client_list_features():
     c = _FeatureRegistry(project_name="p", endpoint="https://feathr-sql-registry.azurewebsites.net/api/v1")
-    f = [e["qualifiedName"] for e in c.list_registered_features("feathr_getting_started")]
+    f = [e["qualifiedName"] for e in c.list_registered_features("feathr_ci_registry_getting_started")]
     print(f)
     assert len(f)==9
     for i in f:
-        assert i.startswith("feathr_getting_started__")
+        assert i.startswith("feathr_ci_registry_getting_started__")
         
 def test_registry_client_load():
     c = _FeatureRegistry(project_name="p", endpoint="https://feathr-sql-registry.azurewebsites.net/api/v1")
-    (anchors, derived_features) = c.get_features_from_registry("feathr_getting_started")
+    (anchors, derived_features) = c.get_features_from_registry("feathr_ci_registry_getting_started")
     assert len(anchors)==2
     request_features = [a for a in anchors if a.name=='request_features'][0]
     assert isinstance(request_features.source, InputContext)

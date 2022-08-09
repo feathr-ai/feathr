@@ -62,7 +62,9 @@ class Registry(ABC):
     def search_entity(self,
                       keyword: str,
                       type: list[EntityType],
-                      project: Optional[Union[str, UUID]] = None) -> list[EntityRef]:
+                      project: Optional[Union[str, UUID]] = None,
+                      start: Optional[int] = None,
+                      size: Optional[int] = None) -> list[EntityRef]:
         """
         Search entities with specified type that also match the keyword in a project
         """

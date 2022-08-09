@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from "react";
 import { Form, Select, Table } from "antd";
 import { DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
@@ -6,9 +6,9 @@ import { fetchDataSources, fetchProjects } from "../api";
 const DataSourceList: React.FC = () => {
   const columns = [
     {
-      title: <div style={ { userSelect: "none" } }>Name</div>,
-      key: 'name',
-      align: 'center' as 'center',
+      title: <div style={{ userSelect: "none" }}>Name</div>,
+      key: "name",
+      align: "center" as "center",
       width: 120,
       render: (row: DataSource) => {
         return row.attributes.name;
@@ -16,15 +16,15 @@ const DataSourceList: React.FC = () => {
       onCell: () => {
         return {
           style: {
-            maxWidth: 120
-          }
-        }
-      }
+            maxWidth: 120,
+          },
+        };
+      },
     },
     {
       title: <div>Type</div>,
-      key: 'type',
-      align: 'center' as 'center',
+      key: "type",
+      align: "center" as "center",
       width: 80,
       render: (row: DataSource) => {
         return row.attributes.type;
@@ -32,15 +32,15 @@ const DataSourceList: React.FC = () => {
       onCell: () => {
         return {
           style: {
-            maxWidth: 120
-          }
-        }
-      }
+            maxWidth: 120,
+          },
+        };
+      },
     },
     {
       title: <div>Path</div>,
-      key: 'path',
-      align: 'center' as 'center',
+      key: "path",
+      align: "center" as "center",
       width: 190,
       render: (row: DataSource) => {
         return row.attributes.path;
@@ -48,15 +48,15 @@ const DataSourceList: React.FC = () => {
       onCell: () => {
         return {
           style: {
-            maxWidth: 120
-          }
-        }
-      }
+            maxWidth: 120,
+          },
+        };
+      },
     },
     {
       title: <div>Pre Processing</div>,
-      key: 'preprocessing',
-      align: 'center' as 'center',
+      key: "preprocessing",
+      align: "center" as "center",
       width: 190,
       render: (row: DataSource) => {
         return row.attributes.preprocessing;
@@ -64,15 +64,15 @@ const DataSourceList: React.FC = () => {
       onCell: () => {
         return {
           style: {
-            maxWidth: 120
-          }
-        }
-      }
+            maxWidth: 120,
+          },
+        };
+      },
     },
     {
       title: <div>Event Timestamp Column</div>,
-      key: 'eventTimestampColumn',
-      align: 'center' as 'center',
+      key: "eventTimestampColumn",
+      align: "center" as "center",
       width: 190,
       render: (row: DataSource) => {
         return row.attributes.eventTimestampColumn;
@@ -80,15 +80,15 @@ const DataSourceList: React.FC = () => {
       onCell: () => {
         return {
           style: {
-            maxWidth: 120
-          }
-        }
-      }
+            maxWidth: 120,
+          },
+        };
+      },
     },
     {
       title: <div>Timestamp Format</div>,
-      key: 'timestampFormat',
-      align: 'center' as 'center',
+      key: "timestampFormat",
+      align: "center" as "center",
       width: 190,
       render: (row: DataSource) => {
         return row.attributes.timestampFormat;
@@ -96,11 +96,11 @@ const DataSourceList: React.FC = () => {
       onCell: () => {
         return {
           style: {
-            maxWidth: 120
-          }
-        }
-      }
-    }
+            maxWidth: 120,
+          },
+        };
+      },
+    },
   ];
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -108,23 +108,26 @@ const DataSourceList: React.FC = () => {
   const [projects, setProjects] = useState<any>([]);
   const [project, setProject] = useState<string>("");
 
-  const fetchData = useCallback(async (project: string) => {
-    setLoading(true);
-    const result = await fetchDataSources(project);
-    setPage(page);
-    setTableData(result);
-    setLoading(false);
-  }, [page])
+  const fetchData = useCallback(
+    async (project: string) => {
+      setLoading(true);
+      const result = await fetchDataSources(project);
+      setPage(page);
+      setTableData(result);
+      setLoading(false);
+    },
+    [page]
+  );
 
   const loadProjects = useCallback(async () => {
     const projects = await fetchProjects();
-    const projectOptions = projects.map(p => ({ value: p, label: p }));
+    const projectOptions = projects.map((p) => ({ value: p, label: p }));
     setProjects(projectOptions);
-  }, [])
+  }, []);
 
   useEffect(() => {
     loadProjects();
-  }, [loadProjects])
+  }, [loadProjects]);
 
   const onProjectChange = async (value: string) => {
     setProject(value);
@@ -133,22 +136,33 @@ const DataSourceList: React.FC = () => {
 
   return (
     <div>
-      <Form.Item label="Select Project: "
-                 style={ { minWidth: "35%", float: "left", paddingLeft: "10px" } }
-                 rules={ [{ required: true, message: "Please select a project to start." }] }>
-        <Select options={ projects } defaultValue={ project } value={ project } optionFilterProp="label"
-                notFoundContent={ <div>No projects found from server</div> }
-                onChange={ onProjectChange }>
-        </Select>
+      <Form.Item
+        label="Select Project: "
+        style={{ minWidth: "35%", float: "left", paddingLeft: "10px" }}
+        rules={[
+          {
+            required: true,
+            message: "Please select a project to start.",
+          },
+        ]}
+      >
+        <Select
+          options={projects}
+          defaultValue={project}
+          value={project}
+          optionFilterProp="label"
+          notFoundContent={<div>No projects found from server</div>}
+          onChange={onProjectChange}
+        ></Select>
       </Form.Item>
       <Table
-        dataSource={ tableData }
-        columns={ columns }
-        rowKey={ "id" }
-        loading={ loading }
+        dataSource={tableData}
+        columns={columns}
+        rowKey={"id"}
+        loading={loading}
       />
     </div>
   );
-}
+};
 
 export default DataSourceList;

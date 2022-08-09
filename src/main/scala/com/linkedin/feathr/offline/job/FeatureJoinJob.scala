@@ -343,7 +343,7 @@ object FeatureJoinJob {
   }
 
   def main(args: Array[String]) {
-    logger.info("FeatureJoinJob args are: " + args)
+    logger.info("FeatureJoinJob args are: " + args.mkString("Array(", ", ", ")"))
     val feathrJoinPreparationInfo = prepareSparkSession(args)
 
     run(feathrJoinPreparationInfo.sparkSession, feathrJoinPreparationInfo.hadoopConf, feathrJoinPreparationInfo.jobContext, List()) //TODO: accept handlers instead of empty List

@@ -106,7 +106,7 @@ private[offline] object SourceUtils {
     sourceFormatType match {
       case SourceFormatType.FIXED_PATH => Seq(HdfsUtils.getLatestPath(sourcePath, ss.sparkContext.hadoopConfiguration))
       case SourceFormatType.TIME_PATH =>
-        val pathChecker = PathChecker(ss)
+        val pathChecker = PathChecker(ss, dataLoaderHandlers)
         val pathGenerator = new TimeBasedHdfsPathGenerator(pathChecker)
         val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
         val pathInfo = pathAnalyzer.analyze(sourcePath)
