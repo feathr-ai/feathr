@@ -92,7 +92,7 @@ parent: Developer Guides
             ```
 ---
 
-5. Upon release, new version will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to four hours. See the [Sonatype documentation](https://central.sonatype.org/publish/publish-guide/#releasing-to-central) for more information.
+5. Upon release, new version will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to 24 hours. See the [Sonatype documentation](https://central.sonatype.org/publish/publish-guide/#releasing-to-central) for more information.
 
 ---
 
