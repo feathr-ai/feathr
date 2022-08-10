@@ -77,7 +77,7 @@ const FeatureList: React.FC = () => {
       },
     },
     {
-      title: <div>Key</div>,
+      title: <div>Entity Key</div>,
       key: "aggregation",
       width: 80,
       render: (name: string, row: Feature) => {
