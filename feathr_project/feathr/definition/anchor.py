@@ -26,16 +26,18 @@ class FeatureAnchor(HoconConvertible):
                 source: Source,
                 features: List[Feature],
                 registry_tags: Optional[Dict[str, str]] = None,
-                ):
+                **kwargs):
         self.name = name
         self.features = features
         self.source = source
         self.registry_tags=registry_tags
-        self.validate_features()
+        # Add a hidden option to skip validation, Anchor could be half-constructed during the loading from registry
+        if not kwargs.get("__no_validate", False) :
+            self.validate_features()
 
     def validate_features(self):
         """Validate that anchor is non-empty and all its features share the same key"""
-        assert len(self.features) > 0
+        # assert len(self.features) > 0
         if self.source != INPUT_CONTEXT:
             for feature in self.features:
                 if feature.key == [DUMMY_KEY]:
@@ -54,7 +56,7 @@ class FeatureAnchor(HoconConvertible):
                 }
             }
         """)
-        key_list = ','.join(key for key in self.features[0].key_alias)
+        key_list = ','.join((key for key in self.features[0].key_alias) if len(self.features)!=0 else [])
         return tm.render(anchor_name = self.name,
                         key_list = key_list,
                         features = self.features,

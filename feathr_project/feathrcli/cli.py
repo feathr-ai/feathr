@@ -7,7 +7,7 @@ import distutils.dir_util
 import subprocess
 import urllib.request
 from feathr.client import FeathrClient
-from feathr.registry._feature_registry_purview import _FeatureRegistry
+from feathr.registry._feathr_registry_client import _FeatureRegistry
 
 @click.group()
 @click.pass_context

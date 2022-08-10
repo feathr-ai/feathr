@@ -10,6 +10,7 @@ import org.eclipse.jetty.util.StringUtil
 @CaseClassDeserialize()
 case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: String = "", password: String = "", token: String = "", useToken: Boolean = false, anonymous: Boolean = false) extends InputLocation {
   override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String] = Map()): DataFrame = {
+    println(s"Jdbc.loadDf, location is ${this}")
     var reader = ss.read.format("jdbc")
       .option("url", url)
     if (StringUtil.isBlank(dbtable)) {
@@ -35,6 +36,7 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
           reader.load()
         } else {
           // Fallback to global JDBC credential
+          println("Fallback to default credential")
           ss.conf.set(DBTABLE_CONF, dbtable)
           JdbcUtils.loadDataFrame(ss, url)
         }
@@ -48,6 +50,11 @@ case class Jdbc(url: String, @JsonAlias(Array("query")) dbtable: String, user: S
   override def getPath: String = url
 
   override def getPathList: List[String] = List(url)
+
+  override def isFileBasedLocation(): Boolean = false
+
+  // These members don't contain actual secrets
+  override def toString: String = s"Jdbc(url=$url, dbtable=$dbtable, useToken=$useToken, anonymous=$anonymous, user=$user, password=$password, token=$token)"
 }
 
 object Jdbc {

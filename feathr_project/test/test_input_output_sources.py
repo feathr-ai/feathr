@@ -1,18 +1,14 @@
 import os
+import time
 from datetime import datetime
 from pathlib import Path
-from unittest import result
-import time
 
-from click.testing import CliRunner
-from feathr import (BOOLEAN, FLOAT, INT32, FeatureQuery, ObservationSettings,
-                    SparkExecutionConfiguration, TypedKey, ValueType)
+from feathr import (FeatureQuery, ObservationSettings, SparkExecutionConfiguration, TypedKey, ValueType)
 from feathr.client import FeathrClient
-from feathr.utils.job_utils import get_result_df
-
-from test_fixture import basic_test_setup
 from feathr.constants import OUTPUT_FORMAT
-
+from feathr.utils.job_utils import get_result_df
+from test_fixture import basic_test_setup
+from test_utils.constants import Constants
 
 # test parquet file read/write without an extension name
 def test_feathr_get_offline_features_with_parquet():
@@ -46,11 +42,11 @@ def test_feathr_get_offline_features_with_parquet():
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path,
-                                execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"})
+                                execution_configurations=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"})
                                 )
 
     # assuming the job can successfully run; otherwise it will throw exception
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
     
     # download result and just assert the returned result is not empty
     res_df = get_result_df(client)
@@ -91,11 +87,11 @@ def test_feathr_get_offline_features_with_delta_lake():
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path,
-                                execution_configuratons=SparkExecutionConfiguration({"spark.feathr.inputFormat": "delta", "spark.feathr.outputFormat": "delta"})
+                                execution_configurations=SparkExecutionConfiguration({"spark.feathr.inputFormat": "delta", "spark.feathr.outputFormat": "delta"})
                                 )
 
     # assuming the job can successfully run; otherwise it will throw exception
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
     
     # wait for a few secs for the resource to come up in the databricks API
     time.sleep(5)

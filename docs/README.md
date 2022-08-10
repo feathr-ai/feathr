@@ -1,10 +1,9 @@
----
-layout: default
-title: Home
-nav_order: 1
-description: "Feathr – An Enterprise-Grade, High Performance Feature Store"
-permalink: /
----
+# An Enterprise-Grade, High Performance Feature Store - Feathr
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/linkedin/feathr/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/linkedin/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/linkedin/feathr/releases)
+[![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://linkedin.github.io/feathr/)
+[![Python API](https://img.shields.io/readthedocs/feathr?label=Python%20API)](https://feathr.readthedocs.io/en/latest/)
 
 ## What is Feathr?
 
@@ -13,44 +12,46 @@ Feathr is the feature store that is used in production in LinkedIn for many year
 Feathr lets you:
 
 - **Define features** based on raw data sources (batch and streaming) using pythonic APIs.
-- **Register and get features by names** during model training and model inferencing.
+- **Register and get features by names** during model training and model inference.
 - **Share features** across your team and company.
 
 Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
-## Feathr Highlights
+## 🌟 Feathr Highlights
 
-- **Scalable with built-in optimizations.** For example, based on some internal use case, Feathr can process billions of rows and PB scale data with built-in optimizations such as bloom filters and salted joins.
+- **Battle tested in production for more than 6 years:** LinkedIn has been using Feathr in production for over 6 years and have a dedicated team improving it.
+- **Scalable with built-in optimizations:** For example, based on some internal use case, Feathr can process billions of rows and PB scale data with built-in optimizations such as bloom filters and salted joins.
 - **Rich support for point-in-time joins and aggregations:** Feathr has high performant built-in operators designed for Feature Store, including time-based aggregation, sliding window joins, look-up features, all with point-in-time correctness.
 - **Highly customizable user-defined functions (UDFs)** with native PySpark and Spark SQL support to lower the learning curve for data scientists.
 - **Pythonic APIs** to access everything with low learning curve; Integrated with model building so data scientists can be productive from day one.
+- **Derived Features** which is a unique capability across all the feature store solutions. This encourage feature consumers to build features on existing features and encouraging feature reuse.
 - **Rich type system** including support for embeddings for advanced machine learning/deep learning scenarios. One of the common use cases is to build embeddings for customer profiles, and those embeddings can be reused across an organization in all the machine learning applications.
 - **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
 - **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
 
+## ☁️ Running Feathr on Cloud with a few simple steps
 
-## Running Feathr on Azure with 3 Simple Steps
+Feathr has native integrations with Databricks and Azure Synapse:
 
-Feathr has native cloud integration. To use Feathr on Azure, you only need three steps:
+Follow the [Feathr ARM deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
 
-1. Get the `Principal ID` of your account by running `az ad signed-in-user show --query id -o tsv` in the link below (Select "Bash" if asked), and write down that value (something like `b65ef2e0-42b8-44a7-9b55-abbccddeefff`). Think this ID as something representing you when accessing Azure, and it will be used to grant permissions in the next step in the UI.
+If you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
 
-[Launch Cloud Shell](https://shell.azure.com/bash)
+- Please read the [Quick Start Guide for Feathr on Databricks](./quickstart_databricks.md) to run Feathr with Databricks.
+- Please read the [Quick Start Guide for Feathr on Azure Synapse](./quickstart_synapse.md) to run Feathr with Azure Synapse.
 
-2. Click the button below to deploy a minimal set of Feathr resources for demo purpose. You will need to fill in the `Principal ID` and `Resource Prefix`. You will need "Owner" permission of the selected subscription.
+## 📓 Documentation
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+- For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
+- For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
+- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
 
-3. Run the Feathr Jupyter Notebook by clicking the button below. You only need to change the specified `Resource Prefix`.
+## 🛠️ Install Feathr Client Locally
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fproduct_recommendation_demo.ipynb)
-
-## Installing Feathr Client Locally
-
-If you are not using the above Jupyter Notebook and want to install Feathr client locally, use this:
+If you want to install Feathr client in a python environment, use this:
 
 ```bash
-pip install -U feathr
+pip install feathr
 ```
 
 Or use the latest code from GitHub:
@@ -59,9 +60,22 @@ Or use the latest code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## Feathr Examples
+## 🔡 Feathr Highlighted Capabilities
 
-Please read [Feathr Capabilities](https://linkedin.github.io/feathr/concepts/feathr-capabilities.html) for more examples. Below are a few selected ones:
+Please read [Feathr Full Capabilities](./concepts/feathr-capabilities.md) for more examples. Below are a few selected ones:
+
+### Feathr UI
+
+Feathr provides an intuitive UI so you can search and explore all the available features and their corresponding lineages.
+
+You can use Feathr UI to search features, identify data sources, track feature lineages and manage access controls. Check out the latest live demo [here](https://aka.ms/feathrdemo) to see what Feathr UI can do for you. Use one of following accounts when you are prompted to login:
+
+- A work or school organization account, includes Office 365 subscribers.
+- Microsoft personal account, this means an account can access to Skype, Outlook.com, OneDrive, and Xbox LIVE.
+
+![Feathr UI](./images/feathr-ui.png)
+
+For more information on the Feathr UI and the registry behind it, please refer to [Feathr Feature Registry](./concepts/feature-registry.md)
 
 ### Rich UDF Support
 
@@ -80,7 +94,7 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
                         timestamp_format="yyyy-MM-dd HH:mm:ss")
 ```
 
-### Defining Window Aggregation Features
+### Defining Window Aggregation Features with Point-in-time correctness
 
 ```python
 agg_features = [Feature(name="f_location_avg_fare",
@@ -120,43 +134,55 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ### Define Streaming Features
 
-Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming_source_ingestion.html) for more details.
+Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming-source-ingestion.html) for more details.
 
 ### Point in Time Joins
 
 Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linkedin.github.io/feathr/concepts/point-in-time-join.html) for more details.
 
+### Running Feathr Examples
 
-## Running Feathr Examples
+Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart_synapse.html) containing a bit more explanation on the notebook.
 
-Follow the [quick start Jupyter Notebook](./feathr_project/feathrcli/data/feathr_user_workspace/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart.html) containing a bit more explanation on the notebook.
+## 🗣️ Tech Talks on Feathr
 
+- [Introduction to Feathr - Beginner's guide](https://www.youtube.com/watch?v=gZg01UKQMTY)
+- [Document Intelligence using Azure Feature Store (Feathr) and SynapseML
+  ](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
+- [Notebook tutorial: Build a Product Recommendation Machine Learning Model with Feathr Feature Store](https://www.youtube.com/watch?v=2KSM-NLfvY0)
 
-## Cloud Architecture
+## ⚙️ Cloud Integrations and Architecture
 
-Feathr has native integration with Azure and other cloud services, and here's the high-level architecture to help you get started.
-![Architecture](images/architecture.png)
+![Architecture Diagram](./images/architecture.png)
 
-# Next Steps
+| Feathr component                | Cloud Integrations                                                          |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| Offline store – Object Store    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
+| Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
+| Streaming Source                | Kafka, EventHub                                                             |
+| Online store                    | Azure Cache for Redis                                                       |
+| Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                            |
+| Compute Engine                  | Azure Synapse Spark Pools, Databricks                                       |
+| Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook               |
+| File Format                     | Parquet, ORC, Avro, JSON, Delta Lake                                        |
+| Credentials                     | Azure Key Vault                                                             |
 
-## Quickstart
+## 🚀 Roadmap
 
-- [Quickstart for Azure Synapse](quickstart_synapse.md)
+For a complete roadmap with estimated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
 
-## Concepts
+- [x] Support streaming
+- [x] Support common data sources
+- [x] Support feature store UI, including Lineage and Search functionalities
+- [ ] Support online transformation
+- [ ] Support feature versioning
+- [ ] Support feature monitoring
+- [ ] Support feature data deletion and retention
 
-- [Feature Definition](concepts/feature-definition.md)
-- [Feature Generation](concepts/feature-generation.md)
-- [Feature Join](concepts/feature-join.md)
-- [Point-in-time Correctness](concepts/point-in-time-join.md)
+## 👨‍👨‍👦‍👦 Community Guidelines
 
-## How-to-guides
+Build for the community and build by the community. Check out [Community Guidelines](../CONTRIBUTING.md).
 
-- [Azure Deployment](how-to-guides/azure-deployment.md)
-- [Local Feature Testing](how-to-guides/local-feature-testing.md)
-- [Feature Definition Troubleshooting Guide](how-to-guides/troubleshoot-feature-definition.md)
-- [Feathr Expression Language](how-to-guides/expression-language.md)
-- [Feathr Job Configuration](how-to-guides/feathr-job-configuration.md)
+## 📢 Slack Channel
 
-## API Documentation
-- [Python API Documentation](https://feathr.readthedocs.io/en/latest/)
+Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-1d5wguusz-aS1kJH72P6z~XeTChBz8VA)).

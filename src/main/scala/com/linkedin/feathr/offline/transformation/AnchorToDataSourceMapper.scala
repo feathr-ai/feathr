@@ -4,6 +4,7 @@ import java.time.Duration
 import com.linkedin.feathr.common.{DateParam, DateTimeResolution}
 import com.linkedin.feathr.offline.source.SourceFormatType._
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
+import com.linkedin.feathr.offline.config.location.{PathList, SimplePath}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
@@ -93,13 +94,19 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       failOnMissingPartition: Boolean): DataFrame = {
 
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
-    val pathChecker = PathChecker(ss)
-    val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
-    val pathInfo = pathAnalyzer.analyze(factDataSource.path)
-    val adjustedObsTimeRange = if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY)
-    {
-      obsTimeRange.adjustWithDateTimeResolution(DateTimeResolution.DAILY)
-    } else obsTimeRange
+
+    // Only file-based source has real "path", others are just single dataset
+    val adjustedObsTimeRange = if (factDataSource.location.isFileBasedLocation()) {
+      val pathChecker = PathChecker(ss, dataLoaderHandlers)
+      val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
+      val pathInfo = pathAnalyzer.analyze(factDataSource.path)
+      if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY)
+      {
+        obsTimeRange.adjustWithDateTimeResolution(DateTimeResolution.DAILY)
+      } else obsTimeRange
+    } else {
+      obsTimeRange
+    }
 
     val timeInterval = OfflineDateTimeUtils.getFactDataTimeRange(adjustedObsTimeRange, window, timeDelays)
     val needCreateTimestampColumn = SlidingWindowFeatureUtils.needCreateTimestampColumnFromPartition(factDataSource)

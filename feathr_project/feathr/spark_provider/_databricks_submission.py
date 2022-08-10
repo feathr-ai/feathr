@@ -1,25 +1,23 @@
-import base64
+import copy
 import json
 import os
 import time
-
 from collections import namedtuple
 from os.path import basename
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
 import requests
+from databricks_cli.dbfs.api import DbfsApi
+from databricks_cli.runs.api import RunsApi
+from databricks_cli.sdk.api_client import ApiClient
+from feathr.constants import *
+from feathr.spark_provider._abc import SparkJobLauncher
 from loguru import logger
 from requests.structures import CaseInsensitiveDict
-from tqdm import tqdm
 
-from feathr.spark_provider._abc import SparkJobLauncher
-from feathr.constants import *
-from databricks_cli.dbfs.api import DbfsApi
-from databricks_cli.sdk.api_client import ApiClient
-from databricks_cli.runs.api import RunsApi
 
 class _FeathrDatabricksJobLauncher(SparkJobLauncher):
     """Class to interact with Databricks Spark cluster
@@ -36,7 +34,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         5. will override the name of this job
 
         Args:
-            workspace_instance_url (str): the workinstance url. Document to get workspakce_instance_url: https://docs.microsoft.com/en-us/azure/databricks/workspace/workspace-details#workspace-url
+            workspace_instance_url (str): the workinstance url. Document to get workspace_instance_url: https://docs.microsoft.com/en-us/azure/databricks/workspace/workspace-details#workspace-url
             token_value (str): see here on how to get tokens: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/authentication
             config_template (str): config template for databricks cluster. See https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--runs-submit for more details.
             databricks_work_dir (_type_, optional): databricks_work_dir must start with dbfs:/. Defaults to 'dbfs:/feathr_jobs'.
@@ -116,7 +114,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
         return returned_path
 
-    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = {}):
+    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = {}, properties: Dict[str, str] = {}):
         """
         submit the feathr job to databricks
         Refer to the databricks doc for more details on the meaning of the parameters:
@@ -124,18 +122,23 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         Args:
             main_file_path (str): main file paths, usually your main jar file
             main_class_name (str): name of your main class
-            arguments (str): all the arugments you want to pass into the spark job
-            job_tags (str): tags of the job, for exmaple you might want to put your user ID, or a tag with a certain information
+            arguments (str): all the arguments you want to pass into the spark job
+            job_tags (str): tags of the job, for example you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
+            properties (Dict[str, str]): Additional System Properties for the spark job
         """
+
+        if properties:
+            arguments.append("--system-properties=%s" % json.dumps(properties))
 
         if isinstance(self.config_template, str):
             # if the input is a string, load it directly
             submission_params = json.loads(self.config_template)
         else:
-            # otherwise users might have missed the quotes in the config.
-            submission_params = self.config_template
-            logger.warning("Databricks config template loaded in a non-string fashion. Please consider providing the config template in a string fashion.")
+            # otherwise users might have missed the quotes in the config. Treat them as dict
+            # Note that we need to use deep copy here, in order to make `self.config_template` immutable
+            # Otherwise, since we need to change submission_params later, which will modify `self.config_template` and cause unexpected behaviors
+            submission_params = copy.deepcopy(self.config_template) 
 
         submission_params['run_name'] = job_name
         if 'existing_cluster_id' not in submission_params:
@@ -145,7 +148,14 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             configuration['spark.executor.extraJavaOptions'] = '-Djava.security.properties='
             configuration['spark.driver.extraJavaOptions'] = '-Djava.security.properties='
             submission_params['new_cluster']['spark_conf'] = configuration
-            submission_params['new_cluster']['custom_tags'] = job_tags
+
+            if job_tags:
+                custom_tags = submission_params['new_cluster'].get('custom_tags', {})
+                for tag, value in job_tags.items():
+                    custom_tags[tag] = value
+
+                submission_params['new_cluster']['custom_tags'] = custom_tags
+
         # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
         if not main_jar_path:
             logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
@@ -157,6 +167,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # this is a pyspark job. definition here: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--sparkpythontask
             # the first file is the pyspark driver code. we only need the driver code to execute pyspark
             param_and_file_dict = {"parameters": arguments, "python_file": self.upload_or_get_cloud_path(python_files[0])}
+            # indicates this is a pyspark job
+            # `setdefault` method will get the value of the "spark_python_task" item, if the "spark_python_task" item does not exist, insert "spark_python_task" with the value "param_and_file_dict":
             submission_params.setdefault('spark_python_task',param_and_file_dict)
         else:
             # this is a scala spark job
@@ -174,7 +186,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
 
         result = RunsApi(self.api_client).get_run(self.res_job_id)
         self.job_url = result['run_page_url']
-        logger.info('Feathr job Submitted Sucessfully. View more details here: {}', self.job_url)
+        logger.info('Feathr job Submitted Successfully. View more details here: {}', self.job_url)
 
         # return ID as the submission result
         return self.res_job_id

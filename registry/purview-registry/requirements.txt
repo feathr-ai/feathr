@@ -1,0 +1,9 @@
+azure-core
+azure-purview-catalog==1.0.0b2
+fastapi
+opencensus-ext-azure
+pyapacheatlas
+pydantic
+uvicorn
+loguru
+pyhocon

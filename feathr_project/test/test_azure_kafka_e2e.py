@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from feathr import MaterializationSettings, RedisSink
 from test_fixture import kafka_test_setup
+from test_utils.constants import Constants
 
 @pytest.mark.skipif(os.environ.get('SPARK_CONFIG__SPARK_CLUSTER') != "azure_synapse",
                     reason="skip for databricks, as it cannot stop streaming job automatically for now.")
@@ -19,4 +20,4 @@ def test_feathr_kafa_streaming_features():
                                    feature_names=['f_modified_streaming_count']
                                    )
     client.materialize_features(settings)
-    client.wait_job_to_finish(timeout_sec=600)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)

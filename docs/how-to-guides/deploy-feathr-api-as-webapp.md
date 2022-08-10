@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Feathr API Deployment
-parent: Feathr How-to Guides
+title: Feathr REST API Deployment
+parent: How-to Guides
 ---
 
-# Feathr API
+# Feathr REST API
 
 The API currently supports following functionality
 
@@ -21,7 +21,7 @@ The API currently supports following functionality
 You can install dependencies through the requirements file
 
 ```bash
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Run

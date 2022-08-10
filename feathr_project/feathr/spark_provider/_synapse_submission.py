@@ -1,4 +1,5 @@
 from copy import deepcopy
+import json
 import os
 import pathlib
 import re
@@ -79,7 +80,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str = None,  main_class_name: str = None, arguments: List[str] = None,
                           python_files: List[str]= None, reference_files_path: List[str] = None, job_tags: Dict[str, str] = None,
-                          configuration: Dict[str, str] = {}):
+                          configuration: Dict[str, str] = {}, properties: Dict[str, str] = {}):
         """
         Submits the feathr job
         Refer to the Apache Livy doc for more details on the meaning of the parameters:
@@ -100,7 +101,11 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             arguments (str): all the arguments you want to pass into the spark job
             job_tags (str): tags of the job, for example you might want to put your user ID, or a tag with a certain information
             configuration (Dict[str, str]): Additional configs for the spark job
+            properties (Dict[str, str]): Additional System Properties for the spark job
         """
+
+        if properties:
+            arguments.append("--system-properties=%s" % json.dumps(properties))
 
         if configuration:
             cfg = configuration.copy()  # We don't want to mess up input parameters
@@ -213,6 +218,8 @@ class _SynapseJobRunner(object):
     Class to interact with Synapse Spark cluster
     """
     def __init__(self, synapse_dev_url, spark_pool_name, credential=None, executor_size='Small', executors=2):
+        self._synapse_dev_url = synapse_dev_url
+        self._spark_pool_name = spark_pool_name
         if credential is None:
             logger.warning('No valid Azure credential detected. Using DefaultAzureCredential')
             credential = DefaultAzureCredential()
@@ -318,8 +325,8 @@ class _SynapseJobRunner(object):
     def get_driver_log(self, job_id) -> str:
         # @see: https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/connect-monitor-azure-synapse-spark-application-level-metrics
         app_id = self.get_spark_batch_job(job_id).app_id
-        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stdout/?isDownload=true" % (self._synapse_dev_url, self._pool_name, job_id, app_id)
-        token = self._credential.get_token("https://dev.azuresynapse.net/.default")
+        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stdout/?isDownload=true" % (self._synapse_dev_url, self._spark_pool_name, job_id, app_id)
+        token = self._credential.get_token("https://dev.azuresynapse.net/.default").token
         req = urllib.request.Request(url=url, headers={"authorization": "Bearer %s" % token})
         resp = urllib.request.urlopen(req)
         return resp.read()

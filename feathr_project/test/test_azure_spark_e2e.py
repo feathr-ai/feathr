@@ -2,33 +2,32 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
-from feathr import BOOLEAN, FLOAT, INT32, ValueType
-from feathr import FeathrClient
-from feathr import ValueType
-from feathr.utils.job_utils import get_result_df
+
 from feathr import (BackfillTime, MaterializationSettings)
+from feathr import FeathrClient
 from feathr import FeatureQuery
 from feathr import ObservationSettings
 from feathr import RedisSink, HdfsSink
 from feathr import TypedKey
+from feathr import ValueType
+from feathr.utils.job_utils import get_result_df
 from feathrcli.cli import init
-import pytest
-
 from test_fixture import (basic_test_setup, get_online_test_table_name)
+from test_utils.constants import Constants
+
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_materialize_to_offline():
     """
     Test FeathrClient() HdfsSink.
     """
-
-    online_test_table = get_online_test_table_name("nycTaxiCITable")
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
 
-    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -46,7 +45,7 @@ def test_feathr_materialize_to_offline():
                                        backfill_time=backfill_time)
     client.materialize_features(settings)
     # assuming the job can successfully run; otherwise it will throw exception
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
     # download result and just assert the returned result is not empty
     # by default, it will write to a folder appended with date
@@ -58,12 +57,12 @@ def test_feathr_online_store_agg_features():
     Test FeathrClient() get_online_features and batch_get can get data correctly.
     """
 
-    online_test_table = get_online_test_table_name("nycTaxiCITable")
+    online_test_table = get_online_test_table_name("nycTaxiCITableSparkE2E")
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
 
-    client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -76,15 +75,15 @@ def test_feathr_online_store_agg_features():
     client.materialize_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
     res = client.get_online_features(online_test_table, '265', [
                                      'f_location_avg_fare', 'f_location_max_fare'])
-    # just assme there are values. We don't hard code the values for now for testing
-    # the correctness of the feature generation should be garunteed by feathr runtime.
+    # just assume there are values. We don't hard code the values for now for testing
+    # the correctness of the feature generation should be guaranteed by feathr runtime.
     # ID 239 and 265 are available in the `DOLocationID` column in this file:
     # https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv
-    # View more detials on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+    # View more details on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
     assert len(res) == 2
     assert res[0] != None
     assert res[1] != None
@@ -105,7 +104,7 @@ def test_feathr_online_store_non_agg_features():
         __file__).parent.resolve() / "test_user_workspace"
     client = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
-    online_test_table = get_online_test_table_name('nycTaxiCITable')
+    online_test_table = get_online_test_table_name('nycTaxiCITableNonAggFeature')
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
     redisSink = RedisSink(table_name=online_test_table)
@@ -117,15 +116,15 @@ def test_feathr_online_store_non_agg_features():
     client.materialize_features(settings)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
-    client.wait_job_to_finish(timeout_sec=900)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
     res = client.get_online_features(online_test_table, '111', ['f_gen_trip_distance', 'f_gen_is_long_trip_distance',
                                                                    'f1', 'f2', 'f3', 'f4', 'f5', 'f6'])
-    # just assme there are values. We don't hard code the values for now for testing
-    # the correctness of the feature generation should be garunteed by feathr runtime.
+    # just assume there are values. We don't hard code the values for now for testing
+    # the correctness of the feature generation should be guaranteed by feathr runtime.
     # ID 239 and 265 are available in the `DOLocationID` column in this file:
     # https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv
-    # View more detials on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+    # View more detail on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
     assert len(res) == 8
     assert res[0] != None
@@ -159,7 +158,7 @@ def test_dbfs_path():
     if client.spark_runtime.casefold() == "databricks":
         # expect this raise an error since the result path is not in dbfs: format
         with pytest.raises(RuntimeError):
-            client.feathr_spark_laucher.download_result(result_path="wasb://res_url", local_folder="/tmp")
+            client.feathr_spark_launcher.download_result(result_path="wasb://res_url", local_folder="/tmp")
 
 
 def test_feathr_get_offline_features():
@@ -197,7 +196,7 @@ def test_feathr_get_offline_features():
                                     output_path=output_path)
 
         # assuming the job can successfully run; otherwise it will throw exception
-        client.wait_job_to_finish(timeout_sec=900)
+        client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
         # download result and just assert the returned result is not empty
         res_df = get_result_df(client)

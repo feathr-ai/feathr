@@ -1,14 +1,15 @@
-import React from 'react';
-import { Card } from 'antd';
-import FeatureForm from '../../components/featureForm';
+import React from "react";
+import { Card, Typography } from "antd";
+import FeatureForm from "../../components/featureForm";
 
-type Props = {};
+const { Title } = Typography;
 
-const NewFeature: React.FC<Props> = () => {
+const NewFeature: React.FC = () => {
   return (
-    <div style={ { "margin": "2%" } }>
-      <Card title="Create Feature">
-        <FeatureForm isNew={ true } editMode={ true } />
+    <div className="page">
+      <Card>
+        <Title level={3}>Create Feature</Title>
+        <FeatureForm isNew={true} editMode={true} />
       </Card>
     </div>
   );
