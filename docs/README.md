@@ -161,7 +161,7 @@ Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.
 | Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
 | Streaming Source                | Kafka, EventHub                                                             |
 | Online store                    | Azure Cache for Redis                                                       |
-| Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                            |
+| Feature Registry and Governance | Azure Purview, SQL Databases such as Azure SQL Server/MySQL                            |
 | Compute Engine                  | Azure Synapse Spark Pools, Databricks                                       |
 | Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook               |
 | File Format                     | Parquet, ORC, Avro, JSON, Delta Lake                                        |
