@@ -4,15 +4,17 @@ title: Feathr FAQ
 nav_order: 7
 ---
 
+# Feathr FAQ
+
 This page covered the most asked questions that we've heard from end users.
 
-# when do you need a feature store and when do you don't?
+## when do you need a feature store and when do you don't?
 
 when you have entities/keys you usually need it (like for deep learning etc.)
 
-when you don't (say just doing regular image recognation task) you probably don't need feature store.
+when you don't (say just doing regular image recognition task) you probably don't need feature store.
 
-# What is a key and which kind of features need this?
+## What is a key and which kind of features need this?
 
 For Feathr keys, think that every feature needs it by default, i.e. think each Feathr Feature is associated with a certain key.
 
@@ -22,11 +24,13 @@ That's why when querying features, if you want to get a bunch of item related fe
 
 The only exception here would be Features defined in `INPUT_CONTEXT` don't need keys, the reason being that they will usually not be "reused", and are directly computed on observation data, so doesn't make sense to have keys.
 
-# What is the essence of Feature Anchors in Purview? Are we really generating feature values to show it as a view ?
+## What is the essence of Feature Anchors in Purview? Are we really generating feature values to show it as a view ?
 
 Think `Anchors` like just "views" in regular SQL terms, where it doesn't store the feature value, but it's merely a group of features; individual `Feature` is just a column in that view. That's why when you "group" features together, you need to
 
-# What are key_column and full_name? where used?
+Think they are just feature grouping
+
+## What are key_column and full_name? where used?
 
 key_column: maps to source table. Ignore full_name (used for reference)
 
@@ -218,7 +222,7 @@ client.get_offline_features(observation_settings=settings,
 
                             output_path=output_path)
 
-# online store
+## online store
 
 backfill_time = BackfillTime(start=datetime(
 
@@ -261,3 +265,15 @@ What is the use of this parameter?
 While using features from registry in consumption flow, it is required that the user has access to all the source datafiles before the feature can be used. This will be tricky especially in our datalake and DDS setup. Any way to handle this
 
 how he can pass a list in preprocessing to execute multiple UDF functions currently it looks like it only supports passing in a single function
+
+We have a huge volume of sign-in events from the login token service which would make up our observation data.
+
+Each event or observation will have keys like UserId and TenantId which we can use to define features on. (for example: time since last login for each user). We will use feathr to precompute and store these values in the offline store, then when we request a feature feathr will join those user or tenant based features back with the event/observation data with point in time correctness. However, it is my understanding that we would never want to store features on eventId as a key, since the volume is so large and eventIds are not reused. Instead we should instead build features on INPUT_CONTEXT. Feathr will serve these features "on-demand".
+
+Does it make sense to use INPUT_CONTEXT for features like the following? Is there a better way?
+
+- mapping of categorical values to machine understandable format like enum values or one hot encoding
+
+- simple feature extraction like "does column x in observation data contain string y?"
+
+- aggregation of column x across all observations - ex: avg request time
