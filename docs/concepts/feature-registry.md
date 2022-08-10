@@ -10,7 +10,13 @@ Feature registry is an important component of a feature store. This documentatio
 
 ## Introduction
 
-Feathr UI and Feathr Registry are two optional components to use Feathr, but usually they are recommended to be provisioned so that Feathr users can explore features that are already registered in the registry, and reuse those features.
+Feathr UI and Feathr Registry are two optional components to use Feathr, but usually they are recommended to be provisioned so that Feathr users can explore features that are already registered in the registry, and reuse those features. Feathr UI and the registry component allows end users to:
+
+- Identity Data Sources for features
+- Search features and explore feature metadata details
+- Track project and feature level lineage data
+- Manage access control
+- Register and share features across team members
 
 ## Deployment
 
