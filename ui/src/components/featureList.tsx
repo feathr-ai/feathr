@@ -44,7 +44,7 @@ const FeatureList: React.FC = () => {
     {
       title: <div>Type</div>,
       key: "type",
-      width: 120,
+      width: 80,
       render: (name: string, row: Feature) => {
         return (
           <div>{row.typeName.replace("feathr_", "").replace("_v1", "")}</div>
@@ -63,12 +63,35 @@ const FeatureList: React.FC = () => {
       key: "transformation",
       width: 190,
       render: (name: string, row: Feature) => {
+        const transformation = row.attributes.transformation;
         return (
-          <div>
-            {row.attributes.transformation.transformExpr ??
-              row.attributes.transformation.defExpr}
-          </div>
+          <div>{transformation.transformExpr ?? transformation.defExpr}</div>
         );
+      },
+      onCell: () => {
+        return {
+          style: {
+            maxWidth: 120,
+          },
+        };
+      },
+    },
+    {
+      title: <div>Key</div>,
+      key: "aggregation",
+      width: 80,
+      render: (name: string, row: Feature) => {
+        const key = row.attributes.key && row.attributes.key[0];
+        if ("NOT_NEEDED" !== key.keyColumn) {
+          return (
+            <div>
+              {key.keyColumn && `${key.keyColumn}`}{" "}
+              {key.keyColumnType && `(${key.keyColumnType})`}
+            </div>
+          );
+        } else {
+          return <div>N/A</div>;
+        }
       },
       onCell: () => {
         return {
@@ -83,19 +106,14 @@ const FeatureList: React.FC = () => {
       key: "aggregation",
       width: 150,
       render: (name: string, row: Feature) => {
+        const transformation = row.attributes.transformation;
         return (
           <>
             <div>
-              {row.attributes.transformation.aggFunc &&
-                `Type: ${row.attributes.transformation.aggFunc}`}
+              {transformation.aggFunc && `Type: ${transformation.aggFunc}`}
             </div>
             <div>
-              {row.attributes.transformation.aggFunc &&
-                `Window: ${row.attributes.transformation.window}`}
-            </div>
-            <div>
-              {row.attributes.transformation.aggFunc &&
-                `Key: ${row.attributes.key[0].keyColumn}`}
+              {transformation.aggFunc && `Window: ${transformation.window}`}
             </div>
           </>
         );
