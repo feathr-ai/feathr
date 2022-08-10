@@ -9,7 +9,7 @@ parent: Developer Guides
 
 ## Code Structure for get_offline_features() and materialize_features() API calls
 
-Credit goes to @csruiliu for creating those diagrams below:
+Credit goes to https://github.com/csruiliu for creating those diagrams below:
 
 ### Feathr get_offline_features() diagram
 
