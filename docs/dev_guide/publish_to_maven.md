@@ -92,7 +92,7 @@ parent: Developer Guides
             ```
 ---
 
-5. Upon release, new version will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to 24 hours. See the [Sonatype documentation](https://central.sonatype.org/publish/publish-guide/#releasing-to-central) for more information.
+5. Upon release, new version will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to 24 hours. To check new version status, go to [maven repository site](https://mvnrepository.com/artifact/com.linkedin.feathr/feathr). See the [Sonatype documentation](https://central.sonatype.org/publish/publish-guide/#releasing-to-central) for more information.
 
 ---
 
