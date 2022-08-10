@@ -11,9 +11,10 @@ This page covered the most asked questions that we've heard from end users.
 when you have entities/keys you usually need it (like for deep learning etc.)
 
 when you don't (say just doing regular image recognation task) you probably don't need feature store.
+
 # What is a key and which kind of features need this?
 
-For Feathr keys, think that every feature needs it by default, i.e. think each Feathr Feature is associated with a certain key. 
+For Feathr keys, think that every feature needs it by default, i.e. think each Feathr Feature is associated with a certain key.
 
 Key is also called `Entity` in many other feature store, so think a Feature is "associated" with a certain entity. For example, if you are building a recommendation system, you probably have `f_item_sales_1_week` for item sales, and `f_user_location` for user historical buying, so `f_item_sales_1_week` should be "keyed" to `item_id`, and `f_user_location` should be "keyed" to `user_id`. The reason is - each feature is only representing something for a particular `Entity` (item or user, in the above case), so the features must be associated with them. Otherwise, it doesn't make sense to use `f_user_location` on items, or use `f_item_sales_1_week` on users.
 
@@ -21,261 +22,234 @@ That's why when querying features, if you want to get a bunch of item related fe
 
 The only exception here would be Features defined in `INPUT_CONTEXT` don't need keys, the reason being that they will usually not be "reused", and are directly computed on observation data, so doesn't make sense to have keys.
 
-
 # What is the essence of Feature Anchors in Purview? Are we really generating feature values to show it as a view ?
 
-Think `Anchors` like just "views" in regular SQL terms, where it doesn't store the feature value, but it's merely a group of features; individual `Feature` is just a column in that view. That's why when you "group" features together, you need to 
+Think `Anchors` like just "views" in regular SQL terms, where it doesn't store the feature value, but it's merely a group of features; individual `Feature` is just a column in that view. That's why when you "group" features together, you need to
 
+# What are key_column and full_name? where used?
 
-# What are key_column and full_name? where used? 
+key_column: maps to source table. Ignore full_name (used for reference)
 
-key_column: maps to source table. Ignore full_name (used for reference) 
+Feature
 
-Feature 
+name: f_day_of_week
 
-name: f_day_of_week 
+key:
 
-key: 
+feature_type: INT32
 
-feature_type: INT32 
+transformation: "dayofweek(lpep_dropoff_datetime)"
 
-transformation: "dayofweek(lpep_dropoff_datetime)" 
+questions
 
-questions 
+can we have more than one column name in transform?
 
-can we have more than one column name in transform? 
+yes (can be error prone - if source table splits)
 
-yes (can be error prone - if source table splits) 
+why no key in the example?
 
-why no key in the example? 
+INPUT_CONTEXT needs no key
 
-INPUT_CONTEXT needs no key 
+DerivedFeature
 
-DerivedFeature 
+Features that are computed from other features. They could be computed from anchored features, or other derived features
 
-Features that are computed from other features. They could be computed from anchored features, or other derived features 
+name
 
-name 
+feature_type
 
-feature_type 
+input_features= array/list of features
 
-input_features= array/list of features 
+transform
 
-transform 
+FeatureAnchor (feature view)
 
-FeatureAnchor (feature view) 
+It is a collection of features. Contains:
 
-It is a collection of features. Contains: 
+name
 
-name 
+source
 
-source 
+feature list
 
-feature list 
+FeatureQuery
 
-FeatureQuery 
+feature list
 
-feature list 
+key
 
-key 
+question
+why is key needed since Features have it?
 
-question 
-why is key needed since Features have it? 
+advanced usecases in linkedin
 
-advanced usecases in linkedin 
+client.get_offline_features()
 
-client.get_offline_features() 
+Joins observation data with feature list
 
-Joins observation data with feature list 
+observation settings: source, time stamp column in source
 
-observation settings: source, time stamp column in source 
+feature query
 
-feature query 
+output path
 
-output path 
+Questions:
 
-Questions: 
+Is FeatureAnchor not input to the call?
 
-Is FeatureAnchor not input to the call? 
+it is implicitly. This method uses anchors and features built using build_features.
 
-it is implicitly. This method uses anchors and features built using build_features. 
+What if Feature A is in a different source and Feature B is in different source? get_offline_features accepts only one source?
 
-What if Feature A is in a different source and Feature B is in different source? get_offline_features accepts only one source? 
+You can have different anchors associated with different sources.
 
-You can have different anchors associated with different sources. 
+the feature list in sample has sample features and agg features. Are multiple queries fired in parallel to get data?
 
-the feature list in sample has sample features and agg features. Are multiple queries fired in parallel to get data? 
+Yes multiple queries may be fired.
 
-Yes multiple queries may be fired. 
+client.register_features()
 
-client.register_features() 
+Registers the features (a) which were part of built features in client.build() OR (b) features from configuration files.
+question:
 
-Registers the features (a) which were part of built features in client.build() OR (b) features from configuration files. 
-question: 
+how do i load registered features?
 
-how do i load registered features? 
+Docs will be published soon
 
-Docs will be published soon 
+Questions
 
-Questions 
+any action/scheduled job needed to get updated feature data?
 
-any action/scheduled job needed to get updated feature data? 
+Only for online data
 
-Only for online data 
+online backfill api: only latest feature?
 
-online backfill api: only latest feature? 
+yes
 
-yes 
+API
 
-API 
+location_id = TypedKey(key_column="DOLocationID",
 
-location_id = TypedKey(key_column="DOLocationID", 
+                       key_column_type=ValueType.INT32,
 
-                       key_column_type=ValueType.INT32, 
+                       description="location id in NYC",
 
-                       description="location id in NYC", 
+                       full_name="nyc_taxi.location_id")
 
-                       full_name="nyc_taxi.location_id") 
+agg_features = [Feature(name="f_location_avg_fare",
 
-agg_features = [Feature(name="f_location_avg_fare", 
+                        key=location_id,
 
-                        key=location_id, 
+                        feature_type=FLOAT,
 
-                        feature_type=FLOAT, 
+                        transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
 
-                        transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)", 
+                                                          agg_func="AVG",
 
-                                                          agg_func="AVG", 
+                                                          window="90d")),
 
-                                                          window="90d")), 
+                Feature(name="f_location_max_fare",
 
-                Feature(name="f_location_max_fare", 
+                        key=location_id,
 
-                        key=location_id, 
+                        feature_type=FLOAT,
 
-                        feature_type=FLOAT, 
+                        transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
 
-                        transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)", 
+                                                          agg_func="MAX",
 
-                                                          agg_func="MAX", 
+                                                          window="90d")),
 
-                                                          window="90d")), 
+                Feature(name="f_location_total_fare_cents",
 
-                Feature(name="f_location_total_fare_cents", 
+                        key=location_id,
 
-                        key=location_id, 
+                        feature_type=FLOAT,
 
-                        feature_type=FLOAT, 
+                        transform=WindowAggTransformation(agg_expr="fare_amount_cents",
 
-                        transform=WindowAggTransformation(agg_expr="fare_amount_cents", 
+                                                          agg_func="SUM",
 
-                                                          agg_func="SUM", 
+                                                          window="90d")),
 
-                                                          window="90d")), 
+                ]
 
-                ] 
+agg_anchor = FeatureAnchor(name="aggregationFeatures",
 
-agg_anchor = FeatureAnchor(name="aggregationFeatures", 
+                           source=batch_source,
 
-                           source=batch_source, 
+                           features=agg_features)
 
-                           features=agg_features) 
+f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
 
- 
+                                      feature_type=FLOAT,
 
-f_trip_time_distance = DerivedFeature(name="f_trip_time_distance", 
+                                      input_features=[
 
-                                      feature_type=FLOAT, 
+                                          f_trip_distance, f_trip_time_duration],
 
-                                      input_features=[ 
+                                      transform="f_trip_distance * f_trip_time_duration")
 
-                                          f_trip_distance, f_trip_time_duration], 
+f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded",
 
-                                      transform="f_trip_distance * f_trip_time_duration") 
+                                     feature_type=INT32,
 
- 
+                                     input_features=[f_trip_time_duration],
 
-f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded", 
+                                     transform="f_trip_time_duration % 10")
 
-                                     feature_type=INT32, 
+client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
 
-                                     input_features=[f_trip_time_duration], 
+                      f_trip_time_distance, f_trip_time_rounded])
 
-                                     transform="f_trip_time_duration % 10") 
+feature_query = FeatureQuery(
 
- 
+    feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance", "f_location_total_fare_cents"], key=location_id)
 
- 
+settings = ObservationSettings( observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
 
-client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[ 
+    event_timestamp_column="lpep_dropoff_datetime",
 
-                      f_trip_time_distance, f_trip_time_rounded]) 
+    timestamp_format="yyyy-MM-dd HH:mm:ss")
 
- 
+client.get_offline_features(observation_settings=settings,
 
-feature_query = FeatureQuery( 
+                            feature_query=feature_query,
 
-    feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance", "f_location_total_fare_cents"], key=location_id) 
+                            output_path=output_path)
 
- 
+# online store
 
-settings = ObservationSettings(    observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv", 
+backfill_time = BackfillTime(start=datetime(
 
-    event_timestamp_column="lpep_dropoff_datetime", 
+    2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
 
-    timestamp_format="yyyy-MM-dd HH:mm:ss") 
+redisSink = RedisSink(table_name="nycTaxiDemoFeature")
 
- 
+settings = MaterializationSettings("nycTaxiTable",
 
-client.get_offline_features(observation_settings=settings, 
+                                   backfill_time=backfill_time,
 
-                            feature_query=feature_query, 
+                                   sinks=[redisSink],
 
-                            output_path=output_path) 
+                                   feature_names=["f_location_avg_fare", "f_location_max_fare"])
 
- 
+client.materialize_features(settings)
 
-# online store 
+Offline transformation:
 
-backfill_time = BackfillTime(start=datetime( 
-
-    2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1)) 
-
- 
-
-redisSink = RedisSink(table_name="nycTaxiDemoFeature") 
-
- 
-
-settings = MaterializationSettings("nycTaxiTable", 
-
-                                   backfill_time=backfill_time, 
-
-                                   sinks=[redisSink], 
-
-                                   feature_names=["f_location_avg_fare", "f_location_max_fare"]) 
-
- 
-
-client.materialize_features(settings) 
-
- Offline transformation:
-
- Does it support popular transformations (e.g. MinMaxScaler for numerical data or one-hot encoding (mapping categories to integers)?
+Does it support popular transformations (e.g. MinMaxScaler for numerical data or one-hot encoding (mapping categories to integers)?
 Does is support customized transformations (e.g. quantile clipping)?
-
 
 Online transformation:
 Does is support to store necessary information to transform new streaming data (e.g. min and max values of offline data (training set), which is used for model training to normalize new data or integers used before to map categorical data (men → 0 and women → 1)?
 
+1. Assuming that feature set has multiple columns, is it possible to retrieve feature set with Feathr?
+   Yes (that’s called “Feathr Anchor” (link to the motivation)
 
-1) Assuming that feature set has multiple columns, is it possible to retrieve feature set with Feathr?
-Yes (that’s called “Feathr Anchor” (link to the motivation)
-
-2) We use location in both batch source and observation settings, how differently are these locations used?
-It’s also explained here, but basically in observation setting you only need two columns: an ID column, and a timestamp column. Other fields are all optional.
-The existing NYC driver sample is a bit confusing since we are using a same file for two purpose. I’ll update them shortly to make sure it’s less confusing.
-
+2. We use location in both batch source and observation settings, how differently are these locations used?
+   It’s also explained here, but basically in observation setting you only need two columns: an ID column, and a timestamp column. Other fields are all optional.
+   The existing NYC driver sample is a bit confusing since we are using a same file for two purpose. I’ll update them shortly to make sure it’s less confusing.
 
 Does feathr support "local spark" runtime? other than databricks and synapse. For users to build and test features locally, without much changes to Way of working.
 
@@ -284,8 +258,6 @@ Is it possible to update the feature got from Registry(Purview)?Consider I have 
 type_system_initialization: true in feathr_conf(Purview)
 What is the use of this parameter?
 
-
-While using features from registry in consumption flow, it is required that the user has access to all the source datafiles before the feature can be used. This will be tricky especially in our datalake and DDS setup. Any way to handle this 
-
+While using features from registry in consumption flow, it is required that the user has access to all the source datafiles before the feature can be used. This will be tricky especially in our datalake and DDS setup. Any way to handle this
 
 how he can pass a list in preprocessing to execute multiple UDF functions currently it looks like it only supports passing in a single function
