@@ -33,7 +33,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 Feathr has native integrations with Databricks and Azure Synapse:
 
-Follow the [Feathr ARM deployment guide ](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
+Follow the [Feathr ARM deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
 
 If you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
 
@@ -60,9 +60,22 @@ Or use the latest code from GitHub:
 pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
 ```
 
-## 🔡 Feathr Examples
+## 🔡 Feathr Highlighted Capabilities
 
-Please read [Feathr Capabilities](https://linkedin.github.io/feathr/concepts/feathr-capabilities.html) for more examples. Below are a few selected ones:
+Please read [Feathr Full Capabilities](./concepts/feathr-capabilities.md) for more examples. Below are a few selected ones:
+
+### Feathr UI
+
+Feathr provides an intuitive UI so you can search and explore all the available features and their corresponding lineages.
+
+You can use Feathr UI to search features, identify data sources, track feature lineages and manage access controls. Check out the latest live demo [here](https://aka.ms/feathrdemo) to see what Feathr UI can do for you. Use one of following accounts when you are prompted to login:
+
+- A work or school organization account, includes Office 365 subscribers.
+- Microsoft personal account, this means an account can access to Skype, Outlook.com, OneDrive, and Xbox LIVE.
+
+![Feathr UI](./images/feathr-ui.png)
+
+For more information on the Feathr UI and the registry behind it, please refer to [Feathr Feature Registry](./concepts/feature-registry.md)
 
 ### Rich UDF Support
 
@@ -81,7 +94,7 @@ batch_source = HdfsSource(name="nycTaxiBatchSource",
                         timestamp_format="yyyy-MM-dd HH:mm:ss")
 ```
 
-### Defining Window Aggregation Features
+### Defining Window Aggregation Features with Point-in-time correctness
 
 ```python
 agg_features = [Feature(name="f_location_avg_fare",
@@ -131,13 +144,6 @@ Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linked
 
 Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart_synapse.html) containing a bit more explanation on the notebook.
 
-### Feathr UI
-
-You can use Feathr UI to search features, identify data sources, track feature lineages and manage access controls. Check out the latest live demo [here](https://aka.ms/feathrdemo) to see what Feathr UI can do for you. Use one of following accounts when you are prompted to login:
-
-- A work or school organization account, includes Office 365 subscribers.
-- Microsoft personal account, this means an account can access to Skype, Outlook.com, OneDrive, and Xbox LIVE.
-
 ## 🗣️ Tech Talks on Feathr
 
 - [Introduction to Feathr - Beginner's guide](https://www.youtube.com/watch?v=gZg01UKQMTY)
@@ -155,7 +161,7 @@ You can use Feathr UI to search features, identify data sources, track feature l
 | Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
 | Streaming Source                | Kafka, EventHub                                                             |
 | Online store                    | Azure Cache for Redis                                                       |
-| Feature Registry and Governance | Azure Purview                                                               |
+| Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                            |
 | Compute Engine                  | Azure Synapse Spark Pools, Databricks                                       |
 | Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook               |
 | File Format                     | Parquet, ORC, Avro, JSON, Delta Lake                                        |
@@ -167,10 +173,10 @@ For a complete roadmap with estimated dates, please [visit this page](https://gi
 
 - [x] Support streaming
 - [x] Support common data sources
+- [x] Support feature store UI, including Lineage and Search functionalities
 - [ ] Support online transformation
 - [ ] Support feature versioning
 - [ ] Support feature monitoring
-- [ ] Support feature store UI, including Lineage and Search functionalities
 - [ ] Support feature data deletion and retention
 
 ## 👨‍👨‍👦‍👦 Community Guidelines
