@@ -2,13 +2,6 @@
 
 This directory hosts Feathr Feature Store UI code.
 
-## Live Demo
-
-Check out the latest Feathr Feature Store UI live demo [here](https://aka.ms/feathrdemo), use one of following accounts when you are prompted to login:
-
-- A work or school organization account, includes Office 365 subscribers.
-- Microsoft personal account, this means an account can access to Skype, Outlook.com, OneDrive, and Xbox LIVE.
-
 ## Development Getting Started
 
 ### Prerequisites
