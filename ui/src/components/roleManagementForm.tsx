@@ -58,7 +58,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
             label="User Name"
             rules={[{ required: true }]}
           >
-            <Input disabled={!editMode} placeholder="Email Account or App Id"/>
+            <Input disabled={!editMode} placeholder="Email Account or App Id" />
           </Form.Item>
           <Form.Item
             name="roleName"
