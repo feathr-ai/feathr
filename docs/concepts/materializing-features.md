@@ -48,7 +48,9 @@ client.materialize_features(settings)
 
 Feathr will submit a materialization job for each of the step for performance reasons. I.e. if you have `BackfillTime(start=datetime(2022, 2, 1), end=datetime(2022, 2, 20), step=timedelta(days=1))`, Feathr will submit 20 jobs to run in parallel for maximum performance.
 
-Please note that the `start` and `end` parameter means the cutoff start and end time. For example, we might have a dataset like below:
+Please note that the parameter forms a closed interval, which means that both start and end date will be included in materialized job,
+
+Please also note that the `start` and `end` parameter means the cutoff start and end time. For example, we might have a dataset like below:
 
 | TrackingID | UserId | Spending | Date       |
 | ---------- | ------ | -------- | ---------- |
