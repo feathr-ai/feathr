@@ -22,7 +22,7 @@ Feathr has native integration with Azure Machine Learning (AML). However due to 
 
 ## Authentication in Azure Machine Learning
 
-Azure Machine Learning has native integration to allow you authenticate. All the [Feathr sample notebooks](../samples/) will be able to seamlessly use that.
+Azure Machine Learning has native integration to allow you authenticate. All the [Feathr sample notebooks](../samples/) will be able to seamlessly use the credentials that you have logged in.
 
 When logged into Azure Machine Learning, you will see a prompt like this to ask you to login:
 
@@ -35,4 +35,4 @@ And after you have logged in, for all [Feathr sample notebooks](../samples/), si
 ! az login --use-device-code
 ```
 
-And enjoy the rest of the capabilities that Azure Machine Learning brings to you, include distributed machine learning training and managed compute, etc.
+And that's it! enjoy the rest of the capabilities that Azure Machine Learning brings to you, include distributed machine learning training and managed compute, etc.
