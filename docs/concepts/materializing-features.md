@@ -107,9 +107,9 @@ client.materialize_features(settings)
 This will generate features on latest date(assuming it's `2022/05/21`) and output data to the following path:
 `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2022/05/21`
 
-You can also specify a `BackfillTime` so the features will be generated only for those dates. For example:
+You can also specify a `BackfillTime` which will specify a cutoff time for feature materialization. For example:
 
-```Python
+```python
 backfill_time = BackfillTime(start=datetime(
     2020, 5, 10), end=datetime(2020, 5, 20), step=timedelta(days=1))
 offline_sink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
@@ -120,8 +120,8 @@ settings = MaterializationSettings("nycTaxiTable",
                                    backfill_time=backfill_time)
 ```
 
-This will generate features from `2020/05/10` to `2020/05/20` and the output will have 11 folders, from
-`abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/10` to `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`. Note that currently Feathr only supports materializing data in daily step (i.e. even if you specify an hourly step, the generated features in offline store will still be presented in a daily hierarchy).
+This will generate features up from a starting date up to `2020/05/10` and `2020/05/20` correspondingly, and the output will have 11 folders, from
+`abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/10` to `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`. Note that currently Feathr only supports materializing data in daily step (i.e. even if you specify an hourly step, the generated features in offline store will still be presented in a daily hierarchy). For more details on how `BackfillTime` works, refer to the [BackfillTime section](#feature-backfill) above.
 
 You can also specify the format of the materialized features in the offline store by using `execution_configurations` like below. Please refer to the [documentation](../how-to-guides/feathr-job-configuration.md) here for those configuration details.
 
