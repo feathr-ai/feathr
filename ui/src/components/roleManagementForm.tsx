@@ -15,10 +15,10 @@ const Admin = "admin";
 const Producer = "producer";
 const Consumer = "consumer";
 
-const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
+const RoleManagementForm = ({
   editMode,
   userRole,
-}) => {
+}: RoleManagementFormProps) => {
   const [fireRedirect] = useState<boolean>(false);
   const [createLoading, setCreateLoading] = useState<boolean>(false);
 

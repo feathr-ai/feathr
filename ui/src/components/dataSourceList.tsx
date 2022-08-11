@@ -3,7 +3,7 @@ import { Form, Select, Table } from "antd";
 import { DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
 
-const DataSourceList: React.FC = () => {
+const DataSourceList = () => {
   const columns = [
     {
       title: <div style={{ userSelect: "none" }}>Name</div>,
