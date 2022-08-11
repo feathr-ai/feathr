@@ -225,6 +225,9 @@ const FeatureDetails: React.FC = () => {
     navigate(lineageUrl);
   };
 
+  const preProject = localStorage.getItem("project") ?? "";
+  const preKeyword = localStorage.getItem("keyword") ?? "";
+
   const render = (status: QueryStatus): JSX.Element => {
     switch (status) {
       case "error":
@@ -265,6 +268,14 @@ const FeatureDetails: React.FC = () => {
         } else {
           return (
             <>
+              <Button
+                type="link"
+                onClick={() =>
+                  navigate("/features/" + preProject + "/" + preKeyword)
+                }
+              >
+                feature list {">"}
+              </Button>
               <Card>
                 <Title level={3}>{data.attributes.name}</Title>
                 <div>

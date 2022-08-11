@@ -1,11 +1,12 @@
 import React from "react";
 import { Button, Card, Space, Typography } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import FeatureList from "../../components/featureList";
 
 const { Title } = Typography;
 
 const Features: React.FC = () => {
+  const { project, keyword } = useParams();
   const navigate = useNavigate();
   const onCreateFeatureClick = () => {
     navigate("/new-feature");
@@ -28,7 +29,7 @@ const Features: React.FC = () => {
             + Create Feature
           </Button>
         </Space>
-        <FeatureList />
+        <FeatureList preProject={project ?? ""} preKeyword={keyword ?? ""} />
       </Card>
     </div>
   );

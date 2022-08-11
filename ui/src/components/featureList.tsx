@@ -14,7 +14,12 @@ import {
 import { Feature } from "../models/model";
 import { fetchProjects, fetchFeatures } from "../api";
 
-const FeatureList: React.FC = () => {
+type Props = {
+  preProject: string;
+  preKeyword: string;
+};
+
+const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
   const navigate = useNavigate();
   const columns = [
     {
@@ -153,9 +158,9 @@ const FeatureList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [tableData, setTableData] = useState<Feature[]>();
-  const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState<string>(preKeyword ?? "");
   const [projects, setProjects] = useState<any>([]);
-  const [project, setProject] = useState<string>("");
+  const [project, setProject] = useState<string>(preProject ?? "");
 
   const fetchData = useCallback(
     async (project) => {
@@ -164,6 +169,8 @@ const FeatureList: React.FC = () => {
       setPage(page);
       setTableData(result);
       setLoading(false);
+      localStorage.setItem("project", project);
+      localStorage.setItem("keyword", query);
     },
     [page, query]
   );
@@ -177,6 +184,13 @@ const FeatureList: React.FC = () => {
   useEffect(() => {
     loadProjects();
   }, [loadProjects]);
+
+  useEffect(() => {
+    if (preProject !== "") {
+      console.log("fetch data onload");
+      fetchData(preProject);
+    }
+  }, []);
 
   const onProjectChange = async (value: string) => {
     setProject(value);
@@ -215,6 +229,7 @@ const FeatureList: React.FC = () => {
         ></Select>
       </Form.Item>
       <Input
+        value={query}
         placeholder="keyword"
         style={{ width: "10%", marginLeft: "5px" }}
         onChange={(e) => onKeywordChange(e.target.value)}
