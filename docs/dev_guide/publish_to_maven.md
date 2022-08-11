@@ -10,7 +10,7 @@ parent: Developer Guides
 ---
 
 ### Prerequisites
-- Install JDK8, for macOS: `brew cask install adoptopenjdk8`
+- Install JDK8, for macOS: `brew install --cask adoptopenjdk`
 - Install SBT, for macOS: `brew install sbt`
 - Install GPG, for macOS: `brew install gpg`
 - Sonatype account credential
