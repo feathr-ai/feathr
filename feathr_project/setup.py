@@ -23,7 +23,7 @@ setup(
         'Click',
         "azure-storage-file-datalake>=12.5.0",
         "azure-synapse-spark",
-        "azure-identity>=1.8.0", #fixing Azure Machine Learning authentication issue per https://stackoverflow.com/a/72262694/3193073
+        "azure-identity",
         "py4j",
         "loguru",
         "pandas",
@@ -49,7 +49,7 @@ setup(
         # In 1.23.0, azure-core is using ParamSpec which might cause issues in some of the databricks runtime.
         # see this for more details:
         # https://github.com/Azure/azure-sdk-for-python/pull/22891
-        # using a version lower than that to workaround this issue. 
+        # using a version lower than that to workaround this issue
         "azure-core<=1.22.1",
         "typing_extensions>=4.2.0"
     ],

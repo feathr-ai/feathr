@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Feathr Job Configuration during Run Time
+title: Feathr Job Configuration
 parent: How-to Guides
 ---
 
-# Feathr Job Configuration during Run Time
+# Feathr Job Configuration
 
 Since Feathr uses Spark as the underlying execution engine, there's a way to override Spark configuration by `FeathrClient.get_offline_features()` with `execution_configurations` parameters. The complete list of the available spark configuration is located in [Spark Configuration](https://spark.apache.org/docs/latest/configuration.html) (though not all of those are honored for cloud hosted Spark platforms such as Databricks), and there are a few Feathr specific ones that are documented here:
 
