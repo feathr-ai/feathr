@@ -7,4 +7,4 @@ permalink: docs/how-to-guides
 
 # How-to Guides
 
-This folder includes important Feathr how-to guides.
+This folder includes important Feathr how-to guides and will help hands-on customers for detailed step-by-step guide.
