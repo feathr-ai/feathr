@@ -12,6 +12,9 @@ Feathr supports multiple file formats, including Parquet, ORC, Avro, JSON, Delta
 2. If the input file doesn't have a name, say `wasb://demodata@demodata/user_click_stream`, users can optionally set a parameter to let Feathr know which format to read those files. Refer to the `spark.feathr.inputFormat` setting in [Feathr Job Configuration](./feathr-configuration-and-env.md) for more details on how to set those. Note that this is a global setting that will apply to every input which the format isn't recognized.
 3. If all the above conditions are not recognized, Feathr will use `avro` as the default format.
 
-Special note for spark outputs:
+## Special note for spark outputs
 
+Many Spark users will use delta lake format to store the results. In those cases, the result folder will be something like this:
 ![Spark Output](../images/spark-output.png)
+
+Please note that although the results are shown as "parquet", you should use the path of the parent folder and use `delta` format to read the folder.
