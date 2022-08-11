@@ -16,7 +16,7 @@ const { TabPane } = Tabs;
 type Params = {
   project: string;
 };
-const LineageGraph: React.FC = () => {
+const LineageGraph = () => {
   const { project } = useParams() as Params;
   const [searchParams] = useSearchParams();
   const nodeId = searchParams.get("nodeId") as string;
