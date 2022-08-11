@@ -3,7 +3,7 @@ import { Card, Typography } from "antd";
 
 const { Title } = Typography;
 
-const Jobs: React.FC = () => {
+const Jobs = () => {
   return (
     <div className="page">
       <Card style={{ minWidth: "1000px" }}>

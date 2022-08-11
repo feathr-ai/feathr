@@ -4,7 +4,6 @@ import {
   Button,
   Menu,
   message,
-  PageHeader,
   Popconfirm,
   Row,
   Space,
@@ -14,7 +13,7 @@ import {
 import { UserRole } from "../models/model";
 import { deleteUserRole, listUserRole } from "../api";
 
-const UserRoles: React.FC = () => {
+const UserRoles = () => {
   const navigate = useNavigate();
 
   const onDelete = async (row: UserRole) => {
