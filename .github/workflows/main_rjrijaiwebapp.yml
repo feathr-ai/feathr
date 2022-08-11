@@ -31,7 +31,7 @@ jobs:
       with:
         push: true
         tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_b7068ec837d7406caf96effd5888450a }}/feathrfeaturestore/feathr-registry:${{ github.sha }}
-        file: ./Dockerfile
+        file: FeathrRegistry.Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
