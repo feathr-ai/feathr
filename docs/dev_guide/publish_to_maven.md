@@ -9,6 +9,13 @@ parent: Developer Guides
 ## Manual Publishing
 ---
 
+### Prerequisites
+- Install JDK8, for macOS: `brew install --cask adoptopenjdk`
+- Install SBT, for macOS: `brew install sbt`
+- Install GPG, for macOS: `brew install gpg`
+- Sonatype account credential
+
+### Publishing
 1. Set up GPG for signing artifacts.
     * Generate the key, use the name and email you would like to use to identify who uploaded the artifacts. An example email address would be your github email, and name could be `Feathr Developer`, `Feathr Contributor`, your real name, etc.
         *   ```
@@ -20,7 +27,8 @@ parent: Developer Guides
                 "Central Repo Test <central@example.com>"
             Change (N)ame, (E)mail, or (O)kay/(Q)uit? O
             ```
-     * Verify your gpg metadata, and not the uid. In this example it is `CA925CD6C9E8D064FF05B4728190C4130ABA0F98`
+     * Save key passphrase, which is needed during the sbt publishSigned step
+     * Verify your gpg metadata, and note the uid. In this example it is `CA925CD6C9E8D064FF05B4728190C4130ABA0F98`
         *   ```
             $ gpg --list-keys
             /home/mylocaluser/.gnupg/pubring.kbx
@@ -32,7 +40,7 @@ parent: Developer Guides
             ```
     * Upload gpg keys to a key server
         * [Recommended] Upload manually
-            * Run the following command to generated the ASCII-armored public key needed by the key server. Replaced the {uid} with the uid noted from the earlier step.
+            * Run the following command to generate the ASCII-armored public key needed by the key server. Replaced the {uid} with the uid noted from the earlier step.
                 *   ```
                     gpg --armor --export {uid} > pubkey.asc
                     ```
@@ -44,8 +52,8 @@ parent: Developer Guides
                 ```
 ---
 
-2.  Set up `Sonatype` credentials
-    * Get account details to login to https://oss.sonatype.org/. Reachout to feathr team, such as @jaymo001 or @hangfei
+2.  Set up `Sonatype` credentials    
+    * Get account details to login to https://oss.sonatype.org/. Reachout to Feathr team, such as @jaymo001, @hangfei or @blrchen
     * Setup the credentials locally
         * Create sonatype configuration file
             *   ```
@@ -55,12 +63,17 @@ parent: Developer Guides
             *   ```
                 credentials += Credentials("Sonatype Nexus Repository Manager",
                         "oss.sonatype.org",
-                        "(Sonatype user name)",
-                        "(Sonatype password)")
+                        "<REPLACE_WITH_SONATYPE_USERNAME>",
+                        "<REPLACE_WITH_SONATYPE_PASSWORD>")
                 ```
 ---
+3. Increase version number in build.sbt, search for `ThisBuild / version` and replace the version number with the next version number.
+    *   ```
+        ThisBuild / version          := "0.6.0"
+        ```
 
-3. Publish to sonatype/maven via sbt
+---
+4. Publish to sonatype/maven via sbt
     * In your feathr directory, clear your cache to prevent stale errors
         *   ```
             rm -rf target/sonatype-staging/
@@ -75,17 +88,19 @@ parent: Developer Guides
                 ```
     * Execute command in sbt console to publish to maven
         *   ```
-            reload
-            ; publishSigned; sonatypeBundleRelease
+            reload; publishSigned; sonatypeBundleRelease
             ```
 ---
 
-4. "Upon release, your component will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to four hours."
-https://central.sonatype.org/publish/publish-guide/#releasing-to-central
+5. Upon release, new version will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to 24 hours. See the [Sonatype documentation](https://central.sonatype.org/publish/publish-guide/#releasing-to-central) for more information.
 
 ---
 
-5. After new version is released via Maven, use the released version to run a test to ensure it actually works. You can do this by running a codebase that imports Feathr scala code.
+6. After new version is released via Maven, use the released version to run a test to ensure it actually works. You can do this by running a codebase that imports Feathr scala code.
+
+## Troubleshooting
+- If you get something like `[error] gpg: signing failed: Inappropriate ioctl for device`, run `export GPG_TTY=$(tty)` in your terminal and restart sbt console.
+
 
 ## CI Automatic Publishing
 
