@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 const { Title } = Typography;
 
-const ResponseErrors: React.FC = () => {
+const ResponseErrors = () => {
   const { status, detail } = useParams();
   switch (status) {
     case "403":

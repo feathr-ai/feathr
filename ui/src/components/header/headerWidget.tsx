@@ -5,7 +5,7 @@ import { useMsal } from "@azure/msal-react";
 import HeaderWidgetMenu from "./headerWidgetMenu";
 
 type Props = { username?: string };
-const HeaderWidget: React.FC<Props> = ({ username }) => {
+const HeaderWidget = ({ username }: Props) => {
   const { instance } = useMsal();
   if (!username) {
     return null;

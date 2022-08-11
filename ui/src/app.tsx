@@ -22,7 +22,7 @@ import { getMsalConfig } from "./utils/utils";
 const queryClient = new QueryClient();
 
 const msalClient = getMsalConfig();
-const App: React.FC = () => {
+const App = () => {
   return (
     <MsalProvider instance={msalClient}>
       <MsalAuthenticationTemplate interactionType={InteractionType.Redirect}>

@@ -4,7 +4,7 @@ import UserRoles from "../../components/userRoles";
 
 const { Title } = Typography;
 
-const Management: React.FC = () => {
+const Management = () => {
   return (
     <div className="page">
       <Card style={{ minWidth: "1000px" }}>
