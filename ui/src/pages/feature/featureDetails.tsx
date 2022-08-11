@@ -14,15 +14,14 @@ import { getElements } from "../../components/graph/utils";
 
 const { Title } = Typography;
 
-function FeatureKey(props: { feature: Feature }) {
+const FeatureKey = (props: { feature: Feature }) => {
   const keys = props.feature.attributes.key;
-  console.log(props.feature.attributes);
   return (
     <>
       {keys && keys.length > 0 && (
         <Col span={24}>
           <Card className="card">
-            <Title level={4}>Key</Title>
+            <Title level={4}>Entity Key</Title>
             <div className="feature-container">
               <p>Full Name: {keys[0].fullName}</p>
               <p>Key Column: {keys[0].keyColumn}</p>
@@ -35,9 +34,9 @@ function FeatureKey(props: { feature: Feature }) {
       )}
     </>
   );
-}
+};
 
-function FeatureType(props: { feature: Feature }) {
+const FeatureType = (props: { feature: Feature }) => {
   const type = props.feature.attributes.type;
   return (
     <>
@@ -56,9 +55,9 @@ function FeatureType(props: { feature: Feature }) {
       )}
     </>
   );
-}
+};
 
-function FeatureTransformation(props: { feature: Feature }) {
+const FeatureTransformation = (props: { feature: Feature }) => {
   const transformation = props.feature.attributes.transformation;
   return (
     <>
@@ -88,9 +87,9 @@ function FeatureTransformation(props: { feature: Feature }) {
       )}
     </>
   );
-}
+};
 
-function InputAnchorFeatures(props: { project: string; feature: Feature }) {
+const InputAnchorFeatures = (props: { project: string; feature: Feature }) => {
   const navigate = useNavigate();
   const inputAnchorFeatures = props.feature.attributes.inputAnchorFeatures;
   return (
@@ -124,7 +123,7 @@ function InputAnchorFeatures(props: { project: string; feature: Feature }) {
       )}
     </>
   );
-}
+};
 
 function InputDerivedFeatures(props: { project: string; feature: Feature }) {
   const navigate = useNavigate();

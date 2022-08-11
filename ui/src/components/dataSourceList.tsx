@@ -152,6 +152,7 @@ const DataSourceList: React.FC = () => {
           value={project}
           optionFilterProp="label"
           notFoundContent={<div>No projects found from server</div>}
+          showSearch={true}
           onChange={onProjectChange}
         ></Select>
       </Form.Item>
