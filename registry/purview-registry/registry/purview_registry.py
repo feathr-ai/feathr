@@ -201,7 +201,7 @@ class PurviewRegistry(Registry):
         edges = []
         targetsRelationships = {
             EntityType.Project: RelationshipType.Contains.value,
-            EntityType.Anchor: RelationshipType.Produces.value | RelationshipType.Consumes.value,
+            EntityType.Anchor: RelationshipType.Contains.value | RelationshipType.Consumes.value,
             EntityType.DerivedFeature: RelationshipType.Consumes.value
         }
 
@@ -209,7 +209,7 @@ class PurviewRegistry(Registry):
         for id,entity in guidAtlasEntityMap.items():
             if entity['typeName'] == 'Process':
                name = entity['attributes']['qualifiedName']
-               if not name.startswith('BELONGSTO'):
+               if not (name.startswith('BELONGSTO') and name.endswith(str(project_id))):
                     edges.append(self._create_edge_from_process(name, id))
             else:
                 guidEntityMap[id] = self._atlasEntity_to_entity(entity)

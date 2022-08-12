@@ -531,7 +531,7 @@ class AnchorAttributes(Attributes):
             "features": list([e.get_ref().to_dict() for e in self.features]),
             "tags": self.tags,
         }
-        if self.source is not None and isinstance(self.source, Attributes):
+        if self.source is not None and isinstance(self.source, EntityRef):
             source_ref = self.source.get_ref()
             if source_ref is not None:
                 ret["source"] = source_ref.to_dict() 
