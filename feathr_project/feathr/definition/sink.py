@@ -130,7 +130,7 @@ class GenericSink(Sink):
         }
         return json.dumps(ret, indent=4)
     
-    def _to_dict(self) -> dict[str, str]:
+    def _to_dict(self) -> Dict[str, str]:
         ret = self.options.copy()
         ret["type"] = "generic"
         ret["format"] = self.format
