@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source
 
-import com.linkedin.feathr.offline.config.location.{InputLocation, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, SimplePath}
 import com.linkedin.feathr.offline.source.SourceFormatType.SourceFormatType
 import com.linkedin.feathr.offline.util.{AclCheckUtils, HdfsUtils, LocalFeatureJoinUtils}
 import org.apache.hadoop.fs.Path
@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
  * @param timePartitionPattern format of the time partitioned feature
  */
 private[offline] case class DataSource(
-                                        val location: InputLocation,
+                                        val location: DataLocation,
                                         sourceType: SourceFormatType,
                                         timeWindowParams: Option[TimeWindowParams],
                                         timePartitionPattern: Option[String])
@@ -63,7 +63,7 @@ object DataSource {
             timeWindowParams: Option[TimeWindowParams] = None,
             timePartitionPattern: Option[String] = None): DataSource = DataSource(SimplePath(rawPath), sourceType, timeWindowParams, timePartitionPattern)
 
-  def apply(inputLocation: InputLocation,
+  def apply(inputLocation: DataLocation,
             sourceType: SourceFormatType): DataSource = DataSource(inputLocation, sourceType, None, None)
 
 }
