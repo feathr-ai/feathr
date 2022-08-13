@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.job
 
 import com.linkedin.feathr.offline.client.InputData
+import com.linkedin.feathr.offline.config.location.{DataLocation, SimplePath}
 
 
 object JoinJobContext {
@@ -23,7 +24,7 @@ case class JoinJobContext(
                            feathrLocalConfig: Option[String] = None,
                            feathrFeatureConfig: Option[String] = None,
                            inputData: Option[InputData] = None,
-                           outputPath: String = "/join_output",
+                           outputPath: DataLocation = SimplePath("/join_output"),
                            numParts: Int = 1
                           ) {
 }
