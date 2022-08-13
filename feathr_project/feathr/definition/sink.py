@@ -2,7 +2,6 @@ from abc import abstractmethod
 import json
 from typing import Dict, List, Optional
 from jinja2 import Template
-from pymysql import paramstyle
 from feathr.definition.feathrconfig import HoconConvertible
 
 
