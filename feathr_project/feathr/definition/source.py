@@ -300,7 +300,7 @@ class GenericSource(Source):
                     ret.append(option[start+2:start+end])
         return ret
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> Dict[str, str]:
         ret = self.options.copy()
         ret["type"] = "generic"
         ret["format"] = self.format
