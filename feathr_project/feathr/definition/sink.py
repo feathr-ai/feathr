@@ -155,17 +155,17 @@ class GenericSink(Sink):
         return json.dumps(self._to_dict())
     
 class CosmosDbSink(GenericSink):
-    def __init__(self, name: str, endpoint: str, database: str, collection: str):        
+    def __init__(self, name: str, endpoint: str, database: str, container: str):        
         super().__init__(format = "cosmos.oltp", mode="APPEND", options={
             "spark.cosmos.accountEndpoint": endpoint,
             'spark.cosmos.accountKey': "${%s_KEY}" % name,
             "spark.cosmos.database": database,
-            "spark.cosmos.container": collection
+            "spark.cosmos.container": container
         })
         self.name = name
         self.endpoint = endpoint
         self.database = database
-        self.collection = collection
+        self.container = container
         
     def get_required_properties(self) -> List[str]:
         return [self.name + "_KEY"]
