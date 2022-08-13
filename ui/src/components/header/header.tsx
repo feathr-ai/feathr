@@ -4,7 +4,7 @@ import { useAccount, useMsal } from "@azure/msal-react";
 import "./header.css";
 import HeaderWidget from "./headerWidget";
 
-const Header: React.FC = () => {
+const Header = () => {
   const { accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
   return (

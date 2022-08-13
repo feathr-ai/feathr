@@ -4,7 +4,6 @@ import {
   Button,
   Menu,
   message,
-  PageHeader,
   Popconfirm,
   Row,
   Space,
@@ -14,7 +13,7 @@ import {
 import { UserRole } from "../models/model";
 import { deleteUserRole, listUserRole } from "../api";
 
-const UserRoles: React.FC = () => {
+const UserRoles = () => {
   const navigate = useNavigate();
 
   const onDelete = async (row: UserRole) => {
@@ -136,8 +135,9 @@ const UserRoles: React.FC = () => {
         <div style={{ flex: 1 }}>
           <>
             <p style={{ width: "80%" }}>
-              This page is protected by Feathr Access Control. Only Global Admin
-              can retrieve management details and grant or delete user roles.
+              This page is protected by Feathr Access Control. Only Project
+              Admins can retrieve management details and grant or delete user
+              roles.
             </p>
           </>
         </div>

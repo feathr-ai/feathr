@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { QueryStatus, useQuery } from "react-query";
 import { AxiosError } from "axios";
 import { fetchFeature } from "../../api";
-import { Feature } from "../../models/model";
+import { Feature, InputFeature } from "../../models/model";
 import { FeatureLineage } from "../../models/model";
 import { fetchFeatureLineages } from "../../api";
 import { Elements } from "react-flow-renderer";
@@ -14,15 +14,15 @@ import { getElements } from "../../components/graph/utils";
 
 const { Title } = Typography;
 
-function FeatureKey(props: { feature: Feature }) {
-  const keys = props.feature.attributes.key;
-  console.log(props.feature.attributes);
+type FeatureKeyProps = { feature: Feature };
+const FeatureKey = ({ feature }: FeatureKeyProps) => {
+  const keys = feature.attributes.key;
   return (
     <>
       {keys && keys.length > 0 && (
         <Col span={24}>
           <Card className="card">
-            <Title level={4}>Key</Title>
+            <Title level={4}>Entity Key</Title>
             <div className="feature-container">
               <p>Full Name: {keys[0].fullName}</p>
               <p>Key Column: {keys[0].keyColumn}</p>
@@ -35,10 +35,11 @@ function FeatureKey(props: { feature: Feature }) {
       )}
     </>
   );
-}
+};
 
-function FeatureType(props: { feature: Feature }) {
-  const type = props.feature.attributes.type;
+type FeatureTypeProps = { feature: Feature };
+const FeatureType = ({ feature }: FeatureTypeProps) => {
+  const type = feature.attributes.type;
   return (
     <>
       {type && (
@@ -56,10 +57,11 @@ function FeatureType(props: { feature: Feature }) {
       )}
     </>
   );
-}
+};
 
-function FeatureTransformation(props: { feature: Feature }) {
-  const transformation = props.feature.attributes.transformation;
+type FeatureTransformationProps = { feature: Feature };
+const FeatureTransformation = ({ feature }: FeatureTransformationProps) => {
+  const transformation = feature.attributes.transformation;
   return (
     <>
       {transformation && (
@@ -88,11 +90,15 @@ function FeatureTransformation(props: { feature: Feature }) {
       )}
     </>
   );
-}
+};
 
-function InputAnchorFeatures(props: { project: string; feature: Feature }) {
+type InputAnchorFeaturesProps = { project: string; feature: Feature };
+const InputAnchorFeatures = ({
+  project,
+  feature,
+}: InputAnchorFeaturesProps) => {
   const navigate = useNavigate();
-  const inputAnchorFeatures = props.feature.attributes.inputAnchorFeatures;
+  const inputAnchorFeatures = feature.attributes.inputAnchorFeatures;
   return (
     <>
       {inputAnchorFeatures && inputAnchorFeatures.length > 0 && (
@@ -112,7 +118,7 @@ function InputAnchorFeatures(props: { project: string; feature: Feature }) {
                 type="link"
                 onClick={() => {
                   navigate(
-                    `/projects/${props.project}/features/${input_feature.guid}`
+                    `/projects/${project}/features/${input_feature.guid}`
                   );
                 }}
               >
@@ -124,11 +130,15 @@ function InputAnchorFeatures(props: { project: string; feature: Feature }) {
       )}
     </>
   );
-}
+};
 
-function InputDerivedFeatures(props: { project: string; feature: Feature }) {
+type InputDerivedFeaturesProps = { project: string; feature: Feature };
+const InputDerivedFeatures = ({
+  project,
+  feature,
+}: InputDerivedFeaturesProps) => {
   const navigate = useNavigate();
-  const inputDerivedFeatures = props.feature.attributes.inputDerivedFeatures;
+  const inputDerivedFeatures = feature.attributes.inputDerivedFeatures;
   return (
     <>
       {inputDerivedFeatures && inputDerivedFeatures.length > 0 && (
@@ -143,12 +153,12 @@ function InputDerivedFeatures(props: { project: string; feature: Feature }) {
             }}
           >
             <Title level={4}>Input Derived Features</Title>
-            {inputDerivedFeatures.map((input_feature) => (
+            {inputDerivedFeatures.map((input_feature: InputFeature) => (
               <Button
                 type="link"
                 onClick={() => {
                   navigate(
-                    `/projects/${props.project}/features/${input_feature.guid}`
+                    `/projects/${project}/features/${input_feature.guid}`
                   );
                 }}
               >
@@ -160,9 +170,9 @@ function InputDerivedFeatures(props: { project: string; feature: Feature }) {
       )}
     </>
   );
-}
+};
 
-function FeatureLineageGraph() {
+const FeatureLineageGraph = () => {
   const { featureId } = useParams() as Params;
   const [lineageData, setLineageData] = useState<FeatureLineage>({
     guidEntityMap: null,
@@ -205,13 +215,13 @@ function FeatureLineageGraph() {
       )}
     </>
   );
-}
+};
 
 type Params = {
   project: string;
   featureId: string;
 };
-const FeatureDetails: React.FC = () => {
+const FeatureDetails = () => {
   const { project, featureId } = useParams() as Params;
   const navigate = useNavigate();
   const loadingIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;

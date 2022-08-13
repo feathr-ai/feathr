@@ -3,7 +3,7 @@ import { Card, Typography } from "antd";
 
 const { Title } = Typography;
 
-const Monitoring: React.FC = () => {
+const Monitoring = () => {
   return (
     <div className="page">
       <Card>

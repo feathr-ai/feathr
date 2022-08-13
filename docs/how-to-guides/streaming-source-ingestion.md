@@ -88,3 +88,7 @@ res = client.multi_get_online_features('kafkaSampleDemoFeature', ['1', '2'], ['f
 ```
 
 You can also refer to the [test case](../../feathr_project/test/test_azure_kafka_e2e.py) for more details.
+
+## Kafka configuration
+
+Please refer to the [Feathr Configuration Doc](./feathr-configuration-and-env.md#kafkasasljaasconfig) for more details on the credentials.
