@@ -1,51 +1,57 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
+# This workflow builds the docker container and publishes to dockerhub with appropriate tag
+# It has two triggers, 
+#   1. daily i.e. runs everyday at specific time.
+#   2. Anytime a new branch is created under releases
 
-name: Build and deploy container app to Azure Web App - rjrijaiwebapp
+name: Publish Feathr Docker image to DockerHub
 
 on:
   push:
+    # For every push against the releases/** branch, usually would happen at release time, Tag example - releases/v0.7.0
     branches:
-      - main
+      - 'releases/**'
   workflow_dispatch:
 
+
 jobs:
-  build:
-    runs-on: 'ubuntu-latest'
-
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-
-    - name: Log in to registry
-      uses: docker/login-action@v1
-      with:
-        registry: https://index.docker.io/v1/
-        username: ${{ secrets.AzureAppService_ContainerUsername_b7068ec837d7406caf96effd5888450a }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_0b463ada3b954cd999fa44760c2427d9 }}
-
-    - name: Build and push container image to registry
-      uses: docker/build-push-action@v2
-      with:
-        push: true
-        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_b7068ec837d7406caf96effd5888450a }}/feathrfeaturestore/feathr-registry:${{ github.sha }}
-        file: FeathrRegistry.Dockerfile
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: feathrfeaturestore/feathr-registry
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: FeathrRegistry.Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    needs: push_to_registry
 
+    
     steps:
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'rjrijaiwebapp'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_aab7641e97054fc389bb6d33b79452dd }}
-        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_b7068ec837d7406caf96effd5888450a }}/feathrfeaturestore/feathr-registry:${{ github.sha }}'
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v4
+        with:
+          app-name: 'rjrijaiwebapp'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          images: 'index.docker.io/feathrfeaturestore/feathr-registry:nightly'
