@@ -15,8 +15,9 @@ on:
     branches:
       - 'releases/**'
 
+
 jobs:
-  push_to_registry:
+  build_and_push_image_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     steps:
@@ -43,3 +44,33 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push_image_to_registry
+    
+    
+    steps:
+      - name: Deploy to Feathr SQL Registry Azure Web App
+        id: deploy-to-sql-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'feathr-sql-registry'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FEATHR_SQL_REGISTRY }}
+          images: 'index.docker.io/feathrfeaturestore/feathr-registry:nightly'
+    
+      - name: Deploy to Feathr Purview Registry Azure Web App
+        id: deploy-to-purview-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'feathr-purview-registry'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FEATHR_PURVIEW_REGISTRY }}
+          images: 'index.docker.io/feathrfeaturestore/feathr-registry:nightly'
+
+      - name: Deploy to Feathr RBAC Registry Azure Web App
+        id: deploy-to-rbac-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'feathr-rbac-registry'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FEATHR_RBAC_REGISTRY }}
+          images: 'index.docker.io/feathrfeaturestore/feathr-registry:nightly'
