@@ -213,7 +213,7 @@ class Header(val featureInfoMap: Map[TaggedFeatureName, FeatureInfo])
   * @param columnName the column in the dataframe that represents this feature
   * @param featureType the feature type of this feature
   */
-class FeatureInfo(val columnName: String, val featureType: FeatureTypes) {
+class FeatureInfo(val columnName: String, val featureType: FeatureTypeConfig) {
   override def toString: String = s"columnName: $columnName; featureType: $featureType"
 }
 
