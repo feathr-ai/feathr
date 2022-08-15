@@ -45,6 +45,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+  # Deploy the docker container to the three test environments for feathr
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_image_to_registry
