@@ -404,6 +404,10 @@
               {
                 "name": "PURVIEW_NAME",
                 "value": "[if(equals(parameters('registryBackend'),'Azure-Purview'),variables('purviewName'),json('null'))]"
+              },            
+              {
+              "name": "AZURE_CLIENT_ID",
+              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName')), '2018-11-30','Full').properties.clientId]"
               }
             ]
           }
