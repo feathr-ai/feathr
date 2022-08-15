@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Registry Access Control
-parent: Feature Registry
+parent: Feathr Concepts
 ---
 
 # Feathr Registry Access Control
@@ -18,18 +18,20 @@ With Registry Access Control, you can
 - Invite contributors to update features in this project by assigning `producer` role.
 - Transfer project admin by assigning `admin` role.
 
+For `admin`, `producer`, `consumer` explanation, please refer to [Role](#role) section. 
+
 ### Scope
 
-_Scope_ is the set of resources that the permission applies to. In Feathr, you can specify a scope at 2 levels: **registry**, **project**. Lower levels inherit role permissions from higher levels.
+_Scope_ is the set of resources that the permission applies to. In Feathr, you can specify a scope at 2 levels: **global**, **project**. Lower levels inherit role permissions from higher levels.
 
 ```mermaid
 flowchart TD
-    A[Registry] --> B[Project A];
-    A[Registry] --> C[Project B];
-    A[Registry] --> D[...Project N];
+    A[Global] --> B[Project A];
+    A[Global] --> C[Project B];
+    A[Global] --> D[...Project N];
 ```
 
-When you specify the scope in role assignment, please use `global` for registry level scope and `{project name}` for project level scope.
+When you specify the scope in role assignment, please use `global` for global-level scope and `{project name}` for project-level scope.
 
 Feature level access control is **NOT** supported yet. Users are encouraged to group features with similar access control rules in one project.
 
@@ -51,25 +53,30 @@ _permission_ refers to the a certain kind of access to registry metadata or role
 | Manage     | Create and manage role assignment records with management APIs |
 
 ### User
-A _user_ can be an email account or an AppId. 
+A _user_ can be an email account or an [Azure AppId](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app). 
 
 All Registry API requests requires `token` in header to identify the requestor and validate the permission.
-Feathr UI uses the id token of login account. While Feathr Client samples get token by `DefaultAzureCredential()`.
+- Feathr UI uses the id token of login account. User credentials will be auto generated with [@azure/msal-browser](https://www.npmjs.com/package/@azure/msal-browser)
+- Feathr Client let users to pass their own credentials. 
+- In particular, Feathr samples get token with [DefaultAzureCredential()](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python).
 
-_Group_ is **NOT** supported yet. 
+Please make sure your token is valid when getting `500` or `401` Exceptions.
+
+_AAD Group_ is **NOT** supported yet. 
 
 ### Role Assignment
 
 A _Role Assignment_ is the process of add a `user-role` mapping record into backend storage table.
 
-[Feature Registry](https://linkedin.github.io/feathr/concepts/feature-registry.html#access-control-management-page) section briefly introduced the access control management page, where project admins can manage role assignments. 
-Management APIs are not exposed in Feathr Client by design.
+[Feature Registry](https://linkedin.github.io/feathr/concepts/feature-registry.html#access-control-management-page) section briefly introduced the access control management page, where project admins can manage role assignments.
+Management APIs are not exposed in Feathr Client by design. As we don't want to put control plane together with data plane. 
 
 
 ## How to enable Registry Access Control?
-[Azure Resource Provisioning](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) section has detailed instructions on resource provisioning. For RBAC specific, you will:
-1. Choose `Yes` for `Enable RBAC` in ARM Template.
+[Azure Resource Provisioning](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) section has detailed instructions on resource provisioning. For RBAC specific, you will need to manually:
+1. Choose `Yes` for `Enable RBAC` in ARM Template, and provision the resources.
 2. Create a `userrole` table in provisioned SQL database with [RBAC Schema](../../registry/access_control/scripts/schema.sql).
 3. Initialize the `userrole` table refer to commands in [test data](../../registry/access_control/scripts/test_data.sql).
+4. Login to the Web UI and navigate to the management page, and the roles you initialized in #3 should be in table. 
 
 For more details, please refer to the [Feathr Registry Access Control Gateway Specifications](../../../feathr/registry/access_control/README.md). 
