@@ -14,7 +14,7 @@ import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnch
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
 import com.linkedin.feathr.offline.client.plugins.{AnchorExtractorAdaptor, FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor, SimpleAnchorExtractorSparkAdaptor, SourceKeyExtractorAdaptor}
-import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, KafkaEndpoint, LocationUtils, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, KafkaEndpoint, LocationUtils, SimplePath}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWindowParams}
@@ -735,7 +735,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
      * 2. a placeholder with reserved string "PASSTHROUGH" for anchor defined pass-through features,
      *    since anchor defined pass-through features do not have path
      */
-    val path: InputLocation = dataSourceType match {
+    val path: DataLocation = dataSourceType match {
       case "KAFKA" =>
         Option(node.get("config")) match {
           case Some(field: ObjectNode) =>
@@ -748,7 +748,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case "PASSTHROUGH" => SimplePath("PASSTHROUGH")
       case _ => Option(node.get("location")) match {
         case Some(field: ObjectNode) =>
-          LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
+          LocationUtils.getMapper().treeToValue(field, classOf[DataLocation])
         case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
           s"Data location is not defined for data source ${node.toPrettyString()}")
         case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,

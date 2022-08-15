@@ -4,7 +4,7 @@ import FeatureForm from "../../components/featureForm";
 
 const { Title } = Typography;
 
-const NewFeature: React.FC = () => {
+const NewFeature = () => {
   return (
     <div className="page">
       <Card>

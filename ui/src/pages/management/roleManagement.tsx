@@ -4,7 +4,7 @@ import RoleManagementForm from "../../components/roleManagementForm";
 
 const { Title } = Typography;
 
-const RoleManagement: React.FC = () => {
+const RoleManagement = () => {
   return (
     <div className="page">
       <Card>
