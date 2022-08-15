@@ -56,5 +56,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ matrix.webapp_name }}
-          publish-profile: ${{ secrets[AZURE_WEBAPP_PUBLISH_PROFILE_${{matrix.webapp_name}} ]}}
+          publish-profile: ${{ secrets[AZURE_WEBAPP_PUBLISH_PROFILE_+${{matrix.webapp_name}} ]}}
           images: 'index.docker.io/feathrfeaturestore/feathr-registry:nightly'
