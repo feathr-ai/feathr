@@ -23,8 +23,9 @@ jobs:
       - name: Build source and wheel distributions
         run: |
           cd ./feathr_project/
-          python -m pip install --upgrade build twine
-          python -m build 
+          python3 -m pip install --upgrade build twine
+          python3 -m build --wheel
+          python3 -m build --sdist
           twine check --strict dist/*
       
       - name: Publish distribution to PyPI
