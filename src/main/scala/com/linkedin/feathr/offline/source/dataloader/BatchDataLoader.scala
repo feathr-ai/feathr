@@ -4,8 +4,8 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataExceptio
 import com.linkedin.feathr.offline.config.location.DataLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
+import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
@@ -64,31 +64,35 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
     val dataPath = location.getPath
 
     log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
-    try {
-        import scala.util.control.Breaks._
 
-        var dfOpt: Option[DataFrame] = None
-        breakable {
-          for(dataLoaderHandler <- dataLoaderHandlers) {
-            println(s"Applying dataLoaderHandler ${dataLoaderHandler}")
-            if (dataLoaderHandler.validatePath(dataPath)) {
-              dfOpt = Some(dataLoaderHandler.createDataFrame(dataPath, dataIOParametersWithSplitSize, jobConf))
-              break
-            } 
+    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSV)
+    val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
+
+    try {
+      import scala.util.control.Breaks._
+
+      var dfOpt: Option[DataFrame] = None
+      breakable {
+        for(dataLoaderHandler <- dataLoaderHandlers) {
+          println(s"Applying dataLoaderHandler ${dataLoaderHandler}")
+          if (dataLoaderHandler.validatePath(dataPath)) {
+            dfOpt = Some(dataLoaderHandler.createDataFrame(dataPath, dataIOParametersWithSplitSize, jobConf))
+            break
           }
         }
-        val df = dfOpt match {
-          case Some(df) => df
-          case _ => location.loadDf(ss, dataIOParametersWithSplitSize)
-        }
-        df
+      }
+      val df = dfOpt match {
+        case Some(df) => df
+        case _ => location.loadDf(ss, dataIOParametersWithSplitSize)
+      }
+      df
     } catch {
       case feathrException: FeathrInputDataException =>
         println(feathrException.toString)
         throw feathrException // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
       case e: Throwable => //TODO: Analyze all thrown exceptions, instead of swalling them all, and reading as a csv
         println(e.toString)
-        ss.read.format("csv").option("header", "true").load(dataPath)
+        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(dataPath)
     }
   }
 }
