@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.generation
 
 import com.linkedin.feathr.common.types.protobuf.FeatureValueOuterClass
-import com.linkedin.feathr.common.{FeatureInfo, FeatureTypes, Header, TaggedFeatureName}
+import com.linkedin.feathr.common.{FeatureInfo, FeatureTypeConfig, FeatureTypes, Header, TaggedFeatureName}
 import com.linkedin.feathr.offline.generation.outputProcessor.RedisOutputUtils
 import com.linkedin.feathr.offline.{AssertFeatureUtils, TestFeathr}
 import org.apache.spark.sql.Row
@@ -52,13 +52,13 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
 
     rawDf.show()
     val featureInfoMap = Map(
-      new TaggedFeatureName("", "__feathr_feature_f") -> new FeatureInfo("__feathr_feature_f", FeatureTypes.NUMERIC),
-      new TaggedFeatureName("", "__feathr_feature_f2") -> new FeatureInfo("__feathr_feature_f2", FeatureTypes.NUMERIC),
-      new TaggedFeatureName("", "__feathr_feature_g") -> new FeatureInfo("__feathr_feature_g", FeatureTypes.CATEGORICAL),
-      new TaggedFeatureName("", "__feathr_feature_h") -> new FeatureInfo("__feathr_feature_h", FeatureTypes.BOOLEAN),
-      new TaggedFeatureName("", "__feathr_feature_j") -> new FeatureInfo("__feathr_feature_j", FeatureTypes.TENSOR),
-      new TaggedFeatureName("", "__feathr_feature_sparse1") -> new FeatureInfo("__feathr_feature_sparse1", FeatureTypes.TENSOR),
-      new TaggedFeatureName("", "__feathr_feature_sparse2") -> new FeatureInfo("__feathr_feature_sparse2", FeatureTypes.TENSOR),
+      new TaggedFeatureName("", "__feathr_feature_f") -> new FeatureInfo("__feathr_feature_f", new FeatureTypeConfig(FeatureTypes.NUMERIC)),
+      new TaggedFeatureName("", "__feathr_feature_f2") -> new FeatureInfo("__feathr_feature_f2", new FeatureTypeConfig(FeatureTypes.NUMERIC)),
+      new TaggedFeatureName("", "__feathr_feature_g") -> new FeatureInfo("__feathr_feature_g", new FeatureTypeConfig(FeatureTypes.CATEGORICAL)),
+      new TaggedFeatureName("", "__feathr_feature_h") -> new FeatureInfo("__feathr_feature_h", new FeatureTypeConfig(FeatureTypes.BOOLEAN)),
+      new TaggedFeatureName("", "__feathr_feature_j") -> new FeatureInfo("__feathr_feature_j", new FeatureTypeConfig(FeatureTypes.TENSOR)),
+      new TaggedFeatureName("", "__feathr_feature_sparse1") -> new FeatureInfo("__feathr_feature_sparse1", new FeatureTypeConfig(FeatureTypes.TENSOR)),
+      new TaggedFeatureName("", "__feathr_feature_sparse2") -> new FeatureInfo("__feathr_feature_sparse2", new FeatureTypeConfig(FeatureTypes.TENSOR)),
     )
     val header = new Header(featureInfoMap)
 
@@ -136,7 +136,7 @@ class TestPushToRedisOutputProcessor extends TestFeathr with MockitoSugar {
       expSchema)
 
     val featureInfoMap = Map(
-      new TaggedFeatureName("", "__feathr_feature_sparse1") -> new FeatureInfo("__feathr_feature_sparse1", FeatureTypes.TENSOR),
+      new TaggedFeatureName("", "__feathr_feature_sparse1") -> new FeatureInfo("__feathr_feature_sparse1", new FeatureTypeConfig(FeatureTypes.TENSOR)),
     )
     val header = new Header(featureInfoMap)
 

@@ -6,6 +6,8 @@ parent: How-to Guides
 
 # Feature Definition Troubleshooting Guide
 
+> :warning: This document is out of date and will be updated in the future.
+
 You may come across some errors while creating your feature definition config. This guide will help you troubleshoot those errors.
 
 ## Prerequisite

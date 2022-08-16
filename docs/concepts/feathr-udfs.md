@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Feathr User Defined Functions (UDFs)
-parent: How-to Guides
+parent: Feathr Concepts
 ---
 
 # Feathr User Defined Functions (UDFs)

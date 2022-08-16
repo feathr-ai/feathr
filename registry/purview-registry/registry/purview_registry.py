@@ -1,4 +1,4 @@
-
+import copy
 from http.client import CONFLICT, HTTPException
 import itertools
 from typing import Any, Optional, Tuple, Union
@@ -15,7 +15,7 @@ from pyapacheatlas.core.util import GuidTracker
 from pyhocon import ConfigFactory
 
 from registry.interface import Registry
-from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, ProjectDef, RelationshipType, SourceDef, _to_uuid
+from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, ProjectDef, RelationshipType, SourceDef, Attributes, _to_uuid
 Label_Contains = "CONTAINS"
 Label_BelongsTo = "BELONGSTO"
 Label_Consumes = "CONSUMES"
@@ -24,7 +24,7 @@ TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_v1>"
 TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_v1>"
 TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_v1>"
 class PurviewRegistry(Registry):
-    def __init__(self,azure_purview_name: str, registry_delimiter: str = "__", credential=None,register_types = False):
+    def __init__(self,azure_purview_name: str, registry_delimiter: str = "__", credential=None,register_types = True):
         self.registry_delimiter = registry_delimiter
         self.azure_purview_name = azure_purview_name
 
@@ -38,7 +38,7 @@ class PurviewRegistry(Registry):
         self.guid = GuidTracker(starting=-1000)
         if register_types:
             self._register_feathr_feature_types()
-    
+
     def get_projects(self) -> list[str]:
         """
         Returns the names of all projects
@@ -47,7 +47,7 @@ class PurviewRegistry(Registry):
         result = self.purview_client.discovery.query(filter=searchTerm)
         result_entities = result['value']
         return [x['qualifiedName'] for x in result_entities]
-
+        
     def get_entity(self, id_or_name: Union[str, UUID],recursive = False) -> Entity:
         id = self.get_entity_id(id_or_name)
         if not id:
@@ -137,6 +137,7 @@ class PurviewRegistry(Registry):
             relation_lookup[x['attributes']['qualifiedName'].split(self.registry_delimiter)[0]])
              for x in out_edges])
         return result_edges
+
     def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
         """
         Get list of edges with specified type that connect to this entity.
@@ -184,33 +185,61 @@ class PurviewRegistry(Registry):
                     all_edges.add(neighbour)
         return list(all_edges)
         
+    def _create_edge_from_process(self, name:str, guid: str) -> Edge:
+        names = name.split(self.registry_delimiter)
+        return Edge(guid, names[1], names[2], RelationshipType.new(names[0]))
+
     def get_project(self, id_or_name: Union[str, UUID]) -> EntitiesAndRelations:
-        """
-        Get a project and everything inside of it, both entities and edges
-        """
-        project = self.get_entity(id_or_name)
-        edges = set(self.get_neighbors(id_or_name, RelationshipType.Contains))
-        ids = list([e.to_id for e in edges])
-        all_edges = self._get_edges(ids)
-        children = self.get_entities(ids)
-        child_map = dict([(e.id, e) for e in children])
-        project.attributes.children = children
-        for anchor in project.attributes.anchors:
-            conn = self.get_neighbors(anchor.id, RelationshipType.Contains)
-            feature_ids = [e.to_id for e in conn]
-            edges = edges.union(conn)
-            features = list([child_map[id] for id in feature_ids])
-            anchor.attributes.features = features
-            source_id = self.get_neighbors(
-                anchor.id, RelationshipType.Consumes)[0].to_id
-            anchor.attributes.source = child_map[source_id]
-        for df in project.attributes.derived_features:
-            conn = self.get_neighbors(anchor.id, RelationshipType.Consumes)
-            input_ids = [e.to_id for e in conn]
-            edges = edges.union(conn)
-            features = list([child_map[id] for id in input_ids])
-            df.attributes.input_features = features
-        return EntitiesAndRelations([project] + children, list(edges.union(all_edges)))
+        project_id = self.get_entity_id(id_or_name)
+        if not project_id:
+            return None
+        lineage = self.purview_client.get_entity_lineage(project_id)
+        guidAtlasEntityMap = lineage['guidEntityMap']
+
+        guidEntityMap = {}
+        finalGuidEntityMap = {}
+        edges = []
+        targetsRelationships = {
+            EntityType.Project: RelationshipType.Contains.value,
+            EntityType.Anchor: RelationshipType.Contains.value | RelationshipType.Consumes.value,
+            EntityType.DerivedFeature: RelationshipType.Consumes.value
+        }
+
+        # Build edges and entities from guidEntityMap
+        for id,entity in guidAtlasEntityMap.items():
+            if entity['typeName'] == 'Process':
+               name = entity['attributes']['qualifiedName']
+               if not (name.startswith('BELONGSTO') and name.endswith(str(project_id))):
+                    edges.append(self._create_edge_from_process(name, id))
+            else:
+                guidEntityMap[id] = self._atlasEntity_to_entity(entity)
+            finalGuidEntityMap = copy.deepcopy(guidEntityMap)
+        
+        # Add relationships among each entity
+        for edge in edges:
+            edge_dict = edge.to_dict()
+            relationship = edge_dict['relationshipTypeValue']
+    
+            fromId = edge_dict['fromEntityId']
+            fromEntity = guidEntityMap[fromId]
+            fromEntityType = EntityType.new(fromEntity.to_dict()['typeName'])
+            if fromEntityType in targetsRelationships and targetsRelationships[fromEntityType] & relationship != 0:
+                toId = edge_dict['toEntityId']
+                toEntity = guidEntityMap[toId]
+                toEntitytype = EntityType.new(toEntity.to_dict()['typeName'])
+                if fromEntityType == EntityType.Project:
+                    finalGuidEntityMap[fromId].attributes.children.append(toEntity)
+                elif fromEntityType == EntityType.Anchor:
+                    if toEntitytype == EntityType.Source:
+                        finalGuidEntityMap[fromId].attributes.source = toEntity
+                    else:
+                        finalGuidEntityMap[fromId].attributes.features.append(toEntity)
+                else:
+                    curr_input_features = finalGuidEntityMap[fromId].attributes.input_features
+                    curr_input_features.append(toEntity)
+                    finalGuidEntityMap[fromId].attributes.input_features = curr_input_features
+                        
+        return EntitiesAndRelations(list(finalGuidEntityMap.values()), list(edges))
 
     def search_entity(self,
                       keyword: str,
@@ -231,8 +260,6 @@ class PurviewRegistry(Registry):
                         continue
                 result.append(EntityRef(UUID(entity_id),entity_type,qualified_name))
         return result
-            
-
 
     def create_project(self, definition: ProjectDef) -> UUID:
         attrs = definition.to_attr().to_dict()
@@ -301,7 +328,7 @@ class PurviewRegistry(Registry):
     def create_project_anchor_feature(self, project_id: UUID, anchor_id: UUID, definition: AnchorFeatureDef) -> UUID:
         attrs = definition.to_attr().to_dict()
         project_entity = self.get_entity(project_id)
-        anchor_entity = self.get_entity(anchor_id)
+        anchor_entity = self.get_entity(anchor_id,True)
         qualified_name = self.registry_delimiter.join([project_entity.qualified_name,
                                                        anchor_entity.attributes.name,
                                                         attrs['name']])
@@ -317,7 +344,7 @@ class PurviewRegistry(Registry):
 
         # change from AtlasEntity to Entity
         anchor_feature_entity = self.get_entity(anchor_feature_entity.guid)
-        source_entity = self.get_entity(anchor_entity.id)
+        source_entity = self.get_entity(anchor_entity.attributes.source.id)
 
         project_contains_feature_relation = self._generate_relation_pairs(
             project_entity, anchor_feature_entity, Label_Contains)

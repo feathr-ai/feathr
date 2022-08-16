@@ -368,27 +368,27 @@ object DataFrameColName {
       inferredFeatureTypeConfigs: Map[String, FeatureTypeConfig]): Header = {
     // generate a map of feature name to its feature type
     // if the feature type is unspecified in the anchor config, we will use FeatureTypes.UNSPECIFIED
-    val anchoredFeatureTypes: Map[String, FeatureTypes] = allAnchoredFeatures.map {
+    val anchoredFeatureTypes: Map[String, FeatureTypeConfig] = allAnchoredFeatures.map {
       case (featureName, anchorWithSource) =>
         val featureTypeOpt = anchorWithSource.featureAnchor.getFeatureTypes.map(types => {
           // Get the actual type in the output dataframe, the type is inferred and stored previously, if not specified by users
           val inferredType = inferredFeatureTypeConfigs.getOrElse(featureName, FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
-          val fType = types.getOrElse(featureName, FeatureTypes.UNSPECIFIED)
-          if (fType == FeatureTypes.UNSPECIFIED) inferredType.getFeatureType else fType
+          val fType = new FeatureTypeConfig(types.getOrElse(featureName, FeatureTypes.UNSPECIFIED))
+          if (fType == FeatureTypeConfig.UNDEFINED_TYPE_CONFIG) inferredType else fType
         })
-        val featureType = featureTypeOpt.getOrElse(FeatureTypes.UNSPECIFIED)
+        val featureType = featureTypeOpt.getOrElse(FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
         featureName -> featureType
     }
 
-    val derivedFeatureTypes: Map[String, FeatureTypes] = allDerivedFeatures.flatMap {
+    val derivedFeatureTypes: Map[String, FeatureTypeConfig] = allDerivedFeatures.flatMap {
       case (_, derivedFeature) =>
-        derivedFeature.getFeatureTypes
+        derivedFeature.featureTypeConfigs
     }
-    val allFeatureTypes = inferredFeatureTypeConfigs.map(x => (x._1, x._2.getFeatureType)) ++ derivedFeatureTypes ++ anchoredFeatureTypes
+    val allFeatureTypes = inferredFeatureTypeConfigs.map(x => (x._1, x._2)) ++ derivedFeatureTypes ++ anchoredFeatureTypes
     val featuresInfo = featureToColumnNameMap.map {
       case (taggedFeatureName, columnName) =>
         val featureInfo = new FeatureInfo(columnName, allFeatureTypes.getOrElse(taggedFeatureName.getFeatureName,
-          FeatureTypes.UNSPECIFIED))
+          FeatureTypeConfig.UNDEFINED_TYPE_CONFIG))
         taggedFeatureName -> featureInfo
     }
     new Header(featuresInfo)
