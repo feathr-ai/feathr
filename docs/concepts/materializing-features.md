@@ -120,7 +120,7 @@ settings = MaterializationSettings("nycTaxiTable",
                                    backfill_time=backfill_time)
 ```
 
-This will generate features up from a starting date up to `2020/05/10` and `2020/05/20` correspondingly, and the output will have 11 folders, from
+This will materialize features with cutoff time from `2020/05/10` to `2020/05/20` correspondingly, and the output will have 11 folders, from
 `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/10` to `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`. Note that currently Feathr only supports materializing data in daily step (i.e. even if you specify an hourly step, the generated features in offline store will still be presented in a daily hierarchy). For more details on how `BackfillTime` works, refer to the [BackfillTime section](#feature-backfill) above.
 
 You can also specify the format of the materialized features in the offline store by using `execution_configurations` like below. Please refer to the [documentation](../how-to-guides/feathr-job-configuration.md) here for those configuration details.

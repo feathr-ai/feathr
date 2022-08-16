@@ -6,7 +6,7 @@ parent: How-to Guides
 
 # Local Feature Testing Guide
 
-> Note: This document is out of date and will be updated in the future.
+> :warning: This document is out of date and will be updated in the future.
 
 > **Local testing supports .csv and .parquet source format.**
 
