@@ -2,7 +2,7 @@ name: Feathr Documents' Broken Link Check
 
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  check-links:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -16,4 +16,4 @@ jobs:
           pip install pytest pytest-check-links requests-cache
       - name: Test with pytest
         run: |
-          pytest --check-links --check-links-cache docs
+          pytest --check-links --check-links-cache --check-links-ignore "^https?:\/\/localhost(?:[:\/].+)?$" --check-links-ignore "^https?:\/\/pypi.org\/manage\/project\/feathr\/" docs

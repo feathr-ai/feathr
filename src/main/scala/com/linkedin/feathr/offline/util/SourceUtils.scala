@@ -7,7 +7,7 @@ import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.exception._
 import com.linkedin.feathr.common.{AnchorExtractor, DateParam}
 import com.linkedin.feathr.offline.client.InputData
-import com.linkedin.feathr.offline.config.location.{InputLocation, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, SimplePath}
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.source.SourceFormatType
@@ -107,7 +107,7 @@ private[offline] object SourceUtils {
     sourceFormatType match {
       case SourceFormatType.FIXED_PATH => Seq(HdfsUtils.getLatestPath(sourcePath, ss.sparkContext.hadoopConfiguration))
       case SourceFormatType.TIME_PATH =>
-        val pathChecker = PathChecker(ss)
+        val pathChecker = PathChecker(ss, dataLoaderHandlers)
         val pathGenerator = new TimeBasedHdfsPathGenerator(pathChecker)
         val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
         val pathInfo = pathAnalyzer.analyze(sourcePath)
@@ -176,7 +176,7 @@ private[offline] object SourceUtils {
   def safeWriteDF(df: DataFrame, dataPath: String, parameters: Map[String, String], dataLoaderHandlers: List[DataLoaderHandler]): Unit = {
     val tempBasePath = dataPath.stripSuffix("/") + "_temp_"
     HdfsUtils.deletePath(dataPath, true)
-    SparkIOUtils.writeDataFrame(df, tempBasePath, parameters, dataLoaderHandlers)
+    SparkIOUtils.writeDataFrame(df, SimplePath(tempBasePath), parameters, dataLoaderHandlers)
     if (HdfsUtils.exists(tempBasePath) && !HdfsUtils.renamePath(tempBasePath, dataPath)) {
       throw new FeathrDataOutputException(
         ErrorLabel.FEATHR_ERROR,
@@ -645,7 +645,7 @@ private[offline] object SourceUtils {
    * @param inputPath
    * @return
    */
-  def loadAsDataFrame(ss: SparkSession, location: InputLocation,
+  def loadAsDataFrame(ss: SparkSession, location: DataLocation,
                       dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")

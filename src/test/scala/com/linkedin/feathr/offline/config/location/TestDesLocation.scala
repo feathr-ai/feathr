@@ -7,7 +7,7 @@ import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.FeathrJacksonScalaModule
 import com.linkedin.feathr.offline.config.DataSourceLoader
 import com.linkedin.feathr.offline.config.location.LocationUtils.envSubstitute
-import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, Jdbc, SimplePath}
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.DataSource
 import org.apache.spark.{SparkConf, SparkContext}
@@ -32,7 +32,7 @@ class TestDesLocation extends FunSuite {
   test("Deserialize Location") {
     {
       val configDoc = """{ path: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv" }"""
-      val ds = jackson.readValue(configDoc, classOf[InputLocation])
+      val ds = jackson.readValue(configDoc, classOf[DataLocation])
       ds match {
         case SimplePath(path) => {
           assert(path == "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv")
@@ -50,9 +50,9 @@ class TestDesLocation extends FunSuite {
           | user: "bar"
           | password: "foo"
           |}""".stripMargin
-      val ds = jackson.readValue(configDoc, classOf[InputLocation])
+      val ds = jackson.readValue(configDoc, classOf[DataLocation])
       ds match {
-        case Jdbc(url, dbtable, user, password, token, useToken, _) => {
+        case Jdbc(url, dbtable, user, password, token) => {
           assert(url == "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase")
           assert(user == "bar")
           assert(password == "foo")
@@ -69,7 +69,7 @@ class TestDesLocation extends FunSuite {
         | type: "pathlist"
         | paths: ["abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"]
         |}""".stripMargin
-    val ds = jackson.readValue(configDoc, classOf[InputLocation])
+    val ds = jackson.readValue(configDoc, classOf[DataLocation])
     ds match {
       case PathList(pathList) => {
         assert(pathList == List("abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"))
@@ -88,7 +88,7 @@ class TestDesLocation extends FunSuite {
         | dbtable: "table1"
         | anonymous: true
         |}""".stripMargin
-    val ds = jackson.readValue(configDoc, classOf[InputLocation])
+    val ds = jackson.readValue(configDoc, classOf[DataLocation])
 
     val _ = SparkSession.builder().config("spark.master", "local").appName("Sqlite test").getOrCreate()
 
@@ -112,7 +112,31 @@ class TestDesLocation extends FunSuite {
          | query: "select c1, c2 from table1"
          | anonymous: true
          |}""".stripMargin
-    val ds = jackson.readValue(configDoc, classOf[InputLocation])
+    val ds = jackson.readValue(configDoc, classOf[DataLocation])
+
+    val _ = SparkSession.builder().config("spark.master", "local").appName("Sqlite test").getOrCreate()
+
+    val df = SparkIOUtils.createDataFrame(ds, Map(), new JobConf(), List())
+    val rows = df.head(3)
+    assert(rows(0).getLong(0) == 1)
+    assert(rows(1).getLong(0) == 2)
+    assert(rows(2).getLong(0) == 3)
+    assert(rows(0).getString(1) == "r1c2")
+    assert(rows(1).getString(1) == "r2c2")
+    assert(rows(2).getString(1) == "r3c2")
+  }
+
+  test("Test GenericLocation load Sqlite with SQL query") {
+    val path = s"${System.getProperty("user.dir")}/src/test/resources/mockdata/sqlite/test.db"
+    val configDoc =
+      s"""
+         |{
+         | type: "generic"
+         | format: "jdbc"
+         | url: "jdbc:sqlite:${path}"
+         | query: "select c1, c2 from table1"
+         |}""".stripMargin
+    val ds = jackson.readValue(configDoc, classOf[DataLocation])
 
     val _ = SparkSession.builder().config("spark.master", "local").appName("Sqlite test").getOrCreate()
 

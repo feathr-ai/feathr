@@ -73,7 +73,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
     // be more strict for resolving keys (don't swallow exceptions)
     keyExpression.map(k =>
       try {
-        Option(MVEL.executeExpression(k, datum)) match {
+        Option(MvelContext.executeExpressionWithPluginSupport(k, datum)) match {
           case None => null
           case Some(keys) => keys.toString
         }

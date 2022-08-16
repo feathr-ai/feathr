@@ -4,12 +4,17 @@
     "es6": true,
     "node": true
   },
+  "plugins": ["@typescript-eslint/eslint-plugin"],
   "extends": [
     // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
     "eslint:recommended",
     // https://github.com/facebook/create-react-app/tree/main/packages/eslint-config-react-app
-    "react-app"
+    "react-app",
+    // https://reactjs.org/docs/hooks-rules.html
+    "plugin:react-hooks/recommended",
+    "prettier"
   ],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "module"
@@ -19,9 +24,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "**/*.ts?(x)"
-      ],
+      "files": ["**/*.ts?(x)"],
       "rules": {}
     }
   ]

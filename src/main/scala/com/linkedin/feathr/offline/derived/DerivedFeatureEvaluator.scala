@@ -5,6 +5,7 @@ import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig}
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
 import com.linkedin.feathr.offline.client.DataFrameColName
+import com.linkedin.feathr.offline.client.plugins.{FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor}
 import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
 import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinAsDerivation, SparkUdfDerivation}
 import com.linkedin.feathr.offline.join.algorithms.{SequentialJoinConditionBuilder, SparkJoinWithJoinCondition}
@@ -49,8 +50,16 @@ private[offline] class DerivedFeatureEvaluator(derivationStrategies: DerivationS
         // doesn't have fixed DataFrame schema so that we can't return TensorData but has to return FDS.
         val resultDF = derivationStrategies.rowBasedDerivationStrategy(keyTag, keyTagList, contextDF, derivedFeature, x)
         offline.FeatureDataFrame(resultDF, getTypeConfigs(producedFeatureColName, derivedFeature, resultDF))
-      case _ =>
-        throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Unsupported feature derivation function for feature ${derivedFeature.producedFeatureNames.head}.")
+      case derivation =>
+        FeathrUdfPluginContext.getRegisteredUdfAdaptor(derivation.getClass) match {
+          case Some(adaptor: FeatureDerivationFunctionAdaptor) =>
+            // replicating the FeatureDerivationFunction case above
+            val featureDerivationFunction = adaptor.adaptUdf(derivation)
+            val resultDF = derivationStrategies.rowBasedDerivationStrategy(keyTag, keyTagList, contextDF, derivedFeature, featureDerivationFunction)
+            offline.FeatureDataFrame(resultDF, getTypeConfigs(producedFeatureColName, derivedFeature, resultDF))
+          case _ =>
+            throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Unsupported feature derivation function for feature ${derivedFeature.producedFeatureNames.head}.")
+        }
     }
   }
 

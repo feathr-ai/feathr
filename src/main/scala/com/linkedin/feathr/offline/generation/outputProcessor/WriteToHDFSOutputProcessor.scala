@@ -4,6 +4,7 @@ import com.linkedin.feathr.offline.util.Transformations.sortColumns
 import com.linkedin.feathr.common.configObj.generation.OutputProcessorConfig
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrDataOutputException, FeathrException}
 import com.linkedin.feathr.common.{Header, RichConfig, TaggedFeatureName}
+import com.linkedin.feathr.offline.config.location.{DataLocation, SimplePath}
 import com.linkedin.feathr.offline.generation.{FeatureDataHDFSProcessUtils, FeatureGenerationPathName}
 import com.linkedin.feathr.offline.util.{FeatureGenConstants, IncrementalAggUtils}
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
@@ -149,7 +150,25 @@ private[offline] class WriteToHDFSOutputProcessor(val config: OutputProcessorCon
 
     // If it's local, we can't write to HDFS.
     val skipWrite = if (ss.sparkContext.isLocal) true else false
-    FeatureDataHDFSProcessUtils.processFeatureDataHDFS(ss, featuresToDF, parentPath, config, skipWrite = skipWrite, endTimeOpt, timestampOpt, dataLoaderHandlers)
+    location match {
+      case Some(l) => {
+        // We have a DataLocation to write the df
+        l.writeDf(ss, augmentedDF, Some(header))
+        (augmentedDF, header)
+      }
+      case None => {
+        FeatureDataHDFSProcessUtils.processFeatureDataHDFS(ss, featuresToDF, parentPath, config, skipWrite = skipWrite, endTimeOpt, timestampOpt, dataLoaderHandlers)
+      }
+    }
+  }
+
+  private val location: Option[DataLocation] = {
+    if (!config.getParams.getStringWithDefault("type", "").isEmpty) {
+      // The location param contains 'type' key, assuming it's a DataLocation
+      Some(DataLocation(config.getParams))
+    } else {
+      None
+    }
   }
 
   // path parameter name
