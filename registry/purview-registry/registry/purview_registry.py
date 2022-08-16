@@ -328,7 +328,7 @@ class PurviewRegistry(Registry):
     def create_project_anchor_feature(self, project_id: UUID, anchor_id: UUID, definition: AnchorFeatureDef) -> UUID:
         attrs = definition.to_attr().to_dict()
         project_entity = self.get_entity(project_id)
-        anchor_entity = self.get_entity(anchor_id)
+        anchor_entity = self.get_entity(anchor_id,True)
         qualified_name = self.registry_delimiter.join([project_entity.qualified_name,
                                                        anchor_entity.attributes.name,
                                                         attrs['name']])
@@ -344,7 +344,7 @@ class PurviewRegistry(Registry):
 
         # change from AtlasEntity to Entity
         anchor_feature_entity = self.get_entity(anchor_feature_entity.guid)
-        source_entity = self.get_entity(anchor_entity.id)
+        source_entity = self.get_entity(anchor_entity.attributes.source.id)
 
         project_contains_feature_relation = self._generate_relation_pairs(
             project_entity, anchor_feature_entity, Label_Contains)
