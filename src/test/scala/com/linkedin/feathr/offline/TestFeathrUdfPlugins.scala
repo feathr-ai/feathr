@@ -1,7 +1,15 @@
 package com.linkedin.feathr.offline
 
+import com.linkedin.feathr.common.FeatureTypes
+import com.linkedin.feathr.offline.anchored.keyExtractor.AlienSourceKeyExtractorAdaptor
+import com.linkedin.feathr.offline.client.plugins.FeathrUdfPluginContext
+import com.linkedin.feathr.offline.derived.AlienDerivationFunctionAdaptor
 import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext
 import com.linkedin.feathr.offline.plugins.{AlienFeatureValue, AlienFeatureValueTypeAdaptor}
+import com.linkedin.feathr.offline.util.FeathrTestUtils
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.{FloatType, StringType, StructField, StructType}
+import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
 class TestFeathrUdfPlugins extends FeathrIntegTest {
@@ -11,12 +19,13 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
   @Test
   def testMvelUdfPluginSupport: Unit = {
     FeathrMvelPluginContext.addFeatureTypeAdaptor(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor())
-
+    FeathrUdfPluginContext.registerUdfAdaptor(new AlienDerivationFunctionAdaptor())
+    FeathrUdfPluginContext.registerUdfAdaptor(new AlienSourceKeyExtractorAdaptor())
     val df = runLocalFeatureJoinForTest(
       joinConfigAsString = """
                              | features: {
                              |   key: a_id
-                             |   featureList: ["f1", "f2", "f3", "f4", "f5", "f6", "f7"]
+                             |   featureList: ["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "fA"]
                              | }
       """.stripMargin,
       featureDefAsString = s"""
@@ -54,6 +63,17 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
                              |      }
                              |    }
                              |  }
+                             |  anchor2: {
+                             |    source: "anchor1-source.csv"
+                             |      keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.AlienSampleKeyExtractor"
+                             |      features: {
+                             |       fA: {
+                             |         def: cast_float(beta)
+                             |         type: NUMERIC
+                             |         default: 0
+                             |       }
+                             |      }
+                             |  }
                              |}
                              |
                              |derivations: {
@@ -79,39 +99,39 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
                              |       AlienFeatureValueMvelUDFs.lowercase_string_afv(f4);
                              |       $MULTILINE_QUOTE
                              |  }
+                             |  f8: {
+                             |    key: ["mId"]
+                             |    inputs: [{ key: "mId", feature: "f6" }]
+                             |    class: "com.linkedin.feathr.offline.derived.SampleAlienFeatureDerivationFunction"
+                             |    type: NUMERIC
+                             |  }
                              |}
         """.stripMargin,
       observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
 
-    df.data.show()
+    val f8Type = df.fdsMetadata.header.get.featureInfoMap.filter(_._1.getFeatureName == "f8").head._2.featureType.getFeatureType
+    assertEquals(f8Type, FeatureTypes.NUMERIC)
 
-    // TODO UPDATE THE EXPECTED DF BELOW
-//    val selectedColumns = Seq("a_id", "featureWithNull")
-//    val filteredDf = df.data.select(selectedColumns.head, selectedColumns.tail: _*)
-//
-//    val expectedDf = ss.createDataFrame(
-//      ss.sparkContext.parallelize(
-//        Seq(
-//          Row(
-//            // a_id
-//            "1",
-//            // featureWithNull
-//            1.0f),
-//          Row(
-//            // a_id
-//            "2",
-//            // featureWithNull
-//            0.0f),
-//          Row(
-//            // a_id
-//            "3",
-//            // featureWithNull
-//            3.0f))),
-//      StructType(
-//        List(
-//          StructField("a_id", StringType, true),
-//          StructField("featureWithNull", FloatType, true))))
-//    def cmpFunc(row: Row): String = row.get(0).toString
-//    FeathrTestUtils.assertDataFrameApproximatelyEquals(filteredDf, expectedDf, cmpFunc)
+    val selectedColumns = Seq("a_id", "fA")
+    val filteredDf = df.data.select(selectedColumns.head, selectedColumns.tail: _*)
+
+    val expectedDf = ss.createDataFrame(
+      ss.sparkContext.parallelize(
+        Seq(
+          Row(
+          "1",
+            10.0f),
+          Row(
+            "2",
+            10.0f),
+          Row(
+            "3",
+            10.0f))),
+      StructType(
+        List(
+          StructField("a_id", StringType, true),
+          StructField("fA", FloatType, true))))
+    def cmpFunc(row: Row): String = row.get(0).toString
+    FeathrTestUtils.assertDataFrameApproximatelyEquals(filteredDf, expectedDf, cmpFunc)
   }
 }

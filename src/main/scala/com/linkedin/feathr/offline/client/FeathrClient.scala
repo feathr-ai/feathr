@@ -60,8 +60,8 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
     val sparkConf = sparkSession.sparkContext.getConf
     FeathrUtils.enableDebugLogging(sparkConf)
 
-    val (joinedDF, _) = doJoinObsAndFeatures(joinConfig, jobContext, obsData.data)
-    SparkFeaturizedDataset(joinedDF, FeaturizedDatasetMetadata())
+    val (joinedDF, header) = doJoinObsAndFeatures(joinConfig, jobContext, obsData.data)
+    SparkFeaturizedDataset(joinedDF, FeaturizedDatasetMetadata(header=Some(header)))
   }
 
   /**
