@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.source.dataloader
 
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataException}
-import com.linkedin.feathr.offline.config.location.InputLocation
+import com.linkedin.feathr.offline.config.location.DataLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
@@ -16,7 +16,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * @param ss the spark session
  * @param path input data path
  */
-private[offline] class BatchDataLoader(ss: SparkSession, location: InputLocation, dataLoaderHandlers: List[DataLoaderHandler]) extends DataLoader {
+private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation, dataLoaderHandlers: List[DataLoaderHandler]) extends DataLoader {
 
   /**
    * get the schema of the source. It's only used in the deprecated DataSource.getDataSetAndSchema

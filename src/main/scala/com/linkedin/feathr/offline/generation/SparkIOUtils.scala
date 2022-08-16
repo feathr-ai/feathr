@@ -1,8 +1,7 @@
 package com.linkedin.feathr.offline.generation
 
-import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, SimplePath}
 import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.mapred.JobConf
@@ -35,7 +34,7 @@ object SparkIOUtils {
     df
   }
 
-  def createDataFrame(location: InputLocation, dataIOParams: Map[String, String] = Map(), jobConf: JobConf, dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
+  def createDataFrame(location: DataLocation, dataIOParams: Map[String, String] = Map(), jobConf: JobConf, dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     var dfOpt: Option[DataFrame] = None
     breakable {
       for (dataLoaderHandler <- dataLoaderHandlers) {
@@ -54,23 +53,32 @@ object SparkIOUtils {
     df
   }
 
-  def writeDataFrame( outputDF: DataFrame, path: String, parameters: Map[String, String] = Map(), dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
+  def writeDataFrame( outputDF: DataFrame, outputLocation: DataLocation, parameters: Map[String, String] = Map(), dataLoaderHandlers: List[DataLoaderHandler]): DataFrame = {
     var dfWritten = false
     breakable {
       for (dataLoaderHandler <- dataLoaderHandlers) {
-        if (dataLoaderHandler.validatePath(path)) {
-          dataLoaderHandler.writeDataFrame(outputDF, path, parameters)
-          dfWritten = true
-          break
+        outputLocation match {
+          case SimplePath(path) => {
+            if (dataLoaderHandler.validatePath(path)) {
+              dataLoaderHandler.writeDataFrame(outputDF, path, parameters)
+              dfWritten = true
+              break
+            }
+          }
         }
       }
     }
     if(!dfWritten) {
-      val output_format = outputDF.sqlContext.getConf("spark.feathr.outputFormat", "avro")
-      // if the output format is set by spark configurations "spark.feathr.outputFormat"
-      // we will use that as the job output format; otherwise use avro as default for backward compatibility
-      outputDF.write.mode(SaveMode.Overwrite).format(output_format).save(path)
-      outputDF
+      outputLocation match {
+        case SimplePath(path) => {
+          val output_format = outputDF.sqlContext.getConf("spark.feathr.outputFormat", "avro")
+          // if the output format is set by spark configurations "spark.feathr.outputFormat"
+          // we will use that as the job output format; otherwise use avro as default for backward compatibility
+          outputDF.write.mode(SaveMode.Overwrite).format(output_format).save(path)
+          outputDF
+        }
+        case _ => outputLocation.writeDf(SparkSession.builder().getOrCreate(), outputDF, None)
+      }
     }
     outputDF
   }

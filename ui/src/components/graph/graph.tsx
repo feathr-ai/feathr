@@ -29,7 +29,7 @@ type Props = {
   data: Elements;
   nodeId: string;
 };
-const Graph: React.FC<Props> = ({ data, nodeId }) => {
+const Graph = ({ data, nodeId }: Props) => {
   const [, setURLSearchParams] = useSearchParams();
 
   const { layoutedElements, elementMapping } = getLayoutedElements(data);
