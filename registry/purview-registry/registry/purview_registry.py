@@ -24,7 +24,7 @@ TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_v1>"
 TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_v1>"
 TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_v1>"
 class PurviewRegistry(Registry):
-    def __init__(self,azure_purview_name: str, registry_delimiter: str = "__", credential=None,register_types = False):
+    def __init__(self,azure_purview_name: str, registry_delimiter: str = "__", credential=None,register_types = True):
         self.registry_delimiter = registry_delimiter
         self.azure_purview_name = azure_purview_name
 
