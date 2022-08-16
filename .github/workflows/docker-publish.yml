@@ -6,9 +6,9 @@
 name: Publish Feathr Docker image to DockerHub
 
 on:
-  schedule:
-    # Runs daily at 10 PM UTC, would generate nightly tag
-    - cron: '00 22 * * *'
+#   schedule:
+#     # Runs daily at 10 PM UTC, would generate nightly tag
+#     - cron: '00 22 * * *'
   
   push:
     # For every push against the releases/** branch, usually would happen at release time, Tag example - releases/v0.7.0
