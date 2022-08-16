@@ -507,6 +507,7 @@ class FeathrClient(object):
                     feature_join_job_params.join_config_path),
                 '--input', feature_join_job_params.observation_path,
                 '--output', feature_join_job_params.job_output_path,
+                '--row-bloomfilter-threshold', 0,
                 '--feature-config', self.feathr_spark_launcher.upload_or_get_cloud_path(
                     feature_join_job_params.feature_config),
                 '--num-parts', self.output_num_parts,
