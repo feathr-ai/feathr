@@ -28,8 +28,11 @@ jobs:
           python3 -m build --sdist
           twine check --strict dist/*
       
-      - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+      
+   # Build and upload to PyPI
+      - name: "Builds and uploads to PyPI"
+        run: |
+          python3 -m twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TWINE_TOKEN }}
