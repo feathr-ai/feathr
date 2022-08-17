@@ -38,7 +38,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
 
   @transient private lazy val parserContext = MvelContext.newParserContext
 
-  private val keyExpression = key.map(k => MVEL.compileExpression(k, parserContext))
+  private val keyExpression = if (key == null) Seq() else key.map(k => MVEL.compileExpression(k, parserContext))
 
   /*
    * Create a map of FeatureRef string to (MVEL expression, optional FeatureType) tuple.
