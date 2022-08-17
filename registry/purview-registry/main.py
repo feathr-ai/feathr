@@ -64,18 +64,8 @@ def get_project_datasources(project: str) -> list:
 
 @router.get("/projects/{project}/features",tags=["Project"])
 def get_project_features(project: str, keyword: Optional[str] = None) -> list:
-    if keyword is None or keyword.strip()=='':
-        p = registry.get_entity(project,True)
-        feature_ids = [s.id for s in p.attributes.anchor_features] + \
-            [s.id for s in p.attributes.derived_features]
-        features = registry.get_entities(feature_ids,True)
-        return list([to_camel(e.to_dict()) for e in features])
-    else:
-        efs = registry.search_entity(
-            keyword, [EntityType.AnchorFeature, EntityType.DerivedFeature],project=project)
-        feature_ids = [ef.id for ef in efs]
-        features = registry.get_entities(feature_ids)
-        return list([to_camel(e.to_dict()) for e in features])
+    atlasEntities = registry.get_project_features(project, keywords=keyword)
+    return list([to_camel(e.to_dict()) for e in atlasEntities])
 
 
 @router.get("/features/{feature}",tags=["Feature"])
