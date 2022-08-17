@@ -32,7 +32,10 @@ jobs:
    # Build and upload to PyPI
       - name: "Builds and uploads to PyPI"
         run: |
-          python3 -m twine upload dist/*
+          pwd
+          ls -al
+          cd ./feathr_project
+          python3 -m twine upload ./dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TWINE_TOKEN }}
