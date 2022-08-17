@@ -22,7 +22,7 @@ jobs:
 
       - name: Build source and wheel distributions
         run: |
-          cd ./feathr_project/
+          cd ./feathr_project
           python3 -m pip install --upgrade build twine
           python3 -m build --wheel
           python3 -m build --sdist
@@ -32,8 +32,6 @@ jobs:
    # Build and upload to PyPI
       - name: "Builds and uploads to PyPI"
         run: |
-          pwd
-          ls -al
           cd ./feathr_project
           python3 -m twine upload ./dist/*
         env:
