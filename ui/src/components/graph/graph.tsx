@@ -37,7 +37,7 @@ const Graph = ({ data, nodeId }: Props) => {
 
   useEffect(() => {
     setElements(layoutedElements);
-  }, [layoutedElements, data, nodeId]);
+  }, [data, nodeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset all node highlight status
   const resetHighlight = useCallback((): void => {
@@ -68,7 +68,7 @@ const Graph = ({ data, nodeId }: Props) => {
     }
 
     setElements(values);
-  }, [elements]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Highlight path of selected node, including all linked up and down stream nodes
   const highlightPath = useCallback(
@@ -124,7 +124,7 @@ const Graph = ({ data, nodeId }: Props) => {
 
       setElements(values);
     },
-    [elements, layoutedElements]
+    [] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   useEffect(() => {
@@ -135,7 +135,7 @@ const Graph = ({ data, nodeId }: Props) => {
         highlightPath(node, !!nodeId);
       }
     }
-  }, [highlightPath, layoutedElements, resetHighlight, nodeId]);
+  }, [highlightPath, resetHighlight, nodeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fit the graph to the center of layout view when graph is initialized
   const onLoad = (reactFlowInstance: OnLoadParams<unknown> | null) => {
