@@ -160,8 +160,6 @@ az synapse workspace firewall-rule create --name allowAll --workspace-name $syna
 # sleep for a few seconds for the change to take effect
 sleep 2
 az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $service_principal_name
-
-
 ```
 
 Alternatively, you can use your Azure account ("User Principal Name") like below:

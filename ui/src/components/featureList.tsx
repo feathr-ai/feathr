@@ -13,6 +13,7 @@ import {
 } from "antd";
 import { Feature } from "../models/model";
 import { fetchProjects, fetchFeatures } from "../api";
+import { setLocalVariables } from "../utils/utils";
 
 type Props = {
   preProject: string;
@@ -49,7 +50,7 @@ const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
     {
       title: <div>Type</div>,
       key: "type",
-      width: 120,
+      width: 80,
       render: (name: string, row: Feature) => {
         return (
           <div>{row.typeName.replace("feathr_", "").replace("_v1", "")}</div>
@@ -68,12 +69,35 @@ const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
       key: "transformation",
       width: 190,
       render: (name: string, row: Feature) => {
+        const transformation = row.attributes.transformation;
         return (
-          <div>
-            {row.attributes.transformation.transformExpr ??
-              row.attributes.transformation.defExpr}
-          </div>
+          <div>{transformation.transformExpr ?? transformation.defExpr}</div>
         );
+      },
+      onCell: () => {
+        return {
+          style: {
+            maxWidth: 120,
+          },
+        };
+      },
+    },
+    {
+      title: <div>Entity Key</div>,
+      key: "aggregation",
+      width: 80,
+      render: (name: string, row: Feature) => {
+        const key = row.attributes.key && row.attributes.key[0];
+        if ("NOT_NEEDED" !== key.keyColumn) {
+          return (
+            <div>
+              {key.keyColumn && `${key.keyColumn}`}{" "}
+              {key.keyColumnType && `(${key.keyColumnType})`}
+            </div>
+          );
+        } else {
+          return <div>N/A</div>;
+        }
       },
       onCell: () => {
         return {
@@ -88,19 +112,14 @@ const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
       key: "aggregation",
       width: 150,
       render: (name: string, row: Feature) => {
+        const transformation = row.attributes.transformation;
         return (
           <>
             <div>
-              {row.attributes.transformation.aggFunc &&
-                `Type: ${row.attributes.transformation.aggFunc}`}
+              {transformation.aggFunc && `Type: ${transformation.aggFunc}`}
             </div>
             <div>
-              {row.attributes.transformation.aggFunc &&
-                `Window: ${row.attributes.transformation.window}`}
-            </div>
-            <div>
-              {row.attributes.transformation.aggFunc &&
-                `Key: ${row.attributes.key[0].keyColumn}`}
+              {transformation.aggFunc && `Window: ${transformation.window}`}
             </div>
           </>
         );
@@ -158,9 +177,9 @@ const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [tableData, setTableData] = useState<Feature[]>();
-  const [query, setQuery] = useState<string>(preKeyword ?? "");
+  const [query, setQuery] = useState<string>(preKeyword);
   const [projects, setProjects] = useState<any>([]);
-  const [project, setProject] = useState<string>(preProject ?? "");
+  const [project, setProject] = useState<string>(preProject);
 
   const fetchData = useCallback(
     async (project) => {
@@ -169,8 +188,7 @@ const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
       setPage(page);
       setTableData(result);
       setLoading(false);
-      localStorage.setItem("project", project);
-      localStorage.setItem("keyword", query);
+      setLocalVariables((preProject = project), (preKeyword = query));
     },
     [page, query]
   );

@@ -13,7 +13,7 @@ type Params = {
   featureId: string;
 };
 
-const GraphNodeDetails: React.FC = () => {
+const GraphNodeDetails = () => {
   const [searchParams] = useSearchParams();
   const { project } = useParams() as Params;
   const nodeId = searchParams.get("nodeId") as string;
@@ -74,7 +74,7 @@ const GraphNodeDetails: React.FC = () => {
           )}
           {feature?.attributes.key && feature.attributes.key.length > 0 && (
             <Card>
-              <Title level={4}>Key</Title>
+              <Title level={4}>Entity Key</Title>
               <p>Full name: {feature.attributes.key[0].fullName}</p>
               <p>Description: {feature.attributes.key[0].description}</p>
               <p>Key column: {feature.attributes.key[0].keyColumn}</p>

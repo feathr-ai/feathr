@@ -15,10 +15,10 @@ const Admin = "admin";
 const Producer = "producer";
 const Consumer = "consumer";
 
-const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
+const RoleManagementForm = ({
   editMode,
   userRole,
-}) => {
+}: RoleManagementFormProps) => {
   const [fireRedirect] = useState<boolean>(false);
   const [createLoading, setCreateLoading] = useState<boolean>(false);
 
@@ -58,7 +58,7 @@ const RoleManagementForm: React.FC<RoleManagementFormProps> = ({
             label="User Name"
             rules={[{ required: true }]}
           >
-            <Input disabled={!editMode} placeholder="Email Account or App Id"/>
+            <Input disabled={!editMode} placeholder="Email Account or App Id" />
           </Form.Item>
           <Form.Item
             name="roleName"
