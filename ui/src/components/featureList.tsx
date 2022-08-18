@@ -205,10 +205,9 @@ const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
 
   useEffect(() => {
     if (preProject !== "") {
-      console.log("fetch data onload");
       fetchData(preProject);
     }
-  }, []);
+  }, [preProject, fetchData]);
 
   const onProjectChange = async (value: string) => {
     setProject(value);
