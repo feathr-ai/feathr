@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
-# from click.testing import CliRunner
+from click.testing import CliRunner
 
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import FeathrClient
