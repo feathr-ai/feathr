@@ -3,13 +3,13 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
-from click.testing import CliRunner
+# from click.testing import CliRunner
 
 from feathr import (BackfillTime, MaterializationSettings)
 from feathr import FeathrClient
 from feathr import FeatureQuery
 from feathr import ObservationSettings
-from feathr import RedisSink, HdfsSink
+from feathr import RedisSink, HdfsSink, JdbcSink
 from feathr import TypedKey
 from feathr import ValueType
 from feathr.utils.job_utils import get_result_df
@@ -201,3 +201,47 @@ def test_feathr_get_offline_features():
         # download result and just assert the returned result is not empty
         res_df = get_result_df(client)
         assert res_df.shape[0] > 0
+
+@pytest.mark.skip(reason="We don't have SQL server configured in CI pipeline")
+def test_feathr_get_offline_features_to_sql():
+    """
+    Test get_offline_features() can save data to SQL.
+    """
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # runner.invoke(init, [])
+        test_workspace_dir = Path(
+            __file__).parent.resolve() / "test_user_workspace"
+        client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+        location_id = TypedKey(key_column="DOLocationID",
+                               key_column_type=ValueType.INT32,
+                               description="location id in NYC",
+                               full_name="nyc_taxi.location_id")
+
+        feature_query = FeatureQuery(
+            feature_list=["f_location_avg_fare"], key=location_id)
+        settings = ObservationSettings(
+            observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
+            event_timestamp_column="lpep_dropoff_datetime",
+            timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+        now = datetime.now()
+        # Set DB user and password before submitting job
+        # os.environ[f"o_USER"] = "some_user@feathrtestsql4"
+        # os.environ[f"o_PASSWORD"] = "some_password"
+        output_path = JdbcSink(name="o",
+                               url="jdbc:sqlserver://feathrtestsql4.database.windows.net:1433;database=testsql;encrypt=true;",
+                               dbtable=''.join(['feathrazure_cijob','_', str(now.minute), '_', str(now.second)]),
+                               auth="USERPASS")
+
+        client.get_offline_features(observation_settings=settings,
+                                    feature_query=feature_query,
+                                    output_path=output_path)
+
+        # assuming the job can successfully run; otherwise it will throw exception
+        client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+
+        # We may not have SQL client package installed so skip the verification
+        # res_df = get_result_df(client)
+        # assert res_df.shape[0] > 0
