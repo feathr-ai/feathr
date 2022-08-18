@@ -48,8 +48,8 @@ class FeatureJoinJobParams:
         job_output_path: Absolute path in Cloud that you want your output data to be in.
     """
 
-    def __init__(self, join_config_path, observation_path, feature_config, job_output_path):
-        self.secrets = []
+    def __init__(self, join_config_path, observation_path, feature_config, job_output_path, secrets:List[str]=[]):
+        self.secrets = secrets
         self.join_config_path = join_config_path
         if isinstance(observation_path, str):
             self.observation_path = observation_path
@@ -440,7 +440,7 @@ class FeathrClient(object):
     def get_offline_features(self,
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
-                             output_path: str,
+                             output_path: Union[str, Sink],
                              execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
                              udf_files = None,
                              verbose: bool = False
@@ -488,9 +488,16 @@ class FeathrClient(object):
             FeaturePrinter.pretty_print_feature_query(feature_query)
 
         write_to_file(content=config, full_file_name=config_file_path)
-        return self._get_offline_features_with_config(config_file_path, execution_configurations, udf_files=udf_files)
+        return self._get_offline_features_with_config(config_file_path,
+                                                      output_path=output_path,
+                                                      execution_configurations=execution_configurations,
+                                                      udf_files=udf_files)
 
-    def _get_offline_features_with_config(self, feature_join_conf_path='feature_join_conf/feature_join.conf', execution_configurations: Dict[str,str] = {}, udf_files=[]):
+    def _get_offline_features_with_config(self,
+                                          feature_join_conf_path='feature_join_conf/feature_join.conf',
+                                          output_path: Union[str, Sink] = "",
+                                          execution_configurations: Dict[str,str] = {},
+                                          udf_files=[]):
         """Joins the features to your offline observation dataset based on the join config.
 
         Args:
@@ -502,8 +509,7 @@ class FeathrClient(object):
         feature_join_job_params = FeatureJoinJobParams(join_config_path=os.path.abspath(feature_join_conf_path),
                                                        observation_path=feathr_feature['observationPath'],
                                                        feature_config=os.path.join(self.local_workspace_dir, 'feature_conf/'),
-                                                       job_output_path=feathr_feature['outputPath'],
-                                                       )
+                                                       job_output_path=output_path)
         job_tags = {OUTPUT_PATH_TAG:feature_join_job_params.job_output_path}
         # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
         if execution_configurations is not None and OUTPUT_FORMAT in execution_configurations:

@@ -10,8 +10,19 @@ class Sink(HoconConvertible):
     """
     
     @abstractmethod
+    def support_offline(self) -> bool:
+        pass
+    
+    @abstractmethod
+    def support_online(self) -> bool:
+        pass
+    
+    @abstractmethod
     def to_argument(self):
         pass
+    
+    def __str__(self) -> str:
+        return "DUMMY"
 
 class MonitoringSqlSink(Sink):
     """SQL-based sink that stores feature monitoring results.
@@ -35,6 +46,12 @@ class MonitoringSqlSink(Sink):
         msg = tm.render(source=self)
         return msg
 
+    def support_offline(self) -> bool:
+        return False
+    
+    def support_online(self) -> bool:
+        return True
+    
     def to_argument(self):
         raise TypeError("MonitoringSqlSink cannot be used as output argument")
 
@@ -70,6 +87,12 @@ class RedisSink(Sink):
         msg = tm.render(source=self)
         return msg
 
+    def support_offline(self) -> bool:
+        return False
+    
+    def support_online(self) -> bool:
+        return True
+    
     def to_argument(self):
         raise TypeError("RedisSink cannot be used as output argument")
 
@@ -113,9 +136,80 @@ class HdfsSink(Sink):
         hocon_config = tm.render(sink=self)
         return hocon_config
 
+    def support_offline(self) -> bool:
+        return True
+    
+    def support_online(self) -> bool:
+        return True
+    
     def to_argument(self):
         return self.output_path
 
+class JdbcSink(Sink):
+    def __init__(self, name: str, url: str, dbtable: str, auth: Optional[str] = None) -> None:
+        self.name = name
+        self.url = url
+        self.dbtable = dbtable
+        if auth is not None:
+            self.auth = auth.upper()
+            if self.auth not in ["USERPASS", "TOKEN"]:
+                raise ValueError(
+                    "auth must be None or one of following values: ['userpass', 'token']")
+
+    def get_required_properties(self):
+        if not hasattr(self, "auth"):
+            return []
+        if self.auth == "USERPASS":
+            return ["%s_USER" % self.name, "%s_PASSWORD" % self.name]
+        elif self.auth == "TOKEN":
+            return ["%s_TOKEN" % self.name]
+
+    def support_offline(self) -> bool:
+        return True
+    
+    def support_online(self) -> bool:
+        return True
+    
+    def to_feature_config(self) -> str:
+        """Produce the config used in feature materialization"""
+        tm = Template("""  
+            {
+                name: HDFS
+                params: {
+                    type: "jdbc"
+                    url: "{{sink.url}}"
+                    dbtable: "{{sink.dbtable}}"
+                    {% if sink.auth is defined %}
+                        {% if sink.auth == "USERPASS" %}
+                    user: "${{ "{" }}{{sink.name}}_USER{{ "}" }}"
+                    password: "${{ "{" }}{{sink.name}}_PASSWORD{{ "}" }}"
+                        {% else %}
+                    token: "${{ "{" }}{{sink.name}}_TOKEN{{ "}" }}"
+                        {% endif %}
+                    {% endif %}
+                }
+            }
+        """)
+        hocon_config = tm.render(sink=self)
+        return hocon_config
+
+    def to_argument(self):
+        d = {
+            "type": "jdbc",
+            "url": self.url,
+        }
+        if hasattr(self, "dbtable"):
+            d["dbtable"] = self.dbtable
+        if hasattr(self, "auth"):
+            if self.auth == "USERPASS":
+                d["user"] = "${" + self.name + "_USER}"
+                d["password"] = "${" + self.name + "_PASSWORD}"
+            elif self.auth == "TOKEN":
+                d["useToken"] = True
+                d["token"] = "${" + self.name + "_TOKEN}"
+        else:
+            d["anonymous"] = True
+        return json.dumps(d)
     
 class GenericSink(Sink):
     def __init__(self, format: str, mode: Optional[str] = None, options: Dict[str, str] = {}) -> None:
@@ -167,5 +261,11 @@ class CosmosDbSink(GenericSink):
         self.database = database
         self.container = container
         
+    def support_offline(self) -> bool:
+        return False
+    
+    def support_online(self) -> bool:
+        return True
+    
     def get_required_properties(self) -> List[str]:
         return [self.name + "_KEY"]
