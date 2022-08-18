@@ -34,13 +34,6 @@ const App = () => {
                 <Routes>
                   <Route path="/dataSources" element={<DataSources />} />
                   <Route path="/features" element={<Features />} />
-                  <Route path="/features/:project" element={<Features />} />
-                  <Route
-                    path="/features/:project/:keyword"
-                    element={<Features />}
-                  />
-                  #TODO: better Expression to combine multiple path to same
-                  component?
                   <Route
                     path="/projects/:project/features/:featureId"
                     element={<FeatureDetails />}

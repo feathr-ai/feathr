@@ -235,9 +235,6 @@ const FeatureDetails = () => {
     navigate(lineageUrl);
   };
 
-  const preProject = localStorage.getItem("project") ?? "";
-  const preKeyword = localStorage.getItem("keyword") ?? "";
-
   const render = (status: QueryStatus): JSX.Element => {
     switch (status) {
       case "error":
@@ -278,12 +275,7 @@ const FeatureDetails = () => {
         } else {
           return (
             <>
-              <Button
-                type="link"
-                onClick={() =>
-                  navigate("/features/" + preProject + "/" + preKeyword)
-                }
-              >
+              <Button type="link" onClick={() => navigate(-1)}>
                 feature list {">"}
               </Button>
               <Card>
