@@ -13,7 +13,7 @@ type Params = {
   featureId: string;
 };
 
-const GraphNodeDetails: React.FC = () => {
+const GraphNodeDetails = () => {
   const [searchParams] = useSearchParams();
   const { project } = useParams() as Params;
   const nodeId = searchParams.get("nodeId") as string;

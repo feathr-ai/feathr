@@ -11,11 +11,7 @@ type FeatureFormProps = {
   feature?: FeatureAttributes;
 };
 
-const FeatureForm: React.FC<FeatureFormProps> = ({
-  isNew,
-  editMode,
-  feature,
-}) => {
+const FeatureForm = ({ isNew, editMode, feature }: FeatureFormProps) => {
   const [fireRedirect, setRedirect] = useState<boolean>(false);
   const [createLoading, setCreateLoading] = useState<boolean>(false);
 

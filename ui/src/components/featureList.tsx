@@ -14,7 +14,7 @@ import {
 import { Feature } from "../models/model";
 import { fetchProjects, fetchFeatures } from "../api";
 
-const FeatureList: React.FC = () => {
+const FeatureList = () => {
   const navigate = useNavigate();
   const columns = [
     {

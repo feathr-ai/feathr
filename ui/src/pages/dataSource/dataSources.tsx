@@ -4,7 +4,7 @@ import DataSourceList from "../../components/dataSourceList";
 
 const { Title } = Typography;
 
-const DataSources: React.FC = () => {
+const DataSources = () => {
   return (
     <div className="page">
       <Card>

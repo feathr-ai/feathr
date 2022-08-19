@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source.accessor
 
-import com.linkedin.feathr.offline.config.location.{Jdbc, KafkaEndpoint, PathList, SimplePath}
+import com.linkedin.feathr.offline.config.location.{GenericLocation, Jdbc, KafkaEndpoint, PathList, SimplePath}
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
@@ -30,7 +30,8 @@ private[offline] class NonTimeBasedDataSourceAccessor(
     val df = source.location match {
       case SimplePath(path) => List(path).map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
       case PathList(paths) => paths.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
-      case Jdbc(_, _, _, _, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
+      case Jdbc(_, _, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
+      case GenericLocation(_, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
       case _ => fileLoaderFactory.createFromLocation(source.location).loadDataFrame()
     }
 

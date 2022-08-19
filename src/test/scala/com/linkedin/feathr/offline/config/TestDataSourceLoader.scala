@@ -54,7 +54,7 @@ class TestDataSourceLoader extends FunSuite {
         |""".stripMargin
     val ds = jackson.readValue(configDoc, classOf[DataSource])
     ds.location match {
-      case Jdbc(url, dbtable, user, password, token, useToken, _) => {
+      case Jdbc(url, dbtable, user, password, token) => {
         assert(url == "jdbc:sqlserver://myserver.database.windows.net:1433;database=mydatabase")
         assert(user=="bar")
         assert(password=="foo")
