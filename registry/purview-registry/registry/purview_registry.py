@@ -189,13 +189,30 @@ class PurviewRegistry(Registry):
         names = name.split(self.registry_delimiter)
         return Edge(guid, names[1], names[2], RelationshipType.new(names[0]))
 
+    def get_project_features(self, project:str, keywords:Optional[str] = None) -> list[Entity]:
+        project_id = self.get_entity_id(project)
+        if not project_id:
+            return None
+        guidAtlasEntityMap = self.purview_client.get_entity_lineage(project_id, depth=1, width=1, direction="OUTPUT")['guidEntityMap']
+        atlasEntities = []
+
+        for entity in guidAtlasEntityMap.values():
+            type = entity['typeName']
+            if type != "Process":
+                type = EntityType.new(type)
+                if type == EntityType.AnchorFeature or type == EntityType.DerivedFeature:
+                    attributes = entity['attributes']
+                    if not keywords or (attributes and keywords in attributes['qualifiedName']):
+                        atlasEntity = self._atlasEntity_to_entity(entity)
+                        atlasEntities.append(atlasEntity)
+        return atlasEntities
+
     def get_project(self, id_or_name: Union[str, UUID]) -> EntitiesAndRelations:
         project_id = self.get_entity_id(id_or_name)
         if not project_id:
             return None
         lineage = self.purview_client.get_entity_lineage(project_id)
         guidAtlasEntityMap = lineage['guidEntityMap']
-
         guidEntityMap = {}
         finalGuidEntityMap = {}
         edges = []
@@ -249,7 +266,7 @@ class PurviewRegistry(Registry):
         Search entities with specified type that also match the keyword in a project
         """
         query_result = self.purview_client.search_entities(keyword)
-        result = []
+        result = []   
         for entity in query_result:
             qualified_name = entity["qualifiedName"]
             entity_id = entity['id']
@@ -328,7 +345,7 @@ class PurviewRegistry(Registry):
     def create_project_anchor_feature(self, project_id: UUID, anchor_id: UUID, definition: AnchorFeatureDef) -> UUID:
         attrs = definition.to_attr().to_dict()
         project_entity = self.get_entity(project_id)
-        anchor_entity = self.get_entity(anchor_id)
+        anchor_entity = self.get_entity(anchor_id,True)
         qualified_name = self.registry_delimiter.join([project_entity.qualified_name,
                                                        anchor_entity.attributes.name,
                                                         attrs['name']])
@@ -344,7 +361,7 @@ class PurviewRegistry(Registry):
 
         # change from AtlasEntity to Entity
         anchor_feature_entity = self.get_entity(anchor_feature_entity.guid)
-        source_entity = self.get_entity(anchor_entity.id)
+        source_entity = self.get_entity(anchor_entity.attributes.source.id)
 
         project_contains_feature_relation = self._generate_relation_pairs(
             project_entity, anchor_feature_entity, Label_Contains)
@@ -592,4 +609,5 @@ class PurviewRegistry(Registry):
         for entity in entities:
             if entity.get('qualifiedName') == qualifiedName:
                 return entity.get('id')
-                
+
+

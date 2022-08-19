@@ -411,13 +411,19 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
               new MVELSourceKeyExtractor(anchorExtractor)
             }
           case None =>
-            if (!anchorExtractorBase.isInstanceOf[AnchorExtractorBase[_]]) {
-              throw new FeathrException(
-                ErrorLabel.FEATHR_USER_ERROR,
-                s"In ${node}, ${anchorExtractorBase} with no key and no keyExtractor must be extends AnchorExtractorBase")
-            }
             val keyAlias = FeathrConfigLoader.extractStringListOpt(node.get(KEY_ALIAS))
-            val anchorExtractor = anchorExtractorBase.asInstanceOf[AnchorExtractor[Any]]
+            val anchorExtractor = if (!anchorExtractorBase.isInstanceOf[AnchorExtractorBase[_]]) {
+              FeathrUdfPluginContext.getRegisteredUdfAdaptor(anchorExtractorBase.getClass) match {
+                case Some(adaptor: AnchorExtractorAdaptor) =>
+                  adaptor.adaptUdf(anchorExtractorBase).asInstanceOf[AnchorExtractor[Any]]
+                case _ =>
+                  throw new FeathrException(
+                    ErrorLabel.FEATHR_USER_ERROR,
+                    s"In ${node}, ${anchorExtractorBase} with no key and no keyExtractor must be extends AnchorExtractorBase")
+              }
+            } else {
+              anchorExtractorBase.asInstanceOf[AnchorExtractor[Any]]
+            }
             new MVELSourceKeyExtractor(anchorExtractor, keyAlias)
         }
     }
@@ -571,7 +577,7 @@ private[offline] class DerivationLoader extends JsonDeserializer[DerivedFeature]
           val consumedFeatures = config.inputs.map(x => ErasedEntityTaggedFeature(x.key.map(config.key.zipWithIndex.toMap), x.feature)).toIndexedSeq
 
           // consumedFeatures and parameterNames have same order, since they are all from config.inputs
-          DerivedFeature(consumedFeatures, producedFeatures, derivationFunction, config.parameterNames, featureTypeConfigMap)
+          DerivedFeature(consumedFeatures, producedFeatures, maybeAdaptedDerivationFunction, config.parameterNames, featureTypeConfigMap)
         } else if (x.has("join")) { // when the derived feature config is a seqJoin config
           val config = codec.treeToValue(x, classOf[SeqJoinFeatureConfig])
           if (config.aggregation.isEmpty) {
