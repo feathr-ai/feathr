@@ -1,12 +1,12 @@
 ---
 layout: default
 title: Feathr REST API Deployment
-parent: How-to Guides
+parent: Developer Guides
 ---
 
 # Feathr REST API
 
-The API currently supports following functionality
+The REST API currently supports following functionalities:
 
 1. Get Feature by Qualified Name
 2. Get Feature by GUID
