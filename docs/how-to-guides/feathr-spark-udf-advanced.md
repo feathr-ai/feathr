@@ -8,11 +8,11 @@ parent: How-to Guides
 
 Feathr provides flexible ways for end users to define featurization logics. One of the advanced use case would be to use complex, customized logic to do transformations in Feathr. This document describes the required steps to do that.
 
-Although Feathr uses Spark as execution engine, most of the users don't have to know that; However for advanced use cases such as using Spark UDF, users have to know a bit on Spark.
+Although Feathr uses Spark as the execution engine, this is transparent to end users; However, for advanced use cases such as using Spark UDF, users have to have basic knowledge on Spark.
 
 The thinking here is to have users define arbitrary functions using Spark UDF framework, register the UDF as permanent functions in Spark, and have Feathr calling the function.
 
-Most of the content in this document are a bit unrelated with Feathr, but we just document the steps here to make it easier for end users to develop Spark UDFs and understand a bit more.
+Most of the content in this document are out of Feathr's scope, but we just document the steps here to make it easier for end users to develop Spark UDFs and understand a bit more.
 
 ## Difference between Spark UDF scopes
 
