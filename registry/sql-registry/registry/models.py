@@ -117,6 +117,15 @@ class RelationshipType(Enum):
     Produces = 4
 
 
+    def __str__(self):
+        return {
+            RelationshipType.Contains: "Contains",
+            RelationshipType.BelongsTo: "BelongsTo",
+            RelationshipType.Consumes: "Consumes",
+            RelationshipType.Produces: "Produces",
+        }[self]
+
+
 class ToDict(ABC):
     """
     This ABC is used to convert object to dict, then JSON.
