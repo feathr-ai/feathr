@@ -983,4 +983,87 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
 
     validateRows(dfs.select(keyField, features: _*).collect().sortBy(row => row.getAs[Int](keyField)), expectedRows)
   }
+
+
+  @Test
+  def testSWACountDistinct(): Unit = {
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "generation/daily/" }
+        |    isTimeSeries: true
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |anchors: {
+        |  swaAnchorWithKeyExtractor: {
+        |    source: "swaSource"
+        |    key: [x]
+        |    features: {
+        |      f: {
+        |        def: "Id"   // the column that contains the raw view count
+        |        aggregation: COUNT
+        |        window: 10d
+        |      }
+        |      g: {
+        |        def: "Id"   // the column that contains the raw view count
+        |        aggregation: COUNT_DISTINCT
+        |        window: 10d
+        |      }
+        |    }
+        |  }
+        |}
+    """.stripMargin
+
+    val features = Seq("f", "g")
+    val keyField = "x"
+    val featureJoinAsString =
+      s"""
+         | settings: {
+         |  joinTimeSettings: {
+         |   timestampColumn: {
+         |     def: timestamp
+         |     format: yyyy-MM-dd
+         |   }
+         |  }
+         |}
+         |features: [
+         |  {
+         |    key: [$keyField],
+         |    featureList: [${features.mkString(",")}]
+         |  }
+         |]
+    """.stripMargin
+
+
+    /**
+     * Expected output:
+     * +--------+----+----+
+     * |x|   f|   g|
+     * +--------+----+----+
+     * |       1|   6|   2|
+     * |       2|   6|   2|
+     * |       3|   1|   1|
+     * +--------+----+----+
+     */
+    val expectedSchema = StructType(
+      Seq(
+        StructField(keyField, LongType),
+        StructField(features.head, LongType), // f
+        StructField(features.last, LongType) // g
+      ))
+
+    val expectedRows = Array(
+      new GenericRowWithSchema(Array(1, 6, 2), expectedSchema),
+      new GenericRowWithSchema(Array(2, 5, 2), expectedSchema),
+      new GenericRowWithSchema(Array(3, 1, 1), expectedSchema))
+    val dfs = runLocalFeatureJoinForTest(featureJoinAsString, featureDefAsString, "featuresWithFilterObs.avro.json").data
+    dfs.show()
+
+    validateRows(dfs.select(keyField, features: _*).collect().sortBy(row => row.getAs[Int](keyField)), expectedRows)
+  }
 }
