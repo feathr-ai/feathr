@@ -1,6 +1,6 @@
 name: Non-technical Request
 description: Use this template for non-technical requests
-labels: 'enhancement'
+labels: ['enhancement', 'non-technical']
 title: '[NT]'
 
 body:
