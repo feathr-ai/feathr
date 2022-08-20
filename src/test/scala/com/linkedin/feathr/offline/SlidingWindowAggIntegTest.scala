@@ -1046,7 +1046,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
      * |x|   f|   g|
      * +--------+----+----+
      * |       1|   6|   2|
-     * |       2|   6|   2|
+     * |       2|   5|   2|
      * |       3|   1|   1|
      * +--------+----+----+
      */
