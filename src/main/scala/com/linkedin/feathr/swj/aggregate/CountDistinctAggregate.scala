@@ -4,7 +4,7 @@ import com.linkedin.feathr.swj.aggregate.AggregationType._
 import org.apache.spark.sql.types._
 
 /**
-  * MAX aggregation implementation.
+  * COUNT_DISTINCT aggregation implementation.
   *
   * @param metricCol Name of the metric column or a Spark SQL column expression for derived metric
   *                  that will be aggregated using COUNT_DISTINCT.
