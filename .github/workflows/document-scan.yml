@@ -2,7 +2,7 @@ name: Feathr Documents' Broken Link Check
 
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  check-links:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

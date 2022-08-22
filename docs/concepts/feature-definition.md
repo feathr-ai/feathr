@@ -60,11 +60,11 @@ request_anchor = FeatureAnchor(name="request_features",
                                features=features)
 ```
 
-For the features field above, there are two different types, simple anchored features and window aggregation features.
+For the features field above, there are two different types, anchor features without aggregations, and anchor features with window aggregation features.
 
-### Simple anchored features
+### Anchor features without aggregations
 
-1. For simple anchored features, see the example below:
+For simple anchored features, see the example below:
 
 ```python
 f_trip_time_duration = Feature(name="f_trip_time_duration",
@@ -72,11 +72,11 @@ f_trip_time_duration = Feature(name="f_trip_time_duration",
                                transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
 ```
 
-Note that for `transform` section, you can put a simple expression to transform your features. For more information, please refer to [Feathr User Defined Functions (UDFs)](../how-to-guides/feathr-udfs.md).
+Note that for `transform` section, you can put a simple expression to transform your features. For more information, please refer to [Feathr User Defined Functions (UDFs)](./feathr-udfs.md).
 
-### Window aggregation features
+### Anchor features with aggregations
 
-2. For window aggregation features, see the supported fields below:
+For window aggregation features, see the supported fields below:
 
 ```python
 

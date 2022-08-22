@@ -4,7 +4,6 @@ import {
   Button,
   Menu,
   message,
-  PageHeader,
   Popconfirm,
   Row,
   Space,
@@ -14,7 +13,7 @@ import {
 import { UserRole } from "../models/model";
 import { deleteUserRole, listUserRole } from "../api";
 
-const UserRoles: React.FC = () => {
+const UserRoles = () => {
   const navigate = useNavigate();
 
   const onDelete = async (row: UserRole) => {
@@ -132,31 +131,22 @@ const UserRoles: React.FC = () => {
 
   return (
     <div>
-      <PageHeader
-        title={`Role Managements`}
-        style={{
-          backgroundColor: "white",
-          paddingLeft: "50px",
-          paddingRight: "50px",
-        }}
-      >
-        <Row>
-          <div style={{ flex: 1 }}>
-            <>
-              <p>
-                This page is protected by Feathr Access Control. Only Global
-                Admin can retrieve management details and grant or delete user
-                roles.
-              </p>
-            </>
-          </div>
-        </Row>
-      </PageHeader>
+      <Row>
+        <div style={{ flex: 1 }}>
+          <>
+            <p style={{ width: "80%" }}>
+              This page is protected by Feathr Access Control. Only Project
+              Admins can retrieve management details and grant or delete user
+              roles.
+            </p>
+          </>
+        </div>
+      </Row>
       <Space style={{ marginBottom: 16 }}>
         <Button
           type="primary"
           onClick={onClickRoleAssign}
-          style={{ position: "absolute", right: "12px", top: "56px" }}
+          style={{ position: "absolute", right: "12px", top: "70px" }}
         >
           + Create Role Assignment
         </Button>

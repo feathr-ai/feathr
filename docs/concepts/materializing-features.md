@@ -33,7 +33,7 @@ In the above example, we define a Redis table called `nycTaxiDemoFeature` and ma
 
 ## Feature Backfill
 
-It is also possible to backfill the features for a particular time range, like below. If the `BackfillTime` part is not specified, it's by default to `now()` (i.e. if not specified, it's equivalent to `BackfillTime(start=now, end=now, step=timedelta(days=1))`).
+It is also possible to backfill the features till a particular time, like below. If the `BackfillTime` part is not specified, it's by default to `now()` (i.e. if not specified, it's equivalent to `BackfillTime(start=now, end=now, step=timedelta(days=1))`).
 
 ```python
 client = FeathrClient()
@@ -46,9 +46,30 @@ settings = MaterializationSettings("nycTaxiMaterializationJob",
 client.materialize_features(settings)
 ```
 
-Note that if you don't have features available in `now`, you'd better specify a `BackfillTime` range where you have features.
+Feathr will submit a materialization job for each of the step for performance reasons. I.e. if you have `BackfillTime(start=datetime(2022, 2, 1), end=datetime(2022, 2, 20), step=timedelta(days=1))`, Feathr will submit 20 jobs to run in parallel for maximum performance.
 
-Also, Feathr will submit a materialization job for each of the step for performance reasons. I.e. if you have `BackfillTime(start=datetime(2022, 2, 1), end=datetime(2022, 2, 20), step=timedelta(days=1))`, Feathr will submit 20 jobs to run in parallel for maximum performance.
+Please note that the parameter forms a closed interval, which means that both start and end date will be included in materialized job,
+
+Please also note that the `start` and `end` parameter means the cutoff start and end time. For example, we might have a dataset like below:
+
+| TrackingID | UserId | Spending | Date       |
+| ---------- | ------ | -------- | ---------- |
+| 1          | 1      | 10       | 2022/05/01 |
+| 2          | 2      | 15       | 2022/05/02 |
+| 3          | 3      | 19       | 2022/05/03 |
+| 4          | 1      | 18       | 2022/05/04 |
+| 5          | 3      | 7        | 2022/05/05 |
+
+If we call the API like this:
+`BackfillTime(start=datetime(2022, 5, 2), end=datetime(2022, 5, 4), step=timedelta(days=1))`
+
+Feathr will trigger 3 jobs:
+
+- job 1 will backfill all data till 2022/05/02 (so feature using data in 2022/05/01 will also be materialized)
+- job 2 will backfill all data till 2022/05/03 (so feature using data in 2022/05/01 and 2022/05/02 will also be materialized)
+- job 3 will backfill all data till 2022/05/04 (so feature using data in 2022/05/01, 2022/05/02, and 2022/05/03 will also be materialized)
+
+This is in particular useful for aggregated features. For example, if there is a feature defined as `user_purchase_in_last_2_days`, this will grantee that all the materialized features come with the right result.
 
 More reference on the APIs:
 
@@ -86,9 +107,9 @@ client.materialize_features(settings)
 This will generate features on latest date(assuming it's `2022/05/21`) and output data to the following path:
 `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2022/05/21`
 
-You can also specify a `BackfillTime` so the features will be generated only for those dates. For example:
+You can also specify a `BackfillTime` which will specify a cutoff time for feature materialization. For example:
 
-```Python
+```python
 backfill_time = BackfillTime(start=datetime(
     2020, 5, 10), end=datetime(2020, 5, 20), step=timedelta(days=1))
 offline_sink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
@@ -99,8 +120,8 @@ settings = MaterializationSettings("nycTaxiTable",
                                    backfill_time=backfill_time)
 ```
 
-This will generate features from `2020/05/10` to `2020/05/20` and the output will have 11 folders, from
-`abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/10` to `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`. Note that currently Feathr only supports materializing data in daily step (i.e. even if you specify an hourly step, the generated features in offline store will still be presented in a daily hierarchy).
+This will materialize features with cutoff time from `2020/05/10` to `2020/05/20` correspondingly, and the output will have 11 folders, from
+`abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/10` to `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`. Note that currently Feathr only supports materializing data in daily step (i.e. even if you specify an hourly step, the generated features in offline store will still be presented in a daily hierarchy). For more details on how `BackfillTime` works, refer to the [BackfillTime section](#feature-backfill) above.
 
 You can also specify the format of the materialized features in the offline store by using `execution_configurations` like below. Please refer to the [documentation](../how-to-guides/feathr-job-configuration.md) here for those configuration details.
 

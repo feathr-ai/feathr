@@ -260,7 +260,7 @@ class FeathrClient(object):
 
         # Pretty print anchor_list
         if verbose and self.anchor_list:
-                FeaturePrinter.pretty_print_anchors(self.anchor_list)
+            FeaturePrinter.pretty_print_anchors(self.anchor_list)
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features under the given project.
