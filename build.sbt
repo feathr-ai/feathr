@@ -85,7 +85,7 @@ lazy val root = (project in file("."))
 // )
 
 // To assembly with certain java version: sbt assembly -java-home "/Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home"
-// To execute the jar: java -jar target/scala-2.12/feathr-assembly-0.5.0-SNAPSHOT.jar
+// To execute the jar: java -jar target/scala-2.12/feathr-assembly-0.x.x-SNAPSHOT.jar (Please use the latest version of the jar)
 
 assembly / assemblyMergeStrategy := {
     // See https://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
