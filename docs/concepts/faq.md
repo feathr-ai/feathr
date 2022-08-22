@@ -44,13 +44,12 @@ feature_type: INT32
 
 transformation: "dayofweek(lpep_dropoff_datetime)"
 
-questions
 
-can we have more than one column name in transform?
+## transform - can we have more than one column name in transform?
 
 yes (can be error prone - if source table splits)
 
-why no key in the example?
+## why no key in the example?
 
 INPUT_CONTEXT needs no key
 
@@ -83,7 +82,7 @@ feature list
 key
 
 question
-why is key needed since Features have it?
+## why is key needed since Features have it?
 
 advanced usecases in linkedin
 
@@ -132,96 +131,6 @@ yes
 
 API
 
-location_id = TypedKey(key_column="DOLocationID",
-
-                       key_column_type=ValueType.INT32,
-
-                       description="location id in NYC",
-
-                       full_name="nyc_taxi.location_id")
-
-agg_features = [Feature(name="f_location_avg_fare",
-
-                        key=location_id,
-
-                        feature_type=FLOAT,
-
-                        transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
-
-                                                          agg_func="AVG",
-
-                                                          window="90d")),
-
-                Feature(name="f_location_max_fare",
-
-                        key=location_id,
-
-                        feature_type=FLOAT,
-
-                        transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
-
-                                                          agg_func="MAX",
-
-                                                          window="90d")),
-
-                Feature(name="f_location_total_fare_cents",
-
-                        key=location_id,
-
-                        feature_type=FLOAT,
-
-                        transform=WindowAggTransformation(agg_expr="fare_amount_cents",
-
-                                                          agg_func="SUM",
-
-                                                          window="90d")),
-
-                ]
-
-agg_anchor = FeatureAnchor(name="aggregationFeatures",
-
-                           source=batch_source,
-
-                           features=agg_features)
-
-f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
-
-                                      feature_type=FLOAT,
-
-                                      input_features=[
-
-                                          f_trip_distance, f_trip_time_duration],
-
-                                      transform="f_trip_distance * f_trip_time_duration")
-
-f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded",
-
-                                     feature_type=INT32,
-
-                                     input_features=[f_trip_time_duration],
-
-                                     transform="f_trip_time_duration % 10")
-
-client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
-
-                      f_trip_time_distance, f_trip_time_rounded])
-
-feature_query = FeatureQuery(
-
-    feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance", "f_location_total_fare_cents"], key=location_id)
-
-settings = ObservationSettings( observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
-
-    event_timestamp_column="lpep_dropoff_datetime",
-
-    timestamp_format="yyyy-MM-dd HH:mm:ss")
-
-client.get_offline_features(observation_settings=settings,
-
-                            feature_query=feature_query,
-
-                            output_path=output_path)
-
 ## online store
 
 backfill_time = BackfillTime(start=datetime(
@@ -240,7 +149,7 @@ settings = MaterializationSettings("nycTaxiTable",
 
 client.materialize_features(settings)
 
-Offline transformation:
+## Offline transformation:
 
 Does it support popular transformations (e.g. MinMaxScaler for numerical data or one-hot encoding (mapping categories to integers)?
 Does is support customized transformations (e.g. quantile clipping)?
