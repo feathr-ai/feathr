@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source.dataloader
 
-import com.linkedin.feathr.offline.config.location.{InputLocation, KafkaEndpoint, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, KafkaEndpoint, SimplePath}
 import com.linkedin.feathr.offline.source.dataloader.stream.KafkaDataLoader
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.util.LocalFeatureJoinUtils
@@ -58,7 +58,7 @@ dataLoaderHandlers: List[DataLoaderHandler]) extends DataLoaderFactory {
       }
   }
 
-  override def createFromLocation(inputLocation: InputLocation): DataLoader = {
+  override def createFromLocation(inputLocation: DataLocation): DataLoader = {
     if (inputLocation.isInstanceOf[KafkaEndpoint]) {
       new KafkaDataLoader(ss, inputLocation.asInstanceOf[KafkaEndpoint])
     } else {

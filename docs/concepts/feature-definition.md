@@ -72,7 +72,7 @@ f_trip_time_duration = Feature(name="f_trip_time_duration",
                                transform="time_duration(lpep_pickup_datetime, lpep_dropoff_datetime, 'minutes')")
 ```
 
-Note that for `transform` section, you can put a simple expression to transform your features. For more information, please refer to [Feathr User Defined Functions (UDFs)](../how-to-guides/feathr-udfs.md).
+Note that for `transform` section, you can put a simple expression to transform your features. For more information, please refer to [Feathr User Defined Functions (UDFs)](./feathr-udfs.md).
 
 ### Anchor features with aggregations
 

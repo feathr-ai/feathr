@@ -29,7 +29,7 @@ type Props = {
   data: Elements;
   nodeId: string;
 };
-const Graph: React.FC<Props> = ({ data, nodeId }) => {
+const Graph = ({ data, nodeId }: Props) => {
   const [, setURLSearchParams] = useSearchParams();
 
   const { layoutedElements, elementMapping } = getLayoutedElements(data);
@@ -37,7 +37,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
 
   useEffect(() => {
     setElements(layoutedElements);
-  }, [layoutedElements, data, nodeId]);
+  }, [data, nodeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset all node highlight status
   const resetHighlight = useCallback((): void => {
@@ -68,7 +68,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
     }
 
     setElements(values);
-  }, [elements]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Highlight path of selected node, including all linked up and down stream nodes
   const highlightPath = useCallback(
@@ -124,7 +124,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
 
       setElements(values);
     },
-    [elements, layoutedElements]
+    [] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   useEffect(() => {
@@ -135,7 +135,7 @@ const Graph: React.FC<Props> = ({ data, nodeId }) => {
         highlightPath(node, !!nodeId);
       }
     }
-  }, [highlightPath, layoutedElements, resetHighlight, nodeId]);
+  }, [highlightPath, resetHighlight, nodeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fit the graph to the center of layout view when graph is initialized
   const onLoad = (reactFlowInstance: OnLoadParams<unknown> | null) => {

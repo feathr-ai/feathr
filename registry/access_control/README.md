@@ -16,7 +16,7 @@ flowchart TD
     G -- Yes --> H[Return API Results]
 ```
 
-If Access control plugin is NOT enabled, the flow will directly **Call Downstream API***.
+If Access control plugin is NOT enabled, the flow will directly **Call Downstream API\***.
 
 ## Access Control Registry API
 
@@ -36,6 +36,7 @@ Users needs to create a `userroles` table with [schema.sql](scripts/schema.sql) 
 
 In current version, user needs to manually initialize `userroles` table in SQL database with [schema.sql](scripts/schema.sql) and insert global admin roles.
 You can add `[your-email-account]` as global admin with the following SQL script in [Azure portal query editor](https://docs.microsoft.com/en-us/azure/azure-sql/database/connect-query-portal?view=azuresql)
+
 ```SQL
 insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time) values ('global', '[your-email-account]','admin', '[your-email-account]', 'Initialize First Global Admin',  getutcdate())
 ```
@@ -75,16 +76,18 @@ Supported scenarios status are tracked below:
   - [x] `management` page for project admin to make CUD requests to `userroles` table
   - [x] Use id token in Management API Request headers to identify requestor
 - Future Enhancements:
-  - [x] Support AAD Application token  
+  - [x] Support AAD Application token
   - [x] Support OAuth tokens with `email` attributes
   - [x] Functional in Feathr Client
   - [ ] Add Access Control Dev Guide (include deployment tips)
   - [ ] Add Access Control User Guide (UI & Client Experience)
   - [ ] Support AAD Groups
   - [ ] Support Other OAuth Providers
-  
+
 ## Access Control Management APIs
+
 ### UserRole
+
 | Field        | Comments                                     |
 | ------------ | -------------------------------------------- |
 | scope        | Project name or `global`                     |
@@ -98,22 +101,28 @@ Supported scenarios status are tracked below:
 | deleteTime   | Auto generated when record marked as deleted |
 | access       | A list of permissions of this role           |
 
-### `GET /userroles` 
+### `GET /userroles`
+
 Get `userrole` records of projects that requestor has `manage` access.
-+ Response Type: [`UserRole`](#userrole)
+
+- Response Type: [`UserRole`](#userrole)
 
 ### `POST /users/{user}/userroles/add `
-Create a new role assignment 
-+ Request Params:
-  + project: project name or `global`
-  + user: user email or app id
-  + role: admin or producer or consumer
-  + reason: create reason
+
+Create a new role assignment
+
+- Request Params:
+  - project: project name or `global`
+  - user: user email or app id
+  - role: admin or producer or consumer
+  - reason: create reason
 
 ### `DELETE /users/{user}/userroles/delete`
+
 Delete an existing role assignment
-+ Request Params:
-  + project: project name or `global`
-  + user: user email or app id
-  + role: admin or producer or consumer
-  + reason: delete reason
+
+- Request Params:
+  - project: project name or `global`
+  - user: user email or app id
+  - role: admin or producer or consumer
+  - reason: delete reason

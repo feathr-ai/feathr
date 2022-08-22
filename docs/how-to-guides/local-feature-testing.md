@@ -6,6 +6,8 @@ parent: How-to Guides
 
 # Local Feature Testing Guide
 
+> :warning: This document is out of date and will be updated in the future.
+
 > **Local testing supports .csv and .parquet source format.**
 
 # What's Local Feature Testing

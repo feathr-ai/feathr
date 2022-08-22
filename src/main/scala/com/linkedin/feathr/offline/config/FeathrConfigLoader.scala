@@ -14,7 +14,7 @@ import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnch
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
 import com.linkedin.feathr.offline.client.plugins.{AnchorExtractorAdaptor, FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor, SimpleAnchorExtractorSparkAdaptor, SourceKeyExtractorAdaptor}
-import com.linkedin.feathr.offline.config.location.{InputLocation, Jdbc, KafkaEndpoint, LocationUtils, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, KafkaEndpoint, LocationUtils, SimplePath}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWindowParams}
@@ -411,13 +411,19 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
               new MVELSourceKeyExtractor(anchorExtractor)
             }
           case None =>
-            if (!anchorExtractorBase.isInstanceOf[AnchorExtractorBase[_]]) {
-              throw new FeathrException(
-                ErrorLabel.FEATHR_USER_ERROR,
-                s"In ${node}, ${anchorExtractorBase} with no key and no keyExtractor must be extends AnchorExtractorBase")
-            }
             val keyAlias = FeathrConfigLoader.extractStringListOpt(node.get(KEY_ALIAS))
-            val anchorExtractor = anchorExtractorBase.asInstanceOf[AnchorExtractor[Any]]
+            val anchorExtractor = if (!anchorExtractorBase.isInstanceOf[AnchorExtractorBase[_]]) {
+              FeathrUdfPluginContext.getRegisteredUdfAdaptor(anchorExtractorBase.getClass) match {
+                case Some(adaptor: AnchorExtractorAdaptor) =>
+                  adaptor.adaptUdf(anchorExtractorBase).asInstanceOf[AnchorExtractor[Any]]
+                case _ =>
+                  throw new FeathrException(
+                    ErrorLabel.FEATHR_USER_ERROR,
+                    s"In ${node}, ${anchorExtractorBase} with no key and no keyExtractor must be extends AnchorExtractorBase")
+              }
+            } else {
+              anchorExtractorBase.asInstanceOf[AnchorExtractor[Any]]
+            }
             new MVELSourceKeyExtractor(anchorExtractor, keyAlias)
         }
     }
@@ -571,7 +577,7 @@ private[offline] class DerivationLoader extends JsonDeserializer[DerivedFeature]
           val consumedFeatures = config.inputs.map(x => ErasedEntityTaggedFeature(x.key.map(config.key.zipWithIndex.toMap), x.feature)).toIndexedSeq
 
           // consumedFeatures and parameterNames have same order, since they are all from config.inputs
-          DerivedFeature(consumedFeatures, producedFeatures, derivationFunction, config.parameterNames, featureTypeConfigMap)
+          DerivedFeature(consumedFeatures, producedFeatures, maybeAdaptedDerivationFunction, config.parameterNames, featureTypeConfigMap)
         } else if (x.has("join")) { // when the derived feature config is a seqJoin config
           val config = codec.treeToValue(x, classOf[SeqJoinFeatureConfig])
           if (config.aggregation.isEmpty) {
@@ -735,7 +741,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
      * 2. a placeholder with reserved string "PASSTHROUGH" for anchor defined pass-through features,
      *    since anchor defined pass-through features do not have path
      */
-    val path: InputLocation = dataSourceType match {
+    val path: DataLocation = dataSourceType match {
       case "KAFKA" =>
         Option(node.get("config")) match {
           case Some(field: ObjectNode) =>
@@ -748,7 +754,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case "PASSTHROUGH" => SimplePath("PASSTHROUGH")
       case _ => Option(node.get("location")) match {
         case Some(field: ObjectNode) =>
-          LocationUtils.getMapper().treeToValue(field, classOf[InputLocation])
+          LocationUtils.getMapper().treeToValue(field, classOf[DataLocation])
         case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
           s"Data location is not defined for data source ${node.toPrettyString()}")
         case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,

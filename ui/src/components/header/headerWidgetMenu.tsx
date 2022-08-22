@@ -4,7 +4,7 @@ import { Menu } from "antd";
 import { IPublicClientApplication } from "@azure/msal-browser";
 
 type Props = { instance: IPublicClientApplication };
-const HeaderWidgetMenu: React.FC<Props> = ({ instance }) => {
+const HeaderWidgetMenu = ({ instance }: Props) => {
   const menuItems = [
     {
       key: "logout",

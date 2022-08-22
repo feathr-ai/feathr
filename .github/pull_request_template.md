@@ -4,14 +4,14 @@ Hey! Thank you for the contribution! Please go through https://github.com/linked
 
 Describe
 - What changes to make and why you are making these changes.
-- How are you going to achieve your goal Describe what testings you have done, for example, performance testing etc.
+- How are you going to achieve your goal. Describe what testings you have done, for example, performance testing etc.
 
 If this PR resolves an issue be sure to include "Resolves #XXX" to correctly link and close the issue upon merge.
 -->
 
 Resolves #XXX
 
-## How was this patch tested?
+## How was this PR tested?
 <!--
 If you're unsure about what to test, where to add tests, or how to run tests, please feel free to ask. We'd be happy to help.
 -->
@@ -23,13 +23,3 @@ If no, choose 'No'.
 -->
 - [ ] No. You can skip the rest of this section.
 - [ ] Yes. Make sure to clarify your proposed changes.
-
-## Dependencies
-<!--
-Please list the new dependencies in the PR description with
-
-- What's their license
-- Are they compatible with our license
--->
-- [ ] No. You can skip the rest of this section.
-- [ ] Yes. Make sure to list all the dependencies and licenses.
