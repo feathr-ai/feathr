@@ -1,18 +1,18 @@
 import React from "react";
 import { Card, Typography } from "antd";
-import FeatureList from "../../components/featureList";
+import ProjectList from "../../components/projectList";
 
 const { Title } = Typography;
 
-const Features = () => {
+const Projects = () => {
   return (
     <div className="page">
       <Card>
-        <Title level={3}>Features</Title>
-        <FeatureList />
+        <Title level={3}>Projects</Title>
+        <ProjectList />
       </Card>
     </div>
   );
 };
 
-export default Features;
+export default Projects;
