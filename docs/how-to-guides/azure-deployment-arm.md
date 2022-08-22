@@ -35,10 +35,10 @@ The very first step is to create an Azure Active Directory (AAD) application to 
 ```bash
 # This is the prefix you want to name your resources with, make a note of it, you will need it during deployment.
 #  Note: please keep the `resourcePrefix` short (less than 15 chars), since some of the Azure resources need the full name to be less than 24 characters. Only lowercase alphanumeric characters are allowed for resource prefix.
-prefix="userprefix1"
+resource_prefix="userprefix1"
 
 # Please don't change this name, a corresponding webapp with same name gets created in subsequent steps.
-sitename="${prefix}webapp"
+sitename="${resource_prefix}webapp"
 
 # Use the following configuration command to enable dynamic install of az extensions without a prompt. This is required for the az account command group used in the following steps.
 az config set extension.use_dynamic_install=yes_without_prompt
@@ -77,7 +77,7 @@ Click the button below to deploy a minimal set of Feathr resources. This is not 
 
 ### 3. Grant Key Vault and Synapse access to selected users (Optional)
 
-You will need to assign the right permission to users in order for them to access Azure key vault, permission to access the Storage Blob as a Contributor, and permission to submit jobs to Synapse cluster.
+You will need to assign the right permission to users in order for them to access Azure key vault, permission to access the Storage Blob as a Contributor, and permission to submit jobs to Synapse cluster. This is useful if you want to allow multiple users access the same environment.
 
 Skip this step if you have already given yourself the access. Otherwise, run the following lines of command in the [Cloud Shell](https://shell.azure.com/bash).
 
@@ -93,23 +93,38 @@ az role assignment create --assignee $userId --role "Storage Blob Data Contribut
 az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $userId
 ```
 
-### 4. Assign the right permission for Azure Purview
+### 4. Assign the right permission for Azure Purview (Optional)
 
 If you are using Purview registry there is an additional step required for the deployment to work. Registry Server authenticates with Azure Purview using Managed Identity that was created by ARM template. The Managed Identity needs to be added to Azure Purview Collections as a **Data Curator**. For more details, please refer to [Access control in the Microsoft Purview governance portal](https://docs.microsoft.com/en-us/azure/purview/catalog-permissions).
 
 ![purview data curator role add](../images/purview_permission_setting.png)
 
-Only collection admins can perform the above operation, the user who created this Purview account is already one. If you want to add additional admins, you can do so by clicking on _Root collection permission_ option on Azure Purview page. The name is usually called `{prefix}identity`.
+Only collection admins can perform the above operation, the user who created this Purview account is already one. If you want to add additional admins, you can do so by clicking on _Root collection permission_ option on Azure Purview page. The name is usually called `{resource_prefix}identity`.
 
 Congratulations, you have successfully deployed Feathr on Azure. You can access your resources by going to the resource group that you created for the deployment. A good first test would be to access Feathr UI, you can access it by clicking on App Service URL. The URL would have the following format:
 
 ```bash
-https://{prefix}webapp.azurewebsites.net
+https://{resource_prefix}webapp.azurewebsites.net
 ```
 
 ![app service url](../images/app-service-url.png)
 
 ![feathr ui landing page](../images/feathr-ui-landingpage.png)
+
+
+### 5. Initialize RBAC access table (Optional)
+
+If you want to use RBAC access for your deployment, you also need to manually initialize the user access table. Replace `[your-email-account]` with the email account that you are currently using, and this email will be the global admin for Feathr feature registry.
+
+You need to execute the command below in the database that you have created (see screenshot below). The database is usually something like `{resource_prefix}db`.
+
+```SQL
+insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time) values ('global', '[your-email-account]','admin', '[your-email-account]', 'Initialize First Global Admin',  getutcdate())
+```
+
+![Feathr RBAC initialization](../images/feathr-rbac-role-initialization.png)
+
+For more details on RBAC, refer to [Feathr Registry Access Control](../how-to-guides/../concepts/registry-access-control.md) for more details.
 
 ## Next Steps
 
