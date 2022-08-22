@@ -1062,7 +1062,6 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
       new GenericRowWithSchema(Array(2, 5, 2), expectedSchema),
       new GenericRowWithSchema(Array(3, 1, 1), expectedSchema))
     val dfs = runLocalFeatureJoinForTest(featureJoinAsString, featureDefAsString, "featuresWithFilterObs.avro.json").data
-    dfs.show()
 
     validateRows(dfs.select(keyField, features: _*).collect().sortBy(row => row.getAs[Int](keyField)), expectedRows)
   }
