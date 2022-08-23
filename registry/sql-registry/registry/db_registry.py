@@ -410,7 +410,6 @@ class DbRegistry(Registry):
         sql = fr"""select edge_id, from_id, to_id, conn_type from edges
         where from_id in %(ids)s
         and to_id in %(ids)s"""
-        types = [ str(t) for t in types]
         if len(types) > 0:
             sql = fr"""select edge_id, from_id, to_id, conn_type from edges
             where conn_type in %(types)s
@@ -419,7 +418,7 @@ class DbRegistry(Registry):
         
         rows = self.conn.query(sql, {
             "ids": tuple([str(id) for id in ids]),
-            "types": tuple([str(t) for t in types]),
+            "types": tuple([t.name for t in types]),
         })
         return list([_to_type(row, Edge) for row in rows])
 
