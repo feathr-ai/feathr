@@ -116,6 +116,7 @@ class RelationshipType(Enum):
     Consumes = 3
     Produces = 4
 
+
 class ToDict(ABC):
     """
     This ABC is used to convert object to dict, then JSON.
