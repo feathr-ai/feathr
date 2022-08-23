@@ -59,8 +59,10 @@ def source_to_def(v: Source) -> dict:
         ret["preprocessing"] = inspect.getsource(v.preprocessing)
     if v.event_timestamp_column:
         ret["eventTimestampColumn"] = v.event_timestamp_column
+        ret["event_timestamp_column"] = v.event_timestamp_column
     if v.timestamp_format:
         ret["timestampFormat"] = v.timestamp_format
+        ret["timestamp_format"] = v.timestamp_format
     if v.registry_tags:
         ret["tags"] = v.registry_tags
     return ret
