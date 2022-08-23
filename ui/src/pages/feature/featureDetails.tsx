@@ -275,6 +275,9 @@ const FeatureDetails = () => {
         } else {
           return (
             <>
+              <Button type="link" onClick={() => navigate(-1)}>
+                feature list {">"}
+              </Button>
               <Card>
                 <Title level={3}>{data.attributes.name}</Title>
                 <div>
