@@ -15,11 +15,11 @@ import { Feature } from "../models/model";
 import { fetchProjects, fetchFeatures } from "../api";
 
 type Props = {
-  preProject: string;
-  preKeyword: string;
+  projectProp: string;
+  keywordProp: string;
 };
 
-const FeatureList = ({ preProject, preKeyword }: Props) => {
+const FeatureList = ({ projectProp, keywordProp }: Props) => {
   const navigate = useNavigate();
   const columns = [
     {
@@ -176,9 +176,9 @@ const FeatureList = ({ preProject, preKeyword }: Props) => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [tableData, setTableData] = useState<Feature[]>();
-  const [query, setQuery] = useState<string>(preKeyword);
+  const [query, setQuery] = useState<string>(keywordProp);
   const [projects, setProjects] = useState<any>([]);
-  const [project, setProject] = useState<string>(preProject);
+  const [project, setProject] = useState<string>(projectProp);
   const [, setURLSearchParams] = useSearchParams();
 
   const fetchData = useCallback(
@@ -207,10 +207,10 @@ const FeatureList = ({ preProject, preKeyword }: Props) => {
   }, [loadProjects]);
 
   useEffect(() => {
-    if (preProject) {
-      fetchData(preProject);
+    if (projectProp) {
+      fetchData(projectProp);
     }
-  }, [preProject, fetchData]);
+  }, [projectProp, fetchData]);
 
   const onProjectChange = async (value: string) => {
     setProject(value);

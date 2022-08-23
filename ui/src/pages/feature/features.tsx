@@ -10,8 +10,8 @@ const Features = () => {
     navigate("/new-feature");
   };
   const [searchParams] = useSearchParams();
-  const preProject = (searchParams.get("project") as string) ?? "";
-  const preKeyword = (searchParams.get("keyword") as string) ?? "";
+  const project = (searchParams.get("project") as string) ?? "";
+  const keyword = (searchParams.get("keyword") as string) ?? "";
 
   return (
     <div className="page">
@@ -30,7 +30,7 @@ const Features = () => {
             + Create Feature
           </Button>
         </Space>
-        <FeatureList preProject={preProject} preKeyword={preKeyword} />
+        <FeatureList projectProp={project} keywordProp={keyword} />
       </Card>
     </div>
   );
