@@ -1381,9 +1381,9 @@ derivations: {
         feature_list=[]
         key_list = []
         for feature_entity in feature_entities:
-            for key in feature_entity["attributes"]["key"]:
-                key_list.append(TypedKey(key_column=key["keyColumn"], key_column_type=key["keyColumnType"], full_name=key["fullName"], description=key["description"], key_column_alias=key["keyColumnAlias"]))
-
+            first_key = feature_entity["attributes"]["key"][0]
+            key_list = [TypedKey(key_column=first_key["keyColumn"], key_column_type=first_key["keyColumnType"], full_name=first_key["fullName"], description=first_key["description"], key_column_alias=first_key["keyColumnAlias"])]
+            
             # after get keys, put them in features
             feature_list.append(Feature(name=feature_entity["attributes"]["name"],
                     feature_type=self._get_feature_type_from_hocon(feature_entity["attributes"]["type"]), # stored as a hocon string, can be parsed using pyhocon
