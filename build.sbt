@@ -82,7 +82,8 @@ lazy val root = (project in file("."))
 //     )
 // )
 
-// To assembly with certain java version: sbt assembly -java-home "/Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home"
+// To assembly with certain java version: sbt assembly -java-home "/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home"
+// Please specify the feathr version feathr-assembly-X.X.X-SNAPSHOT.jar
 // To execute the jar: java -jar target/scala-2.12/feathr-assembly-0.5.0-SNAPSHOT.jar
 
 assembly / assemblyMergeStrategy := {

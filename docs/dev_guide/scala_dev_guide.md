@@ -43,7 +43,7 @@ sbt assembly
 
 To compile with certain java version, run
 ```
-sbt assembly -java-home "/Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home"
+sbt assembly -java-home "/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home"
 ```
 
 The jar files are compiled and placed in `feathr/target/scala-2.12/feathr-assembly-X.X.X.jar `.
