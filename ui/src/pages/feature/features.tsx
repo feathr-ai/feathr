@@ -4,7 +4,7 @@ import FeatureList from "../../components/featureList";
 
 const { Title } = Typography;
 
-const Features: React.FC = () => {
+const Features = () => {
   const navigate = useNavigate();
   const onCreateFeatureClick = () => {
     navigate("/new-feature");

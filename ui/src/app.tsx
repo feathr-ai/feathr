@@ -34,11 +34,11 @@ const App = () => {
                 <Routes>
                   <Route path="/dataSources" element={<DataSources />} />
                   <Route path="/features" element={<Features />} />
+                  <Route path="/new-feature" element={<NewFeature />} />
                   <Route
                     path="/projects/:project/features/:featureId"
                     element={<FeatureDetails />}
                   />
-                  <Route path="/new-feature" element={<NewFeature />} />
                   <Route
                     path="/projects/:project/lineage"
                     element={<LineageGraph />}
