@@ -163,6 +163,8 @@ Other than the UDF in the input level, Feathr also allows some level of customiz
 
 For those row-level transformations, [Spark SQL built-in functions](https://spark.apache.org/docs/latest/api/sql/index.html) are supported. For example you can call [`dayofmonth`](https://spark.apache.org/docs/latest/api/sql/index.html#dayofmonth), [`xpath_double`](https://spark.apache.org/docs/latest/api/sql/index.html#xpath_double), or [`percent_rank`](https://spark.apache.org/docs/latest/api/sql/index.html#percent_rank) etc. in the Spark SQL built-in functions in the `transformation` parameter for Feathr.
 
+If you want to customize the capability here, i.e. not using the Spark built-in functions but want to use some customized functions, please refer to [Developing Customized Feathr Spark UDF document](../how-to-guides/feathr-spark-udf-advanced.md).
+
 Some examples are shown below. Note that usually they are row level transformations, and if you want to do some aggregations across rows, please check out [Window aggregation features](../concepts/feature-definition.md#window-aggregation-features).
 
 ```python
