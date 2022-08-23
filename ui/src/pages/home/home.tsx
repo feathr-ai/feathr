@@ -160,103 +160,94 @@ const Home = () => {
       </Row>
       <Row>
         <Col span={16}>
-          <Row>
-            <Col span={24}>
-              <Card
-                style={{
-                  marginTop: "15px",
-                  marginRight: "15px",
-                  boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-                  borderRadius: "8px",
-                }}
+          <Card
+            style={{
+              marginTop: "15px",
+              marginRight: "15px",
+              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
+              borderRadius: "8px",
+            }}
+          >
+            <Title level={2}>Need help to get started?</Title>
+            Explore the following resources to get started with Feathr:
+            <ul>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://github.com/linkedin/feathr#-documentation"
+                  rel="noreferrer"
+                >
+                  Documentation
+                </a>{" "}
+                provides docs for getting started
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://github.com/linkedin/feathr#%EF%B8%8F-running-feathr-on-cloud-with-a-few-simple-steps"
+                  rel="noreferrer"
+                >
+                  Running Feathr on Cloud
+                </a>{" "}
+                describes how to run Feathr to Azure with Databricks or Synapse
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://github.com/linkedin/feathr#%EF%B8%8F-cloud-integrations-and-architecture"
+                  rel="noreferrer"
+                >
+                  Cloud Integrations and Architecture on Cloud
+                </a>{" "}
+                describes Feathr architecture
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://github.com/linkedin/feathr#-slack-channel"
+                  rel="noreferrer"
+                >
+                  Slack Channel
+                </a>{" "}
+                describes how to join Slack channel for questions and
+                discussions
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://github.com/linkedin/feathr#-community-guidelines"
+                  rel="noreferrer"
+                >
+                  Community Guidelines
+                </a>{" "}
+                describes how to contribute to Feathr
+              </li>
+            </ul>
+            <p>
+              Visit
+              <a
+                target="_blank"
+                rel="noreferrer"
+                href="https://linkedin.github.io/feathr/concepts/feathr-concepts-for-beginners.html"
               >
-                <Title level={2}>Need help to get started?</Title>
-                Explore the following resources to get started with Feathr:
-                <ul>
-                  <li>
-                    <a
-                      target="_blank"
-                      href="https://github.com/linkedin/feathr#-documentation"
-                      rel="noreferrer"
-                    >
-                      Documentation
-                    </a>{" "}
-                    provides docs for getting started
-                  </li>
-                  <li>
-                    <a
-                      target="_blank"
-                      href="https://github.com/linkedin/feathr#%EF%B8%8F-running-feathr-on-cloud-with-a-few-simple-steps"
-                      rel="noreferrer"
-                    >
-                      Running Feathr on Cloud
-                    </a>{" "}
-                    describes how to run Feathr to Azure with Databricks or
-                    Synapse
-                  </li>
-                  <li>
-                    <a
-                      target="_blank"
-                      href="https://github.com/linkedin/feathr#%EF%B8%8F-cloud-integrations-and-architecture"
-                      rel="noreferrer"
-                    >
-                      Cloud Integrations and Architecture on Cloud
-                    </a>{" "}
-                    describes Feathr architecture
-                  </li>
-                  <li>
-                    <a
-                      target="_blank"
-                      href="https://github.com/linkedin/feathr#-slack-channel"
-                      rel="noreferrer"
-                    >
-                      Slack Channel
-                    </a>{" "}
-                    describes how to join Slack channel for questions and
-                    discussions
-                  </li>
-                  <li>
-                    <a
-                      target="_blank"
-                      href="https://github.com/linkedin/feathr#-community-guidelines"
-                      rel="noreferrer"
-                    >
-                      Community Guidelines
-                    </a>{" "}
-                    describes how to contribute to Feathr
-                  </li>
-                </ul>
-                <p>
-                  Visit
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                    href="https://linkedin.github.io/feathr/concepts/feathr-concepts-for-beginners.html"
-                  >
-                    {" "}
-                    Feathr Github Homepage
-                  </a>{" "}
-                  to learn more.
-                </p>
-              </Card>
-            </Col>
-          </Row>
+                {" "}
+                Feathr Github Homepage
+              </a>{" "}
+              to learn more.
+            </p>
+          </Card>
         </Col>
         <Col span={8}>
-          <Row>
-            <Col span={24}>
-              <Card
-                style={{
-                  marginTop: "15px",
-                  boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-                  borderRadius: "8px",
-                }}
-              >
-                <Title level={2}>Recent Activity</Title>
-                <span>Under construction</span>
-              </Card>
-            </Col>
-          </Row>
+          <Card
+            style={{
+              marginTop: "15px",
+              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
+              borderRadius: "8px",
+            }}
+          >
+            <Title level={2}>Recent Activity</Title>
+            <span>Under construction</span>
+          </Card>
         </Col>
       </Row>
     </div>

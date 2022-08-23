@@ -29,14 +29,24 @@ const ProjectList = () => {
       width: 120,
       render: (row: Project) => {
         return (
-          <Button
-            type="link"
-            onClick={() => {
-              navigate(`/projects/${row.name}/lineage`);
-            }}
-          >
-            View Lineage
-          </Button>
+          <>
+            <Button
+              type="link"
+              onClick={() => {
+                navigate(`/features?project=${row.name}`);
+              }}
+            >
+              View Features
+            </Button>
+            <Button
+              type="link"
+              onClick={() => {
+                navigate(`/projects/${row.name}/lineage`);
+              }}
+            >
+              View Lineage
+            </Button>
+          </>
         );
       },
       onCell: () => {
