@@ -1,6 +1,5 @@
-import React from "react";
 import { Button, Card, Space, Typography } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import FeatureList from "../../components/featureList";
 
 const { Title } = Typography;
@@ -10,6 +9,9 @@ const Features = () => {
   const onCreateFeatureClick = () => {
     navigate("/new-feature");
   };
+  const [searchParams] = useSearchParams();
+  const project = (searchParams.get("project") as string) ?? "";
+  const keyword = (searchParams.get("keyword") as string) ?? "";
 
   return (
     <div className="page">
@@ -28,7 +30,7 @@ const Features = () => {
             + Create Feature
           </Button>
         </Space>
-        <FeatureList />
+        <FeatureList projectProp={project} keywordProp={keyword} />
       </Card>
     </div>
   );

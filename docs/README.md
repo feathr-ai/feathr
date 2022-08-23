@@ -164,7 +164,7 @@ Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.
 | Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                            |
 | Compute Engine                  | Azure Synapse Spark Pools, Databricks                                       |
 | Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook               |
-| File Format                     | Parquet, ORC, Avro, JSON, Delta Lake                                        |
+| File Format                     | Parquet, ORC, Avro, JSON, Delta Lake, CSV                                   |
 | Credentials                     | Azure Key Vault                                                             |
 
 ## 🚀 Roadmap
