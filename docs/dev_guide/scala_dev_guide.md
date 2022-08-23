@@ -8,11 +8,11 @@ parent: Developer Guides
 
 ## IntelliJ Setup
 
-IntelliJ is the recommended IDE to use when developing Feathr. Please visit IntelliJ's 
+IntelliJ is the recommended IDE to use when developing Feathr. Please visit IntelliJ's
 [installation guide](https://www.jetbrains.com/help/idea/installation-guide.html) to install it
 in your local machine. To import Feathr as a new project:
 1. Git clone Feathr into your local machine. i.e. via https `git clone https://github.com/linkedin/feathr.git` or ssh `git clone git@github.com:linkedin/feathr.git`
-2. In IntelliJ, select `File` > `Project from Existing Sources...` and select `feathr` from the directory you cloned.
+2. In IntelliJ, select `File` > `New` > `Project from Existing Sources...` and select `feathr` from the directory you cloned.
 3. Under `Import project from external model` select `sbt`. Click `Next`.
 4. Under `Project JDK` specify a valid Java `1.8` JDK and select SBT shell for `project reload` and `builds`.
 5. Click `Finish`.
@@ -38,8 +38,15 @@ Feathr is compiled using [SBT](https://www.scala-sbt.org/1.x/docs/Command-Line-R
 
 To compile, run
 ```
-sbt compile
+sbt assembly
 ```
+
+To compile with certain java version, run
+```
+sbt assembly -java-home "/Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home"
+```
+
+The jar files are compiled and placed in `feathr/target/scala-2.12/feathr-assembly-X.X.X.jar `.
 
 To execute tests, run
 ```
