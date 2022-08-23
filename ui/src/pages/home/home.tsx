@@ -15,7 +15,6 @@ const Home = () => {
     <div className="page">
       <Card
         style={{
-          minWidth: "1000px",
           boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
           borderRadius: "8px",
         }}
@@ -167,7 +166,6 @@ const Home = () => {
                 style={{
                   marginTop: "15px",
                   marginRight: "15px",
-                  minWidth: "1000px",
                   boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
                   borderRadius: "8px",
                 }}
@@ -245,16 +243,20 @@ const Home = () => {
           </Row>
         </Col>
         <Col span={8}>
-          <Card
-            style={{
-              marginTop: "15px",
-              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-              borderRadius: "8px",
-            }}
-          >
-            <Title level={2}>Recent Activity</Title>
-            <span>Under construction</span>
-          </Card>
+          <Row>
+            <Col span={24}>
+              <Card
+                style={{
+                  marginTop: "15px",
+                  boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
+                  borderRadius: "8px",
+                }}
+              >
+                <Title level={2}>Recent Activity</Title>
+                <span>Under construction</span>
+              </Card>
+            </Col>
+          </Row>
         </Col>
       </Row>
     </div>

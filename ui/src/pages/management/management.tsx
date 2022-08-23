@@ -7,7 +7,7 @@ const { Title } = Typography;
 const Management = () => {
   return (
     <div className="page">
-      <Card style={{ minWidth: "1000px" }}>
+      <Card>
         <Title level={3}>Role Management</Title>
         <UserRoles />
       </Card>
