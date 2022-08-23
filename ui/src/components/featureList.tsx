@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { DownOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -14,7 +14,12 @@ import {
 import { Feature } from "../models/model";
 import { fetchProjects, fetchFeatures } from "../api";
 
-const FeatureList = () => {
+type Props = {
+  projectProp: string;
+  keywordProp: string;
+};
+
+const FeatureList = ({ projectProp, keywordProp }: Props) => {
   const navigate = useNavigate();
   const columns = [
     {
@@ -171,9 +176,10 @@ const FeatureList = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [tableData, setTableData] = useState<Feature[]>();
-  const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState<string>(keywordProp);
   const [projects, setProjects] = useState<any>([]);
-  const [project, setProject] = useState<string>("");
+  const [project, setProject] = useState<string>(projectProp);
+  const [, setURLSearchParams] = useSearchParams();
 
   const fetchData = useCallback(
     async (project) => {
@@ -182,8 +188,12 @@ const FeatureList = () => {
       setPage(page);
       setTableData(result);
       setLoading(false);
+      setURLSearchParams({
+        project: project,
+        keyword: query,
+      });
     },
-    [page, query]
+    [page, query, setURLSearchParams]
   );
 
   const loadProjects = useCallback(async () => {
@@ -195,6 +205,12 @@ const FeatureList = () => {
   useEffect(() => {
     loadProjects();
   }, [loadProjects]);
+
+  useEffect(() => {
+    if (projectProp) {
+      fetchData(projectProp);
+    }
+  }, [projectProp, fetchData]);
 
   const onProjectChange = async (value: string) => {
     setProject(value);
@@ -233,6 +249,7 @@ const FeatureList = () => {
         ></Select>
       </Form.Item>
       <Input
+        value={query}
         placeholder="keyword"
         style={{ width: "10%", marginLeft: "5px" }}
         onChange={(e) => onKeywordChange(e.target.value)}
