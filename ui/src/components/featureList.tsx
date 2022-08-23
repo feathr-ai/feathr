@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { DownOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -13,14 +13,13 @@ import {
 } from "antd";
 import { Feature } from "../models/model";
 import { fetchProjects, fetchFeatures } from "../api";
-import { setLocalVariables } from "../utils/utils";
 
 type Props = {
   preProject: string;
   preKeyword: string;
 };
 
-const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
+const FeatureList = ({ preProject, preKeyword }: Props) => {
   const navigate = useNavigate();
   const columns = [
     {
@@ -180,6 +179,7 @@ const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
   const [query, setQuery] = useState<string>(preKeyword);
   const [projects, setProjects] = useState<any>([]);
   const [project, setProject] = useState<string>(preProject);
+  const [, setURLSearchParams] = useSearchParams();
 
   const fetchData = useCallback(
     async (project) => {
@@ -188,9 +188,12 @@ const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
       setPage(page);
       setTableData(result);
       setLoading(false);
-      setLocalVariables((preProject = project), (preKeyword = query));
+      setURLSearchParams({
+        project: project,
+        keyword: query,
+      });
     },
-    [page, query]
+    [page, query, setURLSearchParams]
   );
 
   const loadProjects = useCallback(async () => {
@@ -204,7 +207,7 @@ const FeatureList: React.FC<Props> = ({ preProject, preKeyword }) => {
   }, [loadProjects]);
 
   useEffect(() => {
-    if (preProject !== "") {
+    if (preProject) {
       fetchData(preProject);
     }
   }, [preProject, fetchData]);

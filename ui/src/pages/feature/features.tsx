@@ -1,23 +1,17 @@
-import React, { useState } from "react";
 import { Button, Card, Space, Typography } from "antd";
-import { useNavigate, useNavigationType } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import FeatureList from "../../components/featureList";
-import { LocalVariables, getLocalVariable } from "../../utils/utils";
 
 const { Title } = Typography;
 
 const Features: React.FC = () => {
-  const navigationType = useNavigationType();
   const navigate = useNavigate();
   const onCreateFeatureClick = () => {
     navigate("/new-feature");
   };
-  const [preProject] = useState(
-    navigationType === "POP" ? getLocalVariable(LocalVariables.PreProject) : ""
-  );
-  const [preKeyword] = useState(
-    navigationType === "POP" ? getLocalVariable(LocalVariables.PreKeyword) : ""
-  );
+  const [searchParams] = useSearchParams();
+  const preProject = (searchParams.get("project") as string) ?? "";
+  const preKeyword = (searchParams.get("keyword") as string) ?? "";
 
   return (
     <div className="page">

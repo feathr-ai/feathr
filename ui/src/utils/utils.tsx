@@ -36,17 +36,3 @@ export const isFeature = (featureType: string) => {
     featureType === FeatureType.DerivedFeature
   );
 };
-
-export const enum LocalVariables {
-  PreKeyword = "preKeyword",
-  PreProject = "preProject",
-}
-
-export const setLocalVariables = (preProject = "", preKeyword = "") => {
-  localStorage.setItem(LocalVariables.PreKeyword, preKeyword);
-  localStorage.setItem(LocalVariables.PreProject, preProject);
-};
-
-export const getLocalVariable = (key: LocalVariables) => {
-  return localStorage.getItem(key) ?? "";
-};
