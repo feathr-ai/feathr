@@ -9,7 +9,7 @@ const ResponseErrors = () => {
     case "403":
       return (
         <div className="page">
-          <Card style={{ minWidth: "1000px" }}>
+          <Card>
             <Title level={3}> ERROR 403</Title>
             ACCESS NOT GRANTED
             <Card>{detail}</Card>
@@ -20,7 +20,7 @@ const ResponseErrors = () => {
     default:
       return (
         <div className="page">
-          <Card style={{ minWidth: "1000px" }}>
+          <Card>
             <Title level={3}>Unknown Error</Title>
           </Card>
         </div>
