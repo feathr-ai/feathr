@@ -10,6 +10,7 @@ import {
   Tooltip,
   Form,
   Table,
+  Space,
 } from "antd";
 import { Feature } from "../models/model";
 import { fetchProjects, fetchFeatures } from "../api";
@@ -226,6 +227,9 @@ const FeatureList = ({ projectProp, keywordProp }: Props) => {
     fetchData(project);
   };
 
+  const onCreateFeatureClick = () => {
+    navigate("/new-feature");
+  };
   return (
     <div>
       <Form.Item
@@ -263,6 +267,19 @@ const FeatureList = ({ projectProp, keywordProp }: Props) => {
       >
         Search
       </Button>
+      <Space style={{ marginBottom: 16 }}>
+        <Button
+          type="primary"
+          onClick={onCreateFeatureClick}
+          style={{
+            position: "absolute",
+            right: "12px",
+            top: "56px",
+          }}
+        >
+          + Create Feature
+        </Button>
+      </Space>
       <Table
         dataSource={tableData}
         columns={columns}

@@ -16,6 +16,8 @@ import LineageGraph from "./pages/feature/lineageGraph";
 import Management from "./pages/management/management";
 import ResponseErrors from "./pages/responseErrors/responseErrors";
 import RoleManagement from "./pages/management/roleManagement";
+import Home from "./pages/home/home";
+import Projects from "./pages/project/projects";
 import { getMsalConfig } from "./utils/utils";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,9 @@ const App = () => {
               <Layout>
                 <Header />
                 <Routes>
+                  <Route index element={<Home />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/projects" element={<Projects />} />
                   <Route path="/dataSources" element={<DataSources />} />
                   <Route path="/features" element={<Features />} />
                   <Route path="/new-feature" element={<NewFeature />} />

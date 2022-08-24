@@ -1,10 +1,12 @@
 import { Layout, Menu, Typography } from "antd";
 import {
+  ControlOutlined,
   CopyOutlined,
   DatabaseOutlined,
   EyeOutlined,
+  HomeOutlined,
+  ProjectOutlined,
   RocketOutlined,
-  ControlOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 
@@ -36,6 +38,20 @@ const SideMenu = () => {
         defaultSelectedKeys={["/"]}
         defaultOpenKeys={["/"]}
       >
+        <Menu.Item
+          key="/home"
+          icon={<HomeOutlined style={{ fontSize: "20px", color: "#e28743" }} />}
+        >
+          <Link to="/home">Home</Link>
+        </Menu.Item>
+        <Menu.Item
+          key="/projects"
+          icon={
+            <ProjectOutlined style={{ fontSize: "20px", color: "#177ddc" }} />
+          }
+        >
+          <Link to="/projects">Projects</Link>
+        </Menu.Item>
         <Menu.Item
           key="/dataSources"
           icon={
