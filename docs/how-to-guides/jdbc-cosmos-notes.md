@@ -44,13 +44,20 @@ When the `auth` parameter is set to `TOKEN`, you need to set following environme
 I.e., if you created a source:
 
 ```
-source1 = JdbcSource(name="source1", url="jdbc:...", dbtable="table1", auth="USERPASS")
+src1_name="source1"
+source1 = JdbcSource(name=src1_name, url="jdbc:...", dbtable="table1", auth="USERPASS")
+anchor1 = FeatureAnchor(name="anchor_name",
+                        source=source1,
+                        features=[some_features, some_other_features])
 ```
 
-You need to set 2 environment variables:
+You need to set 2 environment variables before submitting jobs:
 ```
-os.environ["source1_USER"] = "some_user_name"
-os.environ["source1_PASSWORD"] = "some_magic_word"
+os.environ[f"{src1_name}_USER"] = "some_user_name"
+os.environ[f"{src1_name}_PASSWORD"] = "some_magic_word"
+
+client.build_features(anchor_list=[anchor1, ...])
+client.get_offline_features(...)
 ```
 
 These values will be automatically passed to the Feathr core when submitting the job.
@@ -85,4 +92,14 @@ os.environ[f"{name}_KEY"] = "some_cosmosdb_api_key"
 client.materialize_features(..., materialization_settings=MaterializationSettings(..., sinks=[sink]))
 ```
 
-NOTE: Feathr client doesn't support getting feature values from CosmosDb, you need to use [official CosmosDb client](https://pypi.org/project/azure-cosmos/) to get the values.
+Feathr client doesn't support getting feature values from CosmosDb, you need to use [official CosmosDb client](https://pypi.org/project/azure-cosmos/) to get the values:
+
+```
+from azure.cosmos import exceptions, CosmosClient, PartitionKey
+
+client = CosmosClient(some_cosmosdb_url, some_cosmosdb_api_key)
+db_client = client.get_database_client(some_cosmosdb_database)
+container_client = db_client.get_container_client(some_cosmosdb_collection)
+doc = container_client.read_item(some_key)
+feature_value = doc['feature_name']
+```

@@ -212,6 +212,10 @@ class JdbcSink(Sink):
         return json.dumps(d)
     
 class GenericSink(Sink):
+    """
+    This class is corresponding to 'GenericLocation' in Feathr core, but only be used as Sink.
+    The class is not meant to be used by user directly, user should use its subclasses like `CosmosDbSink`
+    """
     def __init__(self, format: str, mode: Optional[str] = None, options: Dict[str, str] = {}) -> None:
         self.format = format
         self.mode = mode
@@ -249,6 +253,10 @@ class GenericSink(Sink):
         return json.dumps(self._to_dict())
     
 class CosmosDbSink(GenericSink):
+    """
+    CosmosDbSink is a sink that is used to store online feature data in CosmosDB.
+    Even it's possible, but we shouldn't use it as offline store as CosmosDb requires records to have unique keys, why offline feature job cannot generate unique keys.
+    """
     def __init__(self, name: str, endpoint: str, database: str, container: str):        
         super().__init__(format = "cosmos.oltp", mode="APPEND", options={
             "spark.cosmos.accountEndpoint": endpoint,

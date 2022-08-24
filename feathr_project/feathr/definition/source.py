@@ -255,6 +255,10 @@ class KafKaSource(Source):
         raise TypeError("KafKaSource cannot be used as observation source")
 
 class GenericSource(Source):
+    """
+    This class is corresponding to 'GenericLocation' in Feathr core, but only be used as Source.
+    The class is not meant to be used by user directly, user should use its subclasses like `CosmosDbSource`
+    """
     def __init__(self, name: str, format: str, mode: Optional[str] = None, options: Dict[str, str] = {}, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
         super().__init__(name, event_timestamp_column,
                          timestamp_format, registry_tags=registry_tags)
@@ -316,6 +320,9 @@ class GenericSource(Source):
 
 
 class CosmosDbSource(GenericSource):
+    """
+    Use CosmosDb as the data source
+    """
     def __init__(self,
                  name: str,
                  endpoint: str,
