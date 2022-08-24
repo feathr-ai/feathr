@@ -60,6 +60,7 @@ offline_store:
 
   # snowflake endpoint
   snowflake:
+    snowflake_enabled: true
     url: "dqllago-ol19457.snowflakecomputing.com"
     user: "feathrintegration"
     role: "ACCOUNTADMIN"
