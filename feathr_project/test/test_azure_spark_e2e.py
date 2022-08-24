@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+from feathr.definition.sink import CosmosDbSink
 
 import pytest
 from click.testing import CliRunner
@@ -245,3 +246,29 @@ def test_feathr_get_offline_features_to_sql():
         # We may not have SQL client package installed so skip the verification
         # res_df = get_result_df(client)
         # assert res_df.shape[0] > 0
+
+@pytest.mark.skip(reason="We don't have CosmosDb configured in CI pipeline")
+def test_feathr_materialize_to_cosmosdb():
+    """
+    Test FeathrClient() CosmosDbSink.
+    """
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    # os.chdir(test_workspace_dir)
+
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+
+    now = datetime.now()
+    collection = ''.join(['feathrazure_cijob_materialize_cosmosdb_','_', str(now.minute), '_', str(now.second), ""])
+    sink = CosmosDbSink(name='o', endpoint='https://feathrtestcosmosdb.documents.azure.com:443/', database='feathr', collection=collection)
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[sink],
+                                       feature_names=[
+                                           "f_location_avg_fare", "f_location_max_fare"],
+                                       backfill_time=backfill_time)
+    client.materialize_features(settings)
+    # assuming the job can successfully run; otherwise it will throw exception
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
