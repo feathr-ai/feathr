@@ -115,9 +115,24 @@ class FeathrClient(object):
         self.redis_ssl_enabled = self.envutils.get_environment_variable_with_default(
             'online_store', 'redis', 'ssl_enabled')
 
+        # Offline store enabled configs; false by default
+        self.s3_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 's3', 's3_enabled')
+        self.adls_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 'adls', 'adls_enabled')
+        self.wasb_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 'wasb', 'wasb_enabled')
+        self.jdbc_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 'jdbc', 'jdbc_enabled')
+        self.snowflake_enabled = self.envutils.get_environment_variable_with_default(
+            'offline_store', 'snowflake', 'snowflake_enabled')
+        if not (self.s3_enabled or self.adls_enabled or self.wasb_enabled or self.jdbc_enabled or self.snowflake_enabled):
+            self.logger.warning("No offline storage enabled.")
+
         # S3 configs
-        self.s3_endpoint = self.envutils.get_environment_variable_with_default(
-            'offline_store', 's3', 's3_endpoint')
+        if self.s3_enabled:
+            self.s3_endpoint = self.envutils.get_environment_variable_with_default(
+                'offline_store', 's3', 's3_endpoint')
 
         # spark configs
         self.output_num_parts = self.envutils.get_environment_variable_with_default(
@@ -502,24 +517,38 @@ class FeathrClient(object):
             python_files=cloud_udf_paths,
             job_tags=job_tags,
             main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
-            arguments=[
+            arguments= [
                 '--join-config', self.feathr_spark_launcher.upload_or_get_cloud_path(
                     feature_join_job_params.join_config_path),
                 '--input', feature_join_job_params.observation_path,
                 '--output', feature_join_job_params.job_output_path,
                 '--feature-config', self.feathr_spark_launcher.upload_or_get_cloud_path(
                     feature_join_job_params.feature_config),
-                '--num-parts', self.output_num_parts,
-                '--s3-config', self._get_s3_config_str(),
-                '--adls-config', self._get_adls_config_str(),
-                '--blob-config', self._get_blob_config_str(),
-                '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str()
-            ],
+                '--num-parts', self.output_num_parts
+            ]+self._get_offline_storage_arguments(),
             reference_files_path=[],
             configuration=execution_configurations,
             properties=self._get_system_properties()
         )
+
+    def _get_offline_storage_arguments(self):
+        arguments = []
+        if self.s3_enabled:
+            arguments.append('--s3-config')
+            arguments.append(self._get_s3_config_str())
+        if self.adls_enabled:
+            arguments.append('--adls-config')
+            arguments.append(self._get_adls_config_str())
+        if self.wasb_enabled:
+            arguments.append('--blob-config')
+            arguments.append(self._get_blob_config_str())
+        if self.jdbc_enabled:
+            arguments.append('--sql-config')
+            arguments.append(self._get_sql_config_str())
+        if self.snowflake_enabled:
+            arguments.append('--snowflake-config')
+            arguments.append(self._get_snowflake_config_str())
+        return arguments
 
     def get_job_result_uri(self, block=True, timeout_sec=300) -> str:
         """Gets the job output URI
@@ -617,12 +646,7 @@ class FeathrClient(object):
                 '--feature-config', self.feathr_spark_launcher.upload_or_get_cloud_path(
                 generation_config.feature_config),
                 '--redis-config', self._getRedisConfigStr(),
-                '--s3-config', self._get_s3_config_str(),
-                '--adls-config', self._get_adls_config_str(),
-                '--blob-config', self._get_blob_config_str(),
-                '--sql-config', self._get_sql_config_str(),
-                '--snowflake-config', self._get_snowflake_config_str(),
-            ] + optional_params
+            ] + self._get_offline_storage_arguments()+optional_params
         monitoring_config_str = self._get_monitoring_config_str()
         if monitoring_config_str:
             arguments.append('--monitoring-config')
