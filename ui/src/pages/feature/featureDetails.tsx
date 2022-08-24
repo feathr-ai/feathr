@@ -107,7 +107,6 @@ const InputAnchorFeatures = ({
             style={{
               marginTop: "15px",
               marginRight: "15px",
-              minWidth: "1000px",
               boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
               borderRadius: "8px",
             }}
@@ -147,7 +146,6 @@ const InputDerivedFeatures = ({
             style={{
               marginTop: "15px",
               marginRight: "15px",
-              minWidth: "1000px",
               boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
               borderRadius: "8px",
             }}
@@ -275,6 +273,9 @@ const FeatureDetails = () => {
         } else {
           return (
             <>
+              <Button type="link" onClick={() => navigate(-1)}>
+                feature list {">"}
+              </Button>
               <Card>
                 <Title level={3}>{data.attributes.name}</Title>
                 <div>

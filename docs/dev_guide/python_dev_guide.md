@@ -31,6 +31,25 @@ We use [Google Python Style Guide](https://google.github.io/styleguide/pyguide.h
 
 Run `pytest` in this folder to kick off the integration test. The integration test will test the creation of feature dataset, the materialization to online storage, and retrieve from online storage, as well as the CLI. It usually takes 5 ~ 10 minutes. It needs certain keys for cloud resources.
 
+## Using Docker
+
+We provide a dockerfile with feathr installed, and with embedded vscode server, and jupyter lab. 
+To build the docker, navigate to Feathr root folder, and use following command to build a docker file:
+`docker build -t <Your Image Name> docker`
+
+Run the docker image with port mapping. 
+![dockerportmapping](./images/docker_port_mapping.png)
+
+
+8080 : VsCode (default password is 'feathr')
+
+9090: Jupyter Lab (default password is 'feathr')
+
+With the docker image running, open your browser and access 
+`localhost:<your mapped port>` to access apps.
+![codeserver](./images/vscode_browser.png)
+![jupyterlab](./images/jupyterlab_browser.png)
+
 
 ## Using Virtual Environment
 

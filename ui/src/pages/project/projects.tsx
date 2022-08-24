@@ -1,18 +1,18 @@
 import React from "react";
 import { Card, Typography } from "antd";
-import UserRoles from "../../components/userRoles";
+import ProjectList from "../../components/projectList";
 
 const { Title } = Typography;
 
-const Management = () => {
+const Projects = () => {
   return (
     <div className="page">
       <Card>
-        <Title level={3}>Role Management</Title>
-        <UserRoles />
+        <Title level={3}>Projects</Title>
+        <ProjectList />
       </Card>
     </div>
   );
 };
 
-export default Management;
+export default Projects;

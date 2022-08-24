@@ -49,7 +49,7 @@ After docker image launched, open web browser and navigate to <https://localhost
 
 ## Upload to DockerHub Registry
 
-Login with feathrfeaturestore account and then run **docker push** command to publish docker image to DockerHub.
+Login with feathrfeaturestore account and then run **docker push** command to publish docker image to DockerHub. Contact Feathr Team (@jainr, @blrchen) for credentials.
 
 ```bash
 docker login

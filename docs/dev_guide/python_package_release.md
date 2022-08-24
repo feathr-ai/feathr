@@ -24,7 +24,7 @@ parent: Developer Guides
 - Generate sdist: `python3 -m build --sdist`. A tar.gz file will be generated.
 - Check the `dist` folder and you should see only two newly generated files, one for wheel(`.wheel`) and one for dist(`.gz`).
 - Upload to Pypi `python3 -m twine upload dist/*`. This will upload both wheel and dist to Pypi. Username and password
-  of your pypi.org account is needed to finish the uploading.
+  of your pypi.org account is needed to finish the uploading. Contact Feathr Team (@jainr, @blrchen) for credentials.
 - If upload completed, you can see your new version in https://pypi.org/manage/project/feathr/.
 - You can also delete the uploaded package in https://pypi.org/manage/project/feathr/releases/.
 
