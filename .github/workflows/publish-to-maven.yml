@@ -25,6 +25,8 @@ jobs:
 
       - name: Build and Publish package
         run: |
+          GPG_TTY=$(tty)
+          export GPG_TTY
           sbt reload
           sbt publishSigned
           sbt sonatypeBundleRelease
