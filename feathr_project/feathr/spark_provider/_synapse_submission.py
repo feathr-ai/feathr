@@ -178,7 +178,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                 return True
             elif status in {LivyStates.ERROR.value, LivyStates.DEAD.value, LivyStates.KILLED.value}:
                 logger.error("Feathr job has failed.")
-                logger.error(self._api.get_driver_log(self.current_job_info.id))
+                logger.error(self._api.get_driver_log(self.current_job_info.id).decode('utf-8'))
                 return False
             else:
                 time.sleep(30)
