@@ -76,6 +76,7 @@ class FeatureGenerationJobParams:
     Attributes:
         generation_config_path: Path to the feature generation config.
         feature_config: Path to the features config.
+        secrets: secret names from data sources, the values will be taken from env or KeyVault
     """
 
     def __init__(self, generation_config_path, feature_config, secrets=[]):
@@ -611,7 +612,7 @@ class FeathrClient(object):
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
             udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
-            # CLI will directly call this so the experiene won't be broken
+            # CLI will directly call this so the experience won't be broken
             self._materialize_features_with_config(config_file_path, execution_configurations, udf_files, secrets)
             if os.path.exists(config_file_path):
                 os.remove(config_file_path)
