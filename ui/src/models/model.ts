@@ -1,3 +1,7 @@
+export interface Project {
+  name: string;
+}
+
 export interface Feature {
   attributes: FeatureAttributes;
   displayText: string;
