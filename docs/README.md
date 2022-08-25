@@ -169,12 +169,12 @@ Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.
 
 ## 🚀 Roadmap
 
-For a complete roadmap with estimated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
-
-- [x] Support streaming
-- [x] Support common data sources
+- [x] Support streaming features with transformation
+- [x] Support common data sources and sinks
 - [x] Support feature store UI, including Lineage and Search functionalities
+- [ ] Support a sandbox Feathr environment for better getting started experience
 - [ ] Support online transformation
+- [ ] More online client libraries such as Java
 - [ ] Support feature versioning
 - [ ] Support feature monitoring
 - [ ] Support feature data deletion and retention
