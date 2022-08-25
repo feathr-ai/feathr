@@ -97,6 +97,38 @@ class RedisSink(Sink):
     def to_argument(self):
         raise TypeError("RedisSink cannot be used as output argument")
 
+class AerospikeSink(Sink):
+    """Aerospike-based sink that stores feature monitoring results.
+
+    Attributes:
+        table_name: output table name
+    """
+    def __init__(self, namespace: str, seedhost:str) -> None:
+        self.namespace = namespace
+        self.seedhost = seedhost
+
+
+    def to_feature_config(self) -> str:
+        """Produce the config used in feature monitoring"""
+        tm = Template("""  
+            {
+                name: AEROSPIKE
+                params: {
+                    namespace: "{{source.namespace}}"
+                    seedhost:"{{source.seedhost}}"
+                }
+            }
+        """)
+        msg = tm.render(source=self)
+        return msg
+
+    def support_offline(self) -> bool:
+        return False
+    
+    def support_online(self) -> bool:
+        return True
+    def to_argument(self):
+        raise TypeError("Aerospike sink cannot be used as output argument")
 
 class HdfsSink(Sink):
     """Offline Hadoop HDFS-compatible(HDFS, delta lake, Azure blog storage etc) sink that is used to store feature data.
