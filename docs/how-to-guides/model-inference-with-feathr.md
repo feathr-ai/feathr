@@ -1,15 +1,14 @@
 ---
 layout: default
-title: Consuming Features in ML Platforms
+title: Model Inference with Features from Feathr
 parent: How-to Guides
 ---
 
-# Consuming Features in ML Platforms
+# Model Inference with Features from Feathr
 
-After you have materialized features in online store such as Redis, usually end users want to consume those features in production environment for model inference. 
+After you have materialized features in online store such as Redis, usually end users want to consume those features in production environment for model inference.
 
 With Feathr's online client, it is quite straightforward to do that. The sample code is as below, where users only need to configure the online store endpoint (if using Redis), and call `client.get_online_features()` to get the features for a particular key.
-
 
 ```python
 
@@ -28,7 +27,7 @@ client = FeathrClient()
 
 # put this section in the model inference handler
 feature = client.get_online_features(feature_table="nycTaxiCITable",
-                                 key='2020-04-15', 
+                                 key='2020-04-15',
                                  feature_names=['f_is_long_trip_distance', 'f_day_of_week'])
 # `res` will be an array representing the features of that particular key.
 
@@ -49,7 +48,7 @@ In the initialization handler, initialize the environment variables and initiali
 ```python
 # put this section in the model inference handler
 feature = client.get_online_features(feature_table="nycTaxiCITable",
-                                 key='2020-04-15', 
+                                 key='2020-04-15',
                                  feature_names=['f_is_long_trip_distance', 'f_day_of_week'])
 # `res` will be an array representing the features of that particular key.
 
@@ -57,4 +56,3 @@ feature = client.get_online_features(feature_table="nycTaxiCITable",
 # `model` will be a ML model that is loaded previously.
 result = model.predict(feature)
 ```
-
