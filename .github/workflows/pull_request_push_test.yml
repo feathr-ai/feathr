@@ -187,6 +187,9 @@ jobs:
           KAFKA_SASL_JAAS_CONFIG: ${{secrets.KAFKA_SASL_JAAS_CONFIG}}
           MONITORING_DATABASE_SQL_PASSWORD: ${{secrets.MONITORING_DATABASE_SQL_PASSWORD}}
           SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/${{ env.CI_SPARK_REMOTE_JAR_FOLDER}}/${{ env.FEATHR_LOCAL_JAR_NAME}}"
+          COSMOS1_KEY: ${{secrets.COSMOS1_KEY}}
+          SQL1_USER: ${{secrets.SQL1_USER}}
+          SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
