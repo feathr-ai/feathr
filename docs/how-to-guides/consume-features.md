@@ -41,8 +41,20 @@ result = model.predict(feature)
 
 Usually for ML platforms such as Azure Machine Learning, Sagemaker, or DataRobot, there are options where you can "bring your own container" or using "container inference". Basically it requires end users to write an "entry script" and provide a few functions. In those cases, there are usually two handlers:
 
-- an initialization handler to allow users to load configurations. For example, in Azure Machine Learning, it is a function called `init()`, and in Sagemaker, it is 
-- a model inference handler to do the model inference. For example, `predict_fn()`
+- an initialization handler to allow users to load configurations. For example, in Azure Machine Learning, it is a function called `init()`, and in Sagemaker, it is `model_fn()`.
+- a model inference handler to do the model inference. For example, in Azure Machine Learning, it is called `init()`, and in Sagemaker, it is called `predict_fn()`.
 
-In the initialization handler
+In the initialization handler, initialize the environment variables and initialize `FeathrClient` as shown in the above script; in the inference handler, call this line:
+
+```python
+# put this section in the model inference handler
+feature = client.get_online_features(feature_table="nycTaxiCITable",
+                                 key='2020-04-15', 
+                                 feature_names=['f_is_long_trip_distance', 'f_day_of_week'])
+# `res` will be an array representing the features of that particular key.
+
+
+# `model` will be a ML model that is loaded previously.
+result = model.predict(feature)
+```
 
