@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Model Inference with Features from Feathr
+title: Online Model Inference with Features from Feathr
 parent: How-to Guides
 ---
 
-# Model Inference with Features from Feathr
+# Online Model Inference with Features from Feathr
 
 After you have materialized features in online store such as Redis, usually end users want to consume those features in production environment for model inference.
 
