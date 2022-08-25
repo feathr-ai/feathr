@@ -53,8 +53,8 @@ anchor1 = FeatureAnchor(name="anchor_name",
 
 You need to set 2 environment variables before submitting jobs:
 ```
-os.environ[f"{src1_name}_USER"] = "some_user_name"
-os.environ[f"{src1_name}_PASSWORD"] = "some_magic_word"
+os.environ[f"{src1_name.upper()}_USER"] = "some_user_name"
+os.environ[f"{src1_name.upper()}_PASSWORD"] = "some_magic_word"
 
 client.build_features(anchor_list=[anchor1, ...])
 client.get_offline_features(...)
@@ -72,8 +72,8 @@ sink = client.JdbcSink(name, some_jdbc_url, dbtable, "USERPASS")
 
 Then you need to set following environment variables before submitting job:
 ```
-os.environ[f"{name}_USER"] = "some_user_name"
-os.environ[f"{name}_PASSWORD"] = "some_magic_word"
+os.environ[f"{name.upper()}_USER"] = "some_user_name"
+os.environ[f"{name.upper()}_PASSWORD"] = "some_magic_word"
 client.get_offline_features(..., output_path=sink)
 ```
 
@@ -88,7 +88,7 @@ To use CosmosDb as the online store, create `CosmosDbSink` and add it to the `Ma
 ```
 name = 'cosmosdb_output'
 sink = CosmosDbSink(name, some_cosmosdb_url, some_cosmosdb_database, some_cosmosdb_collection)
-os.environ[f"{name}_KEY"] = "some_cosmosdb_api_key"
+os.environ[f"{name.upper()}_KEY"] = "some_cosmosdb_api_key"
 client.materialize_features(..., materialization_settings=MaterializationSettings(..., sinks=[sink]))
 ```
 

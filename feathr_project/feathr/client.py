@@ -805,6 +805,7 @@ class FeathrClient(object):
         """Collect all values corresponding to the secret names."""
         prop_and_value = {}
         for prop in self.secret_names + additional_secrets:
+            prop = prop.upper()
             prop_and_value[prop] = self.envutils.get_environment_variable_with_default(prop)
         return prop_and_value
 

@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import copy
 import json
 from typing import Dict, List, Optional
 from jinja2 import Template
@@ -160,9 +161,9 @@ class JdbcSink(Sink):
         if not hasattr(self, "auth"):
             return []
         if self.auth == "USERPASS":
-            return ["%s_USER" % self.name, "%s_PASSWORD" % self.name]
+            return ["%s_USER" % self.name.upper(), "%s_PASSWORD" % self.name.upper()]
         elif self.auth == "TOKEN":
-            return ["%s_TOKEN" % self.name]
+            return ["%s_TOKEN" % self.name.upper()]
 
     def support_offline(self) -> bool:
         return True
@@ -190,7 +191,9 @@ class JdbcSink(Sink):
                 }
             }
         """)
-        hocon_config = tm.render(sink=self)
+        sink = copy.copy(self)
+        sink.name = self.name.upper()
+        hocon_config = tm.render(sink=sink)
         return hocon_config
 
     def to_argument(self):
@@ -202,11 +205,11 @@ class JdbcSink(Sink):
             d["dbtable"] = self.dbtable
         if hasattr(self, "auth"):
             if self.auth == "USERPASS":
-                d["user"] = "${" + self.name + "_USER}"
-                d["password"] = "${" + self.name + "_PASSWORD}"
+                d["user"] = "${" + self.name.upper() + "_USER}"
+                d["password"] = "${" + self.name.upper() + "_PASSWORD}"
             elif self.auth == "TOKEN":
                 d["useToken"] = True
-                d["token"] = "${" + self.name + "_TOKEN}"
+                d["token"] = "${" + self.name.upper() + "_TOKEN}"
         else:
             d["anonymous"] = True
         return json.dumps(d)
@@ -260,7 +263,7 @@ class CosmosDbSink(GenericSink):
     def __init__(self, name: str, endpoint: str, database: str, container: str):        
         super().__init__(format = "cosmos.oltp", mode="APPEND", options={
             "spark.cosmos.accountEndpoint": endpoint,
-            'spark.cosmos.accountKey': "${%s_KEY}" % name,
+            'spark.cosmos.accountKey': "${%s_KEY}" % name.upper(),
             "spark.cosmos.database": database,
             "spark.cosmos.container": container
         })
@@ -276,4 +279,4 @@ class CosmosDbSink(GenericSink):
         return True
     
     def get_required_properties(self) -> List[str]:
-        return [self.name + "_KEY"]
+        return [self.name.upper() + "_KEY"]

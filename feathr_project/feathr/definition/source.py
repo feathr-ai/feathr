@@ -1,5 +1,6 @@
 
 from abc import abstractmethod
+import copy
 from typing import Callable, Dict, List, Optional
 from feathr.definition.feathrconfig import HoconConvertible
 
@@ -151,9 +152,9 @@ class JdbcSource(Source):
         if not hasattr(self, "auth"):
             return []
         if self.auth == "USERPASS":
-            return ["%s_USER" % self.name, "%s_PASSWORD" % self.name]
+            return ["%s_USER" % self.name.upper(), "%s_PASSWORD" % self.name.upper()]
         elif self.auth == "TOKEN":
-            return ["%s_TOKEN" % self.name]
+            return ["%s_TOKEN" % self.name.upper()]
 
     def to_feature_config(self) -> str:
         tm = Template("""  
@@ -187,7 +188,9 @@ class JdbcSource(Source):
                 {% endif %}
             } 
         """)
-        msg = tm.render(source=self)
+        source = copy.copy(self)
+        source.name = self.name.upper()
+        msg = tm.render(source=source)
         return msg
 
     def __str__(self):
@@ -204,11 +207,11 @@ class JdbcSource(Source):
             d["query"] = self.query
         if hasattr(self, "auth"):
             if self.auth == "USERPASS":
-                d["user"] = "${" + self.name + "_USER}"
-                d["password"] = "${" + self.name + "_PASSWORD}"
+                d["user"] = "${" + self.name.upper() + "_USER}"
+                d["password"] = "${" + self.name.upper() + "_PASSWORD}"
             elif self.auth == "TOKEN":
                 d["useToken"] = True
-                d["token"] = "${" + self.name + "_TOKEN}"
+                d["token"] = "${" + self.name.upper() + "_TOKEN}"
         else:
             d["anonymous"] = True
         return json.dumps(d)
@@ -334,7 +337,7 @@ class CosmosDbSource(GenericSource):
                  registry_tags: Optional[Dict[str, str]] = None):
         options = {
             'spark.cosmos.accountEndpoint': endpoint,
-            'spark.cosmos.accountKey': "${%s_KEY}" % name,
+            'spark.cosmos.accountKey': "${%s_KEY}" % name.upper(),
             'spark.cosmos.database': database,
             'spark.cosmos.container': container
         }
