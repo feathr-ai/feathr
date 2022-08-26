@@ -164,18 +164,17 @@ Does is support to store necessary information to transform new streaming data (
    It’s also explained here, but basically in observation setting you only need two columns: an ID column, and a timestamp column. Other fields are all optional.
    The existing NYC driver sample is a bit confusing since we are using a same file for two purpose. I’ll update them shortly to make sure it’s less confusing.
 
-Does feathr support "local spark" runtime? other than databricks and synapse. For users to build and test features locally, without much changes to Way of working.
+## Is it possible to update the feature got from Registry(Purview)?
 
-Is it possible to update the feature got from Registry(Purview)?Consider I have got the features from purview with get_features_from_registry function of FeathrClient for a particular project name. Now I would like to see the code of the feature, modify the feature and update the feature in registry with Feathr Client.
+Consider I have got the features from purview with get_features_from_registry function of FeathrClient for a particular project name. Now I would like to see the code of the feature, modify the feature and update the feature in registry with Feathr Client.
 
-type_system_initialization: true in feathr_conf(Purview)
-What is the use of this parameter?
+## Identity pass thru for Feathr
 
 While using features from registry in consumption flow, it is required that the user has access to all the source datafiles before the feature can be used. This will be tricky especially in our datalake and DDS setup. Any way to handle this
 
+## Multiple UDF functions?
 how he can pass a list in preprocessing to execute multiple UDF functions currently it looks like it only supports passing in a single function
 
-We have a huge volume of sign-in events from the login token service which would make up our observation data.
 
 Each event or observation will have keys like UserId and TenantId which we can use to define features on. (for example: time since last login for each user). We will use feathr to precompute and store these values in the offline store, then when we request a feature feathr will join those user or tenant based features back with the event/observation data with point in time correctness. However, it is my understanding that we would never want to store features on eventId as a key, since the volume is so large and eventIds are not reused. Instead we should instead build features on INPUT_CONTEXT. Feathr will serve these features "on-demand".
 
@@ -186,3 +185,18 @@ Does it make sense to use INPUT_CONTEXT for features like the following? Is ther
 - simple feature extraction like "does column x in observation data contain string y?"
 
 - aggregation of column x across all observations - ex: avg request time
+
+
+
+## Error message: java.lang.RuntimeException: The 0th field 'key0' of input row cannot be null.
+This error message means the input data have some rows without key and users should add a filter to the source to exclude all such rows since they cannot be used anyway. 
+
+## Do keys need to be unique in the input data?
+The key needs not to be unique for input data, but it should not be null. The output dataset is a k/v map and the key is what you specified here, And the value is the combination of all features you requested, for each key. You can think the materialization is the process of grouping/bucketing
+
+## If I am going to materialize the feature data into offline storage, how could I read that through Feathr API?
+
+The offline store is just a plain table, so far the offline store is just parquet/avro files on hdfs. So users can just read the table in offline storage without Feathr API. 
+
+
+
