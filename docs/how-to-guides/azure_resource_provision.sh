@@ -130,7 +130,6 @@ echo "SYNAPSE_POOL_NAME: $synapse_sparkpool_name"
 echo "SYNAPSE_WORKSPACE_DIR: abfss://$storage_file_system_name@$storage_account_name.dfs.core.windows.net/"
 echo "REDIS_PASSWORD: $redis_password"
 echo "REDIS_HOST: $redis_cluster_name.redis.cache.windows.net"
-echo "FEATHR_RUNTIME_LOCATION: https://azurefeathrstorage.blob.core.windows.net/public/feathr_20220204.jar"
 echo "AZURE_PURVIEW_NAME: $purview_account_name"
 echo "Demo Data Location: abfss://$storage_file_system_name@$storage_account_name.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv"
 

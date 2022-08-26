@@ -30,10 +30,10 @@ Read through the [commit log](https://github.com/linkedin/feathr/commits/main) t
 
 ## Code Changes
 Before the release is made, the version needs to be updated in following places
-- [build.sbt](https://github.com/linkedin/feathr/blob/73656fe4a57219e99ff6fede10d51a000ae90fa1/build.sbt#L3) - For Maven release version
-- [setup.py](https://github.com/linkedin/feathr/blob/73656fe4a57219e99ff6fede10d51a000ae90fa1/feathr_project/setup.py#L10) - For PyPi release version
-- [conf.py](https://github.com/linkedin/feathr/blob/73656fe4a57219e99ff6fede10d51a000ae90fa1/feathr_project/docs/conf.py#L27) - For documentation version
-- [feathr_config.yaml](https://github.com/linkedin/feathr/blob/73656fe4a57219e99ff6fede10d51a000ae90fa1/feathr_project/test/test_user_workspace/feathr_config.yaml#L84) - To set the spark runtime location for Azure Synapse and Azure Databricks used by test suite.
+- [build.sbt](https://github.com/linkedin/feathr/blob/main/build.sbt#L3) - For Maven release version
+- [setup.py](https://github.com/linkedin/feathr/blob/main/feathr_project/setup.py#L10) - For PyPi release version
+- [conf.py](https://github.com/linkedin/feathr/blob/main/feathr_project/docs/conf.py#L27) - For documentation version
+- [feathr_config.yaml](https://github.com/linkedin/feathr/blob/main/feathr_project/test/test_user_workspace/feathr_config.yaml#L84) - To set the spark runtime location for Azure Synapse and Azure Databricks used by test suite.
 - [constants.py](https://github.com/linkedin/feathr/blob/73656fe4a57219e99ff6fede10d51a000ae90fa1/feathr_project/feathr/constants.py#L31) - To set the default maven artifact version
 
 ## Triggering automated release pipelines
