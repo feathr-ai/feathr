@@ -82,7 +82,6 @@ parent: Developer Guides
         *   ```
             sbt -java-home /Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
             ```
-        * This will ensure compiled jar won't fail at runtime with error `java.lang.UnsupportedClassVersionError: com/linkedin/feathr/common/exception/FeathrInputDataException has been compiled by a more recent version of the Java Runtime (class file version 62.0), this version of the Java Runtime only recognizes class file versions up to 52.0`
     * Execute command in sbt console to publish to maven
         *   ```
             reload; publishSigned; sonatypeBundleRelease
@@ -97,7 +96,7 @@ parent: Developer Guides
 
 ## Troubleshooting
 - If you get something like `[error] gpg: signing failed: Inappropriate ioctl for device`, run `export GPG_TTY=$(tty)` in your terminal and restart sbt console.
-
+- If the published jar fails to run in Spark with error `java.lang.UnsupportedClassVersionError: com/linkedin/feathr/common/exception/FeathrInputDataException has been compiled by a more recent version of the Java Runtime (class file version 62.0), this version of the Java Runtime only recognizes class file versions up to 52.0`, make sure you complied with the right Java version with -java-home parameter in sbt console.
 
 ## CI Automatic Publishing
 

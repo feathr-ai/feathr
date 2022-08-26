@@ -21,7 +21,7 @@ addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.1") //https://github.com/sbt/sbt-
  * Supports more advanced dependency tree scripts
  * 
  * ex.
- * sbt dependencyTree -java-home /Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home
+ * sbt dependencyTree -java-home /Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
  * https://www.baeldung.com/scala/sbt-dependency-tree
  */
 addDependencyTreePlugin
