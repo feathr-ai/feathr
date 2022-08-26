@@ -80,12 +80,9 @@ parent: Developer Guides
             ```
     * Start sbt console by running
         *   ```
-            sbt
+            sbt -java-home /Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
             ```
-        * if experiencing java issues try setting the java version like so:
-            *   ```
-                sbt -java-home /Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home
-                ```
+        * This will ensure compiled jar won't fail at runtime with error `java.lang.UnsupportedClassVersionError: com/linkedin/feathr/common/exception/FeathrInputDataException has been compiled by a more recent version of the Java Runtime (class file version 62.0), this version of the Java Runtime only recognizes class file versions up to 52.0`
     * Execute command in sbt console to publish to maven
         *   ```
             reload; publishSigned; sonatypeBundleRelease
