@@ -16,6 +16,9 @@ addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.5") //https://github.com/x
  */
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.1") //https://github.com/sbt/sbt-pgp/releases
 
+
+addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "<version>")
+
 /**
  *
  * Supports more advanced dependency tree scripts
