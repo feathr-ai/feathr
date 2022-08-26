@@ -2,6 +2,7 @@ import importlib
 import inspect
 import json
 import logging
+from loguru import logger
 import os
 from pathlib import Path
 import sys
@@ -25,7 +26,6 @@ from feathr.definition.transformation import ExpressionTransformation, Transform
 from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
 from feathr.utils._file_utils import write_to_file
-
 
 def to_camel(s):
     if not s:
@@ -122,6 +122,8 @@ class _FeatureRegistry(FeathrRegistry):
         for df in _topological_sort(derived_feature_list):
             if not hasattr(df, "_registry_id"):
                 df._registry_id = self._create_derived_feature(df)
+        url = '/'.join(self.endpoint.split('/')[:3])       
+        logger.info(f"Check project lineage by this link: {url}/projects/{self.project_name}/lineage")
 
     def list_registered_features(self, project_name: str) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
