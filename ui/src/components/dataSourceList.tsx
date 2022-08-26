@@ -3,7 +3,12 @@ import { Form, Select, Table } from "antd";
 import { DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
 
-const DataSourceList = () => {
+type Props = {
+  projectProp: string;
+  keywordProp: string;
+};
+
+const DataSourceList = ({ projectProp, keywordProp }: Props) => {
   const columns = [
     {
       title: <div style={{ userSelect: "none" }}>Name</div>,
