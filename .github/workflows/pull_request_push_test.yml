@@ -126,7 +126,7 @@ jobs:
 
         run: |
           # run only test with databricks. run in 4 parallel jobs
-          pytest -n 6 feathr_project/test/
+          pytest -n 4 feathr_project/test/
 
   azure_synapse_test:
     # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
@@ -196,4 +196,4 @@ jobs:
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
-          pytest -n 6 feathr_project/test/
+          pytest -n 4 feathr_project/test/
