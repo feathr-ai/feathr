@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Form, Select, Table } from "antd";
+import { useNavigate } from "react-router-dom";
+import { Form, Select, Table, Button } from "antd";
 import { DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
 
@@ -9,6 +10,7 @@ type Props = {
 };
 
 const DataSourceList = ({ projectProp, keywordProp }: Props) => {
+  const navigate = useNavigate();
   const columns = [
     {
       title: <div style={{ userSelect: "none" }}>Name</div>,
@@ -16,7 +18,17 @@ const DataSourceList = ({ projectProp, keywordProp }: Props) => {
       align: "center" as "center",
       width: 120,
       render: (row: DataSource) => {
-        return row.attributes.name;
+        // return row.attributes.name;
+        return (
+          <Button
+            type="link"
+            onClick={() => {
+              navigate(`/projects/${project}/features/${row.guid}`);
+            }}
+          >
+            {row.displayText}
+          </Button>
+        )
       },
       onCell: () => {
         return {
