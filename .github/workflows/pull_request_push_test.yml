@@ -7,13 +7,13 @@ on:
       - "docs/**"
       - "ui/**"
       - "**/README.md"
-
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - "docs/**"
-      - "ui/**"
-      - "**/README.md"
+  # comment out `pull_request` section, otherwise PRs will fail and will be confusing to developers.
+  # pull_request:
+  #   branches: [main]
+  #   paths-ignore:
+  #     - "docs/**"
+  #     - "ui/**"
+  #     - "**/README.md"
 
   pull_request_target:
     branches: [main]
