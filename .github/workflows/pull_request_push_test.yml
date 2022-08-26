@@ -125,7 +125,8 @@ jobs:
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
 
         run: |
-          # run only test with databricks. run in 4 parallel jobs
+          # run only test with databricks. 
+          # run in parallel jobs to make the time shorter
           pytest -n 3 feathr_project/test/
 
   azure_synapse_test:
@@ -194,6 +195,6 @@ jobs:
           SQL1_USER: ${{secrets.SQL1_USER}}
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
         run: |
-          # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
-          # run in 4 parallel jobs to make the time shorter
+          # skip databricks related test as we just ran the test; also separate databricks and synapse test to make sure there's no write conflict
+          # run in parallel jobs to make the time shorter
           pytest -n 3 feathr_project/test/

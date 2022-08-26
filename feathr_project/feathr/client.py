@@ -675,7 +675,7 @@ class FeathrClient(object):
         arguments = [
                 '--generation-config', self.feathr_spark_launcher.upload_or_get_cloud_path(
                 generation_config.generation_config_path),
-                # Local Config, comma seperated file names
+                # Local Config, comma separated file names
                 '--feature-config', self.feathr_spark_launcher.upload_or_get_cloud_path(
                 generation_config.feature_config),
                 '--redis-config', self._getRedisConfigStr(),
