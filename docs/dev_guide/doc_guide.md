@@ -26,8 +26,9 @@ Here's a link to all the emojis available in README files: [Emoji Cheat Sheet](h
 
 ## Code Snippets
 
-Please use \`\`\` instead ~~~ when writing a code snippet in Jupyter Notebook because pytest-check-links which is used to check broken links is unable to parse ~~~ correctly.
+Please use \`\`\` instead ~~~ when writing a code block in Jupyter Notebook because `pytest-check-links` which is used to check broken links is unable to parse ~~~ correctly.
 
+Example error when ~~~ is used in Jupyter Notebooks:
 ```
 pytest --check-links --check-links-cache --check-links-ignore "^https?:\/\/localhost(?:[:\/].+)?$" --check-links-ignore "^https?:\/\/pypi.org\/manage\/project\/feathr\/" docs/samples
 ============================================================ test session starts ============================================================
