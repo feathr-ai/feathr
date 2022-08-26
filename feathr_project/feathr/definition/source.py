@@ -349,5 +349,28 @@ class CosmosDbSource(GenericSource):
                          event_timestamp_column=event_timestamp_column, timestamp_format=timestamp_format,
                          registry_tags=registry_tags)
 
+class AerospikeSource(GenericSource):
+    """
+    Use Aerospike as the data source
+    """
+    def __init__(self,
+                 name: str,
+                 seedhost: str,
+                 namespace: str,
+                 preprocessing: Optional[Callable] = None,
+                 event_timestamp_column: Optional[str] = None,
+                 timestamp_format: Optional[str] = "epoch",
+                 registry_tags: Optional[Dict[str, str]] = None):
+        options = {
+            'aerospike.namespace': namespace,
+            'aerospike.seedhost': seedhost,
+        }
+        super().__init__(name,
+                         options=options,
+                         format='aerospike', # set this format in case we want to some special handling in the future.
+                         preprocessing=preprocessing,
+                         event_timestamp_column=event_timestamp_column, timestamp_format=timestamp_format,
+                         registry_tags=registry_tags)
+
 
 INPUT_CONTEXT = InputContext()
