@@ -29,6 +29,8 @@ jobs:
           java-version: "8"
           distribution: "temurin"
       
+      - name: Compile
+        run: sbt compile
       
       - name: Sbt ci release
         uses: olafurpg/setup-scala@v13
