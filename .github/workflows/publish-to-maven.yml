@@ -36,6 +36,7 @@ jobs:
       - name: Sbt ci release
         # uses: olafurpg/setup-scala@v13
         run: |
+          .github/decodekey.sh
           sbt ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
