@@ -36,7 +36,6 @@ jobs:
       - name: Sbt ci release
         # uses: olafurpg/setup-scala@v13
         run: |
-          export GPG_TTY=$(tty)
           sbt ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
