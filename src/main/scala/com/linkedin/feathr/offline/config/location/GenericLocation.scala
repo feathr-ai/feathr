@@ -45,7 +45,7 @@ case class GenericLocation(format: String, mode: Option[String] = None) extends 
    * @return
    */
   override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String]): DataFrame = {
-    GenericLocationFixes.readDf(ss, this)
+    GenericLocationAdHocPatches.readDf(ss, this)
   }
 
   /**
@@ -55,7 +55,7 @@ case class GenericLocation(format: String, mode: Option[String] = None) extends 
    * @param df DataFrame to write
    */
   override def writeDf(ss: SparkSession, df: DataFrame, header: Option[Header]): Unit = {
-    GenericLocationFixes.writeDf(ss, df, header, this)
+    GenericLocationAdHocPatches.writeDf(ss, df, header, this)
   }
 
   /**
@@ -91,16 +91,28 @@ case class GenericLocation(format: String, mode: Option[String] = None) extends 
 
 /**
  * Some Spark connectors need extra actions before read or write, namely CosmosDb and ElasticSearch
- * Need to run specific fixes base on `format`
+ * Need to run specific ad-hoc patch base on `format`
  */
-object GenericLocationFixes {
+object GenericLocationAdHocPatches {
   def readDf(ss: SparkSession, location: GenericLocation): DataFrame = {
     location.conf.foreach(e => {
       ss.conf.set(e._1, e._2)
     })
-    ss.read.format(location.format)
-      .options(location.options)
-      .load()
+
+    location.format.toLowerCase() match {
+      case "org.elasticsearch.spark.sql" => {
+        ss.read.format(location.format)
+          .option("es.nodes.wan.only", "true")  // Otherwise Spark will try to find node via broadcast ping, which will always fail
+          .option("pushdown", true) // Enable pushdown to speed up extraction
+          .options(location.options)
+          .load()
+      }
+      case _ => {
+        ss.read.format(location.format)
+          .options(location.options)
+          .load()
+      }
+    }
   }
 
   def writeDf(ss: SparkSession, df: DataFrame, header: Option[Header], location: GenericLocation) = {
@@ -150,6 +162,29 @@ object GenericLocationFixes {
           .options(location.options)
           .mode(location.mode.getOrElse("append")) // CosmosDb doesn't support ErrorIfExist mode in batch mode
           .save()
+      case "org.elasticsearch.spark.sql" => {
+        val keyDf = header match {
+          case Some(h) => {
+            // Generate key column from header info, which is required by CosmosDb
+            val (keyCol, keyedDf) = DataFrameKeyCombiner().combine(df, FeatureGenUtils.getKeyColumnsFromHeader(h))
+            // Rename key column to `_id`
+            keyedDf.withColumnRenamed(keyCol, "_id")
+          }
+          case None => {
+            // If there is no key column, we use a auto-generated monotonic id.
+            // but in this case the result could be duplicated if you run job for multiple times
+            // This function is for offline-storage usage, ideally user should create a new container for every run
+            df.withColumn("_id", (monotonically_increasing_id().cast("string")))
+          }
+        }
+        keyDf.write.format(location.format)
+          .option("es.nodes.wan.only", "true")
+          .option("es.mapping.id", "_id") // Use generated key as the doc id
+          .option("es.write.operation", "upsert") // As we already have `_id` column, we should use "upsert", otherwise there could be duplicates in the output
+          .options(location.options)
+          .mode(location.mode.getOrElse("overwrite")) // I don't see if ElasticSearch uses it in any doc
+          .save()
+      }
       case _ =>
         // Normal writing procedure, just set format and options then write
         df.write.format(location.format)

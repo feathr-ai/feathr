@@ -280,3 +280,45 @@ class CosmosDbSink(GenericSink):
     
     def get_required_properties(self) -> List[str]:
         return [self.name.upper() + "_KEY"]
+
+class ElasticSearchSink(GenericSink):
+    """
+    Use ElasticSearch as the data sink.
+    """
+    def __init__(self,
+                 name: str,
+                 host: str,
+                 port: str,
+                 index: str,
+                 ssl: bool = True,
+                 auth: bool = True,
+                 mode = 'OVERWRITE'):
+        self.auth = auth
+        options = {
+            'es.nodes': host,
+            'es.port': port,
+            'es.ssl': str(ssl).lower(),
+            'es.resource': index,
+        }
+        if auth:
+            options["es.net.http.auth.user"] = "${%s_USER}" % name.upper(),
+            options["es.net.http.auth.pass"] = "${%s_PASSWORD}" % name.upper(),
+        super().__init__(name,
+                         format='org.elasticsearch.spark.sql',
+                         mode=mode,
+                         options=options)
+
+    def support_offline(self) -> bool:
+        """
+        CAUTION: Using ES as offline store is possible, but the FeatureJoinJob output doesn't have a key column, you need to make sure
+        the output dataset is accessible in other ways, like full-text search or time-series with a timestamp field.
+        """
+        return True
+    
+    def support_online(self) -> bool:
+        return True
+    
+    def get_required_properties(self) -> List[str]:
+        if self.auth:
+            return [self.name.upper() + "_USER", self.name.upper() + "_PASSWORD"]
+        return []

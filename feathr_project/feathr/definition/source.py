@@ -349,5 +349,36 @@ class CosmosDbSource(GenericSource):
                          event_timestamp_column=event_timestamp_column, timestamp_format=timestamp_format,
                          registry_tags=registry_tags)
 
+class ElasticSearchSource(GenericSource):
+    """
+    Use ElasticSearch as the data source
+    """
+    def __init__(self,
+                 name: str,
+                 host: str,
+                 port: str,
+                 index: str,
+                 ssl: bool = True,
+                 auth: bool = True,
+                 preprocessing: Optional[Callable] = None,
+                 event_timestamp_column: Optional[str] = None,
+                 timestamp_format: Optional[str] = "epoch",
+                 registry_tags: Optional[Dict[str, str]] = None):
+        options = {
+            'es.nodes': host,
+            'es.port': port,
+            'es.ssl': str(ssl).lower(),
+            'es.resource': index,
+        }
+        if auth:
+            options["es.net.http.auth.user"] = "${%s_USER}" % name.upper(),
+            options["es.net.http.auth.pass"] = "${%s_PASSWORD}" % name.upper(),
+        super().__init__(name,
+                         format='org.elasticsearch.spark.sql',
+                         mode="APPEND",
+                         options=options,
+                         preprocessing=preprocessing,
+                         event_timestamp_column=event_timestamp_column, timestamp_format=timestamp_format,
+                         registry_tags=registry_tags)
 
 INPUT_CONTEXT = InputContext()
