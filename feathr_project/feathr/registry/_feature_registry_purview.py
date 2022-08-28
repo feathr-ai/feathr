@@ -1369,7 +1369,13 @@ derivations: {
             # it's ExpressionTransformation
             return ExpressionTransformation(input['transformExpr'])
         elif 'def_expr' in input:
-            return WindowAggTransformation(agg_expr=input['def_expr'], agg_func=input['agg_func'], window=input['window'], group_by=input['group_by'], filter=input['filter'], limit=input['limit'])
+            agg_expr=input['def_expr'] if 'def_expr' in input else None
+            agg_func=input['agg_func']if 'agg_func' in input else None
+            window=input['window']if 'window' in input else None
+            group_by=input['group_by']if 'group_by' in input else None
+            filter=input['filter']if 'filter' in input else None
+            limit=input['limit']if 'limit' in input else None
+            return WindowAggTransformation(agg_expr, agg_func, window, group_by, filter, limit)
         else:
             # no transformation function observed
             return None
