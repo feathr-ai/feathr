@@ -463,8 +463,11 @@ class SourceAttributes(Attributes):
             ret["preprocessing"] = self.preprocessing
         if self.event_timestamp_column is not None:
             ret["eventTimestampColumn"] = self.event_timestamp_column
+            ret["event_timestamp_column"] = self.event_timestamp_column
         if self.timestamp_format is not None:
             ret["timestampFormat"] = self.timestamp_format
+            ret["timestamp_format"] = self.timestamp_format
+
         return ret
 
 
