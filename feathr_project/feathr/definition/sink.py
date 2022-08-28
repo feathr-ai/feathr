@@ -288,19 +288,30 @@ class ElasticSearchSink(GenericSink):
     def __init__(self,
                  name: str,
                  host: str,
-                 port: str,
                  index: str,
                  ssl: bool = True,
                  auth: bool = True,
                  mode = 'OVERWRITE'):
+        """
+        name: The name of the sink.
+        host: ElasticSearch node, can be `hostname` or `hostname:port`, default port is 9200.
+        index: The index to write the data.
+        ssl: Set to `True` to enable SSL.
+        auth: Set to `True` to enable authentication, you need to provide username/password from environment or KeyVault.
+        mode: Spark mode, check official doc for more details.
+        """
         self.auth = auth
         options = {
             'es.nodes': host,
-            'es.port': port,
             'es.ssl': str(ssl).lower(),
             'es.resource': index,
         }
         if auth:
+            """
+            Currently only BasicAuth is supported.
+            ElasticSearch Spark connector also supports PKI auth but that needs to setup keystore on each driver node,
+            which seems to be too complicated for managed Spark cluster.
+            """
             options["es.net.http.auth.user"] = "${%s_USER}" % name.upper(),
             options["es.net.http.auth.pass"] = "${%s_PASSWORD}" % name.upper(),
         super().__init__(name,

@@ -180,6 +180,7 @@ object GenericLocationAdHocPatches {
         keyDf.write.format(location.format)
           .option("es.nodes.wan.only", "true")
           .option("es.mapping.id", "_id") // Use generated key as the doc id
+          .option("es.mapping.exclude", "_id") // Exclude doc id column from the doc body
           .option("es.write.operation", "upsert") // As we already have `_id` column, we should use "upsert", otherwise there could be duplicates in the output
           .options(location.options)
           .mode(location.mode.getOrElse("overwrite")) // I don't see if ElasticSearch uses it in any doc

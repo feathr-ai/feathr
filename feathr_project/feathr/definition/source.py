@@ -356,7 +356,6 @@ class ElasticSearchSource(GenericSource):
     def __init__(self,
                  name: str,
                  host: str,
-                 port: str,
                  index: str,
                  ssl: bool = True,
                  auth: bool = True,
@@ -364,9 +363,16 @@ class ElasticSearchSource(GenericSource):
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = "epoch",
                  registry_tags: Optional[Dict[str, str]] = None):
+        """
+        name: The name of the sink.
+        host: ElasticSearch node, can be `hostname` or `hostname:port`, default port is 9200.
+        index: The index to read the data.
+        ssl: Set to `True` to enable SSL.
+        auth: Set to `True` to enable authentication, you need to provide username/password from environment or KeyVault.
+        preprocessing/event_timestamp_column/timestamp_format/registry_tags: See `HdfsSource`
+        """
         options = {
             'es.nodes': host,
-            'es.port': port,
             'es.ssl': str(ssl).lower(),
             'es.resource': index,
         }
