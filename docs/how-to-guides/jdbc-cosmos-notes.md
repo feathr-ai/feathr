@@ -126,6 +126,8 @@ resp = es.get(index="someindex", id="somekey")
 print(resp['_source'])
 ```
 
+The feature generation job uses `upsert` mode to write data, so after the job the index may contain stale data, the recommended way is to create a new index each time, and use index alias to seamlessly switch over, detailed information can be found from [the official doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/aliases.html), currently Feathr doesn't provide any helper to do this.
+
 NOTE:
 + You can use no auth or basic auth only, no other authentication methods are supported.
 + If you enabled SSL, you need to make sure the certificate on ES nodes is trusted by the Spark cluster, otherwise the job will fail.
