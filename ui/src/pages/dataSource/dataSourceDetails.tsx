@@ -12,7 +12,7 @@ import {
 } from "antd";
 import { QueryStatus, useQuery } from "react-query";
 import { AxiosError } from "axios";
-import { fetchDataSources } from "../../api";
+import { fetchDataSource } from "../../api";
 import { DataSource, DataSourceAttributes } from "../../models/model";
 
 const { Title } = Typography;
@@ -28,7 +28,7 @@ const DataSourceDetails = () => {
     const loadingIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
     const { status, error, data } = useQuery<DataSource, AxiosError>(
       ["dataSourceId", dataSourceId],
-      () => fetchDataSources(project, dataSourceId)
+      () => fetchDataSource(project, dataSourceId)
     );
 
     // return <div className="page">Hello World</div>;
@@ -101,13 +101,13 @@ const DataSourceDetails = () => {
                 </Button>
                 <Card>
                   <Title level={3}>{data.attributes.name}</Title>
-                  <div>
+                  {/* <div>
                     <Space>
                       <Button type="primary" onClick={() => openLineageWindow()}>
                         View Lineage
                       </Button>
                     </Space>
-                  </div>
+                  </div> */}
                   <div>
                     <Row>
                       Test
