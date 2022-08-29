@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Typography } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import DataSourceList from "../../components/dataSourceList";
