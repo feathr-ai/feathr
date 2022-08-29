@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Form, Select, Table, Button } from "antd";
+import { useNavigate, Link } from "react-router-dom";
+import { Form, Select, Table, Button, Menu, Dropdown, Tooltip } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 import { DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
 
@@ -23,7 +24,7 @@ const DataSourceList = ({ projectProp, keywordProp }: Props) => {
           <Button
             type="link"
             onClick={() => {
-              navigate(`/projects/${project}/features/${row.guid}`);
+              navigate(`/projects/${project}/dataSource/${row.guid}`);
             }}
           >
             {row.displayText}
@@ -117,6 +118,45 @@ const DataSourceList = ({ projectProp, keywordProp }: Props) => {
           },
         };
       },
+    },
+    {
+      title: (
+        <div>
+          Action{" "}
+          <Tooltip
+            title={
+              <Link style={{ color: "cyan" }} to="/help">
+                Learn more
+              </Link>
+            }
+          ></Tooltip>
+        </div>
+      ),
+      key: "action",
+      align: "center" as "center",
+      width: 120,
+      render: (name: string, row: DataSource) => (
+        <Dropdown
+          overlay={() => {
+            return (
+              <Menu>
+                <Menu.Item key="view">
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      navigate(`/projects/${project}/dataSource/${row.guid}`);
+                    }}
+                  >
+                    View Details
+                  </Button>
+                </Menu.Item>
+              </Menu>
+            );
+          }}
+        >
+          <Button icon={<DownOutlined />}>action</Button>
+        </Dropdown>
+      ),
     },
   ];
   const [page, setPage] = useState(1);
