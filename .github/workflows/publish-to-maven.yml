@@ -36,6 +36,7 @@ jobs:
       - name: Sbt ci release
         # uses: olafurpg/setup-scala@v13
         run: |
+          export GPG_TTY=$(tty)
           .github/decodekey.sh
           sbt ci-release
         env:
