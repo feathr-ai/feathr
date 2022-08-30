@@ -476,7 +476,7 @@ def dict_to_source(v: dict) -> Source:
             timestamp_format=v["attributes"].get(
                 "timestampFormat"),
             registry_tags=v["attributes"].get("tags", {}))
-    elif "path" in v["attributes"]:
+    elif v["attributes"].get("path"):
         source = HdfsSource(name=v["attributes"]["name"],
                             path=v["attributes"]["path"],
                             preprocessing=_correct_function_indentation(
