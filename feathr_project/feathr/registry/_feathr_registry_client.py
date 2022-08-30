@@ -433,16 +433,6 @@ def dict_to_source(v: dict) -> Source:
     source = None
     if type == INPUT_CONTEXT:
         source = InputContext()
-    elif v["attributes"]["type"] in ("wasbs", "wasb", "hdfs"):
-        source = HdfsSource(name=v["attributes"]["name"],
-                            path=v["attributes"]["path"],
-                            preprocessing=_correct_function_indentation(
-                                v["attributes"].get("preprocessing")),
-                            event_timestamp_column=v["attributes"].get(
-                                "eventTimestampColumn"),
-                            timestamp_format=v["attributes"].get(
-                                "timestampFormat"),
-                            registry_tags=v["attributes"].get("tags", {}))
     elif type == "jdbc":
         source = JdbcSource(name=v["attributes"]["name"],
                             url=v["attributes"].get("url"),
@@ -486,6 +476,16 @@ def dict_to_source(v: dict) -> Source:
             timestamp_format=v["attributes"].get(
                 "timestampFormat"),
             registry_tags=v["attributes"].get("tags", {}))
+    elif "path" in v["attributes"]:
+        source = HdfsSource(name=v["attributes"]["name"],
+                            path=v["attributes"]["path"],
+                            preprocessing=_correct_function_indentation(
+                                v["attributes"].get("preprocessing")),
+                            event_timestamp_column=v["attributes"].get(
+                                "eventTimestampColumn"),
+                            timestamp_format=v["attributes"].get(
+                                "timestampFormat"),
+                            registry_tags=v["attributes"].get("tags", {}))
     else:
         raise ValueError(f"Invalid source format {type}")
     source._registry_id = id
