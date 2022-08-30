@@ -31,7 +31,7 @@ const DataSourceList = ({ projectProp, keywordProp }: Props) => {
           <Button
             type="link"
             onClick={() => {
-              navigate(`/projects/${project}/dataSource/${row.guid}`);
+              navigate(`/projects/${project}/dataSources/${row.guid}`);
             }}
           >
             {row.displayText}
@@ -151,7 +151,7 @@ const DataSourceList = ({ projectProp, keywordProp }: Props) => {
                   <Button
                     type="link"
                     onClick={() => {
-                      navigate(`/projects/${project}/dataSource/${row.guid}`);
+                      navigate(`/projects/${project}/dataSources/${row.guid}`);
                     }}
                   >
                     View Details
