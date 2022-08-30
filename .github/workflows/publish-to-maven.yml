@@ -1,6 +1,6 @@
 name: Publish package to the Maven Central Repository
-on:
-  workflow_run:
+on: workflow_dispatch
+    
     
   # push:
   #   tags: ["*"]
