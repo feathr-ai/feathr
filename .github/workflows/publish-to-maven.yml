@@ -55,25 +55,36 @@ jobs:
       # - name: Compile
       #   run: sbt compile
       
+      - name: Sbt ci release
+        # uses: olafurpg/setup-scala@v13
+        run: |
+          sbt ci-release
+        env:
+          PGP_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+
+      # - name: Build and Publish package
+      #   run: |
+      #     # export GPG_TTY=$(tty)
+      #     sbt reload
+      #     sbt publishSigned
+      #     sbt sonatypeBundleRelease
+      #   env:
+      #     OSSRH_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      #     OSSRH_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      #     MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+
+
       # - name: Sbt ci release
       #   # uses: olafurpg/setup-scala@v13
       #   run: |
-      #     export GPG_TTY=$(tty)
       #     .github/decodekey.sh
       #     sbt ci-release
       #   env:
-      #     PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-      #     PGP_SECRET: ${{ secrets.PGP_SECRET }}
+      #     PGP_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      #     PGP_SECRET: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
       #     SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       #     SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-
-      - name: Build and Publish package
-        run: |
-          # export GPG_TTY=$(tty)
-          sbt reload
-          sbt publishSigned
-          sbt sonatypeBundleRelease
-        env:
-          OSSRH_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
