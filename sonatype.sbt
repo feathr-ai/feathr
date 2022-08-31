@@ -1,6 +1,8 @@
 publishTo := sonatypePublishToBundle.value
 // For all Sonatype accounts created on or after February 2021
-ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+sonatypeCredentialHost := "oss.sonatype.org"
+// sonatypeRepository := "https://oss.sonatype.org/service/local"
+
 
 // Your profile name of the sonatype account. The default is the same with the organization value
 sonatypeProfileName := "com.linkedin.feathr"
