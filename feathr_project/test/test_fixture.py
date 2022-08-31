@@ -75,6 +75,7 @@ def basic_test_setup(config_path: str):
                             feature_type=FLOAT,
                             transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
                                                               agg_func="MAX",
+                                                              filter="fare_amount > 20",
                                                               window="90d"))
                     ]
 
