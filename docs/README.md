@@ -185,4 +185,4 @@ Build for the community and build by the community. Check out [Community Guideli
 
 ## 📢 Slack Channel
 
-Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-1d5wguusz-aS1kJH72P6z~XeTChBz8VA)).
+Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-1f8gc99jm-RsRff2tyQNuYdSFyqZc1kg)).

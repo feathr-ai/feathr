@@ -78,7 +78,7 @@ spark_config:
     # workspace dir for storing all the required configuration files and the jar resources
     workspace_dir: 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_test_workspace'
     executor_size: 'Small'
-    executor_num: 4
+    executor_num: 1
 
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
     # this is the default location so end users don't have to compile the runtime again.

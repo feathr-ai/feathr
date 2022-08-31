@@ -40,12 +40,12 @@ def test_feathr_get_secrets_from_key_vault():
             pool_name: 'spark3'
             workspace_dir: 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_test_workspace'
             executor_size: 'Small'
-            executor_num: 4
+            executor_num: 1
 
         databricks:
             workspace_instance_url: 'https://adb-2474129336842816.16.azuredatabricks.net/'
             workspace_token_value: ''
-            config_template: '{"run_name":"FEATHR_FILL_IN","new_cluster":{"spark_version":"9.1.x-scala2.12","num_workers":2,"spark_conf":{"FEATHR_FILL_IN":"FEATHR_FILL_IN"},"instance_pool_id":"0403-214809-inlet434-pool-l9dj3kwz"},"libraries":[{"jar":"FEATHR_FILL_IN"}],"spark_jar_task":{"main_class_name":"FEATHR_FILL_IN","parameters":["FEATHR_FILL_IN"]}}'
+            config_template: '{"run_name":"FEATHR_FILL_IN","new_cluster":{"spark_version":"9.1.x-scala2.12","num_workers":1,"spark_conf":{"FEATHR_FILL_IN":"FEATHR_FILL_IN"},"instance_pool_id":"0403-214809-inlet434-pool-l9dj3kwz"},"libraries":[{"jar":"FEATHR_FILL_IN"}],"spark_jar_task":{"main_class_name":"FEATHR_FILL_IN","parameters":["FEATHR_FILL_IN"]}}'
             work_dir: 'dbfs:/feathr_getting_started'
             feathr_runtime_location: ''
     online_store:

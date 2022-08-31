@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -36,6 +36,10 @@ const UserRoles = () => {
       dataIndex: "scope",
       key: "scope",
       align: "center" as "center",
+      sorter: {
+        compare: (a: UserRole, b: UserRole) => a.scope.localeCompare(b.scope),
+        multiple: 3,
+      }
     },
     {
       title: <div style={{ userSelect: "none" }}>Role</div>,
@@ -48,6 +52,10 @@ const UserRoles = () => {
       dataIndex: "userName",
       key: "userName",
       align: "center" as "center",
+      sorter: {
+        compare: (a: UserRole, b: UserRole) => a.userName.localeCompare(b.userName),
+        multiple: 1,
+      }
     },
     {
       title: <div>Permissions</div>,
@@ -84,6 +92,10 @@ const UserRoles = () => {
       dataIndex: "createTime",
       key: "createTime",
       align: "center" as "center",
+      sorter: {
+        compare: (a: UserRole, b: UserRole) => a.createTime.localeCompare(b.createTime),
+        multiple: 2,
+      }
     },
     {
       title: "Action",
