@@ -16,11 +16,21 @@ jobs:
         uses: actions/checkout@v2
       
 
-      - id: install-secret-key
-        name: Install gpg secret key
-        run: |
-          cat <(echo -e "${{ secrets.secrets.MAVEN_GPG_PRIVATE_KEY }}") | gpg --batch --import
-          gpg --list-secret-keys --keyid-format LONG
+      # - id: install-secret-key
+      #   name: Install gpg secret key
+      #   run: |
+      #     cat <(echo -e "${{ secrets.secrets.MAVEN_GPG_PRIVATE_KEY }}") | gpg --batch --import
+      #     gpg --list-secret-keys --keyid-format LONG
+
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      
+      - name: List keys
+        run: gpg -K
 
       - name: Set up JDK 8
         uses: actions/setup-java@v2
