@@ -1,16 +1,19 @@
 name: Publish package to the Maven Central Repository
 on: 
   push:
+    # This pipeline will get triggered everytime there is a new tag created.
+    # It is required 
     tags: ["*"]
 
 jobs:
-  publish:
+  publish-to-maven:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
       
-
+    # Setting up JDK 8, this is required to build Feathr
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
@@ -22,6 +25,9 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+    # CI release command defaults to publishSigned
+    # Sonatype release command defaults to sonaTypeBundleRelease
+    # https://github.com/sbt/sbt-ci-release
       - name: Sbt ci release
         run: |
           sbt ci-release
