@@ -1212,7 +1212,18 @@ derivations: {
                 target_entities = [full_entities[x[1]] for x in matching_relations]
                 input_features = [x for x in target_entities if x['typeName']==TYPEDEF_ANCHOR_FEATURE \
                     or x['typeName']==TYPEDEF_DERIVED_FEATURE]
-                return input_features
+                result_features=[]
+                for feature_entity in input_features:
+                    key_list=[]
+                    for key in feature_entity["attributes"]["key"]:
+                        key_list.append(TypedKey(key_column=key["keyColumn"], key_column_type=key["keyColumnType"], full_name=key["fullName"], description=key["description"], key_column_alias=key["keyColumnAlias"]))
+                    result_features.append(Feature(name=feature_entity["attributes"]["name"],
+                        feature_type=self._get_feature_type_from_hocon(feature_entity["attributes"]["type"]), # stored as a hocon string, can be parsed using pyhocon
+                        transform=self._get_transformation_from_dict(feature_entity["attributes"]['transformation']), #transform attributes are stored in a dict fashion , can be put in a WindowAggTransformation
+                        key=key_list, # since all features inside an anchor should share the same key, pick the first one.
+                        registry_tags=feature_entity["attributes"]["tags"]))
+                return result_features
+
 
             all_input_features = search_for_input_feature(derived_feature_entity,consume_relations,entities_dict)
             derived_feature_list.append(DerivedFeature(name=derived_feature_entity["attributes"]["name"],
@@ -1358,7 +1369,13 @@ derivations: {
             # it's ExpressionTransformation
             return ExpressionTransformation(input['transformExpr'])
         elif 'def_expr' in input:
-            return WindowAggTransformation(agg_expr=input['def_expr'], agg_func=input['agg_func'], window=input['window'], group_by=input['group_by'], filter=input['filter'], limit=input['limit'])
+            agg_expr=input['def_expr'] if 'def_expr' in input else None
+            agg_func=input['agg_func']if 'agg_func' in input else None
+            window=input['window']if 'window' in input else None
+            group_by=input['group_by']if 'group_by' in input else None
+            filter=input['filter']if 'filter' in input else None
+            limit=input['limit']if 'limit' in input else None
+            return WindowAggTransformation(agg_expr, agg_func, window, group_by, filter, limit)
         else:
             # no transformation function observed
             return None
@@ -1388,8 +1405,8 @@ derivations: {
             feature_list.append(Feature(name=feature_entity["attributes"]["name"],
                     feature_type=self._get_feature_type_from_hocon(feature_entity["attributes"]["type"]), # stored as a hocon string, can be parsed using pyhocon
                     transform=self._get_transformation_from_dict(feature_entity["attributes"]['transformation']), #transform attributes are stored in a dict fashion , can be put in a WindowAggTransformation
-                    key=key_list,
+                    key=key_list, 
                     registry_tags=feature_entity["attributes"]["tags"],
-
+            
             ))
         return feature_list 

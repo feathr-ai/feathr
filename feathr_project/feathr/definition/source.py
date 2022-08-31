@@ -1,4 +1,6 @@
 
+from abc import abstractmethod
+import copy
 from typing import Callable, Dict, List, Optional
 from feathr.definition.feathrconfig import HoconConvertible
 
@@ -13,7 +15,8 @@ class SourceSchema(HoconConvertible):
 
 class AvroJsonSchema(SourceSchema):
     """Avro schema written in Json string form."""
-    def __init__(self, schemaStr:str):
+
+    def __init__(self, schemaStr: str):
         self.schemaStr = schemaStr
 
     def to_feature_config(self):
@@ -39,6 +42,7 @@ class Source(HoconConvertible):
          registry_tags: A dict of (str, str) that you can pass to feature registry for better organization.
                         For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
     """
+
     def __init__(self,
                  name: str,
                  event_timestamp_column: Optional[str] = "0",
@@ -60,6 +64,10 @@ class Source(HoconConvertible):
 
     def __str__(self):
         return self.to_feature_config()
+    
+    @abstractmethod
+    def to_argument(self):
+        pass
 
 
 class InputContext(Source):
@@ -76,6 +84,9 @@ class InputContext(Source):
     def to_feature_config(self) -> str:
         return "source: " + self.name
 
+    def to_argument(self):
+        raise TypeError("InputContext cannot be used as observation source")
+
 
 class HdfsSource(Source):
     """A data source(table) stored on HDFS-like file system. Data can be fetch through a POSIX style path.
@@ -91,13 +102,15 @@ class HdfsSource(Source):
                                                     - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
         registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
     """
-    def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str]= None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
-        super().__init__(name, event_timestamp_column, timestamp_format, registry_tags=registry_tags)
+
+    def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, event_timestamp_column,
+                         timestamp_format, registry_tags=registry_tags)
         self.path = path
         self.preprocessing = preprocessing
         if path.startswith("http"):
-            logger.warning("Your input path {} starts with http, which is not supported. Consider using paths starting with wasb[s]/abfs[s]/s3.", path)
-
+            logger.warning(
+                "Your input path {} starts with http, which is not supported. Consider using paths starting with wasb[s]/abfs[s]/s3.", path)
 
     def to_feature_config(self) -> str:
         tm = Template("""  
@@ -117,9 +130,11 @@ class HdfsSource(Source):
     def __str__(self):
         return str(self.preprocessing) + '\n' + self.to_feature_config()
 
+    def to_argument(self):
+        return self.path
 
 class JdbcSource(Source):
-    def __init__(self, name: str, url: str = "", dbtable: Optional[str] = None, query: Optional[str] = None, auth: Optional[str] = None, preprocessing: Optional[Callable] = None                 ,event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch",registry_tags: Optional[Dict[str, str]] = None) -> None:
+    def __init__(self, name: str, url: str = "", dbtable: Optional[str] = None, query: Optional[str] = None, auth: Optional[str] = None, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
         super().__init__(name, event_timestamp_column, timestamp_format, registry_tags)
         self.preprocessing = preprocessing
         self.url = url
@@ -130,15 +145,16 @@ class JdbcSource(Source):
         if auth is not None:
             self.auth = auth.upper()
             if self.auth not in ["USERPASS", "TOKEN"]:
-                raise ValueError("auth must be None or one of following values: ['userpass', 'token']")
+                raise ValueError(
+                    "auth must be None or one of following values: ['userpass', 'token']")
 
     def get_required_properties(self):
         if not hasattr(self, "auth"):
             return []
         if self.auth == "USERPASS":
-            return ["%s_USER" % self.name, "%s_PASSWORD" % self.name]
+            return ["%s_USER" % self.name.upper(), "%s_PASSWORD" % self.name.upper()]
         elif self.auth == "TOKEN":
-            return ["%s_TOKEN" % self.name]
+            return ["%s_TOKEN" % self.name.upper()]
 
     def to_feature_config(self) -> str:
         tm = Template("""  
@@ -172,12 +188,33 @@ class JdbcSource(Source):
                 {% endif %}
             } 
         """)
-        msg = tm.render(source=self)
+        source = copy.copy(self)
+        source.name = self.name.upper()
+        msg = tm.render(source=source)
         return msg
 
     def __str__(self):
         return str(self.preprocessing) + '\n' + self.to_feature_config()
 
+    def to_argument(self):
+        d = {
+            "type": "jdbc",
+            "url": self.url,
+        }
+        if hasattr(self, "dbtable"):
+            d["dbtable"] = self.dbtable
+        if hasattr(self, "query"):
+            d["query"] = self.query
+        if hasattr(self, "auth"):
+            if self.auth == "USERPASS":
+                d["user"] = "${" + self.name.upper() + "_USER}"
+                d["password"] = "${" + self.name.upper() + "_PASSWORD}"
+            elif self.auth == "TOKEN":
+                d["useToken"] = True
+                d["token"] = "${" + self.name.upper() + "_TOKEN}"
+        else:
+            d["anonymous"] = True
+        return json.dumps(d)
 
 class KafkaConfig:
     """Kafka config for a streaming source
@@ -187,6 +224,7 @@ class KafkaConfig:
         topics: Kafka topics
         schema: Kafka message schema
         """
+
     def __init__(self, brokers: List[str], topics: List[str], schema: SourceSchema):
         self.brokers = brokers
         self.topics = topics
@@ -195,9 +233,10 @@ class KafkaConfig:
 
 class KafKaSource(Source):
     """A kafka source object. Used in streaming feature ingestion."""
+
     def __init__(self, name: str, kafkaConfig: KafkaConfig):
-            super().__init__(name)
-            self.config = kafkaConfig
+        super().__init__(name)
+        self.config = kafkaConfig
 
     def to_feature_config(self) -> str:
         tm = Template("""
@@ -214,6 +253,101 @@ class KafKaSource(Source):
         topics = ','.join(self.config.topics)
         msg = tm.render(source=self, brokers=brokers, topics=topics)
         return msg
+
+    def to_argument(self):
+        raise TypeError("KafKaSource cannot be used as observation source")
+
+class GenericSource(Source):
+    """
+    This class is corresponding to 'GenericLocation' in Feathr core, but only be used as Source.
+    The class is not meant to be used by user directly, user should use its subclasses like `CosmosDbSource`
+    """
+    def __init__(self, name: str, format: str, mode: Optional[str] = None, options: Dict[str, str] = {}, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, event_timestamp_column,
+                         timestamp_format, registry_tags=registry_tags)
+        self.source_type = 'generic'
+        self.format = format
+        self.mode = mode
+        self.preprocessing = preprocessing
+        # Feathr Core uses HOCON format config, `.` will disrupt parsing.
+        # In Feathr Core, GenericLocation will replace `__` back to `.`
+        self.options = dict([(key.replace(".", "__"), options[key]) for key in options])
+
+    def to_feature_config(self) -> str:
+        tm = Template("""  
+            {{source.name}}: {
+                location: {
+                    type: "generic"
+                    format: "{{source.format}}"
+                    {% if source.mode is defined %}
+                    mode: "{{source.mode}}"
+                    {% endif %}
+                    {% for option in source.options %}
+                    {{option.key}}: "{{option.value}}"
+                    {% endfor %}
+                }
+                {% if source.event_timestamp_column is defined %}
+                timeWindowParameters: {
+                    timestampColumn: "{{source.event_timestamp_column}}"
+                    timestampColumnFormat: "{{source.timestamp_format}}"
+                }
+                {% endif %}
+            } 
+        """)
+        msg = tm.render(source=self)
+        return msg
+
+    def get_required_properties(self):
+        ret = []
+        for option in self.options:
+            start = option.find("${")
+            if start >= 0:
+                end = option[start:].find("}")
+                if end >= 0:
+                    ret.append(option[start+2:start+end])
+        return ret
+
+    def to_dict(self) -> Dict[str, str]:
+        ret = self.options.copy()
+        ret["type"] = "generic"
+        ret["format"] = self.format
+        if self.mode:
+            ret["mode"] = self.mode
+        return ret        
+    
+    def to_argument(self):
+        """
+        One-line JSON string, used by job submitter
+        """
+        return json.dumps(self.to_dict())
+
+
+class CosmosDbSource(GenericSource):
+    """
+    Use CosmosDb as the data source
+    """
+    def __init__(self,
+                 name: str,
+                 endpoint: str,
+                 database: str,
+                 container: str,
+                 preprocessing: Optional[Callable] = None,
+                 event_timestamp_column: Optional[str] = None,
+                 timestamp_format: Optional[str] = "epoch",
+                 registry_tags: Optional[Dict[str, str]] = None):
+        options = {
+            'spark.cosmos.accountEndpoint': endpoint,
+            'spark.cosmos.accountKey': "${%s_KEY}" % name.upper(),
+            'spark.cosmos.database': database,
+            'spark.cosmos.container': container
+        }
+        super().__init__(name,
+                         format='cosmos.oltp',
+                         mode="APPEND",
+                         options=options,
+                         preprocessing=preprocessing,
+                         event_timestamp_column=event_timestamp_column, timestamp_format=timestamp_format,
+                         registry_tags=registry_tags)
 
 
 INPUT_CONTEXT = InputContext()
