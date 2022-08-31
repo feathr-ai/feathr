@@ -1,6 +1,6 @@
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
-ThisBuild / version          := "0.6.3"
+ThisBuild / version          := "0.6.4"
 ThisBuild / organization     := "com.linkedin.feathr"
 ThisBuild / organizationName := "linkedin"
 val sparkVersion = "3.1.3"
