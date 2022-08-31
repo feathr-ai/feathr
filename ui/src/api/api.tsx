@@ -39,6 +39,7 @@ export const fetchDataSource = async (project: string, dataSourceId: string) => 
       params: { project: project },
     })
     .then((response) => {
+      console.log(response.data);
       return response.data;
     });
 };
