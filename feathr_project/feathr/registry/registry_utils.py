@@ -38,7 +38,7 @@ def source_to_def(v: Source) -> dict:
     elif isinstance(v, HdfsSource):
         ret = {
             "name": v.name,
-            "type": urlparse(v.path).scheme,
+            "type": "hdfs",
             "path": v.path,
         }
     elif isinstance(v, JdbcSource):
