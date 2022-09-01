@@ -98,6 +98,6 @@ Please refer to the [Feathr Configuration Doc](./feathr-configuration-and-env.md
 
 ## Event Hub monitor
 
-Please check monitor panel on your 'Event Hub' overview page like below graph while running materialize to make sure there are both incoming and outgoing messages, like below graph. Otherwise, you may not get anything from 'get_online_features' since the source is empty.
+Please check monitor panel on your 'Event Hub' overview page while running materialize to make sure there are both incoming and outgoing messages, like below graph. Otherwise, you may not get anything from 'get_online_features' since the source is empty.
 
 ![Kafka Monitor Page](../images/kafka-messages-monitor.png)
