@@ -35,6 +35,8 @@ stream_source = KafKaSource(name="kafkaStreamingSource",
                             )
 ```
 
+You may need to produce data and send them into Kafka as this data source in advance. Please check [Kafka data source producer](../samples/kafka_producer.py) as a reference. Also you should keep this producer running which means there are data stream keep coming into Kafka while calling the 'materialize_features' below.
+
 ## Define feature definition with the Kafka source
 
 You can then define features. They are mostly the same with the [regular feature definition](../concepts/feature-definition.md).
@@ -69,6 +71,7 @@ You can then start a streaming job and stream all the features into online store
 
 ```python
 redisSink = RedisSink(table_name="kafkaSampleDemoFeature", streaming=True, streamingTimeoutMs=10000)
+# The 'streamingTimeoutMs' parameter may need to be increased, such as 10min or even longer, to make sure some data sources from Kafka was captured.
 settings = MaterializationSettings(name="kafkaSampleDemo",
                                    sinks=[redisSink],
                                    feature_names=['f_modified_streaming_count']
@@ -92,3 +95,9 @@ You can also refer to the [test case](../../feathr_project/test/test_azure_kafka
 ## Kafka configuration
 
 Please refer to the [Feathr Configuration Doc](./feathr-configuration-and-env.md#kafkasasljaasconfig) for more details on the credentials.
+
+## Event Hub monitor
+
+Please check monitor panel on your 'Event Hub' overview page like below graph while running materialize to make sure there are both incoming and outgoing messages, like below graph. Otherwise, you may not get anything from 'get_online_features' since the source is empty.
+
+![Kafka Monitor Page](../images/kafka-messages-monitor.png)
