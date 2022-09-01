@@ -1,6 +1,6 @@
-syntax = "proto3";
+syntax = "proto2";
 
-// generate java: protoc -I=/absolute_path/feathr/src/main/protobuf/ --java_out=/absolute_path/feathr/src/main/java/com/linkedin/feathr/common/types/ featureValue.prot
+// generate java: protoc -I=/absolute_path/feathr/src/main/protobuf/ --java_out=/absolute_path/feathr/src/main/java/com/linkedin/feathr/common/types/ featureValue.proto
 // generate python: protoc -I=/absolute_path/feathr/src/main/protobuf/ --python_out=/absolute_path/feathr/feathr_project/feathr/protobuf/ featureValue.proto
 
 
