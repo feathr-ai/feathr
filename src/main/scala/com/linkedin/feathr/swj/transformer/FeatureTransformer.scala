@@ -93,7 +93,7 @@ object FeatureTransformer {
     // The order of the feature columns should follow the order of the specified sliding window
     // features. In addition, the feature columns should be in front of join key and timestamp
     // columns. These will guarantee we can fetch corresponding feature columns using index.
-    println(s"SQL: ${sql}")
+    println(s"Generated SQL Statement: ${sql}")
     spark.sql(sql)
   }
 }
