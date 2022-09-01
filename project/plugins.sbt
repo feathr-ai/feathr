@@ -14,7 +14,13 @@ addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.5") //https://github.com/x
  *
  * https://github.com/sbt/sbt-pgp/releases
  */
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.1") //https://github.com/sbt/sbt-pgp/releases
+addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.1.2")
+
+/*
+This is an sbt plugin to help automate releases to Sonatype and Maven Central from GitHub Actions.
+https://github.com/sbt/sbt-ci-release
+*/
+addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.5.10")
 
 /**
  *
