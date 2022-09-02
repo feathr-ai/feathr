@@ -17,7 +17,9 @@ The provided Azure Resource Manager (ARM) template deploys the following resourc
 7. Azure Event Hub
 8. Azure Redis
 
-Please note, you need to have **owner access** in the resource group you are deploying this in. Owner access is required to assign role to managed identity within ARM template so it can access key vault and store secrets.
+Please note, you need to have **owner access** in the resource group you are deploying this in. Owner access is required to assign role to managed identity within ARM template so it can access key vault and store secrets. If you don't have such permission, you might want to contact your IT admin to see if they can do that. 
+
+Although we recommend end users deploy the resources using the ARM template, we understand that in many situations where users want to reuse existing resources instead of creating new resources; or users have many other permission issues. See [Manually connecting existing resources](#manually-connecting-existing-resources) for more details.
 
 ## Architecture
 
@@ -147,3 +149,15 @@ Follow the quick start guide [here](https://linkedin.github.io/feathr/quickstart
    - [SQL Registry DB Schema](https://github.com/linkedin/feathr/blob/main/registry/sql-registry/scripts/schema.sql)
 
    - [RBAC DB Schema](https://github.com/linkedin/feathr/blob/main/registry/access_control/scripts/schema.sql)
+
+
+## Manually connecting existing resources
+
+
+Although we recommend end users deploy the resources using the ARM template, we understand that in many situations where users want to reuse existing resources instead of creating new resources; or users have many other permission issues. 
+
+The "source of truth" deployment template is still the [JSON file describing the Azure resources (known as "ARM template")](azure_resource_provision.json). Essentially what we are doing below is just replicate the ARM template manually.
+
+The part that needs most attention is the Feathr registry deployment. Let's say the developer want to reuse an existing SQL database, there are a few steps:
+
+1. 
