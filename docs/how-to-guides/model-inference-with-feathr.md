@@ -6,7 +6,7 @@ parent: How-to Guides
 
 # Online Model Inference with Features from Feathr
 
-After you have materialized features in online store such as Redis, usually end users want to consume those features in production environment for model inference.
+After you have materialized features in online store such as Redis or Azure Cosmos DB, usually end users want to consume those features in production environment for model inference.
 
 With Feathr's online client, it is quite straightforward to do that. The sample code is as below, where users only need to configure the online store endpoint (if using Redis), and call `client.get_online_features()` to get the features for a particular key.
 

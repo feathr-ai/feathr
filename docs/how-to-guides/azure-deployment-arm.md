@@ -156,8 +156,8 @@ Follow the quick start guide [here](https://linkedin.github.io/feathr/quickstart
 
 Although we recommend end users deploy the resources using the ARM template, we understand that in many situations where users want to reuse existing resources instead of creating new resources; or users have many other permission issues. 
 
-The "source of truth" deployment template is still the [JSON file describing the Azure resources (known as "ARM template")](azure_resource_provision.json). Essentially what we are doing below is just replicate the ARM template manually.
+The "source of truth" deployment template is still the [JSON file describing the Azure resources (known as "ARM template")](azure_resource_provision.json). Essentially what we are doing below is just replicate the ARM template manually. Also note that this requires some basic understanding 
 
-The part that needs most attention is the Feathr registry deployment. Let's say the developer want to reuse an existing SQL database, there are a few steps:
+The part that needs most attention is the Feathr registry deployment which is a bit complex, so we will focus on that part.
 
-1. 
+There are two components from deployment point of view: An Azure WebApp hosting a container containing the Feathr UI and the REST API, and the actual backend storing the metadata of those features.
