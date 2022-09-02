@@ -1,12 +1,12 @@
 ---
 layout: default
-title: Streaming Source Ingestion
+title: Streaming Source Ingestion and Feature Definition
 parent: How-to Guides
 ---
 
-# Streaming feature ingestion
+# Streaming Source Ingestion and Feature Definition
 
-Feathr supports defining features from a stream source (for example Kafka) and sink the features into an online store (such as Redis). This is very useful if you need up-to-date features for online store, for example when user clicks on the website, that web log event is usually sent to Kafka, and data scientists might need some features immediately, such as the browser used in this particular event. The steps are as below:
+Feathr supports defining features from a stream source (for example Kafka) with transformations, and sink the features into an online store (such as Redis). This is very useful if you need up-to-date features for online store, for example when user clicks on the website, that web log event is usually sent to Kafka, and data scientists might need some features immediately, such as the browser used in this particular event. The steps are as below:
 
 ## Define Kafka streaming input source
 
@@ -35,13 +35,13 @@ stream_source = KafKaSource(name="kafkaStreamingSource",
                             )
 ```
 
-You may need to produce data and send them into Kafka as this data source in advance. Please check [Kafka data source producer](../../feathr_project/test/prep_azure_kafka_test_data.py) as a reference. Also you should keep this producer running which means there are data stream keep coming into Kafka while calling the 'materialize_features' below.
+You may need to produce data and send them into Kafka as this data source in advance. Please check [Kafka data source producer](https://github.com/linkedin/feathr/blob/main/feathr_project/test/prep_azure_kafka_test_data.py) as a reference. Also you should keep this producer running which means there are data stream keep coming into Kafka while calling the 'materialize_features' below.
 
 ## Define feature definition with the Kafka source
 
 You can then define features. They are mostly the same with the [regular feature definition](../concepts/feature-definition.md).
 
-Note that for the `transform` part, only row level transformation is allowed in streaming anchor at the moment, i.e. the transformations listed in [Spark SQL Built-in Functions](https://spark.apache.org/docs/latest/api/sql/) are supported. Other transformations support are in the roadmap. 
+Note that for the `transform` part, only row level transformation is allowed in streaming anchor at the moment, i.e. the transformations listed in [Spark SQL Built-in Functions](https://spark.apache.org/docs/latest/api/sql/) are supported. Users can also define customized [Spark SQL functions](./feathr-spark-udf-advanced.md).
 
 For example, you can specify to do a row-level transformation like `trips_today + randn() * cos(trips_today)` for your input data.
 
@@ -90,14 +90,14 @@ res = client.multi_get_online_features('kafkaSampleDemoFeature', ['1', '2'], ['f
 
 ```
 
-You can also refer to the [test case](../../feathr_project/test/test_azure_kafka_e2e.py) for more details.
+You can also refer to the [test case](https://github.com/linkedin/feathr/blob/main/feathr_project/test/test_azure_kafka_e2e.py) for more details.
 
 ## Kafka configuration
 
-Please refer to the [Feathr Configuration Doc](./feathr-configuration-and-env.md#kafkasasljaasconfig) for more details on the credentials.
+Please refer to the [Feathr Configuration Doc](./feathr-configuration-and-env.md#KAFKA_SASL_JAAS_CONFIG) for more details on the credentials.
 
-## Event Hub monitor
+## Event Hub monitoring
 
-Please check monitor panel on your 'Event Hub' overview page while running materialize to make sure there are both incoming and outgoing messages, like below graph. Otherwise, you may not get anything from 'get_online_features' since the source is empty.
+If you feel something is wrong, you can check the monitor panel on your 'Event Hub' overview page while running the Feathr materialization job, to make sure there are both incoming and outgoing messages, like the graph below. Otherwise, you may not get anything from `get_online_features()` since the source is empty.
 
 ![Kafka Monitor Page](../images/kafka-messages-monitor.png)
