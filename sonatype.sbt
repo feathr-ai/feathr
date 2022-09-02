@@ -1,6 +1,8 @@
 publishTo := sonatypePublishToBundle.value
-// For all Sonatype accounts created on or after February 2021
-ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+
+// Feathr Sonatype account was created before Feb 2021, hence this host.
+sonatypeCredentialHost := "oss.sonatype.org"
+
 
 // Your profile name of the sonatype account. The default is the same with the organization value
 sonatypeProfileName := "com.linkedin.feathr"

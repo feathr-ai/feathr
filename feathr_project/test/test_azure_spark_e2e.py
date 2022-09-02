@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+from feathr.definition.sink import CosmosDbSink, ElasticSearchSink
 
 import pytest
 from click.testing import CliRunner
@@ -9,7 +10,7 @@ from feathr import (BackfillTime, MaterializationSettings)
 from feathr import FeathrClient
 from feathr import FeatureQuery
 from feathr import ObservationSettings
-from feathr import RedisSink, HdfsSink
+from feathr import RedisSink, HdfsSink, JdbcSink
 from feathr import TypedKey
 from feathr import ValueType
 from feathr.utils.job_utils import get_result_df
@@ -201,3 +202,100 @@ def test_feathr_get_offline_features():
         # download result and just assert the returned result is not empty
         res_df = get_result_df(client)
         assert res_df.shape[0] > 0
+
+def test_feathr_get_offline_features_to_sql():
+    """
+    Test get_offline_features() can save data to SQL.
+    """
+    # runner.invoke(init, [])
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    location_id = TypedKey(key_column="DOLocationID",
+                            key_column_type=ValueType.INT32,
+                            description="location id in NYC",
+                            full_name="nyc_taxi.location_id")
+
+    feature_query = FeatureQuery(
+        feature_list=["f_location_avg_fare"], key=location_id)
+    settings = ObservationSettings(
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+    now = datetime.now()
+    # Set DB user and password before submitting job
+    # os.environ[f"sql1_USER"] = "some_user@feathrtestsql4"
+    # os.environ[f"sql1_PASSWORD"] = "some_password"
+    output_path = JdbcSink(name="sql1",
+                            url="jdbc:sqlserver://feathrtest3sql.database.windows.net:1433;database=feathrci;encrypt=true;",
+                            dbtable=''.join(['feathrazure_cijob','_', str(now.minute), '_', str(now.second)]),
+                            auth="USERPASS")
+
+    client.get_offline_features(observation_settings=settings,
+                                feature_query=feature_query,
+                                output_path=output_path)
+
+    # assuming the job can successfully run; otherwise it will throw exception
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+
+def test_feathr_materialize_to_cosmosdb():
+    """
+    Test FeathrClient() CosmosDbSink.
+    """
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    # os.chdir(test_workspace_dir)
+
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+
+    now = datetime.now()
+    container = ''.join(['feathrazure_cijob_materialize_','_', str(now.minute), '_', str(now.second), ""])
+    sink = CosmosDbSink(name='cosmos1', endpoint='https://feathrazuretest3-cosmosdb.documents.azure.com:443/', database='feathr', container=container)
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[sink],
+                                       feature_names=[
+                                           "f_location_avg_fare", "f_location_max_fare"],
+                                       backfill_time=backfill_time)
+    client.materialize_features(settings)
+    # assuming the job can successfully run; otherwise it will throw exception
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+
+
+@pytest.mark.skip(reason="Marked as skipped as we need to setup resources for this test")
+def test_feathr_materialize_to_es():
+    """
+    Test FeathrClient() CosmosDbSink.
+    """
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    # os.chdir(test_workspace_dir)
+
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+
+    now = datetime.now()
+    index = ''.join(['feathrazure_cijob_materialize_','_', str(now.minute), '_', str(now.second), ""])
+    sink = ElasticSearchSink(name='es1', host='somenode:9200', index=index, ssl=True, auth=True)
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[sink],
+                                       feature_names=[
+                                           "f_location_avg_fare", "f_location_max_fare"],
+                                       backfill_time=backfill_time)
+    client.materialize_features(settings)
+    # Set user and password before submitting job
+    # os.environ[f"es1_USER"] = "some_user"
+    # os.environ[f"es1_PASSWORD"] = "some_password"
+    # assuming the job can successfully run; otherwise it will throw exception
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+
+
+if __name__ == "__main__":
+    test_feathr_get_offline_features_to_sql()
+    test_feathr_materialize_to_cosmosdb()

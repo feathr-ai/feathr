@@ -1,6 +1,6 @@
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
-ThisBuild / version          := "0.6.0"
+ThisBuild / version          := "0.7.1"
 ThisBuild / organization     := "com.linkedin.feathr"
 ThisBuild / organizationName := "linkedin"
 val sparkVersion = "3.1.3"
@@ -46,6 +46,7 @@ val localAndCloudCommonDependencies = Seq(
     "org.xerial" % "sqlite-jdbc" % "3.36.0.3",
     "com.github.changvvb" %% "jackson-module-caseclass" % "1.1.1",
     "com.azure.cosmos.spark" % "azure-cosmos-spark_3-1_2-12" % "4.11.1",
+    "org.elasticsearch" % "elasticsearch-spark-30_2.12" % "7.15.2",
     "org.eclipse.jetty" % "jetty-util" % "9.3.24.v20180605"
 ) // Common deps
 
@@ -59,7 +60,7 @@ val jdbcDrivers = Seq(
 lazy val root = (project in file("."))
   .settings(
       name := "feathr",
-      // To assemble, run sbt assembly -java-home /Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home
+      // To assemble, run sbt assembly -java-home /Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
       assembly / mainClass := Some("com.linkedin.feathr.offline.job.FeatureJoinJob"),
       libraryDependencies ++= cloudProvidedDeps,
       libraryDependencies ++= localAndCloudCommonDependencies,
@@ -73,7 +74,7 @@ lazy val root = (project in file("."))
 //lazy val localCliJar = (project in file("."))
 // .settings(
 //     name := "feathr-cli",
-//     // To assemble, run sbt assembly -java-home /Library/Java/JavaVirtualMachines/jdk1.8.0_282-msft.jdk/Contents/Home
+//     // To assemble, run sbt assembly -java-home /Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
 //     assembly / mainClass := Some("com.linkedin.feathr.cli.FeatureExperimentEntryPoint"),
 //     // assembly / mainClass := Some("com.linkedin.feathr.offline.job.FeatureJoinJob"),
 //     libraryDependencies ++= localAndCloudDiffDependencies,
