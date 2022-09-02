@@ -35,7 +35,7 @@ stream_source = KafKaSource(name="kafkaStreamingSource",
                             )
 ```
 
-You may need to produce data and send them into Kafka as this data source in advance. Please check [Kafka data source producer](../samples/kafka_producer.py) as a reference. Also you should keep this producer running which means there are data stream keep coming into Kafka while calling the 'materialize_features' below.
+You may need to produce data and send them into Kafka as this data source in advance. Please check [Kafka data source producer](../../feathr_project/test/prep_azure_kafka_test_data.py) as a reference. Also you should keep this producer running which means there are data stream keep coming into Kafka while calling the 'materialize_features' below.
 
 ## Define feature definition with the Kafka source
 
