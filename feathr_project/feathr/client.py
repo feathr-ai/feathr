@@ -2,26 +2,22 @@ import base64
 import logging
 import os
 import tempfile
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Optional, Union
-
-from numpy import isin
+from typing import Dict, List, Union
 from feathr.definition.feature import FeatureBase
 
 import redis
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
 from pyhocon import ConfigFactory
-from feathr.definition.sink import GenericSink, Sink
-from feathr.definition.source import GenericSource, Source
+from feathr.definition.sink import Sink
 from feathr.registry.feature_registry import default_registry_client
 
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
+from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
+from feathr.spark_provider._localspark_submission import _FeathrDLocalSparkJobLauncher
 
 from feathr.definition._materialization_utils import _to_materialization_config
 from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
-from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.constants import *
 from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
 from feathr.definition.feature_derivations import DerivedFeature
@@ -36,54 +32,7 @@ from feathr.spark_provider.feathr_configurations import SparkExecutionConfigurat
 from feathr.utils._envvariableutil import _EnvVaraibleUtil
 from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
-
-
-class FeatureJoinJobParams:
-    """Parameters related to feature join job.
-
-    Attributes:
-        join_config_path: Path to the join config.
-        observation_path: Absolute path in Cloud to the observation data path.
-        feature_config: Path to the features config.
-        job_output_path: Absolute path in Cloud that you want your output data to be in.
-    """
-
-    def __init__(self, join_config_path, observation_path, feature_config, job_output_path, secrets:List[str]=[]):
-        self.secrets = secrets
-        self.join_config_path = join_config_path
-        if isinstance(observation_path, str):
-            self.observation_path = observation_path
-        elif isinstance(observation_path, Source):
-            self.observation_path = observation_path.to_argument()
-            if hasattr(observation_path, "get_required_properties"):
-                self.secrets.extend(observation_path.get_required_properties())
-        else:
-            raise TypeError("observation_path must be a string or a Sink")
-        self.feature_config = feature_config
-        if isinstance(job_output_path, str):
-            self.job_output_path = job_output_path
-        elif isinstance(job_output_path, Sink):
-            self.job_output_path = job_output_path.to_argument()
-            if hasattr(job_output_path, "get_required_properties"):
-                self.secrets.extend(job_output_path.get_required_properties())
-        else:
-            raise TypeError("job_output_path must be a string or a Sink")
-
-
-class FeatureGenerationJobParams:
-    """Parameters related to feature generation job.
-
-    Attributes:
-        generation_config_path: Path to the feature generation config.
-        feature_config: Path to the features config.
-        secrets: secret names from data sources, the values will be taken from env or KeyVault
-    """
-
-    def __init__(self, generation_config_path, feature_config, secrets=[]):
-        self.generation_config_path = generation_config_path
-        self.feature_config = feature_config
-        self.secrets = secrets
-
+from feathr.utils.spark_job_params import FeatureJoinJobParams, FeatureGenerationJobParams, OfflineStorageParams
 
 
 class FeathrClient(object):
@@ -162,7 +111,7 @@ class FeathrClient(object):
             'spark_config', 'spark_cluster')
 
         self.credential = credential
-        if self.spark_runtime not in {'azure_synapse', 'databricks'}:
+        if self.spark_runtime not in {'azure_synapse', 'databricks', 'local'}:
             raise RuntimeError(
                 'Only \'azure_synapse\' and \'databricks\' are currently supported.')
         elif self.spark_runtime == 'azure_synapse':
@@ -207,6 +156,11 @@ class FeathrClient(object):
                 databricks_work_dir=self.envutils.get_environment_variable_with_default(
                     'spark_config', 'databricks', 'work_dir')
             )
+        elif self.spark_runtime == 'local':
+            self._FEATHR_JOB_JAR_PATH = \
+                self.envutils.get_environment_variable_with_default(
+                    'spark_config', 'local', 'feathr_runtime_location')
+            self.feathr_spark_launcher = _FeathrDLocalSparkJobLauncher(self.envutils.get_environment_variable_with_default('spark_config', 'local', 'workspace'))
 
         self._construct_redis_client()
 
@@ -537,12 +491,20 @@ class FeathrClient(object):
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
         # submit the jars
+        if self.spark_runtime == 'local':
+            return self.feathr_spark_launcher.submit_feathr_job(
+                job_name = self.project_name,
+                main_jar_path=self._FEATHR_JOB_JAR_PATH,
+                python_files=cloud_udf_paths,
+                configs = feature_join_job_params,
+            )
+
         return self.feathr_spark_launcher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             python_files=cloud_udf_paths,
             job_tags=job_tags,
-            main_class_name='com.linkedin.feathr.offline.job.FeatureJoinJob',
+            main_class_name=JOIN_CLASS_NAME,
             arguments= [
                 '--join-config', self.feathr_spark_launcher.upload_or_get_cloud_path(
                     feature_join_job_params.join_config_path),
@@ -684,11 +646,22 @@ class FeathrClient(object):
         if monitoring_config_str:
             arguments.append('--monitoring-config')
             arguments.append(monitoring_config_str)
+        
+        if self.spark_runtime == "local":
+            return self.feathr_spark_launcher.submit_feathr_job(
+                job_name=self.project_name + '_feathr_feature_materialization_job',
+                main_jar_path=self._FEATHR_JOB_JAR_PATH,
+                python_files=cloud_udf_paths,
+                main_class_name=GEN_CLASS_NAME,
+                configs=generation_config,
+                redis_config =  self._getRedisConfigStr(),
+            )
+
         return self.feathr_spark_launcher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             python_files=cloud_udf_paths,
-            main_class_name='com.linkedin.feathr.offline.job.FeatureGenJob',
+            main_class_name=GEN_CLASS_NAME,
             arguments=arguments,
             reference_files_path=[],
             configuration=execution_configurations,
