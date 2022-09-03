@@ -73,3 +73,7 @@ In case if the Feathr release manager wants to do it manually, login with feathr
 docker login
 docker push feathrfeaturestore/feathr-registry
 ```
+
+## Published Feathr Registry Image
+
+The published feathr feature registry is located in [DockerHub here](https://hub.docker.com/r/feathrfeaturestore/feathr-registry).
