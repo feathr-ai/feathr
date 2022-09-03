@@ -1,6 +1,6 @@
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
-ThisBuild / version          := "0.7.1"
+ThisBuild / version          := "0.7.2"
 ThisBuild / organization     := "com.linkedin.feathr"
 ThisBuild / organizationName := "linkedin"
 val sparkVersion = "3.1.3"
@@ -39,7 +39,7 @@ val localAndCloudCommonDependencies = Seq(
     "com.redislabs" %% "spark-redis" % "3.0.0",
     "org.scalatest" %% "scalatest" % "3.0.9" % "test",
     "org.apache.xbean" % "xbean-asm6-shaded" % "4.10",
-    "com.google.protobuf" % "protobuf-java" % "3.19.4",
+    "com.google.protobuf" % "protobuf-java" % "2.6.1",
     "net.snowflake" % "snowflake-jdbc" % "3.13.18",
     "net.snowflake" % "spark-snowflake_2.12" % "2.10.0-spark_3.2",
     "org.apache.commons" % "commons-lang3" % "3.12.0",
