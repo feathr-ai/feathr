@@ -41,11 +41,15 @@ def test_local_spark_get_offline_features():
     result = client.get_offline_features(observation_settings=settings,
                             feature_query=feature_query,
                             output_path=output_path,
+                            config_file_name = "feature_join_conf/feature_join_local.conf",
                             verbose=False)
     assert result.returncode == 0
 
     df = parse_avro_result(output_path)
     assert df.__len__() == 35612
+
+    # output folder will be cleaned up.
+    shutil.rmtree(output_path)
 
 def test_local_spark_materialization():
     #TODO: add test for materialization
@@ -126,11 +130,8 @@ def parse_avro_result(output_path):
     dataframe_list = []
     # assuming the result are in avro format
     for file in glob.glob(os.path.join(output_path, '*.avro')):
-        print(file)
         dataframe_list.append(pdx.read_avro(file))
     
-    # output folder will be cleaned up.
-    shutil.rmtree(output_path)
     vertical_concat_df = pd.concat(dataframe_list, axis=0)
     return vertical_concat_df
 

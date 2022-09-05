@@ -36,6 +36,17 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
         return local_path_or_http_path
 
     def submit_feathr_job(self, job_name: str, configs: FeatureGenerationJobParams | FeatureJoinJobParams, redis_config:str = None, main_jar_path: str = None, python_files: str = None, num_parts: int = 1, debug: bool = True):
+        """
+        Submits the Feathr job to local spark
+        Args:
+            job_name (str): Name of the job
+            configs (FeatureGenerationJobParams | FeatureJoinJobParams): Configs for the job
+            redis_config (str): Redis config, used for feature gen job
+            main_jar_path (str): Path to the main jar, default is the latest Marven jar
+            python_files (str): Path to the python files, default is None
+            num_parts (int): Number of partitions, default is 1
+            debug (bool): Whether to run in debug mode to record spark submit script and result, default is True
+        """
         logger.warning(f"Local Spark Mode only support basic params right now and only for testing purpose.")
         now = datetime.now().strftime("%Y%m%d%H%M%S")
         current_dir = Path(__file__).parent.resolve()
@@ -95,9 +106,11 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
         return result
 
     def wait_for_completion(self, timeout_seconds: Optional[float]) -> bool:
+        """Wait for the job to complete, only a placeholder for local spark"""
         return super().wait_for_completion(timeout_seconds)
 
     def get_status(self) -> str:
+        """Get the status of the job, only a placeholder for local spark"""
         return super().get_status()
 
     def _get_command_template(self, main_class_name:str):

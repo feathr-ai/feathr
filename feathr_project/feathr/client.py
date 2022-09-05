@@ -32,7 +32,7 @@ from feathr.spark_provider.feathr_configurations import SparkExecutionConfigurat
 from feathr.utils._envvariableutil import _EnvVaraibleUtil
 from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
-from feathr.utils.spark_job_params import FeatureJoinJobParams, FeatureGenerationJobParams, OfflineStorageParams
+from feathr.utils.spark_job_params import FeatureJoinJobParams, FeatureGenerationJobParams
 
 
 class FeathrClient(object):
@@ -412,6 +412,7 @@ class FeathrClient(object):
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
                              output_path: Union[str, Sink],
                              execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
+                             config_file_name:str = "feature_join_conf/feature_join.conf",
                              udf_files = None,
                              verbose: bool = False
                              ):
@@ -422,6 +423,7 @@ class FeathrClient(object):
             feature_query: features that are requested to add onto the observation data
             output_path: output path of job, i.e. the observation data with features attached.
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            config_file_name: the name of the config file that will be passed to the spark job. The config file is used to configure the spark job. The default value is "feature_join_conf/feature_join.conf".
         """
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
         feature_names = []
@@ -442,7 +444,6 @@ class FeathrClient(object):
             outputPath: "{{output_path}}"
         """)
         config = tm.render(feature_lists=feature_queries, observation_settings=observation_settings, output_path=output_path)
-        config_file_name = "feature_join_conf/feature_join.conf"
         config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
 
         # make sure `FeathrClient.build_features()` is called before getting offline features/materialize features
