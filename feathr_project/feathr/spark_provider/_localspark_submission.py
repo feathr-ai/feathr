@@ -2,7 +2,7 @@ from datetime import datetime
 import os
 from string import Template
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
 from feathr.spark_provider._abc import SparkJobLauncher
@@ -35,7 +35,7 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
         """For Local Spark Case, no need to upload to cloud workspace."""
         return local_path_or_http_path
 
-    def submit_feathr_job(self, job_name: str, configs: FeatureGenerationJobParams | FeatureJoinJobParams, redis_config:str = None, main_jar_path: str = None, python_files: str = None, num_parts: int = 1, debug: bool = True):
+    def submit_feathr_job(self, job_name: str, configs: Union[FeatureGenerationJobParams, FeatureJoinJobParams], redis_config:str = None, main_jar_path: str = None, python_files: str = None, num_parts: int = 1, debug: bool = True):
         """
         Submits the Feathr job to local spark
         Args:

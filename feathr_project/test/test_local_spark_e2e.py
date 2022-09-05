@@ -134,7 +134,3 @@ def parse_avro_result(output_path):
     
     vertical_concat_df = pd.concat(dataframe_list, axis=0)
     return vertical_concat_df
-
-if __name__ == "__main__":
-    test_local_spark_get_offline_features()
-
