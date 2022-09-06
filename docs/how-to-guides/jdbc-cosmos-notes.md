@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Using SQL databases and CosmosDb with Feathr
+title: Using SQL databases, CosmosDb, and ElasticSearch with Feathr
 parent: Feathr How-to Guides
 ---
 
@@ -103,3 +103,45 @@ container_client = db_client.get_container_client(some_cosmosdb_collection)
 doc = container_client.read_item(some_key)
 feature_value = doc['feature_name']
 ```
+
+## Using ElasticSearch as online store
+
+To use ElasticSearch as the online store, create `ElasticSearchSink` and add it to the `MaterializationSettings`, then use it with `FeathrClient.materialize_features`, e.g..
+
+```
+name = 'es_output'
+sink = ElasticSearchSink(name, host="esnode1:9200", index="someindex", ssl=False, auth=True)
+os.environ[f"{name.upper()}_USER"] = "some_user_name"
+os.environ[f"{name.upper()}_PASSWORD"] = "some_magic_word"
+client.materialize_features(..., materialization_settings=MaterializationSettings(..., sinks=[sink]))
+```
+
+Feathr client doesn't support getting feature values from ElasticSearch, you need to use [official ElasticSearch client](https://pypi.org/project/elasticsearch/) to get the values, e.g.:
+
+```
+from elasticsearch import Elasticsearch
+
+es = Elasticsearch("http://esnode1:9200")
+resp = es.get(index="someindex", id="somekey")
+print(resp['_source'])
+```
+
+The feature generation job uses `upsert` mode to write data, so after the job the index may contain stale data, the recommended way is to create a new index each time, and use index alias to seamlessly switch over, detailed information can be found from [the official doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/aliases.html), currently Feathr doesn't provide any helper to do this.
+
+NOTE:
++ You can use no auth or basic auth only, no other authentication methods are supported.
++ If you enabled SSL, you need to make sure the certificate on ES nodes is trusted by the Spark cluster, otherwise the job will fail.
+
+## Using ElasticSearch as offline store
+
+To use ElasticSearch as the offline store, create `ElasticSearchSink` and use it with `FeathrClient.get_offline_features`, e.g..
+
+```
+name = 'es_output'
+sink = ElasticSearchSink(name, host="esnode1", index="someindex", ssl=False, auth=True)
+os.environ[f"{name.upper()}_USER"] = "some_user_name"
+os.environ[f"{name.upper()}_PASSWORD"] = "some_magic_word"
+client.get_offline_features(..., output_path=sink)
+```
+
+NOTE: The feature joining process doesn't generate meaningful keys for each document, you need to make sure the output dataset can be accessed/queried by some other ways such as full-text-search, otherwise you may have to fetch all the data from ES to get what you look for.

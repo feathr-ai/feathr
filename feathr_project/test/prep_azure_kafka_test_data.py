@@ -74,9 +74,11 @@ avro_schema_json = json.dumps({
     ]
 })
 
-
-for record in trips_df.drop(columns=['created']).to_dict('record'):
-    record["datetime"] = (
-        record["datetime"].to_pydatetime().replace(tzinfo=pytz.utc)
-    )
-    send_avro_record_to_kafka(topic=KAFKA_TOPIC, record=record)
+while True:    
+# This while loop is used to keep the process runinng and producing data stream; 
+# If no need please remove it
+    for record in trips_df.drop(columns=['created']).to_dict('record'):
+        record["datetime"] = (
+            record["datetime"].to_pydatetime().replace(tzinfo=pytz.utc)
+        )
+        send_avro_record_to_kafka(topic=KAFKA_TOPIC, record=record)
