@@ -99,8 +99,25 @@ parent: Developer Guides
 - If the published jar fails to run in Spark with error `java.lang.UnsupportedClassVersionError: com/linkedin/feathr/common/exception/FeathrInputDataException has been compiled by a more recent version of the Java Runtime (class file version 62.0), this version of the Java Runtime only recognizes class file versions up to 52.0`, make sure you complied with the right Java version with -java-home parameter in sbt console.
 
 ## CI Automatic Publishing
+There is a Github Action that automates the above process, you can find it [here](../../.github/workflows/publish-to-maven.yml)
+This action is triggered anytime a new tag is created, which is usually for release purposes. To manually trigger the pipeline for testing purposes tag can be created using following commands
 
-(TBD)
+```bash
+
+git tag -a <version> -m "Test tag"
+git push --tags
+
+```
+
+Following are some of the things to keep in mind while attempting to do something similar, since signing issues are hard to debug.
+1. There are four secrets that needs to be set for the Github workflow action
+    
+1. As noted in previous steps, you need to use gpg to create a public-private key pair on your dev machine. The public key is uploaded to a Key server for verification purpose. The private gpg key is used to sign the package being uploaded to maven. We export this private key to be used for signing on Github agent using the following command
+
+```bash
+gpg --export-secret-keys --armor 1234ABCD > secret.asc
+
+```
 
 ### References
 
