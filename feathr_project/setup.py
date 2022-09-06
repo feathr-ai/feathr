@@ -7,7 +7,7 @@ long_description = (root_path / "docs/README.md").read_text()
 
 setup(
     name='feathr',
-    version='0.7.1',
+    version='0.7.2',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="frame_dev@linkedin.com",
@@ -39,9 +39,8 @@ setup(
         "pyspark>=3.1.2",
         "python-snappy",
         "deltalake",
-        "google>=3.0.0",
         "graphlib_backport",
-        "google-api-python-client>=2.41.0",
+        "protobuf==3.*",
         "azure-keyvault-secrets",
         "confluent-kafka",
         "databricks-cli",

@@ -1,6 +1,6 @@
 name: Feature Request
 description: Use this template for feature requests.
-labels: 'enhancement'
+labels: 'feature'
 title: '[FR]'
 
 body:
@@ -43,21 +43,21 @@ body:
     attributes:
       label: Details
       description: |
-        Give a clear description here.
+        Please provide a clear description here.
     validations:
       required: false
 
   - type: checkboxes
     id: component
     attributes:
-      label: What component(s) does this bug affect?
+      label: What component(s) does this feature request affect?
       description: Please choose one or more components below.
       options:
-        - label: "`Python Feathr Client`: This is the client users use to interact with most of our API. Mostly written in Python."
+        - label: "`Python Client`: This is the client users use to interact with most of our API. Mostly written in Python."
           required: false
         - label: "`Computation Engine`: The computation engine that execute the actual feature join and generation work. Mostly in Scala and Spark."
           required: false
-        - label: "`Feature Registry API Layer`: The storage layer supports SQL, Purview(Atlas). The API layer is in Python(FAST API)"
+        - label: "`Feature Registry API`: The frontend API layer supports SQL, Purview(Atlas) as storage. The API layer is in Python(FAST API)"
           required: false
-        - label: "`Feature Registry Web UI layer`: The Web UI for feature registry. Written in React with a few UI frameworks."
+        - label: "`Feature Registry Web UI`: The Web UI for feature registry. Written in React"
           required: false

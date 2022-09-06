@@ -60,6 +60,7 @@ trait DataLocation {
 
   /**
    * Write DataFrame to the location
+   *
    * @param ss SparkSession
    * @param df DataFrame to write
    */
@@ -77,7 +78,12 @@ trait DataLocation {
 
 object LocationUtils {
   private def propOrEnvOrElse(key: String, alt: String): String = {
-    scala.util.Properties.propOrElse(key, scala.util.Properties.envOrElse(key, alt))
+    // Try properties, then env, then properties and env again with uppercase
+    // GitHub secrets must have uppercase name, so client can only use uppercase keys if they're taken from GH secrets
+    scala.util.Properties.propOrElse(key,
+      scala.util.Properties.envOrElse(key,
+        scala.util.Properties.propOrElse(key.toUpperCase,
+          scala.util.Properties.envOrElse(key.toUpperCase, alt))))
   }
 
   /**
@@ -108,6 +114,7 @@ object LocationUtils {
 object DataLocation {
   /**
    * Create DataLocation from string, try parsing the string as JSON and fallback to SimplePath
+   *
    * @param cfg the input string
    * @return DataLocation
    */
@@ -126,7 +133,7 @@ object DataLocation {
         SimplePath(cfg)
       }
     } catch {
-      case _ @ (_: ConfigException | _: JacksonException) => SimplePath(cfg)
+      case _@(_: ConfigException | _: JacksonException) => SimplePath(cfg)
     }
   }
 
