@@ -20,10 +20,10 @@ jobs:
           java-version: "8"
           distribution: "temurin"
           server-id: ossrh
-          server-username: OSSRH_USERNAME
-          server-password: OSSRH_PASSWORD
+          server-username: SONATYPE_USERNAME
+          server-password: SONATYPE_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          gpg-passphrase: PGP_PASSPHRASE
 
     # CI release command defaults to publishSigned
     # Sonatype release command defaults to sonaTypeBundleRelease
