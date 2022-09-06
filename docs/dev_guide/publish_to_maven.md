@@ -99,8 +99,7 @@ parent: Developer Guides
 - If the published jar fails to run in Spark with error `java.lang.UnsupportedClassVersionError: com/linkedin/feathr/common/exception/FeathrInputDataException has been compiled by a more recent version of the Java Runtime (class file version 62.0), this version of the Java Runtime only recognizes class file versions up to 52.0`, make sure you complied with the right Java version with -java-home parameter in sbt console.
 
 ## CI Automatic Publishing
-There is a Github Action that automates the above process, you can find it [here](../../.github/workflows/publish-to-maven.yml)
-This action is triggered anytime a new tag is created, which is usually for release purposes. To manually trigger the pipeline for testing purposes tag can be created using following commands
+There is a Github Action that automates the above process, you can find it [here](../../.github/workflows/publish-to-maven.yml). This action is triggered anytime a new tag is created, which is usually for release purposes. To manually trigger the pipeline for testing purposes tag can be created using following commands
 
 ```bash
 
@@ -110,21 +109,57 @@ git push --tags
 ```
 
 Following are some of the things to keep in mind while attempting to do something similar, since signing issues are hard to debug.
-1. There are four secrets that needs to be set for the Github workflow action
+
+1. There are four secrets that needs to be set for the Github workflow action to work
+    ```bash
+    PGP_PASSPHRASE: This is the passphrase that you provided during GPG key pair creation.
+    PGP_SECRET: The Private Key from GPG key pair created above.
+    SONATYPE_PASSWORD: Password for oss sonatype repository.
+    SONATYPE_USERNAME: Username for oss sonatype repository.
+    ```
     
 1. As noted in previous steps, you need to use gpg to create a public-private key pair on your dev machine. The public key is uploaded to a Key server for verification purpose. The private gpg key is used to sign the package being uploaded to maven. We export this private key to be used for signing on Github agent using the following command
 
-```bash
-gpg --export-secret-keys --armor 1234ABCD > secret.asc
+    ```bash
 
-```
+    gpg --export-secret-keys --armor YOUR_PRIVATE_KEY_ID > privatekey.asc
+    ```
+    Copy everything from the privatekey.asc file and put it as Github secret with name PGP_SECRET
+    
+    To get the private key id you can run the following command and use id under section sec (stands for secret)
 
+    ```bash
+    $ gpg --list-secret-keys
+    /Users/myuser/.gnupg/pubring.kbx
+    -------------------------------
+
+    sec   abc123 2022-08-24 [SC] [expires: 2024-08-23]
+        3203203SD.......  
+    uid           [ultimate] YOUR NAME <YOUR_EMAIL>
+    ssb   abc123 2022-08-24 [E] [expires: 2024-08-23]
+    ```
+1. Make sure you are using the right credential host in [sonatype.sbt](../../sonatype.sbt)
+    - For accounts created before Feb 2021 use __oss.sonatype.org__ 
+    - For accounts created after Feb 2021 use __s01.oss.sonatype.org__
+    
+
+1. Make sure you are using latest release of sbt-pgp package, or atleast the one close to the dev box on which gpg keypair is generated. You can change the version in [build.sbt](../../build.sbt)
+    ```bash
+    addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.1.2")
+    ```
+
+1. We are using sbt-ci-release plugin, that makes the publishing process easier. Read more about it [here](https://github.com/sbt/sbt-ci-release). You can add this in [build.sbt](../../build.sbt)
+    ```bash
+    addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.5.10")
+    ```
 ### References
 
-https://github.com/xerial/sbt-sonatype
+- https://github.com/xerial/sbt-sonatype
 
-https://www.linuxbabe.com/security/a-practical-guide-to-gpg-part-1-generate-your-keypair
+- https://www.linuxbabe.com/security/a-practical-guide-to-gpg-part-1-generate-your-keypair
 
-https://central.sonatype.org/publish/publish-guide/#deployment
+- https://central.sonatype.org/publish/publish-guide/#deployment
 
-https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html
+- https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html
+
+- https://github.com/sbt/sbt-ci-release
