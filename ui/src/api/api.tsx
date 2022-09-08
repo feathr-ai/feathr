@@ -35,11 +35,10 @@ export const fetchDataSources = async (project: string) => {
 export const fetchDataSource = async (project: string, dataSourceId: string) => {
   const axios = await authAxios(msalInstance);
   return axios
-    .get<DataSource>(`${getApiBaseUrl()}/projects/${project}/dataSources/${dataSourceId}`, {
-      params: { project: project },
+    .get<DataSource>(`${getApiBaseUrl()}/projects/${project}/datasources/${dataSourceId}`, {
+      params: { project: project, datasource: dataSourceId },
     })
     .then((response) => {
-      console.log(response.data);
       return response.data;
     });
 };
@@ -79,6 +78,9 @@ export const fetchFeature = async (project: string, featureId: string) => {
       params: { project: project },
     })
     .then((response) => {
+      console.log('Feature')
+      console.log(response.data);
+      console.log(response.data.attributes.name);
       return response.data;
     });
 };
