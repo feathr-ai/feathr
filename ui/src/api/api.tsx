@@ -78,9 +78,6 @@ export const fetchFeature = async (project: string, featureId: string) => {
       params: { project: project },
     })
     .then((response) => {
-      console.log('Feature')
-      console.log(response.data);
-      console.log(response.data.attributes.name);
       return response.data;
     });
 };
