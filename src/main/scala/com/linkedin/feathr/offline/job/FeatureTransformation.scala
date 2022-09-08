@@ -6,11 +6,11 @@ import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnch
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.MVELSourceKeyExtractor
 import com.linkedin.feathr.offline.client.DataFrameColName
-import com.linkedin.feathr.offline.client.plugins.{SimpleAnchorExtractorSparkAdaptor, FeathrUdfPluginContext, AnchorExtractorAdaptor}
 import com.linkedin.feathr.offline.config.{MVELFeatureDefinition, TimeWindowFeatureDefinition}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
 import com.linkedin.feathr.offline.job.FeatureJoinJob.FeatureName
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.{DataSourceAccessor, NonTimeBasedDataSourceAccessor, TimeBasedDataSourceAccessor}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
@@ -164,7 +164,8 @@ private[offline] object FeatureTransformation {
       featureAnchorWithSource: FeatureAnchorWithSource,
       df: DataFrame,
       requestedFeatureRefString: Seq[String],
-      inputDateInterval: Option[DateTimeInterval]): TransformedResult = {
+      inputDateInterval: Option[DateTimeInterval],
+      mvelContext: Option[FeathrExpressionExecutionContext]): TransformedResult = {
     val featureNamePrefix = getFeatureNamePrefix(featureAnchorWithSource.featureAnchor.extractor)
     val featureNamePrefixPairs = requestedFeatureRefString.map((_, featureNamePrefix))
 
@@ -178,7 +179,7 @@ private[offline] object FeatureTransformation {
         // so that transformation logic can be written only once
         DataFrameBasedSqlEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs)
       case transformer: AnchorExtractor[_] =>
-        DataFrameBasedRowEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs)
+        DataFrameBasedRowEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs, mvelContext)
       case _ =>
         throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, s"cannot find valid Transformer for ${featureAnchorWithSource}")
     }
@@ -286,7 +287,8 @@ private[offline] object FeatureTransformation {
       keyExtractor: SourceKeyExtractor,
       bloomFilter: Option[BloomFilter],
       inputDateInterval: Option[DateTimeInterval],
-      preprocessedDf: Option[DataFrame] = None): KeyedTransformedResult = {
+      preprocessedDf: Option[DataFrame] = None,
+      mvelContext: Option[FeathrExpressionExecutionContext]): KeyedTransformedResult = {
     // Can two diff anchors have different keyExtractor?
     assert(anchorFeatureGroup.anchorsWithSameSource.map(_.dateParam).distinct.size == 1)
     val defaultInterval = anchorFeatureGroup.anchorsWithSameSource.head.dateParam.map(OfflineDateTimeUtils.createIntervalFromFeatureGenDateParam)
@@ -314,7 +316,7 @@ private[offline] object FeatureTransformation {
         (prevTransformedResult, featureAnchorWithSource) => {
           val requestedFeatures = featureAnchorWithSource.selectedFeatures
           val transformedResultWithoutKey =
-            transformSingleAnchorDF(featureAnchorWithSource, prevTransformedResult.df, requestedFeatures, inputDateInterval)
+            transformSingleAnchorDF(featureAnchorWithSource, prevTransformedResult.df, requestedFeatures, inputDateInterval, mvelContext)
           val namePrefixPairs = prevTransformedResult.featureNameAndPrefixPairs ++ transformedResultWithoutKey.featureNameAndPrefixPairs
           val columnNameToFeatureNameAndType = prevTransformedResult.inferredFeatureTypes ++ transformedResultWithoutKey.inferredFeatureTypes
           val featureColumnFormats = prevTransformedResult.featureColumnFormats ++ transformedResultWithoutKey.featureColumnFormats
@@ -437,7 +439,8 @@ private[offline] object FeatureTransformation {
       anchorToSourceDFThisStage: Map[FeatureAnchorWithSource, DataSourceAccessor],
       requestedFeatureNames: Seq[FeatureName],
       bloomFilter: Option[BloomFilter],
-      incrementalAggContext: Option[IncrementalAggContext] = None): Map[FeatureName, KeyedTransformedResult] = {
+      incrementalAggContext: Option[IncrementalAggContext] = None,
+      mvelContext: Option[FeathrExpressionExecutionContext]): Map[FeatureName, KeyedTransformedResult] = {
     val executionService = Executors.newFixedThreadPool(MAX_PARALLEL_FEATURE_GROUP)
     implicit val executionContext = ExecutionContext.fromExecutorService(executionService)
     val groupedAnchorToFeatureGroups: Map[FeatureGroupingCriteria, Map[FeatureAnchorWithSource, FeatureGroupWithSameTimeWindow]] =
@@ -457,7 +460,7 @@ private[offline] object FeatureTransformation {
 
           val sourceDF = featureGroupingFactors.source
           val transformedResults: Seq[KeyedTransformedResult] = transformMultiAnchorsOnSingleDataFrame(sourceDF,
-                keyExtractor, featureAnchorWithSource, bloomFilter, selectedFeatures, incrementalAggContext)
+                keyExtractor, featureAnchorWithSource, bloomFilter, selectedFeatures, incrementalAggContext, mvelContext)
 
           val res = transformedResults
             .map { transformedResultWithKey =>
@@ -854,7 +857,8 @@ private[offline] object FeatureTransformation {
       anchorsWithSameSource: Seq[FeatureAnchorWithSource],
       bloomFilter: Option[BloomFilter],
       allRequestedFeatures: Seq[String],
-      incrementalAggContext: Option[IncrementalAggContext]): Seq[KeyedTransformedResult] = {
+      incrementalAggContext: Option[IncrementalAggContext],
+      mvelContext: Option[FeathrExpressionExecutionContext]): Seq[KeyedTransformedResult] = {
 
     // based on source and feature definition, divide features into direct transform and incremental
     // transform groups
@@ -864,7 +868,7 @@ private[offline] object FeatureTransformation {
     val preprocessedDf = PreprocessedDataFrameManager.getPreprocessedDataframe(anchorsWithSameSource)
 
     val directTransformedResult =
-      directTransformAnchorGroup.map(anchorGroup => Seq(directCalculate(anchorGroup, source, keyExtractor, bloomFilter, None, preprocessedDf)))
+      directTransformAnchorGroup.map(anchorGroup => Seq(directCalculate(anchorGroup, source, keyExtractor, bloomFilter, None, preprocessedDf, mvelContext)))
 
     val incrementalTransformedResult = incrementalTransformAnchorGroup.map { anchorGroup =>
       {
@@ -883,7 +887,7 @@ private[offline] object FeatureTransformation {
             baseDF.join(curDF, keyColumnNames)
           })
         val preAggRootDir = incrAggCtx.previousSnapshotRootDirMap(anchorGroup.anchorsWithSameSource.head.selectedFeatures.head)
-        Seq(incrementalCalculate(anchorGroup, joinedPreAggDFs, source, keyExtractor, bloomFilter, preAggRootDir))
+        Seq(incrementalCalculate(anchorGroup, joinedPreAggDFs, source, keyExtractor, bloomFilter, preAggRootDir, mvelContext))
       }
     }
 
@@ -1000,7 +1004,8 @@ private[offline] object FeatureTransformation {
       source: DataSourceAccessor,
       keyExtractor: SourceKeyExtractor,
       bloomFilter: Option[BloomFilter],
-      preAggRootDir: String): KeyedTransformedResult = {
+      preAggRootDir: String,
+      mvelContext: Option[FeathrExpressionExecutionContext]): KeyedTransformedResult = {
     // get the aggregation window of the feature
     val aggWindow = getFeatureAggWindow(featureAnchorWithSource)
 
@@ -1013,7 +1018,7 @@ private[offline] object FeatureTransformation {
     // If so, even though the incremental aggregation succeeds, the  result is incorrect.
     // And the incorrect result will be propagated to all subsequent incremental aggregation because the incorrect result will be used as the snapshot.
 
-    val newDeltaSourceAgg = directCalculate(featureAnchorWithSource, source, keyExtractor, bloomFilter, Some(dateParam))
+    val newDeltaSourceAgg = directCalculate(featureAnchorWithSource, source, keyExtractor, bloomFilter, Some(dateParam), None, mvelContext)
     // if the new delta window size is smaller than the request feature window, need to use the pre-aggregated results,
     if (newDeltaWindowSize < aggWindow) {
       // add prefixes to feature columns and keys for the previous aggregation snapshot
@@ -1034,7 +1039,7 @@ private[offline] object FeatureTransformation {
         renamedPreAgg
       } else {
         // preAgg - oldDeltaAgg
-        val oldDeltaSourceAgg = directCalculate(featureAnchorWithSource, source, keyExtractor, bloomFilter, Some(oldDeltaWindowInterval))
+        val oldDeltaSourceAgg = directCalculate(featureAnchorWithSource, source, keyExtractor, bloomFilter, Some(oldDeltaWindowInterval), None, mvelContext)
         val oldDeltaAgg = oldDeltaSourceAgg.transformedResult.df
         mergeDeltaDF(renamedPreAgg, oldDeltaAgg, leftKeyColumnNames, joinKeys, newDeltaFeatureColumnNames, false)
       }
