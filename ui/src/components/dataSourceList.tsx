@@ -79,7 +79,7 @@ const DataSourceList = ({ projectProp, keywordProp }: Props) => {
       },
     },
     {
-      title: <div>Pre Processing</div>,
+      title: <div>Preprocessing</div>,
       key: "preprocessing",
       align: "center" as "center",
       width: 190,

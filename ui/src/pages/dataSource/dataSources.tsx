@@ -1,5 +1,5 @@
 import { Card, Typography } from "antd";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import DataSourceList from "../../components/dataSourceList";
 
 const { Title } = Typography;

@@ -5,8 +5,8 @@ import {
   Alert,
   Button,
   Card,
+  Col,
   Row,
-  Space,
   Spin,
   Typography
 } from "antd";
@@ -16,6 +16,32 @@ import { fetchDataSource } from "../../api";
 import { DataSource, DataSourceAttributes } from "../../models/model";
 
 const { Title } = Typography;
+
+type DataSourceKeyProps = { dataSource: DataSource };
+const DataSourceKey = ({ dataSource }: DataSourceKeyProps) => {
+  const keys = dataSource.attributes;
+  return (
+    <>
+      {keys && (
+        <Col span={24}>
+          <Card className="card">
+            <Title level={4}>Data Source Attributes</Title>
+            <div className="dataSource-container">
+              <p>Name: {keys.name}</p>
+              <p>Type: {keys.type}</p>
+              <p>Path: {keys.path}</p>
+              <p>Preprocessing: {keys.preprocessing}</p>
+              <p>Event Timestamp Column: {keys.eventTimestampColumn}</p>
+              <p>Timestamp Format: {keys.timestampFormat}</p>
+              <p>Qualified Name: {keys.qualifiedName}</p>
+              <p>Tags: {JSON.stringify(keys.tags)}</p>
+            </div>
+          </Card>
+        </Col>
+      )}
+    </>
+  );
+};
 
 type Params = {
   project: string;
@@ -76,22 +102,9 @@ const DataSourceDetails = () => {
                 </Button>
                 <Card>
                   <Title level={3}>{data.attributes.name}</Title>
-                  {/* <div>
-                    <Space>
-                      <Button type="primary" onClick={() => openLineageWindow()}>
-                        View Lineage
-                      </Button>
-                    </Space>
-                  </div> */}
                   <div>
                     <Row>
-                      Test Below
-                      {/* <InputAnchorFeatures project={project} feature={data} />
-                      <InputDerivedFeatures project={project} feature={data} />
-                      <FeatureTransformation feature={data} />
-                      <FeatureKey feature={data} />
-                      <FeatureType feature={data} />
-                      <FeatureLineageGraph /> */}
+                      <DataSourceKey dataSource={data} />
                     </Row>
                   </div>
                 </Card>
@@ -101,8 +114,7 @@ const DataSourceDetails = () => {
       }
     };
 
-    // return <div className="page">{render(status)}</div>;
-    return <div className="page">{data}</div>;
+    return <div className="page">{render(status)}</div>;
 };
 
 export default DataSourceDetails;
