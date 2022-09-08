@@ -5,6 +5,8 @@ import {
   FeatureLineage,
   Role,
   UserRole,
+  AnchorFeature,
+  DerivedFeature,
 } from "../models/model";
 import {
   InteractionRequiredAuthError,
@@ -86,6 +88,62 @@ export const fetchFeatureLineages = async (featureId: string) => {
     .get<FeatureLineage>(`${getApiBaseUrl()}/features/${featureId}/lineage`, {})
     .then((response) => {
       return response.data;
+    });
+};
+//TODO: Support project uuid and anchor uuid as params
+export const createAnchorFeature = async (
+  project: string,
+  anchor: string,
+  anchorFeature: AnchorFeature | undefined
+) => {
+  if (!anchorFeature) return;
+  console.log("calling create anchor feature");
+  console.log(anchorFeature);
+  const axios = await authAxios(msalInstance);
+  return axios
+    .post(
+      `${getApiBaseUrl()}/projects/${project}/anchors/${anchor}/features`,
+      anchorFeature,
+      {
+        headers: {
+          "Content-Type": "application/json;",
+          //"Access-Control-Allow-Origin": "*",
+        },
+        params: {
+          project: project,
+          anchor: anchor,
+          definition: anchorFeature,
+        },
+      }
+    )
+    .then((response) => {
+      return response;
+    })
+    .catch((error) => {
+      return error.response;
+    });
+};
+
+export const createDerivedFeature = async (
+  project: string,
+  derivedFeature: DerivedFeature | undefined
+) => {
+  if (!derivedFeature) return;
+  const axios = await authAxios(msalInstance);
+  return axios
+    .post(
+      `${getApiBaseUrl()}/projects/${project}/derivedfeatures`,
+      derivedFeature,
+      {
+        headers: { "Content-Type": "application/json;" },
+        params: { project_id: project, definition: derivedFeature },
+      }
+    )
+    .then((response) => {
+      return response;
+    })
+    .catch((error) => {
+      return error.response;
     });
 };
 
@@ -216,6 +274,8 @@ export const authAxios = async (msalInstance: PublicClientApplication) => {
     headers: {
       Authorization: "Bearer " + token,
       "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": "true",
     },
     baseURL: getApiBaseUrl(),
   });

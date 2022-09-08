@@ -14,6 +14,26 @@ export interface Feature {
   version: string;
 }
 
+export interface AnchorFeature {
+  name: string;
+  featureType: FeatureType;
+  transformation: FeatureTransformation;
+  key: FeatureKey[];
+  qualifiedName: string;
+  tags: {};
+}
+
+export interface DerivedFeature {
+  name: string;
+  featureType: FeatureType;
+  transformation: FeatureTransformation;
+  key: FeatureKey[];
+  inputAnchorFeatures: string[];
+  inputDerivedFeatures: string[];
+  qualifiedName: string;
+  tags: {};
+}
+
 export interface FeatureAttributes {
   inputAnchorFeatures: InputFeature[];
   inputDerivedFeatures: InputFeature[];
@@ -26,28 +46,29 @@ export interface FeatureAttributes {
 }
 
 export interface FeatureType {
-  dimensionType: string[];
-  tensorCategory: string;
+  dimensionType?: string[];
+  tensorCategory?: string;
   type: string;
   valType: string;
 }
 
 export interface FeatureTransformation {
-  transformExpr: string;
-  filter: string;
-  aggFunc: string;
-  limit: string;
-  groupBy: string;
-  window: string;
-  defExpr: string;
+  transformExpr?: string;
+  filter?: string;
+  aggFunc?: string;
+  limit?: string;
+  groupBy?: string;
+  window?: string;
+  defExpr?: string;
+  udfExpr?: string;
 }
 
 export interface FeatureKey {
   description: string;
   fullName: string;
-  keyColumn: string;
-  keyColumnAlias: string;
-  keyColumnType: string;
+  keyColumn?: string;
+  keyColumnAlias?: string;
+  keyColumnType?: string;
 }
 
 export interface InputFeature {
@@ -107,3 +128,18 @@ export interface Role {
   roleName: string;
   reason: string;
 }
+
+export const ValueType = [
+  "UNSPECIFIED",
+  "BOOLEAN",
+  "INT",
+  "LONG",
+  "FLOAT",
+  "DOUBLE",
+  "STRING",
+  "BYTES",
+];
+
+export const TensorCategory = ["DENSE", "SPARSE"];
+
+export const VectorType = ["TENSOR"];
