@@ -57,18 +57,6 @@ const App = () => {
                     path="/responseErrors/:status/:detail"
                     element={<ResponseErrors />}
                   />
-                  <Route
-                    path="/dependencies"
-                    element={<FeatureForm isNew={true} editMode={true} />}
-                  />
-                  <Route
-                    path="/basic"
-                    element={<FeatureForm isNew={true} editMode={true} />}
-                  />
-                  <Route
-                    path="/transformation"
-                    element={<FeatureForm isNew={true} editMode={true} />}
-                  />
                 </Routes>
               </Layout>
             </Layout>

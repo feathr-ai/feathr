@@ -90,15 +90,13 @@ export const fetchFeatureLineages = async (featureId: string) => {
       return response.data;
     });
 };
-//TODO: Support project uuid and anchor uuid as params
+
 export const createAnchorFeature = async (
   project: string,
   anchor: string,
   anchorFeature: AnchorFeature | undefined
 ) => {
   if (!anchorFeature) return;
-  console.log("calling create anchor feature");
-  console.log(anchorFeature);
   const axios = await authAxios(msalInstance);
   return axios
     .post(
@@ -107,7 +105,6 @@ export const createAnchorFeature = async (
       {
         headers: {
           "Content-Type": "application/json;",
-          //"Access-Control-Allow-Origin": "*",
         },
         params: {
           project: project,
@@ -274,8 +271,6 @@ export const authAxios = async (msalInstance: PublicClientApplication) => {
     headers: {
       Authorization: "Bearer " + token,
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Credentials": "true",
     },
     baseURL: getApiBaseUrl(),
   });
