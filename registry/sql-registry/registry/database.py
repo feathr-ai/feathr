@@ -3,9 +3,13 @@ from contextlib import contextmanager
 import logging
 import threading
 import os
+
+# Checks if the platform is Max (Darwin).
+# If so, imports _scproxy that is necessary for pymssql to work on MacOS
 import platform
 if platform.system().lower().startswith('dar'):
     import _scproxy
+
 import pymssql
 
 
