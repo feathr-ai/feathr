@@ -3,7 +3,9 @@ from contextlib import contextmanager
 import logging
 import threading
 import os
-import _scproxy
+import platform
+if platform.system().lower().startswith('dar'):
+    import _scproxy
 import pymssql
 
 
