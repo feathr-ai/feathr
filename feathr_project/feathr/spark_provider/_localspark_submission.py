@@ -1,17 +1,17 @@
+import time
 from datetime import datetime
+import json
 import os
-from string import Template
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, List, Optional
 
-from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
 from feathr.spark_provider._abc import SparkJobLauncher
 from loguru import logger
 
 from pyspark import *
 
-from subprocess import run, STDOUT
-from feathr.constants import GEN_CLASS_NAME, JOIN_CLASS_NAME, FEATHR_MAVEN_ARTIFACT
+from subprocess import run, STDOUT, Popen, PIPE
+from feathr.constants import FEATHR_MAVEN_ARTIFACT
 
 
 
@@ -35,116 +35,137 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
         """For Local Spark Case, no need to upload to cloud workspace."""
         return local_path_or_http_path
 
-    def submit_feathr_job(self, job_name: str, configs: Union[FeatureGenerationJobParams, FeatureJoinJobParams], redis_config:str = None, main_jar_path: str = None, python_files: str = None, num_parts: int = 1, debug: bool = True):
+    def submit_feathr_job(self, job_name: str, main_jar_path: str = None,  main_class_name: str = None, arguments: List[str] = None,
+                          python_files: List[str]= None, configuration: Dict[str, str] = {}, properties: Dict[str, str] = {}, reference_files_path: List[str] = None, job_tags: Dict[str, str] = None):
         """
-        Submits the Feathr job to local spark
+        Submits the Feathr job to local spark, using subprocess args.
+
+        reference files: put everything there and the function will automatically categorize them based on the
+        extension name to either the "files" argument in the Livy API, or the "jars" argument in the Livy API. The
+        path can be local path and this function will automatically upload the function to the corresponding azure
+        storage
+
+        Also, note that the Spark application will automatically run on YARN cluster mode. You cannot change it if
+        you are running with Azure Synapse.
+
         Args:
-            job_name (str): Name of the job
-            configs (FeatureGenerationJobParams | FeatureJoinJobParams): Configs for the job
-            redis_config (str): Redis config, used for feature gen job
-            main_jar_path (str): Path to the main jar, default is the latest Marven jar
-            python_files (str): Path to the python files, default is None
-            num_parts (int): Number of partitions, default is 1
-            debug (bool): Whether to run in debug mode to record spark submit script and result, default is True
+            job_name (str): name of the job
+            main_jar_path (str): main file paths, usually your main jar file
+            main_class_name (str): name of your main class
+            arguments (str): all the arguments you want to pass into the spark job
+            configuration (Dict[str, str]): Additional configs for the spark job
+            python_files (List[str]): required .zip, .egg, or .py files of spark job
+            properties (Dict[str, str]): Additional System Properties for the spark job
+            job_tags (str): not used in local spark mode
+            reference_files_path (str): not used in local spark mode
         """
         logger.warning(f"Local Spark Mode only support basic params right now and only for testing purpose.")
-        now = datetime.now().strftime("%Y%m%d%H%M%S")
-        current_dir = Path(__file__).parent.resolve()
+        args = self._init_args(job_name)
 
-        self._get_packages(main_jar_path, python_files)
+        if properties:
+            arguments.append("--system-properties %s" % json.dumps(properties))
 
-        if isinstance(configs, FeatureJoinJobParams):
-            template_file = os.path.join(current_dir, 'local_spark_utils', 'join_template.sh')
-            with open(template_file) as t:
-                template = Template(t.read())
-            
-            command = template.substitute(
-                jobName=job_name,
-                packages = self.packages,
-                mainJar=self.main_jar_path,
-                joinConfig=configs.join_config_path,
-                input=configs.observation_path,
-                output=configs.job_output_path,
-                featureConfig=self._get_feature_config(configs.feature_config),
-                numParts=num_parts,
-            )
-        elif isinstance(configs, FeatureGenerationJobParams):
-            logger.warning("Please notice that UDF and extra feature config are not supported in local spark mode yet.")
-            template_file = os.path.join(current_dir, 'local_spark_utils', 'gen_template.sh')
-            with open(template_file, 'r') as t:
-                template = Template(t.read())
-            
-            command = template.substitute(
-                jobName=job_name,
-                packages = self.packages,
-                mainJar=self.main_jar_path,
-                genConfig = configs.generation_config_path,
-                featureConfig = self._get_feature_config(configs.feature_config),
-                redisConfig = redis_config,
-            )
+        if configuration:
+            cfg = configuration.copy()  # We don't want to mess up input parameters
         else:
-            raise ValueError("Config type not supported in Local Spark Mode.")
+            cfg = {}
         
-        if debug:
-            debug_folder = "debug"
-            if not os.path.exists(debug_folder):
-                os.makedirs(debug_folder)
-            
-            command_file = os.path.join(debug_folder, f"auto_generated_command_{now}.sh")
-            with open(command_file, 'w') as f:
-                f.write(command)
-        
-            logger.info(f"Auto generated spark-submit command is stored in {command_file} for testing purpose.")
+        if not main_jar_path:
+            # We don't have the main jar, use Maven
+            # Add Maven dependency to the job configuration
+            if "spark.jars.packages" in cfg:
+                cfg["spark.jars.packages"] = ",".join(
+                    [cfg["spark.jars.packages"], FEATHR_MAVEN_ARTIFACT])
+            else:
+                default_packages = "org.apache.spark:spark-avro_2.12:3.3.0,com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8,com.microsoft.azure:spark-mssql-connector_2.12:1.2.0,org.apache.logging.log4j:log4j-core:2.17.2,com.typesafe:config:1.3.4,com.fasterxml.jackson.core:jackson-databind:2.12.6.1,org.apache.hadoop:hadoop-mapreduce-client-core:2.7.7,org.apache.hadoop:hadoop-common:2.7.7,org.apache.avro:avro:1.8.2,org.apache.xbean:xbean-asm6-shaded:4.10,org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.3,com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21,org.apache.kafka:kafka-clients:3.1.0,com.google.guava:guava:31.1-jre,it.unimi.dsi:fastutil:8.1.1,org.mvel:mvel2:2.2.8.Final,com.fasterxml.jackson.module:jackson-module-scala_2.12:2.13.3,com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.6,com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.12.6,com.jasonclawson:jackson-dataformat-hocon:1.1.0,com.redislabs:spark-redis_2.12:3.1.0,org.apache.xbean:xbean-asm6-shaded:4.10,com.google.protobuf:protobuf-java:3.19.4,net.snowflake:snowflake-jdbc:3.13.18,net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2,org.apache.commons:commons-lang3:3.12.0,org.xerial:sqlite-jdbc:3.36.0.3,com.github.changvvb:jackson-module-caseclass_2.12:1.1.1,com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1,org.eclipse.jetty:jetty-util:9.3.24.v20180605,commons-io:commons-io:2.6,org.apache.hadoop:hadoop-azure:2.7.4,com.microsoft.azure:azure-storage:8.6.4"
+                cfg["spark.jars.packages"] = ",".join([default_packages, FEATHR_MAVEN_ARTIFACT])
 
-            log_file = os.path.join(debug_folder, f"{job_name}_log_{now}.txt")
-            with open(log_file, 'w') as log:
-                result = run(command, shell=True, stdout=log, stderr=STDOUT)
-            logger.info(f"Detail job log can be find in: {log_file}")
+            if not python_files:
+                # This is a JAR job
+                # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
+                # so we have to use a dummy jar as the main file.
+                logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
+                # Use the no-op jar as the main file
+                # This is a dummy jar which contains only one `org.example.Noop` class with one empty `main` function which does nothing
+                current_dir = Path(__file__).parent.resolve()
+                main_jar_path = os.path.join(current_dir, "noop-1.0.jar")
+                args.append("--packages %s" % cfg["spark.jars.packages"])
+                args.append('--class %s' % main_class_name)
+                args.append('%s '%main_jar_path)
+            else:
+                args.append("--packages %s" % cfg["spark.jars.packages"])
+                # This is a PySpark job, no more things to 
+                if python_files.__len__() > 1:
+                    args.append('--py-files %s' % ",".join(python_files[1:]))
+                print(python_files)
+                args.append('%s '%python_files[0])
         else:
-            result = run(command, shell=True)
-        
-        return result
+            args.append('--class %s' % main_class_name)
+            args.append('%s '%main_jar_path)
 
-    def wait_for_completion(self, timeout_seconds: Optional[float]) -> bool:
-        """Wait for the job to complete, only a placeholder for local spark"""
-        return super().wait_for_completion(timeout_seconds)
+        cmd = ' '.join(args) + ' '.join(arguments)
+
+        proc = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT)
+        logger.info(f"Detail job stdout and stderr are in PIPE.")
+
+        self.spark_proc = proc
+
+        logger.info(f"{proc.args}")
+
+        return proc
+
+    def wait_for_completion(self, timeout_seconds: Optional[float] = 500) -> bool:
+        """
+        this function track local spark job commands and process status.
+        files will be write into `debug` folder under your workspace
+        """
+        cmd_file, log_file = self._get_debug_file_name()
+        logger.info(f"Please check auto generated spark command in {cmd_file} and detail logs in {log_file}.")
+        
+        with open(cmd_file, 'w') as c:
+            c.write(self.spark_proc.args)
+        
+        start_time = time.time()
+        logger.info(f"Spark process pid: {self.spark_proc.pid}")
+        with open(log_file, 'w') as l:
+            while (timeout_seconds is None) or (time.time() - start_time < timeout_seconds):
+                line = self.spark_proc.stdout.readline().decode('utf-8')
+                l.write(line)
+                if self.spark_proc.returncode == 1:
+                    logger.warning(f"Spark job has False return code.")               
+                elif line == '':
+                    logger.info(f"Spark Job completed.")
+                    return True
+                elif 'Feathr Pyspark job completed' in line:
+                    logger.info(f"Pyspark job ends")
+                    return True
+            logger.warning(f"Spark job doesn't completed in {timeout_seconds} seconds, you may need to wait longer.")
+            return False
+        logger.warning(self.spark_proc.stderr)
+        return self.spark_proc.returncode
 
     def get_status(self) -> str:
         """Get the status of the job, only a placeholder for local spark"""
-        return super().get_status()
+        return self.spark_proc.returncode
 
-    def _get_command_template(self, main_class_name:str):
-        """Get the command template for spark-submit"""
-        current_dir = Path(__file__).parent.resolve()
+    def _init_args(self, job_name:str):
+        args = []
+        args.append('spark-submit')
+        args.append('--master local[*]')
+        args.append('--name %s' % job_name)
+        args.append('--conf "spark.driver.extraClassPath=../target/scala-2.12/classes:jars/config-1.3.4.jar:jars/jackson-dataformat-hocon-1.1.0.jar:jars/jackson-module-caseclass_2.12-1.1.1.jar:jars/mvel2-2.2.8.Final.jar:jars/fastutil-8.1.1.jar"' )
+        args.append('--conf "spark.hadoop.fs.wasbs.impl=org.apache.hadoop.fs.azure.NativeAzureFileSystem"')
+        args.append('--conf "spark.hadoop.fs.wasbs=org.apache.hadoop.fs.azure.NativeAzureFileSystem"')
 
-        if main_class_name ==  JOIN_CLASS_NAME:
-            template_file = os.path.join(current_dir, 'local_spark_utils', 'join_template.sh')
-        elif main_class_name == GEN_CLASS_NAME:
-            template_file = os.path.join(current_dir, 'local_spark_utils','gen_template.sh')
-        else:
-            raise ValueError("Main Class not supported in Local Spark Mode.")
-        
-        with open(template_file) as t:
-             return Template(t.read())
-    
-    def _get_feature_config(self, feature_config:str):
-        """Get the feature config path with folder name"""
-        feature_conf_folder = "feature_conf"
-        return f"{os.path.join(feature_conf_folder, 'auto_generated_request_features.conf')},{os.path.join(feature_conf_folder,'auto_generated_anchored_features.conf')},{os.path.join(feature_conf_folder,'auto_generated_derived_features.conf')}"
+        return args
 
-    def _get_packages(self, main_jar_path:str = None, python_files:str = None):
-        """Get the packages and modify JAR Path for spark-submit"""
-        #TODO: make package list configurable
-        self.packages = "org.apache.spark:spark-avro_2.12:3.3.0,com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8,com.microsoft.azure:spark-mssql-connector_2.12:1.2.0,org.apache.logging.log4j:log4j-core:2.17.2,com.typesafe:config:1.3.4,com.fasterxml.jackson.core:jackson-databind:2.12.6.1,org.apache.hadoop:hadoop-mapreduce-client-core:2.7.7,org.apache.hadoop:hadoop-common:2.7.7,org.apache.avro:avro:1.8.2,org.apache.xbean:xbean-asm6-shaded:4.10,org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.3,com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21,org.apache.kafka:kafka-clients:3.1.0,com.google.guava:guava:31.1-jre,it.unimi.dsi:fastutil:8.1.1,org.mvel:mvel2:2.2.8.Final,com.fasterxml.jackson.module:jackson-module-scala_2.12:2.13.3,com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.6,com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.12.6,com.jasonclawson:jackson-dataformat-hocon:1.1.0,com.redislabs:spark-redis_2.12:3.1.0,org.apache.xbean:xbean-asm6-shaded:4.10,com.google.protobuf:protobuf-java:3.19.4,net.snowflake:snowflake-jdbc:3.13.18,net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2,org.apache.commons:commons-lang3:3.12.0,org.xerial:sqlite-jdbc:3.36.0.3,com.github.changvvb:jackson-module-caseclass_2.12:1.1.1,com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1,org.eclipse.jetty:jetty-util:9.3.24.v20180605,commons-io:commons-io:2.6,org.apache.hadoop:hadoop-azure:2.7.4,com.microsoft.azure:azure-storage:8.6.4"
-        if not main_jar_path or main_jar_path.__contains__('noop'):
-            # When main jar is not provided, we assume the user is using the Maven jar
-            # Add Maven jar to the packages
-            logger.info("No main jar is provided, using Maven jar instead.")
-            self.packages = ",".join([self.packages, FEATHR_MAVEN_ARTIFACT])
-            if not python_files:
-                current_dir = Path(__file__).parent.resolve()
-                self.main_jar_path = os.path.join(current_dir, "noop-1.0.jar")
-            else:
-                self.main_jar_path = python_files
-        else:
-            self.main_jar_path = main_jar_path
+    def _get_debug_file_name(self, debug_folder: str = 'debug', suffix:str = None):
+        if not os.path.exists(debug_folder):
+                os.makedirs(debug_folder)
+            
+        if not suffix:
+            suffix = datetime.now().strftime("%Y%m%d%H%M%S")
+        cmd_file = os.path.join(debug_folder, f"command_{suffix}.sh")
+        log_file = os.path.join(debug_folder, f"log_{suffix}.txt")
+
+        return cmd_file, log_file

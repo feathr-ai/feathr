@@ -492,14 +492,6 @@ class FeathrClient(object):
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
         # submit the jars
-        if self.spark_runtime == 'local':
-            return self.feathr_spark_launcher.submit_feathr_job(
-                job_name = self.project_name,
-                main_jar_path=self._FEATHR_JOB_JAR_PATH,
-                python_files=cloud_udf_paths,
-                configs = feature_join_job_params,
-            )
-
         return self.feathr_spark_launcher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
@@ -647,17 +639,6 @@ class FeathrClient(object):
         if monitoring_config_str:
             arguments.append('--monitoring-config')
             arguments.append(monitoring_config_str)
-        
-        if self.spark_runtime == "local":
-            return self.feathr_spark_launcher.submit_feathr_job(
-                job_name=self.project_name + '_feathr_feature_materialization_job',
-                main_jar_path=self._FEATHR_JOB_JAR_PATH,
-                python_files=cloud_udf_paths,
-                main_class_name=GEN_CLASS_NAME,
-                configs=generation_config,
-                redis_config =  self._getRedisConfigStr(),
-            )
-
         return self.feathr_spark_launcher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
