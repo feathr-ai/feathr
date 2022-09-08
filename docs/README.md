@@ -4,6 +4,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/linkedin/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/linkedin/feathr/releases)
 [![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://linkedin.github.io/feathr/)
 [![Python API](https://img.shields.io/readthedocs/feathr?label=Python%20API)](https://feathr.readthedocs.io/en/latest/)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6457/badge)](https://bestpractices.coreinfrastructure.org/projects/6457)
 
 ## What is Feathr?
 
