@@ -32,7 +32,6 @@ def test_local_spark_get_offline_features():
     assert df.shape[0] > 0
 
     shutil.rmtree('debug')
-    shutil.rmtree(output_path)
     return 
 
 def test_local_spark_pyudf_get_offline_features():
@@ -45,10 +44,8 @@ def test_local_spark_pyudf_get_offline_features():
 
     client.wait_job_to_finish()
     df = parse_avro_result(output_path)
-    print(df.__len__())
     assert df.shape[0] > 0
     shutil.rmtree('debug')
-    shutil.rmtree(output_path)
     return 
 
 def test_local_spark_materialization():
@@ -340,7 +337,6 @@ def _feature_gen_test(client:FeathrClient = None):
     return res
 
 def parse_avro_result(output_path:str):
-    print(output_path)
     dataframe_list = []
     # assuming the result are in avro format
     for file in glob.glob(os.path.join(output_path, '*.avro')):
