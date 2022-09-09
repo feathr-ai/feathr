@@ -19,7 +19,6 @@ import RoleManagement from "./pages/management/roleManagement";
 import Home from "./pages/home/home";
 import Projects from "./pages/project/projects";
 import { getMsalConfig } from "./utils/utils";
-import FeatureForm from "./components/featureForm";
 
 const queryClient = new QueryClient();
 
