@@ -5,12 +5,11 @@ import { ValueType, TensorCategory, VectorType } from "../../models/model";
 
 type Props = {
   onFeatureTypeChange: any;
+  featureTypeProp: any;
 };
-const FeatureTypeForm = ({ onFeatureTypeChange }: Props) => {
-  const [featureType, setFeatureType] = useState({});
+const FeatureTypeForm = ({ onFeatureTypeChange, featureTypeProp }: Props) => {
   const [form] = Form.useForm();
   const valueOptions = ValueType.map((p) => ({ value: p, label: p }));
-
   const tensorOptions = TensorCategory.map((p) => ({ value: p, label: p }));
   const typeOptions = VectorType.map((p) => ({ value: p, label: p }));
   const onClickNext = () => {
@@ -21,6 +20,7 @@ const FeatureTypeForm = ({ onFeatureTypeChange }: Props) => {
     width: "85%",
     paddingTop: "2%",
   };
+
   return (
     <div>
       <Form
@@ -38,6 +38,7 @@ const FeatureTypeForm = ({ onFeatureTypeChange }: Props) => {
             label="Type"
             style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
+            initialValue={featureTypeProp?.type}
           >
             <Select options={typeOptions}></Select>
           </Form.Item>
@@ -46,18 +47,16 @@ const FeatureTypeForm = ({ onFeatureTypeChange }: Props) => {
             label="Tensor Category"
             style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
+            initialValue={featureTypeProp?.tensorCategory}
           >
-            <Select
-              options={tensorOptions}
-              //defaultValue={tensorOptions[0]}
-            ></Select>
+            <Select options={tensorOptions}></Select>
           </Form.Item>
-          {/*TODO: support more than one dimension types */}
           <Form.Item
             name="dimensionType"
             label="Dimension Type"
             style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
+            initialValue={featureTypeProp?.dimensionType}
           >
             <Select mode="multiple" options={valueOptions}></Select>
           </Form.Item>
@@ -66,6 +65,7 @@ const FeatureTypeForm = ({ onFeatureTypeChange }: Props) => {
             label="Value Type"
             style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
+            initialValue={featureTypeProp?.valType}
           >
             <Select options={valueOptions}></Select>
           </Form.Item>
@@ -73,7 +73,7 @@ const FeatureTypeForm = ({ onFeatureTypeChange }: Props) => {
             <Button
               type="primary"
               htmlType="button"
-              title="submit and go back to list"
+              title="submit and go to the next menu"
               style={{ float: "inline-start" }}
               onClick={onClickNext}
             >

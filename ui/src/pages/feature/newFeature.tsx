@@ -3,7 +3,6 @@ import { Card, Typography, Menu, Layout, Button } from "antd";
 import FeatureForm from "../../components/featureForm";
 import { Link, BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import MenuItem from "antd/lib/menu/MenuItem";
-import CreateFeatureMenu from "../../components/createFeatureMenu";
 import BasicForm from "../../components/newFeature/basicForm";
 import TransformationForm from "../../components/newFeature/transformationForm";
 import DependenciesForm from "../../components/newFeature/dependenciesForm";
@@ -16,10 +15,6 @@ import {
   FeatureType,
 } from "../../models/model";
 import { createAnchorFeature, createDerivedFeature } from "../../api";
-
-//import Home from "./components/Home";
-//import About from "./components/About";
-//import Contact from "./components/Contact";
 
 const { Title } = Typography;
 
@@ -61,14 +56,15 @@ const NewFeature = () => {
     setMenu("transformation");
   };
 
-  const onTransformationChange = (e: any) => {
+  const onTransformationChange = async (e: any) => {
     setTransformation(e);
+    //TODO: create a summary page
   };
 
   const onCreate = async () => {
-    console.log("type: ", type);
-    if (!featureType || !featureKeys) {
-      console.log("invalid feature definition");
+    //TODO: create a page/message box to show success or failure
+    if (!featureType || !featureKeys || !transformation) {
+      console.error("invalid feature definition");
       return;
     }
 
@@ -86,10 +82,10 @@ const NewFeature = () => {
         transformation: transformation,
         key: featureKeys,
         tags: basic.tags ?? {},
-        inputAnchorFeatures: dependencies.inputAnchorFeatures
+        inputAnchorFeatures: dependencies?.inputAnchorFeatures
           .toString()
           .split(","),
-        inputDerivedFeatures: dependencies.inputDerivedFeatures
+        inputDerivedFeatures: dependencies?.inputDerivedFeatures
           .toString()
           .split(","),
       };
@@ -115,7 +111,12 @@ const NewFeature = () => {
         className="layout-header"
         style={{ backgroundColor: "#fff", height: "auto" }}
       >
-        <Menu mode={"horizontal"} theme={"light"} defaultSelectedKeys={[menu]}>
+        <Menu
+          mode={"horizontal"}
+          theme={"light"}
+          defaultSelectedKeys={[menu]}
+          selectedKeys={[menu]}
+        >
           <Menu.Item
             key="dependencies"
             style={{ width: "20%" }}
@@ -163,15 +164,27 @@ const NewFeature = () => {
         </Button>
       </Layout.Header>
       <span></span>
-      {menu === "basic" && <BasicForm onBasicChange={onBasicChange} />}
+      {menu === "basic" && (
+        <BasicForm onBasicChange={onBasicChange} basicProp={basic ?? {}} />
+      )}
       {menu === "featureKey" && (
-        <FeatureKeyForm onFeatureKeyChange={onFeatureKeyChange} />
+        <FeatureKeyForm
+          onFeatureKeyChange={onFeatureKeyChange}
+          featureKeyProp={featureKeys[0] ?? {}}
+        />
       )}
       {menu === "featureType" && (
-        <FeatureTypeForm onFeatureTypeChange={onFeatureTypeChange} />
+        <FeatureTypeForm
+          onFeatureTypeChange={onFeatureTypeChange}
+          featureTypeProp={featureType ?? {}}
+        />
       )}
       {menu === "dependencies" && (
-        <DependenciesForm onDependenciesChange={onDependenciesChange} />
+        <DependenciesForm
+          onDependenciesChange={onDependenciesChange}
+          dependenciesProp={dependencies ?? {}}
+          projectIdProp={projectId ?? " "}
+        />
       )}
       {menu === "transformation" && (
         <TransformationForm onTransformationChange={onTransformationChange} />

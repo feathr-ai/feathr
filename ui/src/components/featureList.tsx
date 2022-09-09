@@ -133,26 +133,6 @@ const FeatureList = ({ projectProp, keywordProp }: Props) => {
       },
     },
     {
-      title: <div>Tags</div>,
-      key: "tags",
-      width: 80,
-      render: (name: string, row: Feature) => {
-        const tags = row.attributes.tags;
-        return (
-          <>
-            <div>{tags.length > 0 && `${tags.join(",")}`}</div>
-          </>
-        );
-      },
-      onCell: () => {
-        return {
-          style: {
-            maxWidth: 120,
-          },
-        };
-      },
-    },
-    {
       title: (
         <div>
           Action{" "}

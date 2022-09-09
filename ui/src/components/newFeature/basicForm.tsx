@@ -1,13 +1,13 @@
-import React, { CSSProperties, useState } from "react";
+import React, { CSSProperties } from "react";
 import { UpCircleOutlined } from "@ant-design/icons";
 import { BackTop, Button, Form, Input, Space, Typography } from "antd";
 
 type Props = {
   onBasicChange: any;
+  basicProp: any;
 };
 
-const BasicForm = ({ onBasicChange }: Props) => {
-  const [basicProperties, setBasicProperties] = useState({});
+const BasicForm = ({ onBasicChange, basicProp }: Props) => {
   const [form] = Form.useForm();
 
   const styling: CSSProperties = {
@@ -31,10 +31,10 @@ const BasicForm = ({ onBasicChange }: Props) => {
         initialValues={{ remember: true }}
       >
         <Space direction="vertical" size="large" style={styling}>
-          {/* name */}
           <Form.Item
             name="name"
             label="Name"
+            initialValue={basicProp?.name}
             style={{ marginBottom: "1%" }}
             rules={[{ required: true }]}
           >
@@ -44,6 +44,7 @@ const BasicForm = ({ onBasicChange }: Props) => {
           <Form.Item
             name="qualifiedName"
             label="Qualified name"
+            initialValue={basicProp?.qualifiedName}
             style={{ marginBottom: "1%" }}
             rules={[{ required: true }]}
           >
@@ -57,6 +58,7 @@ const BasicForm = ({ onBasicChange }: Props) => {
               name="tagName"
               label="name"
               style={{ display: "inline-block", width: "40%" }}
+              initialValue={basicProp?.tagName}
             >
               <Input name="tagName" />
             </Form.Item>
@@ -69,6 +71,7 @@ const BasicForm = ({ onBasicChange }: Props) => {
                 paddingLeft: "10px",
                 paddingRight: "0px",
               }}
+              initialValue={basicProp?.tagValue}
             >
               <Input name="tagValue" />
             </Form.Item>
@@ -78,7 +81,7 @@ const BasicForm = ({ onBasicChange }: Props) => {
             <Button
               type="primary"
               htmlType="button"
-              title="submit and go back to list"
+              title="submit and go to the next menu"
               style={{ float: "inline-start" }}
               onClick={onClickNext}
             >

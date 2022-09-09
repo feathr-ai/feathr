@@ -46,8 +46,8 @@ export interface FeatureAttributes {
 }
 
 export interface FeatureType {
-  dimensionType?: string[];
-  tensorCategory?: string;
+  dimensionType: string[];
+  tensorCategory: string;
   type: string;
   valType: string;
 }

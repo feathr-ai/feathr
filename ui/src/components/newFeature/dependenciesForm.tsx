@@ -6,22 +6,26 @@ import { fetchProjects, fetchProjectLineages } from "../../api";
 
 type Props = {
   onDependenciesChange: any;
+  dependenciesProp: any;
+  projectIdProp: string;
 };
 
-const DependenciesForm = ({ onDependenciesChange }: Props) => {
-  const [dependencies, setDependencies] = useState({});
+const DependenciesForm = ({
+  onDependenciesChange,
+  dependenciesProp,
+  projectIdProp,
+}: Props) => {
   const [form] = Form.useForm();
-  const [projects, setProjects] = useState<any>([]);
-  const [project, setProject] = useState<string>("");
-  const [projectId, setProjectId] = useState<string>("");
-  const [featureType, setFeatureType] = useState<string>("");
-  const [anchorOptions, setAnchorOptions] = useState<any>([]);
-  const [anchor, setAnchor] = useState<string>("");
-  const [anchorId, setAnchorId] = useState<string>("");
-  const [anchorFeatureOptions, setAnchorFeatureOptions] = useState<any>([]);
-  const [anchorFeatures, setAnchorFeatures] = useState<string[]>([]);
-  const [derivedFeatureOptions, setDerivedFeatureOptions] = useState<any>([]);
-  const [derivedFeatures, setDerivedFeatures] = useState<string[]>([]);
+  const [projects, setProjects] = useState<any>();
+  const [project, setProject] = useState<string>(
+    dependenciesProp?.project ?? ""
+  );
+  const [projectId, setProjectId] = useState<string>(projectIdProp);
+  const [featureType, setFeatureType] = useState<string>();
+  const [anchorOptions, setAnchorOptions] = useState<any>();
+  const [anchorFeatureOptions, setAnchorFeatureOptions] = useState<any>();
+  const [derivedFeatureOptions, setDerivedFeatureOptions] = useState<any>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const styling: CSSProperties = {
     width: "85%",
@@ -29,8 +33,8 @@ const DependenciesForm = ({ onDependenciesChange }: Props) => {
   };
 
   const loadProjects = useCallback(async () => {
-    const projects = await fetchProjects();
-    const projectOptions = projects.map((p) => ({ value: p, label: p }));
+    const currProjects = await fetchProjects();
+    const projectOptions = currProjects.map((p) => ({ value: p, label: p }));
     setProjects(projectOptions);
   }, []);
 
@@ -38,43 +42,51 @@ const DependenciesForm = ({ onDependenciesChange }: Props) => {
     loadProjects();
   }, [loadProjects]);
 
-  const fetchData = useCallback(
-    async (project) => {
-      console.log("fetching features");
-      const result = await fetchProjectLineages(project);
-      const entities = result.guidEntityMap;
-      const currAnchorOptions = anchorOptions;
-      const currAnchorFeatureOptions = anchorFeatureOptions;
-      const currDerivedFeatureOptions = derivedFeatureOptions;
+  const fetchData = useCallback(async (project) => {
+    const result = await fetchProjectLineages(project);
+    const entities = result?.guidEntityMap;
+    if (!entities) return;
+    const currAnchorOptions = [];
+    const currAnchorFeatureOptions = [];
+    const currDerivedFeatureOptions = [];
 
-      for (const key in entities) {
-        const value = entities[key];
-        const name = value.attributes?.name;
-        const typeName = value.typeName;
-        if (typeName === "feathr_anchor_feature_v1") {
-          currAnchorFeatureOptions.push({ value: key, label: name });
-        } else if (typeName === "feathr_anchor_v1") {
-          currAnchorOptions.push({ value: key, label: name });
-        } else if (typeName === "feathr_derived_feature_v1") {
-          currDerivedFeatureOptions.push({ value: key, label: name });
-        } else if (typeName === "feathr_workspace_v1") {
-          setProjectId(key);
-        }
+    for (const key in entities) {
+      const value = entities[key];
+      const name = value.attributes?.name;
+      const typeName = value.typeName;
+      if (typeName === "feathr_anchor_feature_v1") {
+        currAnchorFeatureOptions.push({ value: key, label: name });
+      } else if (typeName === "feathr_anchor_v1") {
+        currAnchorOptions.push({ value: key, label: name });
+      } else if (typeName === "feathr_derived_feature_v1") {
+        currDerivedFeatureOptions.push({ value: key, label: name });
+      } else if (typeName === "feathr_workspace_v1") {
+        setProjectId(key);
       }
-      setAnchorOptions(currAnchorOptions);
-      setAnchorFeatureOptions(currAnchorFeatureOptions);
-      setDerivedFeatureOptions(currDerivedFeatureOptions);
-    },
-    [anchorOptions, anchorFeatureOptions, derivedFeatureOptions]
-  );
+    }
+    setAnchorOptions(currAnchorOptions);
+    setAnchorFeatureOptions(currAnchorFeatureOptions);
+    setDerivedFeatureOptions(currDerivedFeatureOptions);
+  }, []);
 
-  const onProjectChange = async (value: string) => {
+  const onProjectChange = (value: string) => {
     setProject(value);
-    await fetchData(value);
   };
 
-  const onRadioChange = (value: any) => {
+  useEffect(() => {
+    const fetchOptions = async (project: string) => {
+      if (project) {
+        setLoading(true);
+        await fetchData(project);
+        setLoading(false);
+      }
+    };
+    fetchOptions(project);
+  }, [project, fetchData]);
+
+  const onRadioChange = async (value: any) => {
     setFeatureType(value.target.value);
+    console.log("type changed: ", featureType);
   };
 
   const onClickNext = () => {
@@ -107,7 +119,6 @@ const DependenciesForm = ({ onDependenciesChange }: Props) => {
             <Select
               options={projects}
               defaultValue={project}
-              value={project}
               notFoundContent={<div>No projects found from server</div>}
               showSearch={true}
               onChange={onProjectChange}
@@ -142,10 +153,9 @@ const DependenciesForm = ({ onDependenciesChange }: Props) => {
             >
               <Select
                 showArrow
-                //tagRender={tagRender}
-                //defaultValue={['gold', 'cyan']}
                 style={{ paddingLeft: "2%" }}
                 options={anchorOptions}
+                disabled={loading}
               />
             </Form.Item>
           )}
@@ -164,10 +174,9 @@ const DependenciesForm = ({ onDependenciesChange }: Props) => {
                 <Select
                   mode="multiple"
                   showArrow
-                  //tagRender={tagRender}
-                  //defaultValue={['gold', 'cyan']}
                   style={{ paddingLeft: "2%" }}
                   options={anchorFeatureOptions}
+                  disabled={loading}
                 />
               </Form.Item>
               <Form.Item
@@ -183,10 +192,9 @@ const DependenciesForm = ({ onDependenciesChange }: Props) => {
                 <Select
                   mode="multiple"
                   showArrow
-                  //tagRender={tagRender}
-                  //defaultValue={['gold', 'cyan']}
                   style={{ paddingLeft: "2%" }}
                   options={derivedFeatureOptions}
+                  disabled={loading}
                 />
               </Form.Item>
             </div>

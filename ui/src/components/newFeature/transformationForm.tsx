@@ -7,7 +7,6 @@ type Props = {
 };
 
 const TransformationForm = ({ onTransformationChange }: Props) => {
-  const [transformation, setTransformation] = useState({});
   const [transformationType, setTransformationType] = useState("");
   const [form] = Form.useForm();
 
@@ -92,6 +91,11 @@ const TransformationForm = ({ onTransformationChange }: Props) => {
                 name="defExpr"
                 label="Definition Expression"
                 style={{ marginLeft: "5%" }}
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
               >
                 <Input name="defExpr" />
               </Form.Item>
@@ -154,7 +158,7 @@ const TransformationForm = ({ onTransformationChange }: Props) => {
               style={{ float: "inline-start" }}
               onClick={onClickNext}
             >
-              Save + Next: Review + create {">"}
+              Save + Next: Summary {">"}
             </Button>
           </Form.Item>
           <BackTop style={{ marginBottom: "5%", marginRight: "20px" }}>

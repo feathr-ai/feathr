@@ -5,9 +5,9 @@ import { ValueType } from "../../models/model";
 
 type Props = {
   onFeatureKeyChange: any;
+  featureKeyProp: any;
 };
-const FeatureKeyForm = ({ onFeatureKeyChange }: Props) => {
-  const [featureKey, setFeatureKey] = useState({});
+const FeatureKeyForm = ({ onFeatureKeyChange, featureKeyProp }: Props) => {
   const [form] = Form.useForm();
   const valueOptions = ValueType.map((p) => ({ value: p, label: p }));
   const onClickNext = () => {
@@ -37,6 +37,7 @@ const FeatureKeyForm = ({ onFeatureKeyChange }: Props) => {
             label="Key Column"
             style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
+            initialValue={featureKeyProp?.keyColumn}
           >
             <Input name="keyColumn" />
           </Form.Item>
@@ -45,6 +46,7 @@ const FeatureKeyForm = ({ onFeatureKeyChange }: Props) => {
             label="Key Column Type"
             style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
+            initialValue={featureKeyProp?.keyColumnType}
           >
             <Select options={valueOptions}></Select>
           </Form.Item>
@@ -52,6 +54,7 @@ const FeatureKeyForm = ({ onFeatureKeyChange }: Props) => {
             name="description"
             label="Description"
             style={{ marginLeft: "5%" }}
+            initialValue={featureKeyProp?.description}
           >
             <Input name="description" />
           </Form.Item>
@@ -59,6 +62,7 @@ const FeatureKeyForm = ({ onFeatureKeyChange }: Props) => {
             name="keyFullName"
             label="Key Full Name"
             style={{ marginLeft: "5%" }}
+            initialValue={featureKeyProp?.keyFullName}
           >
             <Input name="keyFullName" />
           </Form.Item>
@@ -66,6 +70,7 @@ const FeatureKeyForm = ({ onFeatureKeyChange }: Props) => {
             name="keyColumnAlias"
             label="Key Column Alias"
             style={{ marginLeft: "5%" }}
+            initialValue={featureKeyProp?.keyColumnAlias}
           >
             <Input name="keyColumnAlias" />
           </Form.Item>
@@ -73,7 +78,7 @@ const FeatureKeyForm = ({ onFeatureKeyChange }: Props) => {
             <Button
               type="primary"
               htmlType="button"
-              title="submit and go back to list"
+              title="submit and go to the next menu"
               style={{ float: "inline-start" }}
               onClick={onClickNext}
             >
