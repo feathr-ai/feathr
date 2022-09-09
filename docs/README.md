@@ -3,10 +3,10 @@
       Feathr
     </h1>
     <h3 align="center">
-      An enterprise-grade, high performance feature store
+      An enterprise-grade, high-performance feature store
     </h3>
     <h3 align="center">
-      Support:
+      Support channels:
       <a href="https://join.slack.com/t/feathrai/shared_invite/zt-1ffva5u6v-voq0Us7bbKAw873cEzHOSg">Slack</a> &
       <a href="https://github.com/feathr-ai/feathr/discussions">Discussions</a>
     </h3>
