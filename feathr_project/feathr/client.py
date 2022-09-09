@@ -578,7 +578,7 @@ class FeathrClient(object):
         for sink in settings.sinks:
             if hasattr(sink, "get_required_properties"):
                 secrets.extend(sink.get_required_properties())
-        
+        results = []
         # produce materialization config
         for end in settings.get_backfill_cutoff_time():
             settings.backfill_time.end = end
@@ -597,13 +597,16 @@ class FeathrClient(object):
 
             udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
             # CLI will directly call this so the experience won't be broken
-            self._materialize_features_with_config(config_file_path, execution_configurations, udf_files, secrets)
-            if os.path.exists(config_file_path):
+            result = self._materialize_features_with_config(config_file_path, execution_configurations, udf_files, secrets)
+            if os.path.exists(config_file_path) and self.spark_runtime != 'local':
                 os.remove(config_file_path)
+            results.append(result)
 
         # Pretty print feature_names of materialized features
         if verbose and settings:
             FeaturePrinter.pretty_print_materialize_features(settings)
+
+        return results
 
     def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configurations: Dict[str,str] = {}, udf_files=[], secrets=[]):
         """Materializes feature data based on the feature generation config. The feature
@@ -672,7 +675,7 @@ class FeathrClient(object):
         REDIS_PORT: {REDIS_PORT}
         REDIS_SSL_ENABLED: {REDIS_SSL_ENABLED}
         """.format(REDIS_PASSWORD=password, REDIS_HOST=host, REDIS_PORT=port, REDIS_SSL_ENABLED=ssl_enabled)
-        return config_str
+        return self._reshape_config_str(config_str)
 
     def _get_s3_config_str(self):
         """Construct the S3 config string. The endpoint, access key, secret key, and other parameters can be set via
@@ -688,7 +691,7 @@ class FeathrClient(object):
             S3_ACCESS_KEY: "{S3_ACCESS_KEY}"
             S3_SECRET_KEY: "{S3_SECRET_KEY}"
             """.format(S3_ENDPOINT=endpoint, S3_ACCESS_KEY=access_key, S3_SECRET_KEY=secret_key)
-        return config_str
+        return self._reshape_config_str(config_str)
 
     def _get_adls_config_str(self):
         """Construct the ADLS config string for abfs(s). The Account, access key and other parameters can be set via
@@ -702,7 +705,7 @@ class FeathrClient(object):
             ADLS_ACCOUNT: {ADLS_ACCOUNT}
             ADLS_KEY: "{ADLS_KEY}"
             """.format(ADLS_ACCOUNT=account, ADLS_KEY=key)
-        return config_str
+        return self._reshape_config_str(config_str)
 
     def _get_blob_config_str(self):
         """Construct the Blob config string for wasb(s). The Account, access key and other parameters can be set via
@@ -716,7 +719,7 @@ class FeathrClient(object):
             BLOB_ACCOUNT: {BLOB_ACCOUNT}
             BLOB_KEY: "{BLOB_KEY}"
             """.format(BLOB_ACCOUNT=account, BLOB_KEY=key)
-        return config_str
+        return self._reshape_config_str(config_str)
 
     def _get_sql_config_str(self):
         """Construct the SQL config string for jdbc. The dbtable (query), user, password and other parameters can be set via
@@ -736,7 +739,7 @@ class FeathrClient(object):
             JDBC_AUTH_FLAG: {JDBC_AUTH_FLAG}
             JDBC_TOKEN: {JDBC_TOKEN}
             """.format(JDBC_TABLE=table, JDBC_USER=user, JDBC_PASSWORD=password, JDBC_DRIVER = driver, JDBC_AUTH_FLAG = auth_flag, JDBC_TOKEN = token)
-        return config_str
+        return self._reshape_config_str(config_str)
 
     def _get_monitoring_config_str(self):
         """Construct monitoring-related config string."""
@@ -750,7 +753,7 @@ class FeathrClient(object):
                 MONITORING_DATABASE_SQL_USER: {user}
                 MONITORING_DATABASE_SQL_PASSWORD: {password}
                 """.format(url=url, user=user, password=password)
-            return config_str
+            return self._reshape_config_str(config_str)
         else:
             ""
 
@@ -768,7 +771,7 @@ class FeathrClient(object):
             JDBC_SF_ROLE: {JDBC_SF_ROLE}
             JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
             """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
-        return config_str
+        return self._reshape_config_str(config_str)
 
     def _get_kafka_config_str(self):
         """Construct the Kafka config string. The endpoint, access key, secret key, and other parameters can be set via
@@ -778,7 +781,7 @@ class FeathrClient(object):
         config_str = """
             KAFKA_SASL_JAAS_CONFIG: "{sasl}"
             """.format(sasl=sasl)
-        return config_str
+        return self._reshape_config_str(config_str)
 
     def _collect_secrets(self, additional_secrets=[]):
         """Collect all values corresponding to the secret names."""
@@ -801,4 +804,10 @@ class FeathrClient(object):
                 feature_dict[feature.name] = feature
         for feature in registry_derived_feature_list:
                 feature_dict[feature.name] = feature
-        return feature_dict
+        return feature_dict 
+
+    def _reshape_config_str(self, config_str:str):
+        if self.spark_runtime == 'local':
+            return "'{" + config_str + "}'"
+        else:
+            return config_str

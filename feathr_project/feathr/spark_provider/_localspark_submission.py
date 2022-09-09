@@ -10,7 +10,8 @@ from loguru import logger
 
 from pyspark import *
 
-from subprocess import run, STDOUT, Popen, PIPE
+from subprocess import TimeoutExpired, STDOUT, Popen
+from shlex import split
 from feathr.constants import FEATHR_MAVEN_ARTIFACT
 
 
@@ -25,11 +26,20 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
     """
     def __init__(
         self,
-        workspace_path: str
+        workspace_path: str,
+        debug_folder:str = 'debug',
+        clean_up:bool = True,
+        retry:int = 3,
+        retry_sec:int = 5,
     ):
         """Initialize the Local Spark job launcher
         """
-        self.workspace_path = workspace_path
+        self.workspace_path = workspace_path,
+        self.debug_folder = debug_folder
+        self.spark_job_num = 0
+        self.clean_up = clean_up
+        self.retry = retry
+        self.retry_sec = retry_sec
 
     def upload_or_get_cloud_path(self, local_path_or_http_path: str):
         """For Local Spark Case, no need to upload to cloud workspace."""
@@ -59,7 +69,8 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
             job_tags (str): not used in local spark mode
             reference_files_path (str): not used in local spark mode
         """
-        logger.warning(f"Local Spark Mode only support basic params right now and only for testing purpose.")
+        logger.warning(f"Local Spark Mode only support basic params right now and should be used only for testing purpose.")
+        self.cmd_file, self.log_path = self._get_debug_file_name(self.debug_folder, prefix = job_name)
         args = self._init_args(job_name)
 
         if properties:
@@ -105,48 +116,84 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
 
         cmd = ' '.join(args) + ' '.join(arguments)
 
-        proc = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT)
-        logger.info(f"Detail job stdout and stderr are in PIPE.")
+        log_a = open(f'{self.log_path}_{self.spark_job_num}.txt' , 'a')     
+        proc = Popen(split(cmd), shell=False, stdout=log_a, stderr=STDOUT)
+        logger.info(f"Detail job stdout and stderr are in {self.log_path}.")
 
-        self.spark_proc = proc
+        self.spark_job_num += 1
 
-        logger.info(f"{proc.args}")
+        with open(self.cmd_file, 'a') as c:
+                c.write(' '.join(proc.args))
+                c.write('\n')
+
+        self.latest_spark_proc = proc
+
+        logger.info(f"Local Spark job submit with pid: {proc.pid}.")
 
         return proc
 
     def wait_for_completion(self, timeout_seconds: Optional[float] = 500) -> bool:
         """
         this function track local spark job commands and process status.
-        files will be write into `debug` folder under your workspace
+        files will be write into `debug` folder under your workspace.
         """
-        cmd_file, log_file = self._get_debug_file_name()
-        logger.info(f"Please check auto generated spark command in {cmd_file} and detail logs in {log_file}.")
-        
-        with open(cmd_file, 'w') as c:
-            c.write(self.spark_proc.args)
-        
+        logger.info(f"{self.spark_job_num} local spark job(s) in this Launcher, only the latest will be monitored.")
+        logger.info(f"Please check auto generated spark command in {self.cmd_file} and detail logs in {self.log_path}.")
+
+        proc = self.latest_spark_proc
         start_time = time.time()
-        logger.info(f"Spark process pid: {self.spark_proc.pid}")
-        with open(log_file, 'w') as l:
-            while (timeout_seconds is None) or (time.time() - start_time < timeout_seconds):
-                line = self.spark_proc.stdout.readline().decode('utf-8')
-                l.write(line)
-                if self.spark_proc.returncode == 1:
-                    logger.warning(f"Spark job has False return code.")               
-                elif line == '':
-                    logger.info(f"Spark Job completed.")
-                    return True
-                elif 'Feathr Pyspark job completed' in line:
-                    logger.info(f"Pyspark job ends")
-                    return True
-            logger.warning(f"Spark job doesn't completed in {timeout_seconds} seconds, you may need to wait longer.")
+        retry = self.retry
+
+        log_r = open(f'{self.log_path}_{self.spark_job_num-1}.txt' , 'r') 
+        while proc.poll() is None and (((timeout_seconds is None) or (time.time() - start_time < timeout_seconds))):
+            time.sleep(1)
+            try:
+                if retry < 1:
+                    logger.warning(f"Spark job has hang for {self.retry * self.retry_sec} seconds. latest msg is {last_line}. please check {log_r.name}")
+                    if self.clean_up:
+                        self._clean_up()
+                        proc.wait()
+                    break
+                last_line = log_r.readlines()[-1]
+                retry = self.retry
+                if last_line == []:
+                    print("_", end="")
+                else:
+                    print(">", end="")
+                    if last_line.__contains__('Feathr Pyspark job completed'):
+                        logger.info(f"Pyspark job Completed")
+                        proc.terminate()
+            except IndexError as e:
+                print("x", end="")
+                time.sleep(self.retry_sec)
+                retry -= 1
+
+        job_duration = time.time() - start_time
+        log_r.close() 
+
+        if proc.returncode == None:
+            logger.warning(f"Spark job not completed after {timeout_seconds} sec time out setting, please check.")
+            if self.clean_up:
+                self._clean_up()
+                proc.wait()
+                return True
+        elif proc.returncode == 1:
+            logger.warning(f"Spark job is not successful, please check.")
             return False
-        logger.warning(self.spark_proc.stderr)
-        return self.spark_proc.returncode
+        else:
+            logger.info(f"Spark job {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds with returncode {proc.returncode}")
+            return True
+
+    def _clean_up(self, proc:Popen = None):
+        logger.warning(f"Terminate the spark job due to as clean_up is set to True.")
+        if not proc:
+            self.latest_spark_proc.terminate()
+        else:
+            proc.terminate()
 
     def get_status(self) -> str:
         """Get the status of the job, only a placeholder for local spark"""
-        return self.spark_proc.returncode
+        return self.latest_spark_proc.returncode
 
     def _init_args(self, job_name:str):
         args = []
@@ -159,13 +206,19 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
 
         return args
 
-    def _get_debug_file_name(self, debug_folder: str = 'debug', suffix:str = None):
-        if not os.path.exists(debug_folder):
-                os.makedirs(debug_folder)
-            
-        if not suffix:
-            suffix = datetime.now().strftime("%Y%m%d%H%M%S")
-        cmd_file = os.path.join(debug_folder, f"command_{suffix}.sh")
-        log_file = os.path.join(debug_folder, f"log_{suffix}.txt")
+    def _get_debug_file_name(self, debug_folder: str = 'debug', prefix:str = None):
+        """
+        auto generated command will be write into cmd file
+        spark job output will be write into log path with job number as suffix
+        """
+        prefix += datetime.now().strftime("%Y%m%d%H%M%S")
+        debug_path = os.path.join(debug_folder, prefix)
 
-        return cmd_file, log_file
+        print(debug_path)
+        if not os.path.exists(debug_path):
+                os.makedirs(debug_path)
+
+        cmd_file = os.path.join(debug_path, f"command.sh")
+        log_path = os.path.join(debug_path, f"log")
+
+        return cmd_file, log_path

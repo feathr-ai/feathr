@@ -60,9 +60,9 @@ logs are automatically stored in `debug` folder of your workspace for further de
 ### Usage
 The usage of local spark provider is almost the same with cloud spark providers. You could refer to [test_local_spark_e2e.py](../../feathr_project/test/test_local_spark_e2e.py) for usage samples.
 
-In short, the `submit_feathr_job()` in local spark mode will return a Popen object, which `stdout` and `stderr` are set to `PIPE`. You can track the jobs with your custom code. Or, you could try the following python code which will process output for you.
+In short, the `submit_feathr_job()` in local spark mode will return a Popen object, which `stdout` and `stderr` are set to local log file. You can track the jobs with your custom code. Or, you could try the following python code which will process output for you.
 ```python
-result = client.feathr_spark_launcher.wait_for_completion()
+results = client.wait_job_to_finish()
 ```
 
 

@@ -11,7 +11,7 @@
 # version of API settings
 api_version: 1
 project_config:
-  project_name: 'project_feathr_local_spark_test'
+  project_name: 'local_spark'
   required_environment_variables:
   optional_environment_variables:
     # the environemnt variables are optional, however you will need them if you want to use some of the services:
@@ -33,6 +33,13 @@ spark_config:
   spark_result_output_parts: '1'
   local:
     feathr_runtime_location:
+
+online_store:
+  redis:
+    # Redis configs to access Redis cluster
+    host: 'feathrazuretest3redis.redis.cache.windows.net'
+    port: 6380
+    ssl_enabled: True
 
 feature_registry:
   # The API endpoint of the registry service
