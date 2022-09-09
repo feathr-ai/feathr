@@ -1,4 +1,18 @@
-# An Enterprise-Grade, High Performance Feature Store - Feathr
+<html>
+    <h1 align="center">
+      Feathr
+    </h1>
+    <h3 align="center">
+      An enterprise-grade, high performance feature store
+    </h3>
+    <h3 align="center">
+      Support:
+      <a href="https://join.slack.com/t/feathrai/shared_invite/zt-1ffva5u6v-voq0Us7bbKAw873cEzHOSg">Slack</a> &
+      <a href="https://github.com/feathr-ai/feathr/discussions">Discussions</a>
+    </h3>
+</html> 
+    
+# 
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/linkedin/feathr/blob/main/LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/linkedin/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/linkedin/feathr/releases)
@@ -186,4 +200,4 @@ Build for the community and build by the community. Check out [Community Guideli
 
 ## 📢 Slack Channel
 
-Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-1f8gc99jm-RsRff2tyQNuYdSFyqZc1kg)).
+Join our [Slack channel](https://feathrai.slack.com) for questions and discussions (or click the [invitation link](https://join.slack.com/t/feathrai/shared_invite/zt-1ffva5u6v-voq0Us7bbKAw873cEzHOSg)).
