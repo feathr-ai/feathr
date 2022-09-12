@@ -22,7 +22,7 @@ First step is to provision required cloud resources if you want to use Feathr. F
 
 Feathr has native cloud integration. Here are the steps to use Feathr on Azure:
 
-1. Follow the [Feathr ARM deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template. Alternatively, if you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
+1. Follow the [Feathr ARM deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template. Alternatively, if you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
 
 2. Once the deployment is complete,run the Feathr Jupyter Notebook by clicking this button:  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb). 
 3. You only need to change the specified `Resource Prefix`.
@@ -188,7 +188,7 @@ client.multi_get_online_features("nycTaxiDemoFeature", ["239", "265"], ['f_locat
 ## Next steps
 
 - Run the [demo notebook](./samples/product_recommendation_demo.ipynb) to understand the workflow of Feathr.
-- Read the [Feathr Documentation Page](https://linkedin.github.io/feathr/) page to understand the Feathr abstractions.
-- Read guide to understand [how to setup Feathr on Azure using Azure Resource Manager template](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html).
-- Read guide to understand [how to setup Feathr step by step on Azure using Azure CLI](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html).
+- Read the [Feathr Documentation Page](https://feathr-ai.github.io/feathr/) page to understand the Feathr abstractions.
+- Read guide to understand [how to setup Feathr on Azure using Azure Resource Manager template](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html).
+- Read guide to understand [how to setup Feathr step by step on Azure using Azure CLI](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-cli.html).
 - Read [Python API Documentation](https://feathr.readthedocs.io/en/latest/)

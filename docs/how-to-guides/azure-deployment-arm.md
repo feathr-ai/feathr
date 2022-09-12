@@ -128,7 +128,7 @@ For more details on RBAC, refer to [Feathr Registry Access Control](../how-to-gu
 
 ## Next Steps
 
-Follow the quick start guide [here](https://linkedin.github.io/feathr/quickstart_synapse.html) to try out a notebook example.
+Follow the quick start guide [here](https://feathr-ai.github.io/feathr/quickstart_synapse.html) to try out a notebook example.
 
 ## Known Issues/Workaround
 
