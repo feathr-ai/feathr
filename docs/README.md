@@ -16,7 +16,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/linkedin/feathr/blob/main/LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/linkedin/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/linkedin/feathr/releases)
-[![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://linkedin.github.io/feathr/)
+[![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://feathr-ai.github.io/feathr/)
 [![Python API](https://img.shields.io/readthedocs/feathr?label=Python%20API)](https://feathr.readthedocs.io/en/latest/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6457/badge)](https://bestpractices.coreinfrastructure.org/projects/6457)
 
@@ -48,16 +48,16 @@ Feathr automatically computes your feature values and joins them to your trainin
 
 Feathr has native integrations with Databricks and Azure Synapse:
 
-Follow the [Feathr ARM deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
+Follow the [Feathr ARM deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
 
-If you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
+If you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
 
 - Please read the [Quick Start Guide for Feathr on Databricks](./quickstart_databricks.md) to run Feathr with Databricks.
 - Please read the [Quick Start Guide for Feathr on Azure Synapse](./quickstart_synapse.md) to run Feathr with Azure Synapse.
 
 ## 📓 Documentation
 
-- For more details on Feathr, read our [documentation](https://linkedin.github.io/feathr/).
+- For more details on Feathr, read our [documentation](https://feathr-ai.github.io/feathr/).
 - For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
 - For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
 
@@ -149,15 +149,15 @@ user_item_similarity = DerivedFeature(name="user_item_similarity",
 
 ### Define Streaming Features
 
-Read the [Streaming Source Ingestion Guide](https://linkedin.github.io/feathr/how-to-guides/streaming-source-ingestion.html) for more details.
+Read the [Streaming Source Ingestion Guide](https://feathr-ai.github.io/feathr/how-to-guides/streaming-source-ingestion.html) for more details.
 
 ### Point in Time Joins
 
-Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://linkedin.github.io/feathr/concepts/point-in-time-join.html) for more details.
+Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://feathr-ai.github.io/feathr/concepts/point-in-time-join.html) for more details.
 
 ### Running Feathr Examples
 
-Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://linkedin.github.io/feathr/quickstart_synapse.html) containing a bit more explanation on the notebook.
+Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://feathr-ai.github.io/feathr/quickstart_synapse.html) containing a bit more explanation on the notebook.
 
 ## 🗣️ Tech Talks on Feathr
 
