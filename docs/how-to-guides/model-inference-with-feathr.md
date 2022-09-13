@@ -17,7 +17,7 @@ import os
 from feathr import FeathrClient
 
 # Set Redis endpoint
-os.environ['online_store__redis__host'] = "xx.redis.cache.windows.net"
+os.environ['online_store__redis__host'] = "<replace_with_your_redis_name>.redis.cache.windows.net"
 os.environ['online_store__redis__port'] = "6380"
 os.environ['online_store__redis__ssl_enabled'] = "True"
 os.environ['REDIS_PASSWORD'] = "<put-your-key-here>"
