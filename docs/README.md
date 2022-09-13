@@ -160,7 +160,7 @@ Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.
 | Offline store – Object Store    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                                                                                    |
 | Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake                                                                    |
 | Streaming Source                | Kafka, EventHub                                                                                                                                |
-| Online store                    | Redis, [Azure Cosmos DB](https://linkedin.github.io/feathr/how-to-guides/jdbc-cosmos-notes.html#using-cosmosdb-as-the-online-store), Aerospike (coming soon) |
+| Online store                    | Redis, [Azure Cosmos DB](https://feathr-ai.github.io/feathr/how-to-guides/jdbc-cosmos-notes.html#using-cosmosdb-as-the-online-store), Aerospike (coming soon) |
 | Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                                                                                               |
 | Compute Engine                  | Azure Synapse Spark Pools, Databricks                                                                                                          |
 | Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook                                                                                  |

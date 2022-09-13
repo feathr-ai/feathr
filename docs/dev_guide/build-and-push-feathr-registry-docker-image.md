@@ -65,7 +65,7 @@ After docker image launched, open web browser and navigate to <https://localhost
 
 ## Upload to DockerHub (For Feathr Release Manager)
 
-The Feathr repository should have automatic CD pipelines to publish the docker container. 
+The Feathr repository already have automatic CD pipelines to publish the docker image to DockerHub on release branches. Please checkout [docker publish workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/docker-publish.yml) for details
 
 In case if the Feathr release manager wants to do it manually, login with feathrfeaturestore account and then run **docker push** command to publish docker image to DockerHub. Contact Feathr Team (@jainr, @blrchen) for credentials.
 
