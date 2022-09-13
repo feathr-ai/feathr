@@ -51,7 +51,6 @@ feature = client.get_online_features(feature_table="nycTaxiCITable",
                                  key='2020-04-15',
                                  feature_names=['f_is_long_trip_distance', 'f_day_of_week'])
 # `res` will be an array representing the features of that particular key.
-
 # `model` will be a ML model that is loaded previously.
 result = model.predict(feature)
 ```
