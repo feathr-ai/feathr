@@ -87,13 +87,17 @@ def transformation_to_def(v: Transformation) -> dict:
     elif isinstance(v, WindowAggTransformation):
         ret = {
             "defExpr": v.def_expr,
+            "def_expr": v.def_expr,
         }
         if v.agg_func:
             ret["aggFunc"] = v.agg_func
+            ret["agg_func"] = v.agg_func
+
         if v.window:
             ret["window"] = v.window
         if v.group_by:
             ret["groupBy"] = v.group_by
+            ret["group_by"] = v.group_by
         if v.filter:
             ret["filter"] = v.filter
         if v.limit:

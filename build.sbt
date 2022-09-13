@@ -47,7 +47,8 @@ val localAndCloudCommonDependencies = Seq(
     "com.github.changvvb" %% "jackson-module-caseclass" % "1.1.1",
     "com.azure.cosmos.spark" % "azure-cosmos-spark_3-1_2-12" % "4.11.1",
     "org.elasticsearch" % "elasticsearch-spark-30_2.12" % "7.15.2",
-    "org.eclipse.jetty" % "jetty-util" % "9.3.24.v20180605"
+    "org.eclipse.jetty" % "jetty-util" % "9.3.24.v20180605",
+    "com.aerospike" % "aerospike-spark_2.12" % "3.3.0_spark3.1-allshaded"
 ) // Common deps
 
 val jdbcDrivers = Seq(

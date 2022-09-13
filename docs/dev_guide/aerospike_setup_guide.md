@@ -65,3 +65,35 @@ Next we will verify the functionality of Aerospike database by performing basic 
 	# View the config
 	asadm -e "show config"
 ```
+
+# Configure feathr core Spark to connect with Aerospike
+
+1. To connect to Aerospike (with Aerospike SDK, or Spark), username and password need to be configured. 
+Guidance for setting up username and password:
+https://docs.aerospike.com/server/operations/configure/security/access-control
+
+2. To connect to Aerospike with Spark, a spark conector jar needs to be submitted to your Spark runtime. 
+Link to spark connector: 
+https://docs.aerospike.com/connect/spark
+
+3. To operate data in Aerospike database via Spark, spark job should have following configurations:
+```
+		"aerospike__seedhost": <your Aerospike server ip>,
+		"aerospike__port": "3000",
+        "aerospike__namespace": <the namespace on Aerospike>,
+		"aerospike__set": <Aerospike set name>,
+        "aerospike__user": <username>,
+        "aerospike__password": <password>,
+        "aerospike__updatebykey": "__key",
+```
+
+# Known limitations for Aerospike:
+Aerospike has its own limitations on the data . 
+One limitation is that worth attention is, for any incoming data row, ANY column name should not be longer than 15 bytes.
+
+So when using feathr, do not define feature names longer than 15 ascii characters.
+
+Check 
+https://docs.aerospike.com/guide/limitations for more details.
+
+

@@ -1,7 +1,12 @@
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+from feathr import (BOOLEAN, FLOAT, INPUT_CONTEXT, INT32, STRING,
+                    DerivedFeature, Feature, FeatureAnchor, HdfsSource,
+                    TypedKey, ValueType, WindowAggTransformation)
+from feathr import FeathrClient
 from feathr.definition.sink import CosmosDbSink, ElasticSearchSink
+from feathr.definition.source import HdfsSource
 
 import pytest
 from click.testing import CliRunner
@@ -10,7 +15,7 @@ from feathr import (BackfillTime, MaterializationSettings)
 from feathr import FeathrClient
 from feathr import FeatureQuery
 from feathr import ObservationSettings
-from feathr import RedisSink, HdfsSink, JdbcSink
+from feathr import RedisSink, HdfsSink, JdbcSink,AerospikeSink
 from feathr import TypedKey
 from feathr import ValueType
 from feathr.utils.job_utils import get_result_df
@@ -265,7 +270,6 @@ def test_feathr_materialize_to_cosmosdb():
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
-
 @pytest.mark.skip(reason="Marked as skipped as we need to setup resources for this test")
 def test_feathr_materialize_to_es():
     """
@@ -295,7 +299,101 @@ def test_feathr_materialize_to_es():
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
+@pytest.mark.skip(reason="Marked as skipped as we need to setup resources for this test")
+def test_feathr_materialize_to_aerospike():
+    """
+    Test FeathrClient() CosmosDbSink.
+    """
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    # os.chdir(test_workspace_dir)
+    now = datetime.now()
+    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
+    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
+    
+    client = FeathrClient(config_path="feathr_config.yaml")
+    batch_source = HdfsSource(name="nycTaxiBatchSource",
+                              path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
+                              event_timestamp_column="lpep_dropoff_datetime",
+                              timestamp_format="yyyy-MM-dd HH:mm:ss")
 
+    f_trip_distance = Feature(name="f_trip_distance",
+                              feature_type=FLOAT, transform="trip_distance")
+    f_trip_time_duration = Feature(name="f_trip_time_duration",
+                                   feature_type=INT32,
+                                   transform="(to_unix_timestamp(lpep_dropoff_datetime) - to_unix_timestamp(lpep_pickup_datetime))/60")
+
+    features = [
+        f_trip_distance,
+        f_trip_time_duration,
+        Feature(name="f_is_long_trip_distance",
+                feature_type=BOOLEAN,
+                transform="cast_float(trip_distance)>30"),
+        Feature(name="f_day_of_week",
+                feature_type=INT32,
+                transform="dayofweek(lpep_dropoff_datetime)"),
+    ]
+
+
+    request_anchor = FeatureAnchor(name="request_features",
+                                   source=INPUT_CONTEXT,
+                                   features=features)
+
+    f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
+                                          feature_type=FLOAT,
+                                          input_features=[
+                                              f_trip_distance, f_trip_time_duration],
+                                          transform="f_trip_distance * f_trip_time_duration")
+
+    f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded",
+                                         feature_type=INT32,
+                                         input_features=[f_trip_time_duration],
+                                         transform="f_trip_time_duration % 10")
+
+    location_id = TypedKey(key_column="DOLocationID",
+                           key_column_type=ValueType.INT32,
+                           description="location id in NYC",
+                           full_name="nyc_taxi.location_id")
+    agg_features = [Feature(name="avgfare",
+                            key=location_id,
+                            feature_type=FLOAT,
+                            transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                                                              agg_func="AVG",
+                                                              window="90d",
+                                                              )),
+                    Feature(name="maxfare",
+                            key=location_id,
+                            feature_type=FLOAT,
+                            transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                                                              agg_func="MAX",
+                                                              window="90d"))
+                    ]
+
+    agg_anchor = FeatureAnchor(name="aggregationFeatures",
+                               source=batch_source,
+                               features=agg_features)
+
+    client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=[
+        f_trip_time_distance, f_trip_time_rounded])
+
+
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+
+    now = datetime.now()
+    os.environ[f"aerospike_USER"] = "feathruser"
+    os.environ[f"aerospike_PASSWORD"] = "feathr"
+    as_sink = AerospikeSink(name="aerospike",seedhost="20.57.186.153", port="3000", namespace="test", setname="test")
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[as_sink],
+                                       feature_names=[
+                                           "avgfare", "maxfea"],
+                                       backfill_time=backfill_time)
+    client.materialize_features(settings)
+    # assuming the job can successfully run; otherwise it will throw exception
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 if __name__ == "__main__":
+    test_feathr_materialize_to_aerospike()
     test_feathr_get_offline_features_to_sql()
     test_feathr_materialize_to_cosmosdb()
