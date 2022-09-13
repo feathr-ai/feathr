@@ -8,7 +8,7 @@ parent: How-to Guides
 
 After you have materialized features in online store such as Redis or Azure Cosmos DB, usually end users want to consume those features in production environment for model inference.
 
-With Feathr's online client, it is quite straightforward to do that. The sample code is as below, where users only need to configure the online store endpoint (if using Redis), and call `client.get_online_features()` to get the features for a particular key.
+With Feathr's [online client](https://feathr.readthedocs.io/en/latest/#feathr.FeathrClient.get_online_features), it is quite straightforward to do that. The sample code is as below, where users only need to configure the online store endpoint (if using Redis), and call `client.get_online_features()` to get the features for a particular key.
 
 ```python
 
@@ -51,7 +51,6 @@ feature = client.get_online_features(feature_table="nycTaxiCITable",
                                  key='2020-04-15',
                                  feature_names=['f_is_long_trip_distance', 'f_day_of_week'])
 # `res` will be an array representing the features of that particular key.
-
 
 # `model` will be a ML model that is loaded previously.
 result = model.predict(feature)
