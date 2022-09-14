@@ -71,12 +71,12 @@ _AAD Group_ is **NOT** supported yet.
 
 A _Role Assignment_ is the process of add a `user-role` mapping record into backend storage table.
 
-[Feature Registry](https://linkedin.github.io/feathr/concepts/feature-registry.html#access-control-management-page) section briefly introduced the access control management page, where project admins can manage role assignments.
+[Feature Registry](https://feathr-ai.github.io/feathr/concepts/feature-registry.html#access-control-management-page) section briefly introduced the access control management page, where project admins can manage role assignments.
 Management APIs are not exposed in Feathr Client by design. As we don't want to put control plane together with data plane.
 
 ## How to enable Registry Access Control?
 
-[Azure Resource Provisioning](https://linkedin.github.io/feathr/how-to-guides/azure-deployment-arm.html) section has detailed instructions on resource provisioning. For RBAC specific, you will need to manually:
+[Azure Resource Provisioning](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html) section has detailed instructions on resource provisioning. For RBAC specific, you will need to manually:
 
 1. Choose `Yes` for `Enable RBAC` in ARM Template, and provision the resources.
 2. Create a `userrole` table in provisioned SQL database with [RBAC Schema](../../registry/access_control/scripts/schema.sql).

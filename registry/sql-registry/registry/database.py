@@ -3,6 +3,13 @@ from contextlib import contextmanager
 import logging
 import threading
 import os
+
+# Checks if the platform is Max (Darwin).
+# If so, imports _scproxy that is necessary for pymssql to work on MacOS
+import platform
+if platform.system().lower().startswith('dar'):
+    import _scproxy
+
 import pymssql
 
 
@@ -53,7 +60,7 @@ class MssqlConnection(DbConnection):
         self.params = params
         self.make_connection()
         self.mutex = threading.Lock()
-        
+
     def make_connection(self):
         self.conn = pymssql.connect(**self.params)
 
@@ -85,10 +92,10 @@ class MssqlConnection(DbConnection):
         """
         Start a transaction so we can run multiple SQL in one batch.
         User should use `with` with the returned value, look into db_registry.py for more real usage.
-        
+
         NOTE: `self.query` and `self.execute` will use a different MSSQL connection so any change made
         in this transaction will *not* be visible in these calls.
-        
+
         The minimal implementation could look like this if the underlying engine doesn't support transaction.
         ```
         @contextmanager
