@@ -14,7 +14,7 @@ For example, the dataset is like below, where there are 3 tables that feature pr
 
 For feature consumers, they will usually use a central dataset ("observation data", `user_observation_mock_data` in this case) which contains a couple of IDs (`user_id` and `product_id` in this case), timestamps, and other columns. Feature consumers will use this "observation data" to query from different feature tables (using `Feature Query` below).
 
-![Feature Flow](https://github.com/linkedin/feathr/blob/main/docs/images/product_recommendation_advanced.jpg?raw=true)
+![Feature Flow](https://github.com/feathr-ai/feathr/blob/main/docs/images/product_recommendation_advanced.jpg?raw=true)
 
 As we can see, the use case for getting offline features using Feathr is straightforward. Feature consumers want to get a few features - for a particular user, what's the gift card balance? What's the total purchase in the last 90 days; Feature consumers can also get a few features for other entities in the same `Feature Query`. For example, in the meanwhile, feature consumers can also query the product feature such as product quantity and price.
 
