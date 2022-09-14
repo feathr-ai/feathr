@@ -388,7 +388,7 @@ def test_feathr_materialize_to_aerospike():
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[as_sink],
                                        feature_names=[
-                                           "avgfare", "maxfea"],
+                                           "avgfare", "maxfare"],
                                        backfill_time=backfill_time)
     client.materialize_features(settings)
     # assuming the job can successfully run; otherwise it will throw exception
