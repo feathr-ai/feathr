@@ -62,7 +62,7 @@ def get_project_datasources(project: str) -> list:
     return list([to_camel(e.to_dict()) for e in sources])
 
 
-@router.get("/projects/{project}/datasources/{datasource}")
+@router.get("/projects/{project}/datasources/{datasource}",tags=["Project"])
 def get_datasource(project: str, datasource: str) -> dict:
     p = registry.get_entity(project,True)
     for s in p.attributes.sources:
