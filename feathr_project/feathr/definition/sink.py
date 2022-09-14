@@ -335,7 +335,7 @@ class ElasticSearchSink(GenericSink):
         return []
 
 class AerospikeSink(GenericSink):
-    def __init__(self,name:str,seedhost:str,port:str,namespace:str,setname:str,auth: bool = True):
+    def __init__(self,name:str,seedhost:str,port:str,namespace:str,setname:str):
         super().__init__(format="aerospike",mode="APPEND",options = {
             "aerospike.seedhost":seedhost,
             "aerospike.port":port,
@@ -344,7 +344,6 @@ class AerospikeSink(GenericSink):
             "aerospike.password":"${%s_PASSWORD}" % name.upper(),
             "aerospike.set":setname
         })
-        self.auth = auth
         self.name = name
 
     def support_offline(self) -> bool:
@@ -354,6 +353,4 @@ class AerospikeSink(GenericSink):
         return True
     
     def get_required_properties(self) -> List[str]:
-        if self.auth:
-            return [self.name.upper() + "_USER", self.name.upper() + "_PASSWORD"]
-        return []
+        return [self.name.upper() + "_USER", self.name.upper() + "_PASSWORD"]
