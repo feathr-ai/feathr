@@ -49,13 +49,13 @@ spark-submit \
 ```
 You can also call the script directly:
 ```bash
-sh debug/command_20220903133652.sh
+sh debug/local_spark_feathr_feature_join_job20220914160251/command.sh
 ```
 You may also refer to
 [submitting-applications docs](https://spark.apache.org/docs/latest/submitting-applications.html) to customize your scripts.
 
 ### Logs
-logs are automatically stored in `debug` folder of your workspace for further debugging, with name like `log_20220903133652.txt`
+logs are automatically stored in `debug` folder of your workspace for further debugging.
 
 ### Usage
 The usage of local spark provider is almost the same with cloud spark providers. You could refer to [test_local_spark_e2e.py](../../feathr_project/test/test_local_spark_e2e.py) for usage samples.
@@ -84,4 +84,4 @@ Following use cases are covered in CI test:
 ### Coming soon:
 - `materialize_features()` into online store with local spark environment.
 - advanced `udf` support
-- more data source validations
+- more data sources
