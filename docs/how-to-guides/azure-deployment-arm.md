@@ -17,7 +17,9 @@ The provided Azure Resource Manager (ARM) template deploys the following resourc
 7. Azure Event Hub
 8. Azure Redis
 
-Please note, you need to have **owner access** in the resource group you are deploying this in. Owner access is required to assign role to managed identity within ARM template so it can access key vault and store secrets.
+Please note, you need to have **owner access** in the resource group you are deploying this in. Owner access is required to assign role to managed identity within ARM template so it can access key vault and store secrets. If you don't have such permission, you might want to contact your IT admin to see if they can do that.
+
+Although we recommend end users deploy the resources using the ARM template, we understand that in many situations where users want to reuse existing resources instead of creating new resources; or users have many other permission issues. See [Manually connecting existing resources](#manually-connecting-existing-resources) for more details.
 
 ## Architecture
 
@@ -110,7 +112,6 @@ https://{resource_prefix}webapp.azurewebsites.net
 ![app service url](../images/app-service-url.png)
 
 ![feathr ui landing page](../images/feathr-ui-landingpage.png)
-
 
 ### 5. Initialize RBAC access table (Optional)
 
