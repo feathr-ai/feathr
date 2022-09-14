@@ -76,16 +76,16 @@ https://docs.aerospike.com/server/operations/configure/security/access-control
 Link to spark connector: 
 https://docs.aerospike.com/connect/spark
 
-3. To operate data in Aerospike database via Spark, spark job should have following configurations:
+3. To use Aerospike as the online store, create `AerospikeSink` and add it to the `MaterializationSettings`, then use it with `FeathrClient.materialize_features`, e.g..
+
 ```
-		"aerospike__seedhost": <your Aerospike server ip>,
-		"aerospike__port": "3000",
-        "aerospike__namespace": <the namespace on Aerospike>,
-		"aerospike__set": <Aerospike set name>,
-        "aerospike__user": <username>,
-        "aerospike__password": <password>,
-        "aerospike__updatebykey": "__key",
+name = 'aerospike_output'
+os.environ[f"{name.upper()}_USER"] = "as_user_name"
+os.environ[f"{name.upper()}_PASSWORD"] = "some_magic_word"
+as_sink = AerospikeSink(name=name,seedhost="ip_address", port="3000", namespace="test", setname="test")
+client.materialize_features(..., materialization_settings=MaterializationSettings(..., sinks=[as_sink]))
 ```
+
 
 # Known limitations for Aerospike:
 Aerospike has its own limitations on the data . 
