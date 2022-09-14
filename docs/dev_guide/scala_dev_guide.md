@@ -11,7 +11,7 @@ parent: Developer Guides
 IntelliJ is the recommended IDE to use when developing Feathr. Please visit IntelliJ's
 [installation guide](https://www.jetbrains.com/help/idea/installation-guide.html) to install it
 in your local machine. To import Feathr as a new project:
-1. Git clone Feathr into your local machine. i.e. via https `git clone https://github.com/linkedin/feathr.git` or ssh `git clone git@github.com:linkedin/feathr.git`
+1. Git clone Feathr into your local machine. i.e. via https `git clone https://github.com/feathr-ai/feathr.git` or ssh `git clone git@github.com:feathr-ai/feathr.git`
 2. In IntelliJ, select `File` > `New` > `Project from Existing Sources...` and select `feathr` from the directory you cloned.
 3. Under `Import project from external model` select `sbt`. Click `Next`.
 4. Under `Project JDK` specify a valid Java `1.8` JDK and select SBT shell for `project reload` and `builds`.
