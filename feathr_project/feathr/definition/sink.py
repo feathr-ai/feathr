@@ -64,10 +64,11 @@ class RedisSink(Sink):
         streaming: whether it is used in streaming mode
         streamingTimeoutMs: maximum running time for streaming mode. It is not used in batch mode.
     """
-    def __init__(self, table_name: str, streaming: bool=False, streamingTimeoutMs: Optional[int]=None) -> None:
+    def __init__(self, table_name: str, streaming: bool=False, streamingTimeoutMs: Optional[int]=None, aggregation_features: Optional[List[str]]=None) -> None:
         self.table_name = table_name
         self.streaming = streaming
         self.streamingTimeoutMs = streamingTimeoutMs
+        self.aggregation_features = aggregation_features
 
     def to_feature_config(self) -> str:
         """Produce the config used in feature materialization"""
@@ -81,6 +82,9 @@ class RedisSink(Sink):
                     {% endif %}
                     {% if source.streamingTimeoutMs %}
                     timeoutMs: {{source.streamingTimeoutMs}}
+                    {% endif %}
+                    {% if source.aggregation_features %}
+                    features: [{{','.join(source.aggregation_features)}}]
                     {% endif %}
                 }
             }
