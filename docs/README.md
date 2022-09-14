@@ -170,26 +170,26 @@ Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.
 
 ![Architecture Diagram](./images/architecture.png)
 
-| Feathr component                | Cloud Integrations                                                          |
-| ------------------------------- | --------------------------------------------------------------------------- |
-| Offline store – Object Store    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                 |
-| Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake |
-| Streaming Source                | Kafka, EventHub                                                             |
-| Online store                    | Redis, Azure Cosmos DB (coming soon), Aerospike (coming soon)               |
-| Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                            |
-| Compute Engine                  | Azure Synapse Spark Pools, Databricks                                       |
-| Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook               |
-| File Format                     | Parquet, ORC, Avro, JSON, Delta Lake, CSV                                   |
-| Credentials                     | Azure Key Vault                                                             |
+| Feathr component                | Cloud Integrations                                                                                                                             |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Offline store – Object Store    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                                                                                    |
+| Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake                                                                    |
+| Streaming Source                | Kafka, EventHub                                                                                                                                |
+| Online store                    | Redis, [Azure Cosmos DB](https://feathr-ai.github.io/feathr/how-to-guides/jdbc-cosmos-notes.html#using-cosmosdb-as-the-online-store), Aerospike (coming soon) |
+| Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                                                                                               |
+| Compute Engine                  | Azure Synapse Spark Pools, Databricks                                                                                                          |
+| Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook                                                                                  |
+| File Format                     | Parquet, ORC, Avro, JSON, Delta Lake, CSV                                                                                                      |
+| Credentials                     | Azure Key Vault                                                                                                                                |
 
 ## 🚀 Roadmap
 
-For a complete roadmap with estimated dates, please [visit this page](https://github.com/linkedin/feathr/milestones?direction=asc&sort=title&state=open).
-
-- [x] Support streaming
-- [x] Support common data sources
+- [x] Support streaming features with transformation
+- [x] Support common data sources and sinks. Read more in the [Cloud Integrations and Architecture](#️-cloud-integrations-and-architecture) part.
 - [x] Support feature store UI, including Lineage and Search functionalities
+- [ ] Support a sandbox Feathr environment for better getting started experience
 - [ ] Support online transformation
+- [ ] More Feathr online client libraries such as Java
 - [ ] Support feature versioning
 - [ ] Support feature monitoring
 - [ ] Support feature data deletion and retention
