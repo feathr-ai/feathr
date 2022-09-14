@@ -35,7 +35,7 @@ stream_source = KafKaSource(name="kafkaStreamingSource",
                             )
 ```
 
-You may need to produce data and send them into Kafka as this data source in advance. Please check [Kafka data source producer](https://github.com/linkedin/feathr/blob/main/feathr_project/test/prep_azure_kafka_test_data.py) as a reference. Also you should keep this producer running which means there are data stream keep coming into Kafka while calling the 'materialize_features' below.
+You may need to produce data and send them into Kafka as this data source in advance. Please check [Kafka data source producer](https://github.com/feathr-ai/feathr/blob/main/feathr_project/test/prep_azure_kafka_test_data.py) as a reference. Also you should keep this producer running which means there are data stream keep coming into Kafka while calling the 'materialize_features' below.
 
 ## Define feature definition with the Kafka source
 
@@ -90,7 +90,7 @@ res = client.multi_get_online_features('kafkaSampleDemoFeature', ['1', '2'], ['f
 
 ```
 
-You can also refer to the [test case](https://github.com/linkedin/feathr/blob/main/feathr_project/test/test_azure_kafka_e2e.py) for more details.
+You can also refer to the [test case](https://github.com/feathr-ai/feathr/blob/main/feathr_project/test/test_azure_kafka_e2e.py) for more details.
 
 ## Kafka configuration
 

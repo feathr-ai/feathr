@@ -14,8 +14,8 @@
     
 # 
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/linkedin/feathr/blob/main/LICENSE)
-[![GitHub Release](https://img.shields.io/github/v/release/linkedin/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/linkedin/feathr/releases)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/feathr-ai/feathr/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/feathr-ai/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/feathr-ai/feathr/releases)
 [![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://feathr-ai.github.io/feathr/)
 [![Python API](https://img.shields.io/readthedocs/feathr?label=Python%20API)](https://feathr.readthedocs.io/en/latest/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6457/badge)](https://bestpractices.coreinfrastructure.org/projects/6457)
@@ -72,7 +72,7 @@ pip install feathr
 Or use the latest code from GitHub:
 
 ```bash
-pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
+pip install git+https://github.com/feathr-ai/feathr.git#subdirectory=feathr_project
 ```
 
 ## 🔡 Feathr Highlighted Capabilities
