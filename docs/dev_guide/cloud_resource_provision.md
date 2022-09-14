@@ -34,7 +34,7 @@ Get-AzLocation | select displayname,location
 
 ```powershell
 
-iwr https://raw.githubusercontent.com/linkedin/feathr/main/docs/how-to-guides/deployFeathr.ps1 -outfile ./deployFeathr.ps1; ./deployFeathr.ps1 -AzureRegion '{Assign Your Region}'  
+iwr https://raw.githubusercontent.com/feathr-ai/feathr/main/docs/how-to-guides/deployFeathr.ps1 -outfile ./deployFeathr.ps1; ./deployFeathr.ps1 -AzureRegion '{Assign Your Region}'  
 
 ``` 
 

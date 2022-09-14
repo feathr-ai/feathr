@@ -13,7 +13,7 @@ from feathr.registry._feathr_registry_client import _FeatureRegistry
 @click.pass_context
 def cli(ctx: click.Context):
     """
-    Feathr CLI tool. Visit https://github.com/linkedin/feathr for more details.
+    Feathr CLI tool. Visit https://github.com/feathr-ai/feathr for more details.
     """
     pass
 

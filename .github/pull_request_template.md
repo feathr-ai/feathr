@@ -1,6 +1,6 @@
 ## Description
 <!--
-Hey! Thank you for the contribution! Please go through https://github.com/linkedin/feathr/blob/main/docs/dev_guide/pull_request_guideline.md for more information.
+Hey! Thank you for the contribution! Please go through https://github.com/feathr-ai/feathr/blob/main/docs/dev_guide/pull_request_guideline.md for more information.
 
 Describe what changes to make and why you are making these changes.
 

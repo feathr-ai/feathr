@@ -75,7 +75,7 @@ az rest --method PATCH --uri "https://graph.microsoft.com/v1.0/applications/$aad
 
 Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ffeathr-ai%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 ### 3. Grant Key Vault and Synapse access to selected users (Optional)
 
@@ -145,6 +145,6 @@ Follow the quick start guide [here](https://feathr-ai.github.io/feathr/quickstar
    - Once the login is successful, you will see the query editor screen. Run the below queries in the editor and create the required schema.
      ![sql-query-editor-auth](../images/sql-query-editor-open.png)
 
-   - [SQL Registry DB Schema](https://github.com/linkedin/feathr/blob/main/registry/sql-registry/scripts/schema.sql)
+   - [SQL Registry DB Schema](https://github.com/feathr-ai/feathr/blob/main/registry/sql-registry/scripts/schema.sql)
 
-   - [RBAC DB Schema](https://github.com/linkedin/feathr/blob/main/registry/access_control/scripts/schema.sql)
+   - [RBAC DB Schema](https://github.com/feathr-ai/feathr/blob/main/registry/access_control/scripts/schema.sql)

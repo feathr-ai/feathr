@@ -6,23 +6,25 @@
       An enterprise-grade, high-performance feature store
     </h3>
     <h3 align="center">
-      Support channels:
+      Important Links:
       <a href="https://join.slack.com/t/feathrai/shared_invite/zt-1ffva5u6v-voq0Us7bbKAw873cEzHOSg">Slack</a> &
-      <a href="https://github.com/feathr-ai/feathr/discussions">Discussions</a>
+      <a href="https://github.com/feathr-ai/feathr/discussions">Discussions</a>.   
+      <a href="https://feathr-ai.github.io/feathr/">Docs</a>.
     </h3>
 </html> 
-    
-# 
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/linkedin/feathr/blob/main/LICENSE)
-[![GitHub Release](https://img.shields.io/github/v/release/linkedin/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/linkedin/feathr/releases)
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/feathr-ai/feathr/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/feathr-ai/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/feathr-ai/feathr/releases)
 [![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://feathr-ai.github.io/feathr/)
 [![Python API](https://img.shields.io/readthedocs/feathr?label=Python%20API)](https://feathr.readthedocs.io/en/latest/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6457/badge)](https://bestpractices.coreinfrastructure.org/projects/6457)
 
 ## What is Feathr?
 
-Feathr is the feature store that is used in production in LinkedIn for many years and was open sourced in April 2022. Read our announcement on [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/).
+Feathr is the feature store that is used in production in LinkedIn for many years and was open sourced in April 2022. It is currently a project under [LF AI & Data Foundation](https://lfaidata.foundation/blog/2022/09/12/feathr-joins-lf-ai-data-as-new-sandbox-project/).
+
+Read our announcement on [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/), as well as the [announcement from LF AI & Data Foundation](https://lfaidata.foundation/blog/2022/09/12/feathr-joins-lf-ai-data-as-new-sandbox-project/).
 
 Feathr lets you:
 
@@ -72,7 +74,7 @@ pip install feathr
 Or use the latest code from GitHub:
 
 ```bash
-pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
+pip install git+https://github.com/feathr-ai/feathr.git#subdirectory=feathr_project
 ```
 
 ## 🔡 Feathr Highlighted Capabilities
@@ -170,17 +172,17 @@ Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.
 
 ![Architecture Diagram](./images/architecture.png)
 
-| Feathr component                | Cloud Integrations                                                                                                                             |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Offline store – Object Store    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                                                                                    |
-| Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake                                                                    |
-| Streaming Source                | Kafka, EventHub                                                                                                                                |
+| Feathr component                | Cloud Integrations                                                                                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Offline store – Object Store    | Azure Blob Storage, Azure ADLS Gen2, AWS S3                                                                                                                   |
+| Offline store – SQL             | Azure SQL DB, Azure Synapse Dedicated SQL Pools, Azure SQL in VM, Snowflake                                                                                   |
+| Streaming Source                | Kafka, EventHub                                                                                                                                               |
 | Online store                    | Redis, [Azure Cosmos DB](https://feathr-ai.github.io/feathr/how-to-guides/jdbc-cosmos-notes.html#using-cosmosdb-as-the-online-store), Aerospike (coming soon) |
-| Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                                                                                               |
-| Compute Engine                  | Azure Synapse Spark Pools, Databricks                                                                                                          |
-| Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook                                                                                  |
-| File Format                     | Parquet, ORC, Avro, JSON, Delta Lake, CSV                                                                                                      |
-| Credentials                     | Azure Key Vault                                                                                                                                |
+| Feature Registry and Governance | Azure Purview, ANSI SQL such as Azure SQL Server                                                                                                              |
+| Compute Engine                  | Azure Synapse Spark Pools, Databricks                                                                                                                         |
+| Machine Learning Platform       | Azure Machine Learning, Jupyter Notebook, Databricks Notebook                                                                                                 |
+| File Format                     | Parquet, ORC, Avro, JSON, Delta Lake, CSV                                                                                                                     |
+| Credentials                     | Azure Key Vault                                                                                                                                               |
 
 ## 🚀 Roadmap
 
