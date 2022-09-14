@@ -82,7 +82,7 @@ https://docs.aerospike.com/connect/spark
 name = 'aerospike_output'
 os.environ[f"{name.upper()}_USER"] = "as_user_name"
 os.environ[f"{name.upper()}_PASSWORD"] = "some_magic_word"
-as_sink = AerospikeSink(name=name,seedhost="ip_address", port="3000", namespace="test", setname="test")
+as_sink = AerospikeSink(name=name,seedhost="ip_address", port=3000, namespace="test", setname="test")
 client.materialize_features(..., materialization_settings=MaterializationSettings(..., sinks=[as_sink]))
 ```
 

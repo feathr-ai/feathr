@@ -384,7 +384,7 @@ def test_feathr_materialize_to_aerospike():
     now = datetime.now()
     os.environ[f"aerospike_USER"] = "feathruser"
     os.environ[f"aerospike_PASSWORD"] = "feathr"
-    as_sink = AerospikeSink(name="aerospike",seedhost="20.57.186.153", port="3000", namespace="test", setname="test")
+    as_sink = AerospikeSink(name="aerospike",seedhost="20.57.186.153", port=3000, namespace="test", setname="test")
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[as_sink],
                                        feature_names=[

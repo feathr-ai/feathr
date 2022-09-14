@@ -335,10 +335,10 @@ class ElasticSearchSink(GenericSink):
         return []
 
 class AerospikeSink(GenericSink):
-    def __init__(self,name:str,seedhost:str,port:str,namespace:str,setname:str):
+    def __init__(self,name:str,seedhost:str,port:int,namespace:str,setname:str):
         super().__init__(format="aerospike",mode="APPEND",options = {
             "aerospike.seedhost":seedhost,
-            "aerospike.port":port,
+            "aerospike.port":str(port),
             "aerospike.namespace":namespace,
             "aerospike.user":"${%s_USER}" % name.upper(),
             "aerospike.password":"${%s_PASSWORD}" % name.upper(),
