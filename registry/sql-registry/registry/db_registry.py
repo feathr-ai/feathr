@@ -7,6 +7,9 @@ from registry import connect
 from registry.models import AnchorAttributes, AnchorDef, AnchorFeatureAttributes, AnchorFeatureDef, DerivedFeatureAttributes, DerivedFeatureDef, Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, ProjectAttributes, ProjectDef, RelationshipType, SourceAttributes, SourceDef, _to_type, _to_uuid
 import json
 
+class ConflictError(Exception):
+    pass
+
 
 def quote(id):
     if isinstance(id, str):
@@ -15,7 +18,6 @@ def quote(id):
         return f"'{str(id)}'"
     else:
         return ",".join([quote(i) for i in id])
-
 
 class DbRegistry(Registry):
     def __init__(self):
@@ -41,6 +43,8 @@ class DbRegistry(Registry):
         # It is a name
         ret = self.conn.query(
             f"select entity_id from entities where qualified_name=%s", str(id_or_name))
+        if len(ret) == 0:
+            raise KeyError(f"Entity {id_or_name} not found")
         return ret[0]["entity_id"]
 
     def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
@@ -138,7 +142,7 @@ class DbRegistry(Registry):
                         len(r), definition.qualified_name)
                 # The entity with same name already exists but with different type
                 if _to_type(r[0]["entity_type"], EntityType) != EntityType.Project:
-                    raise ValueError("Entity %s already exists" %
+                    raise ConflictError("Entity %s already exists" %
                                      definition.qualified_name)
                 # Just return the existing project id
                 return _to_uuid(r[0]["entity_id"])
@@ -166,7 +170,7 @@ class DbRegistry(Registry):
                         len(r), definition.qualified_name)
                 # The entity with same name already exists but with different type
                 if _to_type(r[0]["entity_type"], EntityType) != EntityType.Source:
-                    raise ValueError("Entity %s already exists" %
+                    raise ConflictError("Entity %s already exists" %
                                      definition.qualified_name)
                 attr: SourceAttributes = _to_type(
                     json.loads(r[0]["attributes"]), SourceAttributes)
@@ -179,7 +183,7 @@ class DbRegistry(Registry):
                     # Creating exactly same entity
                     # Just return the existing id
                     return _to_uuid(r[0]["entity_id"])
-                raise ValueError("Entity %s already exists" %
+                raise ConflictError("Entity %s already exists" %
                                  definition.qualified_name)
             id = uuid4()
             c.execute(f"insert into entities (entity_id, entity_type, qualified_name, attributes) values (%s, %s, %s, %s)",
@@ -207,7 +211,7 @@ class DbRegistry(Registry):
                         len(r), definition.qualified_name)
                 # The entity with same name already exists but with different type
                 if _to_type(r[0]["entity_type"], EntityType) != EntityType.Anchor:
-                    raise ValueError("Entity %s already exists" %
+                    raise ConflictError("Entity %s already exists" %
                                      definition.qualified_name)
                 attr: AnchorAttributes = _to_type(
                     json.loads(r[0]["attributes"]), AnchorAttributes)
@@ -215,7 +219,7 @@ class DbRegistry(Registry):
                     # Creating exactly same entity
                     # Just return the existing id
                     return _to_uuid(r[0]["entity_id"])
-                raise ValueError("Entity %s already exists" %
+                raise ConflictError("Entity %s already exists" %
                                  definition.qualified_name)
             c.execute("select entity_id, qualified_name from entities where entity_id = %s and entity_type = %s", (str(
                 definition.source_id), str(EntityType.Source)))
@@ -257,7 +261,7 @@ class DbRegistry(Registry):
                         len(r), definition.qualified_name)
                 # The entity with same name already exists but with different type
                 if _to_type(r[0]["entity_type"], EntityType) != EntityType.AnchorFeature:
-                    raise ValueError("Entity %s already exists" %
+                    raise ConflictError("Entity %s already exists" %
                                      definition.qualified_name)
                 attr: AnchorFeatureAttributes = _to_type(
                     json.loads(r[0]["attributes"]), AnchorFeatureAttributes)
@@ -269,7 +273,7 @@ class DbRegistry(Registry):
                     # Just return the existing id
                     return _to_uuid(r[0]["entity_id"])
                 # The existing entity has different definition, that's a conflict
-                raise ValueError("Entity %s already exists" %
+                raise ConflictError("Entity %s already exists" %
                                  definition.qualified_name)
             source_id = anchor.attributes.source.id
             id = uuid4()
@@ -305,7 +309,7 @@ class DbRegistry(Registry):
                         len(r), definition.qualified_name)
                 # The entity with same name already exists but with different type, that's conflict
                 if _to_type(r[0]["entity_type"], EntityType) != EntityType.DerivedFeature:
-                    raise ValueError("Entity %s already exists" %
+                    raise ConflictError("Entity %s already exists" %
                                      definition.qualified_name)
                 attr: DerivedFeatureAttributes = _to_type(
                     json.loads(r[0]["attributes"]), DerivedFeatureAttributes)
@@ -317,7 +321,7 @@ class DbRegistry(Registry):
                     # Just return the existing id
                     return _to_uuid(r[0]["entity_id"])
                 # The existing entity has different definition, that's a conflict
-                raise ValueError("Entity %s already exists" %
+                raise ConflictError("Entity %s already exists" %
                                  definition.qualified_name)
             r1 = []
             # Fill `input_anchor_features`, from `definition` we have ids only, we still need qualified names
@@ -429,7 +433,7 @@ class DbRegistry(Registry):
             where entity_id = %s
         ''', self.get_entity_id(id_or_name))
         if not row:
-            raise ValueError(f"Entity {id_or_name} not found")
+            raise KeyError(f"Entity {id_or_name} not found")
         row=row[0]
         row["attributes"] = json.loads(row["attributes"])
         return _to_type(row, Entity)
