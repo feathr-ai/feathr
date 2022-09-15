@@ -33,6 +33,18 @@ def get_project_datasources(project: str, requestor: User = Depends(project_read
     return json.loads(response)
 
 
+@router.get("/projects/{project}/datasources/{datasource}", name="Get a single data source by datasource Id [Read Access Required]")
+def get_project_datasource(project: str, datasource: str, requestor: User = Depends(project_read_access)) -> list:
+    response = requests.get(url=f"{registry_url}/projects/{project}/datasources/{datasource}",
+                            headers=get_api_header(requestor)).content.decode('utf-8')
+    ret = json.loads(response)
+    
+    datasource_qualifiedName = ret['attributes']['qualifiedName']
+    validate_project_access_for_feature(
+        datasource_qualifiedName, requestor, AccessType.READ)
+    return ret
+
+
 @router.get("/projects/{project}/features", name="Get features under my project [Read Access Required]")
 def get_project_features(project: str, keyword: Optional[str] = None, requestor: User = Depends(project_read_access)) -> list:
     response = requests.get(url=f"{registry_url}/projects/{project}/features",
