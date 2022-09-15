@@ -61,12 +61,17 @@ npm run lint:fix
 
 This command will automatically fix all problems that can be fixed, and list the rest problems requires manual fix.
 
-#### Formatting
+#### Formatting with Prettier
 
-If Prettier is installed, vscode will pick up configuration from [.prettierrc](.prettierrc) file and automatically format code on save. To format code for entire code base, simply run:
+Prettier is an opinionated code formatter for Typescript. It removes all original styling and ensures that all outputted code conforms to a consistent style. If Prettier is installed, vscode will pick up configuration from [.prettierrc](.prettierrc) file and automatically format code on save. To format code for entire code base, simply run:
 
 ```
 npm run format
+```
+
+In Feathr UI, `npx prettier` is already registered as a npm task.
+```
+"format": "npx prettier --write src/**"
 ```
 
 #### Formatting automatically on commit
