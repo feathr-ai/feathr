@@ -34,7 +34,7 @@ def get_project_datasources(project: str, requestor: User = Depends(project_read
 
 
 @router.get("/projects/{project}/datasources/{datasource}", name="Get a single data source by datasource Id [Read Access Required]")
-def get_project_datasource(project: str, requestor: User = Depends(project_read_access)) -> list:
+def get_project_datasource(project: str, datasource: str, requestor: User = Depends(project_read_access)) -> list:
     response = requests.get(url=f"{registry_url}/projects/{project}/datasources/{datasource}",
                             headers=get_api_header(requestor)).content.decode('utf-8')
 
