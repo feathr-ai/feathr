@@ -1,14 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  Form,
-  Select,
-  Table,
-  Button,
-  Menu,
-  Dropdown,
-  Tooltip
-} from "antd";
+import { Form, Select, Table, Button, Menu, Dropdown, Tooltip } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { DataSource } from "../models/model";
 import { fetchDataSources, fetchProjects } from "../api";
@@ -36,7 +28,7 @@ const DataSourceList = ({ projectProp, keywordProp }: Props) => {
           >
             {row.displayText}
           </Button>
-        )
+        );
       },
       onCell: () => {
         return {

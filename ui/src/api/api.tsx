@@ -32,12 +32,18 @@ export const fetchDataSources = async (project: string) => {
     });
 };
 
-export const fetchDataSource = async (project: string, dataSourceId: string) => {
+export const fetchDataSource = async (
+  project: string,
+  dataSourceId: string
+) => {
   const axios = await authAxios(msalInstance);
   return axios
-    .get<DataSource>(`${getApiBaseUrl()}/projects/${project}/datasources/${dataSourceId}`, {
-      params: { project: project, datasource: dataSourceId },
-    })
+    .get<DataSource>(
+      `${getApiBaseUrl()}/projects/${project}/datasources/${dataSourceId}`,
+      {
+        params: { project: project, datasource: dataSourceId },
+      }
+    )
     .then((response) => {
       return response.data;
     });
