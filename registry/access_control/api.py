@@ -37,7 +37,8 @@ def get_project_datasources(project: str, requestor: User = Depends(project_read
 def get_project_datasource(project: str, datasource: str, requestor: User = Depends(project_read_access)) -> list:
     response = requests.get(url=f"{registry_url}/projects/{project}/datasources/{datasource}",
                             headers=get_api_header(requestor)).content.decode('utf-8')
-
+    ret = json.loads(response)
+    
     datasource_qualifiedName = ret['attributes']['qualifiedName']
     validate_project_access_for_feature(
         datasource_qualifiedName, requestor, AccessType.READ)
