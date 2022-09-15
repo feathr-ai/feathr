@@ -2,9 +2,12 @@ import base64
 import logging
 import os
 import tempfile
+import copy
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
+from xmlrpc.client import Boolean, boolean
+from feathr.definition.typed_key import TypedKey
 
 from numpy import isin
 from feathr.definition.feature import FeatureBase
@@ -610,6 +613,40 @@ class FeathrClient(object):
         """
         self.materialize_features(settings, execution_configurations, verbose)
 
+    def _get_feature_key(self, feature_name: str):
+        features = []
+        if 'derived_feature_list' in dir(self):
+            features += self.derived_feature_list 
+        if 'anchor_list' in dir(self):
+            for anchor in self.anchor_list:
+                features += anchor.features  
+        for feature in features:
+            if feature.name == feature_name:
+                keys = feature.key
+                return [key.key_column for key in keys] 
+        self.logger.warning(f"Invalid feature name: {feature_name}. Please call FeathrClient.build_features() first in order to materialize the features.")
+        return None
+        
+    def _valid_materialize_keys(self, features: List[str], allow_empty_key=False)->boolean:
+        keys = None
+        for feature in features:
+            new_keys = self._get_feature_key(feature)
+            if new_keys is None:
+                self.logger.error(f"Failed to get feature key for feature: {feature}")
+                return False
+            if len(new_keys) == 1 and new_keys[0] == "NOT_NEEDED" and not allow_empty_key:
+                self.logger.error(f"Empty feature key is not allowed for features: {features}")
+                return False
+            new_keys = sorted(new_keys)
+            if keys is None:
+                keys = copy.deepcopy(new_keys)
+            else:
+                for key, new_key in zip(keys, new_keys):
+                    if key != new_key:
+                        self.logger.error("Inconsistent feature keys.")
+                        return False
+        return True
+    
     def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
         """Materialize feature data
 
@@ -617,6 +654,9 @@ class FeathrClient(object):
             settings: Feature materialization settings
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
         """
+        feature_list = settings.feature_names
+        if len(feature_list) > 0 and not self._valid_materialize_keys(feature_list):
+            raise RuntimeError(f"Invalid materialization feature keys: {feature_list}")
         
         # Collect secrets from sinks
         secrets = []

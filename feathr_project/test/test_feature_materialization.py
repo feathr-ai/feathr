@@ -21,7 +21,7 @@ from test_utils.constants import Constants
 
 def test_feature_materialization_config():
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5,20), step=timedelta(days=1))
-    redisSink = RedisSink(table_name="nycTaxiDemoFeature", aggregation_features=["f_location_avg_fare", "f_location_max_fare"])
+    redisSink = RedisSink(table_name="nycTaxiDemoFeature")
     settings = MaterializationSettings("nycTaxiTable",
                                         sinks=[redisSink],
                                         feature_names=["f_location_avg_fare", "f_location_max_fare"],
