@@ -37,7 +37,7 @@ def exc_to_content(e: Exception) -> dict:
     return content
 
 @app.exception_handler(ConflictError)
-async def http_exception_handler(request, exc: ValueError):
+async def http_exception_handler(_, exc: ConflictError):
     return JSONResponse(
         status_code=409,
         content=exc_to_content(exc),
@@ -45,7 +45,7 @@ async def http_exception_handler(request, exc: ValueError):
 
 
 @app.exception_handler(ValueError)
-async def http_exception_handler(request, exc: ValueError):
+async def http_exception_handler(_, exc: ValueError):
     return JSONResponse(
         status_code=400,
         content=exc_to_content(exc),
@@ -53,14 +53,14 @@ async def http_exception_handler(request, exc: ValueError):
 
 
 @app.exception_handler(KeyError)
-async def validation_exception_handler(request, exc):
+async def http_exception_handler(_, exc: KeyError):
     return JSONResponse(
         status_code=404,
         content=exc_to_content(exc),
     )
 
 @app.exception_handler(IndexError)
-async def validation_exception_handler(request, exc):
+async def http_exception_handler(_, exc: IndexError):
     return JSONResponse(
         status_code=404,
         content=exc_to_content(exc),
