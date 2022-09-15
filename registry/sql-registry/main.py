@@ -51,6 +51,13 @@ async def value_error_handler(_, exc: ValueError):
         content=exc_to_content(exc),
     )
 
+@app.exception_handler(TypeError)
+async def type_error_handler(_, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content=exc_to_content(exc),
+    )
+
 
 @app.exception_handler(KeyError)
 async def key_error_handler(_, exc: KeyError):
