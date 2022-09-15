@@ -31,6 +31,6 @@ body:
     attributes:
       label: Description of proposal (what needs changing)
       description: |
-        Provide a clear description. Why is the proposed documentation better?
+        Please provide a clear description. Why is the proposed documentation better?
     validations:
       required: true

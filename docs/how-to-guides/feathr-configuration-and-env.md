@@ -6,7 +6,7 @@ parent: How-to Guides
 
 # Configuration and environment variables in Feathr
 
-Feathr uses a YAML file and a few environment variables to allow end users to have more flexibility. See the example of the following configurations in [this file](https://github.com/linkedin/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml).
+Feathr uses a YAML file and a few environment variables to allow end users to have more flexibility. See the example of the following configurations in [this file](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml).
 
 In that YAML file, it contains the configurations that are used by Feathr. All the configurations can be overwritten by environment variables with concatenation of `__` for different layers of this config file. For example, `feathr_runtime_location` for databricks can be overwritten by setting this environment variable: `SPARK_CONFIG__DATABRICKS__FEATHR_RUNTIME_LOCATION`. For example, you can set it in python:
 
@@ -135,8 +135,8 @@ Delimiter indicates that how the project name, feature names etc. are delimited.
 
 Feathr has native integrations with Azure Key Vault to make it more secure to access resources. However, Azure Key Vault doesn't support the secret name to have underscore `_` in the secret name. Feathr will automatically convert underscore `_` to dash `-`. For example, Feathr will look for `ONLINE-STORE--REDIS--HOST` in Azure Key Vault if the actual environment variable is `ONLINE_STORE__REDIS__HOST`.
 
-Please refer to [akv_client.py](https://github.com/linkedin/feathr/blob/main/feathr_project/feathr/secrets/akv_client.py) to understand the secret name convert logic.
+Please refer to [akv_client.py](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathr/secrets/akv_client.py) to understand the secret name convert logic.
 
 Azure Key Vault is not case sensitive, so `online_store__redis__host` and `ONLINE_STORE__REDIS__HOST` will result in the same request to Azure Key Vault and yield the same result.
 
-You can automatically store resource credentials in provision stage, just like [azure_resource_provision.json](https://github.com/linkedin/feathr/blob/main/docs/how-to-guides/azure_resource_provision.json) do for `REDIS-PASSWORD`.
+You can automatically store resource credentials in provision stage, just like [azure_resource_provision.json](https://github.com/feathr-ai/feathr/blob/main/docs/how-to-guides/azure_resource_provision.json) do for `REDIS-PASSWORD`.
