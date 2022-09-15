@@ -33,6 +33,9 @@ app.add_middleware(CORSMiddleware,
 def get_projects() -> list[str]:
     return registry.get_projects()
 
+@router.get("/projects-ids")
+def get_projects_ids() -> dict:
+    return registry.get_projects_ids()
 
 @router.get("/projects/{project}")
 def get_projects(project: str) -> dict:

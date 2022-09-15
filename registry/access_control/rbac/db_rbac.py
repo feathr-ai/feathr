@@ -1,8 +1,10 @@
+import json
+import requests
 from fastapi import HTTPException, status
 from typing import Any
 from rbac import config
 from rbac.database import connect
-from rbac.models import AccessType, UserRole, RoleType, SUPER_ADMIN_SCOPE
+from rbac.models import AccessType, UserRole, RoleType, SUPER_ADMIN_SCOPE, _to_uuid
 from rbac.interface import RBAC
 import os
 import logging
@@ -19,6 +21,7 @@ class DbRBAC(RBAC):
             os.environ["RBAC_CONNECTION_STR"] = config.RBAC_CONNECTION_STR
         self.conn = connect()
         self.get_userroles()
+        self.get_projects_ids()
 
     def get_userroles(self):
         # Cache is not supported in cluster, make sure every operation read from database.
@@ -107,7 +110,7 @@ class DbRBAC(RBAC):
         query = fr"""insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time)
             values ('%s','%s','%s','%s' ,'%s', getutcdate())"""
         self.conn.update(query % (project_name, user_name,
-                         role_name, by, create_reason))
+                         role_name, by, create_reason.replace("'", "''")))
         logging.info(
             f"Userrole added with query: {query%(project_name, user_name, role_name, by, create_reason)}")
         self.get_userroles()
@@ -122,7 +125,7 @@ class DbRBAC(RBAC):
             [delete_time] = getutcdate()
             WHERE [user_name] = '%s' and [project_name] = '%s' and [role_name] = '%s'
             and [delete_time] is null"""
-        self.conn.update(query % (by, delete_reason,
+        self.conn.update(query % (by, delete_reason.replace("'", "''"),
                          user_name, project_name, role_name))
         logging.info(
             f"Userrole removed with query: {query%(by, delete_reason, user_name, project_name, role_name)}")
@@ -148,8 +151,8 @@ class DbRBAC(RBAC):
             else:
                 # initialize project admin if project not exist: 
                 self.init_project_admin(creator_name, project_name)
+          
             
-
     def init_project_admin(self, creator_name: str, project_name: str):
         """initialize the creator as project admin when a new project is created
         """
@@ -160,3 +163,8 @@ class DbRBAC(RBAC):
         self.conn.update(query % (project_name, creator_name, RoleType.ADMIN.value, create_by, create_reason))
         logging.info(f"Userrole initialized with query: {query%(project_name, creator_name, RoleType.ADMIN.value, create_by, create_reason)}")
         return self.get_userroles()
+
+    def get_projects_ids(self):
+        """cache all project ids from registry api"""
+        response = requests.get(url=f"{config.RBAC_REGISTRY_URL}/projects-ids").content.decode('utf-8')
+        self.projects_ids =  json.loads(response)
