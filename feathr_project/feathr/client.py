@@ -6,8 +6,6 @@ import copy
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Union
-from xmlrpc.client import Boolean, boolean
-from feathr.definition.typed_key import TypedKey
 
 from numpy import isin
 from feathr.definition.feature import FeatureBase
@@ -627,7 +625,7 @@ class FeathrClient(object):
         self.logger.warning(f"Invalid feature name: {feature_name}. Please call FeathrClient.build_features() first in order to materialize the features.")
         return None
         
-    def _valid_materialize_keys(self, features: List[str], allow_empty_key=False)->boolean:
+    def _valid_materialize_keys(self, features: List[str], allow_empty_key=False):
         keys = None
         for feature in features:
             new_keys = self._get_feature_key(feature)
