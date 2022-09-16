@@ -5,7 +5,7 @@ import math
 
 
 class BackfillTime:
-    """Time range to materialize/backfill feature data. Please refer to https://linkedin.github.io/feathr/concepts/materializing-features.html#feature-backfill for a more detailed explanation.
+    """Time range to materialize/backfill feature data. Please refer to https://feathr-ai.github.io/feathr/concepts/materializing-features.html#feature-backfill for a more detailed explanation.
 
     Attributes:
         start: start time of the backfill, inclusive.
