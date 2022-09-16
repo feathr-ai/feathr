@@ -62,6 +62,17 @@ def get_project_datasources(project: str) -> list:
     return list([to_camel(e.to_dict()) for e in sources])
 
 
+@router.get("/projects/{project}/datasources/{datasource}",tags=["Project"])
+def get_datasource(project: str, datasource: str) -> dict:
+    p = registry.get_entity(project,True)
+    for s in p.attributes.sources:
+        if str(s.id) == datasource:
+            return s
+    # If datasource is not found, raise 404 error
+    raise HTTPException(
+        status_code=404, detail=f"Data Source {datasource} not found")
+
+
 @router.get("/projects/{project}/features",tags=["Project"])
 def get_project_features(project: str, keyword: Optional[str] = None) -> list:
     atlasEntities = registry.get_project_features(project, keywords=keyword)

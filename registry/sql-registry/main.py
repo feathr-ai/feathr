@@ -47,6 +47,17 @@ def get_project_datasources(project: str) -> list:
     return list([e.to_dict() for e in sources])
 
 
+@router.get("/projects/{project}/datasources/{datasource}")
+def get_datasource(project: str, datasource: str) -> dict:
+    p = registry.get_entity(project)
+    for s in p.attributes.sources:
+        if str(s.id) == datasource:
+            return s
+    # If datasource is not found, raise 404 error
+    raise HTTPException(
+        status_code=404, detail=f"Data Source {datasource} not found")
+
+
 @router.get("/projects/{project}/features")
 def get_project_features(project: str, keyword: Optional[str] = None, page: Optional[int] = None, limit: Optional[int] = None) -> list:
     if keyword:
@@ -54,7 +65,7 @@ def get_project_features(project: str, keyword: Optional[str] = None, page: Opti
         size = None
         if page is not None and limit is not None:
             start = (page - 1) * limit
-            size = limit 
+            size = limit
         efs = registry.search_entity(
             keyword, [EntityType.AnchorFeature, EntityType.DerivedFeature], project=project, start=start, size=size)
         feature_ids = [ef.id for ef in efs]
