@@ -1401,9 +1401,9 @@ derivations: {
         The assumption here is , a feture could have multiple keys, and features inside an anchor should share the same set of keys. 
         So we will take any one of the feature, extract its keys , dedup them by full name, and use them to generate the key list.
         '''
-        first_keys = feature_entities[0]["attributes"]["key"]
+        first_feature_keys = feature_entities[0]["attributes"]["key"]
         deduped_keys = dict()
-        for key in first_keys:
+        for key in first_feature_keys:
             if key['fullName'] not in deduped_keys:
                 deduped_keys.setdefault(key['fullName'],key)
         key_list = [
