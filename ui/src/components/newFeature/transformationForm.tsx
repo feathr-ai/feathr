@@ -158,7 +158,7 @@ const TransformationForm = ({ onTransformationChange }: Props) => {
               style={{ float: "inline-start" }}
               onClick={onClickNext}
             >
-              Save + Next: Summary {">"}
+              Save + Next: Review {">"}
             </Button>
           </Form.Item>
           <BackTop style={{ marginBottom: "5%", marginRight: "20px" }}>

@@ -36,7 +36,6 @@ const FeatureTypeForm = ({ onFeatureTypeChange, featureTypeProp }: Props) => {
           <Form.Item
             name="type"
             label="Type"
-            style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
             initialValue={featureTypeProp?.type}
           >
@@ -45,7 +44,6 @@ const FeatureTypeForm = ({ onFeatureTypeChange, featureTypeProp }: Props) => {
           <Form.Item
             name="tensorCategory"
             label="Tensor Category"
-            style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
             initialValue={featureTypeProp?.tensorCategory}
           >
@@ -54,7 +52,6 @@ const FeatureTypeForm = ({ onFeatureTypeChange, featureTypeProp }: Props) => {
           <Form.Item
             name="dimensionType"
             label="Dimension Type"
-            style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
             initialValue={featureTypeProp?.dimensionType}
           >
@@ -63,7 +60,6 @@ const FeatureTypeForm = ({ onFeatureTypeChange, featureTypeProp }: Props) => {
           <Form.Item
             name="valType"
             label="Value Type"
-            style={{ marginLeft: "5%" }}
             rules={[{ required: true }]}
             initialValue={featureTypeProp?.valType}
           >

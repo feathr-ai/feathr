@@ -1,6 +1,7 @@
 import React, { CSSProperties, useState } from "react";
 import { UpCircleOutlined } from "@ant-design/icons";
 import { BackTop, Button, Form, Input, Select, Space, Typography } from "antd";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { ValueType } from "../../models/model";
 
 type Props = {
@@ -30,50 +31,79 @@ const FeatureKeyForm = ({ onFeatureKeyChange, featureKeyProp }: Props) => {
         initialValues={{ remember: true }}
       >
         <Space direction="vertical" size="large" style={styling}>
-          {/* Feature keys; TODO: support more than one feature keys */}
           <Typography.Title level={4}>Feature Keys </Typography.Title>
-          <Form.Item
-            name="keyColumn"
-            label="Key Column"
-            style={{ marginLeft: "5%" }}
-            rules={[{ required: true }]}
-            initialValue={featureKeyProp?.keyColumn}
-          >
-            <Input name="keyColumn" />
-          </Form.Item>
-          <Form.Item
-            name="keyColumnType"
-            label="Key Column Type"
-            style={{ marginLeft: "5%" }}
-            rules={[{ required: true }]}
-            initialValue={featureKeyProp?.keyColumnType}
-          >
-            <Select options={valueOptions}></Select>
-          </Form.Item>
-          <Form.Item
-            name="description"
-            label="Description"
-            style={{ marginLeft: "5%" }}
-            initialValue={featureKeyProp?.description}
-          >
-            <Input name="description" />
-          </Form.Item>
-          <Form.Item
-            name="keyFullName"
-            label="Key Full Name"
-            style={{ marginLeft: "5%" }}
-            initialValue={featureKeyProp?.keyFullName}
-          >
-            <Input name="keyFullName" />
-          </Form.Item>
-          <Form.Item
-            name="keyColumnAlias"
-            label="Key Column Alias"
-            style={{ marginLeft: "5%" }}
-            initialValue={featureKeyProp?.keyColumnAlias}
-          >
-            <Input name="keyColumnAlias" />
-          </Form.Item>
+          <Form.List name="keys" initialValue={featureKeyProp}>
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map((field) => (
+                  <div key={field.name}>
+                    <Form.Item
+                      {...field}
+                      label="Key Column"
+                      name={[field.name, "keyColumn"]}
+                      rules={[
+                        { required: true, message: "Missing key column" },
+                      ]}
+                    >
+                      <Input name="keyColumn" style={{ marginLeft: "1%" }} />
+                    </Form.Item>
+                    <Form.Item
+                      {...field}
+                      label="Key Column Type"
+                      name={[field.name, "keyColumnType"]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Missing key column type",
+                        },
+                      ]}
+                    >
+                      <Select options={valueOptions}></Select>
+                    </Form.Item>
+                    <Form.Item
+                      {...field}
+                      label="Key Full Name"
+                      name={[field.name, "keyFullName"]}
+                    >
+                      <Input name="keyFullName" />
+                    </Form.Item>
+                    <Form.Item
+                      {...field}
+                      label="Key Column Alias"
+                      name={[field.name, "keyColumnAlias"]}
+                    >
+                      <Input name="keyColumnAlias" />
+                    </Form.Item>
+                    <Form.Item
+                      {...field}
+                      label="Description"
+                      name={[field.name, "description"]}
+                    >
+                      <Input name="description" />
+                    </Form.Item>
+
+                    <MinusCircleOutlined
+                      onClick={() => {
+                        remove(field.name);
+                      }}
+                    />
+                  </div>
+                ))}
+
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    block
+                    icon={<PlusOutlined />}
+                    style={{ marginLeft: "5%" }}
+                  >
+                    Add keys
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
           <Form.Item wrapperCol={{ offset: 11 }}>
             <Button
               type="primary"

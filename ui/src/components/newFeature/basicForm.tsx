@@ -1,6 +1,20 @@
 import React, { CSSProperties } from "react";
-import { UpCircleOutlined } from "@ant-design/icons";
-import { BackTop, Button, Form, Input, Space, Typography } from "antd";
+import {
+  UpCircleOutlined,
+  MinusCircleOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
+import {
+  BackTop,
+  Button,
+  Form,
+  Input,
+  Space,
+  Typography,
+  Select,
+  Divider,
+} from "antd";
+import { ValueType } from "../../models/model";
 
 type Props = {
   onBasicChange: any;
@@ -9,6 +23,7 @@ type Props = {
 
 const BasicForm = ({ onBasicChange, basicProp }: Props) => {
   const [form] = Form.useForm();
+  const valueOptions = ValueType.map((p) => ({ value: p, label: p }));
 
   const styling: CSSProperties = {
     width: "85%",
@@ -30,7 +45,7 @@ const BasicForm = ({ onBasicChange, basicProp }: Props) => {
         layout="horizontal"
         initialValues={{ remember: true }}
       >
-        <Space direction="vertical" size="large" style={styling}>
+        <Space direction="vertical" style={styling}>
           <Form.Item
             name="name"
             label="Name"
@@ -50,32 +65,51 @@ const BasicForm = ({ onBasicChange, basicProp }: Props) => {
           >
             <Input name="qualifiedName" />
           </Form.Item>
+          <Typography.Title level={4}>Feature Tags </Typography.Title>
+          <Form.List name="tags" initialValue={basicProp.tags}>
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map((field, index) => (
+                  <Space
+                    key={field.key}
+                    align="baseline"
+                    direction="horizontal"
+                  >
+                    <Form.Item
+                      {...field}
+                      label="Name"
+                      name={[field.name, "name"]}
+                      rules={[{ required: true, message: "Missing tag name" }]}
+                    >
+                      <Input name="tagName" style={{ marginLeft: "10%" }} />
+                    </Form.Item>
+                    <Form.Item
+                      {...field}
+                      label="Value"
+                      name={[field.name, "value"]}
+                      rules={[{ required: true, message: "Missing tag value" }]}
+                    >
+                      <Input name="tagValue" style={{ marginLeft: "10%" }} />
+                    </Form.Item>
 
-          {/*TODO: support more than one tags */}
-          <Typography.Title level={4}> Tags </Typography.Title>
-          <Form.Item style={{ marginLeft: "5%" }}>
-            <Form.Item
-              name="tagName"
-              label="name"
-              style={{ display: "inline-block", width: "40%" }}
-              initialValue={basicProp?.tagName}
-            >
-              <Input name="tagName" />
-            </Form.Item>
-            <Form.Item
-              name="tagValue"
-              label="value"
-              style={{
-                display: "inline-block",
-                width: "50%",
-                paddingLeft: "10px",
-                paddingRight: "0px",
-              }}
-              initialValue={basicProp?.tagValue}
-            >
-              <Input name="tagValue" />
-            </Form.Item>
-          </Form.Item>
+                    <MinusCircleOutlined onClick={() => remove(field.name)} />
+                  </Space>
+                ))}
+
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    block
+                    icon={<PlusOutlined />}
+                    style={{ marginLeft: "5%" }}
+                  >
+                    Add tags
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
 
           <Form.Item wrapperCol={{ offset: 11 }}>
             <Button

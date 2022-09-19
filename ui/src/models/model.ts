@@ -40,7 +40,7 @@ export interface FeatureAttributes {
   key: FeatureKey[];
   name: string;
   qualifiedName: string;
-  tags: string[];
+  tags: {}[];
   transformation: FeatureTransformation;
   type: FeatureType;
 }
@@ -64,11 +64,11 @@ export interface FeatureTransformation {
 }
 
 export interface FeatureKey {
-  description: string;
-  fullName: string;
-  keyColumn?: string;
+  description?: string;
+  fullName?: string;
+  keyColumn: string;
   keyColumnAlias?: string;
-  keyColumnType?: string;
+  keyColumnType: string;
 }
 
 export interface InputFeature {

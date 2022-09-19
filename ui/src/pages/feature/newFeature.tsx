@@ -1,8 +1,5 @@
 import React, { useState } from "react";
-import { Card, Typography, Menu, Layout, Button } from "antd";
-import FeatureForm from "../../components/featureForm";
-import { Link, BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
-import MenuItem from "antd/lib/menu/MenuItem";
+import { Card, Typography, Menu, Layout, Button, Alert } from "antd";
 import BasicForm from "../../components/newFeature/basicForm";
 import TransformationForm from "../../components/newFeature/transformationForm";
 import DependenciesForm from "../../components/newFeature/dependenciesForm";
@@ -29,6 +26,9 @@ const NewFeature = () => {
   const [transformation, setTransformation] = useState<any>();
   const [featureKeys, setFeatureKeys] = useState<FeatureKey[]>([]);
   const [projectId, setProjectid] = useState<string>("");
+  const [newFeature, setNewFeature] = useState<any>();
+  const [alerts, setAlerts] = useState<string>("");
+  const [result, setResult] = useState<any>();
 
   const onMenuChange = (e: any) => {
     setMenu(e.key);
@@ -47,7 +47,7 @@ const NewFeature = () => {
   };
 
   const onFeatureKeyChange = (e: any) => {
-    setFeatureKeys([e]);
+    setFeatureKeys(e.keys);
     setMenu("featureType");
   };
 
@@ -58,21 +58,54 @@ const NewFeature = () => {
 
   const onTransformationChange = async (e: any) => {
     setTransformation(e);
-    //TODO: create a summary page
+    onReview();
+    setMenu("review + create");
   };
 
-  const onCreate = async () => {
-    //TODO: create a page/message box to show success or failure
-    if (!featureType || !featureKeys || !transformation) {
-      console.error("invalid feature definition");
+  const validateOnReview = () => {
+    var alerts = "";
+    if (!basic) {
+      alerts += "basic; \n";
+    } else {
+      if (!basic.name) alerts += "basic.name;\n";
+      if (!basic.qualifiedName) alerts += "basic.qualifiedName;\n";
+    }
+    if (!dependencies) {
+      alerts += "dependencies; \n";
+    } else {
+      if (!dependencies.project) alerts += "dependencies.project; \n";
+      if (!dependencies.featureType) alerts += "dependencies.featureType; \n";
+      if (type === "anchor" && !dependencies.anchor)
+        alerts += "dependencies.anchor; \n";
+    }
+    if (!featureType) {
+      alerts += "featureType;\n";
+    } else {
+      if (!featureType.tensorCategory) alerts += "featureType.tensorCategory;";
+      if (!featureType.type) alerts += "featureType.type; \n";
+      if (!featureType.valType) alerts += "featureType.calType; \n";
+    }
+    if (!transformation) alerts += "transformation; \n";
+    return alerts;
+  };
+
+  const onReview = () => {
+    const alerts = validateOnReview();
+    if (alerts !== "") {
+      setAlerts(
+        "These items are required.: \n" +
+          alerts +
+          "Please fill them before submitting"
+      );
+      setNewFeature(undefined);
       return;
     }
 
-    const featureTypeTemp = featureType;
-    if (featureType.dimensionType)
-      featureTypeTemp.dimensionType = featureType.dimensionType
-        .toString()
-        .split(",");
+    setAlerts("");
+    if (!featureType || !transformation) {
+      console.error("invalid feature definition");
+      return;
+    }
 
     if (type === "derived") {
       const newFeature = {
@@ -89,7 +122,7 @@ const NewFeature = () => {
           .toString()
           .split(","),
       };
-      const result = await createDerivedFeature(projectId, newFeature);
+      setNewFeature(newFeature);
     } else if (type === "anchor") {
       const newFeature = {
         name: basic.name,
@@ -99,11 +132,23 @@ const NewFeature = () => {
         key: featureKeys,
         tags: basic.tags ?? {},
       };
+      setNewFeature(newFeature);
+    }
+  };
+
+  const onSubmit = async () => {
+    if (type === "derived") {
+      const result = await createDerivedFeature(projectId, newFeature);
+      setResult(result);
+      console.log(result);
+    } else {
       const anchorId = dependencies.anchor;
       const result = await createAnchorFeature(projectId, anchorId, newFeature);
+      setResult(result);
+      console.log(result);
     }
-    //TODO: some validation
   };
+
   return (
     <div className="page">
       <Title level={3}>Create Feature</Title>
@@ -158,7 +203,10 @@ const NewFeature = () => {
           htmlType="button"
           title="submit and go back to list"
           style={{ float: "inline-start" }}
-          onClick={onCreate}
+          onClick={() => {
+            onReview();
+            setMenu("review + create");
+          }}
         >
           Review + create
         </Button>
@@ -170,7 +218,7 @@ const NewFeature = () => {
       {menu === "featureKey" && (
         <FeatureKeyForm
           onFeatureKeyChange={onFeatureKeyChange}
-          featureKeyProp={featureKeys[0] ?? {}}
+          featureKeyProp={featureKeys ?? {}}
         />
       )}
       {menu === "featureType" && (
@@ -188,6 +236,40 @@ const NewFeature = () => {
       )}
       {menu === "transformation" && (
         <TransformationForm onTransformationChange={onTransformationChange} />
+      )}
+      {/* TODO: apply styles for the summary */}
+      {menu === "review + create" && (
+        <div>
+          {alerts !== "" && (
+            <Alert
+              showIcon
+              message={"Verification Failed."}
+              description={alerts}
+              type="error"
+            />
+          )}
+          {newFeature && (
+            <div>
+              <Alert
+                message={"Verification Succeed."}
+                description={JSON.stringify(newFeature)}
+                type="success"
+              />
+
+              <Button
+                type="primary"
+                htmlType="button"
+                title="submit to create this feature"
+                style={{ float: "inline-start", marginTop: "5%" }}
+                onClick={() => {
+                  onSubmit();
+                }}
+              >
+                Submit
+              </Button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
