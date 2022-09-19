@@ -59,9 +59,9 @@ class DbRBAC(RBAC):
             where delete_reason is null and user_name ='%s'"""
         if role_name:
             query += fr"and role_name = '%s'"
-            rows = self.conn.query(query % (user_name, role_name))
+            rows = self.conn.query(query % (user_name.lower(), role_name.lower()))
         else:
-            rows = self.conn.query(query % (user_name))
+            rows = self.conn.query(query % (user_name.lower()))
         ret = []
         for row in rows:
             ret.append(UserRole(**row))
@@ -75,9 +75,9 @@ class DbRBAC(RBAC):
             where delete_reason is null and project_name ='%s'"""
         if role_name:
             query += fr"and role_name = '%s'"
-            rows = self.conn.query(query % (project_name, role_name))
+            rows = self.conn.query(query % (project_name.lower(), role_name.lower()))
         else:
-            rows = self.conn.query(query % (project_name))
+            rows = self.conn.query(query % (project_name.lower()))
         ret = []
         for row in rows:
             ret.append(UserRole(**row))
@@ -109,8 +109,8 @@ class DbRBAC(RBAC):
         # insert new record
         query = fr"""insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time)
             values ('%s','%s','%s','%s' ,'%s', getutcdate())"""
-        self.conn.update(query % (project_name, user_name,
-                         role_name, by, create_reason.replace("'", "''")))
+        self.conn.update(query % (project_name.lower(), user_name.lower(),
+                         role_name.lower(), by, create_reason.replace("'", "''")))
         logging.info(
             f"Userrole added with query: {query%(project_name, user_name, role_name, by, create_reason)}")
         self.get_userroles()
@@ -126,7 +126,7 @@ class DbRBAC(RBAC):
             WHERE [user_name] = '%s' and [project_name] = '%s' and [role_name] = '%s'
             and [delete_time] is null"""
         self.conn.update(query % (by, delete_reason.replace("'", "''"),
-                         user_name, project_name, role_name))
+                         user_name.lower(), project_name.lower(), role_name.lower()))
         logging.info(
             f"Userrole removed with query: {query%(by, delete_reason, user_name, project_name, role_name)}")
         self.get_userroles()
@@ -144,7 +144,7 @@ class DbRBAC(RBAC):
             query = fr"""select project_name, user_name, role_name, create_by, create_reason, create_time, delete_reason, delete_time
                 from userroles
                 where delete_reason is null and project_name ='%s'"""
-            rows = self.conn.query(query%(project_name))
+            rows = self.conn.query(query%(project_name.lower()))
             if len(rows) > 0:
                 logging.warning(f"{project_name} already exist, please pick another name.")
                 return
@@ -160,7 +160,7 @@ class DbRBAC(RBAC):
         create_reason = "creator of project, get admin by default."
         query = fr"""insert into userroles (project_name, user_name, role_name, create_by, create_reason, create_time)
             values ('%s','%s','%s','%s','%s', getutcdate())"""
-        self.conn.update(query % (project_name, creator_name, RoleType.ADMIN.value, create_by, create_reason))
+        self.conn.update(query % (project_name.lower(), creator_name.lower(), RoleType.ADMIN.value, create_by, create_reason))
         logging.info(f"Userrole initialized with query: {query%(project_name, creator_name, RoleType.ADMIN.value, create_by, create_reason)}")
         return self.get_userroles()
 
