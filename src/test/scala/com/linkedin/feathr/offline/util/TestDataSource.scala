@@ -1,9 +1,9 @@
 package com.linkedin.feathr.offline.util
 
 import java.time._
-
 import com.linkedin.feathr.offline.TestFeathr
 import com.linkedin.feathr.offline.TestUtils.createIntervalFromLocalTime
+import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
@@ -81,5 +81,12 @@ class TestDataSource extends TestFeathr {
     assertEquals(schema.getFields.size(), 2)
     assertEquals(schema.getFields.get(0).name(), "obsCol1")
     assertEquals(schema.getFields.get(1).name(), "f1NumericType")
+  }
+
+  @Test(description = "Test resolve latest")
+  def testResolveLatest(): Unit = {
+      val path = SimplePath("src/test/resources/decayTest/daily/#LATEST/#LATEST/#LATEST")
+      assertEquals(new DataSource(path, SourceFormatType.FIXED_PATH, None, None).path,
+        "src/test/resources/decayTest/daily/2019/05/20")
   }
 }
