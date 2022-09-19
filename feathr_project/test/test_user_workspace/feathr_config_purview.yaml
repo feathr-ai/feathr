@@ -104,7 +104,7 @@ online_store:
 
 feature_registry:
   # The API endpoint of the registry service
-    api_endpoint: "https://feathr-sql-registry.azurewebsites.net/api/v1"
+    api_endpoint: "https://feathr-purview-registry.azurewebsites.net/api/v1"
 
 monitoring:
   database:
