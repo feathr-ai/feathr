@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.source.accessor
 import com.linkedin.feathr.offline.TestFeathr
 import com.linkedin.feathr.offline.TestUtils.createDailyInterval
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
-import org.testng.Assert.assertTrue
+import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.{BeforeClass, Test}
 
 class TestDataSourceAccessor extends TestFeathr {
@@ -61,5 +61,15 @@ class TestDataSourceAccessor extends TestFeathr {
     val source = DataSource("anchor1-source.csv", SourceFormatType.FIXED_PATH)
     val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=sourceInterval, expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
     assertTrue(accessor.isInstanceOf[NonTimeBasedDataSourceAccessor])
+  }
+
+  @Test(description = "test loading dataframe with BatchDataLoader having #LATEST in its path")
+  def testBatchDataLoaderWithLatestPath() : Unit = {
+    val path = "src/test/resources/avro/#LATEST/#LATEST/#LATEST"
+    val source = DataSource(path, SourceFormatType.FIXED_PATH)
+    val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=sourceInterval,
+      expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
+    assertTrue(accessor.isInstanceOf[NonTimeBasedDataSourceAccessor])
+    assertEquals(accessor.get().count(), 10L)
   }
 }
