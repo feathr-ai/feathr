@@ -1,8 +1,9 @@
-from typing import Any
+from typing import Any, Union
+from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from rbac.db_rbac import DbRBAC
 
-from rbac.models import AccessType, User
+from rbac.models import AccessType, User, UserAccess,_to_uuid
 from rbac.auth import authorize
 
 """
@@ -22,24 +23,25 @@ def get_user(user: User = Depends(authorize)) -> User:
     return user
 
 
-def project_read_access(project: str, user: User = Depends(authorize)) -> User:
+def project_read_access(project: str, user: User = Depends(authorize)) -> UserAccess:
     return _project_access(project, user, AccessType.READ)
 
 
-def project_write_access(project: str, user: User = Depends(authorize)) -> User:
+def project_write_access(project: str, user: User = Depends(authorize)) -> UserAccess:
     return _project_access(project, user, AccessType.WRITE)
 
 
-def project_manage_access(project: str, user: User = Depends(authorize)) -> User:
+def project_manage_access(project: str, user: User = Depends(authorize)) -> UserAccess:
     return _project_access(project, user, AccessType.MANAGE)
 
 
-def _project_access(project: str, user: User, access: str):
+def _project_access(project: str, user: User, access: str) -> UserAccess:
+    project = _get_project_name(project)
     if rbac.validate_project_access_users(project, user.username, access):
-        return user
+        return UserAccess(user.username, project)
     else:
         raise ForbiddenAccess(
-            f"{access} privileges for project {project} required for user {user.username}")
+            f"{access} access for project {project} is required for user {user.username}")
 
 
 def global_admin_access(user: User = Depends(authorize)):
@@ -48,16 +50,29 @@ def global_admin_access(user: User = Depends(authorize)):
     else:
         raise ForbiddenAccess('Admin privileges required')
 
-def validate_project_access_for_feature(feature:str, user:str, access:str):
+def validate_project_access_for_feature(feature:str, user:User, access:str):
     project = _get_project_from_feature(feature)
     _project_access(project, user, access)
-
 
 def _get_project_from_feature(feature: str):
     feature_delimiter = "__"
     return feature.split(feature_delimiter)[0]
 
-def get_api_header(requestor: User):
+def get_api_header(username: str):
     return {
-        "x-registry-requestor": requestor.username
+        "x-registry-requestor": username
     }
+
+def _get_project_name(id_or_name: Union[str, UUID]):
+    try:
+        _to_uuid(id_or_name)
+        if id_or_name not in rbac.projects_ids:
+            # refresh project id map if id not found
+            rbac.get_projects_ids()
+        return rbac.projects_ids[id_or_name]
+    except KeyError:
+        raise ForbiddenAccess(f"Project Id {id_or_name} not found in Registry")
+    except ValueError:
+        pass
+    # It is a name
+    return id_or_name

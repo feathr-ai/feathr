@@ -25,6 +25,14 @@ class DbRegistry(Registry):
         ret = self.conn.query(
             f"select qualified_name from entities where entity_type=%s", str(EntityType.Project))
         return list([r["qualified_name"] for r in ret])
+    
+    def get_projects_ids(self) -> dict:
+        projects = {}
+        ret = self.conn.query(
+            f"select entity_id, qualified_name from entities where entity_type=%s", str(EntityType.Project))
+        for r in ret:
+            projects[r['entity_id']] = r['qualified_name']
+        return projects
 
     def get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
         return self._fill_entity(self._get_entity(id_or_name))
