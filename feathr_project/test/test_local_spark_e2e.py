@@ -256,7 +256,7 @@ def _feature_gen_test(client:FeathrClient = None):
     if not client:
         client = _local_client_setup()
     batch_source = HdfsSource(name="nycTaxiBatchSource",
-                              path="./green_tripdata_2020-04_short.csv",
+                              path="./green_tripdata_2020-04_with_index.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
                               timestamp_format="yyyy-MM-dd HH:mm:ss")
 

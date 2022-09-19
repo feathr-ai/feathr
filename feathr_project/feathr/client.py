@@ -160,7 +160,10 @@ class FeathrClient(object):
             self._FEATHR_JOB_JAR_PATH = \
                 self.envutils.get_environment_variable_with_default(
                     'spark_config', 'local', 'feathr_runtime_location')
-            self.feathr_spark_launcher = _FeathrDLocalSparkJobLauncher(self.envutils.get_environment_variable_with_default('spark_config', 'local', 'workspace'))
+            self.feathr_spark_launcher = _FeathrDLocalSparkJobLauncher(
+                workspace_path = self.envutils.get_environment_variable_with_default('spark_config', 'local', 'workspace'),
+                master = self.envutils.get_environment_variable_with_default('spark_config', 'local', 'master')
+                )
 
         self._construct_redis_client()
 
