@@ -10,6 +10,7 @@ import Features from "./pages/feature/features";
 import NewFeature from "./pages/feature/newFeature";
 import FeatureDetails from "./pages/feature/featureDetails";
 import DataSources from "./pages/dataSource/dataSources";
+import DataSourceDetails from "./pages/dataSource/dataSourceDetails";
 import Jobs from "./pages/jobs/jobs";
 import Monitoring from "./pages/monitoring/monitoring";
 import LineageGraph from "./pages/feature/lineageGraph";
@@ -43,6 +44,10 @@ const App = () => {
                   <Route
                     path="/projects/:project/features/:featureId"
                     element={<FeatureDetails />}
+                  />
+                  <Route
+                    path="/projects/:project/dataSources/:dataSourceId"
+                    element={<DataSourceDetails />}
                   />
                   <Route
                     path="/projects/:project/lineage"

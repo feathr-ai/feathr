@@ -62,6 +62,51 @@ def test_feathr_register_features_e2e():
                                 output_path=output_path)
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
+def test_feathr_register_features_purview_e2e():
+    """
+    This test will register features, get all the registered features, then query a set of already registered features.
+    """
+
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client: FeathrClient = registry_test_setup(os.path.join(test_workspace_dir, "feathr_config_purview.yaml"))
+    
+    # set output folder based on different runtime
+    now = datetime.now()
+    if client.spark_runtime == 'databricks':
+        output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".parquet"])
+    else:
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".parquet"])
+
+    
+    client.register_features()
+    # Allow purview to process a bit
+    time.sleep(5)
+    # in CI test, the project name is set by the CI pipeline so we read it here
+    all_features = client.list_registered_features(project_name=client.project_name)
+    all_feature_names = [x['name'] for x in all_features]
+    
+    assert 'f_is_long_trip_distance' in all_feature_names # test regular ones
+    assert 'f_trip_time_rounded' in all_feature_names # make sure derived features are there
+    assert 'f_location_avg_fare' in all_feature_names # make sure aggregated features are there
+    assert 'f_trip_time_rounded_plus' in all_feature_names # make sure derived features are there 
+    assert 'f_trip_time_distance' in all_feature_names # make sure derived features are there  
+
+    # Sync workspace from registry, will get all conf files back
+    client.get_features_from_registry(client.project_name)
+
+    feature_query = FeatureQuery(
+        feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance"], 
+        key=TypedKey(key_column="DOLocationID",key_column_type=ValueType.INT32))
+    settings = ObservationSettings(
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss")
+    client.get_offline_features(observation_settings=settings,
+                                feature_query=feature_query,
+                                output_path=output_path)
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+    
 def test_feathr_register_features_partially():
     """
     This test will register full set of features into one project, then register another project in two partial registrations.
@@ -182,4 +227,3 @@ def test_feathr_get_features_from_registry():
         assert len(total_conf_files) == 3
 
 
-    

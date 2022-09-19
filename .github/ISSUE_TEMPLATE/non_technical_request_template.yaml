@@ -1,6 +1,6 @@
 name: Non-technical Request
 description: Use this template for non-technical requests
-labels: ['enhancement', 'non-technical']
+labels: ['non-technical']
 title: '[NT]'
 
 body:
@@ -25,6 +25,6 @@ body:
     attributes:
       label: Non-technical Request Proposal
       description: |
-        Provide a clear high-level description of the request, like documentation improvements etc
+        Please provide a clear description of the request
     validations:
       required: true

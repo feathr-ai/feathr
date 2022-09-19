@@ -25,7 +25,7 @@ const Home = () => {
           feature lineages and manage access controls.
           <a
             target="_blank"
-            href="https://linkedin.github.io/feathr/concepts/feature-registry.html#accessing-feathr-ui"
+            href="https://feathr-ai.github.io/feathr/concepts/feature-registry.html#accessing-feathr-ui"
             rel="noreferrer"
           >
             {" "}
@@ -228,7 +228,7 @@ const Home = () => {
               <a
                 target="_blank"
                 rel="noreferrer"
-                href="https://linkedin.github.io/feathr/concepts/feathr-concepts-for-beginners.html"
+                href="https://feathr-ai.github.io/feathr/concepts/feathr-concepts-for-beginners.html"
               >
                 {" "}
                 Feathr Github Homepage
