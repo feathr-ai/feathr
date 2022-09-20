@@ -186,6 +186,18 @@ object GenericLocationAdHocPatches {
           .mode(location.mode.getOrElse("overwrite")) // I don't see if ElasticSearch uses it in any doc
           .save()
       }
+      case "aerospike" =>
+        val keyDf = if (!df.columns.contains("__key")) {
+          df.withColumn("__key", (monotonically_increasing_id().cast("string")))
+          }
+         else {
+          df
+        }
+        keyDf.write.format(location.format)
+          .option("aerospike.updatebykey", "__key")
+          .options(location.options)
+          .mode(location.mode.getOrElse("append"))
+          .save()
       case _ =>
         // Normal writing procedure, just set format and options then write
         df.write.format(location.format)
