@@ -4,6 +4,7 @@ import os
 import tempfile
 from typing import Dict, List, Union
 from feathr.definition.feature import FeatureBase
+import copy
 
 import redis
 from azure.identity import DefaultAzureCredential
@@ -568,6 +569,9 @@ class FeathrClient(object):
         """
         self.materialize_features(settings, execution_configurations, verbose)
 
+    # Get feature keys givin the name of a feature
+    # Should search in both 'derived_feature_list' and 'anchor_list'
+    # Return related keys(key_column list) or None if cannot find the feature
     def _get_feature_key(self, feature_name: str):
         features = []
         if 'derived_feature_list' in dir(self):
@@ -582,6 +586,9 @@ class FeathrClient(object):
         self.logger.warning(f"Invalid feature name: {feature_name}. Please call FeathrClient.build_features() first in order to materialize the features.")
         return None
         
+    # Validation on feature keys:
+    # Features within a set of aggregation or planned to be merged should have same keys
+    # The param "allow_empty_key" shows if empty keys are acceptable 
     def _valid_materialize_keys(self, features: List[str], allow_empty_key=False):
         keys = None
         for feature in features:
@@ -589,9 +596,11 @@ class FeathrClient(object):
             if new_keys is None:
                 self.logger.error(f"Failed to get feature key for feature: {feature}")
                 return False
+            # If only get one key are it's "NOT_NEEDED", it means the feature has an empty key.
             if len(new_keys) == 1 and new_keys[0] == "NOT_NEEDED" and not allow_empty_key:
                 self.logger.error(f"Empty feature key is not allowed for features: {features}")
                 return False
+            # Sorted keys to make it easier to compare
             new_keys = sorted(new_keys)
             if keys is None:
                 keys = copy.deepcopy(new_keys)

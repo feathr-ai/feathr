@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
-from feathr.definition.sink import RedisSink, Sink
+from feathr.definition.sink import HdfsSink, RedisSink, Sink
 import math
 
 
@@ -32,7 +32,7 @@ class MaterializationSettings:
         now = datetime.now()
         self.backfill_time = backfill_time if backfill_time else BackfillTime(start=now, end=now, step=timedelta(days=1))
         for sink in sinks:
-            if isinstance(sink, RedisSink):
+            if isinstance(sink, RedisSink) or isinstance(sink, HdfsSink):
                 sink.aggregation_features = feature_names
         self.sinks = sinks
         self.feature_names = feature_names
