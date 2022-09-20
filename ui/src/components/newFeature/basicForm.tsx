@@ -4,16 +4,7 @@ import {
   MinusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import {
-  BackTop,
-  Button,
-  Form,
-  Input,
-  Space,
-  Typography,
-  Select,
-  Divider,
-} from "antd";
+import { BackTop, Button, Form, Input, Space, Typography } from "antd";
 import { ValueType } from "../../models/model";
 
 type Props = {
@@ -23,7 +14,6 @@ type Props = {
 
 const BasicForm = ({ onBasicChange, basicProp }: Props) => {
   const [form] = Form.useForm();
-  const valueOptions = ValueType.map((p) => ({ value: p, label: p }));
 
   const styling: CSSProperties = {
     width: "85%",
@@ -61,7 +51,6 @@ const BasicForm = ({ onBasicChange, basicProp }: Props) => {
             label="Qualified name"
             initialValue={basicProp?.qualifiedName}
             style={{ marginBottom: "1%" }}
-            rules={[{ required: true }]}
           >
             <Input name="qualifiedName" />
           </Form.Item>

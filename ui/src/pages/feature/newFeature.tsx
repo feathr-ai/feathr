@@ -1,24 +1,17 @@
 import React, { useState } from "react";
-import { Card, Typography, Menu, Layout, Button, Alert } from "antd";
+import { Typography, Menu, Layout, Button, Alert } from "antd";
 import BasicForm from "../../components/newFeature/basicForm";
 import TransformationForm from "../../components/newFeature/transformationForm";
 import DependenciesForm from "../../components/newFeature/dependenciesForm";
 import FeatureKeyForm from "../../components/newFeature/featureKeyForm";
 import FeatureTypeForm from "../../components/newFeature/featureTypeForm";
-import {
-  AnchorFeature,
-  DerivedFeature,
-  FeatureKey,
-  FeatureType,
-} from "../../models/model";
+import { FeatureKey, FeatureType } from "../../models/model";
 import { createAnchorFeature, createDerivedFeature } from "../../api";
 
 const { Title } = Typography;
 
 const NewFeature = () => {
   const [menu, setMenu] = useState<string>("dependencies");
-  const [anchorFeature, setAnchorFeature] = useState<AnchorFeature>();
-  const [derivedFeature, setDerivedFeature] = useState<DerivedFeature>();
   const [type, setType] = useState<string>();
   const [featureType, setFeatureType] = useState<FeatureType>();
   const [dependencies, setDependencies] = useState<any>();
@@ -56,19 +49,18 @@ const NewFeature = () => {
     setMenu("transformation");
   };
 
-  const onTransformationChange = async (e: any) => {
+  const onTransformationChange = (e: any) => {
     setTransformation(e);
-    onReview();
     setMenu("review + create");
+    onReview(e);
   };
 
-  const validateOnReview = () => {
+  const validateOnReview = (transformationParam: any) => {
     var alerts = "";
     if (!basic) {
       alerts += "basic; \n";
     } else {
       if (!basic.name) alerts += "basic.name;\n";
-      if (!basic.qualifiedName) alerts += "basic.qualifiedName;\n";
     }
     if (!dependencies) {
       alerts += "dependencies; \n";
@@ -85,24 +77,26 @@ const NewFeature = () => {
       if (!featureType.type) alerts += "featureType.type; \n";
       if (!featureType.valType) alerts += "featureType.calType; \n";
     }
-    if (!transformation) alerts += "transformation; \n";
+    if (!transformationParam) alerts += "transformation; \n";
     return alerts;
   };
 
-  const onReview = () => {
-    const alerts = validateOnReview();
+  const onReview = (transformationParam: any) => {
+    setResult(undefined);
+    setAlerts("");
+    setNewFeature(undefined);
+    console.log("transformation: ", transformationParam);
+    const alerts = validateOnReview(transformationParam);
     if (alerts !== "") {
       setAlerts(
-        "These items are required.: \n" +
+        "These items are required: \n" +
           alerts +
           "Please fill them before submitting"
       );
-      setNewFeature(undefined);
       return;
     }
 
-    setAlerts("");
-    if (!featureType || !transformation) {
+    if (!featureType || !transformationParam) {
       console.error("invalid feature definition");
       return;
     }
@@ -112,15 +106,15 @@ const NewFeature = () => {
         name: basic.name,
         qualifiedName: basic.qualifiedName,
         featureType: featureType,
-        transformation: transformation,
+        transformation: transformationParam,
         key: featureKeys,
         tags: basic.tags ?? {},
-        inputAnchorFeatures: dependencies?.inputAnchorFeatures
-          .toString()
-          .split(","),
-        inputDerivedFeatures: dependencies?.inputDerivedFeatures
-          .toString()
-          .split(","),
+        inputAnchorFeatures: dependencies.inputAnchorFeatures
+          ? dependencies.inputAnchorFeatures.toString().split(",")
+          : [],
+        inputDerivedFeatures: dependencies.inputDerivedFeatures
+          ? dependencies.inputDerivedFeatures.toString().split(",")
+          : [],
       };
       setNewFeature(newFeature);
     } else if (type === "anchor") {
@@ -128,7 +122,7 @@ const NewFeature = () => {
         name: basic.name,
         qualifiedName: basic.qualifiedName,
         featureType: featureType,
-        transformation: transformation,
+        transformation: transformationParam,
         key: featureKeys,
         tags: basic.tags ?? {},
       };
@@ -137,15 +131,14 @@ const NewFeature = () => {
   };
 
   const onSubmit = async () => {
+    var currResult = undefined;
     if (type === "derived") {
-      const result = await createDerivedFeature(projectId, newFeature);
-      setResult(result);
-      console.log(result);
+      currResult = await createDerivedFeature(projectId, newFeature);
+      setResult(currResult);
     } else {
       const anchorId = dependencies.anchor;
-      const result = await createAnchorFeature(projectId, anchorId, newFeature);
-      setResult(result);
-      console.log(result);
+      currResult = await createAnchorFeature(projectId, anchorId, newFeature);
+      setResult(currResult);
     }
   };
 
@@ -204,7 +197,7 @@ const NewFeature = () => {
           title="submit and go back to list"
           style={{ float: "inline-start" }}
           onClick={() => {
-            onReview();
+            onReview(transformation);
             setMenu("review + create");
           }}
         >
@@ -235,7 +228,10 @@ const NewFeature = () => {
         />
       )}
       {menu === "transformation" && (
-        <TransformationForm onTransformationChange={onTransformationChange} />
+        <TransformationForm
+          onTransformationChange={onTransformationChange}
+          transformationProp={transformation ?? {}}
+        />
       )}
       {/* TODO: apply styles for the summary */}
       {menu === "review + create" && (
@@ -249,10 +245,12 @@ const NewFeature = () => {
             />
           )}
           {newFeature && (
+            // <ReviewAndCreate onSubmit={onSubmit} newFeatureProp={newFeature} />
             <div>
+              <Title level={5}>New Feature Review</Title>
               <Alert
-                message={"Verification Succeed."}
-                description={JSON.stringify(newFeature)}
+                message={<p>Verification Succeeded.</p>}
+                description={<p>{JSON.stringify(newFeature, null, "\t\n")}</p>}
                 type="success"
               />
 
@@ -269,6 +267,22 @@ const NewFeature = () => {
               </Button>
             </div>
           )}
+          {result &&
+            result.status &&
+            JSON.stringify(result.status) === "200" && (
+              <Alert
+                message={<p> Feature Creation Succeeded! </p>}
+                type="success"
+              />
+            )}
+          {result &&
+            (!result.status || JSON.stringify(result.status) !== "200") && (
+              <Alert
+                message={<p> Feature Creation Failed! </p>}
+                type="error"
+                description={<p>{JSON.stringify(result)}</p>}
+              />
+            )}
         </div>
       )}
     </div>

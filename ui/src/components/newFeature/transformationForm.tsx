@@ -4,9 +4,12 @@ import { BackTop, Button, Form, Input, Radio, Space, Typography } from "antd";
 
 type Props = {
   onTransformationChange: any;
+  transformationProp: any;
 };
-
-const TransformationForm = ({ onTransformationChange }: Props) => {
+const TransformationForm = ({
+  onTransformationChange,
+  transformationProp,
+}: Props) => {
   const [transformationType, setTransformationType] = useState("");
   const [form] = Form.useForm();
 
@@ -17,7 +20,6 @@ const TransformationForm = ({ onTransformationChange }: Props) => {
 
   const onRadioChange = (e: any) => {
     setTransformationType(e.target.value);
-    console.log(transformationType);
   };
 
   const onClickNext = () => {
@@ -45,7 +47,11 @@ const TransformationForm = ({ onTransformationChange }: Props) => {
               },
             ]}
           >
-            <Radio.Group onChange={onRadioChange} style={{ paddingLeft: "2%" }}>
+            <Radio.Group
+              onChange={onRadioChange}
+              style={{ paddingLeft: "2%" }}
+              defaultValue={transformationType}
+            >
               <Radio
                 value={"expression"}
                 style={{ width: "100%", paddingLeft: "5%", marginBottom: "1%" }}
@@ -78,7 +84,10 @@ const TransformationForm = ({ onTransformationChange }: Props) => {
                   },
                 ]}
               >
-                <Input name="transformExpr" />
+                <Input
+                  name="transformExpr"
+                  defaultValue={transformationProp?.transformExpr}
+                />
               </Form.Item>
             </div>
           )}
@@ -97,14 +106,20 @@ const TransformationForm = ({ onTransformationChange }: Props) => {
                   },
                 ]}
               >
-                <Input name="defExpr" />
+                <Input
+                  name="defExpr"
+                  defaultValue={transformationProp?.defExpr}
+                />
               </Form.Item>
               <Form.Item
                 name="aggFunc"
                 label="Aggregation Function"
                 style={{ marginLeft: "5%" }}
               >
-                <Input name="aggFunc" />
+                <Input
+                  name="aggFunc"
+                  defaultValue={transformationProp?.aggFunc}
+                />
               </Form.Item>
 
               <Form.Item
@@ -112,28 +127,37 @@ const TransformationForm = ({ onTransformationChange }: Props) => {
                 label="Window"
                 style={{ marginLeft: "5%" }}
               >
-                <Input name="window" />
+                <Input
+                  name="window"
+                  defaultValue={transformationProp?.window}
+                />
               </Form.Item>
               <Form.Item
                 name="groupBy"
                 label="Group By"
                 style={{ marginLeft: "5%" }}
               >
-                <Input name="groupBy" />
+                <Input
+                  name="groupBy"
+                  defaultValue={transformationProp?.groupBy}
+                />
               </Form.Item>
               <Form.Item
                 name="filter"
                 label="Filter"
                 style={{ marginLeft: "5%" }}
               >
-                <Input name="filter" />
+                <Input
+                  name="filter"
+                  defaultValue={transformationProp?.filter}
+                />
               </Form.Item>
               <Form.Item
                 name="limit"
                 label="Limit"
                 style={{ marginLeft: "5%" }}
               >
-                <Input name="limit" />
+                <Input name="limit" defaultValue={transformationProp?.limit} />
               </Form.Item>
             </div>
           )}
@@ -146,7 +170,10 @@ const TransformationForm = ({ onTransformationChange }: Props) => {
                 style={{ marginBottom: "4%", marginLeft: "1%" }}
                 rules={[{ required: true }]}
               >
-                <Input name="udfTransformation" />
+                <Input
+                  name="udfTransformation"
+                  defaultValue={transformationProp?.name}
+                />
               </Form.Item>
             </div>
           )}

@@ -86,7 +86,6 @@ const DependenciesForm = ({
 
   const onRadioChange = async (value: any) => {
     setFeatureType(value.target.value);
-    console.log("type changed: ", featureType);
   };
 
   const onClickNext = () => {
@@ -135,7 +134,11 @@ const DependenciesForm = ({
               },
             ]}
           >
-            <Radio.Group onChange={onRadioChange} style={{ paddingLeft: "2%" }}>
+            <Radio.Group
+              onChange={onRadioChange}
+              style={{ paddingLeft: "2%" }}
+              defaultValue={dependenciesProp?.featureType}
+            >
               <Radio value={"anchor"}>Anchor Feature</Radio>
               <Radio value={"derived"}>Derived Feature</Radio>
             </Radio.Group>
@@ -156,6 +159,7 @@ const DependenciesForm = ({
                 style={{ paddingLeft: "2%" }}
                 options={anchorOptions}
                 disabled={loading}
+                defaultValue={dependenciesProp?.anchor}
               />
             </Form.Item>
           )}
@@ -165,11 +169,6 @@ const DependenciesForm = ({
                 name="inputAnchorFeatures"
                 label="Select Input Anchor Features:"
                 style={{ marginBottom: "1%" }}
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
               >
                 <Select
                   mode="multiple"
@@ -177,17 +176,13 @@ const DependenciesForm = ({
                   style={{ paddingLeft: "2%" }}
                   options={anchorFeatureOptions}
                   disabled={loading}
+                  defaultValue={dependenciesProp?.inputAnchorFeatures}
                 />
               </Form.Item>
               <Form.Item
                 name="inputDerivedFeatures"
                 label="Select Input Derived Features:"
                 style={{ marginBottom: "1%" }}
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
               >
                 <Select
                   mode="multiple"
@@ -195,6 +190,7 @@ const DependenciesForm = ({
                   style={{ paddingLeft: "2%" }}
                   options={derivedFeatureOptions}
                   disabled={loading}
+                  defaultValue={dependenciesProp?.inputDerivedFeatures}
                 />
               </Form.Item>
             </div>

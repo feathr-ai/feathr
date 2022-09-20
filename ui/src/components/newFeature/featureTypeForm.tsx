@@ -52,7 +52,6 @@ const FeatureTypeForm = ({ onFeatureTypeChange, featureTypeProp }: Props) => {
           <Form.Item
             name="dimensionType"
             label="Dimension Type"
-            rules={[{ required: true }]}
             initialValue={featureTypeProp?.dimensionType}
           >
             <Select mode="multiple" options={valueOptions}></Select>
