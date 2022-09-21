@@ -69,6 +69,7 @@ def basic_test_setup(config_path: str):
                             transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
                                                               agg_func="AVG",
                                                               window="90d",
+                                                              filter="fare_amount > 0"
                                                               )),
                     Feature(name="f_location_max_fare",
                             key=location_id,
