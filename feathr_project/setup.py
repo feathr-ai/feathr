@@ -20,16 +20,13 @@ setup(
     include_package_data=True,
     # consider
     install_requires=[
-        'Click',
-        "azure-storage-file-datalake>=12.5.0",
-        "azure-synapse-spark",
-        "azure-identity>=1.8.0", #fixing Azure Machine Learning authentication issue per https://stackoverflow.com/a/72262694/3193073
+        'click',
         "py4j",
         "loguru",
         "pandas",
         "redis",
         "requests",
-        "pyapacheatlas",
+        "pyapacheatlas<=0.14.0",
         "pyhocon",
         "pandavro",
         "pyyaml",
@@ -38,17 +35,22 @@ setup(
         "pyarrow",
         "pyspark>=3.1.2",
         "python-snappy",
-        "deltalake",
+        # fixing https://github.com/feathr-ai/feathr/issues/687
+        "deltalake<=0.5.8",
         "graphlib_backport",
         "protobuf==3.*",
-        "azure-keyvault-secrets",
         "confluent-kafka",
         "databricks-cli",
         "avro",
+        "azure-storage-file-datalake>=12.5.0",
+        "azure-synapse-spark",
+        # fixing Azure Machine Learning authentication issue per https://stackoverflow.com/a/72262694/3193073
+        "azure-identity>=1.8.0",
+        "azure-keyvault-secrets",
         # In 1.23.0, azure-core is using ParamSpec which might cause issues in some of the databricks runtime.
         # see this for more details:
         # https://github.com/Azure/azure-sdk-for-python/pull/22891
-        # using a version lower than that to workaround this issue. 
+        # using a version lower than that to workaround this issue.
         "azure-core<=1.22.1",
         "typing_extensions>=4.2.0"
     ],
