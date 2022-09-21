@@ -146,7 +146,7 @@ class FeatureName(BaseModel):
     """
     id: FeatureNameId  # unique ID for FeatureName, used to extract data for current FeatureName
     project_id: ProjectId  # ID of the project the FeatureName belongs to
-    features: List[FeatureId]  # List of ids of feature that the FeatureName has
+    feature_ids: List[FeatureId]  # List of ids of feature that the FeatureName has
 
 
 class Project(BaseModel):
@@ -155,7 +155,7 @@ class Project(BaseModel):
     or a namespace which related FeatureNames have.
     """
     id: ProjectId  # Unique ID of the project.
-    feature_names: List[FeatureNameId]  # List of feature name ids that the project has
+    feature_name_ids: List[FeatureNameId]  # List of feature name ids that the project has
     anchor_ids: List[AnchorId]   # List of Anchor ids that the project has
 
 
@@ -168,4 +168,4 @@ class Anchor(BaseModel):
     id: AnchorId  # Unique ID for Anchor
     project_id: ProjectId  # ID of Project that the anchor belongs to
     source: DataSource  # data source of the Anchor
-    anchor_features: List[FeatureId]  # List of anchor features that the anchor has
+    anchor_feature_ids: List[FeatureId]  # List of anchor features that the anchor has
