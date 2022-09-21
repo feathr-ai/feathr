@@ -26,13 +26,13 @@ Diagram of the data models:
       |                               ｜                           |
       |                               ｜1:n                       \|/ has
       |   +--------------+    +---------------+                 +----------------+
-      |   |Transformation|----|    Feature    | --------------- |   DataSource   |            
+      |   |Transformation|----|    Feature    |                 |   DataSource   |            
       |   +--------------+ has+---------------+                 +----------------+
-      |                              /|\   |                     /|\           |extends
-      |                               |    |                      |            |
-      |                               |    +----------------------|---------+  |
-      |                               |                           |         |  |
-      |          +--------------------------------------+         |      has| \|/
+      |                              /|\                         /|\           |extends
+      |                               |                           |            |
+      |                               |                           |            |
+      |                               |                           |            |
+      |          +--------------------------------------+         |           \|/
       |          |                                      |         |        +----------+
       |          |extends                               |extends  |has     |  Source  |
       |    +----------------+                      +-----------------+     +----------+
@@ -41,16 +41,10 @@ Diagram of the data models:
       |            |                                                             |
       |            |                                                             |extends
       |            |                                                       +------------------+
-      |            +-------------------------------------------------------|   FeatureSource  |
+      |            +-------------------------------------------------------|  FeaturesSource  |
       |                                                                has +------------------+
       |                                                                             |
-      +-----------------------------------------------------------------------------|
-                      
-                      
-                      
-                      
-                      
-                      
+      +-----------------------------------------------------------------------------|                                 
 """
 
 
@@ -58,43 +52,51 @@ class FeatureId(BaseModel):
     """
     Id for Feature, it's unique ID represents Feature.
     """
-    pass
+    id: str  # id of a feature
 
 
 class FeatureNameId(BaseModel):
     """
     Id for FeatureName, it's unique ID represents FeatureName.
     """
-    pass
+    id: str  # id of a FeatureName
 
 
 class AnchorId(BaseModel):
     """
     Id for Anchor, it's unique ID represents Anchor.
     """
-    pass
+    id: str  # id of a anchor
 
 
 class ProjectId(BaseModel):
     """
     Id for Project, it's unique ID represents Project.
     """
-    pass
+    id: str  # id of a project
 
 
 class Source(BaseModel):
     """
-    Type of FeatureValue.
-    It defines where the feature is extracted from.
+    Source of the feature.
+    It defines where the feature is extracted or derived from.
     """
     pass
 
 
 class DataSource(Source):
+    """
+    Data source of the feature.
+    It defines the raw data source the feature is extracted from.
+    """
     pass
 
 
-class FeatureSource(Source):
+class FeaturesSource(Source):
+    """
+    Feature source of the feature.
+    It defines one of multiple features where the feature is derived from.
+    """
     input_feature_name_ids: List[FeatureNameId]  # List of input feature name Keys
     pass
 
@@ -123,23 +125,24 @@ class AnchorFeature(Feature):
     """
     Feature implementation of FeatureName which anchored to a data source.
     """
-    source: DataSource
+    source: DataSource  # Raw data source where the feature is extracted from
 
 
 class DerivedFeature(Feature):
     """
     Feature implementation that is derived from other FeatureNames.
     """
-    source: FeatureSource
+    source: FeaturesSource  # Source features where the feature is derived from
 
 
 class FeatureName(BaseModel):
     """
-    Named Feature Interface of FeatureImplementations.
-    Each FeatureName is defined by feature producer and interact
-    by feature consumers.Each FeatureName enclosed attributes that don't change across
-    implementations.
-    One FeatureName can have multiple Features for different environments.
+    Named Feature Interface that can be backed by multiple Feature implementations across
+    different environments accessing different sources (data lake access for batch training,
+    KV store access for online serving). Each FeatureName is defined by feature producer.
+    Feature consumers reference a feature by that name to access that feature data,
+    agnostic of runtime environment. Each FeatureName also encloses attributes that does not
+    change across implementations.
     """
     id: FeatureNameId  # unique ID for FeatureName, used to extract data for current FeatureName
     project_id: ProjectId  # ID of the project the FeatureName belongs to
@@ -148,8 +151,8 @@ class FeatureName(BaseModel):
 
 class Project(BaseModel):
     """
-    Group of FeatureInterfaces. It can be a project the team is working on,
-    or a namespace which related FeatureInterfaces have.
+    Group of FeatureNames. It can be a project the team is working on,
+    or a namespace which related FeatureNames have.
     """
     id: ProjectId  # Unique ID of the project.
     feature_names: List[FeatureNameId]  # List of feature name ids that the project has
