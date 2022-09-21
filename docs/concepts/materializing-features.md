@@ -149,3 +149,11 @@ More reference on the APIs:
 
 - [MaterializationSettings API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings)
 - [HdfsSink API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSource)
+
+## Expected behavior on Feature Materialization
+
+When end users materialize features to a sink, what are the expected behavior?
+
+It seems to be a straightforward question, but actually it is not. Basically when end users want to materialize a feature, Feathr is expecting that - For a certain entity key (say a user_id), there will be multiple features (say user_total_gift_card_balance, and user_purchase_in_last_week). However, an important note here is that the materialized features have no dates associated with them.
+
+Why this is an interesting problem? For example you have defined `user_total_gift_card_balance` and it has different  
