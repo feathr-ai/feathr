@@ -569,7 +569,7 @@ class FeathrClient(object):
         """
         self.materialize_features(settings, execution_configurations, verbose)
 
-    # Get feature keys givin the name of a feature
+    # Get feature keys given the name of a feature
     # Should search in both 'derived_feature_list' and 'anchor_list'
     # Return related keys(key_column list) or None if cannot find the feature
     def _get_feature_key(self, feature_name: str):
@@ -582,7 +582,7 @@ class FeathrClient(object):
         for feature in features:
             if feature.name == feature_name:
                 keys = feature.key
-                return [key.key_column for key in keys] 
+                return set(key.key_column for key in keys) 
         self.logger.warning(f"Invalid feature name: {feature_name}. Please call FeathrClient.build_features() first in order to materialize the features.")
         return None
         
@@ -594,20 +594,21 @@ class FeathrClient(object):
         for feature in features:
             new_keys = self._get_feature_key(feature)
             if new_keys is None:
-                self.logger.error(f"Failed to get feature key for feature: {feature}")
+                self.logger.error(f"Key of feature: {feature} is empty. If this feature is not from INPUT_CONTEXT, you might want to double check on the feature definition to see whether the key is empty or not.")
                 return False
-            # If only get one key are it's "NOT_NEEDED", it means the feature has an empty key.
-            if len(new_keys) == 1 and new_keys[0] == "NOT_NEEDED" and not allow_empty_key:
+            # If only get one key and it's "NOT_NEEDED", it means the feature has an empty key.
+            if ','.join(new_keys) == "NOT_NEEDED" and not allow_empty_key:
                 self.logger.error(f"Empty feature key is not allowed for features: {features}")
                 return False
-            # Sorted keys to make it easier to compare
-            new_keys = sorted(new_keys)
             if keys is None:
                 keys = copy.deepcopy(new_keys)
             else:
-                for key, new_key in zip(keys, new_keys):
-                    if key != new_key:
-                        self.logger.error("Inconsistent feature keys.")
+                if len(keys) != len(new_keys):
+                    self.logger.error(f"Inconsistent feature keys. Current keys are {str(keys)}")
+                    return False
+                for new_key in new_keys:
+                    if new_key not in keys:
+                        self.logger.error(f"Inconsistent feature keys. Current keys are {str(keys)}")
                         return False
         return True
     
@@ -620,7 +621,7 @@ class FeathrClient(object):
         """
         feature_list = settings.feature_names
         if len(feature_list) > 0 and not self._valid_materialize_keys(feature_list):
-            raise RuntimeError(f"Invalid materialization feature keys: {feature_list}")
+            raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
         
         # Collect secrets from sinks
         secrets = []
