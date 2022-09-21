@@ -7,44 +7,7 @@ Backend data models will be used by backend API server to talk to feature regist
 Purpose of this is to decouple backend data models from API specific data models.
 For each feature registry provider/implementation, they will extend this abstract
 data models and backend API.
-Diagram of the data models:
-                                  +-----------------+
-                                  |     Project     |
-                                  +-----------------+
-                                          |  
-                                          |
-                                          | 
-                            +------------------------------+    
-                            |                              |      
-                            | 1:n                          | 1:n         
-                  +------------------+           +------------------+
-      +---------- |   FeatureName    |           |     Anchor       |
-      |      1:n  +------------------+           +------------------+
-      |                 ｜                             ｜          |
-      |                 ｜ 1:n                         ｜1:n       |
-      |                 +------------------------------+          |
-      |                               ｜                           |
-      |                               ｜1:n                       \|/ has
-      |   +--------------+    +---------------+                 +----------------+
-      |   |Transformation|----|    Feature    |                 |   DataSource   |            
-      |   +--------------+ has+---------------+                 +----------------+
-      |                              /|\                         /|\           |extends
-      |                               |                           |            |
-      |                               |                           |            |
-      |                               |                           |            |
-      |          +--------------------------------------+         |           \|/
-      |          |                                      |         |        +----------+
-      |          |extends                               |extends  |has     |  Source  |
-      |    +----------------+                      +-----------------+     +----------+
-      |    | DerivedFeature |                      |  AnchorFeature  |          /|\
-      |    +----------------+                      +-----------------+           |
-      |            |                                                             |
-      |            |                                                             |extends
-      |            |                                                       +------------------+
-      |            +-------------------------------------------------------|  FeaturesSource  |
-      |                                                                has +------------------+
-      |                                                                             |
-      +-----------------------------------------------------------------------------|                                 
+Diagram of the data models:                              
 """
 
 
@@ -89,15 +52,14 @@ class DataSource(Source):
     Data source of the feature.
     It defines the raw data source the feature is extracted from.
     """
-    pass
 
 
 class FeaturesSource(Source):
     """
     Feature source of the feature.
-    It defines one of multiple features where the feature is derived from.
+    It defines one of features where the feature is derived from.
     """
-    input_feature_name_ids: List[FeatureNameId]  # List of input feature name Keys
+    input_feature_name_id: FeatureNameId  # Input feature name Keys
     pass
 
 
@@ -132,7 +94,7 @@ class DerivedFeature(Feature):
     """
     Feature implementation that is derived from other FeatureNames.
     """
-    source: FeaturesSource  # Source features where the feature is derived from
+    source: List[FeaturesSource]  # Source features where the feature is derived from
 
 
 class FeatureName(BaseModel):
@@ -146,7 +108,7 @@ class FeatureName(BaseModel):
     """
     id: FeatureNameId  # unique ID for FeatureName, used to extract data for current FeatureName
     project_id: ProjectId  # ID of the project the FeatureName belongs to
-    features: List[FeatureId]  # List of ids of feature that the FeatureName has
+    feature_ids: List[FeatureId]  # List of ids of feature that the FeatureName has
 
 
 class Project(BaseModel):
@@ -155,7 +117,7 @@ class Project(BaseModel):
     or a namespace which related FeatureNames have.
     """
     id: ProjectId  # Unique ID of the project.
-    feature_names: List[FeatureNameId]  # List of feature name ids that the project has
+    feature_name_ids: List[FeatureNameId]  # List of feature name ids that the project has
     anchor_ids: List[AnchorId]   # List of Anchor ids that the project has
 
 
@@ -168,4 +130,4 @@ class Anchor(BaseModel):
     id: AnchorId  # Unique ID for Anchor
     project_id: ProjectId  # ID of Project that the anchor belongs to
     source: DataSource  # data source of the Anchor
-    anchor_features: List[FeatureId]  # List of anchor features that the anchor has
+    anchor_feature_ids: List[FeatureId]  # List of anchor features that the anchor has
