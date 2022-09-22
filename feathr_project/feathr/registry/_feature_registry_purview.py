@@ -1396,11 +1396,21 @@ derivations: {
                 raise RuntimeError("Number of `feature_entities` is less than provided GUID list for search. The project might be broken.")
 
         feature_list=[]
-        key_list = []
-        for feature_entity in feature_entities:
-            first_key = feature_entity["attributes"]["key"][0]
-            key_list = [TypedKey(key_column=first_key["keyColumn"], key_column_type=first_key["keyColumnType"], full_name=first_key["fullName"], description=first_key["description"], key_column_alias=first_key["keyColumnAlias"])]
-            
+        
+        '''
+        The assumption here is , a feture could have multiple keys, and features inside an anchor should share the same set of keys. 
+        So we will take any one of the feature, extract its keys , dedup them by full name, and use them to generate the key list.
+        '''
+        first_feature_keys = feature_entities[0]["attributes"]["key"]
+        deduped_keys = dict()
+        for key in first_feature_keys:
+            if key['fullName'] not in deduped_keys:
+                deduped_keys.setdefault(key['fullName'],key)
+        key_list = [
+            TypedKey(key_column=key["keyColumn"], key_column_type=key["keyColumnType"], full_name=key["fullName"], description=key["description"], key_column_alias=key["keyColumnAlias"])\
+                for key in list(deduped_keys.values())
+                ]
+        for feature_entity in feature_entities:         
             # after get keys, put them in features
             feature_list.append(Feature(name=feature_entity["attributes"]["name"],
                     feature_type=self._get_feature_type_from_hocon(feature_entity["attributes"]["type"]), # stored as a hocon string, can be parsed using pyhocon
