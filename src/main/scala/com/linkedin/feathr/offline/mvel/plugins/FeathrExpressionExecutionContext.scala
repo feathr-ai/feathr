@@ -14,6 +14,8 @@ import scala.collection.mutable
  * The context needed for the Feathr expression transformation language, in order to
  * support the automatic conversion between the Feather Feature value class and
  * some customized external data, e.g. 3rd-party feature value class.
+ * It is intended for advanced cases to enable compatibility with old versions of FeathrExpression language
+ * and that most users would not need to use it.
  */
 class FeathrExpressionExecutionContext extends Serializable {
 
