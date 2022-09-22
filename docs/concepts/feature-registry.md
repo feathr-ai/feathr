@@ -61,7 +61,7 @@ Alternatively, you can set the feature registry and the API endpoint in the conf
 ```yaml
 feature_registry:
   # The API endpoint of the registry service
-  api_endpoint: "https://feathr-sql-registry.azurewebsites.net/api/v1"
+  api_endpoint: "https://<replace_with_your_api_endpoint>.azurewebsites.net/api/v1"
 ```
 
 ### Register and List Features
