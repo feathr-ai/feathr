@@ -108,9 +108,9 @@ class HdfsSink(Sink):
     Attributes:
         output_path: output path
     """
-    def __init__(self, output_path: str) -> None:
+    def __init__(self, output_path: str, store_name: Optional[str]="df0") -> None:
         self.output_path = output_path
-
+        self.store_name = store_name
     # Sample generated HOCON config:
     # operational: {
     #     name: testFeatureGen
@@ -132,10 +132,14 @@ class HdfsSink(Sink):
         tm = Template("""  
             {
                 name: HDFS
+                outputFormat: RAW_DATA
                 params: {
                     path: "{{sink.output_path}}"
                     {% if sink.aggregation_features %}
                     features: [{{','.join(sink.aggregation_features)}}]
+                    {% endif %}
+                    {% if sink.store_name %}
+                    storeName: "{{sink.store_name}}"
                     {% endif %}
                 }
             }
