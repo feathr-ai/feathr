@@ -7,7 +7,7 @@ long_description = (root_path / "docs/README.md").read_text()
 
 setup(
     name='feathr',
-    version='0.7.2',
+    version='0.8.0',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="feathr-technical-discuss@lists.lfaidata.foundation",
