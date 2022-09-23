@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.common.TaggedFeatureName
 import com.linkedin.feathr.offline.job.{LocalFeatureGenJob, LocalFeatureJoinJob}
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.util.{FeathrTestUtils, SparkFeaturizedDataset}
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.sql.SparkSession
@@ -36,8 +37,9 @@ abstract class FeathrIntegTest extends TestFeathr {
       joinConfigAsString: String,
       featureDefAsString: String,
       observationDataPath: String,
-      extraParams: Array[String] = Array()): SparkFeaturizedDataset = {
-    LocalFeatureJoinJob.joinWithHoconJoinConfig(joinConfigAsString, featureDefAsString, observationDataPath, extraParams, dataPathHandlers=List())
+      extraParams: Array[String] = Array(),
+      mvelContext: Option[FeathrExpressionExecutionContext] = None): SparkFeaturizedDataset = {
+    LocalFeatureJoinJob.joinWithHoconJoinConfig(joinConfigAsString, featureDefAsString, observationDataPath, extraParams, dataPathHandlers=List(), mvelContext=mvelContext)
   }
 
   def getOrCreateSparkSession: SparkSession = {
