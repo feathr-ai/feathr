@@ -750,19 +750,19 @@ derivations: {
             if j["typeName"] == response["typeName"]:
                 if j["typeName"] == "Process":
                     if response["attributes"]["qualifiedName"] != j["attributes"]["qualifiedName"]:
-                        raise RuntimeError("The requested entity conflicts with the existing entity in PurView")
+                        raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
                 else:
-                    if "type" in response['attributes'] and response["typeName"] in ("feathr_anchor_feature_v1", "feathr_derived_feature_v1"):
+                    if "type" in response['attributes'] and response["typeName"] in (TYPEDEF_ANCHOR_FEATURE, TYPEDEF_DERIVED_FEATURE):
                         conf = ConfigFactory.parse_string(response['attributes']['type'])
                         response['attributes']['type'] = dict(conf)
                     keys = set([_to_snake(key) for key in j["attributes"].keys()]) - set(["qualified_name"])
                     keys.add("qualifiedName")
                     for k in keys:
                         if response["attributes"][k] != j["attributes"][k]:
-                            raise RuntimeError("The requested entity conflicts with the existing entity in PurView")
+                            raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
                 return response["guid"]
             else:
-                raise RuntimeError("The requested entity conflicts with the existing entity in PurView")
+                raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
         except AtlasException as e:
             pass
         

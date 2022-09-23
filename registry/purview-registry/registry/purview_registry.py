@@ -23,6 +23,9 @@ Label_Contains = "CONTAINS"
 Label_BelongsTo = "BELONGSTO"
 Label_Consumes = "CONSUMES"
 Label_Produces = "PRODUCES"
+TYPEDEF_DERIVED_FEATURE="feathr_derived_feature_v1"
+TYPEDEF_ANCHOR_FEATURE="feathr_anchor_feature_v1"
+
 TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_v1>"
 TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_v1>"
 TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_v1>"
@@ -586,20 +589,20 @@ class PurviewRegistry(Registry):
             if j["typeName"] == response["typeName"]:
                 if j["typeName"] == "Process":
                     if response["attributes"]["qualifiedName"] != j["attributes"]["qualifiedName"]:
-                        raise RuntimeError("The requested entity conflicts with the existing entity in PurView")
+                        raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
                 else:
-                    if "type" in response['attributes'] and response["typeName"] in ("feathr_anchor_feature_v1", "feathr_derived_feature_v1"):
+                    if "type" in response['attributes'] and response["typeName"] in (TYPEDEF_ANCHOR_FEATURE, TYPEDEF_DERIVED_FEATURE):
                         conf = ConfigFactory.parse_string(response['attributes']['type'])
                         response['attributes']['type'] = dict(conf)
                     keys = set([to_snake(key) for key in j["attributes"].keys()]) - set(["qualified_name"])
                     keys.add("qualifiedName")
                     for k in keys:
                         if response["attributes"][k] != j["attributes"][k]:
-                            raise RuntimeError("The requested entity conflicts with the existing entity in PurView")
+                            raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
                 entity.guid = response["guid"]
                 return
             else:
-                raise RuntimeError("The requested entity conflicts with the existing entity in PurView")
+                raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
         except AtlasException as e:
             pass
 
