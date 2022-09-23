@@ -6,6 +6,7 @@ import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.derived.DerivedFeature
 import com.linkedin.feathr.offline.exception.FeatureTransformationException
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.sparkcommon.FeatureDerivationFunctionSpark
 import org.apache.spark.sql.DataFrame
 
@@ -30,7 +31,8 @@ class SparkUdfDerivation extends SparkUdfDerivationStrategy {
       keyTagList: Seq[String],
       df: DataFrame,
       derivedFeature: DerivedFeature,
-      derivationFunction: FeatureDerivationFunctionSpark): DataFrame = {
+      derivationFunction: FeatureDerivationFunctionSpark,
+      mvelContext: Option[FeathrExpressionExecutionContext]): DataFrame = {
     if (derivedFeature.parameterNames.isEmpty) {
       throw new FeathrException(
         ErrorLabel.FEATHR_USER_ERROR,

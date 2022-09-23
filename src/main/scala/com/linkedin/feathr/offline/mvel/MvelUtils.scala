@@ -1,9 +1,10 @@
 package com.linkedin.feathr.offline.mvel
 
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
+import org.mvel2.PropertyAccessException
 import org.mvel2.integration.VariableResolverFactory
-import org.mvel2.{MVEL, PropertyAccessException}
 
 private[offline] object MvelUtils {
   @transient private lazy val log = Logger.getLogger(getClass)
@@ -15,9 +16,9 @@ private[offline] object MvelUtils {
   // This approach has pros and cons and will likely be controversial
   // But it should allow for much simpler expressions for extracting features from data sets whose values may often be null
   // (We might not want to check for null explicitly everywhere)
-  def executeExpression(compiledExpression: Any, input: Any, resolverFactory: VariableResolverFactory, featureName: String = ""): Option[AnyRef] = {
+  def executeExpression(compiledExpression: Any, input: Any, resolverFactory: VariableResolverFactory, featureName: String = "", mvelContext: Option[FeathrExpressionExecutionContext]): Option[AnyRef] = {
     try {
-      Option(MvelContext.executeExpressionWithPluginSupport(compiledExpression, input, resolverFactory))
+      Option(MvelContext.executeExpressionWithPluginSupportWithFactory(compiledExpression, input, resolverFactory, mvelContext.orNull))
     } catch {
       case e: RuntimeException =>
         log.debug(s"Expression $compiledExpression on input record $input threw exception", e)

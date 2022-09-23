@@ -82,6 +82,9 @@ class RedisSink(Sink):
                     {% if source.streamingTimeoutMs %}
                     timeoutMs: {{source.streamingTimeoutMs}}
                     {% endif %}
+                    {% if source.aggregation_features %}
+                    features: [{{','.join(source.aggregation_features)}}]
+                    {% endif %}
                 }
             }
         """)
@@ -131,6 +134,9 @@ class HdfsSink(Sink):
                 name: HDFS
                 params: {
                     path: "{{sink.output_path}}"
+                    {% if sink.aggregation_features %}
+                    features: [{{','.join(sink.aggregation_features)}}]
+                    {% endif %}
                 }
             }
         """)

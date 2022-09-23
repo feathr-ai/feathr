@@ -1,10 +1,12 @@
 import os
+import traceback
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from registry import *
-from registry.db_registry import DbRegistry
+from registry.db_registry import DbRegistry, ConflictError
 from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
 
 rp = "/"
@@ -27,6 +29,49 @@ app.add_middleware(CORSMiddleware,
                    allow_methods=["*"],
                    allow_headers=["*"],
                    )
+
+def exc_to_content(e: Exception) -> dict:
+    content={"message": str(e)}
+    if os.environ.get("REGISTRY_DEBUGGING"):
+        content["traceback"] = "".join(traceback.TracebackException.from_exception(e).format())
+    return content
+
+@app.exception_handler(ConflictError)
+async def conflict_error_handler(_, exc: ConflictError):
+    return JSONResponse(
+        status_code=409,
+        content=exc_to_content(exc),
+    )
+
+
+@app.exception_handler(ValueError)
+async def value_error_handler(_, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content=exc_to_content(exc),
+    )
+
+@app.exception_handler(TypeError)
+async def type_error_handler(_, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content=exc_to_content(exc),
+    )
+
+
+@app.exception_handler(KeyError)
+async def key_error_handler(_, exc: KeyError):
+    return JSONResponse(
+        status_code=404,
+        content=exc_to_content(exc),
+    )
+
+@app.exception_handler(IndexError)
+async def index_error_handler(_, exc: IndexError):
+    return JSONResponse(
+        status_code=404,
+        content=exc_to_content(exc),
+    )
 
 
 @router.get("/projects")

@@ -8,9 +8,10 @@ import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, Featur
 import com.linkedin.feathr.offline.job._
 import com.linkedin.feathr.offline.join.DataFrameFeatureJoiner
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlanner}
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
-import com.linkedin.feathr.offline.util.{FeathrUtils, _}
+import com.linkedin.feathr.offline.util._
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.internal.SQLConf
@@ -27,7 +28,7 @@ import scala.util.{Failure, Success}
  *
  */
 class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: FeatureGroups, logicalPlanner: MultiStageJoinPlanner,
-  featureGroupsUpdater: FeatureGroupsUpdater, dataPathHandlers: List[DataPathHandler]) {
+  featureGroupsUpdater: FeatureGroupsUpdater, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext]) {
   private val log = Logger.getLogger(getClass)
 
   type KeyTagStringTuple = Seq[String]
@@ -91,7 +92,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
       // Get logical plan
       val logicalPlan = logicalPlanner.getLogicalPlan(featureGroups, keyTaggedRequiredFeatures)
       // This pattern is consistent with the join use case which uses DataFrameFeatureJoiner.
-      val dataFrameFeatureGenerator = new DataFrameFeatureGenerator(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers)
+      val dataFrameFeatureGenerator = new DataFrameFeatureGenerator(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers, mvelContext)
       val featureMap: Map[TaggedFeatureName, (DataFrame, Header)] =
         dataFrameFeatureGenerator.generateFeaturesAsDF(sparkSession, featureGenSpec, featureGroups, keyTaggedRequiredFeatures)
 
@@ -263,7 +264,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
           s"Please rename feature ${conflictFeatureNames} or rename the same field names in the observation data.")
     }
 
-    val joiner = new DataFrameFeatureJoiner(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers)
+    val joiner = new DataFrameFeatureJoiner(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers, mvelContext)
     joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, left, rowBloomFilterThreshold)
   }
 
@@ -337,6 +338,7 @@ object FeathrClient {
     private var localOverrideDefPath: List[String] = List()
     private var featureDefConfs: List[FeathrConfig] = List()
     private var dataPathHandlers: List[DataPathHandler] = List()
+    private var mvelContext: Option[FeathrExpressionExecutionContext] = None;
 
 
     /**
@@ -495,6 +497,10 @@ object FeathrClient {
       this.featureDefConfs = featureDefConfs
       this
     }
+    def addFeathrExpressionContext(_mvelContext: Option[FeathrExpressionExecutionContext]): Builder = {
+      this.mvelContext = _mvelContext
+      this
+    }
 
     /**
      * Build a new instance of the FeathrClient from the added feathr definition configs and any local overrides.
@@ -529,7 +535,7 @@ object FeathrClient {
       featureDefConfigs = featureDefConfigs ++ featureDefConfs
 
       val featureGroups = FeatureGroupsGenerator(featureDefConfigs, Some(localDefConfigs)).getFeatureGroups()
-      val feathrClient = new FeathrClient(sparkSession, featureGroups, MultiStageJoinPlanner(), FeatureGroupsUpdater(), dataPathHandlers)
+      val feathrClient = new FeathrClient(sparkSession, featureGroups, MultiStageJoinPlanner(), FeatureGroupsUpdater(), dataPathHandlers, mvelContext)
 
       feathrClient
     }
