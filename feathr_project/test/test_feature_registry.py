@@ -25,8 +25,9 @@ class FeatureRegistryTests(unittest.TestCase):
 
         config_paths = [
             "feathr_config_registry_purview.yaml",
+            "feathr_config_registry_purview_rbac.yaml",
             "feathr_config_registry_sql.yaml",
-            "feathr_config_registry_sql_rbac.yaml"
+            "feathr_config_registry_sql_rbac.yaml",
         ]
 
         for config_path in config_paths:

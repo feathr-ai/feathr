@@ -160,17 +160,17 @@ def kafka_test_setup(config_path: str):
     return client
 
 def registry_test_setup(config_path: str):
-
-
-    # use a new project name every time to make sure all features are registered correctly
+    # Use a new project name every time to make sure all features are registered correctly
+    # Project name example: feathr_ci_registry_2022_09_24_01_02_30
     now = datetime.now()
-    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ["project_config__project_name"] = f'feathr_ci_registry_{str(now)[:19].replace(" ", "_").replace(":", "_").replace("-", "_")}'
 
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
     request_anchor, agg_anchor, derived_feature_list = generate_entities()
 
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
     return client
+
 def registry_test_setup_partially(config_path: str):
     """Register a partial of a project. Will call `generate_entities()` and register only the first anchor feature.
     """
