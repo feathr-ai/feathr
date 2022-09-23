@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.job
 
 import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
@@ -34,11 +35,13 @@ object LocalFeatureJoinJob {
       observationData: SparkFeaturizedDataset,
       extraParams: Array[String] = Array(),
       ss: SparkSession = ss,
-      dataPathHandlers: List[DataPathHandler]): SparkFeaturizedDataset = {
+      dataPathHandlers: List[DataPathHandler],
+      mvelContext: Option[FeathrExpressionExecutionContext]): SparkFeaturizedDataset = {
     val joinConfig = FeatureJoinConfig.parseJoinConfig(joinConfigAsHoconString)
     val feathrClient = FeathrClient.builder(ss)
     .addFeatureDef(featureDefAsString)
     .addDataPathHandlers(dataPathHandlers)
+    .addFeathrExpressionContext(mvelContext)
     .build()
     val outputPath: String = FeatureJoinJob.SKIP_OUTPUT
 
@@ -66,10 +69,11 @@ object LocalFeatureJoinJob {
       observationDataPath: String,
       extraParams: Array[String] = Array(),
       ss: SparkSession = ss,
-      dataPathHandlers: List[DataPathHandler]): SparkFeaturizedDataset = {
+      dataPathHandlers: List[DataPathHandler],
+      mvelContext: Option[FeathrExpressionExecutionContext]=None): SparkFeaturizedDataset = {
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
     val obsDf = loadObservationAsFDS(ss, observationDataPath,dataLoaderHandlers=dataLoaderHandlers)
-    joinWithObsDFAndHoconJoinConfig(joinConfigAsHoconString, featureDefAsString, obsDf, extraParams, ss, dataPathHandlers=dataPathHandlers)
+    joinWithObsDFAndHoconJoinConfig(joinConfigAsHoconString, featureDefAsString, obsDf, extraParams, ss, dataPathHandlers=dataPathHandlers, mvelContext)
   }
 
   /**

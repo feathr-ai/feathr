@@ -12,6 +12,7 @@ import com.linkedin.feathr.offline.join.algorithms._
 import com.linkedin.feathr.offline.join.util.{FrequentItemEstimatorFactory, FrequentItemEstimatorType}
 import com.linkedin.feathr.offline.join.workflow._
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan}
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.swa.SlidingWindowAggregationJoiner
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
@@ -30,7 +31,7 @@ import scala.collection.JavaConverters._
  * Joiner to join observation with feature data using Spark DataFrame API
  * @param logicalPlan analyzed feature info
  */
-private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler]) extends Serializable {
+private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext]) extends Serializable {
   @transient lazy val log = Logger.getLogger(getClass.getName)
   @transient lazy val anchorToDataSourceMapper = new AnchorToDataSourceMapper(dataPathHandlers)
   private val windowAggFeatureStages = logicalPlan.windowAggFeatureStages
@@ -69,7 +70,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
           (dfWithFeatureNames, featureAnchorWithSourcePair) => {
             val featureAnchorWithSource = featureAnchorWithSourcePair._1
             val requestedFeatures = featureAnchorWithSourcePair._2.toSeq
-            val resultWithoutKey = transformSingleAnchorDF(featureAnchorWithSource, dfWithFeatureNames.df, requestedFeatures, None)
+            val resultWithoutKey = transformSingleAnchorDF(featureAnchorWithSource, dfWithFeatureNames.df, requestedFeatures, None, mvelContext)
             val namePrefixPairs = dfWithFeatureNames.featureNameAndPrefixPairs ++ resultWithoutKey.featureNameAndPrefixPairs
             val inferredFeatureTypeConfigs = dfWithFeatureNames.inferredFeatureTypes ++ resultWithoutKey.inferredFeatureTypes
             val featureColumnFormats = resultWithoutKey.featureColumnFormats ++ dfWithFeatureNames.featureColumnFormats
@@ -201,12 +202,12 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         AnchoredFeatureJoinStep(
           SlickJoinLeftJoinKeyColumnAppender,
           SlickJoinRightJoinKeyColumnAppender,
-          SparkJoinWithJoinCondition(EqualityJoinConditionBuilder))
+          SparkJoinWithJoinCondition(EqualityJoinConditionBuilder), mvelContext)
       } else {
         AnchoredFeatureJoinStep(
           SqlTransformedLeftJoinKeyColumnAppender,
           IdentityJoinKeyColumnAppender,
-          SparkJoinWithJoinCondition(EqualityJoinConditionBuilder))
+          SparkJoinWithJoinCondition(EqualityJoinConditionBuilder), mvelContext)
       }
     val FeatureDataFrameOutput(FeatureDataFrame(withAllBasicAnchoredFeatureDF, inferredBasicAnchoredFeatureTypes)) =
       anchoredFeatureJoinStep.joinFeatures(requiredRegularFeatureAnchors, AnchorJoinStepInput(withWindowAggFeatureDF, anchorSourceAccessorMap))
@@ -223,7 +224,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
     } else withAllBasicAnchoredFeatureDF
 
     // 6. Join Derived Features
-    val derivedFeatureEvaluator = DerivedFeatureEvaluator(ss=ss, featureGroups=featureGroups, dataPathHandlers=dataPathHandlers)
+    val derivedFeatureEvaluator = DerivedFeatureEvaluator(ss=ss, featureGroups=featureGroups, dataPathHandlers=dataPathHandlers, mvelContext)
     val derivedFeatureJoinStep = DerivedFeatureJoinStep(derivedFeatureEvaluator)
     val FeatureDataFrameOutput(FeatureDataFrame(withDerivedFeatureDF, inferredDerivedFeatureTypes)) =
       derivedFeatureJoinStep.joinFeatures(allRequiredFeatures.filter {

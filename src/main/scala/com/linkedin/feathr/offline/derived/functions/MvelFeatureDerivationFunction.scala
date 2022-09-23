@@ -4,6 +4,7 @@ import com.linkedin.feathr.common
 import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig, TaggedFeatureName}
 import com.linkedin.feathr.offline.FeatureValue
 import com.linkedin.feathr.offline.config.TaggedDependency
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.mvel.{FeatureVariableResolverFactory, MvelContext, MvelUtils}
 import org.mvel2.MVEL
 
@@ -31,6 +32,7 @@ private[offline] class MvelFeatureDerivationFunction(
     featureTypeConfigOpt: Option[FeatureTypeConfig] = None)
     extends FeatureDerivationFunction {
 
+  var mvelContext: Option[FeathrExpressionExecutionContext] = None
   val parameterNames: Seq[String] = inputFeatures.keys.toIndexedSeq
 
   private val compiledExpression = {
@@ -42,7 +44,7 @@ private[offline] class MvelFeatureDerivationFunction(
     val argMap = (parameterNames zip inputs).toMap
     val variableResolverFactory = new FeatureVariableResolverFactory(argMap)
 
-    MvelUtils.executeExpression(compiledExpression, null, variableResolverFactory) match {
+    MvelUtils.executeExpression(compiledExpression, null, variableResolverFactory, featureName, mvelContext) match {
       case Some(value) =>
         val featureTypeConfig = featureTypeConfigOpt.getOrElse(FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
         if (value.isInstanceOf[common.FeatureValue]) {

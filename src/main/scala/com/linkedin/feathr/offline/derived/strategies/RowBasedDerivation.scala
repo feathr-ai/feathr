@@ -6,6 +6,7 @@ import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig,
 import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.derived.{DerivedFeature, DerivedFeatureEvaluator}
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
 import com.linkedin.feathr.offline.transformation.FDSConversionUtils
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils.tensorTypeToDataFrameSchema
@@ -21,7 +22,9 @@ import scala.collection.mutable
 /**
  * This class executes custom derivation logic defined in an implementation of FeatureDerivationFunction.
  */
-class RowBasedDerivation(dependentFeatureTypeConfigs: Map[String, FeatureTypeConfig]) extends RowBasedDerivationStrategy with Serializable {
+class RowBasedDerivation(dependentFeatureTypeConfigs: Map[String, FeatureTypeConfig],
+                         val mvelContext: Option[FeathrExpressionExecutionContext],
+                        ) extends RowBasedDerivationStrategy with Serializable {
 
   /**
    * Calculate a Row-based derived features such as Mvel based derivations or UDFs.
@@ -44,7 +47,8 @@ class RowBasedDerivation(dependentFeatureTypeConfigs: Map[String, FeatureTypeCon
       keyTagList: Seq[String],
       df: DataFrame,
       derivedFeature: DerivedFeature,
-      derivationFunction: FeatureDerivationFunction): DataFrame = {
+      derivationFunction: FeatureDerivationFunction,
+      mvelContext: Option[FeathrExpressionExecutionContext]): DataFrame = {
     if (derivationFunction.isInstanceOf[FeatureDerivationFunctionSpark]) {
       throw new FeathrException(ErrorLabel.FEATHR_USER_ERROR, s"Unsupported user customized derived feature ${derivedFeature.producedFeatureNames}")
     }
@@ -96,7 +100,7 @@ class RowBasedDerivation(dependentFeatureTypeConfigs: Map[String, FeatureTypeCon
           contextFeatureValues.put(ErasedEntityTaggedFeature(dependFeature.getBinding, dependFeature.getFeatureName), featureValue)
         })
         // calculate using original function
-        val features = DerivedFeatureEvaluator.evaluateFromFeatureValues(keyTags, derivedFeature, contextFeatureValues.toMap)
+        val features = DerivedFeatureEvaluator.evaluateFromFeatureValues(keyTags, derivedFeature, contextFeatureValues.toMap, mvelContext)
         val taggFeatures = features.map(kv => (kv._1.getErasedTagFeatureName, kv._2))
         val featureValues = featureNames.map(featureName => {
           taggFeatures.get(ErasedEntityTaggedFeature(keyTags, featureName).getErasedTagFeatureName).map { featureValue =>
