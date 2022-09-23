@@ -6,6 +6,10 @@ from rbac.db_rbac import DbRBAC
 from rbac.models import AccessType, User, UserAccess,_to_uuid
 from rbac.auth import authorize
 
+import json
+import requests
+from rbac import config
+
 """
 All Access Validation Functions. Used as FastAPI Dependencies.
 """
@@ -68,11 +72,20 @@ def _get_project_name(id_or_name: Union[str, UUID]):
         _to_uuid(id_or_name)
         if id_or_name not in rbac.projects_ids:
             # refresh project id map if id not found
-            rbac.get_projects_ids()
+            _get_projects_ids()
         return rbac.projects_ids[id_or_name]
     except KeyError:
-        raise ForbiddenAccess(f"Project Id {id_or_name} not found in Registry")
+        raise RuntimeError(f"Project Id {id_or_name} not found in Registry {config.RBAC_REGISTRY_URL}")
     except ValueError:
         pass
     # It is a name
     return id_or_name
+
+
+def _get_projects_ids():
+    """cache all project ids from registry api"""
+    try:
+        response = requests.get(url=f"{config.RBAC_REGISTRY_URL}/projects-ids").content.decode('utf-8')
+        rbac.projects_ids = json.loads(response)
+    except Exception as e:
+        raise RuntimeError(f"Failed to get projects ids from Registry {config.RBAC_REGISTRY_URL}, {e}")
