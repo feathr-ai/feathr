@@ -3,7 +3,7 @@ from pathlib import Path
 
 # Use the README.md from /docs
 root_path = Path(__file__).resolve().parent.parent
-long_description = (root_path / "docs/README.md").read_text()
+long_description = (root_path / "docs/README.md").read_text(encoding="utf8")
 
 setup(
     name='feathr',
