@@ -96,7 +96,7 @@ The API call is very similar to materializing features to online store, and here
 
 ```python
 client = FeathrClient()
-offlineSink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/")
+offlineSink = HdfsSink(output_path="abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/materialize_offline_test_data/")
 # Materialize two features into a Offline store.
 settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    sinks=[offlineSink],
@@ -121,14 +121,14 @@ settings = MaterializationSettings("nycTaxiTable",
 ```
 
 This will materialize features with cutoff time from `2020/05/10` to `2020/05/20` correspondingly, and the output will have 11 folders, from
-`abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/10` to `abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`. Note that currently Feathr only supports materializing data in daily step (i.e. even if you specify an hourly step, the generated features in offline store will still be presented in a daily hierarchy). For more details on how `BackfillTime` works, refer to the [BackfillTime section](#feature-backfill) above.
+`abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/10` to `abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20`. Note that currently Feathr only supports materializing data in daily step (i.e. even if you specify an hourly step, the generated features in offline store will still be presented in a daily hierarchy). For more details on how `BackfillTime` works, refer to the [BackfillTime section](#feature-backfill) above.
 
 You can also specify the format of the materialized features in the offline store by using `execution_configurations` like below. Please refer to the [documentation](../how-to-guides/feathr-job-configuration.md) here for those configuration details.
 
 ```python
 
 from feathr import HdfsSink
-offlineSink = HdfsSink(output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_data/")
+offlineSink = HdfsSink(output_path="abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/materialize_offline_data/")
 # Materialize two features into a Offline store.
 settings = MaterializationSettings("nycTaxiMaterializationJob",
                                    sinks=[offlineSink],
@@ -141,7 +141,7 @@ For reading those materialized features, Feathr has a convenient helper function
 
 ```python
 from feathr import get_result_df
-path = "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20/"
+path = "abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/materialize_offline_test_data/df0/daily/2020/05/20/"
 res = get_result_df(client=client, format="parquet", res_url=path)
 ```
 
