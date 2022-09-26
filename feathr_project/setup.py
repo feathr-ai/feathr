@@ -52,7 +52,8 @@ setup(
         # https://github.com/Azure/azure-sdk-for-python/pull/22891
         # using a version lower than that to workaround this issue.
         "azure-core<=1.22.1",
-        "typing_extensions>=4.2.0"
+        "typing_extensions>=4.2.0",
+        "aws-secretsmanager-caching>=1.1.1.5",
     ],
     tests_require=[
         'pytest',

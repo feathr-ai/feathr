@@ -2,15 +2,27 @@ import os
 import yaml
 from loguru import logger
 from feathr.secrets.akv_client import AzureKeyVaultClient
-from azure.core.exceptions import ResourceNotFoundError
+from feathr.secrets.aws_secretmanager import AWSSecretManagerClient
 
 class _EnvVaraibleUtil(object):
-    def __init__(self, config_path):
+    def __init__(self, config_path: str, secret_manager_client):
+        """Initialize the environment variable utils client
+
+        Args:
+            config_path (str): configuration path, if users want to use YAML to load all the configs
+            secret_manager_client: the secret manager client type. currently only Azure key vault and AWS secret manager is supported.
+        """
         self.config_path = config_path
         # Set to none first to avoid invalid reference
-        self.akv_name = None
-        self.akv_name = self.get_environment_variable_with_default( 'secrets', 'azure_key_vault', 'name')
-        self.akv_client = AzureKeyVaultClient(self.akv_name) if self.akv_name else None
+        self.secret_manager_client = None
+        if self.get_environment_variable_with_default('secrets', 'azure_key_vault', 'name'):
+            self.secret_manager_client = AzureKeyVaultClient(
+                secret_namespace=self.get_environment_variable_with_default('secrets', 'azure_key_vault', 'name'),
+                secret_client=self.secret_manager_client)
+        elif self.get_environment_variable_with_default('secrets', 'aws_secrets_manager', 'secret_id'):
+            self.secret_manager_client = AWSSecretManagerClient(
+                secret_namespace=self.get_environment_variable_with_default('secrets', 'aws_secrets_manager', 'secret_id'),
+                secret_client=self.secret_manager_client)
 
     def get_environment_variable_with_default(self, *args):
         """Gets the environment variable for the variable key.
@@ -48,22 +60,17 @@ class _EnvVaraibleUtil(object):
                         yaml_layer = yaml_layer[arg]
                     return yaml_layer
                 except KeyError as exc:
-                    logger.info("{} not found in the config file.", env_keyword)
+                    logger.info(
+                        "{} not found in the config file.", env_keyword)
                 except yaml.YAMLError as exc:
                     logger.warning(exc)
-        
+
         # If it's not available in the feathr_config.yaml file, Feathr will try to retrieve the value from key vault
-        if self.akv_name:
-            try:
-                return  self.akv_client.get_feathr_akv_secret(env_keyword) 
-            except ResourceNotFoundError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
-                return None
+        if self.secret_manager_client:
+            return self.secret_manager_client.get_feathr_secret(env_keyword)
 
     def get_environment_variable(self, variable_key):
         """Gets the environment variable for the variable key.
-        
 
         Args:
             variable_key: environment variable key that is used to retrieve the environment variable
@@ -80,12 +87,6 @@ class _EnvVaraibleUtil(object):
 
         # If it's not available in the environment variable file, Feathr will try to retrieve the value from key vault
         logger.info(variable_key + ' is not set in the environment variables.')
-        
-        if self.akv_name:
-            try:
-                return self.akv_client.get_feathr_akv_secret(variable_key)
-            except ResourceNotFoundError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable or key vault service.', variable_key)
-                return None
-    
+
+        if self.secret_manager_client:
+            return self.secret_manager_client.get_feathr_secret(variable_key)

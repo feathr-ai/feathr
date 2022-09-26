@@ -52,17 +52,14 @@ class FeathrClient(object):
         config_path (str, optional): config path. See [Feathr Config Template](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
         local_workspace_dir (str, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
         credential (optional): credential to access cloud resources,  most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
-        project_registry_tag (Dict[str, str]): adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
-
-    Raises:
-        RuntimeError: Fail to create the client since necessary environment variables are not set for Redis
-        client creation.
+        project_registry_tag (Dict[str, str]): adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project level. Default is empty.
+        secret_manager_client: the secret manager client initialized outside of Feathr.  End users need to initialize the secret manager outside of Feathr and pass it to Feathr so Feathr can use it to get required secrets.
     """
-    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_registry_tag: Dict[str, str]=None):
+    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_registry_tag: Dict[str, str]=None, secret_manager_client = None):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
-        self.envutils = _EnvVaraibleUtil(config_path)
+        self.envutils = _EnvVaraibleUtil(config_path, secret_manager_client)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
