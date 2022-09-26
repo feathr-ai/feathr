@@ -103,11 +103,12 @@ class HdfsSource(Source):
         registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
     """
 
-    def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+    def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None, time_partition_pattern: Optional[str] = None) -> None:
         super().__init__(name, event_timestamp_column,
                          timestamp_format, registry_tags=registry_tags)
         self.path = path
         self.preprocessing = preprocessing
+        self.time_partition_pattern = time_partition_pattern
         if path.startswith("http"):
             logger.warning(
                 "Your input path {} starts with http, which is not supported. Consider using paths starting with wasb[s]/abfs[s]/s3.", path)
@@ -116,6 +117,9 @@ class HdfsSource(Source):
         tm = Template("""  
             {{source.name}}: {
                 location: {path: "{{source.path}}"}
+                {% if source.time_partition_pattern %}
+                timePartitionPattern: "{{source.time_partition_pattern}}"
+                {% endif %}
                 {% if source.event_timestamp_column %}
                     timeWindowParameters: {
                         timestampColumn: "{{source.event_timestamp_column}}"
