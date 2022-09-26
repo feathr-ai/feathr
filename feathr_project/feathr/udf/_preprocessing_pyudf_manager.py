@@ -100,9 +100,13 @@ class _PreprocessingPyudfManager(object):
         however if we retrieve features from registry, the current implementation is to use plain strings to store the function body. In that case, the user_fuc will be string.
         """
         if isinstance(user_func, str):
+            print("In If loop -> user function name is : " + user_func)
             udf_source_code = [user_func]
         else:
+            print("In else loop -> user function name is : " + user_func)
             udf_source_code = inspect.getsourcelines(user_func)[0]
+            print("UDF SOURCE -----> " + udf_source_code)
+
         lines = []
         # Some basic imports will be provided
         lines = lines + PROVIDED_IMPORTS
