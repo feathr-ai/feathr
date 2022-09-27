@@ -15,18 +15,20 @@ classDiagram
     Feature --> Transformation
     Feature  -->  Transformation : contains
     Source <|-- DataSource: extends
-    Source <|-- FeatureSource: extends
+    Source <|-- MultiFeatureSource: extends
+    MultiFeatureSource "1" --> "1..n" FeatureSource: contains
     AnchorFeature  -->  DataSource : contains
-    DerivedFeature "1" --> "1..n" FeatureSource: contains
+    DerivedFeature -->  MultiFeatureSource: contains
 
     class Source{
     }
-
     class DataSource{
     }
-
     class FeatureSource{
-        +feature_name_id FeatureNameId
+        +FeatureNameId feature_name_id
+    }
+    class MultiFeatureSource{
+        +List[FeatureSource] sources
     }
     class Feature{
         +FeatureId id
@@ -38,7 +40,7 @@ classDiagram
         +DataSource source
     }
     class DerivedFeature{
-        +List[FeatureSource] source
+        +MultiFeatureSource source
     }
     class FeatureName{
         +FeatureNameId id

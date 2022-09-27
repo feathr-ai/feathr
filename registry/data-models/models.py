@@ -56,14 +56,23 @@ class DataSource(Source):
     Data source of the feature.
     It defines the raw data source the feature is extracted from.
     """
+    pass
 
 
-class FeaturesSource(Source):
+class FeatureSource(BaseModel):
     """
-    Feature source of the feature.
-    It defines one of features where the feature is derived from.
+    Represents a feature source for a derived feature. That is, it is a source 'FeatureName' which is used for
+    creating other derived features.
     """
-    input_feature_name_id: FeatureNameId  # Input feature name Keys
+    input_feature_name_id: FeatureNameId  # Input feature name Key
+
+
+class MultiFeatureSource(Source):
+    """
+    Feature sources of the feature.
+    It defines one to many features where the feature is derived from.
+    """
+    sources: List[FeatureSource]  # All source features which the feature is derived from
     pass
 
 
@@ -98,7 +107,7 @@ class DerivedFeature(Feature):
     """
     Feature implementation that is derived from other FeatureNames.
     """
-    source: List[FeaturesSource]  # Source features where the feature is derived from
+    source: MultiFeatureSource  # Source features where the feature is derived from
 
 
 class FeatureName(BaseModel):
