@@ -1,3 +1,4 @@
+from ast import Raise
 import copy
 import json
 import os
@@ -111,7 +112,10 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         returned_path = os.path.join(self.databricks_work_dir, file_name)
         # `local_path_or_http_path` will be either string or PathLib object, so normalize it to string
         local_path = str(local_path)
-        DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
+        try:
+            DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
+        except RuntimeError as e:
+            raise RuntimeError(f"The source path {local_path} or the destination path {returned_path} is/are not valid.") from e
         return returned_path
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = {}, properties: Dict[str, str] = {}):
@@ -265,3 +269,4 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             raise RuntimeError('Currently only paths starting with dbfs is supported for downloading results from a databricks cluster. The path should start with \"dbfs:\" .')
 
         DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=result_path, dst=local_folder)
+
