@@ -14,6 +14,7 @@ Diagram of the data models:  ./data-model-diagram.md
 class FeatureId(BaseModel):
     """
     Id for Feature, it's unique ID represents Feature.
+    Id can be a simple string, int or complex key.
     """
     id: str  # id of a feature
 
@@ -21,6 +22,7 @@ class FeatureId(BaseModel):
 class FeatureNameId(BaseModel):
     """
     Id for FeatureName, it's unique ID represents FeatureName.
+    Id can be a simple string, int or complex key.
     """
     id: str  # id of a FeatureName
 
@@ -28,6 +30,7 @@ class FeatureNameId(BaseModel):
 class AnchorId(BaseModel):
     """
     Id for Anchor, it's unique ID represents Anchor.
+    Id can be a simple string, int or complex key.
     """
     id: str  # id of a anchor
 
@@ -35,6 +38,7 @@ class AnchorId(BaseModel):
 class ProjectId(BaseModel):
     """
     Id for Project, it's unique ID represents Project.
+    Id can be a simple string, int or complex key.
     """
     id: str  # id of a project
 
