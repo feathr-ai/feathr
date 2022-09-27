@@ -115,7 +115,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         try:
             DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
         except RuntimeError as e:
-            raise RuntimeError(f"The source path {local_path} or the destination path {returned_path} is/are not valid.") from e
+            raise RuntimeError(f"The source path: {local_path}, or the destination path: {returned_path}, is/are not valid.") from e
         return returned_path
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str], python_files: List[str], reference_files_path: List[str] = [], job_tags: Dict[str, str] = None, configuration: Dict[str, str] = {}, properties: Dict[str, str] = {}):
