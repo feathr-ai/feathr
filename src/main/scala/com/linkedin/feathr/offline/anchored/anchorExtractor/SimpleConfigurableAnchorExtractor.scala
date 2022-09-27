@@ -6,6 +6,7 @@ import com.linkedin.feathr.common.util.CoercionUtils
 import com.linkedin.feathr.common.{AnchorExtractor, FeatureTypeConfig, FeatureTypes, FeatureValue, SparkRowExtractor}
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.config.MVELFeatureDefinition
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.util.FeatureValueTypeValidator
 import org.apache.log4j.Logger
@@ -28,6 +29,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
                                                           @JsonProperty("features") features: Map[String, MVELFeatureDefinition])
   extends AnchorExtractor[Any] with SparkRowExtractor {
 
+  var mvelContext: Option[FeathrExpressionExecutionContext] = None
   @transient private lazy val log = Logger.getLogger(getClass)
 
   def getKeyExpression(): Seq[String] = key
@@ -73,7 +75,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
     // be more strict for resolving keys (don't swallow exceptions)
     keyExpression.map(k =>
       try {
-        Option(MvelContext.executeExpressionWithPluginSupport(k, datum)) match {
+        Option(MvelContext.executeExpressionWithPluginSupport(k, datum, mvelContext.orNull)) match {
           case None => null
           case Some(keys) => keys.toString
         }
@@ -92,7 +94,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
 
     featureExpressions collect {
       case (featureRefStr, (expression, featureType)) if selectedFeatures.contains(featureRefStr) =>
-        (featureRefStr, (MvelUtils.executeExpression(expression, datum, null, featureRefStr), featureType))
+        (featureRefStr, (MvelUtils.executeExpression(expression, datum, null, featureRefStr, mvelContext), featureType))
     } collect {
       // Apply a partial function only for non-empty feature values, empty feature values will be set to default later
       case (featureRefStr, (Some(value), fType)) =>
@@ -165,7 +167,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
          * for building a tensor. Feature's value type and dimension type(s) are obtained via Feathr's Feature Metadata
          * Library during tensor construction.
          */
-        (featureRefStr, MvelUtils.executeExpression(expression, datum, null, featureRefStr))
+        (featureRefStr, MvelUtils.executeExpression(expression, datum, null, featureRefStr, mvelContext))
     }
   }
 

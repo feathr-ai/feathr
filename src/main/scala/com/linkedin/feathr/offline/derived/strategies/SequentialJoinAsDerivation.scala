@@ -14,13 +14,14 @@ import com.linkedin.feathr.offline.job.FeatureTransformation._
 import com.linkedin.feathr.offline.job.{AnchorFeatureGroups, FeatureTransformation, KeyedTransformedResult}
 import com.linkedin.feathr.offline.join.algorithms.{JoinType, SeqJoinExplodedJoinKeyColumnAppender, SparkJoinWithJoinCondition}
 import com.linkedin.feathr.offline.logical.FeatureGroups
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.transformation.{AnchorToDataSourceMapper, MvelDefinition}
-import com.linkedin.feathr.offline.util.{CoercionUtilsScala, DataFrameSplitterMerger, FeaturizedDatasetUtils, FeathrUtils}
+import com.linkedin.feathr.offline.util.{CoercionUtilsScala, DataFrameSplitterMerger, FeathrUtils, FeaturizedDatasetUtils}
 import com.linkedin.feathr.sparkcommon.{ComplexAggregation, SeqJoinCustomAggregation}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.functions.{expr, udf, _}
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, Row, SparkSession}
 
@@ -44,7 +45,8 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
       keyTagList: Seq[String],
       df: DataFrame,
       derivedFeature: DerivedFeature,
-      derivationFunction: SeqJoinDerivationFunction): DataFrame = {
+      derivationFunction: SeqJoinDerivationFunction,
+      mvelContext: Option[FeathrExpressionExecutionContext]): DataFrame = {
     val allAnchoredFeatures = featureGroups.allAnchoredFeatures
     // gather sequential join feature info
     val seqJoinDerivationFunction = derivationFunction
@@ -70,7 +72,7 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
      */
     val (expansion, expansionJoinKey): (DataFrame, Seq[String]) = if (allAnchoredFeatures.contains(expansionFeatureName)) {
       // prepare and get right table
-      loadExpansionAnchor(expansionFeatureName, derivedFeature, allAnchoredFeatures, seqJoinColumnName)
+      loadExpansionAnchor(expansionFeatureName, derivedFeature, allAnchoredFeatures, seqJoinColumnName, mvelContext)
     } else {
       throw new FeathrException(
         ErrorLabel.FEATHR_ERROR,
@@ -93,7 +95,7 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
       Map(baseTaggedDependency.feature -> MvelDefinition(transformation))
     } getOrElse Map.empty[String, MvelDefinition]
 
-    val left: DataFrame = PostTransformationUtil.transformFeatures(featureNameColumnTuples, obsWithLeftJoined, transformationDef, getDefaultTransformation)
+    val left: DataFrame = PostTransformationUtil.transformFeatures(featureNameColumnTuples, obsWithLeftJoined, transformationDef, getDefaultTransformation, mvelContext)
 
     // Partition build side of the join based on null values
     val (dfWithNoNull, dfWithNull) = DataFrameSplitterMerger.splitOnNull(left, baseFeatureJoinKey.head)
@@ -207,7 +209,8 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
   def getAnchorFeatureDF(
       allAnchoredFeatures: Map[String, FeatureAnchorWithSource],
       anchorFeatureName: String,
-      anchorToDataSourceMapper: AnchorToDataSourceMapper): KeyedTransformedResult = {
+      anchorToDataSourceMapper: AnchorToDataSourceMapper,
+      mvelContext: Option[FeathrExpressionExecutionContext]): KeyedTransformedResult = {
     val featureAnchor = allAnchoredFeatures(anchorFeatureName)
     val requestedFeatures = featureAnchor.featureAnchor.getProvidedFeatureNames
     val anchorGroup = AnchorFeatureGroups(Seq(featureAnchor), requestedFeatures)
@@ -219,7 +222,9 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
       anchorDFMap1(featureAnchor),
       featureAnchor.featureAnchor.sourceKeyExtractor,
       None,
-      None)
+      None,
+      None,
+      mvelContext)
     (featureInfo)
   }
 
@@ -590,10 +595,11 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
       expansionFeatureName: String,
       derivedFeature: DerivedFeature,
       allAnchoredFeatures: Map[String, FeatureAnchorWithSource],
-      seqJoinproducedFeatureName: String): (DataFrame, Seq[String]) = {
+      seqJoinproducedFeatureName: String,
+      mvelContext: Option[FeathrExpressionExecutionContext]): (DataFrame, Seq[String]) = {
     val expansionFeatureKeys = (derivedFeature.derivation.asInstanceOf[SeqJoinDerivationFunction].right.key)
     val expansionAnchor = allAnchoredFeatures(expansionFeatureName)
-    val expandFeatureInfo = getAnchorFeatureDF(allAnchoredFeatures, expansionFeatureName, new AnchorToDataSourceMapper(dataPathHandlers))
+    val expandFeatureInfo = getAnchorFeatureDF(allAnchoredFeatures, expansionFeatureName, new AnchorToDataSourceMapper(dataPathHandlers), mvelContext)
     val transformedFeatureDF = expandFeatureInfo.transformedResult.df
     val expansionAnchorKeyColumnNames = expandFeatureInfo.joinKey
     if (expansionFeatureKeys.size != expansionAnchorKeyColumnNames.size) {
