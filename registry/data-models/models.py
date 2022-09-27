@@ -7,7 +7,7 @@ Backend data models will be used by backend API server to talk to feature regist
 Purpose of this is to decouple backend data models from API specific data models.
 For each feature registry provider/implementation, they will extend this abstract
 data models and backend API.
-Diagram of the data models:                              
+Diagram of the data models:  ./data-model-diagram.md
 """
 
 
