@@ -170,17 +170,6 @@ class FeathrClient(object):
         # initialize registry
         self.registry = default_registry_client(self.project_name, config_path=config_path, credential=self.credential)
 
-    def _check_required_environment_variables_exist(self):
-        """Checks if the required environment variables(form feathr_config.yaml) is set.
-
-        Some required information has to be set via environment variables so the client can work.
-        """
-        props = self.secret_names
-        for required_field in (self.required_fields + props):
-            if required_field not in os.environ:
-                raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
-                                   f'variables are: {self.required_fields}.')
-
     def register_features(self, from_context: bool = True):
         """Registers features based on the current workspace
 
@@ -399,13 +388,12 @@ class FeathrClient(object):
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
 
-        redis_client = redis.Redis(
+        self.redis_client = redis.Redis(
             host=host,
             port=port,
             password=password,
             ssl=ssl_enabled)
         self.logger.info('Redis connection is successful and completed.')
-        self.redis_client = redis_client
 
 
     def get_offline_features(self,
@@ -570,7 +558,7 @@ class FeathrClient(object):
     # Should search in both 'derived_feature_list' and 'anchor_list'
     # Return related keys(key_column list) or None if cannot find the feature
     def _get_feature_key(self, feature_name: str):
-        features = []
+        features: List[FeatureBase] = []
         if 'derived_feature_list' in dir(self):
             features += self.derived_feature_list 
         if 'anchor_list' in dir(self):
@@ -732,7 +720,7 @@ class FeathrClient(object):
         # keys can't be only accessed through environment
         access_key = self.envutils.get_environment_variable('S3_ACCESS_KEY')
         secret_key = self.envutils.get_environment_variable('S3_SECRET_KEY')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             S3_ENDPOINT: {S3_ENDPOINT}
             S3_ACCESS_KEY: "{S3_ACCESS_KEY}"
@@ -747,7 +735,7 @@ class FeathrClient(object):
         # if ADLS Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
         key = self.envutils.get_environment_variable('ADLS_KEY')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             ADLS_ACCOUNT: {ADLS_ACCOUNT}
             ADLS_KEY: "{ADLS_KEY}"
@@ -761,7 +749,7 @@ class FeathrClient(object):
         # if BLOB Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
         key = self.envutils.get_environment_variable('BLOB_KEY')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             BLOB_ACCOUNT: {BLOB_ACCOUNT}
             BLOB_KEY: "{BLOB_KEY}"
@@ -777,7 +765,7 @@ class FeathrClient(object):
         driver = self.envutils.get_environment_variable('JDBC_DRIVER')
         auth_flag = self.envutils.get_environment_variable('JDBC_AUTH_FLAG')
         token = self.envutils.get_environment_variable('JDBC_TOKEN')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             JDBC_TABLE: {JDBC_TABLE}
             JDBC_USER: {JDBC_USER}
@@ -794,7 +782,7 @@ class FeathrClient(object):
         user = self.envutils.get_environment_variable_with_default('monitoring', 'database', 'sql', 'user')
         password = self.envutils.get_environment_variable('MONITORING_DATABASE_SQL_PASSWORD')
         if url:
-            # HOCCON format will be parsed by the Feathr job
+            # HOCON format will be parsed by the Feathr job
             config_str = """
                 MONITORING_DATABASE_SQL_URL: "{url}"
                 MONITORING_DATABASE_SQL_USER: {user}
@@ -811,7 +799,7 @@ class FeathrClient(object):
         sf_user = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'user')
         sf_role = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'role')
         sf_password = self.envutils.get_environment_variable('JDBC_SF_PASSWORD')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             JDBC_SF_URL: {JDBC_SF_URL}
             JDBC_SF_USER: {JDBC_SF_USER}
@@ -824,7 +812,7 @@ class FeathrClient(object):
         """Construct the Kafka config string. The endpoint, access key, secret key, and other parameters can be set via
         environment variables."""
         sasl = self.envutils.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             KAFKA_SASL_JAAS_CONFIG: "{sasl}"
             """.format(sasl=sasl)
