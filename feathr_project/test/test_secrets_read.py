@@ -46,8 +46,6 @@ def test_feathr_get_secrets_from_aws_secret_manager():
 
     client = botocore.session.get_session().create_client(
         service_name='secretsmanager',
-        aws_access_key_id = 'AKIA4C4QVX4ITOHSBR3D',
-        aws_secret_access_key= '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',
         region_name=region_name
     )
     cache_config = SecretCacheConfig()
