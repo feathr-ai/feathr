@@ -50,6 +50,8 @@ class _PreprocessingPyudfManager(object):
                 continue
             preprocessing_func = anchor.source.preprocessing
             if preprocessing_func:
+                print("Preprocessing function defined")
+                print(anchor.source.preprocessing.name)
                 _PreprocessingPyudfManager.persist_pyspark_udf_to_file(preprocessing_func, local_workspace_dir)
                 feature_names = [feature.name for feature in anchor.features]
                 features_with_preprocessing = features_with_preprocessing + feature_names
