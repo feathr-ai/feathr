@@ -77,3 +77,7 @@ docker push feathrfeaturestore/feathr-registry
 ## Published Feathr Registry Image
 
 The published feathr feature registry is located in [DockerHub here](https://hub.docker.com/r/feathrfeaturestore/feathr-registry).
+
+## Include the detailed track back info in registry api HTTP error response
+
+Set environment REGISTRY_DEBUGGING to any non empty string will enable the detailed track back info in registry api http response. This variable is helpful for python client debugging and should only be used for debugging purposes.

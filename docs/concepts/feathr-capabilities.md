@@ -143,8 +143,8 @@ schema = AvroJsonSchema(schemaStr="""
 }
 """)
 stream_source = KafKaSource(name="kafkaStreamingSource",
-                            kafkaConfig=KafkaConfig(brokers=["feathrazureci.servicebus.windows.net:9093"],
-                                                    topics=["feathrcieventhub"],
+                            kafkaConfig=KafkaConfig(brokers=["<replace_with_your_broker>.servicebus.windows.net:9093"],
+                                                    topics=["<replace_with_your_eventhub>"],
                                                     schema=schema)
                             )
 
