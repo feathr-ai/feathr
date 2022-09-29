@@ -103,7 +103,7 @@ class HdfsSource(Source):
         
         registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
         time_partition_pattern(Optional[str]): Format of the time partitioned feature data. e.g. yyyy/MM/DD. All formats supported in dateTimeFormatter.
-        HOCON config:
+        config:
             timeSnapshotHdfsSource: 
             {  
                 location: 
