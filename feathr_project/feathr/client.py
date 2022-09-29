@@ -8,6 +8,7 @@ import copy
 
 import redis
 from azure.identity import DefaultAzureCredential
+from feathr.definition.transformation import WindowAggTransformation
 from jinja2 import Template
 from pyhocon import ConfigFactory
 from feathr.definition.sink import Sink
@@ -612,16 +613,30 @@ class FeathrClient(object):
                         return False
         return True
     
-    def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
+    def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False, allow_materialize_non_agg_feature: bool = False):
         """Materialize feature data
 
         Args:
             settings: Feature materialization settings
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            allow_materialize_non_agg_feature: Normally materializing non-aggregated features doesn't output meaningful results so it's forbidden, but if you really want to do this, set this to True.
         """
         feature_list = settings.feature_names
         if len(feature_list) > 0 and not self._valid_materialize_keys(feature_list):
             raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
+        
+        if not allow_materialize_non_agg_feature:
+            # Check if there are non-aggregation features in the list
+            for fn in feature_list:
+                # Check over anchor features
+                for anchor in self.anchor_list:
+                    for feature in anchor:
+                        if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
+                            raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features.")
+                # Check over derived features
+                for feature in self.derived_feature_list:
+                    if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
+                        raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features.")
         
         # Collect secrets from sinks
         secrets = []

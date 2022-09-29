@@ -3,8 +3,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from feathr import (BackfillTime, MaterializationSettings)
-from feathr import RedisSink
+# from feathr import *
 from feathr.client import FeathrClient
+from feathr.definition.dtype import ValueType
+from feathr.definition.query_feature_list import FeatureQuery
+from feathr.definition.settings import ObservationSettings
+from feathr.definition.typed_key import TypedKey
 from test_fixture import (basic_test_setup, get_online_test_table_name)
 from test_utils.constants import Constants
 
@@ -20,8 +24,37 @@ def test_feathr_online_store_agg_features():
 
     # The `feathr_runtime_location` was commented out in this config file, so feathr should use
     # Maven package as the dependency and `noop.jar` as the main file
-    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config_maven.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config_xch.yaml"))
 
+    
+    
+    location_id = TypedKey(key_column="DOLocationID",
+                            key_column_type=ValueType.INT32,
+                            description="location id in NYC",
+                            full_name="nyc_taxi.location_id")
+
+    feature_query = FeatureQuery(
+        feature_list=["f_location_avg_fare"], key=location_id)
+    settings = ObservationSettings(
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+    now = datetime.now()
+    # set output folder based on different runtime
+    if client.spark_runtime == 'databricks':
+        output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".avro"])
+    else:
+        output_path = ''.join(['abfss://xchfeathrtest4fs@xchfeathrtest4sto.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
+
+
+    client.get_offline_features(observation_settings=settings,
+                                feature_query=feature_query,
+                                output_path=output_path)
+
+    # assuming the job can successfully run; otherwise it will throw exception
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+    return
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
     redisSink = RedisSink(table_name=online_test_table)
@@ -52,3 +85,5 @@ def test_feathr_online_store_agg_features():
     assert res['239'][1] != None
     assert res['265'][0] != None
     assert res['265'][1] != None
+
+test_feathr_online_store_agg_features()
