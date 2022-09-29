@@ -234,8 +234,8 @@ def test_feathr_get_offline_features_to_sql():
     # os.environ[f"sql1_USER"] = "some_user@feathrtestsql4"
     # os.environ[f"sql1_PASSWORD"] = "some_password"
     output_path = JdbcSink(name="sql1",
-                            url="jdbc:sqlserver://feathrtest3sql.database.windows.net:1433;database=feathrci;encrypt=true;",
-                            dbtable=''.join(['feathrazure_cijob','_', str(now.minute), '_', str(now.second)]),
+                            url="jdbc:sqlserver://feathrazureci.database.windows.net:1433;database=feathrci;encrypt=true;",
+                            dbtable=f'feathr_ci_materialization_{str(now)[:19].replace(" ", "_").replace(":", "_").replace("-", "_")}',
                             auth="USERPASS")
 
     client.get_offline_features(observation_settings=settings,
