@@ -78,6 +78,14 @@ const NewFeature = () => {
       if (!featureType.valType) alerts += "featureType.calType; \n";
     }
     if (!transformationParam) alerts += "transformation; \n";
+    else if (
+      !transformationParam.transformExpr &&
+      !transformationParam.defExpr &&
+      !transformationParam.aggFunc
+    ) {
+      alerts +=
+        "one of [transformationParam.transformExpr, transformationParam.defExpr, transformationParam.aggFunc]; \n";
+    }
     return alerts;
   };
 
@@ -104,7 +112,6 @@ const NewFeature = () => {
     if (type === "derived") {
       const newFeature = {
         name: basic.name,
-        qualifiedName: basic.qualifiedName,
         featureType: featureType,
         transformation: transformationParam,
         key: featureKeys,
@@ -120,7 +127,6 @@ const NewFeature = () => {
     } else if (type === "anchor") {
       const newFeature = {
         name: basic.name,
-        qualifiedName: basic.qualifiedName,
         featureType: featureType,
         transformation: transformationParam,
         key: featureKeys,

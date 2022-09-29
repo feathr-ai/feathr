@@ -5,7 +5,6 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import { BackTop, Button, Form, Input, Space, Typography } from "antd";
-import { ValueType } from "../../models/model";
 
 type Props = {
   onBasicChange: any;
@@ -44,15 +43,6 @@ const BasicForm = ({ onBasicChange, basicProp }: Props) => {
             rules={[{ required: true }]}
           >
             <Input name="name" />
-          </Form.Item>
-          {/*TODO: create qualifed name automatically after inputing name */}
-          <Form.Item
-            name="qualifiedName"
-            label="Qualified name"
-            initialValue={basicProp?.qualifiedName}
-            style={{ marginBottom: "1%" }}
-          >
-            <Input name="qualifiedName" />
           </Form.Item>
           <Typography.Title level={4}>Feature Tags </Typography.Title>
           <Form.List name="tags" initialValue={basicProp.tags}>
