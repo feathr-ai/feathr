@@ -100,7 +100,22 @@ class HdfsSource(Source):
                                                     - `epoch` (seconds since epoch), for example `1647737463`
                                                     - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
                                                     - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+        
         registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
+        time_partition_pattern(Optional[str]): Format of the time partitioned feature data. e.g. yyyy/MM/DD. All formats supported in dateTimeFormatter.
+        HOCON config:
+            timeSnapshotHdfsSource: 
+            {  
+                location: 
+                {    
+                    path: "/data/somePath/daily"  
+                }  
+                timePartitionPattern: "yyyy/MM/dd" 
+            }
+        Given the above HDFS path: /data/somePath/daily, 
+        then the expectation is that the following sub directorie(s) should exist:
+        /data/somePath/daily/{yyyy}/{MM}/{dd}
+
     """
 
     def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None, time_partition_pattern: Optional[str] = None) -> None:
