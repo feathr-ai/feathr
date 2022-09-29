@@ -630,7 +630,7 @@ class FeathrClient(object):
             for fn in feature_list:
                 # Check over anchor features
                 for anchor in self.anchor_list:
-                    for feature in anchor:
+                    for feature in anchor.features:
                         if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
                             raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features.")
                 # Check over derived features
