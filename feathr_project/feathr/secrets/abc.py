@@ -21,7 +21,7 @@ class FeathrSecretsManagementClient(ABC):
         pass
 
     @abstractmethod
-    def get_feathr_secret(self, secret_string: str) -> str:
+    def get_feathr_secret(self, secret_name: str) -> str:
         """Get Feathr Secrets from a certain secret management service, such as Azure Key Vault or AWS Secrets Manager. 
 
         Returns:

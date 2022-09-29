@@ -14,15 +14,15 @@ class _EnvVaraibleUtil(object):
         """
         self.config_path = config_path
         # Set to none first to avoid invalid reference
-        self.secret_manager_client = secret_manager_client
-        if self.get_environment_variable_with_default('secrets', 'azure_key_vault', 'name'):
+        self.secret_manager_client = None
+        if secret_manager_client and self.get_environment_variable_with_default('secrets', 'azure_key_vault', 'name'):
             self.secret_manager_client = AzureKeyVaultClient(
                 secret_namespace=self.get_environment_variable_with_default('secrets', 'azure_key_vault', 'name'),
-                secret_client=self.secret_manager_client)
-        elif self.get_environment_variable_with_default('secrets', 'aws_secrets_manager', 'secret_id'):
+                secret_client=secret_manager_client)
+        elif secret_manager_client and self.get_environment_variable_with_default('secrets', 'aws_secrets_manager', 'secret_id'):
             self.secret_manager_client = AWSSecretManagerClient(
                 secret_namespace=self.get_environment_variable_with_default('secrets', 'aws_secrets_manager', 'secret_id'),
-                secret_client=self.secret_manager_client)
+                secret_client=secret_manager_client)
 
     def get_environment_variable_with_default(self, *args):
         """Gets the environment variable for the variable key.

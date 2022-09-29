@@ -19,8 +19,8 @@ def test_feathr_get_secrets_from_azure_key_vault():
         __file__).parent.resolve() / "test_user_workspace"
 
     secret_client = SecretClient(
-        vault_url=f"https://{self.akv_name}.vault.azure.net",
-        credential=DefaultAzureCredential()
+        vault_url="https://feathrazuretest3-kv.vault.azure.net", # hard code the CI key vault endpoint
+        credential=DefaultAzureCredential(exclude_cli_credential=False,exclude_interactive_browser_credential=False)
     )
     client: FeathrClient = secret_test_setup(os.path.join(test_workspace_dir, "feathr_config_secret_test_azure_key_vault.yaml"), secret_manager_client=secret_client)
 
