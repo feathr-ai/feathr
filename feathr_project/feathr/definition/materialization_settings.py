@@ -35,8 +35,7 @@ class MaterializationSettings:
             if isinstance(sink, HdfsSink):
                 self.has_hdfs_sink = True
                 sink.aggregation_features = feature_names
-            else:
-                if isinstance(sink, RedisSink):
+            elif isinstance(sink, RedisSink):
                     sink.aggregation_features = feature_names
         self.sinks = sinks
         self.feature_names = feature_names

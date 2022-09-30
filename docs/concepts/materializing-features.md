@@ -36,7 +36,7 @@ Use incremental aggregation will significantly expedite the SWA feature calculat
 For example, aggregation sum of a feature F within a 180-day window at day T can be expressed as: F(T) = F(T - 1)+DirectAgg(T-1)-DirectAgg(T - 181). 
 Once a SNAPSHOT of the first day is generated, the calculation for the following days can leverage it.
 
-A storeName is required if incremental aggregated is enabled. There could be multiple output Datasets, and each of them need to be stored in a separate folders. The storeName is used as the folder name to create under the base "path".
+A storeName is required if incremental aggregated is enabled. There could be multiple output Datasets, and each of them need to be stored in a separate folder. The storeName is used as the folder name to create under the base "path".
 
 Incremental aggregation is enabled by default when using HdfsSink.
 
