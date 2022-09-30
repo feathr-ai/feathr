@@ -1,9 +1,12 @@
 package com.linkedin.feathr.offline.client
 
-import com.linkedin.feathr.common.{DateParam, JoiningFeatureParams, TaggedFeatureName}
+import com.linkedin.feathr.common.{DateParam, FeatureTypeConfig, JoiningFeatureParams, TaggedFeatureName}
 import com.linkedin.feathr.offline.TestFeathr
+import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
+import org.mockito.Mockito.when
+import org.scalatest.mockito.MockitoSugar.mock
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
@@ -58,5 +61,27 @@ class TestDataFrameColName extends TestFeathr {
     assertEquals(taggedFeatureToNewColumnNameMap(taggedFeature2)._2, "viewer__f1")
     val taggedFeature3 = new TaggedFeatureName("x", "seq_join_a_names")
     assertEquals(taggedFeatureToNewColumnNameMap(taggedFeature3)._2, "seq_join_a_names")
+  }
+
+  @Test(description = "Inferred feature type should be honored when user does not provide feature type")
+  def testGenerateHeader(): Unit = {
+    val mockFeatureAnchor = mock[FeatureAnchor]
+    // Mock if the user does not define feature type
+    when(mockFeatureAnchor.featureTypeConfigs).thenReturn(Map.empty[String, FeatureTypeConfig])
+
+    val mockFeatureAnchorWithSource = mock[FeatureAnchorWithSource]
+    when(mockFeatureAnchorWithSource.featureAnchor).thenReturn(mockFeatureAnchor)
+    val taggedFeatureName = new TaggedFeatureName("id", "f")
+    val  featureToColumnNameMap: Map[TaggedFeatureName, String] = Map(taggedFeatureName -> "f")
+    val allAnchoredFeatures: Map[String, FeatureAnchorWithSource] = Map("f" -> mockFeatureAnchorWithSource)
+    // Mock if the type if inferred to be numeric
+    val inferredFeatureTypeConfigs: Map[String, FeatureTypeConfig] = Map("f" -> FeatureTypeConfig.NUMERIC_TYPE_CONFIG)
+    val header = DataFrameColName.generateHeader(
+      featureToColumnNameMap,
+      allAnchoredFeatures,
+      Map(),
+      inferredFeatureTypeConfigs)
+    // output should be using the inferred type, i.e. numeric
+    assertEquals(header.featureInfoMap.get(taggedFeatureName).get.featureType, FeatureTypeConfig.NUMERIC_TYPE_CONFIG)
   }
 }

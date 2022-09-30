@@ -3,7 +3,6 @@ package com.linkedin.feathr.offline.source
 import com.linkedin.feathr.offline.config.location.{DataLocation, SimplePath}
 import com.linkedin.feathr.offline.source.SourceFormatType.SourceFormatType
 import com.linkedin.feathr.offline.util.{AclCheckUtils, HdfsUtils, LocalFeatureJoinUtils}
-import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 
 import scala.util.{Failure, Success, Try}
@@ -26,29 +25,33 @@ private[offline] case class DataSource(
                                         timePartitionPattern: Option[String])
   extends Serializable {
   private lazy val ss: SparkSession = SparkSession.builder().getOrCreate()
-  val path: String = resolveLatest(location.getPath, None) match {
-    case Success(resolvedPath) => resolvedPath
-    case Failure(_) => location.getPath // resolved failed
-  }
-
+  val path: String = resolveLatest(location.getPath, None)
   val pathList: Array[String] =
-    if (location.isInstanceOf[SimplePath] && sourceType == SourceFormatType.LIST_PATH) path.split(";")
-    else Array(path)
+    if (location.isInstanceOf[SimplePath] && sourceType == SourceFormatType.LIST_PATH) {
+      path.split(";").map(resolveLatest(_, None))
+    } else {
+      Array(path)
+    }
 
   // resolve path with #LATEST
-  def resolveLatest(path: String, mockDataBaseDir: Option[String]): Try[String] = {
-    Try(if (path.contains(AclCheckUtils.LATEST_PATTERN)) {
-      val hadoopConf = ss.sparkContext.hadoopConfiguration
-      if (ss.sparkContext.isLocal && LocalFeatureJoinUtils.getMockPathIfExist(path, hadoopConf, mockDataBaseDir).isDefined) {
-        val mockPath = LocalFeatureJoinUtils.getMockPathIfExist(path, hadoopConf, mockDataBaseDir).get
-        val resolvedPath = HdfsUtils.getLatestPath(mockPath, hadoopConf)
-        LocalFeatureJoinUtils.getOriginalFromMockPath(resolvedPath, mockDataBaseDir)
-      } else if (new Path(path).getFileSystem(hadoopConf).exists(new Path(path))) {
-        HdfsUtils.getLatestPath(path, hadoopConf)
+  def resolveLatest(path: String, mockDataBaseDir: Option[String]): String = {
+    Try(
+      if (path.contains(AclCheckUtils.LATEST_PATTERN)) {
+        val hadoopConf = ss.sparkContext.hadoopConfiguration
+        if (ss.sparkContext.isLocal && LocalFeatureJoinUtils.getMockPathIfExist(path, hadoopConf, mockDataBaseDir).isDefined) {
+          val mockPath = LocalFeatureJoinUtils.getMockPathIfExist(path, hadoopConf, mockDataBaseDir).get
+          val resolvedPath = HdfsUtils.getLatestPath(mockPath, hadoopConf)
+          LocalFeatureJoinUtils.getOriginalFromMockPath(resolvedPath, mockDataBaseDir)
+        } else {
+          HdfsUtils.getLatestPath(path, hadoopConf)
+        }
       } else {
         path
       }
-    } else path)
+    ) match {
+      case Success(resolvedPath) => resolvedPath
+      case Failure(_) => path // resolved failed
+    }
   }
 
   override def toString(): String = "path: " + path + ", sourceType:" + sourceType

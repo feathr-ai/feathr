@@ -1,5 +1,3 @@
-import json
-import requests
 from fastapi import HTTPException, status
 from typing import Any
 from rbac import config
@@ -21,7 +19,7 @@ class DbRBAC(RBAC):
             os.environ["RBAC_CONNECTION_STR"] = config.RBAC_CONNECTION_STR
         self.conn = connect()
         self.get_userroles()
-        self.get_projects_ids()
+        self.projects_ids = {}
 
     def get_userroles(self):
         # Cache is not supported in cluster, make sure every operation read from database.
@@ -47,7 +45,7 @@ class DbRBAC(RBAC):
     def validate_project_access_users(self, project: str, user: str, access: str = AccessType.READ) -> bool:
         self.get_userroles()
         for u in self.userroles:
-            if (u.user_name == user and u.project_name in [project, SUPER_ADMIN_SCOPE] and (access in u.access)):
+            if (u.user_name == user.lower() and u.project_name in [project.lower(), SUPER_ADMIN_SCOPE] and (access in u.access)):
                 return True
         return False
 
@@ -101,7 +99,7 @@ class DbRBAC(RBAC):
         # check if record already exist
         self.get_userroles()
         for u in self.userroles:
-            if u.project_name == project_name and u.user_name == user_name and u.role_name == role_name:
+            if u.project_name == project_name.lower() and u.user_name == user_name.lower() and u.role_name == role_name:
                 logging.warning(
                     f"User {user_name} already have {role_name} role of {project_name}.")
                 return True
@@ -163,8 +161,3 @@ class DbRBAC(RBAC):
         self.conn.update(query % (project_name.lower(), creator_name.lower(), RoleType.ADMIN.value, create_by, create_reason))
         logging.info(f"Userrole initialized with query: {query%(project_name, creator_name, RoleType.ADMIN.value, create_by, create_reason)}")
         return self.get_userroles()
-
-    def get_projects_ids(self):
-        """cache all project ids from registry api"""
-        response = requests.get(url=f"{config.RBAC_REGISTRY_URL}/projects-ids").content.decode('utf-8')
-        self.projects_ids =  json.loads(response)
