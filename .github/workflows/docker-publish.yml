@@ -6,9 +6,11 @@
 name: Publish Feathr Docker image to DockerHub
 
 on:
+  workflow_dispatch: 
   schedule:
     # Runs daily at 10 PM UTC, would generate nightly tag
     - cron: '00 22 * * *'
+    
 
   push:
     # For every push against the releases/** branch, usually would happen at release time, Tag example - releases/v0.7.0
@@ -17,6 +19,7 @@ on:
 
 
 jobs:
+
   build_and_push_image_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
@@ -45,10 +48,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+
+
   # Deploy the docker container to the three test environments for feathr
   deploy:
     runs-on: ubuntu-latest
-    needs: build_and_push_image_to_registry
     
     
     steps:
@@ -67,7 +71,6 @@ jobs:
           app-name: 'feathr-purview-registry'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FEATHR_PURVIEW_REGISTRY }}
           images: 'feathrfeaturestore/feathr-registry:nightly'
-
       - name: Deploy to Feathr RBAC Registry Azure Web App
         id: deploy-to-rbac-webapp
         uses: azure/webapps-deploy@v2
