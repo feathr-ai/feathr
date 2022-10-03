@@ -38,6 +38,7 @@ def test_feature_materialization_config():
                     name: REDIS
                     params: {
                         table_name: "nycTaxiDemoFeature"
+                        features: [f_location_avg_fare,f_location_max_fare]
                     }
                 }
             ]

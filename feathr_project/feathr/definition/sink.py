@@ -82,6 +82,9 @@ class RedisSink(Sink):
                     {% if source.streamingTimeoutMs %}
                     timeoutMs: {{source.streamingTimeoutMs}}
                     {% endif %}
+                    {% if source.aggregation_features %}
+                    features: [{{','.join(source.aggregation_features)}}]
+                    {% endif %}
                 }
             }
         """)
@@ -131,6 +134,9 @@ class HdfsSink(Sink):
                 name: HDFS
                 params: {
                     path: "{{sink.output_path}}"
+                    {% if sink.aggregation_features %}
+                    features: [{{','.join(sink.aggregation_features)}}]
+                    {% endif %}
                 }
             }
         """)
@@ -333,3 +339,24 @@ class ElasticSearchSink(GenericSink):
         if self.auth:
             return [self.name.upper() + "_USER", self.name.upper() + "_PASSWORD"]
         return []
+
+class AerospikeSink(GenericSink):
+    def __init__(self,name:str,seedhost:str,port:int,namespace:str,setname:str):
+        super().__init__(format="aerospike",mode="APPEND",options = {
+            "aerospike.seedhost":seedhost,
+            "aerospike.port":str(port),
+            "aerospike.namespace":namespace,
+            "aerospike.user":"${%s_USER}" % name.upper(),
+            "aerospike.password":"${%s_PASSWORD}" % name.upper(),
+            "aerospike.set":setname
+        })
+        self.name = name
+
+    def support_offline(self) -> bool:
+        return False
+    
+    def support_online(self) -> bool:
+        return True
+    
+    def get_required_properties(self) -> List[str]:
+        return [self.name.upper() + "_USER", self.name.upper() + "_PASSWORD"]

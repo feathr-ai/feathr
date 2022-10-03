@@ -12,6 +12,7 @@ import com.linkedin.feathr.offline.job.KeyedTransformedResult
 import com.linkedin.feathr.offline.join._
 import com.linkedin.feathr.offline.join.algorithms._
 import com.linkedin.feathr.offline.join.util.FrequentItemEstimatorFactory
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.util.FeathrUtils
@@ -31,7 +32,8 @@ import org.apache.spark.sql.functions.lit
 private[offline] class AnchoredFeatureJoinStep(
     leftJoinColumnExtractor: JoinKeyColumnsAppender,
     rightJoinColumnExtractor: JoinKeyColumnsAppender,
-    joiner: SparkJoinWithJoinCondition)
+    joiner: SparkJoinWithJoinCondition,
+    mvelContext: Option[FeathrExpressionExecutionContext])
     extends FeatureJoinStep[AnchorJoinStepInput, DataFrameJoinStepOutput] {
   @transient lazy val log = Logger.getLogger(getClass.getName)
 
@@ -126,7 +128,7 @@ private[offline] class AnchoredFeatureJoinStep(
     val anchoredFeaturesThisStage = featureNames.filter(allAnchoredFeatures.contains).map(allAnchoredFeatures).distinct
     val anchoredDFThisStage = anchorDFMap.filterKeys(anchoredFeaturesThisStage.toSet)
     // map feature name to its transformed dataframe and the join key of the dataframe
-    val featureToDFAndJoinKeys = transformFeatures(anchoredDFThisStage, anchoredFeatureNamesThisStage, bloomFilter)
+    val featureToDFAndJoinKeys = transformFeatures(anchoredDFThisStage, anchoredFeatureNamesThisStage, bloomFilter, None, mvelContext)
     featureToDFAndJoinKeys
       .groupBy(_._2.transformedResult.df) // group by dataframe, join one at a time
       .map(grouped => (grouped._2.keys.toSeq, grouped._2.values.toSeq)) // extract the feature names and their (dataframe,join keys) pairs
@@ -226,6 +228,7 @@ private[offline] object AnchoredFeatureJoinStep {
   def apply(
       leftJoinColumnExtractor: JoinKeyColumnsAppender,
       rightJoinColumnExtractor: JoinKeyColumnsAppender,
-      joiner: SparkJoinWithJoinCondition): AnchoredFeatureJoinStep =
-    new AnchoredFeatureJoinStep(leftJoinColumnExtractor, rightJoinColumnExtractor, joiner)
+      joiner: SparkJoinWithJoinCondition,
+      mvelContext: Option[FeathrExpressionExecutionContext]): AnchoredFeatureJoinStep =
+    new AnchoredFeatureJoinStep(leftJoinColumnExtractor, rightJoinColumnExtractor, joiner, mvelContext)
 }

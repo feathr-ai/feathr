@@ -47,7 +47,18 @@ class PurviewRegistry(Registry):
         result = self.purview_client.discovery.query(filter=searchTerm)
         result_entities = result['value']
         return [x['qualifiedName'] for x in result_entities]
-        
+
+    def get_projects_ids(self) -> dict:
+        """
+        Returns the names and ids of all projects"""
+        searchTerm = {"entityType": str(EntityType.Project)}
+        result = self.purview_client.discovery.query(filter=searchTerm)
+        result_entities = result['value']
+        projects = {}
+        for x in result_entities:
+            projects[x['id']] = x['qualifiedName']
+        return projects
+
     def get_entity(self, id_or_name: Union[str, UUID],recursive = False) -> Entity:
         id = self.get_entity_id(id_or_name)
         if not id:

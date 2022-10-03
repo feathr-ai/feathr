@@ -96,7 +96,7 @@ parent: Developer Guides
 
 ## Troubleshooting
 - If you get something like `[error] gpg: signing failed: Inappropriate ioctl for device`, run `export GPG_TTY=$(tty)` in your terminal and restart sbt console.
-- If the published jar fails to run in Spark with error `java.lang.UnsupportedClassVersionError: com/linkedin/feathr/common/exception/FeathrInputDataException has been compiled by a more recent version of the Java Runtime (class file version 62.0), this version of the Java Runtime only recognizes class file versions up to 52.0`, make sure you complied with the right Java version with -java-home parameter in sbt console.
+- If the published jar fails to run in Spark with error `java.lang.UnsupportedClassVersionError: com/feathr-ai/feathr/common/exception/FeathrInputDataException has been compiled by a more recent version of the Java Runtime (class file version 62.0), this version of the Java Runtime only recognizes class file versions up to 52.0`, make sure you complied with the right Java version with -java-home parameter in sbt console.
 
 ## CI Automatic Publishing
 There is a Github Action that automates the above process, you can find it [here](../../.github/workflows/publish-to-maven.yml). This action is triggered anytime a new tag is created, which is usually for release purposes. To manually trigger the pipeline for testing purposes tag can be created using following commands

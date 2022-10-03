@@ -48,6 +48,9 @@ app.add_middleware(CORSMiddleware,
 def get_projects() -> list[str]:
     return registry.get_projects()
 
+@router.get("/projects-ids")
+def get_projects_ids() -> dict:
+    return registry.get_projects_ids()
 
 @router.get("/projects/{project}",tags=["Project"])
 def get_projects(project: str) -> dict:
@@ -60,6 +63,17 @@ def get_project_datasources(project: str) -> list:
     source_ids = [s.id for s in p.attributes.sources]
     sources = registry.get_entities(source_ids)
     return list([to_camel(e.to_dict()) for e in sources])
+
+
+@router.get("/projects/{project}/datasources/{datasource}",tags=["Project"])
+def get_datasource(project: str, datasource: str) -> dict:
+    p = registry.get_entity(project,True)
+    for s in p.attributes.sources:
+        if str(s.id) == datasource:
+            return s
+    # If datasource is not found, raise 404 error
+    raise HTTPException(
+        status_code=404, detail=f"Data Source {datasource} not found")
 
 
 @router.get("/projects/{project}/features",tags=["Project"])
