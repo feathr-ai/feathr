@@ -29,12 +29,12 @@ trait SparkRowExtractor {
    * This is especially useful when users need to convert the source DataFrame
    * into specific datatype, e.g. Avro GenericRecord or SpecificRecord.
    */
-  def hasBatchPreProcessing() = false
+  def isLowLevelRddExtractor() = false
 
   /**
-   * One time batch preprocess the input data source into a RDD[_] for feature extraction later
+   * One time batch preprocess the input data source into a RDD[IndexedRecord] for feature extraction later
    * @param df input data source
    * @return batch preprocessed dataframe, as RDD[IndexedRecord]
    */
-  def batchPreProcess(df: DataFrame) : RDD[IndexedRecord] = throw new NotImplementedError("Batch preprocess is not implemented")
+  def convertToAvroRdd(df: DataFrame) : RDD[IndexedRecord] = throw new NotImplementedError("Batch preprocess is not implemented")
 }

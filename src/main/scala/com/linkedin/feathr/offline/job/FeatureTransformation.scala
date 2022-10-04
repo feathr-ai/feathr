@@ -45,6 +45,16 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 private[offline] case class AnchorFeatureGroups(anchorsWithSameSource: Seq[FeatureAnchorWithSource], requestedFeatures: Seq[String])
 
 /**
+ * Context info needed in feature transformation
+ * @param featureAnchorWithSource feature annchor with its source
+ * @param featureNamePrefixPairs map of feature name to its prefix
+ * @param transformer transformer of anchor
+ */
+private[offline] case class TransformInfo(featureAnchorWithSource: FeatureAnchorWithSource,
+                                 featureNamePrefixPairs: Seq[(FeatureName, FeatureName)],
+                                 transformer: AnchorExtractorBase[IndexedRecord])
+
+/**
  * Represent the transformed result of an anchor extractor after evaluating its features
  * @param featureNameAndPrefixPairs pairs of feature name and feature name prefix
  * E.g, if feature is A, prefix is pre_, then the feature column in the df should be pre_A
@@ -765,7 +775,7 @@ private[offline] object FeatureTransformation {
    * @param bloomFilter bloomfilter to apply on source rdd
    * @param requestedFeatureNames requested features
    * @param featureTypeConfigs user specified feature types
-   * @return TransformedResultWithKey
+   * @return TransformedResultWithKey The output feature DataFrame conforms to FDS format
    */
   private def transformFeaturesOnAvroRecord(df: DataFrame,
                                             keyExtractor: SourceKeyExtractor,
@@ -778,11 +788,11 @@ private[offline] object FeatureTransformation {
         s"Key extractor ${keyExtractor} must extends MVELSourceKeyExtractor.")
     }
     val extractor = keyExtractor.asInstanceOf[MVELSourceKeyExtractor]
-    if (!extractor.anchorExtractorV1.hasBatchPreProcessing()) {
+    if (!extractor.anchorExtractorV1.isLowLevelRddExtractor()) {
       throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Error processing requested Feature :${requestedFeatureNames}. " +
-        s"Missing batch preprocessors.")
+        s"isLowLevelRddExtractor() should return true and convertToAvroRdd should be implemented.")
     }
-    val rdd = extractor.anchorExtractorV1.batchPreProcess(df)
+    val rdd = extractor.anchorExtractorV1.convertToAvroRdd(df)
     val filteredFactData = applyBloomFilterRdd(keyExtractor, rdd, bloomFilter)
 
     // Build a sequence of 3-tuple of (FeatureAnchorWithSource, featureNamePrefixPairs, AnchorExtractorBase)
@@ -795,7 +805,7 @@ private[offline] object FeatureTransformation {
           val featureNamePrefix = ""
           val featureNames = featureAnchorWithSource.selectedFeatures.filter(requestedFeatureNames.contains)
           val featureNamePrefixPairs = featureNames.map((_, featureNamePrefix))
-          (featureAnchorWithSource, featureNamePrefixPairs, transformer)
+          TransformInfo(featureAnchorWithSource, featureNamePrefixPairs, transformer)
 
         case _ =>
           throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, s"Unsupported transformer $extractor for features: $requestedFeatureNames")
@@ -803,17 +813,17 @@ private[offline] object FeatureTransformation {
     }
 
     // to avoid name conflict between feature names and the raw data field names
-    val sourceKeyExtractors = transformInfo.map(_._1.featureAnchor.sourceKeyExtractor)
+    val sourceKeyExtractors = transformInfo.map(_.featureAnchorWithSource.featureAnchor.sourceKeyExtractor)
     assert(sourceKeyExtractors.map(_.toString).distinct.size == 1)
 
-    val transformers = transformInfo map (_._3)
+    val transformers = transformInfo map (_.transformer)
 
     /*
      * Transform the given RDD by applying extractors to each row to create an RDD[Row] where each Row
      * represents keys and feature values
      */
     val spark = SparkSession.builder().getOrCreate()
-    val userProvidedFeatureTypes = transformInfo.flatMap(_._1.featureAnchor.getFeatureTypes.getOrElse(Map.empty[String, FeatureTypes])).toMap
+    val userProvidedFeatureTypes = transformInfo.flatMap(_.featureAnchorWithSource.featureAnchor.getFeatureTypes.getOrElse(Map.empty[String, FeatureTypes])).toMap
     val FeatureTypeInferenceContext(featureTypeAccumulators) =
       FeatureTransformation.getTypeInferenceContext(spark, userProvidedFeatureTypes, requestedFeatureNames)
     val transformedRdd = filteredFactData map { record =>
@@ -849,7 +859,7 @@ private[offline] object FeatureTransformation {
 
     val featureFormat = FeatureColumnFormat.FDS_TENSOR
     val featureColumnFormats = requestedFeatureNames.map(name => name -> featureFormat).toMap
-    val transformedInfo = TransformedResult(transformInfo.flatMap(_._2), transformedDF, featureColumnFormats, inferredFeatureTypeConfigs)
+    val transformedInfo = TransformedResult(transformInfo.flatMap(_.featureNamePrefixPairs), transformedDF, featureColumnFormats, inferredFeatureTypeConfigs)
     KeyedTransformedResult(keyNames, transformedInfo)
   }
 
@@ -893,8 +903,8 @@ private[offline] object FeatureTransformation {
     }
 
     /*
-     * Retain feature values for only the requested features, and represent each feature value as a term-vector or as
-     * a tensor, as specified. If tensors are required, create a row for each feature value (that is, the tensor).
+     * Retain feature values for only the requested features, and represent each feature value as
+     * a tensor, as specified.
      */
     val featureValuesWithType = requestedFeatureNames map { name =>
       features.get(name) map {
