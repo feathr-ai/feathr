@@ -491,13 +491,11 @@ private[offline] object FeatureTransformation {
           val keyExtractor = anchorsWithSameSource.head._1.featureAnchor.sourceKeyExtractor
           val featureAnchorWithSource = anchorsWithSameSource.keys.toSeq
           val selectedFeatures = anchorsWithSameSource.flatMap(_._2.featureNames).toSeq
-          val isAvroBasedExtractor = featureAnchorWithSource
+          val isAvroRddBasedExtractor = featureAnchorWithSource
             .map(_.featureAnchor.extractor)
-            .filter(extractor =>
-              extractor.isInstanceOf[AnchorExtractor[Any]] &&
-              classOf[IndexedRecord].isAssignableFrom(extractor.asInstanceOf[AnchorExtractor[Any]].getInputType)
+            .filter(extractor => extractor.isInstanceOf[WorkWithAvroRdd]
           ).nonEmpty
-          val transformedResults: Seq[KeyedTransformedResult] = if (isAvroBasedExtractor) {
+          val transformedResults: Seq[KeyedTransformedResult] = if (isAvroRddBasedExtractor) {
               // If there are features are defined using AVRO record based extractor, run RDD based feature transformation
               val sourceAccessor = featureGroupingFactors.source
               val sourceRdd = sourceAccessor.asInstanceOf[NonTimeBasedDataSourceAccessor].get()
@@ -788,11 +786,11 @@ private[offline] object FeatureTransformation {
         s"Key extractor ${keyExtractor} must extends MVELSourceKeyExtractor.")
     }
     val extractor = keyExtractor.asInstanceOf[MVELSourceKeyExtractor]
-    if (!extractor.anchorExtractorV1.isLowLevelRddExtractor()) {
+    if (!extractor.anchorExtractorV1.isInstanceOf[WorkWithAvroRdd]) {
       throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Error processing requested Feature :${requestedFeatureNames}. " +
         s"isLowLevelRddExtractor() should return true and convertToAvroRdd should be implemented.")
     }
-    val rdd = extractor.anchorExtractorV1.convertToAvroRdd(df)
+    val rdd = extractor.anchorExtractorV1.asInstanceOf[WorkWithAvroRdd].convertToAvroRdd(df)
     val filteredFactData = applyBloomFilterRdd(keyExtractor, rdd, bloomFilter)
 
     // Build a sequence of 3-tuple of (FeatureAnchorWithSource, featureNamePrefixPairs, AnchorExtractorBase)
