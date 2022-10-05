@@ -87,5 +87,5 @@ private[feathr] class MVELSourceKeyExtractor(val anchorExtractorV1: AnchorExtrac
   // to the observation data
   // The default toString does not work, because toString of each object have different values
   override def toString: String = getClass.getSimpleName + " with keyExprs:" + keyExprs.mkString(" key:") +
-    anchorExtractorV1.toString
+    "anchorExtractor:" + anchorExtractorV1.toString
 }

@@ -9,12 +9,12 @@ import org.apache.spark.sql.DataFrame
  * this trait, and use convertToAvroRdd to do a one-time batch conversion of DataFrame to RDD of their choice.
  * convertToAvroRdd will be called by Feathr engine before calling getKeyFromRow() and getFeaturesFromRow() in AnchorExtractor.
  */
-trait WorkWithAvroRdd {
+trait CanConvertToAvroRDD {
 
   /**
    * One time batch converting the input data source into a RDD[IndexedRecord] for feature extraction later
    * @param df input data source
    * @return batch preprocessed dataframe, as RDD[IndexedRecord]
    */
-  def convertToAvroRdd(df: DataFrame) : RDD[IndexedRecord] = throw new UnsupportedOperationException("Batch preprocess is not implemented")
+  def convertToAvroRdd(df: DataFrame) : RDD[IndexedRecord]
 }

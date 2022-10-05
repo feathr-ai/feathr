@@ -493,7 +493,7 @@ private[offline] object FeatureTransformation {
           val selectedFeatures = anchorsWithSameSource.flatMap(_._2.featureNames).toSeq
           val isAvroRddBasedExtractor = featureAnchorWithSource
             .map(_.featureAnchor.extractor)
-            .filter(extractor => extractor.isInstanceOf[WorkWithAvroRdd]
+            .filter(extractor => extractor.isInstanceOf[CanConvertToAvroRDD]
           ).nonEmpty
           val transformedResults: Seq[KeyedTransformedResult] = if (isAvroRddBasedExtractor) {
               // If there are features are defined using AVRO record based extractor, run RDD based feature transformation
@@ -786,11 +786,11 @@ private[offline] object FeatureTransformation {
         s"Key extractor ${keyExtractor} must extends MVELSourceKeyExtractor.")
     }
     val extractor = keyExtractor.asInstanceOf[MVELSourceKeyExtractor]
-    if (!extractor.anchorExtractorV1.isInstanceOf[WorkWithAvroRdd]) {
+    if (!extractor.anchorExtractorV1.isInstanceOf[CanConvertToAvroRDD]) {
       throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Error processing requested Feature :${requestedFeatureNames}. " +
         s"isLowLevelRddExtractor() should return true and convertToAvroRdd should be implemented.")
     }
-    val rdd = extractor.anchorExtractorV1.asInstanceOf[WorkWithAvroRdd].convertToAvroRdd(df)
+    val rdd = extractor.anchorExtractorV1.asInstanceOf[CanConvertToAvroRDD].convertToAvroRdd(df)
     val filteredFactData = applyBloomFilterRdd(keyExtractor, rdd, bloomFilter)
 
     // Build a sequence of 3-tuple of (FeatureAnchorWithSource, featureNamePrefixPairs, AnchorExtractorBase)
