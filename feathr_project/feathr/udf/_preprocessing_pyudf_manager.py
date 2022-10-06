@@ -91,9 +91,13 @@ class _PreprocessingPyudfManager(object):
             return None
 
         tree = ast.parse(fn_str)
+
+        # tree.body contains a list of function definition objects parsed from the input string.
+        # Currently, we only accept a single function.
         if len(tree.body) != 1 or not isinstance(tree.body[0], ast.FunctionDef):
             raise ValueError("provided code fragment is not a single function")
 
+        # Get the function name from the function definition.
         return tree.body[0].name
 
 
