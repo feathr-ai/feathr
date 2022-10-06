@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
+from typing import Dict, List, Optional, Tuple
 
-from typing import Any, Dict, List, Optional, Tuple
 
 class SparkJobLauncher(ABC):
     """This is the abstract class for all the spark launchers. All the Spark launcher should implement those interfaces
@@ -14,7 +14,6 @@ class SparkJobLauncher(ABC):
             local_path_or_http_path (str): local path or http path
         """
         pass
-
 
     @abstractmethod
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str],
@@ -33,6 +32,7 @@ class SparkJobLauncher(ABC):
             properties (Dict[str, str]): Additional System Properties for the spark job
         """
         pass
+
     @abstractmethod
     def wait_for_completion(self, timeout_seconds: Optional[float]) -> bool:
         """Returns true if the job completed successfully

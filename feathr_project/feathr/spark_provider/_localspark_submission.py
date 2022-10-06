@@ -5,7 +5,7 @@ from pathlib import Path
 from shlex import split
 from subprocess import STDOUT, Popen
 import time
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 from pyspark import *
@@ -14,7 +14,7 @@ from feathr.constants import FEATHR_MAVEN_ARTIFACT
 from feathr.spark_provider._abc import SparkJobLauncher
 
 
-class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
+class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
     """Class to interact with local Spark. This class is not intended to be used in Production environments.
     It is intended to be used for testing and development purposes. No authentication is required to use this class.
 
@@ -39,7 +39,7 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
         self.retry = retry
         self.retry_sec = retry_sec
         self.packages = self._get_default_package()
-        self.master = master
+        self.master = master or "local[*]"
 
     def upload_or_get_cloud_path(self, local_path_or_http_path: str):
         """For Local Spark Case, no need to upload to cloud workspace."""
@@ -48,14 +48,14 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
     def submit_feathr_job(
         self,
         job_name: str,
-        main_jar_path: str = None,
-        main_class_name: str = None,
+        main_jar_path: str,
+        main_class_name: str,
         arguments: List[str] = None,
         python_files: List[str] = None,
         configuration: Dict[str, str] = {},
         properties: Dict[str, str] = {},
         *_,
-    ):
+    ) -> Any:
         """Submits the Feathr job to local spark, using subprocess args.
         Note that the Spark application will automatically run on YARN cluster mode. You cannot change it if
         you are running with Azure Synapse.
@@ -79,7 +79,7 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
         # Get conf and package arguments
         cfg = configuration.copy() if configuration else {}
         maven_dependency = f"{cfg.pop('spark.jars.packages', self.packages)},{FEATHR_MAVEN_ARTIFACT}"
-        spark_args = self._init_args(master=self.master, job_name=job_name, confs=cfg)
+        spark_args = self._init_args(job_name=job_name, confs=cfg)
 
         if not main_jar_path:
             # We don't have the main jar, use Maven
@@ -199,14 +199,12 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
         """Get the status of the job, only a placeholder for local spark"""
         return self.latest_spark_proc.returncode
 
-    def _init_args(self, master: str, job_name: str, confs: Dict[str, str]):
-        if master is None:
-            master = "local[*]"
-        logger.info(f"Spark job: {job_name} is running on local spark with master: {master}.")
+    def _init_args(self, job_name: str, confs: Dict[str, str]) -> List[str]:
+        logger.info(f"Spark job: {job_name} is running on local spark with master: {self.master}.")
         args = [
             "spark-submit",
             "--master",
-            master,
+            self.master,
             "--name",
             job_name,
             "--conf",
@@ -215,8 +213,8 @@ class _FeathrDLocalSparkJobLauncher(SparkJobLauncher):
             "spark.hadoop.fs.wasbs=org.apache.hadoop.fs.azure.NativeAzureFileSystem",
         ]
 
-        for key, value in confs.items():
-            args.extend(["--conf", f"{key}={value}"])
+        for k, v in confs.items():
+            args.extend(["--conf", f"{k}={v}"])
 
         return args
 
