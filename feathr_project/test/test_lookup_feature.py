@@ -1,6 +1,7 @@
 from feathr import Aggregation
 from feathr import Feature
 from feathr import LookupFeature
+from feathr import DerivedFeature
 from feathr import FLOAT, FLOAT_VECTOR, ValueType, INT32_VECTOR
 from feathr import TypedKey
 
@@ -39,4 +40,5 @@ def test_single_key_lookup_feature_to_config():
         }
     }"""
     assert_config_equals(lookup_feature.to_feature_config(), lookup_feature_config)
+    assert(isinstance(lookup_feature, DerivedFeature))
  
