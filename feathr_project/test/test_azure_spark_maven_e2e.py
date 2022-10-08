@@ -24,7 +24,7 @@ def test_feathr_online_store_agg_features():
 
     # The `feathr_runtime_location` was commented out in this config file, so feathr should use
     # Maven package as the dependency and `noop.jar` as the main file
-    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config_xch.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config_maven.yaml"))
 
     
     
@@ -85,5 +85,3 @@ def test_feathr_online_store_agg_features():
     assert res['239'][1] != None
     assert res['265'][0] != None
     assert res['265'][1] != None
-
-test_feathr_online_store_agg_features()

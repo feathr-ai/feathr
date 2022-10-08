@@ -619,7 +619,7 @@ class FeathrClient(object):
         Args:
             settings: Feature materialization settings
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
-            allow_materialize_non_agg_feature: Normally materializing non-aggregated features doesn't output meaningful results so it's forbidden, but if you really want to do this, set this to True.
+            allow_materialize_non_agg_feature: Materializing non-aggregated features (the features without WindowAggTransformation) doesn't output meaningful results so it's by default set to False, but if you really want to materialize non-aggregated features, set this to True.
         """
         feature_list = settings.feature_names
         if len(feature_list) > 0 and not self._valid_materialize_keys(feature_list):
@@ -632,11 +632,11 @@ class FeathrClient(object):
                 for anchor in self.anchor_list:
                     for feature in anchor.features:
                         if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
-                            raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features.")
+                            raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features. If you want to materialize {fn}, please set allow_materialize_non_agg_feature to True.")
                 # Check over derived features
                 for feature in self.derived_feature_list:
                     if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
-                        raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features.")
+                        raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features. If you want to materialize {fn}, please set allow_materialize_non_agg_feature to True.")
         
         # Collect secrets from sinks
         secrets = []
