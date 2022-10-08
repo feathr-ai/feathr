@@ -12,7 +12,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '25 4 * * 2'
+    - cron: '00 4 * * *'
 
 jobs:
   lint:
@@ -28,6 +28,8 @@ jobs:
 
       - name: Run DevSkim scanner
         uses: microsoft/DevSkim-Action@v1
+        with:
+          ignore-globs: "**/.git/**,**/test/**"
         
       - name: Upload DevSkim scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
