@@ -257,6 +257,60 @@ class KafKaSource(Source):
     def to_argument(self):
         raise TypeError("KafKaSource cannot be used as observation source")
 
+class SparkSqlSource(Source):
+    def __init__(self, name: str, sql: Optional[str] = None, table: Optional[str] = None, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, event_timestamp_column,
+                         timestamp_format, registry_tags=registry_tags)
+        self.source_type = 'sparksql'
+        if sql is None and table is None:
+            raise ValueError("Either `sql` or `table` must be specified")
+        if sql is not None and table is not None:
+            raise ValueError("Only one of `sql` or `table` can be specified")
+        self.sql = sql
+        self.table = table
+        self.preprocessing = preprocessing
+
+    def to_feature_config(self) -> str:
+        tm = Template("""  
+            {{source.name}}: {
+                location: {
+                    type: "sparksql"
+                    {% if source.sql is defined %}
+                    sql: "{{source.sql}}"
+                    {% elif source.table is defined %}
+                    sql: "{{source.table}}"
+                    {% endif %}
+                }
+                {% if source.event_timestamp_column is defined %}
+                timeWindowParameters: {
+                    timestampColumn: "{{source.event_timestamp_column}}"
+                    timestampColumnFormat: "{{source.timestamp_format}}"
+                }
+                {% endif %}
+            } 
+        """)
+        msg = tm.render(source=self)
+        return msg
+
+    def get_required_properties(self):
+        return []
+
+    def to_dict(self) -> Dict[str, str]:
+        ret = self.options.copy()
+        ret["type"] = "sparksql"
+        if self.sql:
+            ret["sql"] = self.sql
+        elif self.table:
+            ret["table"] = self.table
+        return ret        
+    
+    def to_argument(self):
+        """
+        One-line JSON string, used by job submitter
+        """
+        return json.dumps(self.to_dict())
+    
+
 class GenericSource(Source):
     """
     This class is corresponding to 'GenericLocation' in Feathr core, but only be used as Source.
