@@ -32,7 +32,7 @@ More reference on the APIs:
 In the above example, we define a Redis table called `nycTaxiDemoFeature` and materialize two features called `f_location_avg_fare` and `f_location_max_fare` to Redis.
 
 ## Incremental Aggregation
-Use incremental aggregation will significantly expedite the SWA feature calculation. 
+Use incremental aggregation will significantly expedite the WindowAggTransformation feature calculation. 
 For example, aggregation sum of a feature F within a 180-day window at day T can be expressed as: F(T) = F(T - 1)+DirectAgg(T-1)-DirectAgg(T - 181). 
 Once a SNAPSHOT of the first day is generated, the calculation for the following days can leverage it.
 
