@@ -112,7 +112,7 @@ private[offline] object DataFrameDefaultValueSubstituter extends DataFrameDefaul
         // For tensor default, since we don't have type, so we need to use expr to construct the default column
         val schema = field.dataType
         val tensorData = defaultFeatureValue.getAsTensorData
-        val ts = FeaturizedDatasetUtils.tensorToDataFrameRow(tensorData)
+        val ts = FeaturizedDatasetUtils.tensorToFDSDataFrameRow(tensorData)
         val fdsTensorDefaultUDF = getFDSTensorDefaultUDF(schema, ts)
         ss.udf.register("tz_udf", fdsTensorDefaultUDF)
         expr(s"tz_udf($featureColumnName)")

@@ -1,12 +1,15 @@
+import ast
 import inspect
 import os
+import pickle
 from pathlib import Path
 from typing import List, Optional, Union
-import pickle
-from feathr.definition.anchor import FeatureAnchor
+
 from jinja2 import Template
+
+from feathr.definition.anchor import FeatureAnchor
 from feathr.definition.source import HdfsSource
-import ast
+
 
 # Some metadata that are only needed by Feathr
 FEATHR_PYSPARK_METADATA = 'generated_feathr_pyspark_metadata'
@@ -42,7 +45,7 @@ class _PreprocessingPyudfManager(object):
         # delete the file if it already exists to avoid caching previous results
         for f in [client_udf_repo_path, metadata_path,  pyspark_driver_path]:
             if os.path.exists(f):
-                os.remove(f) 
+                os.remove(f)
 
         for anchor in anchor_list:
             # only support batch source preprocessing for now.
@@ -73,23 +76,29 @@ class _PreprocessingPyudfManager(object):
         with open(feathr_pyspark_metadata_abs_path, 'wb') as file:
             pickle.dump(features_with_preprocessing, file)
 
+
     @staticmethod
-    def _parse_function_str_for_name(source: str) -> str:
+    def _parse_function_str_for_name(fn_str: str) -> str:
+        """Use AST to parse the function string and get the name out.
+
+        Args:
+            fn_str: Function code in string.
+
+        Returns:
+            Name of the function.
         """
-        Use AST to parse the functions and get the name out.
-        """
-        if source is None:
+        if not fn_str:
             return None
-        tree = ast.parse(source)
+
+        tree = ast.parse(fn_str)
+
+        # tree.body contains a list of function definition objects parsed from the input string.
+        # Currently, we only accept a single function.
         if len(tree.body) != 1 or not isinstance(tree.body[0], ast.FunctionDef):
-            raise ValueError('provided code fragment is not a single function')
-        code = compile(source=tree, filename='custom.py',mode= 'exec')
-        # https://docs.python.org/3/library/inspect.html see the inspect module for more details
-        # tuple of names other than arguments and function locals. Assume there will be only one function, so will return the first as the name
-        for ele in code.co_consts:
-            # find the first object, that is the str, this will be the name of the function
-            if isinstance(ele, str):
-                return ele
+            raise ValueError("provided code fragment is not a single function")
+
+        # Get the function name from the function definition.
+        return tree.body[0].name
 
 
     @staticmethod
@@ -174,7 +183,7 @@ feature_names_funcs = {
             client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
             # write pyspark_driver_template_abs_path and then client_udf_repo_path
             filenames = [pyspark_driver_template_abs_path, client_udf_repo_path]
-                
+
             with open(pyspark_driver_path, 'w') as outfile:
                 for fname in filenames:
                     with open(fname) as infile:

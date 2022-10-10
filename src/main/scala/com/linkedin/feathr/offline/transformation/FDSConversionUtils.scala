@@ -37,7 +37,7 @@ private[offline] object FDSConversionUtils {
     // convert the "raw" input data into a FDS column a specific dataType
     rawFeatureValue match {
       case tensorData: TensorData =>
-        FeaturizedDatasetUtils.tensorToDataFrameRow(tensorData, Some(targetDataType))
+        FeaturizedDatasetUtils.tensorToFDSDataFrameRow(tensorData, Some(targetDataType))
       case _ =>
         targetDataType match {
           // Scalar tensor
