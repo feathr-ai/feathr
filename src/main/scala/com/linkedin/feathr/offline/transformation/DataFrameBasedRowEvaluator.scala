@@ -74,19 +74,20 @@ private[offline] object DataFrameBasedRowEvaluator {
     val featureTypes = featureTypeConfigs.mapValues(_.getFeatureType)
     val FeatureTypeInferenceContext(featureTypeAccumulators) =
       FeatureTransformation.getTypeInferenceContext(spark, featureTypes, featureRefStrs)
+
     val transformedRdd = inputDF.rdd.map(row => {
-      // in some cases, the input dataframe row here only have Row and does not have schema attached,
-      // while MVEL only works with GenericRowWithSchema, create it manually
-      val rowWithSchema = if (row.isInstanceOf[GenericRowWithSchema]) {
-        row.asInstanceOf[GenericRowWithSchema]
-      } else {
-        new GenericRowWithSchema(row.toSeq.toArray, inputSchema)
-      }
-      if (rowExtractor.isInstanceOf[SimpleConfigurableAnchorExtractor]) {
-        rowExtractor.asInstanceOf[SimpleConfigurableAnchorExtractor].mvelContext = mvelContext
-      }
-      val result = rowExtractor.getFeaturesFromRow(rowWithSchema)
-      val featureValues = featureRefStrs map {
+        // in some cases, the input dataframe row here only have Row and does not have schema attached,
+        // while MVEL only works with GenericRowWithSchema, create it manually
+        val rowWithSchema = if (row.isInstanceOf[GenericRowWithSchema]) {
+          row.asInstanceOf[GenericRowWithSchema]
+        } else {
+          new GenericRowWithSchema(row.toSeq.toArray, inputSchema)
+        }
+        if (rowExtractor.isInstanceOf[SimpleConfigurableAnchorExtractor]) {
+          rowExtractor.asInstanceOf[SimpleConfigurableAnchorExtractor].mvelContext = mvelContext
+        }
+        val result = rowExtractor.getFeaturesFromRow(rowWithSchema)
+        val featureValues = featureRefStrs map {
           featureRef =>
             if (result.contains(featureRef)) {
               val featureValue = result(featureRef)
@@ -95,7 +96,7 @@ private[offline] object DataFrameBasedRowEvaluator {
                 featureTypeAccumulators(featureRef).add(FeatureTypes.valueOf(rowFeatureType.toString))
               }
               val tensorData: TensorData = featureValue.getAsTensorData()
-              FeaturizedDatasetUtils.tensorToDataFrameRow(tensorData)
+              FeaturizedDatasetUtils.tensorToFDSDataFrameRow(tensorData)
             } else null
         }
         Row.merge(row, Row.fromSeq(featureValues))
