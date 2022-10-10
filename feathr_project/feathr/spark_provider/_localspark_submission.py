@@ -54,22 +54,21 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         python_files: List[str] = None,
         configuration: Dict[str, str] = {},
         properties: Dict[str, str] = {},
-        *_,
+        **_,
     ) -> Any:
         """Submits the Feathr job to local spark, using subprocess args.
         Note that the Spark application will automatically run on YARN cluster mode. You cannot change it if
         you are running with Azure Synapse.
 
         Args:
-            job_name (str): name of the job
-            main_jar_path (str): main file paths, usually your main jar file
-            main_class_name (str): name of your main class
-            arguments (List[str]): all the arguments you want to pass into the spark job
-            python_files (List[str]): required .zip, .egg, or .py files of spark job
-            configuration (Dict[str, str]): Additional configs for the spark job
-
-            reference_files_path (str): not used in local spark mode
-            job_tags (str): not used in local spark mode
+            job_name: name of the job
+            main_jar_path: main file paths, usually your main jar file
+            main_class_name: name of your main class
+            arguments: all the arguments you want to pass into the spark job
+            python_files: required .zip, .egg, or .py files of spark job
+            configuration: Additional configs for the spark job
+            properties: System properties configuration
+            **_: Not used arguments in local spark mode, such as reference_files_path and job_tags
         """
         logger.warning(
             f"Local Spark Mode only support basic params right now and should be used only for testing purpose."
