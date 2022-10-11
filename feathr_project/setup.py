@@ -37,9 +37,15 @@ setup(
         "tqdm",
         "pyarrow",
         "pyspark>=3.1.2",
+<<<<<<< Updated upstream
         "python-snappy",
         "deltalake",
         "graphlib_backport",
+=======
+        "python-snappy<=0.6.1",
+        "deltalake==0.6.2",
+        "graphlib_backport<=1.0.3",
+>>>>>>> Stashed changes
         "protobuf==3.*",
         "azure-keyvault-secrets",
         "confluent-kafka",
