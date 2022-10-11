@@ -4,7 +4,7 @@ import com.linkedin.feathr.common
 import com.linkedin.feathr.common.JoiningFeatureParams
 import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader}
-import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.plugins.{AlienFeatureValue, AlienFeatureValueTypeAdaptor}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.avro.generic.GenericRecord
@@ -23,14 +23,16 @@ abstract class TestFeathr extends TestNGSuite {
   protected var feathr: FeathrClient = _
   val FeathrFeatureNamePrefix = "__feathr_feature_"
   protected var feathrConfigLoader: FeathrConfig = FeathrConfigLoader()
+
+  private val mvelContext = new FeathrExpressionExecutionContext()
   import org.apache.log4j.{Level, Logger}
   Logger.getLogger("org").setLevel(Level.OFF)
   Logger.getLogger("akka").setLevel(Level.OFF)
 
   @BeforeClass
   def setup(): Unit = {
-    FeathrMvelPluginContext.addFeatureTypeAdaptor(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor)
     setupSpark()
+    mvelContext.setupExecutorMvelContext(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor(), ss.sparkContext)
   }
 
   /**

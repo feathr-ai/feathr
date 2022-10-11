@@ -5,7 +5,9 @@ import com.linkedin.feathr.common.tensor.TensorData
 import com.linkedin.feathr.common.{AnchorExtractor, FeatureTypeConfig, FeatureTypes, SparkRowExtractor}
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.FeatureDataFrame
+import com.linkedin.feathr.offline.anchored.anchorExtractor.SimpleConfigurableAnchorExtractor
 import com.linkedin.feathr.offline.job.{FeatureTransformation, FeatureTypeInferenceContext, TransformedResult}
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
@@ -32,7 +34,8 @@ private[offline] object DataFrameBasedRowEvaluator {
   def transform(transformer: AnchorExtractor[_],
                 inputDf: DataFrame,
                 requestedFeatureNameAndPrefix: Seq[(String, String)],
-                featureTypeConfigs: Map[String, FeatureTypeConfig]): TransformedResult = {
+                featureTypeConfigs: Map[String, FeatureTypeConfig],
+                mvelContext: Option[FeathrExpressionExecutionContext]): TransformedResult = {
     if (!transformer.isInstanceOf[SparkRowExtractor]) {
       throw new FeathrException(ErrorLabel.FEATHR_USER_ERROR, s"${transformer} must extend SparkRowExtractor.")
     }
@@ -42,7 +45,7 @@ private[offline] object DataFrameBasedRowEvaluator {
     val featureFormat = FeatureColumnFormat.FDS_TENSOR
     // features to calculate, if empty, will calculate all features defined in the extractor
     val selectedFeatureNames = if (requestedFeatureRefString.nonEmpty) requestedFeatureRefString else transformer.getProvidedFeatureNames
-    val FeatureDataFrame(transformedDF, transformedFeatureTypes) = transformToFDSTensor(extractor, inputDf, selectedFeatureNames, featureTypeConfigs)
+    val FeatureDataFrame(transformedDF, transformedFeatureTypes) = transformToFDSTensor(extractor, inputDf, selectedFeatureNames, featureTypeConfigs, mvelContext)
     TransformedResult(
       // Re-compute the featureNamePrefixPairs because feature names can be coming from the extractor.
       selectedFeatureNames.map((_, featureNamePrefix)),
@@ -64,22 +67,27 @@ private[offline] object DataFrameBasedRowEvaluator {
   private def transformToFDSTensor(rowExtractor:  SparkRowExtractor,
                                    inputDF: DataFrame,
                                    featureRefStrs: Seq[String],
-                                   featureTypeConfigs: Map[String, FeatureTypeConfig]): FeatureDataFrame = {
+                                   featureTypeConfigs: Map[String, FeatureTypeConfig],
+                                   mvelContext: Option[FeathrExpressionExecutionContext]): FeatureDataFrame = {
     val inputSchema = inputDF.schema
     val spark = SparkSession.builder().getOrCreate()
     val featureTypes = featureTypeConfigs.mapValues(_.getFeatureType)
     val FeatureTypeInferenceContext(featureTypeAccumulators) =
       FeatureTransformation.getTypeInferenceContext(spark, featureTypes, featureRefStrs)
+
     val transformedRdd = inputDF.rdd.map(row => {
-      // in some cases, the input dataframe row here only have Row and does not have schema attached,
-      // while MVEL only works with GenericRowWithSchema, create it manually
-      val rowWithSchema = if (row.isInstanceOf[GenericRowWithSchema]) {
-        row.asInstanceOf[GenericRowWithSchema]
-      } else {
-        new GenericRowWithSchema(row.toSeq.toArray, inputSchema)
-      }
-      val result = rowExtractor.getFeaturesFromRow(rowWithSchema)
-      val featureValues = featureRefStrs map {
+        // in some cases, the input dataframe row here only have Row and does not have schema attached,
+        // while MVEL only works with GenericRowWithSchema, create it manually
+        val rowWithSchema = if (row.isInstanceOf[GenericRowWithSchema]) {
+          row.asInstanceOf[GenericRowWithSchema]
+        } else {
+          new GenericRowWithSchema(row.toSeq.toArray, inputSchema)
+        }
+        if (rowExtractor.isInstanceOf[SimpleConfigurableAnchorExtractor]) {
+          rowExtractor.asInstanceOf[SimpleConfigurableAnchorExtractor].mvelContext = mvelContext
+        }
+        val result = rowExtractor.getFeaturesFromRow(rowWithSchema)
+        val featureValues = featureRefStrs map {
           featureRef =>
             if (result.contains(featureRef)) {
               val featureValue = result(featureRef)
@@ -88,7 +96,7 @@ private[offline] object DataFrameBasedRowEvaluator {
                 featureTypeAccumulators(featureRef).add(FeatureTypes.valueOf(rowFeatureType.toString))
               }
               val tensorData: TensorData = featureValue.getAsTensorData()
-              FeaturizedDatasetUtils.tensorToDataFrameRow(tensorData)
+              FeaturizedDatasetUtils.tensorToFDSDataFrameRow(tensorData)
             } else null
         }
         Row.merge(row, Row.fromSeq(featureValues))

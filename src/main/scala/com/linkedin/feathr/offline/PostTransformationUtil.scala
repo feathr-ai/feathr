@@ -1,10 +1,10 @@
 package com.linkedin.feathr.offline
 
 import java.io.Serializable
-
 import com.linkedin.feathr.common
 import com.linkedin.feathr.common.{FeatureTypes, FeatureValue}
 import com.linkedin.feathr.offline.exception.FeatureTransformationException
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.mvel.{FeatureVariableResolverFactory, MvelContext}
 import com.linkedin.feathr.offline.transformation.MvelDefinition
 import com.linkedin.feathr.offline.util.{CoercionUtilsScala, FeaturizedDatasetUtils}
@@ -32,9 +32,9 @@ private[offline] object PostTransformationUtil {
    * @param input input feature value
    * @return transformed feature value
    */
-  def booleanTransformer(featureName: String, mvelExpression: MvelDefinition, compiledExpression: Serializable, input: Boolean): Boolean = {
+  def booleanTransformer(featureName: String, mvelExpression: MvelDefinition, compiledExpression: Serializable, input: Boolean, mvelContext: Option[FeathrExpressionExecutionContext]): Boolean = {
     val toFeatureValue = common.FeatureValue.createBoolean(input)
-    val transformedFeatureValue = transformFeatureValues(featureName, toFeatureValue, compiledExpression, FeatureTypes.TERM_VECTOR)
+    val transformedFeatureValue = transformFeatureValues(featureName, toFeatureValue, compiledExpression, FeatureTypes.TERM_VECTOR, mvelContext)
     transformedFeatureValue match {
       case Success(fVal) => fVal.getAsTermVector.containsKey("true")
       case Failure(ex) =>
@@ -57,12 +57,12 @@ private[offline] object PostTransformationUtil {
     featureName: String,
     mvelExpression: MvelDefinition,
     compiledExpression: Serializable,
-    input: GenericRowWithSchema): Map[String, Float] = {
+    input: GenericRowWithSchema, mvelContext: Option[FeathrExpressionExecutionContext]): Map[String, Float] = {
     if (input != null) {
       val inputMapKey = input.getAs[Seq[String]](FeaturizedDatasetUtils.FDS_1D_TENSOR_DIM)
       val inputMapVal = input.getAs[Seq[Float]](FeaturizedDatasetUtils.FDS_1D_TENSOR_VALUE)
       val inputMap = inputMapKey.zip(inputMapVal).toMap
-      mapTransformer(featureName, mvelExpression, compiledExpression, inputMap)
+      mapTransformer(featureName, mvelExpression, compiledExpression, inputMap, mvelContext)
     } else Map()
   }
 
@@ -79,7 +79,8 @@ private[offline] object PostTransformationUtil {
     featureNameColumnTuples: Seq[(String, String)],
     contextDF: DataFrame,
     transformationDef: Map[String, MvelDefinition],
-    defaultTransformation: (DataType, String) => Column): DataFrame = {
+    defaultTransformation: (DataType, String) => Column,
+    mvelContext: Option[FeathrExpressionExecutionContext]): DataFrame = {
     val featureColumnNames = featureNameColumnTuples.map(_._2)
 
     // Transform the features with the provided transformations
@@ -93,11 +94,11 @@ private[offline] object PostTransformationUtil {
             val parserContext = MvelContext.newParserContext()
             val compiledExpression = MVEL.compileExpression(mvelExpressionDef.mvelDef, parserContext)
             val featureType = mvelExpressionDef.featureType
-            val convertToString = udf(stringTransformer(featureName, mvelExpressionDef, compiledExpression, _: String))
-            val convertToBoolean = udf(booleanTransformer(featureName, mvelExpressionDef, compiledExpression, _: Boolean))
-            val convertToFloat = udf(floatTransformer(featureName, mvelExpressionDef, compiledExpression, _: Float))
-            val convertToMap = udf(mapTransformer(featureName, mvelExpressionDef, compiledExpression, _: Map[String, Float]))
-            val convertFDS1dTensorToMap = udf(fds1dTensorTransformer(featureName, mvelExpressionDef, compiledExpression, _: GenericRowWithSchema))
+            val convertToString = udf(stringTransformer(featureName, mvelExpressionDef, compiledExpression, _: String, mvelContext))
+            val convertToBoolean = udf(booleanTransformer(featureName, mvelExpressionDef, compiledExpression, _: Boolean, mvelContext))
+            val convertToFloat = udf(floatTransformer(featureName, mvelExpressionDef, compiledExpression, _: Float, mvelContext))
+            val convertToMap = udf(mapTransformer(featureName, mvelExpressionDef, compiledExpression, _: Map[String, Float], mvelContext))
+            val convertFDS1dTensorToMap = udf(fds1dTensorTransformer(featureName, mvelExpressionDef, compiledExpression, _: GenericRowWithSchema, mvelContext))
             fieldType.dataType match {
               case _: StringType => convertToString(contextDF(columnName))
               case _: NumericType => convertToFloat(contextDF(columnName))
@@ -126,16 +127,17 @@ private[offline] object PostTransformationUtil {
       featureName: String,
       featureValue: FeatureValue,
       compiledExpression: Serializable,
-      featureType: FeatureTypes): Try[FeatureValue] = Try {
+      featureType: FeatureTypes,
+      mvelContext: Option[FeathrExpressionExecutionContext]): Try[FeatureValue] = Try {
     val args = Map(featureName -> Some(featureValue))
     val variableResolverFactory = new FeatureVariableResolverFactory(args)
-    val transformedValue = MvelContext.executeExpressionWithPluginSupport(compiledExpression, featureValue, variableResolverFactory)
+    val transformedValue = MvelContext.executeExpressionWithPluginSupportWithFactory(compiledExpression, featureValue, variableResolverFactory, mvelContext.orNull)
     CoercionUtilsScala.coerceToFeatureValue(transformedValue, featureType)
   }
 
-  private def floatTransformer(featureName: String, mvelExpression: MvelDefinition, compiledExpression: Serializable, input: Float): Float = {
+  private def floatTransformer(featureName: String, mvelExpression: MvelDefinition, compiledExpression: Serializable, input: Float, mvelContext: Option[FeathrExpressionExecutionContext]): Float = {
     val toFeatureValue = common.FeatureValue.createNumeric(input)
-    val transformedFeatureValue = transformFeatureValues(featureName, toFeatureValue, compiledExpression, FeatureTypes.NUMERIC)
+    val transformedFeatureValue = transformFeatureValues(featureName, toFeatureValue, compiledExpression, FeatureTypes.NUMERIC, mvelContext)
     transformedFeatureValue match {
       case Success(fVal) => fVal.getAsNumeric
       case Failure(ex) =>
@@ -146,9 +148,9 @@ private[offline] object PostTransformationUtil {
     }
   }
 
-  private def stringTransformer(featureName: String, mvelExpression: MvelDefinition, compiledExpression: Serializable, input: String): String = {
+  private def stringTransformer(featureName: String, mvelExpression: MvelDefinition, compiledExpression: Serializable, input: String, mvelContext: Option[FeathrExpressionExecutionContext]): String = {
     val toFeatureValue = common.FeatureValue.createCategorical(input)
-    val transformedFeatureValue = transformFeatureValues(featureName, toFeatureValue, compiledExpression, FeatureTypes.CATEGORICAL)
+    val transformedFeatureValue = transformFeatureValues(featureName, toFeatureValue, compiledExpression, FeatureTypes.CATEGORICAL, mvelContext)
     transformedFeatureValue match {
       case Success(fVal) => fVal.getAsString
       case Failure(ex) =>
@@ -163,12 +165,13 @@ private[offline] object PostTransformationUtil {
       featureName: String,
       mvelExpression: MvelDefinition,
       compiledExpression: Serializable,
-      input: Map[String, Float]): Map[String, Float] = {
+      input: Map[String, Float],
+      mvelContext: Option[FeathrExpressionExecutionContext]): Map[String, Float] = {
     if (input == null) {
       return Map()
     }
     val toFeatureValue = new common.FeatureValue(input.asJava)
-    val transformedFeatureValue = transformFeatureValues(featureName, toFeatureValue, compiledExpression, FeatureTypes.TERM_VECTOR)
+    val transformedFeatureValue = transformFeatureValues(featureName, toFeatureValue, compiledExpression, FeatureTypes.TERM_VECTOR, mvelContext)
     transformedFeatureValue match {
       case Success(fVal) => fVal.getAsTermVector.asScala.map(kv => (kv._1.asInstanceOf[String], kv._2.asInstanceOf[Float])).toMap
       case Failure(ex) =>

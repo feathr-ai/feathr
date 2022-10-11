@@ -1,3 +1,5 @@
+import pkg_resources
+
 from .client import FeathrClient
 from .spark_provider.feathr_configurations import SparkExecutionConfiguration
 from .definition.feature_derivations import *
@@ -46,6 +48,7 @@ __all__ = [
     'RedisSink',
     'HdfsSink',
     'MonitoringSqlSink',
+    'AerospikeSink',
     'FeatureQuery',
     'LookupFeature',
     'Aggregation',
@@ -73,3 +76,6 @@ __all__ = [
     'FeaturePrinter',
     'SparkExecutionConfiguration',
  ]
+
+
+__version__ = pkg_resources.require("feathr")[0].version

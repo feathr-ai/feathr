@@ -1,5 +1,6 @@
 package com.linkedin.feathr.offline.client
 
+import com.google.common.annotations.VisibleForTesting
 import com.linkedin.feathr.common._
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrFeatureTransformationException}
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
@@ -357,11 +358,13 @@ object DataFrameColName {
   /**
    * generate header info (e.g, feature type, feature column name map) for output dataframe of
    * feature join or feature generation
+   *
    * @param featureToColumnNameMap map of feature to its column name in the dataframe
    * @param inferredFeatureTypeConfigs feature name to inferred feature types
    * @return header info for a dataframe that contains the features in featureToColumnNameMap
    */
-  private def generateHeader(
+  @VisibleForTesting
+  def generateHeader(
       featureToColumnNameMap: Map[TaggedFeatureName, String],
       allAnchoredFeatures: Map[String, FeatureAnchorWithSource],
       allDerivedFeatures: Map[String, DerivedFeature],
@@ -370,13 +373,10 @@ object DataFrameColName {
     // if the feature type is unspecified in the anchor config, we will use FeatureTypes.UNSPECIFIED
     val anchoredFeatureTypes: Map[String, FeatureTypeConfig] = allAnchoredFeatures.map {
       case (featureName, anchorWithSource) =>
-        val featureTypeOpt = anchorWithSource.featureAnchor.getFeatureTypes.map(types => {
-          // Get the actual type in the output dataframe, the type is inferred and stored previously, if not specified by users
-          val inferredType = inferredFeatureTypeConfigs.getOrElse(featureName, FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
-          val fType = new FeatureTypeConfig(types.getOrElse(featureName, FeatureTypes.UNSPECIFIED))
-          if (fType == FeatureTypeConfig.UNDEFINED_TYPE_CONFIG) inferredType else fType
-        })
-        val featureType = featureTypeOpt.getOrElse(FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
+        val featureTypeOpt = anchorWithSource.featureAnchor.featureTypeConfigs.get(featureName)
+        // Get the actual type in the output dataframe, the type is inferred and stored previously, if not specified by users
+        val inferredType = inferredFeatureTypeConfigs.getOrElse(featureName, FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
+        val featureType = featureTypeOpt.getOrElse(inferredType)
         featureName -> featureType
     }
 

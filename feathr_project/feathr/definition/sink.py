@@ -82,6 +82,9 @@ class RedisSink(Sink):
                     {% if source.streamingTimeoutMs %}
                     timeoutMs: {{source.streamingTimeoutMs}}
                     {% endif %}
+                    {% if source.aggregation_features %}
+                    features: [{{','.join(source.aggregation_features)}}]
+                    {% endif %}
                 }
             }
         """)
@@ -100,25 +103,35 @@ class RedisSink(Sink):
 
 class HdfsSink(Sink):
     """Offline Hadoop HDFS-compatible(HDFS, delta lake, Azure blog storage etc) sink that is used to store feature data.
-    The result is in AVRO format.
+    The result is in AVRO format. 
+
+    Incremental aggregation is enabled by default when using HdfsSink. Use incremental aggregation will significantly expedite the WindowAggTransformation feature calculation. 
+    For example, aggregation sum of a feature F within a 180-day window at day T can be expressed as: F(T) = F(T - 1)+DirectAgg(T-1)-DirectAgg(T - 181). 
+    Once a SNAPSHOT of the first day is generated, the calculation for the following days can leverage it.  
 
     Attributes:
         output_path: output path
+        store_name: the folder name under the base "path". Used especially for the current dataset to support 'Incremental' aggregation. 
+        
     """
-    def __init__(self, output_path: str) -> None:
+    def __init__(self, output_path: str, store_name: Optional[str]="df0") -> None:
         self.output_path = output_path
-
+        self.store_name = store_name
     # Sample generated HOCON config:
     # operational: {
     #     name: testFeatureGen
     #     endTime: 2019-05-01
     #     endTimeFormat: "yyyy-MM-dd"
     #     resolution: DAILY
+    #     enableIncremental = true
     #     output:[
     #         {
     #             name: HDFS
+    #             outputFormat: RAW_DATA
     #             params: {
     #                 path: "/user/featureGen/hdfsResult/"
+    #                 features: [mockdata_a_ct_gen, mockdata_a_sample_gen]
+    #                 storeName: "yyyy/MM/dd"
     #             }
     #         }
     #     ]
@@ -129,8 +142,15 @@ class HdfsSink(Sink):
         tm = Template("""  
             {
                 name: HDFS
+                outputFormat: RAW_DATA
                 params: {
                     path: "{{sink.output_path}}"
+                    {% if sink.aggregation_features %}
+                    features: [{{','.join(sink.aggregation_features)}}]
+                    {% endif %}
+                    {% if sink.store_name %}
+                    storeName: "{{sink.store_name}}"
+                    {% endif %}
                 }
             }
         """)
@@ -333,3 +353,24 @@ class ElasticSearchSink(GenericSink):
         if self.auth:
             return [self.name.upper() + "_USER", self.name.upper() + "_PASSWORD"]
         return []
+
+class AerospikeSink(GenericSink):
+    def __init__(self,name:str,seedhost:str,port:int,namespace:str,setname:str):
+        super().__init__(format="aerospike",mode="APPEND",options = {
+            "aerospike.seedhost":seedhost,
+            "aerospike.port":str(port),
+            "aerospike.namespace":namespace,
+            "aerospike.user":"${%s_USER}" % name.upper(),
+            "aerospike.password":"${%s_PASSWORD}" % name.upper(),
+            "aerospike.set":setname
+        })
+        self.name = name
+
+    def support_offline(self) -> bool:
+        return False
+    
+    def support_online(self) -> bool:
+        return True
+    
+    def get_required_properties(self) -> List[str]:
+        return [self.name.upper() + "_USER", self.name.upper() + "_PASSWORD"]

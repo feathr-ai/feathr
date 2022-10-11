@@ -24,7 +24,7 @@ Feathr has native cloud integration. Here are the steps to use Feathr on Azure:
 
 1. Follow the [Feathr ARM deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template. Alternatively, if you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
 
-2. Once the deployment is complete,run the Feathr Jupyter Notebook by clicking this button:  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/linkedin/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb). 
+2. Once the deployment is complete,run the Feathr Jupyter Notebook by clicking this button:  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/feathr-ai/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb). 
 3. You only need to change the specified `Resource Prefix`.
 
 ## Step 2: Install Feathr
@@ -38,7 +38,7 @@ pip install -U feathr
 Or if you want to use the latest Feathr code from GitHub:
 
 ```bash
-pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
+pip install git+https://github.com/feathr-ai/feathr.git#subdirectory=feathr_project
 ```
 
 ## Step 3: Run the sample notebook
@@ -103,7 +103,7 @@ os.environ['AZURE_TENANT_ID'] = ''
 os.environ['AZURE_CLIENT_SECRET'] = ''
 ```
 
-Please refer to [A note on using azure key vault to store credentials](https://github.com/linkedin/feathr/blob/41e7496b38c43af6d7f8f1de842f657b27840f6d/docs/how-to-guides/feathr-configuration-and-env.md#a-note-on-using-azure-key-vault-to-store-credentials) for more details.
+Please refer to [A note on using azure key vault to store credentials](https://github.com/feathr-ai/feathr/blob/41e7496b38c43af6d7f8f1de842f657b27840f6d/docs/how-to-guides/feathr-configuration-and-env.md#a-note-on-using-azure-key-vault-to-store-credentials) for more details.
 
 ## Step 6: Create features with Python APIs
 
@@ -164,8 +164,8 @@ The following feature join config is used:
 ```python
 feature_query = [FeatureQuery(feature_list=["f_location_avg_fare"], key=["DOLocationID"])]
         settings = ObservationSettings(
-            observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
-            output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro",
+            observation_path="abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+            output_path="abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/demo_data/output.avro",
             event_timestamp_column="lpep_dropoff_datetime", timestamp_format="yyyy-MM-dd HH:mm:ss")
 client.get_offline_features(feature_query=feature_query, observation_settings=settings)
 ```

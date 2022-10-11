@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.linkedin.feathr.common.FeatureValue;
 import com.linkedin.feathr.common.util.MvelContextUDFs;
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext;
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
-import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
@@ -114,9 +114,9 @@ public class MvelContext {
    * {@link com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext}. (Output objects that can be converted
    * to {@link FeatureValue} via plugins, will be converted after MVEL returns.)
    */
-  public static Object executeExpressionWithPluginSupport(Object compiledExpression, Object ctx) {
+  public static Object executeExpressionWithPluginSupport(Object compiledExpression, Object ctx, FeathrExpressionExecutionContext mvelContext) {
     Object output = MVEL.executeExpression(compiledExpression, ctx);
-    return coerceToFeatureValueViaMvelDataConversionPlugins(output);
+    return coerceToFeatureValueViaMvelDataConversionPlugins(output, mvelContext);
   }
 
   /**
@@ -124,15 +124,18 @@ public class MvelContext {
    * {@link com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext}. (Output objects that can be converted
    * to {@link FeatureValue} via plugins, will be converted after MVEL returns.)
    */
-  public static Object executeExpressionWithPluginSupport(Object compiledExpression, Object ctx,
-      VariableResolverFactory variableResolverFactory) {
+  public static Object executeExpressionWithPluginSupportWithFactory(Object compiledExpression,
+                                                                     Object ctx,
+                                                                     VariableResolverFactory variableResolverFactory,
+                                                                     FeathrExpressionExecutionContext mvelContext) {
     Object output = MVEL.executeExpression(compiledExpression, ctx, variableResolverFactory);
-    return coerceToFeatureValueViaMvelDataConversionPlugins(output);
+    return coerceToFeatureValueViaMvelDataConversionPlugins(output, mvelContext);
   }
 
-  private static Object coerceToFeatureValueViaMvelDataConversionPlugins(Object input) {
-    if (input != null && DataConversion.canConvert(FeatureValue.class, input.getClass())) {
-      return DataConversion.convert(input, FeatureValue.class);
+  private static Object coerceToFeatureValueViaMvelDataConversionPlugins(Object input, FeathrExpressionExecutionContext mvelContext) {
+    // Convert the input to feature value using the given MvelContext if possible
+    if (input != null && mvelContext!= null && mvelContext.canConvert(FeatureValue.class, input.getClass())) {
+      return mvelContext.convert(input, FeatureValue.class);
     } else {
       return input;
     }
