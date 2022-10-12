@@ -216,7 +216,7 @@ class FeathrClient(object):
                                    f"definitions. Anchor name of {anchor} is already defined in {anchor_names[anchor.name]}")
             else:
                 anchor_names[anchor.name] = anchor
-            if anchor.source.name in source_names:
+            if anchor.source.name in source_names and (anchor.source is not source_names[anchor.source.name]):
                 raise RuntimeError(f"Source name should be unique but there are duplicate source names in your source "
                                    f"definitions. Source name of {anchor.source} is already defined in {source_names[anchor.source.name]}")
             else:

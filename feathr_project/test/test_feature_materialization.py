@@ -61,12 +61,17 @@ def test_feature_materialization_offline_config():
             endTime: "2020-05-20 00:00:00"
             endTimeFormat: "yyyy-MM-dd HH:mm:ss"
             resolution: DAILY
+            enableIncremental = true
             output:[
                 {
                     name: HDFS
+                    outputFormat: RAW_DATA                   
                     params: {
                         path: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output/hdfs_test.avro"
+                        features: [f_location_avg_fare,f_location_max_fare]
+                        storeName: "df0"
                     }
+
                 }
             ]
         }
