@@ -20,7 +20,7 @@ setup(
     include_package_data=True,
     # consider
     install_requires=[
-        'click<=8.1.3',
+        "click<=8.1.3",
         "py4j<=0.10.9.7",
         "loguru<=0.6.0",
         "pandas<=1.5.0",
@@ -54,9 +54,17 @@ setup(
         "azure-core<=1.22.1",
         "typing_extensions>=4.2.0"
     ],
-    tests_require=[
-        'pytest',
+    tests_require=[  # TODO: This has been depricated
+        "pytest",
     ],
+    extras_require=dict(
+        dev=[
+            "black>=22.1.0",    # formatter
+            "isort",            # sort import statements
+            "pytest>=7",
+            "pytest-mock>=3.8.1",
+        ],
+    ),
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
     },
