@@ -117,7 +117,6 @@ echo "AZURE_TENANT_ID: $sp_tenantid"
 echo "AZURE_CLIENT_SECRET: $sp_password"
 This will give three variables: AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_CLIENT_SECRET. You will need them later.
 ```
-
 Note: **You should save AZURE_CLIENT_SECRET because you will only see it once here**
 
 ## Create a storage account
