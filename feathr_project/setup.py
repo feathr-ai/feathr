@@ -64,6 +64,10 @@ setup(
             "pytest>=7",
             "pytest-mock>=3.8.1",
         ],
+        notebook=[
+            "jupyter==1.0.0",
+            "matplotlib==3.6.1",
+        ],
     ),
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
