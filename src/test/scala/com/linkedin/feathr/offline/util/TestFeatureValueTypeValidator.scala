@@ -45,7 +45,7 @@ class TestFeatureValueTypeValidator extends TestFeathr {
       new FeatureValue(value, valueFeatureType.asInstanceOf[FeatureTypes]);
     }
     val featureTypeConfig = new FeatureTypeConfig(configFeatureTypes.asInstanceOf[FeatureTypes], configTensorType.asInstanceOf[TensorType], null)
-    FeatureValueTypeValidator.validate(featureValue, featureTypeConfig)
+    FeatureValueTypeValidator.validate("", featureValue, featureTypeConfig)
   }
 
   @DataProvider(name = "failTestCases")
@@ -75,7 +75,7 @@ class TestFeatureValueTypeValidator extends TestFeathr {
       new FeatureValue(value, valueFeatureType.asInstanceOf[FeatureTypes]);
     }
     val featureTypeConfig = new FeatureTypeConfig(configFeatureTypes.asInstanceOf[FeatureTypes], configTensorType.asInstanceOf[TensorType], null)
-    FeatureValueTypeValidator.validate(featureValue, featureTypeConfig)
+    FeatureValueTypeValidator.validate("", featureValue, featureTypeConfig)
   }
 
 

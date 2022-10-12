@@ -31,6 +31,18 @@ More reference on the APIs:
 
 In the above example, we define a Redis table called `nycTaxiDemoFeature` and materialize two features called `f_location_avg_fare` and `f_location_max_fare` to Redis.
 
+## Incremental Aggregation
+Use incremental aggregation will significantly expedite the WindowAggTransformation feature calculation. 
+For example, aggregation sum of a feature F within a 180-day window at day T can be expressed as: F(T) = F(T - 1)+DirectAgg(T-1)-DirectAgg(T - 181). 
+Once a SNAPSHOT of the first day is generated, the calculation for the following days can leverage it.
+
+A storeName is required if incremental aggregated is enabled. There could be multiple output Datasets, and each of them need to be stored in a separate folder. The storeName is used as the folder name to create under the base "path".
+
+Incremental aggregation is enabled by default when using HdfsSink.
+
+More reference on the APIs:
+- [HdfsSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSink)
+
 ## Feature Backfill
 
 It is also possible to backfill the features till a particular time, like below. If the `BackfillTime` part is not specified, it's by default to `now()` (i.e. if not specified, it's equivalent to `BackfillTime(start=now, end=now, step=timedelta(days=1))`).
