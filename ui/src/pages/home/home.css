@@ -1,0 +1,24 @@
+ 
+.home .ant-card {
+  box-shadow: 5px 8px 15px 5px rgba(208, 216, 243, 0.6);
+  border-radius: 8px;
+}
+
+.home .card-meta {
+  display: flex;
+}
+
+.home .card-meta .ant-card-meta-avatar {
+  max-width: 80px;
+  flex-basis: 30%;
+  box-sizing: border-box;
+}
+
+.home .card-meta .ant-card-meta-avatar >span {
+  width: 100%;
+}
+
+.home .card-meta .ant-card-meta-avatar svg {
+  width: 100%;
+  height: auto;
+}
