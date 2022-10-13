@@ -1,5 +1,3 @@
-import pkg_resources
-
 from .client import FeathrClient
 from .spark_provider.feathr_configurations import SparkExecutionConfiguration
 from .definition.feature_derivations import *
@@ -19,6 +17,7 @@ from .definition.aggregation import *
 from .definition.settings import *
 from .utils.job_utils import *
 from .utils.feature_printer import *
+from .version import __version__
 
 # skipped class as they are internal methods:
 # RepoDefinitions, HoconConvertible,
@@ -75,7 +74,5 @@ __all__ = [
     'ObservationSettings',
     'FeaturePrinter',
     'SparkExecutionConfiguration',
+    __version__,
  ]
-
-
-__version__ = pkg_resources.require("feathr")[0].version

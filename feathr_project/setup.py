@@ -1,3 +1,5 @@
+import sys
+import os
 from setuptools import setup, find_packages
 from pathlib import Path
 
@@ -5,9 +7,19 @@ from pathlib import Path
 root_path = Path(__file__).resolve().parent.parent
 long_description = (root_path / "docs/README.md").read_text(encoding="utf8")
 
+try:
+    exec(open("feathr/version.py").read())
+except IOError:
+    print("Failed to load Feathr version file for packaging.",
+          file=sys.stderr)
+    sys.exit(-1)
+
+VERSION = __version__  # noqa
+os.environ["FEATHR_VERSION"] = VERSION   
+
 setup(
     name='feathr',
-    version='0.8.0',
+    version=VERSION,
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="feathr-technical-discuss@lists.lfaidata.foundation",
