@@ -1,5 +1,6 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from urllib.parse import urlparse
 
 import pytest
 
@@ -8,25 +9,33 @@ from feathr.datasets.utils import maybe_download
 
 
 @pytest.mark.parametrize(
-    "expected_bytes", [None, 3924447],
+    "dst_filename,expected_bytes",
+    [
+        ("", 3924447),  # 3924447 is the nyc_taxi sample data's bytes
+        ("data.csv", None),
+    ],
 )
-def test__maybe_download(expected_bytes: int):
+def test__maybe_download(dst_filename: str, expected_bytes: int):
     """Test maybe_download utility function w/ nyc_taxi data cached at Azure blob."""
 
     tmpdir = TemporaryDirectory()
-    dst_path = Path(tmpdir.name, "data.csv")
+    dst_path = Path(tmpdir.name, dst_filename)
 
     # Assert the data is downloaded
     assert maybe_download(
         src_url=NYC_TAXI_SMALL_URL,
-        dst_path=dst_path.resolve(),
+        dst_path=str(dst_path),
         expected_bytes=expected_bytes,
     )
+
+    # Assert the downloaded file exists. If dst_path is a dir, assert the original filename is used.
+    dst_filepath = dst_path if dst_path.suffix else dst_path.joinpath(Path(urlparse(NYC_TAXI_SMALL_URL).path).name)
+    assert dst_filepath.is_file()
 
     # Assert the data is already exists and thus the function does not download
     assert not maybe_download(
         src_url=NYC_TAXI_SMALL_URL,
-        dst_path=dst_path.resolve(),
+        dst_path=str(dst_path),
         expected_bytes=expected_bytes,
     )
 
