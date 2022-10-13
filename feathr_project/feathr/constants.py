@@ -32,7 +32,7 @@ TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_{REGISTRY_TYPEDEF_VER
 import os
 from feathr.version import __version__
 FEATHR_MAVEN_VERSION = os.environ.get("FEATHR_MAVEN_VERSION", __version__)
-FEATHR_MAVEN_ARTIFACT="com.linkedin.feathr:feathr_2.12:{FEATHR_MAVEN_VERSION}"
+FEATHR_MAVEN_ARTIFACT=f"com.linkedin.feathr:feathr_2.12:{FEATHR_MAVEN_VERSION}"
 
 JOIN_CLASS_NAME="com.linkedin.feathr.offline.job.FeatureJoinJob"
 GEN_CLASS_NAME="com.linkedin.feathr.offline.job.FeatureGenJob"
