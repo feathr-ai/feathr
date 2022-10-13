@@ -2,14 +2,13 @@ package com.linkedin.feathr.offline.transformation
 
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import com.linkedin.feathr.common.tensor.TensorData
-
-import java.util
 import com.linkedin.feathr.common.util.CoercionUtils
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 
+import java.util
 import scala.collection.JavaConverters._
 import scala.collection.convert.Wrappers.JMapWrapper
 import scala.collection.mutable
@@ -253,7 +252,13 @@ private[offline] object FDSConversionUtils {
       case values: util.ArrayList[Any] =>
         values.asScala.toArray
       case values: mutable.WrappedArray[Any] =>
-        values.asInstanceOf[mutable.WrappedArray[Any]].toArray
+        if (values.nonEmpty && values(0).isInstanceOf[GenericRowWithSchema]) {
+          // Assuming the result is returned by SWA feature with groupBy, hence keeping only the
+          // feature value as an array and dropping the index info.
+          values.asInstanceOf[mutable.WrappedArray[GenericRowWithSchema]].map(v => v.get(v.size - 1)).toArray
+        } else {
+          values.toArray
+        }
       case values: List[Any] =>
         values.toArray
       case mapValues: Map[Integer, Any] =>
