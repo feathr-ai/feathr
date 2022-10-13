@@ -253,6 +253,8 @@ private[offline] object FDSConversionUtils {
         values.asScala.toArray
       case values: mutable.WrappedArray[Any] =>
         if (values.nonEmpty && values(0).isInstanceOf[GenericRowWithSchema]) {
+          // Assuming the result is returned by SWA feature with groupBy, hence keeping only the
+          // feature value as an array and dropping the index info.
           values.asInstanceOf[mutable.WrappedArray[GenericRowWithSchema]].map(v => v.get(v.size - 1)).toArray
         } else {
           values.toArray
