@@ -82,7 +82,7 @@ spark_config:
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
     # this is the default location so end users don't have to compile the runtime again.
     # feathr_runtime_location: wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-LATEST.jar
-    feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.8.0.jar"
+    feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.8.2.jar"
   databricks:
     # workspace instance
     workspace_instance_url: 'https://adb-2474129336842816.16.azuredatabricks.net/'
@@ -93,7 +93,7 @@ spark_config:
     # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
     work_dir: 'dbfs:/feathr_getting_started'
     # this is the default location so end users don't have to compile the runtime again.
-    feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.8.0.jar"
+    feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.8.2.jar"
 
 online_store:
   redis:
