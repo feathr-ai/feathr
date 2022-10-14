@@ -24,7 +24,7 @@ def test__maybe_download(dst_filename: str, expected_bytes: int):
     # Assert the data is downloaded
     assert maybe_download(
         src_url=NYC_TAXI_SMALL_URL,
-        dst_path=str(dst_path),
+        dst_filepath=str(dst_path),
         expected_bytes=expected_bytes,
     )
 
@@ -35,7 +35,7 @@ def test__maybe_download(dst_filename: str, expected_bytes: int):
     # Assert the data is already exists and thus the function does not download
     assert not maybe_download(
         src_url=NYC_TAXI_SMALL_URL,
-        dst_path=str(dst_path),
+        dst_filepath=str(dst_path),
         expected_bytes=expected_bytes,
     )
 
@@ -50,7 +50,7 @@ def test__maybe_download__raise_exception():
     with pytest.raises(IOError):
         maybe_download(
             src_url=NYC_TAXI_SMALL_URL,
-            dst_path=Path(tmpdir.name, "data.csv").resolve(),
+            dst_filepath=Path(tmpdir.name, "data.csv").resolve(),
             expected_bytes=10,
         )
 

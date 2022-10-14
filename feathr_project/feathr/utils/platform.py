@@ -4,11 +4,11 @@ Refs: https://github.com/microsoft/recommenders/blob/main/recommenders/utils/not
 from pathlib import Path
 
 
-def is_jupyter():
+def is_jupyter() -> bool:
     """Check if the module is running on Jupyter notebook/console.
+
     Returns:
-        bool: True if the module is running on Jupyter notebook or Jupyter console,
-        False otherwise.
+        bool: True if the module is running on Jupyter notebook or Jupyter console, False otherwise.
     """
     try:
         shell_name = get_ipython().__class__.__name__
@@ -20,11 +20,11 @@ def is_jupyter():
         return False
 
 
-def is_databricks():
+def is_databricks() -> bool:
     """Check if the module is running on Databricks.
+
     Returns:
-        bool: True if the module is running on Databricks notebook,
-        False otherwise.
+        bool: True if the module is running on Databricks notebook, False otherwise.
     """
     try:
         if str(Path(".").resolve()) == "/databricks/driver":

@@ -35,7 +35,9 @@ def test__nyc_taxi__get_pandas_df(
     mocker: MockerFixture,
     local_cache_path: str,
 ):
-    # Mock maybe_downlaod and TempDirectory
+    """Test if nyc_taxi.get_pandas_df returns pd.DataFrame. Also check if the proper modules are being called.
+    """
+    # Mock maybe_download and TempDirectory
     mocked_maybe_download = mocker.patch("feathr.datasets.nyc_taxi.maybe_download")
     mocked_tmpdir = MagicMock()
     mocked_tmpdir.name = NYC_TAXI_FILE_PATH
@@ -53,28 +55,17 @@ def test__nyc_taxi__get_pandas_df(
     mocked_maybe_download.assert_called_once()
 
 
-@pytest.mark.parametrize(
-    "local_cache_path",
-    [None, NYC_TAXI_FILE_PATH],
-)
 def test__nyc_taxi__get_spark_df(
     spark,
     mocker: MockerFixture,
-    local_cache_path: str,
 ):
-    # Mock maybe_downlaod and TempDirectory
+    """Test if nyc_taxi.get_spark_df returns spark.sql.DataFrame.
+    """
+    # Mock maybe_download
     mocked_maybe_download = mocker.patch("feathr.datasets.nyc_taxi.maybe_download")
-    mocked_tmpdir = MagicMock()
-    mocked_tmpdir.name = NYC_TAXI_FILE_PATH
-    mocked_TemporaryDirectory = mocker.patch("feathr.datasets.nyc_taxi.TemporaryDirectory", return_value=mocked_tmpdir)
 
-    df = nyc_taxi.get_spark_df(spark=spark, local_cache_path=local_cache_path)
+    df = nyc_taxi.get_spark_df(spark=spark, local_cache_path=NYC_TAXI_FILE_PATH)
     assert df.count() == 35612
 
     # Assert mock called
-    if local_cache_path:
-        mocked_TemporaryDirectory.assert_not_called()
-    else:
-        mocked_TemporaryDirectory.assert_called_once()
-
     mocked_maybe_download.assert_called_once()
