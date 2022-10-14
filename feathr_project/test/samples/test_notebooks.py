@@ -39,6 +39,7 @@ def test__nyc_taxi_demo(tmp_path):
             DATA_STORE_PATH=output_tmpdir.name,
             SPARK_CLUSTER="local",
             USE_CLI_AUTH=False,
+            SCRAP_RESULTS=True,
         ),
     )
 
