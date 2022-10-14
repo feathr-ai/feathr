@@ -35,8 +35,7 @@ setup(
         "pyarrow<=9.0.0",
         "pyspark>=3.1.2",
         "python-snappy<=0.6.1",
-        # fixing https://github.com/feathr-ai/feathr/issues/687
-        "deltalake<=0.5.8",
+        "deltalake>=0.6.2",
         "graphlib_backport<=1.0.3",
         "protobuf==3.*",
         "confluent-kafka<=1.9.2",
