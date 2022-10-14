@@ -28,7 +28,7 @@ TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_{REGISTRY_TYPEDEF_VERSION}>"
 TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_{REGISTRY_TYPEDEF_VERSION}>"
 TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_{REGISTRY_TYPEDEF_VERSION}>"
 
-FEATHR_MAVEN_ARTIFACT="com.linkedin.feathr:feathr_2.12:0.8.0"
+FEATHR_MAVEN_ARTIFACT="com.linkedin.feathr:feathr_2.12:0.8.2"
 
 JOIN_CLASS_NAME="com.linkedin.feathr.offline.job.FeatureJoinJob"
 GEN_CLASS_NAME="com.linkedin.feathr.offline.job.FeatureGenJob"
