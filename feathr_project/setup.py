@@ -5,6 +5,23 @@ from pathlib import Path
 root_path = Path(__file__).resolve().parent.parent
 long_description = (root_path / "docs/README.md").read_text(encoding="utf8")
 
+
+extras_require=dict(
+    dev=[
+        "black>=22.1.0",    # formatter
+        "isort",            # sort import statements
+        "pytest>=7",
+        "pytest-mock>=3.8.1",
+    ],
+    notebook=[
+        "jupyter==1.0.0",
+        "matplotlib==3.6.1",
+        "papermill>=2.1.2,<3",      # to test run notebooks
+        "scrapbook>=0.5.0,<1.0.0",  # to scrap notebook outputs
+    ],
+)
+extras_require["all"] = list(set(sum([*extras_require.values()], [])))
+
 setup(
     name='feathr',
     version='0.8.0',
@@ -57,18 +74,7 @@ setup(
     tests_require=[  # TODO: This has been depricated
         "pytest",
     ],
-    extras_require=dict(
-        dev=[
-            "black>=22.1.0",    # formatter
-            "isort",            # sort import statements
-            "pytest>=7",
-            "pytest-mock>=3.8.1",
-        ],
-        notebook=[
-            "jupyter==1.0.0",
-            "matplotlib==3.6.1",
-        ],
-    ),
+    extras_require=extras_require,
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
     },
