@@ -29,7 +29,11 @@ def spark() -> SparkSession:
 
 @pytest.mark.parametrize(
     "local_cache_path",
-    [None, NYC_TAXI_FILE_PATH],
+    [
+        None,                                   # default temporary directory
+        NYC_TAXI_FILE_PATH,                     # full filepath
+        str(Path(NYC_TAXI_FILE_PATH).parent),   # directory
+    ],
 )
 def test__nyc_taxi__get_pandas_df(
     mocker: MockerFixture,
@@ -55,16 +59,24 @@ def test__nyc_taxi__get_pandas_df(
     mocked_maybe_download.assert_called_once()
 
 
+@pytest.mark.parametrize(
+    "local_cache_path",
+    [
+        NYC_TAXI_FILE_PATH,                     # full filepath
+        str(Path(NYC_TAXI_FILE_PATH).parent),   # directory
+    ],
+)
 def test__nyc_taxi__get_spark_df(
     spark,
     mocker: MockerFixture,
+    local_cache_path: str,
 ):
     """Test if nyc_taxi.get_spark_df returns spark.sql.DataFrame.
     """
     # Mock maybe_download
     mocked_maybe_download = mocker.patch("feathr.datasets.nyc_taxi.maybe_download")
 
-    df = nyc_taxi.get_spark_df(spark=spark, local_cache_path=NYC_TAXI_FILE_PATH)
+    df = nyc_taxi.get_spark_df(spark=spark, local_cache_path=local_cache_path)
     assert df.count() == 35612
 
     # Assert mock called
