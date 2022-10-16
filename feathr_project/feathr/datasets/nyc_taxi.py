@@ -10,7 +10,10 @@ from feathr.datasets.utils import maybe_download
 from feathr.utils.platform import is_databricks
 
 
-NYC_TAXI_SMALL_URL = "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/green_tripdata_2020-04_with_index.csv"
+NYC_TAXI_SMALL_URL = (
+    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/green_tripdata_2020-04_with_index.csv"
+)
+
 
 def get_pandas_df(
     local_cache_path: str = None,
@@ -22,29 +25,24 @@ def get_pandas_df(
 
     Args:
         local_cache_path (optional): Local cache file path to download the data set.
+            If local_cache_path is a directory, the source file name will be added.
 
     Returns:
         pandas DataFrame
     """
-    # Use tmpdir if not provided
-    tmpdir = None
+    # if local_cache_path params is not provided then create a temporary folder
     if local_cache_path is None:
-        tmpdir = TemporaryDirectory()
-        local_cache_path = tmpdir.name
+        local_cache_path = TemporaryDirectory().name
 
     # If local_cache_path is a directory, add the source file name.
     src_filepath = Path(urlparse(NYC_TAXI_SMALL_URL).path)
-    dst_filepath = Path(local_cache_path)
-    if dst_filepath.suffix != src_filepath.suffix:
-        local_cache_path = str(dst_filepath.joinpath(src_filepath.name))
+    dst_path = Path(local_cache_path)
+    if dst_path.suffix != src_filepath.suffix:
+        local_cache_path = str(dst_path.joinpath(src_filepath.name))
 
     maybe_download(src_url=NYC_TAXI_SMALL_URL, dst_filepath=local_cache_path)
 
     pdf = pd.read_csv(local_cache_path)
-
-    # Clean up if we used tmpdir
-    if tmpdir:
-        tmpdir.cleanup()
 
     return pdf
 
@@ -61,22 +59,27 @@ def get_spark_df(
     Args:
         spark: Spark session.
         local_cache_path: Local cache file path to download the data set.
+            If local_cache_path is a directory, the source file name will be added.
 
     Returns:
         Spark DataFrame
     """
+    # In spark, local_cache_path should be a persist directory or file path
+    if local_cache_path is None:
+        raise ValueError("In spark, `local_cache_path` should be a persist directory or file path.")
+
     # If local_cache_path is a directory, add the source file name.
     src_filepath = Path(urlparse(NYC_TAXI_SMALL_URL).path)
-    dst_filepath = Path(local_cache_path)
-    if dst_filepath.suffix != src_filepath.suffix:
-        local_cache_path = str(dst_filepath.joinpath(src_filepath.name))
+    dst_path = Path(local_cache_path)
+    if dst_path.suffix != src_filepath.suffix:
+        local_cache_path = str(dst_path.joinpath(src_filepath.name))
 
     if is_databricks():
         # Databricks uses "dbfs:/" prefix for spark paths
-        if not local_cache_path.startswith("dbfs:/"):
-            local_cache_path = str(Path("dbfs:/", local_cache_path))
+        if not local_cache_path.startswith("dbfs:"):
+            local_cache_path = str(Path("dbfs:", local_cache_path.lstrip("/")))
         # Databricks uses "/dbfs/" prefix for python paths
-        python_local_cache_path = local_cache_path.replace("dbfs:/", "/dbfs/")
+        python_local_cache_path = local_cache_path.replace("dbfs:", "/dbfs")
     # TODO add "if is_synapse()"
     else:
         python_local_cache_path = local_cache_path

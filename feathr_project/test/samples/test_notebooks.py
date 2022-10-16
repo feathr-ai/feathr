@@ -34,7 +34,7 @@ def test__nyc_taxi_demo(tmp_path):
         output_path=output_notebook_path,
         # kernel_name="python3",
         parameters=dict(
-            RESOURCE_PREFIX="juntest",  # TODO use test resource's
+            RESOURCE_PREFIX="feathrazuretest3",  # Use the test resource group
             PROJECT_NAME=notebook_name,
             DATA_STORE_PATH=output_tmpdir.name,
             SPARK_CLUSTER="local",

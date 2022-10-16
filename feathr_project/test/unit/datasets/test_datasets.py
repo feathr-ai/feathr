@@ -16,13 +16,7 @@ NYC_TAXI_FILE_PATH = str(TEST_DATASET_DIR.joinpath("green_tripdata_2020-04_with_
 def spark() -> SparkSession:
     """Generate a spark session for tests."""
     # Set ui port other than the default one (4040) so that feathr spark job may not fail.
-    spark_session = (
-        SparkSession
-        .builder
-        .appName("tests")
-        .config("spark.ui.port", "8080")
-        .getOrCreate()
-    )
+    spark_session = SparkSession.builder.appName("tests").config("spark.ui.port", "8080").getOrCreate()
     yield spark_session
     spark_session.stop()
 
@@ -30,17 +24,16 @@ def spark() -> SparkSession:
 @pytest.mark.parametrize(
     "local_cache_path",
     [
-        None,                                   # default temporary directory
-        NYC_TAXI_FILE_PATH,                     # full filepath
-        str(Path(NYC_TAXI_FILE_PATH).parent),   # directory
+        None,  # default temporary directory
+        NYC_TAXI_FILE_PATH,  # full filepath
+        str(Path(NYC_TAXI_FILE_PATH).parent),  # directory
     ],
 )
 def test__nyc_taxi__get_pandas_df(
     mocker: MockerFixture,
     local_cache_path: str,
 ):
-    """Test if nyc_taxi.get_pandas_df returns pd.DataFrame. Also check if the proper modules are being called.
-    """
+    """Test if nyc_taxi.get_pandas_df returns pd.DataFrame. Also check if the proper modules are being called."""
     # Mock maybe_download and TempDirectory
     mocked_maybe_download = mocker.patch("feathr.datasets.nyc_taxi.maybe_download")
     mocked_tmpdir = MagicMock()
@@ -56,14 +49,14 @@ def test__nyc_taxi__get_pandas_df(
     else:
         mocked_TemporaryDirectory.assert_called_once()
 
-    mocked_maybe_download.assert_called_once()
+    # TODO check this is called w/ file extension added
+    mocked_maybe_download.assert_called_once_with(src_url=nyc_taxi.NYC_TAXI_SMALL_URL, dst_filepath=NYC_TAXI_FILE_PATH)
 
 
 @pytest.mark.parametrize(
-    "local_cache_path",
-    [
-        NYC_TAXI_FILE_PATH,                     # full filepath
-        str(Path(NYC_TAXI_FILE_PATH).parent),   # directory
+    "local_cache_path", [
+        NYC_TAXI_FILE_PATH,  # full filepath
+        str(Path(NYC_TAXI_FILE_PATH).parent),  # directory
     ],
 )
 def test__nyc_taxi__get_spark_df(
@@ -71,13 +64,43 @@ def test__nyc_taxi__get_spark_df(
     mocker: MockerFixture,
     local_cache_path: str,
 ):
-    """Test if nyc_taxi.get_spark_df returns spark.sql.DataFrame.
-    """
+    """Test if nyc_taxi.get_spark_df returns spark.sql.DataFrame."""
     # Mock maybe_download
     mocked_maybe_download = mocker.patch("feathr.datasets.nyc_taxi.maybe_download")
 
     df = nyc_taxi.get_spark_df(spark=spark, local_cache_path=local_cache_path)
     assert df.count() == 35612
 
-    # Assert mock called
-    mocked_maybe_download.assert_called_once()
+    mocked_maybe_download.assert_called_once_with(
+        src_url=nyc_taxi.NYC_TAXI_SMALL_URL, dst_filepath=NYC_TAXI_FILE_PATH
+    )
+
+
+@pytest.mark.parametrize(
+    "local_cache_path", [
+        NYC_TAXI_FILE_PATH,  # full filepath
+        str(Path(NYC_TAXI_FILE_PATH).parent),  # directory
+    ],
+)
+def test__nyc_taxi__get_spark_df__with_databricks(
+    mocker: MockerFixture,
+    local_cache_path: str,
+):
+    # Mock maybe_download and spark session
+    mocked_maybe_download = mocker.patch("feathr.datasets.nyc_taxi.maybe_download")
+    mocked_is_databricks = mocker.patch("feathr.datasets.nyc_taxi.is_databricks", return_value=True)
+    mocked_spark = MagicMock(spec=SparkSession)
+
+    nyc_taxi.get_spark_df(spark=mocked_spark, local_cache_path=local_cache_path)
+
+    # Assert mock called with databricks paths
+    mocked_is_databricks.assert_called_once()
+
+    expected_dst_filepath = str(Path("/dbfs", NYC_TAXI_FILE_PATH.lstrip("/")))
+    mocked_maybe_download.assert_called_once_with(
+        src_url=nyc_taxi.NYC_TAXI_SMALL_URL, dst_filepath=expected_dst_filepath
+    )
+
+    mocked_spark.read.option.return_value.csv.assert_called_once_with(
+        str(Path("dbfs:", NYC_TAXI_FILE_PATH.lstrip("/")))
+    )
