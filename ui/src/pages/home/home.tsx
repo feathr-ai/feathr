@@ -8,17 +8,42 @@ import {
   ProjectOutlined,
 } from "@ant-design/icons";
 
+import "./home.css";
+
 const { Title } = Typography;
+const { Meta } = Card;
+
+const features = [
+  {
+    icon: <ProjectOutlined style={{ color: "#177ddc" }} />,
+    title: "Projects",
+    link: "/projects",
+    linkText: "See all",
+  },
+  {
+    icon: <DatabaseOutlined style={{ color: "#219ebc" }} />,
+    title: "Sources",
+    link: "/dataSources",
+    linkText: "See all",
+  },
+  {
+    icon: <CopyOutlined style={{ color: "#ffb703" }} />,
+    title: "Features",
+    link: "/features",
+    linkText: "See all",
+  },
+  {
+    icon: <EyeOutlined style={{ color: "#fb8500" }} />,
+    title: "Monitoring",
+    link: "/monitoring",
+    linkText: "See all",
+  },
+];
 
 const Home = () => {
   return (
-    <div className="page">
-      <Card
-        style={{
-          boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-          borderRadius: "8px",
-        }}
-      >
+    <div className="page home">
+      <Card>
         <Title level={2}>Welcome to Feathr Feature Store</Title>
         <span>
           You can use Feathr UI to search features, identify data sources, track
@@ -33,141 +58,36 @@ const Home = () => {
           </a>
         </span>
       </Card>
-      <Row justify="space-between">
-        <Col span={6}>
-          <Card
-            style={{
-              marginTop: "15px",
-              marginRight: "15px",
-              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-              borderRadius: "8px",
-            }}
-          >
-            <Row>
-              <Col span={6}>
-                <ProjectOutlined
-                  style={{ fontSize: "80px", color: "#177ddc" }}
+      <Row gutter={16} style={{ marginTop: 16 }}>
+        {features.map((item) => {
+          return (
+            <Col
+              key={item.title}
+              xl={6}
+              lg={12}
+              sm={24}
+              xs={24}
+              style={{ marginBottom: 16 }}
+            >
+              <Card>
+                <Meta
+                  className="card-meta"
+                  avatar={item.icon}
+                  title={
+                    <Title level={2} ellipsis>
+                      {item.title}
+                    </Title>
+                  }
+                  description={<Link to={item.link}>{item.linkText}</Link>}
                 />
-              </Col>
-              <Col span={18}>
-                <Row>
-                  <Col span={24}>
-                    <Title level={2}>Projects</Title>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col span={24}>
-                    <span>
-                      <Link to="/projects">See all</Link>
-                    </span>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card
-            style={{
-              marginTop: "15px",
-              marginRight: "15px",
-              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-              borderRadius: "8px",
-            }}
-          >
-            <Row>
-              <Col span={6}>
-                <DatabaseOutlined
-                  style={{ fontSize: "80px", color: "#219ebc" }}
-                />
-              </Col>
-              <Col span={18}>
-                <Row>
-                  <Col span={24}>
-                    <Title level={2}>Sources</Title>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col span={24}>
-                    <span>
-                      <Link to="/dataSources">See all</Link>
-                    </span>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card
-            style={{
-              marginTop: "15px",
-              marginRight: "15px",
-              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-              borderRadius: "8px",
-            }}
-          >
-            <Row>
-              <Col span={6}>
-                <CopyOutlined style={{ fontSize: "80px", color: "#ffb703" }} />
-              </Col>
-              <Col span={18}>
-                <Row>
-                  <Col span={24}>
-                    <Title level={2}>Features</Title>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col span={24}>
-                    <span>
-                      <Link to="/features">See all</Link>
-                    </span>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card
-            style={{
-              marginTop: "15px",
-              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-              borderRadius: "8px",
-            }}
-          >
-            <Row>
-              <Col span={6}>
-                <EyeOutlined style={{ fontSize: "80px", color: "#fb8500" }} />
-              </Col>
-              <Col span={18}>
-                <Row>
-                  <Col span={24}>
-                    <Title level={2}>Monitoring</Title>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col span={24}>
-                    <span>
-                      <Link to="/monitoring">See all</Link>
-                    </span>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          </Card>
-        </Col>
+              </Card>
+            </Col>
+          );
+        })}
       </Row>
-      <Row>
-        <Col span={16}>
-          <Card
-            style={{
-              marginTop: "15px",
-              marginRight: "15px",
-              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-              borderRadius: "8px",
-            }}
-          >
+      <Row gutter={16}>
+        <Col xl={16} lg={24} sm={24} xs={24} style={{ marginBottom: 16 }}>
+          <Card>
             <Title level={2}>Need help to get started?</Title>
             Explore the following resources to get started with Feathr:
             <ul>
@@ -237,14 +157,8 @@ const Home = () => {
             </p>
           </Card>
         </Col>
-        <Col span={8}>
-          <Card
-            style={{
-              marginTop: "15px",
-              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-              borderRadius: "8px",
-            }}
-          >
+        <Col xl={8} lg={24} sm={24} xs={24} style={{ marginBottom: 16 }}>
+          <Card>
             <Title level={2}>Recent Activity</Title>
             <span>Under construction</span>
           </Card>
