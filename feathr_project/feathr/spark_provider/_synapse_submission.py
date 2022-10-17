@@ -53,6 +53,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         # use the same credential for authentication to avoid further login.
         self._api = _SynapseJobRunner(
             synapse_dev_url, pool_name, executor_size=executor_size, executors=executors, credential=self.credential)
+        # Suggest to use an empty datalake directory for a new spark job to avoid errors.
         self._datalake = _DataLakeFiler(
             datalake_dir, credential=self.credential)
         # Save Synapse parameters to retrieve driver log
