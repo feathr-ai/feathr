@@ -55,9 +55,14 @@ class FeathrRegistry(ABC):
 def default_registry_client(project_name: str, config_path:str = "./feathr_config.yaml", project_registry_tag: Dict[str, str]=None, credential = None) -> FeathrRegistry:
     from feathr.registry._feathr_registry_client import _FeatureRegistry
     from feathr.registry._feature_registry_purview import _PurviewRegistry
+    from feathr.registry._feathr_registry_client_hack import _FeatureRegistryHack
+    from aws_requests_auth.aws_auth import AWSRequestsAuth
+
     envutils = _EnvVaraibleUtil(config_path)
     registry_endpoint = envutils.get_environment_variable_with_default("feature_registry", "api_endpoint")
-    if registry_endpoint:
+    if registry_endpoint and isinstance(credential, AWSRequestsAuth):
+        return _FeatureRegistryHack(project_name, endpoint=registry_endpoint, project_tags=project_registry_tag, credential=credential)
+    elif registry_endpoint:
         return _FeatureRegistry(project_name, endpoint=registry_endpoint, project_tags=project_registry_tag, credential=credential)
     else:
         registry_delimiter = envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
