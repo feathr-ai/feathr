@@ -168,3 +168,59 @@ def test_agg_anchor_to_config():
             }
         """
     assert ''.join(agg_anchor.to_feature_config().split()) == ''.join(expected_agg_feature_config.split())
+
+def test_time_partition_to_config():
+    batch_source = HdfsSource(name="testTimePartitionSource",
+                          path="abfss://public@azurefeathrstorage.blob.core.windows.net/sample_data/time_partition_pattern",
+                          time_partition_pattern="yyyy/MM/dd"
+                          )
+    key = TypedKey(key_column="key0",
+               key_column_type=ValueType.INT32)
+    agg_features = [
+        Feature(name="f_loc_avg",
+            key=[key],
+            feature_type=FLOAT,
+                transform="f_location_avg_fare"),
+        Feature(name="f_loc_max",
+            feature_type=FLOAT,
+            key=[key],
+            transform="f_location_max_fare"),
+        ]
+    agg_anchor = FeatureAnchor(name="testTimePartitionFeaturesSource",
+                           source=batch_source,
+                           features=agg_features)
+    expected_time_partition_config = """
+        anchors: {
+            testTimePartitionFeatures: {
+                source: testTimePartitionSource
+                key.sqlExpr: [key0]
+                features: {
+                    f_loc_avg: {
+                        def.sqlExpr: "f_location_avg_fare"
+                        type: {
+                            type: TENSOR
+                            tensorCategory: DENSE
+                            dimensionType: []
+                            valType: FLOAT
+                        }
+                    }       
+                    f_loc_max: {
+                        def.sqlExpr: "f_location_max_fare"
+                        type: {
+                            type: TENSOR
+                            tensorCategory: DENSE
+                            dimensionType: []
+                            valType: FLOAT
+                        }
+                    }
+                }
+            }
+        }
+        sources: {
+            testTimePartitionSource: {
+                location: {path: "abfss://public@azurefeathrstorage.blob.core.windows.net/sample_data/time_partition_pattern"}
+                timePartitionPattern: "yyyy/MM/dd"
+            }   
+        }
+    """
+    assert ''.join(agg_anchor.to_feature_config().split()) == ''.join(expected_time_partition_config.split())
