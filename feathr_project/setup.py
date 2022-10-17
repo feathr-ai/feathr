@@ -7,7 +7,7 @@ long_description = (root_path / "docs/README.md").read_text(encoding="utf8")
 
 setup(
     name='feathr',
-    version='0.8.0',
+    version='0.8.2',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="feathr-technical-discuss@lists.lfaidata.foundation",
@@ -20,7 +20,7 @@ setup(
     include_package_data=True,
     # consider
     install_requires=[
-        'click<=8.1.3',
+        "click<=8.1.3",
         "py4j<=0.10.9.7",
         "loguru<=0.6.0",
         "pandas<=1.5.0",
@@ -35,8 +35,7 @@ setup(
         "pyarrow<=9.0.0",
         "pyspark>=3.1.2",
         "python-snappy<=0.6.1",
-        # fixing https://github.com/feathr-ai/feathr/issues/687
-        "deltalake<=0.5.8",
+        "deltalake>=0.6.2",
         "graphlib_backport<=1.0.3",
         "protobuf==3.*",
         "confluent-kafka<=1.9.2",
@@ -54,9 +53,17 @@ setup(
         "azure-core<=1.22.1",
         "typing_extensions>=4.2.0"
     ],
-    tests_require=[
-        'pytest',
+    tests_require=[  # TODO: This has been depricated
+        "pytest",
     ],
+    extras_require=dict(
+        dev=[
+            "black>=22.1.0",    # formatter
+            "isort",            # sort import statements
+            "pytest>=7",
+            "pytest-mock>=3.8.1",
+        ],
+    ),
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
     },

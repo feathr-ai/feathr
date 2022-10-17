@@ -157,7 +157,7 @@ private[offline] object FeaturizedDatasetUtils {
    * @return the Quince-FDS struct or primitive
 
    */
-  def tensorToDataFrameRow(tensor: TensorData, targetDataType: Option[DataType] = None): Any = {
+  def tensorToFDSDataFrameRow(tensor: TensorData, targetDataType: Option[DataType] = None): Any = {
     tensor match {
       case null => null
       case _ =>

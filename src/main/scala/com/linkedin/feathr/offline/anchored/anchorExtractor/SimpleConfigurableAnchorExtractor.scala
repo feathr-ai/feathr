@@ -10,7 +10,6 @@ import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.util.FeatureValueTypeValidator
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 import org.mvel2.MVEL
 
@@ -66,7 +65,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
    * @param datum input row
    * @return list of feature keys
    */
-  override def getKeyFromRow(datum: GenericRowWithSchema): Seq[String] = {
+  override def getKeyFromRow(datum: Any): Seq[String] = {
     getKey(datum.asInstanceOf[Any])
   }
 
@@ -107,7 +106,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
    * @param row input row
    *  @return A map of feature name to feature value
    */
-  override def getFeaturesFromRow(row: GenericRowWithSchema) = {
+  override def getFeaturesFromRow(row: Any) = {
     getFeatures(row.asInstanceOf[Any])
   }
 
@@ -147,7 +146,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
       featureTypeConfigs(featureRefStr)
     }
     val featureValue = offline.FeatureValue.fromTypeConfig(value, featureTypeConfig)
-    FeatureValueTypeValidator.validate(featureValue, featureTypeConfigs(featureRefStr))
+    FeatureValueTypeValidator.validate(featureRefStr, featureValue, featureTypeConfigs(featureRefStr) )
     (featureRefStr, featureValue)
   }
 
