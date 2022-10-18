@@ -4,7 +4,9 @@ import com.linkedin.feathr.common.FeatureValue;
 import com.linkedin.feathr.common.types.NumericFeatureType;
 import com.linkedin.feathr.offline.mvel.plugins.FeatureValueTypeAdaptor;
 
-public class AlienFeatureValueTypeAdaptor implements FeatureValueTypeAdaptor<AlienFeatureValue> {
+import java.io.Serializable;
+
+public class AlienFeatureValueTypeAdaptor implements FeatureValueTypeAdaptor<AlienFeatureValue>, Serializable {
   @Override
   public FeatureValue toFeathrFeatureValue(AlienFeatureValue other) {
     if (other.isFloat()) {

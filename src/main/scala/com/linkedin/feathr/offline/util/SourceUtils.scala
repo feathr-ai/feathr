@@ -9,15 +9,16 @@ import com.linkedin.feathr.common.{AnchorExtractor, DateParam}
 import com.linkedin.feathr.offline.client.InputData
 import com.linkedin.feathr.offline.config.location.{DataLocation, SimplePath}
 import com.linkedin.feathr.offline.generation.SparkIOUtils
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.source.SourceFormatType
 import com.linkedin.feathr.offline.source.SourceFormatType.SourceFormatType
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer, TimeBasedHdfsPathGenerator}
 import com.linkedin.feathr.offline.util.AclCheckUtils.getLatestPath
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
-import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.avro.generic.GenericData.{Array, Record}
 import org.apache.avro.generic.{GenericDatumReader, GenericRecord, IndexedRecord}
 import org.apache.avro.io.DecoderFactory
@@ -29,14 +30,13 @@ import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.NullWritable
-import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapreduce.Job
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.avro.SchemaConverters
 import org.apache.spark.sql.types.StructType
-import org.codehaus.jackson.JsonNode
 import org.joda.time.{Days, Hours, Interval, DateTime => JodaDateTime, DateTimeZone => JodaTimeZone}
 import org.mvel2.MVEL
 
@@ -234,51 +234,6 @@ private[offline] object SourceUtils {
     field.defaultVal()
   }
 
-  /* Defines a symmetric relationship for two keys regarding to that target fields, for example
-   * ( (viewerId, vieweeId), affinity ) <=> ( (vieweedId, viewerId), affinity ), so in the dataset,
-   * they are only stored once on HDFS, here this operation should generate the full data
-   */
-  def getRDDViewSymmKeys(rawRDD: RDD[_], targetFields: Option[Seq[String]], otherFields: Option[Seq[String]] = None): RDD[_] = {
-
-    val symmKeys = targetFields match {
-      case Some(v: Seq[String]) => v
-      case None =>
-        throw new FeathrConfigException(
-          ErrorLabel.FEATHR_USER_ERROR,
-          s"Trying to get symmetric RDD view. Symmetric keys are not defined. Please provide targetFields fields.")
-    }
-
-    if (symmKeys.size != 2) {
-      throw new FeathrConfigException(
-        ErrorLabel.FEATHR_USER_ERROR,
-        s"Trying to get symmetric RDD view. Symmetric keys (targetFields) must have size of two, found ${symmKeys.size}." +
-          s" Please provide the targetFields.")
-    }
-
-    val otherFeatures = otherFields match {
-      case Some(v: Seq[String]) => v
-      case None =>
-        throw new FeathrConfigException(
-          ErrorLabel.FEATHR_USER_ERROR,
-          s"Trying to get symmetric RDD view. Oother feature fields are not defined. Please provide other feature fields.")
-    }
-
-    val allFields = (otherFeatures ++ symmKeys).distinct
-    val extractorForFields = extractorForFieldNames(allFields)
-
-    val rddView = rawRDD.flatMap(record => {
-      val extractedRecord: Map[String, Any] = extractorForFields(record)
-      val symmKeyVal0 = extractedRecord(symmKeys(0))
-      val symmKeyVal1 = extractedRecord(symmKeys(1))
-      // to create the symmetric version of the data (swapping the two keys)
-      // procedure: remove the original keys from the Map and then add the symmetric pairs
-      val extractedRecordDup = extractedRecord - symmKeys(0) - symmKeys(1) + (symmKeys(0) -> symmKeyVal1, symmKeys(1) -> symmKeyVal0)
-      Seq(extractedRecord.asJava, extractedRecordDup.asJava)
-    })
-
-    rddView
-  }
-
   /**
    * Get the needed fact/feature dataset for a feature anchor as a DataFrame.
    * @param ss Spark Session
@@ -435,7 +390,7 @@ private[offline] object SourceUtils {
   /*
    * Given a sequence of field names, return the corresponding field, must be the top level
    */
-  private def extractorForFieldNames(allFields: Seq[String]): Any => Map[String, Any] = {
+  private def extractorForFieldNames(allFields: Seq[String], mvelContext: Option[FeathrExpressionExecutionContext]): Any => Map[String, Any] = {
     val compiledExpressionMap = allFields
       .map(
         fieldName =>
@@ -446,7 +401,7 @@ private[offline] object SourceUtils {
       compiledExpressionMap
         .mapValues(expression => {
           MvelContext.ensureInitialized()
-          MvelUtils.executeExpression(expression, record, null)
+          MvelUtils.executeExpression(expression, record, null, "", mvelContext)
         })
         .collect { case (name, Some(value)) => (name, value) }
         .toMap
@@ -697,11 +652,7 @@ private[offline] object SourceUtils {
         ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(inputData.inputPath)
       }
       case _ => {
-        if (ss.sparkContext.isLocal){
-          getLocalDF(ss, inputData.inputPath, dataLoaderHandlers)
-        } else {
-          loadAsDataFrame(ss, SimplePath(inputData.inputPath),dataLoaderHandlers)
-        }
+        loadAsDataFrame(ss, SimplePath(inputData.inputPath),dataLoaderHandlers)
       }
     }
   }

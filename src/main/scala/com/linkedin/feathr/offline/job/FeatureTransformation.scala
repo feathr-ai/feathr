@@ -1,16 +1,18 @@
 package com.linkedin.feathr.offline.job
 
-import com.linkedin.feathr.common._
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException, FeathrFeatureTransformationException}
+import com.linkedin.feathr.common.tensor.TensorData
+import com.linkedin.feathr.common.types.FeatureType
+import com.linkedin.feathr.common.{AnchorExtractorBase, _}
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.MVELSourceKeyExtractor
 import com.linkedin.feathr.offline.client.DataFrameColName
-import com.linkedin.feathr.offline.client.plugins.{SimpleAnchorExtractorSparkAdaptor, FeathrUdfPluginContext, AnchorExtractorAdaptor}
 import com.linkedin.feathr.offline.config.{MVELFeatureDefinition, TimeWindowFeatureDefinition}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
 import com.linkedin.feathr.offline.job.FeatureJoinJob.FeatureName
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.{DataSourceAccessor, NonTimeBasedDataSourceAccessor, TimeBasedDataSourceAccessor}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
@@ -22,6 +24,7 @@ import com.linkedin.feathr.offline.{FeatureDataFrame, JoinKeys}
 import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark, SourceKeyExtractor}
 import com.linkedin.feathr.swj.aggregate.AggregationType
 import com.linkedin.feathr.{common, offline}
+import org.apache.avro.generic.IndexedRecord
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
@@ -40,6 +43,16 @@ import scala.concurrent.{Await, ExecutionContext, Future}
  * @param requestedFeatures all requested feature names within the anchorsWithSameSource
  */
 private[offline] case class AnchorFeatureGroups(anchorsWithSameSource: Seq[FeatureAnchorWithSource], requestedFeatures: Seq[String])
+
+/**
+ * Context info needed in feature transformation
+ * @param featureAnchorWithSource feature annchor with its source
+ * @param featureNamePrefixPairs map of feature name to its prefix
+ * @param transformer transformer of anchor
+ */
+private[offline] case class TransformInfo(featureAnchorWithSource: FeatureAnchorWithSource,
+                                 featureNamePrefixPairs: Seq[(FeatureName, FeatureName)],
+                                 transformer: AnchorExtractorBase[IndexedRecord])
 
 /**
  * Represent the transformed result of an anchor extractor after evaluating its features
@@ -75,7 +88,27 @@ private[offline] object FeatureTransformation {
   // feature name, column prefix
   type FeatureNameAndColumnPrefix = (String, String)
 
-  def getFeatureJoinKey(sourceKeyExtractor: SourceKeyExtractor, withKeyColumnDF: DataFrame, featureExtractor: Option[AnyRef] = None): Seq[String] = {
+  /**
+   * Extract feature key column names from the input feature RDD using the sourceKeyExtractor.
+   * @param sourceKeyExtractor key extractor that knows what are the key column in a feature RDD.
+   * @param withKeyColumnRDD RDD that contains the key columns.
+   * @return feature key column names
+   */
+  def getFeatureKeyColumnNamesRdd(sourceKeyExtractor: SourceKeyExtractor, withKeyColumnRDD: RDD[_]): Seq[String] = {
+    if (withKeyColumnRDD.isEmpty) {
+      sourceKeyExtractor.getKeyColumnNames(None)
+    } else {
+      sourceKeyExtractor.getKeyColumnNames(Some(withKeyColumnRDD.first()))
+    }
+  }
+
+  /**
+   * Extract feature key column names from the input feature DataFrame using the sourceKeyExtractor.
+   * @param sourceKeyExtractor key extractor that knows what are the key column in a feature RDD.
+   * @param withKeyColumnDF DataFrame that contains the key columns.
+   * @return feature key column names
+   */
+  def getFeatureKeyColumnNames(sourceKeyExtractor: SourceKeyExtractor, withKeyColumnDF: DataFrame): Seq[String] = {
       if (withKeyColumnDF.head(1).isEmpty) {
         sourceKeyExtractor.getKeyColumnNames(None)
       } else {
@@ -164,7 +197,8 @@ private[offline] object FeatureTransformation {
       featureAnchorWithSource: FeatureAnchorWithSource,
       df: DataFrame,
       requestedFeatureRefString: Seq[String],
-      inputDateInterval: Option[DateTimeInterval]): TransformedResult = {
+      inputDateInterval: Option[DateTimeInterval],
+      mvelContext: Option[FeathrExpressionExecutionContext]): TransformedResult = {
     val featureNamePrefix = getFeatureNamePrefix(featureAnchorWithSource.featureAnchor.extractor)
     val featureNamePrefixPairs = requestedFeatureRefString.map((_, featureNamePrefix))
 
@@ -178,7 +212,7 @@ private[offline] object FeatureTransformation {
         // so that transformation logic can be written only once
         DataFrameBasedSqlEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs)
       case transformer: AnchorExtractor[_] =>
-        DataFrameBasedRowEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs)
+        DataFrameBasedRowEvaluator.transform(transformer, df, featureNamePrefixPairs, featureTypeConfigs, mvelContext)
       case _ =>
         throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, s"cannot find valid Transformer for ${featureAnchorWithSource}")
     }
@@ -286,7 +320,8 @@ private[offline] object FeatureTransformation {
       keyExtractor: SourceKeyExtractor,
       bloomFilter: Option[BloomFilter],
       inputDateInterval: Option[DateTimeInterval],
-      preprocessedDf: Option[DataFrame] = None): KeyedTransformedResult = {
+      preprocessedDf: Option[DataFrame] = None,
+      mvelContext: Option[FeathrExpressionExecutionContext]): KeyedTransformedResult = {
     // Can two diff anchors have different keyExtractor?
     assert(anchorFeatureGroup.anchorsWithSameSource.map(_.dateParam).distinct.size == 1)
     val defaultInterval = anchorFeatureGroup.anchorsWithSameSource.head.dateParam.map(OfflineDateTimeUtils.createIntervalFromFeatureGenDateParam)
@@ -304,7 +339,8 @@ private[offline] object FeatureTransformation {
     }
 
     val withKeyColumnDF = keyExtractor.appendKeyColumns(sourceDF)
-    val outputJoinKeyColumnNames = getFeatureJoinKey(keyExtractor, withKeyColumnDF, Some(anchorFeatureGroup.anchorsWithSameSource.head.featureAnchor.extractor))
+
+    val outputJoinKeyColumnNames = getFeatureKeyColumnNames(keyExtractor, withKeyColumnDF)
     val filteredFactData = applyBloomFilter((keyExtractor, withKeyColumnDF), bloomFilter)
 
     // 1. apply all transformations on the dataframe in sequential order
@@ -314,7 +350,7 @@ private[offline] object FeatureTransformation {
         (prevTransformedResult, featureAnchorWithSource) => {
           val requestedFeatures = featureAnchorWithSource.selectedFeatures
           val transformedResultWithoutKey =
-            transformSingleAnchorDF(featureAnchorWithSource, prevTransformedResult.df, requestedFeatures, inputDateInterval)
+            transformSingleAnchorDF(featureAnchorWithSource, prevTransformedResult.df, requestedFeatures, inputDateInterval, mvelContext)
           val namePrefixPairs = prevTransformedResult.featureNameAndPrefixPairs ++ transformedResultWithoutKey.featureNameAndPrefixPairs
           val columnNameToFeatureNameAndType = prevTransformedResult.inferredFeatureTypes ++ transformedResultWithoutKey.inferredFeatureTypes
           val featureColumnFormats = prevTransformedResult.featureColumnFormats ++ transformedResultWithoutKey.featureColumnFormats
@@ -437,7 +473,8 @@ private[offline] object FeatureTransformation {
       anchorToSourceDFThisStage: Map[FeatureAnchorWithSource, DataSourceAccessor],
       requestedFeatureNames: Seq[FeatureName],
       bloomFilter: Option[BloomFilter],
-      incrementalAggContext: Option[IncrementalAggContext] = None): Map[FeatureName, KeyedTransformedResult] = {
+      incrementalAggContext: Option[IncrementalAggContext] = None,
+      mvelContext: Option[FeathrExpressionExecutionContext]): Map[FeatureName, KeyedTransformedResult] = {
     val executionService = Executors.newFixedThreadPool(MAX_PARALLEL_FEATURE_GROUP)
     implicit val executionContext = ExecutionContext.fromExecutorService(executionService)
     val groupedAnchorToFeatureGroups: Map[FeatureGroupingCriteria, Map[FeatureAnchorWithSource, FeatureGroupWithSameTimeWindow]] =
@@ -454,10 +491,21 @@ private[offline] object FeatureTransformation {
           val keyExtractor = anchorsWithSameSource.head._1.featureAnchor.sourceKeyExtractor
           val featureAnchorWithSource = anchorsWithSameSource.keys.toSeq
           val selectedFeatures = anchorsWithSameSource.flatMap(_._2.featureNames).toSeq
-
-          val sourceDF = featureGroupingFactors.source
-          val transformedResults: Seq[KeyedTransformedResult] = transformMultiAnchorsOnSingleDataFrame(sourceDF,
-                keyExtractor, featureAnchorWithSource, bloomFilter, selectedFeatures, incrementalAggContext)
+          val isAvroRddBasedExtractor = featureAnchorWithSource
+            .map(_.featureAnchor.extractor)
+            .filter(extractor => extractor.isInstanceOf[CanConvertToAvroRDD]
+          ).nonEmpty
+          val transformedResults: Seq[KeyedTransformedResult] = if (isAvroRddBasedExtractor) {
+              // If there are features are defined using AVRO record based extractor, run RDD based feature transformation
+              val sourceAccessor = featureGroupingFactors.source
+              val sourceRdd = sourceAccessor.asInstanceOf[NonTimeBasedDataSourceAccessor].get()
+              val featureTypeConfigs = featureAnchorWithSource.flatMap(featureAnchor => featureAnchor.featureAnchor.featureTypeConfigs).toMap
+              Seq(transformFeaturesOnAvroRecord(sourceRdd, keyExtractor, featureAnchorWithSource, bloomFilter, selectedFeatures, featureTypeConfigs))
+            } else {
+              val sourceDF = featureGroupingFactors.source
+              transformFeaturesOnDataFrameRow(sourceDF,
+                keyExtractor, featureAnchorWithSource, bloomFilter, selectedFeatures, incrementalAggContext, mvelContext)
+            }
 
           val res = transformedResults
             .map { transformedResultWithKey =>
@@ -670,6 +718,204 @@ private[offline] object FeatureTransformation {
     }
   }
 
+
+  /**
+   * Apply a bloomfilter to a RDD
+   *
+   * @param keyExtractor key extractor to extract the key values from the RDD
+   * @param rdd RDD to filter
+   * @param bloomFilter bloomfilter used to filter out unwanted row in the RDD based on key columns
+   * @return filtered RDD
+   */
+
+  private def applyBloomFilterRdd(keyExtractor: SourceKeyExtractor, rdd: RDD[IndexedRecord], bloomFilter: Option[BloomFilter]): RDD[IndexedRecord] = {
+    bloomFilter match {
+      case None =>
+        // no bloom filter, use data as it
+        rdd
+      case Some(filter) =>
+        // get the list of join key columns or expression
+        keyExtractor match {
+          case extractor: MVELSourceKeyExtractor =>
+            // get the list of join key columns or expression
+            val keyColumnsList = if (rdd.isEmpty) {
+              extractor.getKeyColumnNames(None)
+            } else {
+              extractor.getKeyColumnNames(Some(rdd.first))
+            }
+            if (!keyColumnsList.isEmpty) {
+              val filtered = rdd.filter { record: Any =>
+                val keyVals = extractor.getKey(record)
+                // if key is not in observation, skip it
+                if (keyVals != null && keyVals.count(_ == null) == 0) {
+                  filter.mightContainString(SourceUtils.generateFilterKeyString(keyVals))
+                } else {
+                  false
+                }
+              }
+              filtered
+            } else {
+              // expand feature for seq join does not have right key, so we allow empty here
+              rdd
+            }
+          case _ => throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, "No source key extractor found")
+        }
+    }
+  }
+
+  /**
+   * Transform features defined in a group of anchors based on same source
+   * This is for the AVRO record based extractors
+   *
+   * @param rdd source that requested features are defined on
+   * @param keyExtractor key extractor to apply on source rdd
+   * @param featureAnchorWithSources feature anchors defined on source rdd to be evaluated
+   * @param bloomFilter bloomfilter to apply on source rdd
+   * @param requestedFeatureNames requested features
+   * @param featureTypeConfigs user specified feature types
+   * @return TransformedResultWithKey The output feature DataFrame conforms to FDS format
+   */
+  private def transformFeaturesOnAvroRecord(df: DataFrame,
+                                            keyExtractor: SourceKeyExtractor,
+                                            featureAnchorWithSources: Seq[FeatureAnchorWithSource],
+                                            bloomFilter: Option[BloomFilter],
+                                            requestedFeatureNames: Seq[FeatureName],
+                                            featureTypeConfigs: Map[String, FeatureTypeConfig] = Map()): KeyedTransformedResult = {
+    if (!keyExtractor.isInstanceOf[MVELSourceKeyExtractor]) {
+      throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Error processing requested Feature :${requestedFeatureNames}. " +
+        s"Key extractor ${keyExtractor} must extends MVELSourceKeyExtractor.")
+    }
+    val extractor = keyExtractor.asInstanceOf[MVELSourceKeyExtractor]
+    if (!extractor.anchorExtractorV1.isInstanceOf[CanConvertToAvroRDD]) {
+      throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Error processing requested Feature :${requestedFeatureNames}. " +
+        s"isLowLevelRddExtractor() should return true and convertToAvroRdd should be implemented.")
+    }
+    val rdd = extractor.anchorExtractorV1.asInstanceOf[CanConvertToAvroRDD].convertToAvroRdd(df)
+    val filteredFactData = applyBloomFilterRdd(keyExtractor, rdd, bloomFilter)
+
+    // Build a sequence of 3-tuple of (FeatureAnchorWithSource, featureNamePrefixPairs, AnchorExtractorBase)
+    val transformInfo = featureAnchorWithSources map { featureAnchorWithSource =>
+      val extractor = featureAnchorWithSource.featureAnchor.extractor
+      extractor match {
+        case transformer: AnchorExtractorBase[IndexedRecord] =>
+          // We no longer need prefix for the simplicity of the implementation, instead if there's a feature name
+          // and source data field clash, we will throw exception and ask user to rename the feature.
+          val featureNamePrefix = ""
+          val featureNames = featureAnchorWithSource.selectedFeatures.filter(requestedFeatureNames.contains)
+          val featureNamePrefixPairs = featureNames.map((_, featureNamePrefix))
+          TransformInfo(featureAnchorWithSource, featureNamePrefixPairs, transformer)
+
+        case _ =>
+          throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, s"Unsupported transformer $extractor for features: $requestedFeatureNames")
+      }
+    }
+
+    // to avoid name conflict between feature names and the raw data field names
+    val sourceKeyExtractors = transformInfo.map(_.featureAnchorWithSource.featureAnchor.sourceKeyExtractor)
+    assert(sourceKeyExtractors.map(_.toString).distinct.size == 1)
+
+    val transformers = transformInfo map (_.transformer)
+
+    /*
+     * Transform the given RDD by applying extractors to each row to create an RDD[Row] where each Row
+     * represents keys and feature values
+     */
+    val spark = SparkSession.builder().getOrCreate()
+    val userProvidedFeatureTypes = transformInfo.flatMap(_.featureAnchorWithSource.featureAnchor.getFeatureTypes.getOrElse(Map.empty[String, FeatureTypes])).toMap
+    val FeatureTypeInferenceContext(featureTypeAccumulators) =
+      FeatureTransformation.getTypeInferenceContext(spark, userProvidedFeatureTypes, requestedFeatureNames)
+    val transformedRdd = filteredFactData map { record =>
+      val (keys, featureValuesWithType) = transformAvroRecord(requestedFeatureNames, sourceKeyExtractors, transformers, record, featureTypeConfigs)
+      requestedFeatureNames.zip(featureValuesWithType).foreach {
+        case (featureRef, (_, featureType)) =>
+          if (featureTypeAccumulators(featureRef).isZero && featureType != null) {
+            // This is lazy evaluated
+            featureTypeAccumulators(featureRef).add(FeatureTypes.valueOf(featureType.getBasicType.toString))
+          }
+      }
+      // Create a row by merging a row created from keys and a row created from term-vectors/tensors
+      Row.merge(Row.fromSeq(keys), Row.fromSeq(featureValuesWithType.map(_._1)))
+    }
+
+    // Create a DataFrame from the above obtained RDD
+    val keyNames = getFeatureKeyColumnNamesRdd(sourceKeyExtractors.head, filteredFactData)
+    val (outputSchema, inferredFeatureTypeConfigs) = {
+      val allFeatureTypeConfigs = featureAnchorWithSources.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.featureTypeConfigs).toMap
+      val inferredFeatureTypes = inferFeatureTypes(featureTypeAccumulators, transformedRdd, requestedFeatureNames)
+      val inferredFeatureTypeConfigs = inferredFeatureTypes.map(x => x._1 -> new FeatureTypeConfig(x._2))
+      val mergedFeatureTypeConfig = inferredFeatureTypeConfigs ++ allFeatureTypeConfigs
+      val colPrefix = ""
+      val featureTensorTypeInfo = getFDSSchemaFields(requestedFeatureNames, mergedFeatureTypeConfig, colPrefix)
+      val structFields = keyNames.foldRight(List.empty[StructField]) {
+        case (colName, acc) =>
+          StructField(colName, StringType) :: acc
+      }
+      val outputSchema = StructType(StructType(structFields ++ featureTensorTypeInfo))
+      (outputSchema, mergedFeatureTypeConfig)
+    }
+    val transformedDF = spark.createDataFrame(transformedRdd, outputSchema)
+
+    val featureFormat = FeatureColumnFormat.FDS_TENSOR
+    val featureColumnFormats = requestedFeatureNames.map(name => name -> featureFormat).toMap
+    val transformedInfo = TransformedResult(transformInfo.flatMap(_.featureNamePrefixPairs), transformedDF, featureColumnFormats, inferredFeatureTypeConfigs)
+    KeyedTransformedResult(keyNames, transformedInfo)
+  }
+
+  /**
+   * Apply a keyExtractor and feature transformer on a Record to extractor feature values.
+   * @param requestedFeatureNames requested feature names in the output. Extractors may produce more features than requested.
+   * @param sourceKeyExtractors extractor to extract the key from the record
+   * @param transformers transform to produce the feature value from the record
+   * @param record avro record to work on
+   * @param featureTypeConfigs user defined feature types
+   * @return tuple of (feature join key, sequence of (feature value, feature type) in the order of requestedFeatureNames)
+   */
+  private def transformAvroRecord(
+                                   requestedFeatureNames: Seq[FeatureName],
+                                   sourceKeyExtractors: Seq[SourceKeyExtractor],
+                                   transformers: Seq[AnchorExtractorBase[IndexedRecord]],
+                                   record: IndexedRecord,
+                                   featureTypeConfigs: Map[String, FeatureTypeConfig] = Map()): (Seq[String], Seq[(Any, FeatureType)]) = {
+    val keys = sourceKeyExtractors.head match {
+      case mvelSourceKeyExtractor: MVELSourceKeyExtractor => mvelSourceKeyExtractor.getKey(record)
+      case _ => throw new FeathrFeatureTransformationException(ErrorLabel.FEATHR_USER_ERROR, s"${sourceKeyExtractors.head} is not a valid extractor on RDD")
+    }
+
+    /*
+     * For the given row, apply all extractors to extract feature values. If requested as tensors, each feature value
+     * contains a tensor else a term-vector.
+     */
+    val features = transformers map {
+      case extractor: AnchorExtractor[IndexedRecord] =>
+        val features = extractor.getFeatures(record)
+        FeatureValueTypeValidator.validate(features, featureTypeConfigs)
+        features
+      case extractor =>
+        throw new FeathrFeatureTransformationException(
+          ErrorLabel.FEATHR_USER_ERROR,
+          s"Invalid extractor $extractor for features:" +
+            s"$requestedFeatureNames requested as tensors")
+    } reduce (_ ++ _)
+    if (logger.isTraceEnabled) {
+      logger.trace(s"Extracted features: $features")
+    }
+
+    /*
+     * Retain feature values for only the requested features, and represent each feature value as
+     * a tensor, as specified.
+     */
+    val featureValuesWithType = requestedFeatureNames map { name =>
+      features.get(name) map {
+        case featureValue =>
+          val tensorData: TensorData = featureValue.getAsTensorData()
+          val featureType: FeatureType = featureValue.getFeatureType()
+          val row = FeaturizedDatasetUtils.tensorToFDSDataFrameRow(tensorData)
+          (row, featureType)
+      } getOrElse ((null, null)) // return null if no feature value present
+    }
+    (keys, featureValuesWithType)
+  }
+
   /**
     * Helper function to be used by groupFeatures. Given a collection of feature anchors which also contains information about grouping
     * criteria and extractor type per feature anchor, returns a map of FeatureGroupingCriteria to
@@ -848,13 +1094,14 @@ private[offline] object FeatureTransformation {
    *         others use direct aggregation
    *
    */
-  private def transformMultiAnchorsOnSingleDataFrame(
+  private def transformFeaturesOnDataFrameRow(
       source: DataSourceAccessor,
       keyExtractor: SourceKeyExtractor,
       anchorsWithSameSource: Seq[FeatureAnchorWithSource],
       bloomFilter: Option[BloomFilter],
       allRequestedFeatures: Seq[String],
-      incrementalAggContext: Option[IncrementalAggContext]): Seq[KeyedTransformedResult] = {
+      incrementalAggContext: Option[IncrementalAggContext],
+      mvelContext: Option[FeathrExpressionExecutionContext]): Seq[KeyedTransformedResult] = {
 
     // based on source and feature definition, divide features into direct transform and incremental
     // transform groups
@@ -864,7 +1111,7 @@ private[offline] object FeatureTransformation {
     val preprocessedDf = PreprocessedDataFrameManager.getPreprocessedDataframe(anchorsWithSameSource)
 
     val directTransformedResult =
-      directTransformAnchorGroup.map(anchorGroup => Seq(directCalculate(anchorGroup, source, keyExtractor, bloomFilter, None, preprocessedDf)))
+      directTransformAnchorGroup.map(anchorGroup => Seq(directCalculate(anchorGroup, source, keyExtractor, bloomFilter, None, preprocessedDf, mvelContext)))
 
     val incrementalTransformedResult = incrementalTransformAnchorGroup.map { anchorGroup =>
       {
@@ -874,7 +1121,7 @@ private[offline] object FeatureTransformation {
         val incrAggCtx = incrementalAggContext.get
         val preAggDFs = incrAggCtx.previousSnapshotMap.collect { case (featureName, df) if requestedFeatures.exists(df.columns.contains) => df }.toSeq.distinct
         // join each previous aggregation dataframe sequentially
-        val groupKeys = getFeatureJoinKey(keyExtractor, preAggDFs.head)
+        val groupKeys = getFeatureKeyColumnNames(keyExtractor, preAggDFs.head)
         val keyColumnNames = getStandardizedKeyNames(groupKeys.size)
         val firstPreAgg = preAggDFs.head
         val joinedPreAggDFs = preAggDFs
@@ -883,7 +1130,7 @@ private[offline] object FeatureTransformation {
             baseDF.join(curDF, keyColumnNames)
           })
         val preAggRootDir = incrAggCtx.previousSnapshotRootDirMap(anchorGroup.anchorsWithSameSource.head.selectedFeatures.head)
-        Seq(incrementalCalculate(anchorGroup, joinedPreAggDFs, source, keyExtractor, bloomFilter, preAggRootDir))
+        Seq(incrementalCalculate(anchorGroup, joinedPreAggDFs, source, keyExtractor, bloomFilter, preAggRootDir, mvelContext))
       }
     }
 
@@ -1000,7 +1247,8 @@ private[offline] object FeatureTransformation {
       source: DataSourceAccessor,
       keyExtractor: SourceKeyExtractor,
       bloomFilter: Option[BloomFilter],
-      preAggRootDir: String): KeyedTransformedResult = {
+      preAggRootDir: String,
+      mvelContext: Option[FeathrExpressionExecutionContext]): KeyedTransformedResult = {
     // get the aggregation window of the feature
     val aggWindow = getFeatureAggWindow(featureAnchorWithSource)
 
@@ -1013,7 +1261,7 @@ private[offline] object FeatureTransformation {
     // If so, even though the incremental aggregation succeeds, the  result is incorrect.
     // And the incorrect result will be propagated to all subsequent incremental aggregation because the incorrect result will be used as the snapshot.
 
-    val newDeltaSourceAgg = directCalculate(featureAnchorWithSource, source, keyExtractor, bloomFilter, Some(dateParam))
+    val newDeltaSourceAgg = directCalculate(featureAnchorWithSource, source, keyExtractor, bloomFilter, Some(dateParam), None, mvelContext)
     // if the new delta window size is smaller than the request feature window, need to use the pre-aggregated results,
     if (newDeltaWindowSize < aggWindow) {
       // add prefixes to feature columns and keys for the previous aggregation snapshot
@@ -1034,7 +1282,7 @@ private[offline] object FeatureTransformation {
         renamedPreAgg
       } else {
         // preAgg - oldDeltaAgg
-        val oldDeltaSourceAgg = directCalculate(featureAnchorWithSource, source, keyExtractor, bloomFilter, Some(oldDeltaWindowInterval))
+        val oldDeltaSourceAgg = directCalculate(featureAnchorWithSource, source, keyExtractor, bloomFilter, Some(oldDeltaWindowInterval), None, mvelContext)
         val oldDeltaAgg = oldDeltaSourceAgg.transformedResult.df
         mergeDeltaDF(renamedPreAgg, oldDeltaAgg, leftKeyColumnNames, joinKeys, newDeltaFeatureColumnNames, false)
       }

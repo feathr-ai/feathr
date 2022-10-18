@@ -10,6 +10,7 @@ import com.linkedin.feathr.offline.derived.strategies.SequentialJoinAsDerivation
 import com.linkedin.feathr.offline.job.FeatureTransformation.FEATURE_NAME_PREFIX
 import com.linkedin.feathr.offline.join.algorithms.{SeqJoinExplodedJoinKeyColumnAppender, SequentialJoinConditionBuilder, SparkJoinWithJoinCondition}
 import com.linkedin.feathr.offline.logical.FeatureGroups
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.{TestFeathr, TestUtils}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkException
@@ -25,7 +26,7 @@ import org.apache.spark.sql.internal.SQLConf
 class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
   Logger.getLogger("org").setLevel(Level.OFF)
   Logger.getLogger("akka").setLevel(Level.OFF)
-
+  val mvelContext = new FeathrExpressionExecutionContext()
   private def getSampleEmployeeDF = {
     val schema = {
       StructType(
@@ -997,7 +998,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     when(mockBaseTaggedDependency.outputKey).thenReturn(Some(Seq("outputKey1", "outputKey2")))
     when(mockTaggedDependency.key).thenReturn(Seq("expansionKey1"))
 
-    seqJoinDerivations(Seq(0, 1, 2), Seq("keyTag1", "keyTag2", "keyTag3", "keyTag4"), ss.emptyDataFrame, mockDerivedFeature, mockDerivationFunction)
+    seqJoinDerivations(Seq(0, 1, 2), Seq("keyTag1", "keyTag2", "keyTag3", "keyTag4"), ss.emptyDataFrame, mockDerivedFeature, mockDerivationFunction, Some(mvelContext))
   }
 
   /**
@@ -1071,7 +1072,7 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     when(mockBaseTaggedDependency.outputKey).thenReturn(Some(Seq("outputKey1")))
     when(mockTaggedDependency.key).thenReturn(Seq("expansionKey1"))
 
-    seqJoinDerivations(Seq(0, 1, 2), Seq("keyTag1", "keyTag2", "keyTag3", "keyTag4"), ss.emptyDataFrame, mockDerivedFeature, mockDerivationFunction)
+    seqJoinDerivations(Seq(0, 1, 2), Seq("keyTag1", "keyTag2", "keyTag3", "keyTag4"), ss.emptyDataFrame, mockDerivedFeature, mockDerivationFunction, Some(mvelContext))
   }
 
   /**

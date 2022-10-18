@@ -69,6 +69,7 @@ def basic_test_setup(config_path: str):
                             transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
                                                               agg_func="AVG",
                                                               window="90d",
+                                                              filter="fare_amount > 0"
                                                               )),
                     Feature(name="f_location_max_fare",
                             key=location_id,
@@ -87,6 +88,34 @@ def basic_test_setup(config_path: str):
 
     return client
 
+def time_partition_pattern_test_setup(config_path: str):
+    now = datetime.now()
+    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
+    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
+    client = FeathrClient(config_path=config_path)
+    batch_source = HdfsSource(name="testTimePartitionSource",
+                          path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/time_partition_pattern/daily",
+                          time_partition_pattern="yyyy/MM/dd"
+                          )
+    key = TypedKey(key_column="key0",
+               key_column_type=ValueType.INT32)
+    agg_features = [
+    Feature(name="f_loc_avg",
+            key=[key],
+            feature_type=FLOAT,
+            transform="f_location_avg_fare"),
+    Feature(name="f_loc_max",
+            feature_type=FLOAT,
+            key=[key],
+            transform="f_location_max_fare"),
+    ]
+
+    agg_anchor = FeatureAnchor(name="testTimePartitionFeatures",
+                           source=batch_source,
+                           features=agg_features)
+    client.build_features(anchor_list=[agg_anchor])
+    return client
 
 def snowflake_test_setup(config_path: str):
     now = datetime.now()
@@ -160,17 +189,17 @@ def kafka_test_setup(config_path: str):
     return client
 
 def registry_test_setup(config_path: str):
-
-
-    # use a new project name every time to make sure all features are registered correctly
+    # Use a new project name every time to make sure all features are registered correctly
+    # Project name example: feathr_ci_registry_2022_09_24_01_02_30
     now = datetime.now()
-    os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ["project_config__project_name"] = f'feathr_ci_registry_{str(now)[:19].replace(" ", "_").replace(":", "_").replace("-", "_")}'
 
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
     request_anchor, agg_anchor, derived_feature_list = generate_entities()
 
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
     return client
+
 def registry_test_setup_partially(config_path: str):
     """Register a partial of a project. Will call `generate_entities()` and register only the first anchor feature.
     """

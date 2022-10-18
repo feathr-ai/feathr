@@ -61,9 +61,6 @@ project_config:
     # Redis password for your online store
     - "REDIS_PASSWORD"
     # Client IDs and Client Secret for the service principal. Read the getting started docs on how to get those information.
-    - "AZURE_CLIENT_ID"
-    - "AZURE_TENANT_ID"
-    - "AZURE_CLIENT_SECRET"
 
 offline_store:
 ---
@@ -98,9 +95,6 @@ These values can also be retrieved by using cloud key value store, such as [Azur
 ```python
 import os
 os.environ['REDIS_PASSWORD'] = ''
-os.environ['AZURE_CLIENT_ID'] = ''
-os.environ['AZURE_TENANT_ID'] = ''
-os.environ['AZURE_CLIENT_SECRET'] = ''
 ```
 
 Please refer to [A note on using azure key vault to store credentials](https://github.com/feathr-ai/feathr/blob/41e7496b38c43af6d7f8f1de842f657b27840f6d/docs/how-to-guides/feathr-configuration-and-env.md#a-note-on-using-azure-key-vault-to-store-credentials) for more details.
@@ -164,8 +158,8 @@ The following feature join config is used:
 ```python
 feature_query = [FeatureQuery(feature_list=["f_location_avg_fare"], key=["DOLocationID"])]
         settings = ObservationSettings(
-            observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
-            output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro",
+            observation_path="abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+            output_path="abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/demo_data/output.avro",
             event_timestamp_column="lpep_dropoff_datetime", timestamp_format="yyyy-MM-dd HH:mm:ss")
 client.get_offline_features(feature_query=feature_query, observation_settings=settings)
 ```
