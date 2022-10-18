@@ -80,7 +80,7 @@ function RoleForm(props: RoleFormProps, ref: any) {
     handleInit().then((isAdmin: boolean) => {
       getRole?.(isAdmin);
     });
-  }, [handleInit]);
+  }, [handleInit, getRole]);
 
   return (
     <Form
