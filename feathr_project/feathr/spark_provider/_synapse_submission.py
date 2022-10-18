@@ -325,7 +325,7 @@ class _SynapseJobRunner(object):
     def get_driver_log(self, job_id) -> str:
         # @see: https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/connect-monitor-azure-synapse-spark-application-level-metrics
         app_id = self.get_spark_batch_job(job_id).app_id
-        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stdout/?isDownload=true" % (self._synapse_dev_url, self._spark_pool_name, job_id, app_id)
+        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stderr/?isDownload=true" % (self._synapse_dev_url, self._spark_pool_name, job_id, app_id)
         token = self._credential.get_token("https://dev.azuresynapse.net/.default").token
         req = urllib.request.Request(url=url, headers={"authorization": "Bearer %s" % token})
         resp = urllib.request.urlopen(req)
@@ -432,6 +432,8 @@ class _DataLakeFiler(object):
 
         # returns the paths to all the files in the target director in ADLS
         # get all the paths that are not under a directory
+        test_paths = self.file_system_client.get_paths(
+            path=parse_result.path, recursive=False)
         result_paths = [basename(file_path.name) for file_path in self.file_system_client.get_paths(
             path=parse_result.path, recursive=False) if not file_path.is_directory]
 

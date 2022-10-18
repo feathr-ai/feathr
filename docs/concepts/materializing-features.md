@@ -31,6 +31,18 @@ More reference on the APIs:
 
 In the above example, we define a Redis table called `nycTaxiDemoFeature` and materialize two features called `f_location_avg_fare` and `f_location_max_fare` to Redis.
 
+## Incremental Aggregation
+Use incremental aggregation will significantly expedite the WindowAggTransformation feature calculation. 
+For example, aggregation sum of a feature F within a 180-day window at day T can be expressed as: F(T) = F(T - 1)+DirectAgg(T-1)-DirectAgg(T - 181). 
+Once a SNAPSHOT of the first day is generated, the calculation for the following days can leverage it.
+
+A storeName is required if incremental aggregated is enabled. There could be multiple output Datasets, and each of them need to be stored in a separate folder. The storeName is used as the folder name to create under the base "path".
+
+Incremental aggregation is enabled by default when using HdfsSink.
+
+More reference on the APIs:
+- [HdfsSink API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSink)
+
 ## Feature Backfill
 
 It is also possible to backfill the features till a particular time, like below. If the `BackfillTime` part is not specified, it's by default to `now()` (i.e. if not specified, it's equivalent to `BackfillTime(start=now, end=now, step=timedelta(days=1))`).
@@ -149,3 +161,53 @@ More reference on the APIs:
 
 - [MaterializationSettings API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings)
 - [HdfsSink API](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.HdfsSource)
+
+## Expected behavior on Feature Materialization
+
+When end users materialize features to a sink, what is the expected behavior?
+
+It seems to be a straightforward question, but actually it is not. Basically when end users want to materialize a feature, Feathr is expecting that: For a certain entity key (say a user_id), there will be multiple features (say user_total_gift_card_balance, and user_purchase_in_last_week). So two checks will be performed:
+
+1. Those features should have the same entity key (say a user_id). You cannot materialize features for two entity keys in the same materialization job (although you can do it in different jobs), for example materializing `uer_total_purchase` and `product_sold_in_last_week` in the same Feathr materialization job.
+2. Those features should all be "aggregated" feature. I.e. they should be a feature which has a type of `WindowAggTransformation`, such as `product_sold_in_last_week`, or `user_latest_total_gift_card_balance`.
+
+The first constraint is pretty straightforward to explain - since when Feathr materializes certain features, they are used to describe certain aspects of a given entity such as user. Describing `product_sold_in_last_week` would not make sense for users.
+
+The second constraint is a bit more interesting. For example, you have defined `user_total_gift_card_balance` and it has different value for the same user across different time, say the corresponding value is 40,30,20,20 for the last 4 days, like below.
+Original data:
+
+| UserId | user_total_gift_card_balance | Date       |
+| ------ | ---------------------------- | ---------- |
+| 1      | 40                           | 2022/01/01 |
+| 1      | 30                           | 2022/01/02 |
+| 1      | 20                           | 2022/01/03 |
+| 1      | 20                           | 2022/01/04 |
+| 2      | 40                           | 2022/01/01 |
+| 2      | 30                           | 2022/01/02 |
+| 2      | 20                           | 2022/01/03 |
+| 2      | 20                           | 2022/01/04 |
+| 3      | 40                           | 2022/01/01 |
+| 3      | 30                           | 2022/01/02 |
+| 3      | 20                           | 2022/01/03 |
+| 3      | 20                           | 2022/01/04 |
+
+However, the materialized features have no dates associated with them. I.e. the materialized result should be something like this:
+
+| UserId | user_total_gift_card_balance |
+| ------ | ---------------------------- |
+| 1      | ?                            |
+| 2      | ?                            |
+| 3      | ?                            |
+
+When you ask Feathr to "materialize" `user_total_gift_card_balance` for you, there's only one value that can be materialized, since the materialized feature does not have a date associated with them. So the problem is - for a given `user_id`, only one `user_total_gift_card_balance` can be its feature. Which value you are choosing out of the 4 values? A random value? The latest value?
+
+It might be natural to think that "we should materialize the latest feature", and that behavior, by definition, is an "aggregation" operation, since we have 4 values for a given `user_id` but we are only materializing and using one of them. In that case, Feathr asks you to explicitly say that you want to materialize the latest feature (i.e. by using [Point-in-time Join](./point-in-time-join.md))
+
+```python
+feature = Feature(name="user_total_gift_card_balance",
+            key=UserId,
+            feature_type=FLOAT,
+            transform=WindowAggTransformation(agg_expr="gift_card_balance",
+                                              agg_func="LATEST",
+                                              window="7d"))
+```

@@ -327,7 +327,7 @@ private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
             case Some(tType) => offline.FeatureValue.fromTypeConfig(rawValue, tType)
             case None => offline.FeatureValue(rawValue, featureType, key)
           }
-          FeatureValueTypeValidator.validate(featureValue, featureTypeConfig)
+          FeatureValueTypeValidator.validate(featureValue, featureTypeConfig, key)
           (key, featureValue)
       }
       .toMap

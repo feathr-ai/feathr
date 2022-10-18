@@ -652,11 +652,7 @@ private[offline] object SourceUtils {
         ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(inputData.inputPath)
       }
       case _ => {
-        if (ss.sparkContext.isLocal){
-          getLocalDF(ss, inputData.inputPath, dataLoaderHandlers)
-        } else {
-          loadAsDataFrame(ss, SimplePath(inputData.inputPath),dataLoaderHandlers)
-        }
+        loadAsDataFrame(ss, SimplePath(inputData.inputPath),dataLoaderHandlers)
       }
     }
   }
