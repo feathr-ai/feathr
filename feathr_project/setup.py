@@ -37,7 +37,7 @@ setup(
         "python-snappy<=0.6.1",
         "deltalake>=0.6.2",
         "graphlib_backport<=1.0.3",
-        "protobuf==3.*",
+        "protobuf<=3.19.4,>=3.0.0",
         "confluent-kafka<=1.9.2",
         "databricks-cli<=0.17.3",
         "avro<=1.11.1",
