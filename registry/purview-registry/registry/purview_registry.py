@@ -5,6 +5,9 @@ from typing import Any, Optional, Tuple, Union
 from urllib.error import HTTPError
 from uuid import UUID
 
+from registry.models import to_snake
+from pyapacheatlas.core.util import AtlasException
+
 from azure.identity import DefaultAzureCredential
 from loguru import logger
 from pyapacheatlas.auth.azcredential import AzCredentialWrapper
@@ -20,6 +23,9 @@ Label_Contains = "CONTAINS"
 Label_BelongsTo = "BELONGSTO"
 Label_Consumes = "CONSUMES"
 Label_Produces = "PRODUCES"
+TYPEDEF_DERIVED_FEATURE="feathr_derived_feature_v1"
+TYPEDEF_ANCHOR_FEATURE="feathr_anchor_feature_v1"
+
 TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_v1>"
 TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_v1>"
 TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_v1>"
@@ -568,17 +574,47 @@ class PurviewRegistry(Registry):
     def _upload_entity_batch(self, entity_batch:list[AtlasEntity]):
         # we only support entity creation, update is not supported. 
         # setting lastModifiedTS ==0 will ensure this, if another entity with ts>=1 exist
-        # upload funtion will fail with 412 Precondition fail.
+        # upload function will fail with 412 Precondition fail.
         for entity in entity_batch:
-            entity.lastModifiedTS="0"
-            results = self.purview_client.upload_entities(
-                batch=entity)
-            if results:
-                dict = {x.guid: x for x in entity_batch}
-                for k, v in results['guidAssignments'].items():
-                    dict[k].guid = v
+            self._upload_single_entity(entity)
+    
+    def _upload_single_entity(self, entity:AtlasEntity):
+        try:
+            """
+            Try to find existing entity/process first, if found, return the existing entity's GUID
+            """
+            id = self.get_entity_id(entity.qualifiedName)
+            response =  self.purview_client.get_entity(id)['entities'][0]
+            j = entity.to_json()
+            if j["typeName"] == response["typeName"]:
+                if j["typeName"] == "Process":
+                    if response["attributes"]["qualifiedName"] != j["attributes"]["qualifiedName"]:
+                        raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
+                else:
+                    if "type" in response['attributes'] and response["typeName"] in (TYPEDEF_ANCHOR_FEATURE, TYPEDEF_DERIVED_FEATURE):
+                        conf = ConfigFactory.parse_string(response['attributes']['type'])
+                        response['attributes']['type'] = dict(conf)
+                    keys = set([to_snake(key) for key in j["attributes"].keys()]) - set(["qualified_name"])
+                    keys.add("qualifiedName")
+                    for k in keys:
+                        if response["attributes"][k] != j["attributes"][k]:
+                            raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
+                entity.guid = response["guid"]
+                return
             else:
-                raise RuntimeError("Feature registration failed.", results)            
+                raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
+        except AtlasException as e:
+            pass
+
+        entity.lastModifiedTS="0"
+        results = self.purview_client.upload_entities(
+            batch=entity)
+        if results:
+            d = {x.guid: x for x in [entity]}
+            for k, v in results['guidAssignments'].items():
+                d[k].guid = v
+        else:
+            raise RuntimeError("Feature registration failed.", results)
             
     def _generate_fully_qualified_name(self, segments):
         return self.registry_delimiter.join(segments)

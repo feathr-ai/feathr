@@ -111,7 +111,7 @@
       "destinationBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('bacpacBlobName'))]",
       "bacpacDeploymentScriptName": "CopyBacpacFile",
       "bacpacDbExtensionName": "registryRbacDbImport",
-      "preBuiltdockerImage": "feathrfeaturestore/feathr-registry:releases-v0.8.0"
+      "preBuiltdockerImage": "feathrfeaturestore/feathr-registry:releases-v0.8.2"
     },
     "functions": [],
     "resources": [

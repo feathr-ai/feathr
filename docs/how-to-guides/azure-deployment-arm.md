@@ -6,7 +6,7 @@ parent: How-to Guides
 
 # Azure Resource Provisioning
 
-The provided Azure Resource Manager (ARM) template deploys the following resources, please make sure you have enough quota in the subscription and region you are deploying this in. You can view your quota and make request on Azure [portal](https://ms.portal.azure.com/#view/Microsoft_Azure_Capacity/QuotaMenuBlade/~/overview)
+The provided Azure Resource Manager (ARM) template deploys the following resources, please make sure you have enough quota in the subscription and region you are deploying this in. You can view your quota and make request on Azure [portal](https://ms.portal.azure.com/#view/Microsoft_Azure_Capacity/QuotaMenuBlade/~/overview).
 
 1. Azure Storage account
 2. Azure Purview (metadata store if you selected Azure-Purview as registry backend)
@@ -17,9 +17,9 @@ The provided Azure Resource Manager (ARM) template deploys the following resourc
 7. Azure Event Hub
 8. Azure Redis
 
-Please note, you need to have **owner access** in the resource group you are deploying this in. Owner access is required to assign role to managed identity within ARM template so it can access key vault and store secrets. If you don't have such permission, you might want to contact your IT admin to see if they can do that.
+### Please Note: you need to have the **Owner Role** in the resource group you are deploying this in. Owner access is required to assign role to managed identity within the ARM template so it can access key vault and store secrets. It is also required by the permission section in our sample notebooks. If you don't have such permission, you might want to contact your IT admin to see if they can do that.
 
-Although we recommend end users deploy the resources using the ARM template, we understand that in many situations where users want to reuse existing resources instead of creating new resources; or users have many other permission issues. See [Manually connecting existing resources](#manually-connecting-existing-resources) for more details.
+Although we recommend end users deploy the resources using the ARM template, we understand that in many situations where users want to reuse existing resources instead of creating new resources; or users may have permission issues. See [Manually connecting existing resources](#manually-connecting-existing-resources) for more details.
 
 ## Architecture
 
@@ -34,10 +34,12 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
 The very first step is to create an Azure Active Directory (AAD) application to enable authentication on the Feathr UI (which gets created as part of the deployment script). Currently it is not possible to create one through ARM template but you can easily create one by running the following CLI commands in the [Cloud Shell](https://shell.azure.com/bash).
 
+### Please make note of the Client ID and Tenant ID for the AAD app, you will need it in the ARM template deployment section.
+
 ```bash
 # This is the prefix you want to name your resources with, make a note of it, you will need it during deployment.
 #  Note: please keep the `resourcePrefix` short (less than 15 chars), since some of the Azure resources need the full name to be less than 24 characters. Only lowercase alphanumeric characters are allowed for resource prefix.
-resource_prefix="userprefix1"
+resource_prefix="yourprefix"
 
 # Please don't change this name, a corresponding webapp with same name gets created in subsequent steps.
 sitename="${resource_prefix}webapp"

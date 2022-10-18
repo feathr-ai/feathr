@@ -3,6 +3,7 @@ import importlib
 import inspect
 import itertools
 import os
+import re
 import sys
 import ast
 import types
@@ -43,6 +44,25 @@ from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
 
 from feathr.constants import *
+
+def _to_snake(d, level: int = 0):
+    """
+    Convert `string`, `list[string]`, or all keys in a `dict` into snake case
+    The maximum length of input string or list is 100, or it will be truncated before being processed, for dict, the exception will be thrown if it has more than 100 keys.
+    the maximum nested level is 10, otherwise the exception will be thrown
+    """
+    if level >= 10:
+        raise ValueError("Too many nested levels")
+    if isinstance(d, str):
+        d = d[:100]
+        return re.sub(r'(?<!^)(?=[A-Z])', '_', d).lower()
+    if isinstance(d, list):
+        d = d[:100]
+        return [_to_snake(i, level + 1) if isinstance(i, (dict, list)) else i for i in d]
+    if len(d) > 100:
+        raise ValueError("Dict has too many keys")
+    return {_to_snake(a, level + 1): _to_snake(b, level + 1) if isinstance(b, (dict, list)) else b for a, b in d.items()}
+
 
 class _PurviewRegistry(FeathrRegistry):
     """
@@ -720,6 +740,32 @@ derivations: {
         The entity itself will also be modified, fill the GUID with real GUID in Purview.
         In order to avoid having concurrency issue, and provide clear guidance, this method only allows entity uploading once at a time.
         '''
+        try:
+            """
+            Try to find existing entity/process first, if found, return the existing entity's GUID
+            """
+            id = self.get_entity_id(entity.qualifiedName)
+            response =  self.purview_client.get_entity(id)['entities'][0]
+            j = entity.to_json()
+            if j["typeName"] == response["typeName"]:
+                if j["typeName"] == "Process":
+                    if response["attributes"]["qualifiedName"] != j["attributes"]["qualifiedName"]:
+                        raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
+                else:
+                    if "type" in response['attributes'] and response["typeName"] in (TYPEDEF_ANCHOR_FEATURE, TYPEDEF_DERIVED_FEATURE):
+                        conf = ConfigFactory.parse_string(response['attributes']['type'])
+                        response['attributes']['type'] = dict(conf)
+                    keys = set([_to_snake(key) for key in j["attributes"].keys()]) - set(["qualified_name"])
+                    keys.add("qualifiedName")
+                    for k in keys:
+                        if response["attributes"][k] != j["attributes"][k]:
+                            raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
+                return response["guid"]
+            else:
+                raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
+        except AtlasException as e:
+            pass
+        
         try:
             entity.lastModifiedTS="0"
             result = self.purview_client.upload_entities([entity])

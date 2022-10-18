@@ -3,18 +3,17 @@ package com.linkedin.feathr.offline.util
 import com.linkedin.feathr.common.TensorUtils
 import com.linkedin.feathr.common.tensor.{TensorType, Tensors}
 import com.linkedin.feathr.common.types.PrimitiveType
-
-import java.util
-import java.util.Collections
 import com.linkedin.feathr.offline.AssertFeatureUtils
 import com.linkedin.feathr.offline.transformation.FDSConversionUtils
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
 import org.apache.spark.sql.types._
 import org.scalatest.testng.TestNGSuite
 import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.{DataProvider, Test}
 
+import java.util
+import java.util.Collections
 import scala.collection.mutable
 
 class TestFDSConversionUtil extends TestNGSuite {
@@ -141,10 +140,18 @@ class TestFDSConversionUtil extends TestNGSuite {
 
   @DataProvider
   def dataForTestConvertRawValueTo1DFDSDenseTensorRowTz(): Array[Array[Any]] = {
+    val eleType = StructType(
+        StructField("group", IntegerType, false) ::
+        StructField("value", IntegerType, false) :: Nil
+      )
+    val row1 = new GenericRowWithSchema(Array(1, 3), eleType)
+    val row2 = new GenericRowWithSchema(Array(2, 4), eleType)
     Array(
       Array(mutable.WrappedArray.make(Array(2.0f, 6.0f)), util.Arrays.asList(2.0f, 6.0f).toArray),
       Array(Array(1.1).toList, util.Arrays.asList(1.1).toArray),
-      Array(Map("a" -> 1.1), util.Arrays.asList(1.1).toArray)
+      Array(Map("a" -> 1.1), util.Arrays.asList(1.1).toArray),
+      // Simulate raw value return by SWA feature with groupBy
+      Array(mutable.WrappedArray.make(Array(row1, row2)), util.Arrays.asList(3, 4).toArray)
     )
   }
   @Test(dataProvider = "dataForTestConvertRawValueTo1DFDSDenseTensorRowTz")

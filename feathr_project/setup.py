@@ -24,7 +24,7 @@ extras_require["all"] = list(set(sum([*extras_require.values()], [])))
 
 setup(
     name='feathr',
-    version='0.8.0',
+    version='0.8.2',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="feathr-technical-discuss@lists.lfaidata.foundation",
@@ -52,10 +52,9 @@ setup(
         "pyarrow<=9.0.0",
         "pyspark>=3.1.2",
         "python-snappy<=0.6.1",
-        # fixing https://github.com/feathr-ai/feathr/issues/687
-        "deltalake<=0.5.8",
+        "deltalake>=0.6.2",
         "graphlib_backport<=1.0.3",
-        "protobuf==3.*",
+        "protobuf<=3.19.4,>=3.0.0",
         "confluent-kafka<=1.9.2",
         "databricks-cli<=0.17.3",
         "avro<=1.11.1",
