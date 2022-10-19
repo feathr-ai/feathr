@@ -28,7 +28,11 @@ TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_{REGISTRY_TYPEDEF_VERSION}>"
 TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_{REGISTRY_TYPEDEF_VERSION}>"
 TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_{REGISTRY_TYPEDEF_VERSION}>"
 
-FEATHR_MAVEN_ARTIFACT="com.linkedin.feathr:feathr_2.12:0.8.2"
+# Decouple Feathr MAVEN Version from Feathr Python SDK Version
+import os
+from feathr.version import __version__
+FEATHR_MAVEN_VERSION = os.environ.get("FEATHR_MAVEN_VERSION", __version__)
+FEATHR_MAVEN_ARTIFACT=f"com.linkedin.feathr:feathr_2.12:{FEATHR_MAVEN_VERSION}"
 
 JOIN_CLASS_NAME="com.linkedin.feathr.offline.job.FeatureJoinJob"
 GEN_CLASS_NAME="com.linkedin.feathr.offline.job.FeatureGenJob"
