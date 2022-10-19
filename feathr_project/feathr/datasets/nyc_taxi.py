@@ -6,13 +6,9 @@ from urllib.parse import urlparse
 import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 
+from feathr.datasets import NYC_TAXI_SMALL_URL
 from feathr.datasets.utils import maybe_download
 from feathr.utils.platform import is_databricks
-
-
-NYC_TAXI_SMALL_URL = (
-    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/green_tripdata_2020-04_with_index.csv"
-)
 
 
 def get_pandas_df(
