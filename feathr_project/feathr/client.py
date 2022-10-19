@@ -111,7 +111,7 @@ class FeathrClient(object):
         self.credential = credential
         if self.spark_runtime not in {'azure_synapse', 'databricks', 'local'}:
             raise RuntimeError(
-                'Only \'azure_synapse\' and \'databricks\' are currently supported.')
+                f'{self.spark_runtime} is not supported. Only \'azure_synapse\', \'databricks\' and \'local\' are currently supported.')
         elif self.spark_runtime == 'azure_synapse':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
