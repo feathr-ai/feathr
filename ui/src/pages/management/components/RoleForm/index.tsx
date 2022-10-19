@@ -22,7 +22,7 @@ const ValidateRule = {
   reason: [{ required: true, message: "Please input reason!" }],
 };
 
-function RoleForm(props: RoleFormProps, ref: any) {
+const RoleForm = (props: RoleFormProps, ref: any) => {
   const [form] = Form.useForm();
   const { getRole } = props;
   const [loading, setLoading] = useState<boolean>(false);
@@ -117,7 +117,7 @@ function RoleForm(props: RoleFormProps, ref: any) {
       </Item>
     </Form>
   );
-}
+};
 
 const RoleFormComponent = forwardRef<unknown, RoleFormProps>(RoleForm);
 

@@ -24,7 +24,7 @@ export interface SearchModel {
   roleName?: string;
 }
 
-function UserRolesTable(props: UserRolesTableProps, ref: any) {
+const UserRolesTable = (props: UserRolesTableProps, ref: any) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [tableData, setTableData] = useState<UserRole[]>([]);
@@ -65,9 +65,6 @@ function UserRolesTable(props: UserRolesTableProps, ref: any) {
   }, []);
 
   const onDelete = async (row: UserRole) => {
-    console.log(
-      `The [${row.roleName}] Role of [${row.userName}] user role delete request is sent.`
-    );
     try {
       await deleteUserRole(row);
       message.success(`Role ${row.roleName} of user ${row.userName} deleted`);
@@ -97,7 +94,7 @@ function UserRolesTable(props: UserRolesTableProps, ref: any) {
       title: "Permissions",
       dataIndex: "access",
       width: 240,
-      render: (col: any[]) => {
+      render: (col: string[]) => {
         return col.map((tag) => {
           let color = tag.length > 5 ? "red" : "green";
           if (tag === "write") color = "blue";
@@ -121,7 +118,7 @@ function UserRolesTable(props: UserRolesTableProps, ref: any) {
       ellipsis: true,
     },
     {
-      title: "Create Time (Local)",
+      title: "Create Time",
       dataIndex: "createTime",
       width: 200,
       sorter: {
@@ -134,8 +131,7 @@ function UserRolesTable(props: UserRolesTableProps, ref: any) {
         },
       },
       render: (col: string) => {
-        // utc to local time
-        return dayjs(dayjs.utc(col).toDate()).format("YYYY-MM-DD HH:mm:ss");
+        return dayjs(col).format("YYYY-MM-DD HH:mm:ss");
       },
     },
     {
@@ -182,7 +178,7 @@ function UserRolesTable(props: UserRolesTableProps, ref: any) {
       scroll={{ x: 1200 }}
     />
   );
-}
+};
 
 const UserRolesTableComponent = forwardRef<
   UserRolesTableInstance,

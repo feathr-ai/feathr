@@ -15,7 +15,7 @@ const RoleOptions = [
   { label: "Consumer", value: "consumer" },
 ];
 
-function SearchBar(props: SearchBarProps, ref: any) {
+const SearchBar = (props: SearchBarProps, ref: any) => {
   const [form] = Form.useForm();
 
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ function SearchBar(props: SearchBarProps, ref: any) {
       </Button>
     </div>
   );
-}
+};
 
 const SearchBarComponent = forwardRef<unknown, SearchBarProps>(SearchBar);
 
