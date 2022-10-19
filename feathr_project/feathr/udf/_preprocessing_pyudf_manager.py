@@ -53,8 +53,6 @@ class _PreprocessingPyudfManager(object):
                 continue
             preprocessing_func = anchor.source.preprocessing
             if preprocessing_func:
-                print("Preprocessing function defined")
-                print(anchor.source.preprocessing.name)
                 _PreprocessingPyudfManager.persist_pyspark_udf_to_file(preprocessing_func, local_workspace_dir)
                 feature_names = [feature.name for feature in anchor.features]
                 features_with_preprocessing = features_with_preprocessing + feature_names
@@ -111,13 +109,9 @@ class _PreprocessingPyudfManager(object):
         however if we retrieve features from registry, the current implementation is to use plain strings to store the function body. In that case, the user_fuc will be string.
         """
         if isinstance(user_func, str):
-            print("In If loop -> user function name is : " + user_func)
             udf_source_code = [user_func]
         else:
-            print("In else loop -> user function name is : " + user_func)
             udf_source_code = inspect.getsourcelines(user_func)[0]
-            print("UDF SOURCE -----> " + udf_source_code)
-
         lines = []
         # Some basic imports will be provided
         lines = lines + PROVIDED_IMPORTS
