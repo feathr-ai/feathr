@@ -69,7 +69,7 @@ class _EnvVaraibleUtil(object):
         # If it's not available in the feathr_config.yaml file, Feathr will try to retrieve the value from key vault
         if self.secret_manager_client:
             try:
-                return self.secret_manager_client.get_feathr_secret(env_keyword)
+                return self.secret_manager_client.get_feathr_secret(upper_env_keyword)
             except ResourceNotFoundError:
                 # print out warning message if cannot find the env variable in all the resources
                 logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
