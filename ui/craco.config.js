@@ -1,6 +1,7 @@
+const path = require("path");
+
 const { loaderByName } = require("@craco/craco");
 const CracoLessPlugin = require("craco-less");
-const path = require("path");
 
 const resolve = (dir) => path.resolve(__dirname, dir);
 
@@ -28,21 +29,22 @@ module.exports = {
       options: {
         lessLoaderOptions: {
           lessOptions: {
+            modifyVars: {},
             javascriptEnabled: true,
           },
         },
-        // modifyLessModuleRule(lessModuleRule, context) {
-        //   // Configure the file suffix
-        //   lessModuleRule.test = /\.module\.less$/;
+        modifyLessModuleRule(lessModuleRule, context) {
+          // Configure the file suffix
+          lessModuleRule.test = /\.module\.less$/;
 
-        //   // Configure the generated local ident name.
-        //   const cssLoader = lessModuleRule.use.find(loaderByName("css-loader"));
-        //   cssLoader.options.modules = {
-        //     localIdentName: "[local]_[hash:base64:5]",
-        //   };
+          // Configure the generated local ident name.
+          const cssLoader = lessModuleRule.use.find(loaderByName("css-loader"));
+          cssLoader.options.modules = {
+            localIdentName: "[local]_[hash:base64:5]",
+          };
 
-        //   return lessModuleRule;
-        // },
+          return lessModuleRule;
+        },
       },
     },
   ],
