@@ -15,6 +15,7 @@
     "react-router-dom": "^6.3.0"
   },
   "devDependencies": {
+    "@craco/craco": "^7.0.0-alpha.8",
     "@testing-library/jest-dom": "^5.16.3",
     "@testing-library/react": "^12.1.4",
     "@testing-library/user-event": "^13.5.0",
@@ -25,6 +26,8 @@
     "@types/react-dom": "^17.0.14",
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.30.7",
+    "babel-plugin-import": "^1.13.5",
+    "craco-less": "^2.1.0-alpha.0",
     "eslint": "^8.20.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-react-hooks": "^4.6.0",
