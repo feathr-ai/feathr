@@ -87,8 +87,7 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest pytest-xdist databricks-cli
-          python -m pip install -e ./feathr_project/
+          python -m pip install -e ./feathr_project/[all]
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Set env variable and upload jars
         env:
@@ -165,8 +164,7 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest pytest-xdist
-          python -m pip install -e ./feathr_project/
+          python -m pip install -e ./feathr_project/[all]
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Run Feathr with Azure Synapse
         env:
@@ -226,9 +224,8 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest pytest-xdist
-          python -m pip install -e ./feathr_project/
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi          
+          python -m pip install -e ./feathr_project/[all]
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Run Feathr with Local Spark
         env:
           PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_local"
