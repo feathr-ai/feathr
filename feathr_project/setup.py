@@ -1,10 +1,22 @@
+import sys
+import os
 from setuptools import setup, find_packages
 from pathlib import Path
+
 
 # Use the README.md from /docs
 root_path = Path(__file__).resolve().parent.parent
 long_description = (root_path / "docs/README.md").read_text(encoding="utf8")
 
+try:
+    exec(open("feathr/version.py").read())
+except IOError:
+    print("Failed to load Feathr version file for packaging.",
+          file=sys.stderr)
+    sys.exit(-1)
+
+VERSION = __version__  # noqa
+os.environ["FEATHR_VERSION"] = VERSION
 
 extras_require=dict(
     dev=[
@@ -24,7 +36,7 @@ extras_require["all"] = list(set(sum([*extras_require.values()], [])))
 
 setup(
     name='feathr',
-    version='0.8.2',
+    version=VERSION,
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="feathr-technical-discuss@lists.lfaidata.foundation",
@@ -68,6 +80,10 @@ setup(
         # https://github.com/Azure/azure-sdk-for-python/pull/22891
         # using a version lower than that to workaround this issue.
         "azure-core<=1.22.1",
+        # azure-core 1.22.1 is dependent on msrest==0.6.21, if an environment(AML) has a different version of azure-core (say 1.24.0),
+        # it brings a different version of msrest(0.7.0) which is incompatible with azure-core==1.22.1. Hence we need to pin it.
+        # See this for more details: https://github.com/Azure/azure-sdk-for-python/issues/24765
+        "msrest<=0.6.21",
         "typing_extensions>=4.2.0"
     ],
     tests_require=[  # TODO: This has been depricated
