@@ -134,6 +134,3 @@ class FeathrModel(BaseModel):
     """
     displayName: str  # name of the entity showed on UI
     typeName: str  # type of entity in str format, will be displayed in UI
-    # Represents zero, one or multiple keyPlaceholderRefs which are used as the
-    # identifiers to reference KeyPlaceholders of the FeatureSource
-    keyPlaceholderRefs: List[str] = []

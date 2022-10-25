@@ -26,7 +26,7 @@ class SlidingWindowEmbeddingAggregationType(Enum):
 
 class WindowTimeUnit(Enum):
     """
-     Represents a unit of time.
+    Represents a unit of time.
     """
     DAY = "day"
     HOUR = "hour"

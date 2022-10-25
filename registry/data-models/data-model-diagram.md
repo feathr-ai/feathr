@@ -122,7 +122,6 @@ classDiagram
     class FeathrModel{
         +str displayName
         +str typeName
-        +List[str] keyPlaceholderRefs
     }
     class SlidingWindowAggregationType{
         <<enumeration>>

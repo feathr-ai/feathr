@@ -76,7 +76,6 @@ class MultiFeatureSource(Source):
     It defines one to many features where the feature is derived from.
     """
     sources: List[FeatureSource]  # All source features which the feature is derived from
-    pass
 
 
 class Transformation(BaseModel):
