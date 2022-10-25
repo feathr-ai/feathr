@@ -98,14 +98,14 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                 logger.info("Uploading folder {}", local_path_or_http_path)
                 dest_paths = []
                 for item in Path(local_path_or_http_path).glob('**/*.conf'):
-                    cloud_dest_path = self.upload_local_file(item.resolve())
+                    cloud_dest_path = self._upload_local_file_to_workspace(item.resolve())
                     dest_paths.extend([cloud_dest_path])
                 cloud_dest_path = ','.join(dest_paths)
             else:
-                cloud_dest_path = self.upload_local_file(local_path_or_http_path)
+                cloud_dest_path = self._upload_local_file_to_workspace(local_path_or_http_path)
         return cloud_dest_path
 
-    def upload_local_file(self, local_path: str) -> str:
+    def _upload_local_file_to_workspace(self, local_path: str) -> str:
         """
         Supports transferring file from a local path to cloud working storage.
         """
