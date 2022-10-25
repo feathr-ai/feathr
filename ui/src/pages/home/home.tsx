@@ -1,14 +1,16 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { Card, Col, Row, Typography } from "antd";
+
 import {
   CopyOutlined,
   DatabaseOutlined,
   EyeOutlined,
   ProjectOutlined,
 } from "@ant-design/icons";
+import { Card, Col, Row, Typography } from "antd";
+import cs from "classnames";
+import { Link } from "react-router-dom";
 
-import "./home.css";
+import styles from "./index.module.less";
 
 const { Title } = Typography;
 const { Meta } = Card;
@@ -42,7 +44,7 @@ const features = [
 
 const Home = () => {
   return (
-    <div className="page home">
+    <div className={cs("page", styles.home)}>
       <Card>
         <Title level={2}>Welcome to Feathr Feature Store</Title>
         <span>
@@ -71,7 +73,7 @@ const Home = () => {
             >
               <Card>
                 <Meta
-                  className="card-meta"
+                  className={styles.cardMeta}
                   avatar={item.icon}
                   title={
                     <Title level={2} ellipsis>
