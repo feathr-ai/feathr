@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ant-design/icons": "^4.7.0",
     "@azure/msal-browser": "^2.24.0",
     "@azure/msal-react": "^1.4.0",
     "antd": "^4.20.2",
     "axios": "^0.27.2",
+    "classnames": "^2.3.2",
     "dagre": "^0.8.5",
+    "dayjs": "^1.11.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-flow-renderer": "^9.7.4",
@@ -15,9 +18,10 @@
     "react-router-dom": "^6.3.0"
   },
   "devDependencies": {
+    "@craco/craco": "^7.0.0-alpha.8",
     "@testing-library/jest-dom": "^5.16.3",
     "@testing-library/react": "^12.1.4",
-    "@testing-library/user-event": "^13.5.0",
+    "@testing-library/user-event": "^13.5.0", 
     "@types/dagre": "^0.7.47",
     "@types/jest": "^27.5.0",
     "@types/node": "^16.11.26",
@@ -25,8 +29,13 @@
     "@types/react-dom": "^17.0.14",
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.30.7",
+    "babel-plugin-import": "^1.13.5",
+    "craco-less": "^2.1.0-alpha.0",
     "eslint": "^8.20.0",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^3.5.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
@@ -36,9 +45,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject",
     "lint:fix": "npx eslint --fix --ext ts --ext tsx  src/ ",
     "format": "npx prettier --write src/**"

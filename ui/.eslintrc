@@ -4,7 +4,15 @@
     "es6": true,
     "node": true
   },
-  "plugins": ["@typescript-eslint/eslint-plugin"],
+  "plugins": ["react", "@typescript-eslint/eslint-plugin", "prettier"],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".tsx", ".ts", ".jsx", ".js", ".json"]
+      },
+      "typescript": {}
+    }
+  },
   "extends": [
     // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
     "eslint:recommended",
@@ -12,7 +20,7 @@
     "react-app",
     // https://reactjs.org/docs/hooks-rules.html
     "plugin:react-hooks/recommended",
-    "prettier"
+    "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -20,7 +28,23 @@
     "sourceType": "module"
   },
   "rules": {
-    "dot-notation": "error"
+    "dot-notation": "error",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "ts": "never",
+        "tsx": "never",
+        "json": "never",
+        "js": "never",
+        "jsx": "never"
+      }
+    ],
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "import/prefer-default-export": "off",
+    "import/no-unresolved": "error",
+    "import/no-dynamic-require": "off",
+    "import/no-mutable-exports": "warn"
   },
   "overrides": [
     {

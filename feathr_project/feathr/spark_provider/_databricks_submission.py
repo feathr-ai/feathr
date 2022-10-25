@@ -67,28 +67,26 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         """
         src_parse_result = urlparse(local_path_or_http_path)
         file_name = os.path.basename(local_path_or_http_path)
-        # returned paths for the uploaded file
-        returned_path = os.path.join(self.databricks_work_dir, file_name)
-        if src_parse_result.scheme.startswith("http"):
+        # returned paths for the uploaded file. Note that we cannot use os.path.join here, since in Windows system it will yield paths like this:
+        # dbfs:/feathrazure_cijob_snowflake_9_30_157692\auto_generated_derived_features.conf, where the path sep is mixed, and won't be able to be parsed by databricks.
+        # so we force the path to be Linux style here.
+        cloud_dest_path = self.databricks_work_dir + "/" + file_name
+        if src_parse_result.scheme.startswith('http'):
             with urlopen(local_path_or_http_path) as f:
                 # use REST API to avoid local temp file
                 data = f.read()
                 files = {"file": data}
                 # for DBFS APIs, see: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/dbfs
-                requests.post(
-                    url=self.workspace_instance_url + "/api/2.0/dbfs/put",
-                    headers=self.auth_headers,
-                    files=files,
-                    data={"overwrite": "true", "path": returned_path},
-                )
-                logger.info(
-                    "{} is downloaded and then uploaded to location: {}", local_path_or_http_path, returned_path
-                )
-        elif src_parse_result.scheme.startswith("dbfs"):
+                r = requests.post(url=self.workspace_instance_url+'/api/2.0/dbfs/put',
+                                  headers=self.auth_headers, files=files,  data={'overwrite': 'true', 'path': cloud_dest_path})
+                logger.info('{} is downloaded and then uploaded to location: {}',
+                             local_path_or_http_path, cloud_dest_path)
+        elif src_parse_result.scheme.startswith('dbfs'):
             # passed a cloud path
-            logger.info("Skip uploading file {} as the file starts with dbfs:/", local_path_or_http_path)
-            returned_path = local_path_or_http_path
-        elif src_parse_result.scheme.startswith(("wasb", "s3", "gs")):
+            logger.info(
+                'Skip uploading file {} as the file starts with dbfs:/', local_path_or_http_path)
+            cloud_dest_path = local_path_or_http_path
+        elif src_parse_result.scheme.startswith(('wasb','s3','gs')):
             # if the path starts with a location that's not a local path
             logger.error(
                 "File {} cannot be downloaded. Please upload the file to dbfs manually.", local_path_or_http_path
@@ -101,30 +99,30 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             if os.path.isdir(local_path_or_http_path):
                 logger.info("Uploading folder {}", local_path_or_http_path)
                 dest_paths = []
-                for item in Path(local_path_or_http_path).glob("**/*.conf"):
-                    returned_path = self.upload_local_file(item.resolve())
-                    dest_paths.extend([returned_path])
-                returned_path = ",".join(dest_paths)
+                for item in Path(local_path_or_http_path).glob('**/*.conf'):
+                    cloud_dest_path = self._upload_local_file_to_workspace(item.resolve())
+                    dest_paths.extend([cloud_dest_path])
+                cloud_dest_path = ','.join(dest_paths)
             else:
-                returned_path = self.upload_local_file(local_path_or_http_path)
-        return returned_path
+                cloud_dest_path = self._upload_local_file_to_workspace(local_path_or_http_path)
+        return cloud_dest_path
 
-    def upload_local_file(self, local_path: str) -> str:
+    def _upload_local_file_to_workspace(self, local_path: str) -> str:
         """
         Supports transferring file from a local path to cloud working storage.
         """
         file_name = os.path.basename(local_path)
-        # returned paths for the uploaded file
-        returned_path = os.path.join(self.databricks_work_dir, file_name)
+        # returned paths for the uploaded file. Note that we cannot use os.path.join here, since in Windows system it will yield paths like this:
+        # dbfs:/feathrazure_cijob_snowflake_9_30_157692\auto_generated_derived_features.conf, where the path sep is mixed, and won't be able to be parsed by databricks.
+        # so we force the path to be Linux style here.
+        cloud_dest_path = self.databricks_work_dir + "/" + file_name
         # `local_path_or_http_path` will be either string or PathLib object, so normalize it to string
         local_path = str(local_path)
         try:
-            DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=returned_path)
+            DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=local_path, dst=cloud_dest_path)
         except RuntimeError as e:
-            raise RuntimeError(
-                f"The source path: {local_path}, or the destination path: {returned_path}, is/are not valid."
-            ) from e
-        return returned_path
+            raise RuntimeError(f"The source path: {local_path}, or the destination path: {cloud_dest_path}, is/are not valid.") from e
+        return cloud_dest_path
 
     def submit_feathr_job(
         self,
