@@ -74,6 +74,8 @@ client.register_features()
 all_features = client.list_registered_features(project_name=client.project_name)
 ```
 
+Please avoid applying a same name to different features under a certain project. Since it will be treated as updating an exsiting project which is not supported by feathr and will cause errors.
+
 ### Reuse Features from Existing Registry
 
 The feature producers can just let the feature consumers know which features exist so the feature consumers can reuse them. For feature consumers, they can reuse existing features from the registry. The whole project can be retrieved to local environment by calling this API `client.get_features_from_registry` with a project name. This encourage feature reuse across organizations. For example, end users of a feature just need to read all feature definitions from the existing projects, then use a few features from the projects and join those features with a new dataset you have.
