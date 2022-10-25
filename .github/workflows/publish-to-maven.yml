@@ -1,9 +1,5 @@
 name: Publish package to the Maven Central Repository
-on: 
-  push:
-    # This pipeline will get triggered everytime there is a new tag created.
-    # It is required 
-    tags: ["*"]
+on: workflow_dispatch
 
 jobs:
   publish-to-maven:
