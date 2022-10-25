@@ -8,15 +8,3 @@ insert_final_newline=false
 indent_style=space
 indent_size=2
 
-[{.eslintrc,.babelrc,.stylelintrc,.json}]
-indent_style=space
-indent_size=2
-
-[*.less]
-indent_style=space
-indent_size=2
-
-[*.{js,jsx,ts,tsx}]
-indent_style=space
-indent_size=2
-
