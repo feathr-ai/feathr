@@ -15,7 +15,24 @@ except IOError:
     sys.exit(-1)
 
 VERSION = __version__  # noqa
-os.environ["FEATHR_VERSION"] = VERSION   
+os.environ["FEATHR_VERSION]"] = VERSION
+
+extras_require=dict(
+    dev=[
+        "black>=22.1.0",    # formatter
+        "isort",            # sort import statements
+        "pytest>=7",
+        "pytest-xdist",
+        "pytest-mock>=3.8.1",
+    ],
+    notebook=[
+        "jupyter==1.0.0",
+        "matplotlib==3.6.1",
+        "papermill>=2.1.2,<3",      # to test run notebooks
+        "scrapbook>=0.5.0,<1.0.0",  # to scrap notebook outputs
+    ],
+)
+extras_require["all"] = list(set(sum([*extras_require.values()], [])))
 
 setup(
     name='feathr',
@@ -63,7 +80,7 @@ setup(
         # https://github.com/Azure/azure-sdk-for-python/pull/22891
         # using a version lower than that to workaround this issue.
         "azure-core<=1.22.1",
-        # azure-core 1.22.1 is dependent on msrest==0.6.21, if an environment(AML) has a different version of azure-core (say 1.24.0), 
+        # azure-core 1.22.1 is dependent on msrest==0.6.21, if an environment(AML) has a different version of azure-core (say 1.24.0),
         # it brings a different version of msrest(0.7.0) which is incompatible with azure-core==1.22.1. Hence we need to pin it.
         # See this for more details: https://github.com/Azure/azure-sdk-for-python/issues/24765
         "msrest<=0.6.21",
@@ -72,14 +89,7 @@ setup(
     tests_require=[  # TODO: This has been depricated
         "pytest",
     ],
-    extras_require=dict(
-        dev=[
-            "black>=22.1.0",    # formatter
-            "isort",            # sort import statements
-            "pytest>=7",
-            "pytest-mock>=3.8.1",
-        ],
-    ),
+    extras_require=extras_require,
     entry_points={
         'console_scripts': ['feathr=feathrcli.cli:cli']
     },
