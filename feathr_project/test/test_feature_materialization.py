@@ -236,7 +236,7 @@ def test_delete_feature_from_redis():
                                            "f_day_of_week"
                                        ],
                                        backfill_time=backfill_time)
-    client.materialize_features(settings)
+    client.materialize_features(settings, allow_materialize_non_agg_feature=True)
     
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
     
