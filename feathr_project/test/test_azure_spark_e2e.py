@@ -82,9 +82,9 @@ def test_feathr_materialize_with_time_partition_pattern():
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[offline_sink],
                                        feature_names=[
-                                           "f_location_avg_fare", "f_location_max_fare"],
+                                           "f_loc_avg", "f_loc_max"],
                                        backfill_time=backfill_time)
-    client.materialize_features(settings)
+    client.materialize_features(settings, allow_materialize_non_agg_feature=True)
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
