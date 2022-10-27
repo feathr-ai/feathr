@@ -6,6 +6,7 @@ import tempfile
 from typing import Dict, List, Union
 
 from azure.identity import DefaultAzureCredential
+from feathr.definition.transformation import WindowAggTransformation
 from jinja2 import Template
 from pyhocon import ConfigFactory
 import redis
@@ -111,7 +112,7 @@ class FeathrClient(object):
         self.credential = credential
         if self.spark_runtime not in {'azure_synapse', 'databricks', 'local'}:
             raise RuntimeError(
-                'Only \'azure_synapse\' and \'databricks\' are currently supported.')
+                f'{self.spark_runtime} is not supported. Only \'azure_synapse\', \'databricks\' and \'local\' are currently supported.')
         elif self.spark_runtime == 'azure_synapse':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
@@ -485,7 +486,7 @@ class FeathrClient(object):
         job_tags = {OUTPUT_PATH_TAG:feature_join_job_params.job_output_path}
         # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
         if execution_configurations is not None and OUTPUT_FORMAT in execution_configurations:
-            job_tags[OUTPUT_FORMAT]= execution_configurations[OUTPUT_FORMAT]
+            job_tags[OUTPUT_FORMAT] = execution_configurations[OUTPUT_FORMAT]
         '''
         - Job tags are for job metadata and it's not passed to the actual spark job (i.e. not visible to spark job), more like a platform related thing that Feathr want to add (currently job tags only have job output URL and job output format, ). They are carried over with the job and is visible to every Feathr client. Think this more like some customized metadata for the job which would be weird to be put in the spark job itself.
         - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to
@@ -608,17 +609,31 @@ class FeathrClient(object):
                         self.logger.error(f"Inconsistent feature keys. Current keys are {str(keys)}")
                         return False
         return True
-
-    def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
+    
+    def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False, allow_materialize_non_agg_feature: bool = False):
         """Materialize feature data
 
         Args:
             settings: Feature materialization settings
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            allow_materialize_non_agg_feature: Materializing non-aggregated features (the features without WindowAggTransformation) doesn't output meaningful results so it's by default set to False, but if you really want to materialize non-aggregated features, set this to True.
         """
         feature_list = settings.feature_names
         if len(feature_list) > 0 and not self._valid_materialize_keys(feature_list):
             raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
+        
+        if not allow_materialize_non_agg_feature:
+            # Check if there are non-aggregation features in the list
+            for fn in feature_list:
+                # Check over anchor features
+                for anchor in self.anchor_list:
+                    for feature in anchor.features:
+                        if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
+                            raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features. If you want to materialize {fn}, please set allow_materialize_non_agg_feature to True.")
+                # Check over derived features
+                for feature in self.derived_feature_list:
+                    if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
+                        raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features. If you want to materialize {fn}, please set allow_materialize_non_agg_feature to True.")
 
         # Collect secrets from sinks
         secrets = []
