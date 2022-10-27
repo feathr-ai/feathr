@@ -266,4 +266,4 @@ jobs:
         run: echo "NOW=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - name: Notification
         run: |
-          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. SBT test ${{needs.sbt_test.result}}, 2. Python Lint test ${{needs.python_lint.result}}, 3. Databricks Test ${{needs.databricks_test.result}}, 4. Synapse Test ${{needs.azure_synapse_test.result}} , 5. LOCAL_SPARK_TEST ${{needs.local_spark_test.result}}"}' ${{ secrets.TEAMS_WEBHOOK }}
+          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. SBT Test ${{needs.sbt_test.result}}, 2. Python Lint Test ${{needs.python_lint.result}}, 3. Databricks Test ${{needs.databricks_test.result}}, 4. Synapse Test ${{needs.azure_synapse_test.result}} , 5. LOCAL SPARK TEST ${{needs.local_spark_test.result}}"}' ${{ secrets.TEAMS_WEBHOOK }}
