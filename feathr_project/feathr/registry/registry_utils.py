@@ -44,7 +44,7 @@ def source_to_def(v: Source) -> dict:
     elif isinstance(v, SnowflakeSource):
         ret = {
             "name": v.name,
-            "type": "snowflake",
+            "type": urlparse(v.path).scheme,
             "path": v.path,
         }
     elif isinstance(v, JdbcSource):

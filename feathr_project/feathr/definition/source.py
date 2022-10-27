@@ -161,7 +161,6 @@ class SnowflakeSource(Source):
     def to_feature_config(self) -> str:
         tm = Template("""  
             {{source.name}}: {
-                type: "snowflake"
                 location: {path: "{{source.path}}"}
                 {% if source.event_timestamp_column %}
                     timeWindowParameters: {
