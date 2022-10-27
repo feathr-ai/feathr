@@ -36,6 +36,7 @@ Before the release is made, the version needs to be updated in following places
 - [feathr_config.yaml](https://github.com/feathr-ai/feathr/blob/main/feathr_project/test/test_user_workspace/feathr_config.yaml#L84) - To set the spark runtime location for Azure Synapse and Azure Databricks used by test suite. Please update all .yaml files under this path. 
 - [azure_resource_provision.json](https://github.com/feathr-ai/feathr/blob/main/docs/how-to-guides/azure_resource_provision.json#L114) - To set the deployment template to pull the latest release image.
 - [constants.py](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathr/constants.py#L31) - To set the default maven artifact version (Only needed when maven version is **NOT** the same as python sdk version)
+- [package.json](https://github.com/feathr-ai/feathr/blob/main/ui/package.json#L3) - For Feathr UI version
 
 ## Triggering automated release pipelines
 Our goal is to automate the release process as much as possible. So far, we have automated the following steps
