@@ -6,11 +6,11 @@ parent: Feathr Developer Guides
 
 # What can I contribute?
 All forms of contributions are welcome, including and not limited to:
-* Improve or contribute new [notebook samples](https://github.com/feathr-ai/feathr/tree/main/feathr_project/feathrcli/data/feathr_user_workspace)
+* Improve or contribute new [notebook samples](https://github.com/feathr-ai/feathr/tree/main/docs/samples)
 * Add tutorial, blog posts, tech talks etc
 * Increase media coverage and exposure
 * Improve user-facing documentation or developer-facing documentation
-* Add testing code 
+* Add testing code
 * Add new features
 * Refactor and improve architecture
 * For any other forms of contribution and collaboration, don't hesitate to reach out to us.
@@ -18,7 +18,7 @@ All forms of contributions are welcome, including and not limited to:
 # I am interested, how can I start?
 If you are new to this project, we recommend start with [`good-first-issue`](https://github.com/feathr-ai/feathr/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
-The issues are also labled with what types of programming language the task need. 
+The issues are also labled with what types of programming language the task need.
 * [`good-first-issue` and `Python`](https://github.com/feathr-ai/feathr/issues?q=is%3Aopen+label%3A%22good+first+issue%22+label%3Apython)
 * [`good-first-issue` and `Scala`](https://github.com/feathr-ai/feathr/issues?q=is%3Aopen+label%3A%22good+first+issue%22+label%3Ascala)
 * [`good-first-issue` and `Java`](https://github.com/feathr-ai/feathr/issues?q=is%3Aopen+label%3A%22good+first+issue%22+label%3Ajava)
