@@ -58,6 +58,8 @@ def test_feathr_materialize_to_offline():
     res_df = get_result_df(client, "avro", output_path + "/df0/daily/2020/05/20")
     assert res_df.shape[0] > 0
 
+@pytest.mark.skipif(os.environ.get('SPARK_CONFIG__SPARK_CLUSTER') != "azure_synapse",
+                    reason="skip for databricks, as it doesn't have data source for now.")
 def test_feathr_materialize_with_time_partition_pattern():
     """
     Test FeathrClient() using HdfsSource with 'timePartitionPattern'.
