@@ -133,6 +133,53 @@ class HdfsSource(Source):
     def to_argument(self):
         return self.path
 
+class SnowflakeSource(Source):
+    """
+    A data source for Snowflake
+
+    Attributes:
+
+    """
+    def __init__(self, name: str, sf_url: str, sf_user: str, sf_warehouse: str, dbtable: str, database: str, schema: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, event_timestamp_column,
+                         timestamp_format, registry_tags=registry_tags)
+        self.preprocessing=preprocessing
+        self.sf_url = sf_url
+        if self.sf_url.startswith("http"):
+            logger.warning(
+                f"The snowflake url provided {self.sf_url} starts with http, which is not supported. Please remove the http prefix.")
+        self.sf_user = sf_user
+        self.sf_warehouse = sf_warehouse
+        self.dbtable = dbtable
+        self.database = database
+        self.schema = schema
+        self.path = self.generate_jdbc_path()
+
+    def generate_jdbc_path(self):
+        return f"jdbc:snowflake://{self.sf_url}/?user={self.sf_user}&sfWarehouse={self.sf_warehouse}&dbtable={self.dbtable}&sfDatabase={self.database}&sfSchema={self.schema}"
+    
+    def to_feature_config(self) -> str:
+        tm = Template("""  
+            {{source.name}}: {
+                type: "snowflake"
+                location: {path: "{{source.path}}"}
+                {% if source.event_timestamp_column %}
+                    timeWindowParameters: {
+                        timestampColumn: "{{source.event_timestamp_column}}"
+                        timestampColumnFormat: "{{source.timestamp_format}}"
+                    }
+                {% endif %}
+            } 
+        """)
+        msg = tm.render(source=self)
+        return msg
+
+    def __str__(self):
+        return str(self.preprocessing) + '\n' + self.to_feature_config()
+
+    def to_argument(self):
+        return self.path
+
 class JdbcSource(Source):
     def __init__(self, name: str, url: str = "", dbtable: Optional[str] = None, query: Optional[str] = None, auth: Optional[str] = None, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
         super().__init__(name, event_timestamp_column, timestamp_format, registry_tags)
