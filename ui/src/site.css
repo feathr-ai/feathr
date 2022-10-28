@@ -1,5 +1,6 @@
 .page {
-  margin: 1%;
+  margin: 16px;
+  padding-bottom: 100px;
 }
 
 .card {

@@ -24,7 +24,7 @@ Feathr has native cloud integration. Here are the steps to use Feathr on Azure:
 
 1. Follow the [Feathr ARM deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template. Alternatively, if you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
 
-2. Once the deployment is complete,run the Feathr Jupyter Notebook by clicking this button:  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/feathr-ai/feathr/main?labpath=feathr_project%2Ffeathrcli%2Fdata%2Ffeathr_user_workspace%2Fnyc_driver_demo.ipynb). 
+2. Once the deployment is complete,run the Feathr Jupyter Notebook by clicking this button:  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/feathr-ai/feathr/main?labpath=docs%2Fsamples%2Fnyc_taxi_demo.ipynb).
 3. You only need to change the specified `Resource Prefix`.
 
 ## Step 2: Install Feathr
@@ -43,7 +43,7 @@ pip install git+https://github.com/feathr-ai/feathr.git#subdirectory=feathr_proj
 
 ## Step 3: Run the sample notebook
 
-We've provided a self-contained [sample notebook](./samples/product_recommendation_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
+We've provided a self-contained [sample notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
 
 ## Step 4: Update Feathr config
 
@@ -88,7 +88,7 @@ os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 
 ## Step 5: Setup environment variables
 
-In the self-contained [sample notebook](./samples/product_recommendation_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
+In the self-contained [sample notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
 
 These values can also be retrieved by using cloud key value store, such as [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/):
 
@@ -181,7 +181,7 @@ client.multi_get_online_features("nycTaxiDemoFeature", ["239", "265"], ['f_locat
 
 ## Next steps
 
-- Run the [demo notebook](./samples/product_recommendation_demo.ipynb) to understand the workflow of Feathr.
+- Run the [demo notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb) to understand the workflow of Feathr.
 - Read the [Feathr Documentation Page](https://feathr-ai.github.io/feathr/) page to understand the Feathr abstractions.
 - Read guide to understand [how to setup Feathr on Azure using Azure Resource Manager template](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html).
 - Read guide to understand [how to setup Feathr step by step on Azure using Azure CLI](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-cli.html).
