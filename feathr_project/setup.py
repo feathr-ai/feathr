@@ -23,7 +23,6 @@ extras_require=dict(
         "black>=22.1.0",    # formatter
         "isort",            # sort import statements
         "pytest>=7",
-        "pytest-xdist",
         "pytest-mock>=3.8.1",
     ],
     notebook=[
