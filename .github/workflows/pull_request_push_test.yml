@@ -22,11 +22,15 @@ on:
       - "docs/**"
       - "ui/**"
       - "**/README.md"
+  
+  schedule:
+    # Runs daily at 1 PM UTC (9 PM CST), will send notification to TEAMS_WEBHOOK
+    - cron: '00 13 * * *'
 
 jobs:
   sbt_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -41,7 +45,7 @@ jobs:
 
   python_lint:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
@@ -61,7 +65,7 @@ jobs:
 
   databricks_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -122,7 +126,6 @@ jobs:
           COSMOS1_KEY: ${{secrets.COSMOS1_KEY}}
           SQL1_USER: ${{secrets.SQL1_USER}}
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
-
         run: |
           # run only test with databricks. run in 4 parallel jobs
           pytest -n 6 feathr_project/test/
@@ -130,7 +133,7 @@ jobs:
   azure_synapse_test:
     # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -198,7 +201,7 @@ jobs:
 
   local_spark_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -253,3 +256,14 @@ jobs:
         run: |
           # skip cloud related tests
           pytest feathr_project/test/test_local_spark_e2e.py
+
+  notification:
+    needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
+    runs-on: ubuntu-latest
+    if: always() && github.event_name == 'schedule'
+    steps:
+      - name: Get Date
+        run: echo "NOW=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+      - name: Notification
+        run: |
+          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. SBT Test ${{needs.sbt_test.result}}, 2. Python Lint Test ${{needs.python_lint.result}}, 3. Databricks Test ${{needs.databricks_test.result}}, 4. Synapse Test ${{needs.azure_synapse_test.result}} , 5. LOCAL SPARK TEST ${{needs.local_spark_test.result}}"}' ${{ secrets.TEAMS_WEBHOOK }}
