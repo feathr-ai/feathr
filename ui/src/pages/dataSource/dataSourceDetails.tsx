@@ -1,112 +1,113 @@
 import React from "react";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { Alert, Button, Card, Col, Row, Spin, Typography } from "antd";
-import { QueryStatus, useQuery } from "react-query";
+import {
+  Alert,
+  Space,
+  Breadcrumb,
+  PageHeader,
+  Spin,
+  Descriptions,
+  Button,
+} from "antd";
+import { Link } from "react-router-dom";
+import { useQuery } from "react-query";
 import { AxiosError } from "axios";
-import { fetchDataSource } from "../../api";
-import { DataSource, DataSourceAttributes } from "../../models/model";
-
-const { Title } = Typography;
-
-type DataSourceKeyProps = { dataSource: DataSource };
-const DataSourceKey = ({ dataSource }: DataSourceKeyProps) => {
-  const keys = dataSource.attributes;
-  return (
-    <>
-      {keys && (
-        <Col span={24}>
-          <Card className="card">
-            <Title level={4}>Data Source Attributes</Title>
-            <div className="dataSource-container">
-              <p>Name: {keys.name}</p>
-              <p>Type: {keys.type}</p>
-              <p>Path: {keys.path}</p>
-              <p>Preprocessing: {keys.preprocessing}</p>
-              <p>Event Timestamp Column: {keys.eventTimestampColumn}</p>
-              <p>Timestamp Format: {keys.timestampFormat}</p>
-              <p>Qualified Name: {keys.qualifiedName}</p>
-              <p>Tags: {JSON.stringify(keys.tags)}</p>
-            </div>
-          </Card>
-        </Col>
-      )}
-    </>
-  );
-};
-
-type Params = {
-  project: string;
-  dataSourceId: string;
-};
+import { fetchDataSource } from "@/api";
+import { DataSource } from "@/models/model";
 
 const DataSourceDetails = () => {
-  const { project, dataSourceId } = useParams() as Params;
   const navigate = useNavigate();
-  const loadingIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
-  const { status, error, data } = useQuery<DataSource, AxiosError>(
+
+  const { project = "", dataSourceId = "" } = useParams();
+
+  const {
+    isLoading,
+    error,
+    data = { attributes: {} } as DataSource,
+  } = useQuery<DataSource, AxiosError>(
     ["dataSourceId", dataSourceId],
-    () => fetchDataSource(project, dataSourceId)
+    () => fetchDataSource(project, dataSourceId),
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+    }
   );
 
-  const render = (status: QueryStatus): JSX.Element => {
-    switch (status) {
-      case "error":
-        return (
-          <Card>
-            <Alert
-              message="Error"
-              description={error?.message}
-              type="error"
-              showIcon
-            />
-          </Card>
-        );
-      case "idle":
-        return (
-          <Card>
-            <Spin indicator={loadingIcon} />
-          </Card>
-        );
-      case "loading":
-        return (
-          <Card>
-            <Spin indicator={loadingIcon} />
-          </Card>
-        );
-      case "success":
-        if (data === undefined) {
-          return (
-            <Card>
-              <Alert
-                message="Error"
-                description="Data does not exist..."
-                type="error"
-                showIcon
-              />
-            </Card>
-          );
-        } else {
-          return (
-            <>
-              <Button type="link" onClick={() => navigate(-1)}>
-                dataSource list {">"}
-              </Button>
-              <Card>
-                <Title level={3}>{data.attributes.name}</Title>
-                <div>
-                  <Row>
-                    <DataSourceKey dataSource={data} />
-                  </Row>
-                </div>
-              </Card>
-            </>
-          );
-        }
-    }
-  };
+  const { attributes } = data;
 
-  return <div className="page">{render(status)}</div>;
+  return (
+    <div className="page">
+      <PageHeader
+        ghost={false}
+        title="Data Source Attributes"
+        breadcrumb={
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <Link to={`/dataSources?project=${project}`}>Data Sources</Link>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>Data Source Attributes</Breadcrumb.Item>
+          </Breadcrumb>
+        }
+        extra={[
+          <Button
+            key="1"
+            ghost
+            type="primary"
+            onClick={() => {
+              navigate(`/features?project=${project}`);
+            }}
+          >
+            View Features
+          </Button>,
+          <Button
+            key="2"
+            type="primary"
+            onClick={() => {
+              navigate(`/projects/${project}/lineage`);
+            }}
+          >
+            View Lineage
+          </Button>,
+        ]}
+      >
+        <Spin
+          spinning={isLoading}
+          indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+        >
+          <Space direction="vertical" style={{ width: "100%" }} size="middle">
+            {error && <Alert message={error} type="error" showIcon />}
+            <Descriptions bordered column={1} labelStyle={{ width: 220 }}>
+              <Descriptions.Item label="Name">
+                {attributes.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Type">
+                {attributes.type}
+              </Descriptions.Item>
+              <Descriptions.Item label="Path">
+                {attributes.path}
+              </Descriptions.Item>
+              <Descriptions.Item label="Preprocessing">
+                {attributes.preprocessing}
+              </Descriptions.Item>
+              <Descriptions.Item label="Event Timestamp Column">
+                {attributes.event_timestamp_column}
+              </Descriptions.Item>
+              <Descriptions.Item label="Timestamp Forma">
+                {attributes.timestamp_format}
+              </Descriptions.Item>
+              <Descriptions.Item label="Qualified Name">
+                {attributes.qualified_name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Tags">
+                {JSON.stringify(attributes.tags)}
+              </Descriptions.Item>
+            </Descriptions>
+          </Space>
+        </Spin>
+      </PageHeader>
+    </div>
+  );
 };
 
 export default DataSourceDetails;
