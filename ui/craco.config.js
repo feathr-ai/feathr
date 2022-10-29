@@ -3,7 +3,13 @@ const path = require("path");
 const { loaderByName } = require("@craco/craco");
 const CracoLessPlugin = require("craco-less");
 
+const webpack = require("webpack");
+
+const packageJson = require("./package.json");
+
 const resolve = (dir) => path.resolve(__dirname, dir);
+
+const currentTime = new Date();
 
 module.exports = {
   babel: {
@@ -21,6 +27,28 @@ module.exports = {
   webpack: {
     alias: {
       "@": resolve("src"),
+    },
+    configure: (webpackConfig, { env, paths }) => {
+      const index = webpackConfig.plugins.findIndex(
+        (itme) => itme instanceof webpack.DefinePlugin
+      );
+
+      if (index > -1) {
+        const definePlugin = webpackConfig.plugins[index];
+        webpackConfig.plugins.splice(
+          index,
+          1,
+          new webpack.DefinePlugin({
+            "process.env": {
+              ...definePlugin.definitions["process.env"],
+              FEATHR_VERSION: JSON.stringify(packageJson.version),
+              FEATHR_GENERATED_TIME: JSON.stringify(currentTime.toISOString()),
+            },
+          })
+        );
+      }
+
+      return webpackConfig;
     },
   },
   plugins: [
