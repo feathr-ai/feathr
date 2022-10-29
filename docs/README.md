@@ -159,7 +159,7 @@ Read [Point-in-time Correctness and Point-in-time Join in Feathr](https://feathr
 
 ### Running Feathr Examples
 
-Follow the [quick start Jupyter Notebook](./samples/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://feathr-ai.github.io/feathr/quickstart_synapse.html) containing a bit more explanation on the notebook.
+Follow the [quick start Jupyter Notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb) to try it out. There is also a companion [quick start guide](https://feathr-ai.github.io/feathr/quickstart_synapse.html) containing a bit more explanation on the notebook.
 
 ## 🗣️ Tech Talks on Feathr
 
