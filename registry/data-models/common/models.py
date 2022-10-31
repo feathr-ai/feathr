@@ -94,6 +94,7 @@ class Function(BaseModel):
     Base model for all functions
     """
     expression: str  # Expression in str format
+    functionType: str # Type of function in str format, will be used in UI
 
 
 class MvelExpression(Function):
