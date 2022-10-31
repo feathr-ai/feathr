@@ -59,18 +59,6 @@ class FeatureRegistryTests(unittest.TestCase):
                 # Sync workspace from registry, will get all conf files back
                 client.get_features_from_registry(client.project_name)
 
-                feature_query = FeatureQuery(
-                    feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance"],
-                    key=TypedKey(key_column="DOLocationID",key_column_type=ValueType.INT32))
-                settings = ObservationSettings(
-                    observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
-                    event_timestamp_column="lpep_dropoff_datetime",
-                    timestamp_format="yyyy-MM-dd HH:mm:ss")
-                client.get_offline_features(observation_settings=settings,
-                                            feature_query=feature_query,
-                                            output_path=output_path)
-                client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
-
     def test_feathr_register_features_partially(self):
         """
         This test will register full set of features into one project, then register another project in two partial registrations.

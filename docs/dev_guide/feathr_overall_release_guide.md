@@ -67,7 +67,7 @@ The automated workflow should take care of this, you can check under [actions](h
 The automated workflow should take care of this as well, you can check under [actions](https://github.com/feathr-ai/feathr/actions/workflows/docker-publish.yml) to see the triggered run and results. For manual steps, see [Feathr Registry docker image](https://feathr-ai.github.io/feathr/dev_guide/build-and-push-feathr-registry-docker-image.html)
 
 ## Testing
-Run one of the sample [notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/product_recommendation_demo.ipynb) as it uses the latest package from Maven and PyPi.
+Run one of the sample [notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb) as it uses the latest package from Maven and PyPi.
 
 ## Announcement
 
