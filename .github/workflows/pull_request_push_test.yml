@@ -257,7 +257,18 @@ jobs:
           # skip cloud related tests
           pytest feathr_project/test/test_local_spark_e2e.py
 
+  failure_notification:
+    # If any failure, warning message will be sent
+    needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name == 'schedule'
+    steps:
+     - name: Warning
+       run: |
+        curl -H 'Content-Type: application/json' -d '{"text": "[WARNING] Daily CI has failure, please check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' ${{ secrets.TEAMS_WEBHOOK }}
+
   notification:
+    # Final Daily Report with all job status
     needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'schedule'
@@ -266,4 +277,4 @@ jobs:
         run: echo "NOW=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - name: Notification
         run: |
-          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. SBT Test ${{needs.sbt_test.result}}, 2. Python Lint Test ${{needs.python_lint.result}}, 3. Databricks Test ${{needs.databricks_test.result}}, 4. Synapse Test ${{needs.azure_synapse_test.result}} , 5. LOCAL SPARK TEST ${{needs.local_spark_test.result}}"}' ${{ secrets.TEAMS_WEBHOOK }}
+          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. SBT Test ${{needs.sbt_test.result}}, 2. Python Lint Test ${{needs.python_lint.result}}, 3. Databricks Test ${{needs.databricks_test.result}}, 4. Synapse Test ${{needs.azure_synapse_test.result}} , 5. LOCAL SPARK TEST ${{needs.local_spark_test.result}}. Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' ${{ secrets.TEAMS_WEBHOOK }}
