@@ -3,19 +3,19 @@ import { Select } from "antd";
 import { fetchProjects } from "@/api";
 import { useQuery } from "react-query";
 
-export interface DataSourcesSelectProps {
+export interface ProjectsSelectProps {
   width?: number;
   defaultValue?: string;
   onChange?: (value: string) => void;
 }
 
-const DataSourcesSelect = (props: DataSourcesSelectProps) => {
+const ProjectsSelect = (props: ProjectsSelectProps) => {
   const { width = 350, defaultValue, onChange, ...restProps } = props;
 
   const { isLoading, data: options } = useQuery<
     { value: string; label: string }[]
   >(
-    ["dataSources"],
+    ["projectsSelect"],
     async () => {
       try {
         const result = await fetchProjects();
@@ -48,4 +48,4 @@ const DataSourcesSelect = (props: DataSourcesSelectProps) => {
   );
 };
 
-export default DataSourcesSelect;
+export default ProjectsSelect;

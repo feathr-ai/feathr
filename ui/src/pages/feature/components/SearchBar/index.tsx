@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { Form, Input, Button } from "antd";
 import { useNavigate } from "react-router-dom";
-import DataSourcesSelect from "@/components/DataSourcesSelect";
+import ProjectsSelect from "@/components/ProjectsSelect";
 
 export interface SearchValue {
   project?: string;
@@ -46,7 +46,7 @@ const SearchBar = (props: SearchBarProps) => {
         initialValues={defaultValues}
       >
         <Item label="Select Project" name="project">
-          <DataSourcesSelect onChange={form.submit} />
+          <ProjectsSelect onChange={form.submit} />
         </Item>
         <Item name="keyword">
           <Input placeholder="keyword" onChange={onChangeKeyword} />

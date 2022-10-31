@@ -1,6 +1,6 @@
 import React from "react";
 import { Form } from "antd";
-import DataSourcesSelect from "@/components/DataSourcesSelect";
+import ProjectsSelect from "@/components/ProjectsSelect";
 
 export interface SearchBarProps {
   defaultProject?: string;
@@ -28,7 +28,7 @@ const SearchBar = (props: SearchBarProps) => {
           name="project"
           initialValue={defaultProject}
         >
-          <DataSourcesSelect onChange={form.submit} />
+          <ProjectsSelect onChange={form.submit} />
         </Item>
       </Form>
     </div>
