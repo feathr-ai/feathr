@@ -373,9 +373,9 @@ object FeatureJoinJob {
     }
 
     val enableDebugLog = FeathrUtils.getFeathrJobParam(sparkConf, FeathrUtils.ENABLE_DEBUG_OUTPUT).toBoolean
-//    if (enableDebugLog) {
-    Logger.getRootLogger.setLevel(Level.DEBUG)
-//    }
+    if (enableDebugLog) {
+      Logger.getRootLogger.setLevel(Level.DEBUG)
+    }
 
     FeathrJoinPreparationInfo(sparkSession, conf, jobContext)
   }

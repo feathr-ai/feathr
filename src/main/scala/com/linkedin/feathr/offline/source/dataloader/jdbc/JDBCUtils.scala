@@ -60,6 +60,8 @@ object JdbcUtils {
   def loadDataFrame(ss: SparkSession, url: String): DataFrame ={
     val jdbcConnector = JdbcConnectorChooser.getJdbcConnector(ss, url)
     val jdbcOptions = jdbcConnector.extractJdbcOptions(ss, url)
+    println(s"JDBC CONNECTOR: ${jdbcConnector.format}")
+    println(s"URL: ${url}")
     jdbcConnector.loadDataFrame(url, jdbcOptions)
   }
 }

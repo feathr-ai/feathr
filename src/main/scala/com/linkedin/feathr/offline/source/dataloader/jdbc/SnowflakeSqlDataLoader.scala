@@ -19,9 +19,11 @@ class SnowflakeSqlDataLoader(ss: SparkSession) extends JdbcConnector(ss) {
       .format(SNOWFLAKE_SOURCE_NAME)
       .options(jdbcOptions)
 
+    println(s"JDBC OPTIONS: ${jdbcOptions}")
     val uri = new URI(url)
     val charset = Charset.forName("UTF-8")
     val params = URLEncodedUtils.parse(uri.getQuery, charset).asScala
+    println(s"SNOWFLAKE PARAMS: ${params}")
     params.foreach(x => {
       dfReader.option(x.getName, x.getValue)
     })
