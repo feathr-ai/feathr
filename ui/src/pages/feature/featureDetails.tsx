@@ -134,14 +134,14 @@ const FeatureDetails = () => {
     }
   );
   const { attributes } = data;
-  const { transformation, key, type } = attributes;
+  const { transformation, key, type, name } = attributes;
   const FeatureKey = key?.[0];
 
   return (
     <div className="page">
       <PageHeader
         ghost={false}
-        title="Data Source Attributes"
+        title={name}
         breadcrumb={
           <Breadcrumb>
             <Breadcrumb.Item>
