@@ -2,7 +2,7 @@ import React from "react";
 import { Card, Descriptions } from "antd";
 
 export interface CardDescriptionsProps {
-  title: string;
+  title?: string;
   mapping: any[];
   descriptions: any;
 }

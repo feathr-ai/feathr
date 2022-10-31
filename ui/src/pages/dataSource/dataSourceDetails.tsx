@@ -1,20 +1,14 @@
 import React from "react";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  Alert,
-  Space,
-  Breadcrumb,
-  PageHeader,
-  Spin,
-  Descriptions,
-  Button,
-} from "antd";
+import { Alert, Space, Breadcrumb, PageHeader, Spin, Button } from "antd";
 import { Link } from "react-router-dom";
 import { useQuery } from "react-query";
 import { AxiosError } from "axios";
 import { fetchDataSource } from "@/api";
 import { DataSource } from "@/models/model";
+import { SourceAttributesMap } from "@/utils/attributesMapping";
+import CardDescriptions from "@/components/CardDescriptions";
 
 const DataSourceDetails = () => {
   const navigate = useNavigate();
@@ -75,34 +69,12 @@ const DataSourceDetails = () => {
           spinning={isLoading}
           indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
         >
-          <Space direction="vertical" style={{ width: "100%" }} size="middle">
+          <Space className="display-flex" direction="vertical" size="middle">
             {error && <Alert message={error} type="error" showIcon />}
-            <Descriptions bordered column={1} labelStyle={{ width: 220 }}>
-              <Descriptions.Item label="Name">
-                {attributes.name}
-              </Descriptions.Item>
-              <Descriptions.Item label="Type">
-                {attributes.type}
-              </Descriptions.Item>
-              <Descriptions.Item label="Path">
-                {attributes.path}
-              </Descriptions.Item>
-              <Descriptions.Item label="Preprocessing">
-                {attributes.preprocessing}
-              </Descriptions.Item>
-              <Descriptions.Item label="Event Timestamp Column">
-                {attributes.event_timestamp_column}
-              </Descriptions.Item>
-              <Descriptions.Item label="Timestamp Forma">
-                {attributes.timestamp_format}
-              </Descriptions.Item>
-              <Descriptions.Item label="Qualified Name">
-                {attributes.qualified_name}
-              </Descriptions.Item>
-              <Descriptions.Item label="Tags">
-                {JSON.stringify(attributes.tags)}
-              </Descriptions.Item>
-            </Descriptions>
+            <CardDescriptions
+              mapping={SourceAttributesMap}
+              descriptions={attributes}
+            />
           </Space>
         </Spin>
       </PageHeader>

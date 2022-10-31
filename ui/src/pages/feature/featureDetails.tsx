@@ -16,100 +16,14 @@ import { AxiosError } from "axios";
 import { fetchFeature, fetchFeatureLineages } from "@/api";
 import { Feature, InputFeature, FeatureLineage } from "@/models/model";
 import FlowGraph from "@/components/FlowGraph";
+import CardDescriptions from "@/components/CardDescriptions";
+import {
+  FeatureKeyMap,
+  TransformationMap,
+  TypeMap,
+} from "@/utils/attributesMapping";
 
 const contentStyle = { marginRight: 16 };
-
-type FeatureKeyProps = { feature: Feature };
-const FeatureKey = ({ feature }: FeatureKeyProps) => {
-  const { key } = feature.attributes;
-  const info = key?.[0];
-
-  return info ? (
-    <Card className="card" title="Entity Key">
-      <Descriptions contentStyle={contentStyle}>
-        <Descriptions.Item label="Full Name">{info.fullName}</Descriptions.Item>
-        <Descriptions.Item label="Key Column">
-          {info.keyColumn}
-        </Descriptions.Item>
-        <Descriptions.Item label="Description">
-          {info.description}
-        </Descriptions.Item>
-        <Descriptions.Item label="Key Column Alias">
-          {info.keyColumnAlias}
-        </Descriptions.Item>
-        <Descriptions.Item label="Key Column Type">
-          {info.keyColumnType}
-        </Descriptions.Item>
-      </Descriptions>
-    </Card>
-  ) : null;
-};
-
-type FeatureTypeProps = { feature: Feature };
-const FeatureType = ({ feature }: FeatureTypeProps) => {
-  const type = feature.attributes.type;
-  return type ? (
-    <Card className="card" title="Type">
-      <Descriptions contentStyle={contentStyle}>
-        <Descriptions.Item label="Dimension Type">
-          {type.dimensionType}
-        </Descriptions.Item>
-        <Descriptions.Item label="Tensor Category">
-          {type.tensorCategory}
-        </Descriptions.Item>
-        <Descriptions.Item label="Type">{type.type}</Descriptions.Item>
-        <Descriptions.Item label="Value Type">{type.valType}</Descriptions.Item>
-      </Descriptions>
-    </Card>
-  ) : null;
-};
-
-type FeatureTransformationProps = { feature: Feature };
-const FeatureTransformation = ({ feature }: FeatureTransformationProps) => {
-  const { transformation } = feature.attributes;
-
-  return transformation ? (
-    <Card className="card" title="Transformation">
-      <Descriptions contentStyle={contentStyle}>
-        {transformation.transformExpr && (
-          <Descriptions.Item label="Expression">
-            {transformation.transformExpr}
-          </Descriptions.Item>
-        )}
-        {transformation.filter && (
-          <Descriptions.Item label="Filter">
-            {transformation.filter}
-          </Descriptions.Item>
-        )}
-        {transformation.aggFunc && (
-          <Descriptions.Item label="Aggregation">
-            {transformation.aggFunc}
-          </Descriptions.Item>
-        )}
-        {transformation.limit && (
-          <Descriptions.Item label="Limit">
-            {transformation.limit}
-          </Descriptions.Item>
-        )}
-        {transformation.groupBy && (
-          <Descriptions.Item label="Group By">
-            {transformation.groupBy}
-          </Descriptions.Item>
-        )}
-        {transformation.window && (
-          <Descriptions.Item label="Window">
-            {transformation.window}
-          </Descriptions.Item>
-        )}
-        {transformation.defExpr && (
-          <Descriptions.Item label="defExpr">
-            {transformation.defExpr}
-          </Descriptions.Item>
-        )}
-      </Descriptions>
-    </Card>
-  ) : null;
-};
 
 type InputAnchorFeaturesProps = { project: string; feature: Feature };
 
@@ -122,7 +36,7 @@ const InputAnchorFeatures = (props: InputAnchorFeaturesProps) => {
     <Card className="card" title="Input Anchor Features">
       <Descriptions contentStyle={contentStyle}>
         {inputAnchorFeatures.map((input_feature) => (
-          <Descriptions.Item>
+          <Descriptions.Item key={input_feature.guid}>
             <Link to={`/projects/${project}/features/${input_feature.guid}`}>
               {input_feature.uniqueAttributes.qualifiedName}
             </Link>
@@ -144,7 +58,7 @@ const InputDerivedFeatures = (props: InputDerivedFeaturesProps) => {
     <Card className="card" title="Input Derived Features">
       <Descriptions contentStyle={contentStyle}>
         {inputDerivedFeatures.map((input_feature: InputFeature) => (
-          <Descriptions.Item>
+          <Descriptions.Item key={input_feature.guid}>
             <Link to={`/projects/${project}/features/${input_feature.guid}`}>
               {input_feature.uniqueAttributes.qualifiedName}
             </Link>
@@ -186,18 +100,17 @@ const FeatureLineageGraph = () => {
     };
   }, []);
 
-  return (
+  return !loading ? (
     <Card className="card" title="Lineage">
-      <div style={{ height: 500 }}>
-        <FlowGraph
-          loading={loading}
-          data={lineageData}
-          nodeId={featureId}
-          project={project}
-        />
-      </div>
+      <FlowGraph
+        height={500}
+        loading={loading}
+        data={lineageData}
+        nodeId={featureId}
+        project={project}
+      />
     </Card>
-  );
+  ) : null;
 };
 
 type Params = {
@@ -220,6 +133,9 @@ const FeatureDetails = () => {
       refetchOnWindowFocus: false,
     }
   );
+  const { attributes } = data;
+  const { transformation, key, type } = attributes;
+  const FeatureKey = key?.[0];
 
   return (
     <div className="page">
@@ -250,13 +166,25 @@ const FeatureDetails = () => {
           spinning={isLoading}
           indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
         >
-          <Space direction="vertical" style={{ width: "100%" }} size="middle">
+          <Space className="display-flex" direction="vertical" size="middle">
             {error && <Alert message={error} type="error" showIcon />}
             <InputAnchorFeatures project={project} feature={data} />
             <InputDerivedFeatures project={project} feature={data} />
-            <FeatureTransformation feature={data} />
-            <FeatureKey feature={data} />
-            <FeatureType feature={data} />
+            <CardDescriptions
+              title="Transformation"
+              mapping={TransformationMap}
+              descriptions={transformation}
+            />
+            <CardDescriptions
+              title="Entity Key"
+              mapping={FeatureKeyMap}
+              descriptions={FeatureKey}
+            />
+            <CardDescriptions
+              title="Type"
+              mapping={TypeMap}
+              descriptions={type}
+            />
             <FeatureLineageGraph />
           </Space>
         </Spin>

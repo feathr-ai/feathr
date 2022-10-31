@@ -1,8 +1,12 @@
 import React from "react";
 import { Space } from "antd";
 import { Feature } from "@/models/model";
-import CardDescriptions from "./CardDescriptions";
-import { TransformationMap, FeatureKeyMap, TypeMap } from "./utils";
+import CardDescriptions from "@/components/CardDescriptions";
+import {
+  TransformationMap,
+  FeatureKeyMap,
+  TypeMap,
+} from "@/utils/attributesMapping";
 
 export interface FeatureNodeDetialProps {
   feature: Feature;
@@ -17,10 +21,10 @@ const FeatureNodeDetial = (props: FeatureNodeDetialProps) => {
 
   return (
     <Space
+      className="display-flex"
       direction="vertical"
       size="middle"
       align="start"
-      style={{ display: "flex" }}
     >
       <CardDescriptions
         title="Transformation"

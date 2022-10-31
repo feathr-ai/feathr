@@ -76,11 +76,9 @@ const LineageGraph = () => {
           </Radio.Button>
         </Radio.Group>
         <Row>
-          <Col
-            flex="2"
-            style={{ minHeight: "calc(100vh - 215px)", overflow: "hidden" }}
-          >
+          <Col flex="2">
             <FlowGraph
+              minHeight="calc(100vh - 215px)"
               loading={loading}
               data={lineageData}
               nodeId={nodeId}

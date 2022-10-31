@@ -1,3 +1,4 @@
+import { CSSProperties } from "react";
 import { FeatureLineage } from "@/models/model";
 import { FeatureType } from "@/utils/utils";
 import { NodeProps, ReactFlowProps } from "react-flow-renderer";
@@ -14,6 +15,10 @@ export interface NodeData {
 }
 
 export interface FlowGraphProps {
+  className?: string;
+  style?: CSSProperties;
+  minHeight?: string | number;
+  height?: string | number;
   loading?: boolean;
   data?: FeatureLineage;
   nodeId?: string;

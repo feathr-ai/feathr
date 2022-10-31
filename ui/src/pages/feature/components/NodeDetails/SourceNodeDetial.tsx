@@ -1,7 +1,7 @@
 import React from "react";
 import { DataSource } from "@/models/model";
-import { SourceAttributesMap } from "./utils";
-import CardDescriptions from "./CardDescriptions";
+import { SourceAttributesMap } from "@/utils/attributesMapping";
+import CardDescriptions from "@/components/CardDescriptions";
 
 export interface SourceNodeDetialProps {
   source: DataSource;

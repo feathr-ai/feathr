@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { fetchFeature, fetchDataSource } from "@/api";
 import { LoadingOutlined } from "@ant-design/icons";
@@ -15,7 +15,6 @@ const NodeDetails = () => {
   const { project } = useParams();
   const nodeId = searchParams.get("nodeId") as string;
   const featureType = searchParams.get("featureType") as string;
-  const currentDataRef = useRef<any>(null);
 
   const isSource = featureType === FeatureType.Source;
   const isFeature =
@@ -27,7 +26,7 @@ const NodeDetails = () => {
     async () => {
       if (isSource || isFeature) {
         const api = isSource ? fetchDataSource : fetchFeature;
-        return (currentDataRef.current = await api(project!, nodeId));
+        return await api(project!, nodeId);
       }
     },
     {
@@ -44,9 +43,9 @@ const NodeDetails = () => {
       <div style={{ minHeight: "calc(100vh - 300px)" }}>
         {data ? (
           isSource ? (
-            <SourceNodeDetial source={data || currentDataRef.current} />
+            <SourceNodeDetial source={data} />
           ) : (
-            <FeatureNodeDetail feature={data || currentDataRef.current} />
+            <FeatureNodeDetail feature={data} />
           )
         ) : (
           !isLoading && (

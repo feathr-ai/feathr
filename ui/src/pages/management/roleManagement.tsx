@@ -14,7 +14,7 @@ const RoleManagement = () => {
   return (
     <div className="page">
       <Card>
-        <Space direction="vertical" style={{ width: "100%" }}>
+        <Space className="display-flex" direction="vertical">
           {showAlert && (
             <Alert
               type="warning"

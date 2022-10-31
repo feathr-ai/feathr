@@ -18,7 +18,7 @@ const Management = () => {
   return (
     <div className="page">
       <Card>
-        <Space direction="vertical" style={{ width: "100%" }}>
+        <Space className="display-flex" direction="vertical">
           <Alert
             type="info"
             message="This page is protected by Feathr Access Control. Only Project Admins

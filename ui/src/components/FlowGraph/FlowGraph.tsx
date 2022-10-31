@@ -21,6 +21,7 @@ import ReactFlow, {
 import { Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useSearchParams } from "react-router-dom";
+import cs from "classnames";
 import { FeatureLineage } from "@/models/model";
 import { isFeature, FeatureType } from "@/utils/utils";
 import LineageNode from "./LineageNode";
@@ -40,7 +41,18 @@ const defaultProps: FlowGraphProps = {
 };
 
 const FlowGraph = (props: FlowGraphProps, ref: any) => {
-  const { data, loading, project, nodeId, featureType, snapGrid } = {
+  const {
+    className,
+    style,
+    data,
+    loading,
+    height,
+    minHeight,
+    project,
+    nodeId,
+    featureType,
+    snapGrid,
+  } = {
     ...defaultProps,
     ...props,
   };
@@ -192,14 +204,13 @@ const FlowGraph = (props: FlowGraphProps, ref: any) => {
 
   return (
     <Spin
-      wrapperClassName={styles.flowGraphWrap}
-      style={{ height: "100%" }}
       spinning={loading}
       indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />}
     >
       <ReactFlowProvider>
         <ReactFlow
-          className={styles.flowGraph}
+          className={cs(styles.flowGraph, className)}
+          style={{ ...style, height, minHeight }}
           elements={elements}
           snapToGrid
           snapGrid={snapGrid}
