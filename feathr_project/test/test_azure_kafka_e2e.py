@@ -19,5 +19,5 @@ def test_feathr_kafa_streaming_features():
                                    sinks=[redisSink],
                                    feature_names=['f_modified_streaming_count']
                                    )
-    client.materialize_features(settings)
+    client.materialize_features(settings, allow_materialize_non_agg_feature=True)
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
