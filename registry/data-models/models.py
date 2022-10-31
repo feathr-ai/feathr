@@ -45,11 +45,7 @@ class ProjectId(BaseModel):
 
 
 class Source(FeathrModel):
-    """
-    Source of the feature.
-    It defines where the feature is extracted or derived from.
-    """
-    sourceRef: Optional[str]  # Represents the identifier of a Source object.
+    pass
 
 
 class DataSource(Source):

@@ -171,7 +171,6 @@ classDiagram
         +Optional[int] limit        
     }
     class Source{
-        +Optional[str] sourceRef
     }
     class DataSource{
         +Optional[Clazz] clazz
