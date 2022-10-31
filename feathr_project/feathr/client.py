@@ -415,7 +415,6 @@ class FeathrClient(object):
                              output_path: Union[str, Sink],
                              execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
                              config_file_name:str = "feature_join_conf/feature_join.conf",
-                             udf_files = None,
                              verbose: bool = False
                              ):
         """
@@ -609,7 +608,7 @@ class FeathrClient(object):
                         self.logger.error(f"Inconsistent feature keys. Current keys are {str(keys)}")
                         return False
         return True
-    
+
     def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False, allow_materialize_non_agg_feature: bool = False):
         """Materialize feature data
 
@@ -621,7 +620,7 @@ class FeathrClient(object):
         feature_list = settings.feature_names
         if len(feature_list) > 0 and not self._valid_materialize_keys(feature_list):
             raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
-        
+
         if not allow_materialize_non_agg_feature:
             # Check if there are non-aggregation features in the list
             for fn in feature_list:
