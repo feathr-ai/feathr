@@ -58,6 +58,16 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       |       type: "DENSE_VECTOR"
       |       default: [7,8,9]
       |      }
+      |      ee2: {
+      |       def: "c"
+      |       type: {
+      |           type: TENSOR
+      |           tensorCategory: DENSE
+      |           dimensionType: [INT]
+      |           valType: FLOAT
+      |           }
+      |       default: []
+      |      }
       |      ff: {
       |       def: "c"
       |       default: [6,7]
@@ -155,7 +165,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
    */
   @Test
   def testSingleKeyJoinWithDifferentFeatureTypes(): Unit = {
-    val selectedColumns = Seq("x", "aa", "bb", "cc", "dd", "ee", "ff", "multiply_a_b", "categorical_b") // , "z")
+    val selectedColumns = Seq("x", "aa", "bb", "cc", "dd", "ee", "ee2", "ff", "multiply_a_b", "categorical_b") // , "z")
     val featureJoinConf =
       s"""
          |
@@ -186,6 +196,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
             null,
             // ee
             mutable.WrappedArray.make(Array(7.0f, 8.0f, 9.0f)),
+            // ee2
+            mutable.WrappedArray.empty,
             // ff
             mutable.WrappedArray.make(Array(6.0f, 7.0f)),
             // multiply_a_b
@@ -206,6 +218,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
             // dd
             mutable.WrappedArray.make(Array(1.0f, 2.0f, 3.0f)),
             // ee
+            mutable.WrappedArray.make(Array(1.0f, 2.0f, 3.0f)),
+            // ee2
             mutable.WrappedArray.make(Array(1.0f, 2.0f, 3.0f)),
             // ff
             mutable.WrappedArray.make(Array(1.0f, 2.0f, 3.0f)),
@@ -228,6 +242,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
             mutable.WrappedArray.make(Array(4.0f, 5.0f, 6.0f)),
             // ee
             mutable.WrappedArray.make(Array(4.0f, 5.0f, 6.0f)),
+            // ee2
+            mutable.WrappedArray.make(Array(4.0f, 5.0f, 6.0f)),
             // ff
             mutable.WrappedArray.make(Array(4.0f, 5.0f, 6.0f)),
             // multiply_a_b
@@ -246,6 +262,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           StructField("cc", FloatType, true),
           StructField("dd", ArrayType(FloatType, true), true),
           StructField("ee", ArrayType(FloatType, false), true),
+          StructField("ee2", ArrayType(FloatType, false), true),
           StructField("ff", ArrayType(FloatType, false), true),
           StructField(
             "multiply_a_b",
