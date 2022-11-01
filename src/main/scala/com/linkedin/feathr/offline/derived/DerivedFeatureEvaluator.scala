@@ -1,19 +1,19 @@
 package com.linkedin.feathr.offline.derived
 
-import com.linkedin.feathr.{common, offline}
-import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig}
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
-import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
+import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig}
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.client.plugins.{FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor}
-import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SeqJoinDerivationFunction}
-import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinAsDerivation, SparkUdfDerivation}
+import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction}
+import com.linkedin.feathr.offline.derived.strategies._
 import com.linkedin.feathr.offline.join.algorithms.{SequentialJoinConditionBuilder, SparkJoinWithJoinCondition}
 import com.linkedin.feathr.offline.logical.FeatureGroups
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
-import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
+import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
 import com.linkedin.feathr.sparkcommon.FeatureDerivationFunctionSpark
+import com.linkedin.feathr.{common, offline}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -44,6 +44,9 @@ private[offline] class DerivedFeatureEvaluator(derivationStrategies: DerivationS
         convertFeatureColumnToQuinceFds(producedFeatureColName, derivedFeature, resultDF)
       case h: FeatureDerivationFunctionSpark =>
         val resultDF = derivationStrategies.customDerivationSparkStrategy(keyTag, keyTagList, contextDF, derivedFeature, h, mvelContext)
+        convertFeatureColumnToQuinceFds(producedFeatureColName, derivedFeature, resultDF)
+      case s: SQLFeatureDerivationFunction =>
+        val resultDF = derivationStrategies.sqlDerivationSparkStrategy(keyTag, keyTagList, contextDF, derivedFeature, s, mvelContext)
         convertFeatureColumnToQuinceFds(producedFeatureColName, derivedFeature, resultDF)
       case x: FeatureDerivationFunction =>
         // We should do the FDS conversion inside the rowBasedDerivationStrategy here. The result of rowBasedDerivationStrategy
@@ -118,8 +121,8 @@ private[offline] object DerivedFeatureEvaluator {
     val defaultStrategies = strategies.DerivationStrategies(
       new SparkUdfDerivation(),
       new RowBasedDerivation(featureGroups.allTypeConfigs, mvelContext),
-      new SequentialJoinAsDerivation(ss, featureGroups, SparkJoinWithJoinCondition(SequentialJoinConditionBuilder), dataPathHandlers)
-      )
+      new SequentialJoinAsDerivation(ss, featureGroups, SparkJoinWithJoinCondition(SequentialJoinConditionBuilder), dataPathHandlers),
+      new SqlDerivationSpark())
     new DerivedFeatureEvaluator(defaultStrategies, mvelContext)
   }
 
