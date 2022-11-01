@@ -36,9 +36,9 @@ class DerivedFeature(FeatureBase):
 
     def validate_feature(self):
         """Validate the derived feature is valid"""
-        
+
         input_feature_key_alias = []
-        # for new entity in Purview, the attributes are Camel cases, while the old logic works as snake cases. 
+        # for new entity in Purview, the attributes are Camel cases, while the old logic works as snake cases.
         # Modify the conversion to work with both schema.
         for feature in self.input_features:
             input_feature_key_alias.extend([x['keyColumnAlias'] for x in feature['attributes']['key']] if isinstance(feature,dict) else feature.key_alias)
@@ -58,7 +58,7 @@ class DerivedFeature(FeatureBase):
                         }
                     {% endfor %}
                 }
-                definition.sqlExpr: {{derived_feature.transform.to_feature_config(False)}}
+                definition: {{derived_feature.transform.to_feature_config(False)}}
                 {{derived_feature.feature_type.to_feature_config()}}
             }
         """)

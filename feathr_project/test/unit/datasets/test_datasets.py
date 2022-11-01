@@ -12,15 +12,6 @@ TEST_DATASET_DIR = Path(__file__).parent.parent.parent.joinpath("test_user_works
 NYC_TAXI_FILE_PATH = str(TEST_DATASET_DIR.joinpath("green_tripdata_2020-04_with_index.csv").resolve())
 
 
-@pytest.fixture(scope="module")
-def spark() -> SparkSession:
-    """Generate a spark session for tests."""
-    # Set ui port other than the default one (4040) so that feathr spark job may not fail.
-    spark_session = SparkSession.builder.appName("tests").config("spark.ui.port", "8080").getOrCreate()
-    yield spark_session
-    spark_session.stop()
-
-
 @pytest.mark.parametrize(
     "local_cache_path",
     [
