@@ -402,7 +402,7 @@ def test_feathr_materialize_with_time_partition_pattern():
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
 
-    client: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
+    client: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
