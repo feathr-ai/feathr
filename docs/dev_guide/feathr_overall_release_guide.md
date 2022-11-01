@@ -17,6 +17,11 @@ This document describes all the release process for the development team.
 
 A pre-release is needed for internal bug bash. One bug bash is passed, A new major or minor release is needed for official release to public. Pre-release versions should be labelled with a suffix like -rc1.
 
+## Release Versioning
+
+- Major and minor version: X.Y.Z
+- Release Candidate: X.Y.Z-rcN
+
 ## Writing Release Note
 
 Write a release note following past examples [here](https://github.com/feathr-ai/feathr/releases).
