@@ -33,7 +33,7 @@ def test_feathr_materialize_to_offline():
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
 
-    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
