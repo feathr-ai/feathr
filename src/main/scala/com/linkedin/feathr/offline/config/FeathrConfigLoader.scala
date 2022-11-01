@@ -711,7 +711,8 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): DataSource = {
     val codec = p.getCodec
     val node = codec.readTree[TreeNode](p).asInstanceOf[ObjectNode]
-
+    println(s"NODE: ${node}")
+    println(s"NODE TYPE: ${Option(node.get("type"))}")
     // for now only HDFS can be set, in the future, here may allow more options
     // also to form a unified interface with online
     val dataSourceType = Option(node.get("type")) match {
@@ -733,7 +734,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       } else {
         SourceFormatType.FIXED_PATH
       }
-
+    println(s"SOURCE FORMAT TYPE: ${sourceFormatType}")
     /*
      * path here can be:
      *
@@ -741,6 +742,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
      * 2. a placeholder with reserved string "PASSTHROUGH" for anchor defined pass-through features,
      *    since anchor defined pass-through features do not have path
      */
+    println(s"DATA SOURCE TYPE: ${dataSourceType}")
     val path: DataLocation = dataSourceType match {
       case "KAFKA" =>
         Option(node.get("config")) match {
