@@ -183,7 +183,7 @@ def test_feathr_get_offline_features():
                                full_name="nyc_taxi.location_id")
 
         feature_query = FeatureQuery(
-            feature_list=["f_location_avg_fare"], key=location_id)
+            feature_list=["f_location_avg_fare", "f_trip_time_rounded"], key=location_id)
         settings = ObservationSettings(
             observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
             event_timestamp_column="lpep_dropoff_datetime",
@@ -309,9 +309,9 @@ def test_feathr_materialize_to_aerospike():
     # os.chdir(test_workspace_dir)
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
-    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
-    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
-    
+    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)])
+    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)])
+
     client = FeathrClient(config_path="feathr_config.yaml")
     batch_source = HdfsSource(name="nycTaxiBatchSource",
                               path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
