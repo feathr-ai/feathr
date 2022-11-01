@@ -15,7 +15,13 @@ This document describes all the release process for the development team.
 
 ## When to Release
 
-A pre-release is needed for internal bug bash. One bug bash is passed, A new major or minor release is needed for official release to public. Pre-release versions should be labelled with a suffix like -rc1.
+The release process is triggered by the release manager. The release manager will decide when to release with following steps:
+
+1. Ensure Prerequisites are met.
+2. Creation of Release Candidate(rc) on GitHub.
+3. Bug Bash.
+4. Creation of Release on GitHub.
+5. Post Release announcement.
 
 ## Release Versioning
 
@@ -33,7 +39,7 @@ Read through the [commit log](https://github.com/feathr-ai/feathr/commits/main) 
 
 ## Code Changes
 
-Before the release is made, the version needs to be updated in following places
+Before the release candidate or release is made, the version needs to be updated in following places
 
 - [build.sbt](https://github.com/feathr-ai/feathr/blob/main/build.sbt#L3) - For Maven release version
 - [version.py](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathr/version.py#L1) - For Feathr version
@@ -41,7 +47,7 @@ Before the release is made, the version needs to be updated in following places
 - [feathr_config.yaml](https://github.com/feathr-ai/feathr/blob/main/feathr_project/test/test_user_workspace/feathr_config.yaml#L84) - To set the spark runtime location for Azure Synapse and Azure Databricks used by test suite. Please update all .yaml files under this path.
 - [package.json](https://github.com/feathr-ai/feathr/blob/main/ui/package.json#L3) - For Feathr UI version
 
-Following file should only be updated for release version, which means should be skipped for release candidate version.
+Following file should only be updated for release, which means should be skipped for release candidate.
 
 - [azure_resource_provision.json](https://github.com/feathr-ai/feathr/blob/main/docs/how-to-guides/azure_resource_provision.json#L114) - To set the deployment template to pull the latest release image.
 
