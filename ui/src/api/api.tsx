@@ -38,14 +38,18 @@ export const fetchDataSource = async (
 ) => {
   const axios = await authAxios(msalInstance);
   return axios
-    .get<DataSource>(
+    .get<DataSource & { message: string; detail: string }>(
       `${getApiBaseUrl()}/projects/${project}/datasources/${dataSourceId}`,
       {
         params: { project: project, datasource: dataSourceId },
       }
     )
     .then((response) => {
-      return response.data;
+      if (response.data.message || response.data.detail) {
+        return Promise.reject(response.data.message || response.data.detail);
+      } else {
+        return response.data;
+      }
     });
 };
 
@@ -109,33 +113,21 @@ export const fetchFeatureLineages = async (featureId: string) => {
 // Following are place-holder code
 export const createFeature = async (feature: Feature) => {
   const axios = await authAxios(msalInstance);
-  return axios
-    .post(`${getApiBaseUrl()}/features`, feature, {
-      headers: { "Content-Type": "application/json;" },
-      params: {},
-    })
-    .then((response) => {
-      return response;
-    })
-    .catch((error) => {
-      return error.response;
-    });
+  return axios.post(`${getApiBaseUrl()}/features`, feature, {
+    headers: { "Content-Type": "application/json;" },
+    params: {},
+  });
 };
 
-export const updateFeature = async (feature: Feature, id: string) => {
+export const updateFeature = async (feature: Feature, id?: string) => {
   const axios = await authAxios(msalInstance);
-  feature.guid = id;
-  return await axios
-    .put(`${getApiBaseUrl()}/features/${id}`, feature, {
-      headers: { "Content-Type": "application/json;" },
-      params: {},
-    })
-    .then((response) => {
-      return response;
-    })
-    .catch((error) => {
-      return error.response;
-    });
+  if (id) {
+    feature.guid = id;
+  }
+  return axios.put(`${getApiBaseUrl()}/features/${feature.guid}`, feature, {
+    headers: { "Content-Type": "application/json;" },
+    params: {},
+  });
 };
 
 export const listUserRole = async () => {
@@ -245,6 +237,8 @@ export const authAxios = async (msalInstance: PublicClientApplication) => {
       if (error.response?.status === 403) {
         const detail = error.response.data.detail;
         window.location.href = "/responseErrors/403/" + detail;
+      } else {
+        return Promise.reject(error.response.data);
       }
       //TODO: handle other response errors
     }

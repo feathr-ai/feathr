@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useState } from "react";
 import { Form, Select, Input, Button, message } from "antd";
-import { listUserRole, addUserRole } from "../../../../api";
+import { listUserRole, addUserRole } from "@/api";
 
 export interface RoleFormProps {
   getRole?: (isAdmin: boolean) => void;
