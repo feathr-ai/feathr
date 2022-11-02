@@ -12,14 +12,10 @@ def workspace_dir() -> str:
 
 
 @pytest.fixture(scope="function")
-def feathr_client_local(workspace_dir) -> FeathrClient:
-    """Test function-scoped Feathr client"""
-    return FeathrClient(config_path=str(Path(workspace_dir, "feathr_config_local.yaml")))
-
-
-@pytest.fixture(scope="function")
-def feathr_client_databricks(workspace_dir) -> FeathrClient:
-    """Test function-scoped Feathr client"""
+def feathr_client(workspace_dir) -> FeathrClient:
+    """Test function-scoped Feathr client.
+    Note, cluster target (local, databricks, synapse) maybe overriden by the environment variables set at test machine.
+    """
     return FeathrClient(config_path=str(Path(workspace_dir, "feathr_config.yaml")))
 
 

@@ -2,6 +2,7 @@
 # TODO test with no data files exception and unsupported format exception
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Type
 from unittest.mock import MagicMock
 
 import pandas as pd
@@ -18,7 +19,7 @@ from feathr.utils.job_utils import (
 
 
 def test__get_result_pandas_df(mocker: MockerFixture):
-    # Assert if the base function, get_result_df, called w/ proper args
+    """Test if the base function, get_result_df, called w/ proper args"""
     mocked_get_result_df = mocker.patch("feathr.utils.job_utils.get_result_df")
     client = MagicMock()
     data_format = "some_data_format"
@@ -29,7 +30,7 @@ def test__get_result_pandas_df(mocker: MockerFixture):
 
 
 def test__get_result_spark_df(mocker: MockerFixture):
-    # Assert if the base function, get_result_df, called w/ proper args
+    """Test if the base function, get_result_df, called w/ proper args"""
     mocked_get_result_df = mocker.patch("feathr.utils.job_utils.get_result_df")
     client = MagicMock()
     spark = MagicMock()
@@ -40,19 +41,80 @@ def test__get_result_spark_df(mocker: MockerFixture):
     mocked_get_result_df.assert_called_once_with(client, data_format, res_url, local_cache_path, spark=spark)
 
 
-# Local spark is expected to use a local filepath for res_url. Therefore, we mark this test to run with databricks.
-@pytest.mark.databricks
-def test__get_result_df__with_local_cache_path(feathr_client_databricks: FeathrClient):
-    # TODO Assert there is a local copy of the file in the given local_cache_path
-    pass
-
-
-def test__get_result_df__exceptions():
+@pytest.mark.parametrize(
+    "is_databricks,spark_runtime,res_url,local_cache_path,expected_local_cache_path", [
+        # For local spark results, res_url must be a local path and local_cache_path will be ignored.
+        (False, "local", "some_res_url", None, "some_res_url"),
+        (False, "local", "some_res_url", "some_local_cache_path", "some_res_url"),
+        # For databricks results, res_url must be a dbfs path.
+        # If the function is called in databricks, local_cache_path will be ignored.
+        (True, "databricks", "dbfs:/some_res_url", None, "/dbfs/some_res_url"),
+        (True, "databricks", "dbfs:/some_res_url", "some_local_cache_path", "/dbfs/some_res_url"),
+        (False, "databricks", "dbfs:/some_res_url", None, "mocked_temp_path"),
+        (False, "databricks", "dbfs:/some_res_url", "some_local_cache_path", "some_local_cache_path"),
+    ]
+)
+def test__get_result_df__with_local_cache_path(
+    mocker: MockerFixture,
+    is_databricks: bool,
+    spark_runtime: str,
+    res_url: str,
+    local_cache_path: str,
+    expected_local_cache_path: str,
+):
+    """Test local_cache_path is used if provided"""
+    # Mock client
     client = MagicMock()
-    client.get_job_result_uri = MagicMock(return_value=None)
+    client.spark_runtime = spark_runtime
+    client.feathr_spark_launcher.download_result = MagicMock()
+    mocked_load_files_to_pandas_df = mocker.patch("feathr.utils.job_utils._load_files_to_pandas_df")
 
-    # Test ValueError when res_url is None
-    with pytest.raises(ValueError):
+    # Mock is_databricks
+    mocker.patch("feathr.utils.job_utils.is_databricks", return_value=is_databricks)
+
+    # Mock temporary file module
+    mocked_named_temporary_file = MagicMock()
+    mocked_named_temporary_file.name = expected_local_cache_path
+    mocker.patch("feathr.utils.job_utils.NamedTemporaryFile", return_value=mocked_named_temporary_file)
+
+    data_format = "csv"
+    get_result_df(client, data_format=data_format, res_url=res_url, local_cache_path=local_cache_path)
+
+    mocked_load_files_to_pandas_df.assert_called_once_with(
+        dir_path=expected_local_cache_path,
+        data_format=data_format,
+    )
+
+
+@pytest.mark.parametrize(
+    "is_databricks,spark_runtime,res_url,expected_error", [
+        (True, "local", None, RuntimeError),  # Test RuntimeError when the function is running at Databricks but client.spark_runtime is not databricks
+        # Test ValueError when res_url is None
+        (False, "local", None, ValueError),
+        (True, "databricks", None, ValueError),
+        # Test ValueError when res_url is not a dbfs path but client.spark_runtime is databricks
+        (False, "databricks", "some_local_path", ValueError),
+        # Test ValueError when res_url does not exists or not able to access.
+        (False, "local", "some_doesnt_exist_path", Exception),
+    ]
+)
+def test__get_result_df__exceptions(
+    mocker: MockerFixture,
+    is_databricks: bool,
+    spark_runtime: str,
+    res_url: str,
+    expected_error: Type[Exception],
+):
+    """Test exceptions"""
+    # Mock client
+    client = MagicMock()
+    client.get_job_result_uri = MagicMock(return_value=res_url)
+    client.spark_runtime = spark_runtime
+
+    # Mock is_data_bricks
+    mocker.patch("feathr.utils.job_utils.is_databricks", return_value=is_databricks)
+
+    with pytest.raises(expected_error):
         get_result_df(client)
 
 
@@ -67,17 +129,27 @@ def test__get_result_df__exceptions():
 )
 def test__get_result_df(
     workspace_dir: str,
-    feathr_client_local: FeathrClient,
+    feathr_client: FeathrClient,
     data_format: str,
     output_filename: str,
     expected_count: int,
 ):
+    """Test get_result_df returns pandas DataFrame"""
     # Note: make sure the output file exists in the test_user_workspace
     res_url = str(Path(workspace_dir, "mock_results", output_filename))
+    local_cache_path = res_url
+
+    # Mock feathr_spark_launcher.download_result
+    feathr_client.feathr_spark_launcher.download_result = MagicMock()
+
+    if feathr_client.spark_runtime == "databricks":
+        res_url = f"dbfs:/{res_url}"
+
     df = get_result_df(
-        client=feathr_client_local,
+        client=feathr_client,
         data_format=data_format,
         res_url=res_url,
+        local_cache_path=local_cache_path,
     )
     assert isinstance(df, pd.DataFrame)
     assert len(df) == expected_count
@@ -94,19 +166,29 @@ def test__get_result_df(
 )
 def test__get_result_df__with_spark_session(
     workspace_dir: str,
-    feathr_client_local: FeathrClient,
+    feathr_client: FeathrClient,
     spark: SparkSession,
     data_format: str,
     output_filename: str,
     expected_count: int,
 ):
+    """Test get_result_df returns spark DataFrame"""
     # Note: make sure the output file exists in the test_user_workspace
     res_url = str(Path(workspace_dir, "mock_results", output_filename))
+    local_cache_path = res_url
+
+    # Mock feathr_spark_launcher.download_result
+    feathr_client.feathr_spark_launcher.download_result = MagicMock()
+
+    if feathr_client.spark_runtime == "databricks":
+        res_url = f"dbfs:/{res_url}"
+
     df = get_result_df(
-        client=feathr_client_local,
+        client=feathr_client,
         data_format=data_format,
         res_url=res_url,
         spark=spark,
+        local_cache_path=local_cache_path,
     )
     assert isinstance(df, DataFrame)
     assert df.count() == expected_count

@@ -1,6 +1,5 @@
-from multiprocessing.sharedctypes import Value
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import NamedTemporaryFile
 from typing import Union
 
 from loguru import logger
@@ -9,6 +8,7 @@ from pyspark.sql import DataFrame, SparkSession
 
 from feathr.client import FeathrClient
 from feathr.constants import OUTPUT_FORMAT
+from feathr.utils.platform import is_databricks
 
 
 def get_result_pandas_df(
@@ -82,6 +82,9 @@ def get_result_df(
     Returns:
         Either Spark or pandas DataFrame.
     """
+    if is_databricks() and client.spark_runtime != "databricks":
+        raise RuntimeError(f"The function is called from Databricks but the client.spark_runtime is {client.spark_runtime}.")
+
     # use a result url if it's provided by the user, otherwise use the one provided by the job
     res_url: str = res_url or client.get_job_result_uri(block=True, timeout_sec=1200)
     if res_url is None:
@@ -95,22 +98,22 @@ def get_result_df(
                 "In local spark mode, the result files are expected to be stored at a local storage and thus `local_cache_path` argument will be ignored."
             )
         local_cache_path = res_url
+
     elif client.spark_runtime == "databricks":
-        if res_url.startswith("dbfs:"):
+        if not res_url.startswith("dbfs:"):
+            raise ValueError(
+                f"In Databricks, the result files are expected to be stored at a DBFS storage but res_url = {res_url}."
+            )
+
+        if is_databricks():  # Check if the function is being called from Databricks
             if local_cache_path is not None:
                 logger.warning(
                     "Result files are already in DBFS and thus `local_cache_path` will be ignored."
                 )
             local_cache_path = res_url
-        else:
-            # if local_cache_path params is not provided then create a temporary folder
-            if local_cache_path is None:
-                # We'll just use the name of a local TemporaryDirectory to cache the data into DBFS.
-                local_cache_path = TemporaryDirectory().name
+        elif local_cache_path is None:  # Download the result from dbfs to local
+            local_cache_path = NamedTemporaryFile(delete=False).name
 
-            # Databricks uses "dbfs:/" prefix for spark paths
-            if not local_cache_path.startswith("dbfs:"):
-                local_cache_path = str(Path("dbfs:", local_cache_path.lstrip("/")))
     else:
         logger.warning("This utility function currently supports local spark and databricks. You may encounter unexpected results on other platforms.")
     # TODO elif azure_synapse
@@ -127,16 +130,20 @@ def get_result_df(
 
     result_df = None
 
-    if spark is not None:
-        if data_format == "csv":
-            result_df = spark.read.option("header", True).csv(local_cache_path)
+    try:
+        if spark is not None:
+            if data_format == "csv":
+                result_df = spark.read.option("header", True).csv(local_cache_path)
+            else:
+                result_df = spark.read.format(data_format).load(local_cache_path)
         else:
-            result_df = spark.read.format(data_format).load(local_cache_path)
-    else:
-        result_df = _load_files_to_pandas_df(
-            dir_path=local_cache_path.replace("dbfs:", "/dbfs"),  # replace to python path if spark path is provided.
-            data_format=data_format,
-        )
+            result_df = _load_files_to_pandas_df(
+                dir_path=local_cache_path.replace("dbfs:", "/dbfs"),  # replace to python path if spark path is provided.
+                data_format=data_format,
+            )
+    except Exception as e:
+        logger.error(f"Failed to load result files from {local_cache_path} with format {data_format}.")
+        raise e
 
     return result_df
 
