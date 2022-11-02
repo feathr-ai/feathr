@@ -388,7 +388,7 @@ def time_partition_pattern_test_setup(config_path: str):
     client = FeathrClient(config_path=config_path)
     if client.spark_runtime == 'databricks':
         batch_source = HdfsSource(name="testTimePartitionSource",
-                          path="dbfs:/demo_data/timePartitionPattern/df0/daily",
+                          path="dbfs:/sample_data/timePartitionPattern/df0/daily",
                           time_partition_pattern="yyyy/MM/dd"
                           )
     else:
