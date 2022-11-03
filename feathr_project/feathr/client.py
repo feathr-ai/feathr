@@ -627,7 +627,7 @@ class FeathrClient(object):
                 for feature in feature_list:
                     if feature in anchor_feature_names:
                         raise RuntimeError(f"Materializing features that are defined on INPUT_CONTEXT is not supported. {feature} is defined on INPUT_CONTEXT so you should remove it from the feature list in MaterializationSettings.")
-            if self._valid_materialize_keys(feature_list):
+            if not self._valid_materialize_keys(feature_list):
                 raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
         
         if not allow_materialize_non_agg_feature:
