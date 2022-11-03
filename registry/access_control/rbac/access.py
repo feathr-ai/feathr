@@ -1,3 +1,4 @@
+from time import sleep
 from typing import Any, Union
 from uuid import UUID
 from fastapi import Depends, HTTPException, status
@@ -20,6 +21,12 @@ rbac = DbRBAC()
 class ForbiddenAccess(HTTPException):
     def __init__(self, detail: Any = None) -> None:
         super().__init__(status_code=status.HTTP_403_FORBIDDEN,
+                         detail=detail, headers={"WWW-Authenticate": "Bearer"})
+
+
+class BadRequest(HTTPException):
+    def __init__(self, detail: Any = None) -> None:
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST,
                          detail=detail, headers={"WWW-Authenticate": "Bearer"})
 
 
@@ -72,13 +79,22 @@ def _get_project_name(id_or_name: Union[str, UUID]):
         _to_uuid(id_or_name)
         if id_or_name not in rbac.projects_ids:
             # refresh project id map if id not found
-            _get_projects_ids()
+            _get_projects_ids() 
+            if id_or_name not in rbac.projects_ids:
+                # purview discovery-query api has latency, need retry to avoid new project not included issue.
+                # TODO: Update purview project-ids API to realtime one and remove below patch.
+                count = 0
+                max = 5
+                while id_or_name not in rbac.projects_ids and count < max:
+                    sleep(0.5)
+                    _get_projects_ids()
+                    count += 1
         return rbac.projects_ids[id_or_name]
     except KeyError:
-        raise RuntimeError(f"Project Id {id_or_name} not found in Registry {config.RBAC_REGISTRY_URL}")
+        raise BadRequest(f"Project Id {id_or_name} not found in Registry {config.RBAC_REGISTRY_URL}. Please check if the project exists or retry later.")
     except ValueError:
+        # It is a name
         pass
-    # It is a name
     return id_or_name
 
 
@@ -88,4 +104,4 @@ def _get_projects_ids():
         response = requests.get(url=f"{config.RBAC_REGISTRY_URL}/projects-ids").content.decode('utf-8')
         rbac.projects_ids = json.loads(response)
     except Exception as e:
-        raise RuntimeError(f"Failed to get projects ids from Registry {config.RBAC_REGISTRY_URL}, {e}")
+        raise BadRequest(f"Failed to get projects ids from Registry {config.RBAC_REGISTRY_URL}, {e}")

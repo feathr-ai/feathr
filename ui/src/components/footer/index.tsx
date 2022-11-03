@@ -15,8 +15,8 @@ const FooterBar = () => {
   return (
     <Footer className={styles.footer}>
       <Space size={32}>
-        <span>version {process.env.FEATHR_VERSION}</span>
-        <span> generated at {generatedTime}</span>
+        <span>Feathr UI Version: {process.env.FEATHR_VERSION}</span>
+        <span>Feathr UI Build Generated at {generatedTime}</span>
       </Space>
     </Footer>
   );

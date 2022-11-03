@@ -96,7 +96,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#-documentation"
+                  href="https://github.com/feathr-ai/feathr#-documentation"
                   rel="noreferrer"
                 >
                   Documentation
@@ -106,7 +106,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#%EF%B8%8F-running-feathr-on-cloud-with-a-few-simple-steps"
+                  href="https://github.com/feathr-ai/feathr#%EF%B8%8F-running-feathr-on-cloud-with-a-few-simple-steps"
                   rel="noreferrer"
                 >
                   Running Feathr on Cloud
@@ -116,7 +116,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#%EF%B8%8F-cloud-integrations-and-architecture"
+                  href="https://github.com/feathr-ai/feathr#%EF%B8%8F-cloud-integrations-and-architecture"
                   rel="noreferrer"
                 >
                   Cloud Integrations and Architecture on Cloud
@@ -126,7 +126,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#-slack-channel"
+                  href="https://github.com/feathr-ai/feathr#-slack-channel"
                   rel="noreferrer"
                 >
                   Slack Channel
@@ -137,7 +137,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#-community-guidelines"
+                  href="https://github.com/feathr-ai/feathr#-community-guidelines"
                   rel="noreferrer"
                 >
                   Community Guidelines
