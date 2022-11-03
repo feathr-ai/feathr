@@ -43,6 +43,7 @@ def test_feathr_materialize_to_offline():
         output_path = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
     else:
         output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
+    
     offline_sink = HdfsSink(output_path=output_path)
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[offline_sink],
@@ -430,7 +431,7 @@ def test_feathr_materialize_with_time_partition_pattern():
     client_consumer: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), output_path+'/df0/daily')
 
     backfill_time_tpp = BackfillTime(start=datetime(
-        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+        2020, 5, 21), end=datetime(2020, 5, 21), step=timedelta(days=1))
 
     now = datetime.now()
     if client_consumer.spark_runtime == 'databricks':
@@ -449,9 +450,65 @@ def test_feathr_materialize_with_time_partition_pattern():
 
     # download result and just assert the returned result is not empty
     # by default, it will write to a folder appended with date
-    res_df = get_result_df(client_consumer, "avro", output_path_tpp + "/df0/daily/2020/05/20")
+    res_df = get_result_df(client_consumer, "avro", output_path_tpp + "/df0/daily/2020/05/21")
     assert res_df.shape[0] > 0
     
+def test_feathr_materialize_with_time_partition_pattern_hourly():
+    """
+    Test FeathrClient() using HdfsSource with 'timePartitionPattern'.
+    """   
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    # os.chdir(test_workspace_dir)
+    # Create data source first
+    client_producer: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+
+    if client_producer.spark_runtime == 'databricks':
+        output_path = 'dbfs:/timePartitionPattern_hourly_sample'
+    else:
+        output_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_hourly_sample'
+    
+    offline_sink = HdfsSink(output_path=output_path)
+    settings = MaterializationSettings("nycTaxiTable",
+                sinks=[offline_sink],
+                feature_names=[
+                    "f_location_avg_fare", "f_location_max_fare"],
+                backfill_time=backfill_time,resolution='HOURLY')
+    client_producer.materialize_features(settings)
+    # assuming the job can successfully run; otherwise it will throw exception
+    client_producer.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+
+    res_df = get_result_df(client_producer, "avro", output_path + "/df0/daily/2020/05/20/00")
+    assert res_df.shape[0] > 0
+    
+    client_consumer: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), output_path+'/df0/daily', 'HOURLY')
+
+    backfill_time_tpp = BackfillTime(start=datetime(
+        2020, 5, 21), end=datetime(2020, 5, 21), step=timedelta(days=1))
+
+    now = datetime.now()
+    if client_consumer.spark_runtime == 'databricks':
+        output_path_tpp = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
+    else:
+        output_path_tpp = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
+    offline_sink_tpp = HdfsSink(output_path=output_path_tpp)
+    settings_tpp = MaterializationSettings("nycTaxiTable",
+                                       sinks=[offline_sink_tpp],
+                                       feature_names=[
+                                           "f_loc_avg_output", "f_loc_max_output"],
+                                       backfill_time=backfill_time_tpp,
+                                       resolution = 'HOURLY')
+    client_consumer.materialize_features(settings_tpp, allow_materialize_non_agg_feature=True)
+    # assuming the job can successfully run; otherwise it will throw exception
+    client_consumer.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+
+    # download result and just assert the returned result is not empty
+    # by default, it will write to a folder appended with date
+    res_df = get_result_df(client_consumer, "avro", output_path_tpp + "/df0/daily/2020/05/21/00")
+    assert res_df.shape[0] > 0
     
 if __name__ == "__main__":
     test_feathr_materialize_to_aerospike()

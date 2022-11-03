@@ -27,7 +27,11 @@ class MaterializationSettings:
         feature_names: list of feature names to be materialized
         backfill_time: time range and frequency for the materialization. Default to now().
     """
-    def __init__(self, name: str, sinks: List[Sink], feature_names: List[str], backfill_time: Optional[BackfillTime] = None):
+    def __init__(self, name: str, sinks: List[Sink], feature_names: List[str], backfill_time: Optional[BackfillTime] = None, resolution: str = "DAILY"):
+        if resolution not in ["DAILY", "HOURLY"]:
+            raise RuntimeError(
+                f'{resolution} is not supported. Only \'DAILY\' and \'HOURLY\' are currently supported.')
+        self.resolution = resolution
         self.name = name
         now = datetime.now()
         self.backfill_time = backfill_time if backfill_time else BackfillTime(start=now, end=now, step=timedelta(days=1))

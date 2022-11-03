@@ -9,7 +9,7 @@ def _to_materialization_config(settings: MaterializationSettings):
             name: {{ settings.name }}
             endTime: "{{ settings.backfill_time.end.strftime('%Y-%m-%d %H:%M:%S') }}"
             endTimeFormat: "yyyy-MM-dd HH:mm:ss"
-            resolution: DAILY
+            resolution: {{ settings.resolution }}
             {% if settings.has_hdfs_sink == True %}
             enableIncremental = true
             {% endif %}
