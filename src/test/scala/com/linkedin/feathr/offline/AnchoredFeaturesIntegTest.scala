@@ -484,16 +484,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
         |
         |derivations: {
         |   f_trip_time_distance: {
-        |       definition: "f_trip_distance * f_trip_time_duration"
-        |       type: NUMERIC
-        |   }
-        |   f_trip_time_distance_sql: {
-        |    key: [trip]
-        |     inputs: {
-        |       trip_distance: { key: [trip], feature: f_trip_distance }
-        |       trip_time_duration: { key: [trip], feature: f_trip_time_duration }
-        |     }
-        |     definition.sqlExpr: "trip_distance * trip_time_duration"
+        |     definition: "f_trip_distance * f_trip_time_duration"
         |     type: NUMERIC
         |   }
         |}
@@ -523,8 +514,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
          |featureList: [
          |  {
          |    key: DOLocationID
-         |    featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance,
-         |     f_trip_time_duration, f_is_long_trip_distance, f_day_of_week, f_trip_time_distance_sql]
+         |    featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week]
          |  }
          |]
       """.stripMargin
