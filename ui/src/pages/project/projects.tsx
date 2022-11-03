@@ -1,16 +1,21 @@
-import React from "react";
-import { Card, Typography } from "antd";
-import ProjectList from "../../components/projectList";
-
-const { Title } = Typography;
+import React, { useState } from "react";
+import { PageHeader } from "antd";
+import ProjectTable from "./components/ProjectTable";
+import SearchBar from "./components/SearchBar";
 
 const Projects = () => {
+  const [project, setProject] = useState<string>("");
+
+  const onSearch = ({ project }: { project: string }) => {
+    setProject(project);
+  };
+
   return (
     <div className="page">
-      <Card>
-        <Title level={3}>Projects</Title>
-        <ProjectList />
-      </Card>
+      <PageHeader title="Projects" ghost={false}>
+        <SearchBar onSearch={onSearch} />
+        <ProjectTable project={project} />
+      </PageHeader>
     </div>
   );
 };

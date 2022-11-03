@@ -1,6 +1,6 @@
 import React from "react";
 import { LogoutOutlined } from "@ant-design/icons";
-import { Menu } from "antd";
+import { Menu, MenuProps } from "antd";
 import { IPublicClientApplication } from "@azure/msal-browser";
 
 type Props = { instance: IPublicClientApplication };
@@ -9,32 +9,27 @@ const HeaderWidgetMenu = ({ instance }: Props) => {
     {
       key: "logout",
       icon: <LogoutOutlined />,
-      value: "Logout",
-      callback: () => {
-        instance.logoutRedirect().catch((e) => {
-          console.error(e);
-        });
-      },
+      label: "Logout",
     },
   ];
-  // @ts-ignore
-  const onClick = ({ key }) => {
-    const item = menuItems.find((i) => i.key === key);
-    if (item && item.callback) item.callback();
+
+  const logout = () => {
+    instance.logoutRedirect().catch((e) => {
+      console.error(e);
+    });
   };
-  return (
-    <Menu onClick={onClick} selectedKeys={[]}>
-      {menuItems.map((item) => {
-        const { key, icon, value } = item;
-        return (
-          <Menu.Item key={key}>
-            {icon}
-            <span>{value}</span>
-          </Menu.Item>
-        );
-      })}
-    </Menu>
-  );
+
+  const onClick: MenuProps["onClick"] = ({ key }) => {
+    switch (key) {
+      case "logout":
+        logout();
+        break;
+      default:
+        break;
+    }
+  };
+
+  return <Menu onClick={onClick} items={menuItems} />;
 };
 
 export default HeaderWidgetMenu;

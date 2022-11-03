@@ -1,218 +1,116 @@
-import React, { useEffect, useState } from "react";
-import { Alert, Button, Card, Col, Row, Space, Spin, Typography } from "antd";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Alert,
+  Button,
+  PageHeader,
+  Breadcrumb,
+  Space,
+  Card,
+  Spin,
+  Descriptions,
+} from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
-import { useNavigate, useParams } from "react-router-dom";
-import { QueryStatus, useQuery } from "react-query";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "react-query";
 import { AxiosError } from "axios";
-import { fetchFeature } from "../../api";
-import { Feature, InputFeature } from "../../models/model";
-import { FeatureLineage } from "../../models/model";
-import { fetchFeatureLineages } from "../../api";
-import { Elements } from "react-flow-renderer";
-import Graph from "../../components/graph/graph";
-import { getElements } from "../../components/graph/utils";
+import { fetchFeature, fetchFeatureLineages } from "@/api";
+import { Feature, InputFeature, FeatureLineage } from "@/models/model";
+import FlowGraph from "@/components/FlowGraph";
+import CardDescriptions from "@/components/CardDescriptions";
+import {
+  FeatureKeyMap,
+  TransformationMap,
+  TypeMap,
+} from "@/utils/attributesMapping";
 
-const { Title } = Typography;
-
-type FeatureKeyProps = { feature: Feature };
-const FeatureKey = ({ feature }: FeatureKeyProps) => {
-  const keys = feature.attributes.key;
-  return (
-    <>
-      {keys && keys.length > 0 && (
-        <Col span={24}>
-          <Card className="card">
-            <Title level={4}>Entity Key</Title>
-            <div className="feature-container">
-              <p>Full Name: {keys[0].fullName}</p>
-              <p>Key Column: {keys[0].keyColumn}</p>
-              <p>Description: {keys[0].description}</p>
-              <p>Key Column Alias: {keys[0].keyColumnAlias}</p>
-              <p>Key Column Type: {keys[0].keyColumnType}</p>
-            </div>
-          </Card>
-        </Col>
-      )}
-    </>
-  );
-};
-
-type FeatureTypeProps = { feature: Feature };
-const FeatureType = ({ feature }: FeatureTypeProps) => {
-  const type = feature.attributes.type;
-  return (
-    <>
-      {type && (
-        <Col span={24}>
-          <Card className="card">
-            <Title level={4}>Type</Title>
-            <div className="feature-container">
-              <p>Dimension Type: {type.dimensionType}</p>
-              <p>Tensor Category: {type.tensorCategory}</p>
-              <p>Type: {type.type}</p>
-              <p>Value Type: {type.valType}</p>
-            </div>
-          </Card>
-        </Col>
-      )}
-    </>
-  );
-};
-
-type FeatureTransformationProps = { feature: Feature };
-const FeatureTransformation = ({ feature }: FeatureTransformationProps) => {
-  const transformation = feature.attributes.transformation;
-  return (
-    <>
-      {transformation && (
-        <Col span={24}>
-          <Card className="card">
-            <Title level={4}>Transformation</Title>
-            <div className="feature-container">
-              {transformation.transformExpr && (
-                <p>Expression: {transformation.transformExpr}</p>
-              )}
-              {transformation.filter && <p>Filter: {transformation.filter}</p>}
-              {transformation.aggFunc && (
-                <p>Aggregation: {transformation.aggFunc}</p>
-              )}
-              {transformation.limit && <p>Limit: {transformation.limit}</p>}
-              {transformation.groupBy && (
-                <p>Group By: {transformation.groupBy}</p>
-              )}
-              {transformation.window && <p>Window: {transformation.window}</p>}
-              {transformation.defExpr && (
-                <p>Expression: {transformation.defExpr}</p>
-              )}
-            </div>
-          </Card>
-        </Col>
-      )}
-    </>
-  );
-};
+const contentStyle = { marginRight: 16 };
 
 type InputAnchorFeaturesProps = { project: string; feature: Feature };
-const InputAnchorFeatures = ({
-  project,
-  feature,
-}: InputAnchorFeaturesProps) => {
-  const navigate = useNavigate();
-  const inputAnchorFeatures = feature.attributes.inputAnchorFeatures;
-  return (
-    <>
-      {inputAnchorFeatures && inputAnchorFeatures.length > 0 && (
-        <Col span={24}>
-          <Card
-            style={{
-              marginTop: "15px",
-              marginRight: "15px",
-              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-              borderRadius: "8px",
-            }}
-          >
-            <Title level={4}>Input Anchor Features</Title>
-            {inputAnchorFeatures.map((input_feature) => (
-              <Button
-                type="link"
-                onClick={() => {
-                  navigate(
-                    `/projects/${project}/features/${input_feature.guid}`
-                  );
-                }}
-              >
-                {input_feature.uniqueAttributes.qualifiedName}
-              </Button>
-            ))}
-          </Card>
-        </Col>
-      )}
-    </>
-  );
+
+const InputAnchorFeatures = (props: InputAnchorFeaturesProps) => {
+  const { project, feature } = props;
+
+  const { inputAnchorFeatures } = feature.attributes;
+
+  return inputAnchorFeatures?.length > 0 ? (
+    <Card className="card" title="Input Anchor Features">
+      <Descriptions contentStyle={contentStyle}>
+        {inputAnchorFeatures.map((input_feature) => (
+          <Descriptions.Item key={input_feature.guid}>
+            <Link to={`/projects/${project}/features/${input_feature.guid}`}>
+              {input_feature.uniqueAttributes.qualifiedName}
+            </Link>
+          </Descriptions.Item>
+        ))}
+      </Descriptions>
+    </Card>
+  ) : null;
 };
 
 type InputDerivedFeaturesProps = { project: string; feature: Feature };
-const InputDerivedFeatures = ({
-  project,
-  feature,
-}: InputDerivedFeaturesProps) => {
-  const navigate = useNavigate();
-  const inputDerivedFeatures = feature.attributes.inputDerivedFeatures;
-  return (
-    <>
-      {inputDerivedFeatures && inputDerivedFeatures.length > 0 && (
-        <Col span={24}>
-          <Card
-            style={{
-              marginTop: "15px",
-              marginRight: "15px",
-              boxShadow: "5px 8px 15px 5px rgba(208, 216, 243, 0.6)",
-              borderRadius: "8px",
-            }}
-          >
-            <Title level={4}>Input Derived Features</Title>
-            {inputDerivedFeatures.map((input_feature: InputFeature) => (
-              <Button
-                type="link"
-                onClick={() => {
-                  navigate(
-                    `/projects/${project}/features/${input_feature.guid}`
-                  );
-                }}
-              >
-                {input_feature.uniqueAttributes.qualifiedName}
-              </Button>
-            ))}
-          </Card>
-        </Col>
-      )}
-    </>
-  );
+
+const InputDerivedFeatures = (props: InputDerivedFeaturesProps) => {
+  const { project, feature } = props;
+
+  const { inputDerivedFeatures } = feature.attributes;
+
+  return inputDerivedFeatures?.length ? (
+    <Card className="card" title="Input Derived Features">
+      <Descriptions contentStyle={contentStyle}>
+        {inputDerivedFeatures.map((input_feature: InputFeature) => (
+          <Descriptions.Item key={input_feature.guid}>
+            <Link to={`/projects/${project}/features/${input_feature.guid}`}>
+              {input_feature.uniqueAttributes.qualifiedName}
+            </Link>
+          </Descriptions.Item>
+        ))}
+      </Descriptions>
+    </Card>
+  ) : null;
 };
 
 const FeatureLineageGraph = () => {
-  const { featureId } = useParams() as Params;
+  const { project, featureId } = useParams() as Params;
   const [lineageData, setLineageData] = useState<FeatureLineage>({
-    guidEntityMap: null,
-    relations: null,
+    guidEntityMap: {},
+    relations: [],
   });
-  const [elements, SetElements] = useState<Elements>([]);
+
   const [loading, setLoading] = useState<boolean>(false);
+
+  const mountedRef = useRef<Boolean>(true);
 
   useEffect(() => {
     const fetchLineageData = async () => {
       setLoading(true);
       const data = await fetchFeatureLineages(featureId);
-      setLineageData(data);
-      setLoading(false);
+      if (mountedRef.current) {
+        setLineageData(data);
+        setLoading(false);
+      }
     };
 
     fetchLineageData();
   }, [featureId]);
 
-  // Generate graph data on client side, invoked after graphData or featureType is changed
   useEffect(() => {
-    const generateGraphData = async () => {
-      SetElements(getElements(lineageData, "all_nodes")!);
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
     };
+  }, []);
 
-    generateGraphData();
-  }, [lineageData]);
-
-  return (
-    <>
-      {loading ? (
-        <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
-      ) : (
-        <Col span={24}>
-          <Card className="card">
-            <Title level={4}>Lineage</Title>
-            <Graph data={elements} nodeId={featureId} />
-          </Card>
-        </Col>
-      )}
-    </>
-  );
+  return !loading ? (
+    <Card className="card" title="Lineage">
+      <FlowGraph
+        height={500}
+        loading={loading}
+        data={lineageData}
+        nodeId={featureId}
+        project={project}
+      />
+    </Card>
+  ) : null;
 };
 
 type Params = {
@@ -222,87 +120,77 @@ type Params = {
 const FeatureDetails = () => {
   const { project, featureId } = useParams() as Params;
   const navigate = useNavigate();
-  const loadingIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
-  const { status, error, data } = useQuery<Feature, AxiosError>(
+
+  const {
+    isLoading,
+    error,
+    data = { attributes: {} } as Feature,
+  } = useQuery<Feature, AxiosError>(
     ["featureId", featureId],
-    () => fetchFeature(project, featureId)
-  );
-
-  const openLineageWindow = () => {
-    const lineageUrl = `/projects/${project}/lineage`;
-    navigate(lineageUrl);
-  };
-
-  const render = (status: QueryStatus): JSX.Element => {
-    switch (status) {
-      case "error":
-        return (
-          <Card>
-            <Alert
-              message="Error"
-              description={error?.message}
-              type="error"
-              showIcon
-            />
-          </Card>
-        );
-      case "idle":
-        return (
-          <Card>
-            <Spin indicator={loadingIcon} />
-          </Card>
-        );
-      case "loading":
-        return (
-          <Card>
-            <Spin indicator={loadingIcon} />
-          </Card>
-        );
-      case "success":
-        if (data === undefined) {
-          return (
-            <Card>
-              <Alert
-                message="Error"
-                description="Data does not exist..."
-                type="error"
-                showIcon
-              />
-            </Card>
-          );
-        } else {
-          return (
-            <>
-              <Button type="link" onClick={() => navigate(-1)}>
-                feature list {">"}
-              </Button>
-              <Card>
-                <Title level={3}>{data.attributes.name}</Title>
-                <div>
-                  <Space>
-                    <Button type="primary" onClick={() => openLineageWindow()}>
-                      View Lineage
-                    </Button>
-                  </Space>
-                </div>
-                <div>
-                  <Row>
-                    <InputAnchorFeatures project={project} feature={data} />
-                    <InputDerivedFeatures project={project} feature={data} />
-                    <FeatureTransformation feature={data} />
-                    <FeatureKey feature={data} />
-                    <FeatureType feature={data} />
-                    <FeatureLineageGraph />
-                  </Row>
-                </div>
-              </Card>
-            </>
-          );
-        }
+    () => fetchFeature(project, featureId),
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
     }
-  };
+  );
+  const { attributes } = data;
+  const { transformation, key, type, name } = attributes;
+  const FeatureKey = key?.[0];
 
-  return <div className="page">{render(status)}</div>;
+  return (
+    <div className="page">
+      <PageHeader
+        ghost={false}
+        title={name}
+        breadcrumb={
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <Link to={`/features?project=${project}`}>Features</Link>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>Feature Details</Breadcrumb.Item>
+          </Breadcrumb>
+        }
+        extra={[
+          <Button
+            key="1"
+            type="primary"
+            onClick={() => {
+              navigate(`/projects/${project}/lineage`);
+            }}
+          >
+            View Lineage
+          </Button>,
+        ]}
+      >
+        <Spin
+          spinning={isLoading}
+          indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+        >
+          <Space className="display-flex" direction="vertical" size="middle">
+            {error && <Alert message={error} type="error" showIcon />}
+            <InputAnchorFeatures project={project} feature={data} />
+            <InputDerivedFeatures project={project} feature={data} />
+            <CardDescriptions
+              title="Transformation"
+              mapping={TransformationMap}
+              descriptions={transformation}
+            />
+            <CardDescriptions
+              title="Entity Key"
+              mapping={FeatureKeyMap}
+              descriptions={FeatureKey}
+            />
+            <CardDescriptions
+              title="Type"
+              mapping={TypeMap}
+              descriptions={type}
+            />
+            <FeatureLineageGraph />
+          </Space>
+        </Spin>
+      </PageHeader>
+    </div>
+  );
 };
 
 export default FeatureDetails;

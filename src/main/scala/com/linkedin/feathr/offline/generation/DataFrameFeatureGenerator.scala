@@ -5,7 +5,7 @@ import com.linkedin.feathr.common.{Header, JoiningFeatureParams, TaggedFeatureNa
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource.{getDefaultValues, getFeatureTypes}
 import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
-import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinDerivationStrategy, SparkUdfDerivation}
+import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinDerivationStrategy, SparkUdfDerivation, SqlDerivationSpark}
 import com.linkedin.feathr.offline.derived.{DerivedFeature, DerivedFeatureEvaluator}
 import com.linkedin.feathr.offline.evaluator.DerivedFeatureGenStage
 import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
@@ -133,5 +133,7 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
               ErrorLabel.FEATHR_ERROR,
               s"Feature Generation does not support Sequential Join features : ${derivedFeature.producedFeatureNames.head}")
           }
-        }), mvelContext)
+        },
+        new SqlDerivationSpark()
+      ), mvelContext)
 }
