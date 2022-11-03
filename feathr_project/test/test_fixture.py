@@ -380,15 +380,20 @@ def get_online_test_table_name(table_name: str):
     print("The online Redis table is", res_table)
     return res_table
 
-def time_partition_pattern_test_setup(config_path: str, data_source_path: str):
+def time_partition_pattern_test_setup(config_path: str):
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
     os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
     os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
     client = FeathrClient(config_path=config_path)
-
-    batch_source = HdfsSource(name="testTimePartitionSource",
-                          path=data_source_path,
+    if client.spark_runtime == 'databricks':
+        batch_source = HdfsSource(name="testTimePartitionSource",
+                          path="dbfs:/sample_data/timePartitionPattern/df0/daily",
+                          time_partition_pattern="yyyy/MM/dd"
+                          )
+    else:
+        batch_source = HdfsSource(name="testTimePartitionSource",
+                          path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/timePartitionPattern/df0/daily",
                           time_partition_pattern="yyyy/MM/dd"
                           )
     key = TypedKey(key_column="key0",
