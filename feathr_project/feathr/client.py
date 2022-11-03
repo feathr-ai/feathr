@@ -798,14 +798,16 @@ class FeathrClient(object):
         sf_url = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'url')
         sf_user = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'user')
         sf_role = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'role')
+        sf_warehouse = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'warehouse')
         sf_password = self.envutils.get_environment_variable('JDBC_SF_PASSWORD')
         # HOCON format will be parsed by the Feathr job
         config_str = """
             JDBC_SF_URL: {JDBC_SF_URL}
             JDBC_SF_USER: {JDBC_SF_USER}
             JDBC_SF_ROLE: {JDBC_SF_ROLE}
+            JDBC_SF_WAREHOUSE: {JDBC_SF_WAREHOUSE}
             JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
-            """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
+            """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role, JDBC_SF_WAREHOUSE=sf_warehouse)
         return self._reshape_config_str(config_str)
 
     def _get_kafka_config_str(self):

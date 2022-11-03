@@ -711,7 +711,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): DataSource = {
     val codec = p.getCodec
     val node = codec.readTree[TreeNode](p).asInstanceOf[ObjectNode]
-    println(s"NODE: ${node}")
+    println(s"NODE: ${node.toPrettyString}")
     println(s"NODE TYPE: ${Option(node.get("type"))}")
     // for now only HDFS can be set, in the future, here may allow more options
     // also to form a unified interface with online
@@ -754,8 +754,14 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
                                 s"Illegal setting for Kafka source ${node.toPrettyString()}, expected map")
         }
       case "PASSTHROUGH" => SimplePath("PASSTHROUGH")
+      case "SNOWFLAKE" =>
+        Option(node.get("config")) match {
+          case Some(field: ObjectNode) =>
+            LocationUtils.getMapper().treeToValue(field, classOf[DataLocation])
+        }
       case _ => Option(node.get("location")) match {
         case Some(field: ObjectNode) =>
+          println(s"FIELD: ${field}")
           LocationUtils.getMapper().treeToValue(field, classOf[DataLocation])
         case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
           s"Data location is not defined for data source ${node.toPrettyString()}")

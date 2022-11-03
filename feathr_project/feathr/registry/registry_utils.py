@@ -44,9 +44,14 @@ def source_to_def(v: Source) -> dict:
     elif isinstance(v, SnowflakeSource):
         ret = {
             "name": v.name,
-            "type": urlparse(v.path).scheme,
-            "path": v.path,
+            "type": "SNOWFLAKE",
+            "database": v.database,
+            "schema": v.schema
         }
+        if hasattr(v, "dbtable") and v.dbtable:
+            ret["dbtable"] = v.dbtable
+        if hasattr(v, "query") and v.query:
+            ret["query"] = v.query
     elif isinstance(v, JdbcSource):
         ret = {
             "name": v.name,
