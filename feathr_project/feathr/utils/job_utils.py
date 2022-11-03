@@ -1,5 +1,5 @@
 from pathlib import Path
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 from typing import Union
 
 from loguru import logger
@@ -74,7 +74,7 @@ def get_result_df(
             Default to `avro` if not specified.
         res_url: Result URL to download files from. Note that this will not block the job so you need to make sure
             the job is finished and the result URL contains actual data.
-        local_cache_path (optional): Specify the absolute download path. if the user does not provide this,
+        local_cache_path (optional): Specify the absolute download directory. if the user does not provide this,
             the function will create a temporary directory.
         spark (optional): Spark session. If provided, the function returns spark Dataframe.
             Otherwise, it returns pd.DataFrame.
@@ -112,7 +112,7 @@ def get_result_df(
                 )
             local_cache_path = res_url
         elif local_cache_path is None:  # Download the result from dbfs to local
-            local_cache_path = NamedTemporaryFile(delete=False).name
+            local_cache_path = TemporaryDirectory().name
 
     else:
         logger.warning("This utility function currently supports local spark and databricks. You may encounter unexpected results on other platforms.")

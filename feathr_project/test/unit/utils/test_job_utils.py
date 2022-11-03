@@ -1,7 +1,6 @@
 # TODO with, without optional args
 # TODO test with no data files exception and unsupported format exception
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Type
 from unittest.mock import MagicMock
 
@@ -73,9 +72,9 @@ def test__get_result_df__with_local_cache_path(
     mocker.patch("feathr.utils.job_utils.is_databricks", return_value=is_databricks)
 
     # Mock temporary file module
-    mocked_named_temporary_file = MagicMock()
-    mocked_named_temporary_file.name = expected_local_cache_path
-    mocker.patch("feathr.utils.job_utils.NamedTemporaryFile", return_value=mocked_named_temporary_file)
+    mocked_named_temporary_dir = MagicMock()
+    mocked_named_temporary_dir.name = expected_local_cache_path
+    mocker.patch("feathr.utils.job_utils.TemporaryDirectory", return_value=mocked_named_temporary_dir)
 
     data_format = "csv"
     get_result_df(client, data_format=data_format, res_url=res_url, local_cache_path=local_cache_path)
