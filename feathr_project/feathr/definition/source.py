@@ -166,8 +166,8 @@ class SnowflakeSource(Source):
                     {% if source.query is defined %}
                     query: "{{source.query}}"
                     {% endif %}
-                    database: "{source.database}"
-                    schema: "{source.schema}"
+                    database: "{{source.database}}"
+                    schema: "{{source.schema}}"
                 }
                 {% if source.event_timestamp_column %}
                     timeWindowParameters: {

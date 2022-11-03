@@ -14,7 +14,7 @@ import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnch
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
 import com.linkedin.feathr.offline.client.plugins.{AnchorExtractorAdaptor, FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor, SimpleAnchorExtractorSparkAdaptor, SourceKeyExtractorAdaptor}
-import com.linkedin.feathr.offline.config.location.{DataLocation, KafkaEndpoint, LocationUtils, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, KafkaEndpoint, LocationUtils, SimplePath, Snowflake}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWindowParams}
@@ -720,7 +720,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case _ => "HDFS"
     }
 
-    if (dataSourceType != "HDFS" && dataSourceType != "PASSTHROUGH" && dataSourceType != "KAFKA") {
+    if (dataSourceType != "HDFS" && dataSourceType != "PASSTHROUGH" && dataSourceType != "KAFKA" && dataSourceType != "SNOWFLAKE") {
       throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, s"Unknown source type parameter $dataSourceType is used")
     }
 
@@ -757,7 +757,12 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case "SNOWFLAKE" =>
         Option(node.get("config")) match {
           case Some(field: ObjectNode) =>
-            LocationUtils.getMapper().treeToValue(field, classOf[DataLocation])
+            println(s"FIELD: ${field}")
+            LocationUtils.getMapper().treeToValue(field, classOf[Snowflake])
+          case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+            s"Snowflake config is not defined for Snowflake source ${node.toPrettyString()}")
+          case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+            s"Illegal setting for Snowflake source ${node.toPrettyString()}, expected map")
         }
       case _ => Option(node.get("location")) match {
         case Some(field: ObjectNode) =>
@@ -778,7 +783,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
                                 s"Illegal setting for timeWindowParameters ${node.toPrettyString()}, expected map")
     }
-
+    println(s"TIME WINDOW PARAMETER NODE: ${timeWindowParameterNode}")
     val timeWindowParameters = timeWindowParameterNode match {
       case Some(node: ObjectNode) =>
         if (node.has("timestamp")) { // legacy configurations
@@ -800,7 +805,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
         }
       case None => null
     }
-
+    println(s"TIME WINDOW PARAMS: ${timeWindowParameters}")
     if (path.isInstanceOf[KafkaEndpoint]) {
       DataSource(path, sourceFormatType)
     } else {

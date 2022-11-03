@@ -22,13 +22,14 @@ class SnowflakeDataLoader(ss: SparkSession) {
   }
 
   def extractSFOptions(ss: SparkSession, url: String): Map[String, String] = {
-    val authParams = getSfParams(ss)
+    var authParams = getSfParams(ss)
 
     val uri = new URI(url)
     val charset = Charset.forName("UTF-8")
     val params = URLEncodedUtils.parse(uri.getQuery, charset).asScala
+    println(s"PARAMS: ${params}")
     params.foreach(x => {
-      authParams.updated(x.getName, x.getValue)
+      authParams = authParams.updated(x.getName, x.getValue)
     })
     authParams
   }
@@ -39,7 +40,7 @@ class SnowflakeDataLoader(ss: SparkSession) {
       "sfUser" -> ss.conf.get("sfUser"),
       "sfRole" -> ss.conf.get("sfRole"),
       "sfWarehouse" -> ss.conf.get("sfWarehouse"),
-      "sfWarehouse" -> ss.conf.get("sfPassword"),
+      "sfPassword" -> ss.conf.get("sfPassword"),
     )
   }
 
