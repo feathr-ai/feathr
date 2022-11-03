@@ -20,7 +20,7 @@ from feathr import TypedKey
 from feathr import ValueType
 from feathr.utils.job_utils import get_result_df
 from feathrcli.cli import init
-from test_fixture import (basic_test_setup, get_online_test_table_name, time_partition_pattern_test_setup)
+from test_fixture import (basic_test_setup, get_online_test_table_name)
 from test_utils.constants import Constants
 
 # make sure you have run the upload feature script before running these tests
@@ -57,40 +57,6 @@ def test_feathr_materialize_to_offline():
     # by default, it will write to a folder appended with date
     res_df = get_result_df(client, "avro", output_path + "/df0/daily/2020/05/20")
     assert res_df.shape[0] > 0
-
-def test_feathr_materialize_with_time_partition_pattern():
-    """
-    Test FeathrClient() using HdfsSource with 'timePartitionPattern'.
-    """
-    test_workspace_dir = Path(
-        __file__).parent.resolve() / "test_user_workspace"
-    # os.chdir(test_workspace_dir)
-
-    client: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
-
-    backfill_time = BackfillTime(start=datetime(
-        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-
-    now = datetime.now()
-    if client.spark_runtime == 'databricks':
-        output_path = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
-    else:
-        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
-    offline_sink = HdfsSink(output_path=output_path)
-    settings = MaterializationSettings("nycTaxiTable",
-                                       sinks=[offline_sink],
-                                       feature_names=[
-                                           "f_location_avg_fare", "f_location_max_fare"],
-                                       backfill_time=backfill_time)
-    client.materialize_features(settings)
-    # assuming the job can successfully run; otherwise it will throw exception
-    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
-
-    # download result and just assert the returned result is not empty
-    # by default, it will write to a folder appended with date
-    res_df = get_result_df(client, "avro", output_path + "/df0/daily/2020/05/20")
-    assert res_df.shape[0] > 0
-
 
 def test_feathr_online_store_agg_features():
     """
@@ -217,7 +183,7 @@ def test_feathr_get_offline_features():
                                full_name="nyc_taxi.location_id")
 
         feature_query = FeatureQuery(
-            feature_list=["f_location_avg_fare"], key=location_id)
+            feature_list=["f_location_avg_fare", "f_trip_time_rounded"], key=location_id)
         settings = ObservationSettings(
             observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
             event_timestamp_column="lpep_dropoff_datetime",
@@ -343,9 +309,9 @@ def test_feathr_materialize_to_aerospike():
     # os.chdir(test_workspace_dir)
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
-    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
-    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
-    
+    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)])
+    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)])
+
     client = FeathrClient(config_path="feathr_config.yaml")
     batch_source = HdfsSource(name="nycTaxiBatchSource",
                               path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",

@@ -1,3 +1,4 @@
+import { Feature } from "@/models/model";
 import { Configuration, PublicClientApplication } from "@azure/msal-browser";
 
 export const getMsalConfig = () => {
@@ -16,8 +17,6 @@ export const getMsalConfig = () => {
       redirectUri: window.location.origin,
     },
   };
-  console.log("clientId = ", clientId);
-  console.log("authority = ", authority);
 
   return new PublicClientApplication(msalConfig);
 };
@@ -33,6 +32,19 @@ export const enum FeatureType {
 export const isFeature = (featureType: string) => {
   return (
     featureType === FeatureType.AnchorFeature ||
-    featureType === FeatureType.DerivedFeature
+    featureType === FeatureType.DerivedFeature ||
+    featureType === FeatureType.Source
   );
+};
+
+export const getFeatureDetailUrl = (project: string, feature: Feature) => {
+  switch (feature.typeName) {
+    case FeatureType.Source:
+      return `/projects/${project}/dataSources/${feature.guid}`;
+    case FeatureType.AnchorFeature:
+    case FeatureType.DerivedFeature:
+      return `/projects/${project}/features/${feature.guid}`;
+    default:
+      return;
+  }
 };

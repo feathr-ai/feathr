@@ -4,8 +4,6 @@
 }
 
 .card {
-  margin-top: 15px;
-  margin-right: 15px;
   box-shadow: 5px 8px 15px 5px rgba(208, 216, 243, 0.6);
   border-radius: 8px;
 }
@@ -60,4 +58,8 @@
 
 .dataSource-container {
   column-count: 1;
+}
+
+.display-flex {
+  display: "flex";
 }

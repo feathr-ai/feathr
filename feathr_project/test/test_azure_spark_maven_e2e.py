@@ -45,7 +45,7 @@ def test_feathr_online_store_agg_features():
     if client.spark_runtime == 'databricks':
         output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".avro"])
     else:
-        output_path = ''.join(['abfss://xchfeathrtest4fs@xchfeathrtest4sto.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
 
 
     client.get_offline_features(observation_settings=settings,
