@@ -52,7 +52,7 @@ const showManagement = enableRBAC
   ? enableRBAC
   : process.env.REACT_APP_ENABLE_RBAC;
 
-if (showManagement !== "true") {
+if (showManagement === "true") {
   menuItems.push({
     key: "management",
     icon: <ControlOutlined style={{ fontSize: "20px", color: "#6495ed" }} />,
