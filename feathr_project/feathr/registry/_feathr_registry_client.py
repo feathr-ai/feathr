@@ -153,6 +153,8 @@ class _FeatureRegistry(FeathrRegistry):
         return self.project_id
 
     def _create_source(self, s: Source) -> UUID:
+        print(f"PROJECT ID: {self.project_id}")
+        print(f"S: {s}")
         r = self._post(
             f"/projects/{self.project_id}/datasources", source_to_def(s))
         id = UUID(r["guid"])
