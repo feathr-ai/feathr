@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict
 import json
 import logging
 import requests
@@ -12,7 +12,7 @@ def check(r):
     return r
 
 
-class _FeatureRegistryHack(_FeatureRegistry):
+class _FeatureRegistryAWS(_FeatureRegistry):
     def __init__(self, project_name: str, endpoint: str, project_tags: Dict[str, str] = None, credential=None,
                  config_path=None):
         self.project_name = project_name

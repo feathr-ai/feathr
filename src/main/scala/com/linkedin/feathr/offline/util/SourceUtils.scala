@@ -15,7 +15,7 @@ import com.linkedin.feathr.offline.source.SourceFormatType
 import com.linkedin.feathr.offline.source.SourceFormatType.SourceFormatType
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
+import com.linkedin.feathr.offline.source.dataloader.jdbc.{JdbcUtils, SnowflakeUtils}
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer, TimeBasedHdfsPathGenerator}
 import com.linkedin.feathr.offline.util.AclCheckUtils.getLatestPath
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
@@ -647,6 +647,9 @@ private[offline] object SourceUtils {
       }
       case FileFormat.JDBC => {
         JdbcUtils.loadDataFrame(ss, inputData.inputPath)
+      }
+      case FileFormat.SNOWFLAKE => {
+        SnowflakeUtils.loadDataFrame(ss, inputData.inputPath)
       }
       case FileFormat.CSV => {
         ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(inputData.inputPath)

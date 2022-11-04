@@ -236,9 +236,9 @@ class FeathrClient(object):
         if dbtable is None and query is None:
             raise RuntimeError("One of dbtable or query must be specified..")
         if dbtable:
-            return f"snowflake://snowflake_account/?sfDatabase={database}&fSchema={schema}&dbtable={dbtable}"
+            return f"snowflake://snowflake_account/?sfDatabase={database}&sfSchema={schema}&dbtable={dbtable}"
         else:
-            return f"snowflake://snowflake_account/?sfDatabase={database}&fSchema={schema}&query={query}"
+            return f"snowflake://snowflake_account/?sfDatabase={database}&sfSchema={schema}&query={query}"
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features under the given project.
