@@ -14,7 +14,6 @@ object SnowflakeUtils {
   def loadDataFrame(ss: SparkSession, url: String): DataFrame = {
     val snowflakeLoader = new SnowflakeDataLoader(ss)
     val snowflakeOptions = snowflakeLoader.extractSFOptions(ss, url)
-    println(s"SNOWFLAKE OPTIONS: ${snowflakeOptions}")
     snowflakeLoader.loadDataFrame(url, snowflakeOptions)
   }
 }
