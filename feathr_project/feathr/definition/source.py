@@ -172,7 +172,7 @@ class SnowflakeSource(Source):
         """
         parse_result = urlparse(url)
         parsed_queries = parse_qs(parse_result.query)
-        updated_dict = {key: d[key][0] for key in parsed_queries}
+        updated_dict = {key: parsed_queries[key][0] for key in parsed_queries}
         return updated_dict
     
     def to_feature_config(self) -> str:
