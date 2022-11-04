@@ -1,10 +1,12 @@
 import os
+import traceback
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from registry import *
-from registry.db_registry import DbRegistry
+from registry.db_registry import DbRegistry, ConflictError
 from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
 
 rp = "/"
@@ -28,11 +30,57 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"],
                    )
 
+def exc_to_content(e: Exception) -> dict:
+    content={"message": str(e)}
+    if os.environ.get("REGISTRY_DEBUGGING"):
+        content["traceback"] = "".join(traceback.TracebackException.from_exception(e).format())
+    return content
+
+@app.exception_handler(ConflictError)
+async def conflict_error_handler(_, exc: ConflictError):
+    return JSONResponse(
+        status_code=409,
+        content=exc_to_content(exc),
+    )
+
+
+@app.exception_handler(ValueError)
+async def value_error_handler(_, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content=exc_to_content(exc),
+    )
+
+@app.exception_handler(TypeError)
+async def type_error_handler(_, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content=exc_to_content(exc),
+    )
+
+
+@app.exception_handler(KeyError)
+async def key_error_handler(_, exc: KeyError):
+    return JSONResponse(
+        status_code=404,
+        content=exc_to_content(exc),
+    )
+
+@app.exception_handler(IndexError)
+async def index_error_handler(_, exc: IndexError):
+    return JSONResponse(
+        status_code=404,
+        content=exc_to_content(exc),
+    )
+
 
 @router.get("/projects")
 def get_projects() -> list[str]:
     return registry.get_projects()
 
+@router.get("/projects-ids")
+def get_projects_ids() -> dict:
+    return registry.get_projects_ids()
 
 @router.get("/projects/{project}")
 def get_projects(project: str) -> dict:
@@ -47,6 +95,17 @@ def get_project_datasources(project: str) -> list:
     return list([e.to_dict() for e in sources])
 
 
+@router.get("/projects/{project}/datasources/{datasource}")
+def get_datasource(project: str, datasource: str) -> dict:
+    p = registry.get_entity(project)
+    for s in p.attributes.sources:
+        if str(s.id) == datasource:
+            return s
+    # If datasource is not found, raise 404 error
+    raise HTTPException(
+        status_code=404, detail=f"Data Source {datasource} not found")
+
+
 @router.get("/projects/{project}/features")
 def get_project_features(project: str, keyword: Optional[str] = None, page: Optional[int] = None, limit: Optional[int] = None) -> list:
     if keyword:
@@ -54,7 +113,7 @@ def get_project_features(project: str, keyword: Optional[str] = None, page: Opti
         size = None
         if page is not None and limit is not None:
             start = (page - 1) * limit
-            size = limit 
+            size = limit
         efs = registry.search_entity(
             keyword, [EntityType.AnchorFeature, EntityType.DerivedFeature], project=project, start=start, size=size)
         feature_ids = [ef.id for ef in efs]

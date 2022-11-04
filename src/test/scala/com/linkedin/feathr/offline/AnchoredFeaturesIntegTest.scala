@@ -5,8 +5,6 @@ import com.linkedin.feathr.common.exception.FeathrConfigException
 import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
-import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext
-import com.linkedin.feathr.offline.plugins.{AlienFeatureValue, AlienFeatureValueTypeAdaptor}
 import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.spark.sql.Row
@@ -59,6 +57,16 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       |       def: "c"
       |       type: "DENSE_VECTOR"
       |       default: [7,8,9]
+      |      }
+      |      ee2: {
+      |       def: "c"
+      |       type: {
+      |           type: TENSOR
+      |           tensorCategory: DENSE
+      |           dimensionType: [INT]
+      |           valType: FLOAT
+      |           }
+      |       default: []
       |      }
       |      ff: {
       |       def: "c"
@@ -157,7 +165,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
    */
   @Test
   def testSingleKeyJoinWithDifferentFeatureTypes(): Unit = {
-    val selectedColumns = Seq("x", "aa", "bb", "cc", "dd", "ee", "ff", "multiply_a_b", "categorical_b") // , "z")
+    val selectedColumns = Seq("x", "aa", "bb", "cc", "dd", "ee", "ee2", "ff", "multiply_a_b", "categorical_b") // , "z")
     val featureJoinConf =
       s"""
          |
@@ -188,6 +196,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
             null,
             // ee
             mutable.WrappedArray.make(Array(7.0f, 8.0f, 9.0f)),
+            // ee2
+            mutable.WrappedArray.empty,
             // ff
             mutable.WrappedArray.make(Array(6.0f, 7.0f)),
             // multiply_a_b
@@ -208,6 +218,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
             // dd
             mutable.WrappedArray.make(Array(1.0f, 2.0f, 3.0f)),
             // ee
+            mutable.WrappedArray.make(Array(1.0f, 2.0f, 3.0f)),
+            // ee2
             mutable.WrappedArray.make(Array(1.0f, 2.0f, 3.0f)),
             // ff
             mutable.WrappedArray.make(Array(1.0f, 2.0f, 3.0f)),
@@ -230,6 +242,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
             mutable.WrappedArray.make(Array(4.0f, 5.0f, 6.0f)),
             // ee
             mutable.WrappedArray.make(Array(4.0f, 5.0f, 6.0f)),
+            // ee2
+            mutable.WrappedArray.make(Array(4.0f, 5.0f, 6.0f)),
             // ff
             mutable.WrappedArray.make(Array(4.0f, 5.0f, 6.0f)),
             // multiply_a_b
@@ -248,6 +262,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           StructField("cc", FloatType, true),
           StructField("dd", ArrayType(FloatType, true), true),
           StructField("ee", ArrayType(FloatType, false), true),
+          StructField("ee2", ArrayType(FloatType, false), true),
           StructField("ff", ArrayType(FloatType, false), true),
           StructField(
             "multiply_a_b",
@@ -469,7 +484,16 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
         |
         |derivations: {
         |   f_trip_time_distance: {
-        |     definition: "f_trip_distance * f_trip_time_duration"
+        |       definition: "f_trip_distance * f_trip_time_duration"
+        |       type: NUMERIC
+        |   }
+        |   f_trip_time_distance_sql: {
+        |    key: [trip]
+        |     inputs: {
+        |       trip_distance: { key: [trip], feature: f_trip_distance }
+        |       trip_time_duration: { key: [trip], feature: f_trip_time_duration }
+        |     }
+        |     definition.sqlExpr: "trip_distance * trip_time_duration"
         |     type: NUMERIC
         |   }
         |}
@@ -499,7 +523,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
          |featureList: [
          |  {
          |    key: DOLocationID
-         |    featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance, f_trip_time_duration, f_is_long_trip_distance, f_day_of_week]
+         |    featureList: [f_location_avg_fare, f_trip_time_distance, f_trip_distance,
+         |     f_trip_time_duration, f_is_long_trip_distance, f_day_of_week, f_trip_time_distance_sql]
          |  }
          |]
       """.stripMargin

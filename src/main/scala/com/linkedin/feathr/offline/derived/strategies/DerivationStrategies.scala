@@ -1,8 +1,9 @@
 package com.linkedin.feathr.offline.derived.strategies
 
 import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureDerivationFunctionBase}
-import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
 import com.linkedin.feathr.offline.derived.DerivedFeature
+import com.linkedin.feathr.offline.derived.functions.{SQLFeatureDerivationFunction, SeqJoinDerivationFunction}
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.sparkcommon.FeatureDerivationFunctionSpark
 import org.apache.spark.sql.DataFrame
 
@@ -12,7 +13,6 @@ import org.apache.spark.sql.DataFrame
  * A derivation strategy encapsulates the execution of derivations.
  */
 private[offline] trait DerivationStrategy[T <: FeatureDerivationFunctionBase] {
-
   /**
    * Apply the derivation strategy.
    * @param keyTags               keyTags for the derived feature.
@@ -22,7 +22,7 @@ private[offline] trait DerivationStrategy[T <: FeatureDerivationFunctionBase] {
    * @param derivationFunction    Derivation function to evaluate the derived feature
    * @return output DataFrame with derived feature.
    */
-  def apply(keyTags: Seq[Int], keyTagList: Seq[String], df: DataFrame, derivedFeature: DerivedFeature, derivationFunction: T): DataFrame
+  def apply(keyTags: Seq[Int], keyTagList: Seq[String], df: DataFrame, derivedFeature: DerivedFeature, derivationFunction: T, mvelContext: Option[FeathrExpressionExecutionContext]): DataFrame
 }
 
 /**
@@ -42,9 +42,16 @@ private[offline] trait RowBasedDerivationStrategy extends DerivationStrategy[Fea
 private[offline] trait SequentialJoinDerivationStrategy extends DerivationStrategy[SeqJoinDerivationFunction]
 
 /**
+ * Implementation should define how a SQL-expression based derivation is evaluated.
+ */
+private[offline] trait SqlDerivationSparkStrategy extends DerivationStrategy[SQLFeatureDerivationFunction]
+
+/**
  * This case class holds the implementations of supported strategies.
  */
 private[offline] case class DerivationStrategies(
     customDerivationSparkStrategy: SparkUdfDerivationStrategy,
     rowBasedDerivationStrategy: RowBasedDerivationStrategy,
-    sequentialJoinDerivationStrategy: SequentialJoinDerivationStrategy)
+    sequentialJoinDerivationStrategy: SequentialJoinDerivationStrategy,
+    sqlDerivationSparkStrategy: SqlDerivationSparkStrategy) {
+}

@@ -3,6 +3,7 @@ package com.linkedin.feathr.offline.derived.functions
 import com.linkedin.feathr.common
 import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig}
 import com.linkedin.feathr.offline.FeatureValue
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.mvel.{FeatureVariableResolverFactory, MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
 import org.apache.log4j.Logger
@@ -19,6 +20,7 @@ private[offline] class SimpleMvelDerivationFunction(expression: String, featureN
     extends FeatureDerivationFunction {
   @transient private lazy val log = Logger.getLogger(getClass)
 
+  var mvelContext: Option[FeathrExpressionExecutionContext] = None
   // strictMode should only be modified by FeathrConfigLoader when loading config, default value to be false
   var strictMode = false
 
@@ -51,7 +53,7 @@ private[offline] class SimpleMvelDerivationFunction(expression: String, featureN
       }
     }
 
-    MvelUtils.executeExpression(compiledExpression, null, variableResolverFactory) match {
+    MvelUtils.executeExpression(compiledExpression, null, variableResolverFactory, featureName, mvelContext) match {
       case Some(value) =>
         val featureTypeConfig = featureTypeConfigOpt.getOrElse(FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
         val featureValue = FeatureValue.fromTypeConfig(value, featureTypeConfig)

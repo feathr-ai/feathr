@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Documentation Guideline
+title: Feathr Core Code Structure
 parent: Developer Guides
 ---
 

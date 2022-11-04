@@ -15,6 +15,13 @@ class Registry(ABC):
         pass
 
     @abstractmethod
+    def get_projects_ids(self) -> dict:
+        """
+        Returns the ids to names mapping of all projects
+        """
+        pass
+
+    @abstractmethod
     def get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
         """
         Get one entity by its id or qualified name

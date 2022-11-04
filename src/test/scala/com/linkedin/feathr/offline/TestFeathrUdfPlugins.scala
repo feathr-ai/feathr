@@ -4,7 +4,7 @@ import com.linkedin.feathr.common.FeatureTypes
 import com.linkedin.feathr.offline.anchored.keyExtractor.AlienSourceKeyExtractorAdaptor
 import com.linkedin.feathr.offline.client.plugins.FeathrUdfPluginContext
 import com.linkedin.feathr.offline.derived.AlienDerivationFunctionAdaptor
-import com.linkedin.feathr.offline.mvel.plugins.FeathrMvelPluginContext
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.plugins.{AlienFeatureValue, AlienFeatureValueTypeAdaptor}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.spark.sql.Row
@@ -16,11 +16,12 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
 
   val MULTILINE_QUOTE = "\"\"\""
 
+  private val mvelContext = new FeathrExpressionExecutionContext()
   @Test
   def testMvelUdfPluginSupport: Unit = {
-    FeathrMvelPluginContext.addFeatureTypeAdaptor(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor())
-    FeathrUdfPluginContext.registerUdfAdaptor(new AlienDerivationFunctionAdaptor())
-    FeathrUdfPluginContext.registerUdfAdaptor(new AlienSourceKeyExtractorAdaptor())
+    mvelContext.setupExecutorMvelContext(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor(), ss.sparkContext)
+    FeathrUdfPluginContext.registerUdfAdaptor(new AlienDerivationFunctionAdaptor(), ss.sparkContext)
+    FeathrUdfPluginContext.registerUdfAdaptor(new AlienSourceKeyExtractorAdaptor(), ss.sparkContext)
     val df = runLocalFeatureJoinForTest(
       joinConfigAsString = """
                              | features: {
@@ -107,7 +108,8 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
                              |  }
                              |}
         """.stripMargin,
-      observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
+      observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv",
+      mvelContext = Some(mvelContext))
 
     val f8Type = df.fdsMetadata.header.get.featureInfoMap.filter(_._1.getFeatureName == "f8").head._2.featureType.getFeatureType
     assertEquals(f8Type, FeatureTypes.NUMERIC)

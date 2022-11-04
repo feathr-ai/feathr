@@ -1,9 +1,13 @@
+import sbt.Keys.publishLocalConfiguration
+
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
-ThisBuild / version          := "0.7.2"
+ThisBuild / version          := "0.9.0-rc2"
 ThisBuild / organization     := "com.linkedin.feathr"
 ThisBuild / organizationName := "linkedin"
 val sparkVersion = "3.1.3"
+
+publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 
 val localAndCloudDiffDependencies = Seq(
     "org.apache.spark" %% "spark-avro" % sparkVersion,
@@ -46,7 +50,6 @@ val localAndCloudCommonDependencies = Seq(
     "org.xerial" % "sqlite-jdbc" % "3.36.0.3",
     "com.github.changvvb" %% "jackson-module-caseclass" % "1.1.1",
     "com.azure.cosmos.spark" % "azure-cosmos-spark_3-1_2-12" % "4.11.1",
-    "org.elasticsearch" % "elasticsearch-spark-30_2.12" % "7.15.2",
     "org.eclipse.jetty" % "jetty-util" % "9.3.24.v20180605"
 ) // Common deps
 

@@ -277,6 +277,11 @@ List **names** of all projects.
 
 Response Type: `array<string>`
 
+### `GET /projects-ids`
+Dictionary of **id** to **names** mapping of all projects.
+
+Response Type: `dict`
+
 ### `GET /projects/{project}`
 Get everything defined in the project
 
