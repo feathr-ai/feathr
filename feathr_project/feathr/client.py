@@ -225,6 +225,20 @@ class FeathrClient(object):
         # Pretty print anchor_list
         if verbose and self.anchor_list:
             FeaturePrinter.pretty_print_anchors(self.anchor_list)
+    
+    def get_snowflake_path(self, database: str, schema: str, dbtable: str = None, query: str = None) -> str:
+        """
+        Returns snowflake path given dataset location information.
+        Either dbtable or query must be specified but not both.
+        """
+        if dbtable is not None and query is not None:
+            raise RuntimeError("Both dbtable and query are specified. Can only specify one..")
+        if dbtable is None and query is None:
+            raise RuntimeError("One of dbtable or query must be specified..")
+        if dbtable:
+            return f"snowflake://snowflake_account/?sfDatabase={database}&fSchema={schema}&dbtable={dbtable}"
+        else:
+            return f"snowflake://snowflake_account/?sfDatabase={database}&fSchema={schema}&query={query}"
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features under the given project.

@@ -711,8 +711,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): DataSource = {
     val codec = p.getCodec
     val node = codec.readTree[TreeNode](p).asInstanceOf[ObjectNode]
-    println(s"NODE: ${node.toPrettyString}")
-    println(s"NODE TYPE: ${Option(node.get("type"))}")
     // for now only HDFS can be set, in the future, here may allow more options
     // also to form a unified interface with online
     val dataSourceType = Option(node.get("type")) match {
@@ -734,7 +732,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       } else {
         SourceFormatType.FIXED_PATH
       }
-    println(s"SOURCE FORMAT TYPE: ${sourceFormatType}")
     /*
      * path here can be:
      *
@@ -742,7 +739,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
      * 2. a placeholder with reserved string "PASSTHROUGH" for anchor defined pass-through features,
      *    since anchor defined pass-through features do not have path
      */
-    println(s"DATA SOURCE TYPE: ${dataSourceType}")
     val path: DataLocation = dataSourceType match {
       case "KAFKA" =>
         Option(node.get("config")) match {
@@ -757,7 +753,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case "SNOWFLAKE" =>
         Option(node.get("config")) match {
           case Some(field: ObjectNode) =>
-            println(s"FIELD: ${field}")
             LocationUtils.getMapper().treeToValue(field, classOf[Snowflake])
           case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
             s"Snowflake config is not defined for Snowflake source ${node.toPrettyString()}")
@@ -766,7 +761,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
         }
       case _ => Option(node.get("location")) match {
         case Some(field: ObjectNode) =>
-          println(s"FIELD: ${field}")
           LocationUtils.getMapper().treeToValue(field, classOf[DataLocation])
         case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
           s"Data location is not defined for data source ${node.toPrettyString()}")
@@ -783,7 +777,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
                                 s"Illegal setting for timeWindowParameters ${node.toPrettyString()}, expected map")
     }
-    println(s"TIME WINDOW PARAMETER NODE: ${timeWindowParameterNode}")
+
     val timeWindowParameters = timeWindowParameterNode match {
       case Some(node: ObjectNode) =>
         if (node.has("timestamp")) { // legacy configurations
@@ -805,7 +799,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
         }
       case None => null
     }
-    println(s"TIME WINDOW PARAMS: ${timeWindowParameters}")
     if (path.isInstanceOf[KafkaEndpoint]) {
       DataSource(path, sourceFormatType)
     } else {

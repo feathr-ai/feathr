@@ -28,8 +28,7 @@ case class Snowflake(@JsonProperty("database") database: String,
                     @JsonProperty("query") query: String = "") extends DataLocation {
 
   override def loadDf(ss: SparkSession, dataIOParameters: Map[String, String] = Map()): DataFrame = {
-    println(s"SNOWFLAKE PATH: ${getPathList}")
-    SparkIOUtils.createUnionDataFrame(getPathList, dataIOParameters, new JobConf(), List()) // The simple path is not responsible for handling custom data loaders.
+    SparkIOUtils.createUnionDataFrame(getPathList, dataIOParameters, new JobConf(), List())
   }
 
   override def writeDf(ss: SparkSession, df: DataFrame, header: Option[Header]): Unit = ???
