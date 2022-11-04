@@ -56,6 +56,7 @@ __all__ = [
     'Source',
     'InputContext',
     'HdfsSource',
+    'SnowflakeSource',
     'KafkaConfig',
     'KafKaSource',
     'ValueType',

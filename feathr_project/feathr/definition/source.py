@@ -133,6 +133,59 @@ class HdfsSource(Source):
     def to_argument(self):
         return self.path
 
+class SnowflakeSource(Source):
+    """
+    A data source for Snowflake
+
+    Attributes:
+
+    """
+    def __init__(self, name: str, database: str, schema: str, dbtable: Optional[str] = None, query: Optional[str] = None, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, event_timestamp_column,
+                         timestamp_format, registry_tags=registry_tags)
+        self.preprocessing=preprocessing
+        if dbtable is not None and query is not None:
+            raise RuntimeError("Both dbtable and query are specified. Can only specify one..")
+        if dbtable is None and query is None:
+            raise RuntimeError("One of dbtable or query must be specified..")
+        if dbtable is not None:
+            self.dbtable = dbtable
+        if query is not None:
+            self.query = query
+        self.database = database
+        self.schema = schema
+    
+    def to_feature_config(self) -> str:
+        tm = Template("""  
+            {{source.name}}: {
+                type: SNOWFLAKE
+                config: {
+                    {% if source.dbtable is defined %}
+                    dbtable: "{{source.dbtable}}"
+                    {% endif %}
+                    {% if source.query is defined %}
+                    query: "{{source.query}}"
+                    {% endif %}
+                    database: "{{source.database}}"
+                    schema: "{{source.schema}}"
+                }
+                {% if source.event_timestamp_column %}
+                    timeWindowParameters: {
+                        timestampColumn: "{{source.event_timestamp_column}}"
+                        timestampColumnFormat: "{{source.timestamp_format}}"
+                    }
+                {% endif %}
+            } 
+        """)
+        msg = tm.render(source=self)
+        return msg
+
+    def __str__(self):
+        return str(self.preprocessing) + '\n' + self.to_feature_config()
+
+    def to_argument(self):
+        return self.path
+
 class JdbcSource(Source):
     def __init__(self, name: str, url: str = "", dbtable: Optional[str] = None, query: Optional[str] = None, auth: Optional[str] = None, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
         super().__init__(name, event_timestamp_column, timestamp_format, registry_tags)

@@ -126,6 +126,8 @@ jobs:
           COSMOS1_KEY: ${{secrets.COSMOS1_KEY}}
           SQL1_USER: ${{secrets.SQL1_USER}}
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
         run: |
           # run only test with databricks. run in 4 parallel jobs
           pytest -n 6 feathr_project/test/
@@ -194,6 +196,8 @@ jobs:
           COSMOS1_KEY: ${{secrets.COSMOS1_KEY}}
           SQL1_USER: ${{secrets.SQL1_USER}}
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter

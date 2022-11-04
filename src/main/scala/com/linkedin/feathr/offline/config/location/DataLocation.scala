@@ -25,6 +25,7 @@ import scala.collection.JavaConverters._
     new JsonSubTypes.Type(value = classOf[PathList], name = "pathlist"),
     new JsonSubTypes.Type(value = classOf[Jdbc], name = "jdbc"),
     new JsonSubTypes.Type(value = classOf[GenericLocation], name = "generic"),
+    new JsonSubTypes.Type(value = classOf[Snowflake], name = "snowflake"),
   ))
 trait DataLocation {
   /**

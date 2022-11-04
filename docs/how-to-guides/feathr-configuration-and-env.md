@@ -27,8 +27,60 @@ This allows end users to store the configuration in a secure way, say in Kuberne
 Feathr will get the configurations in the following order:
 
 1. If the key is set in the environment variable, Feathr will use the value of that environment variable
-2. If it's not set in the environment, then a value is retrieved from the feathr_config.yaml file with the same config key.
-3. If it's not available in the feathr_config.yaml file, Feathr will try to retrieve the value from a key vault service. Currently only Azure Key Vault is supported.
+2. If it's not set in the environment, then a value is retrieved from the `feathr_config.yaml` file with the same config key.
+3. If it's not available in the `feathr_config.yaml` file, Feathr will try to retrieve the value from a key vault service. Currently both Azure Key Vault and AWS Secrets Manager are supported.
+
+# Using Secret Management Service in Feathr
+
+Feathr supports using a Secret Management service for all the credentials and environment variables. Currently the supported secret management services are Azure Key Vault and AWS Secrets Manager. 
+
+In order to use those secret management service, there are two steps:
+
+Step 1: Tell Feathr which secret management service to use, and what is the corresponding namespace.
+
+If using Azure Key Vault:
+```yaml
+secrets:
+  azure_key_vault:
+    name: feathrazuretest3-kv
+```
+
+If using AWS Secret Manager, users should put the corresponding secret_id in the `feathr_config.yaml` section, like below, so that Feathr knows which secret_id to use to retrieve the required credentials.
+```yaml
+secrets:
+  aws_secrets_manager:
+    secret_id: feathrsecret_namespace
+```
+
+Step 2: Initialize a secret management client and pass it to Feathr.
+
+For Azure Key Vault:
+```python
+from azure.keyvault.secrets import SecretClient
+secret_client = SecretClient(
+                vault_url = f"https://<replace_with_key_vault_name>.vault.azure.net",
+                credential=DefaultAzureCredential()
+            )
+feathr_client = FeathrClient(..., secret_manager_client = secret_client)
+```
+
+For AWS Secrets Manager, users need to create a SecretCache object and pass it to Feathr client, like below:
+```python
+import botocore 
+import botocore.session 
+from aws_secretsmanager_caching import SecretCache, SecretCacheConfig 
+
+client = botocore.session.get_session().create_client(
+    service_name='secretsmanager',
+    aws_access_key_id = '<replace_your_aws_access_key_id>',
+    aws_secret_access_key= '<replace_your_aws_secret_access_key>',
+    region_name=region_name
+)
+cache_config = SecretCacheConfig()
+cache = SecretCache( config = cache_config, client = client)
+feathr_client = FeathrClient(..., secret_manager_client = cache)
+
+```
 
 # A list of environment variables that Feathr uses
 

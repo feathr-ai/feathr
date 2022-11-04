@@ -14,7 +14,7 @@ import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnch
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
 import com.linkedin.feathr.offline.client.plugins.{AnchorExtractorAdaptor, FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor, SimpleAnchorExtractorSparkAdaptor, SourceKeyExtractorAdaptor}
-import com.linkedin.feathr.offline.config.location.{DataLocation, KafkaEndpoint, LocationUtils, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, KafkaEndpoint, LocationUtils, SimplePath, Snowflake}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType, TimeWindowParams}
@@ -711,7 +711,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): DataSource = {
     val codec = p.getCodec
     val node = codec.readTree[TreeNode](p).asInstanceOf[ObjectNode]
-
     // for now only HDFS can be set, in the future, here may allow more options
     // also to form a unified interface with online
     val dataSourceType = Option(node.get("type")) match {
@@ -719,7 +718,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       case _ => "HDFS"
     }
 
-    if (dataSourceType != "HDFS" && dataSourceType != "PASSTHROUGH" && dataSourceType != "KAFKA") {
+    if (dataSourceType != "HDFS" && dataSourceType != "PASSTHROUGH" && dataSourceType != "KAFKA" && dataSourceType != "SNOWFLAKE") {
       throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, s"Unknown source type parameter $dataSourceType is used")
     }
 
@@ -733,7 +732,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
       } else {
         SourceFormatType.FIXED_PATH
       }
-
     /*
      * path here can be:
      *
@@ -752,6 +750,15 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
                                 s"Illegal setting for Kafka source ${node.toPrettyString()}, expected map")
         }
       case "PASSTHROUGH" => SimplePath("PASSTHROUGH")
+      case "SNOWFLAKE" =>
+        Option(node.get("config")) match {
+          case Some(field: ObjectNode) =>
+            LocationUtils.getMapper().treeToValue(field, classOf[Snowflake])
+          case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+            s"Snowflake config is not defined for Snowflake source ${node.toPrettyString()}")
+          case _ => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
+            s"Illegal setting for Snowflake source ${node.toPrettyString()}, expected map")
+        }
       case _ => Option(node.get("location")) match {
         case Some(field: ObjectNode) =>
           LocationUtils.getMapper().treeToValue(field, classOf[DataLocation])
@@ -792,7 +799,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
         }
       case None => null
     }
-
     if (path.isInstanceOf[KafkaEndpoint]) {
       DataSource(path, sourceFormatType)
     } else {

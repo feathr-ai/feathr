@@ -15,13 +15,11 @@ sealed trait JdbcConnectorChooser
 object JdbcConnectorChooser {
   case object SqlServer extends JdbcConnectorChooser
   case object Postgres extends JdbcConnectorChooser
-  case object SnowflakeSql extends JdbcConnectorChooser
   case object DefaultJDBC extends JdbcConnectorChooser
 
   def getType (url: String): JdbcConnectorChooser = url match {
     case url if url.startsWith("jdbc:sqlserver") => SqlServer
     case url if url.startsWith("jdbc:postgresql:") => Postgres
-    case url if url.startsWith("jdbc:snowflake:") => SnowflakeSql
     case _ => DefaultJDBC
   }
 
@@ -29,7 +27,6 @@ object JdbcConnectorChooser {
     val sqlDbType = getType(url)
     val dataLoader = sqlDbType match {
       case SqlServer => new SqlServerDataLoader(ss)
-      case SnowflakeSql => new SnowflakeSqlDataLoader(ss)
       case _ => new SqlServerDataLoader(ss) //default jdbc data loader place holder
     }
     dataLoader
