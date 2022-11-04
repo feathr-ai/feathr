@@ -74,11 +74,13 @@ client.register_features()
 all_features = client.list_registered_features(project_name=client.project_name)
 ```
 
+Please avoid applying a same name to different features under a certain project. Since it will be treated as updating an exsiting project which is not supported by feathr and will cause errors.
+
 ### Reuse Features from Existing Registry
 
 The feature producers can just let the feature consumers know which features exist so the feature consumers can reuse them. For feature consumers, they can reuse existing features from the registry. The whole project can be retrieved to local environment by calling this API `client.get_features_from_registry` with a project name. This encourage feature reuse across organizations. For example, end users of a feature just need to read all feature definitions from the existing projects, then use a few features from the projects and join those features with a new dataset you have.
 
-For example, in the [product recommendation demo notebook](./../samples/product_recommendation_demo.ipynb), some other team members have already defined a few features, such as `feature_user_gift_card_balance` and `feature_user_has_valid_credit_card`. If we want to reuse those features for anti-abuse purpose in a new dataset, what you can do is like this, i.e. just call `get_features_from_registry` to get the features, then put the features you want to query to the anti-abuse dataset you have.
+For example, in the [product recommendation demo notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb), some other team members have already defined a few features, such as `feature_user_gift_card_balance` and `feature_user_has_valid_credit_card`. If we want to reuse those features for anti-abuse purpose in a new dataset, what you can do is like this, i.e. just call `get_features_from_registry` to get the features, then put the features you want to query to the anti-abuse dataset you have.
 
 ```python
 registered_features_dict = client.get_features_from_registry(client.project_name)

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
+from typing import Dict, List, Optional, Tuple
 
-from typing import Any, Dict, List, Optional, Tuple
 
 
 class SparkJobLauncher(ABC):

@@ -103,7 +103,7 @@ def test_non_swa_feature_gen_with_offline_preprocessing():
                                            "f_day_of_week"
                                        ],
                                        backfill_time=backfill_time)
-    client.materialize_features(settings)
+    client.materialize_features(settings, allow_materialize_non_agg_feature=True)
     # just assume the job is successful without validating the actual result in Redis. Might need to consolidate
     # this part with the test_feathr_online_store test case
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)

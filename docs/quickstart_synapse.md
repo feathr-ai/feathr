@@ -43,7 +43,7 @@ pip install git+https://github.com/feathr-ai/feathr.git#subdirectory=feathr_proj
 
 ## Step 3: Run the sample notebook
 
-We've provided a self-contained [sample notebook](./samples/product_recommendation_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
+We've provided a self-contained [sample notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb) to act as the main content of this getting started guide. This documentation should be used more like highlights and further explanations of that demo notebook.
 
 ## Step 4: Update Feathr config
 
@@ -61,9 +61,6 @@ project_config:
     # Redis password for your online store
     - "REDIS_PASSWORD"
     # Client IDs and Client Secret for the service principal. Read the getting started docs on how to get those information.
-    - "AZURE_CLIENT_ID"
-    - "AZURE_TENANT_ID"
-    - "AZURE_CLIENT_SECRET"
 
 offline_store:
 ---
@@ -91,16 +88,13 @@ os.environ['ONLINE_STORE__REDIS__HOST'] = 'feathrazure.redis.cache.windows.net'
 
 ## Step 5: Setup environment variables
 
-In the self-contained [sample notebook](./samples/product_recommendation_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
+In the self-contained [sample notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb), you also have to setup a few environment variables like below in order to access those cloud resources. You should be able to get those values from the first step.
 
 These values can also be retrieved by using cloud key value store, such as [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/):
 
 ```python
 import os
 os.environ['REDIS_PASSWORD'] = ''
-os.environ['AZURE_CLIENT_ID'] = ''
-os.environ['AZURE_TENANT_ID'] = ''
-os.environ['AZURE_CLIENT_SECRET'] = ''
 ```
 
 Please refer to [A note on using azure key vault to store credentials](https://github.com/feathr-ai/feathr/blob/41e7496b38c43af6d7f8f1de842f657b27840f6d/docs/how-to-guides/feathr-configuration-and-env.md#a-note-on-using-azure-key-vault-to-store-credentials) for more details.
@@ -187,7 +181,7 @@ client.multi_get_online_features("nycTaxiDemoFeature", ["239", "265"], ['f_locat
 
 ## Next steps
 
-- Run the [demo notebook](./samples/product_recommendation_demo.ipynb) to understand the workflow of Feathr.
+- Run the [demo notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb) to understand the workflow of Feathr.
 - Read the [Feathr Documentation Page](https://feathr-ai.github.io/feathr/) page to understand the Feathr abstractions.
 - Read guide to understand [how to setup Feathr on Azure using Azure Resource Manager template](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html).
 - Read guide to understand [how to setup Feathr step by step on Azure using Azure CLI](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-cli.html).

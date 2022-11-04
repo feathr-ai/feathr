@@ -61,12 +61,17 @@ def test_feature_materialization_offline_config():
             endTime: "2020-05-20 00:00:00"
             endTimeFormat: "yyyy-MM-dd HH:mm:ss"
             resolution: DAILY
+            enableIncremental = true
             output:[
                 {
                     name: HDFS
+                    outputFormat: RAW_DATA                   
                     params: {
                         path: "abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output/hdfs_test.avro"
+                        features: [f_location_avg_fare,f_location_max_fare]
+                        storeName: "df0"
                     }
+
                 }
             ]
         }
@@ -231,7 +236,7 @@ def test_delete_feature_from_redis():
                                            "f_day_of_week"
                                        ],
                                        backfill_time=backfill_time)
-    client.materialize_features(settings)
+    client.materialize_features(settings, allow_materialize_non_agg_feature=True)
     
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
     

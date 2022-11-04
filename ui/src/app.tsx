@@ -20,48 +20,56 @@ import RoleManagement from "./pages/management/roleManagement";
 import Home from "./pages/home/home";
 import Projects from "./pages/project/projects";
 import { getMsalConfig } from "./utils/utils";
+import Footer from "@/components/footer";
 
 const queryClient = new QueryClient();
 
 const msalClient = getMsalConfig();
+
 const App = () => {
   return (
     <MsalProvider instance={msalClient}>
       <MsalAuthenticationTemplate interactionType={InteractionType.Redirect}>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
-            <Layout style={{ minHeight: "100vh" }}>
+            <Layout style={{ minHeight: "100vh", position: "relative" }}>
               <SideMenu />
               <Layout>
                 <Header />
-                <Routes>
-                  <Route index element={<Home />} />
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/projects" element={<Projects />} />
-                  <Route path="/dataSources" element={<DataSources />} />
-                  <Route path="/features" element={<Features />} />
-                  <Route path="/new-feature" element={<NewFeature />} />
-                  <Route
-                    path="/projects/:project/features/:featureId"
-                    element={<FeatureDetails />}
-                  />
-                  <Route
-                    path="/projects/:project/dataSources/:dataSourceId"
-                    element={<DataSourceDetails />}
-                  />
-                  <Route
-                    path="/projects/:project/lineage"
-                    element={<LineageGraph />}
-                  />
-                  <Route path="/jobs" element={<Jobs />} />
-                  <Route path="/monitoring" element={<Monitoring />} />
-                  <Route path="/management" element={<Management />} />
-                  <Route path="/role-management" element={<RoleManagement />} />
-                  <Route
-                    path="/responseErrors/:status/:detail"
-                    element={<ResponseErrors />}
-                  />
-                </Routes>
+                <Layout.Content>
+                  <Routes>
+                    <Route index element={<Home />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/projects" element={<Projects />} />
+                    <Route path="/dataSources" element={<DataSources />} />
+                    <Route path="/features" element={<Features />} />
+                    <Route path="/new-feature" element={<NewFeature />} />
+                    <Route
+                      path="/projects/:project/features/:featureId"
+                      element={<FeatureDetails />}
+                    />
+                    <Route
+                      path="/projects/:project/dataSources/:dataSourceId"
+                      element={<DataSourceDetails />}
+                    />
+                    <Route
+                      path="/projects/:project/lineage"
+                      element={<LineageGraph />}
+                    />
+                    <Route path="/jobs" element={<Jobs />} />
+                    <Route path="/monitoring" element={<Monitoring />} />
+                    <Route path="/management" element={<Management />} />
+                    <Route
+                      path="/role-management"
+                      element={<RoleManagement />}
+                    />
+                    <Route
+                      path="/responseErrors/:status/:detail"
+                      element={<ResponseErrors />}
+                    />
+                  </Routes>
+                </Layout.Content>
+                <Footer />
               </Layout>
             </Layout>
           </BrowserRouter>
