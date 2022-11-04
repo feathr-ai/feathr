@@ -28,6 +28,4 @@ class _FeatureRegistryAWS(_FeatureRegistry):
     def _post(self, path: str, body: dict) -> dict:
         logging.debug("PATH: ", path)
         logging.debug("BODY: ", json.dumps(body, indent=2))
-        print(f"PATH: {path}")
-        print(f"BODY: {body}")
         return check(requests.post(f"{self.endpoint}{path}", auth=self.credential, json=body)).json()
