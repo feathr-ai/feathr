@@ -10,6 +10,14 @@ import {
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import VersionBar from "./VersionBar";
+
+import styles from "./index.module.less";
+
+export interface SiderMenuProps {
+  collapsedWidth?: number;
+  siderWidth?: number;
+}
 
 const { Title } = Typography;
 const { Sider } = Layout;
@@ -64,8 +72,17 @@ const getMenuKey = (pathname: string) => {
   return pathname.split("/")[1].toLocaleLowerCase();
 };
 
-const SideMenu = () => {
+const defaultProps = {
+  collapsedWidth: 60,
+  siderWidth: 200,
+};
+
+const SideMenu = (props: SiderMenuProps) => {
   const location = useLocation();
+
+  const { siderWidth, collapsedWidth } = { ...defaultProps, ...props };
+
+  const [collapsed] = useState<boolean>(false);
 
   const [current, setcurrent] = useState<string>(getMenuKey(location.pathname));
 
@@ -74,25 +91,39 @@ const SideMenu = () => {
   }, [location.pathname]);
 
   return (
-    <Sider theme="dark">
-      <Title
-        level={1}
+    <>
+      <div
         style={{
-          fontSize: "36px",
-          color: "white",
-          margin: "10px",
-          paddingLeft: "35px",
+          width: collapsed ? collapsedWidth : siderWidth,
+          overflow: "hidden",
+          flex: `0 0 ${collapsed ? collapsedWidth : siderWidth}px`,
+          maxWidth: collapsed ? collapsedWidth : siderWidth,
+          minWidth: collapsed ? collapsedWidth : siderWidth,
+          transition: "all 0.2s ease 0s",
         }}
-      >
-        Feathr
-      </Title>
-      <Menu
-        theme="dark"
-        mode="inline"
-        selectedKeys={[current]}
-        items={menuItems}
       />
-    </Sider>
+      <Sider className={styles.siderMenu} theme="dark" width={siderWidth}>
+        <Title
+          level={1}
+          style={{
+            fontSize: "36px",
+            color: "white",
+            margin: "10px",
+            paddingLeft: "35px",
+          }}
+        >
+          Feathr
+        </Title>
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[current]}
+          items={menuItems}
+        />
+
+        <VersionBar className={styles.versionBar} />
+      </Sider>
+    </>
   );
 };
 
