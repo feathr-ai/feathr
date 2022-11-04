@@ -403,14 +403,8 @@ def source_to_def(v: Source) -> dict:
         ret = {
             "name": v.name,
             "type": "SNOWFLAKE",
-            "path": "SNOWFLAKE",
-            "database": v.database,
-            "schema": v.schema
+            "path": v.path,
         }
-        if hasattr(v, "dbtable") and v.dbtable:
-            ret["dbtable"] = v.dbtable
-        if hasattr(v, "query") and v.query:
-            ret["query"] = v.query
     elif isinstance(v, JdbcSource):
         ret = {
             "name": v.name,
@@ -461,11 +455,13 @@ def dict_to_source(v: dict) -> Source:
                                 "timestampFormat"),
                             registry_tags=v["attributes"].get("tags", {}))
     elif type == "SNOWFLAKE":
+        snowflake_path = v["attributes"]["path"]
+        snowflake_parameters = SnowflakeSource.parse_snowflake_path(snowflake_path)
         source = SnowflakeSource(name=v["attributes"]["name"],
-                                dbtable=v["attributes"]["dbtable"],
-                                query=v["attributes"]["query"],
-                                database=v["attributes"]["database"],
-                                schema=v["attributes"]["schema"],
+                                dbtable=snowflake_parameters.get("dbtable", None),
+                                query=snowflake_parameters.get("query", None),
+                                database=snowflake_parameters["sfDatabase"],
+                                schema=snowflake_parameters["sfSchema"],
                                 preprocessing=_correct_function_indentation(
                                     v["attributes"].get("preprocessing")),
                                 event_timestamp_column=v["attributes"].get(
