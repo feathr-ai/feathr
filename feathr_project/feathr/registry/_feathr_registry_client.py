@@ -403,6 +403,7 @@ def source_to_def(v: Source) -> dict:
         ret = {
             "name": v.name,
             "type": "SNOWFLAKE",
+            "path": "SNOWFLAKE",
             "database": v.database,
             "schema": v.schema
         }
