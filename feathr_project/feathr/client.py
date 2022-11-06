@@ -826,16 +826,6 @@ class FeathrClient(object):
         sf_role = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'role')
         sf_warehouse = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'warehouse')
         sf_password = self.envutils.get_environment_variable('JDBC_SF_PASSWORD')
-        ####TEST
-        sf_testwarehouse = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'testwarehouse')
-        print(f"SF TEST WAREHOUSE 1: {sf_testwarehouse}")
-        sf_testwarehouse2 = self.envutils.get_environment_variable_with_default('OFFLINE_STORE', 'SNOWFLAKE', 'TESTWAREHOUSE')
-        print(f"SF TEST WAREHOUSE 2: {sf_testwarehouse2}")
-        sf_testwarehouse3 = self.envutils.get_environment_variable('offline_store__snowflake__testwarehouse')
-        print(f"SF TEST WAREHOUSE 3: {sf_testwarehouse3}")
-        sf_testwarehouse4 = self.envutils.get_environment_variable('OFFLINE_STORE__SNOWFLAKE__TESTWAREHOUSE')
-        print(f"SF TEST WAREHOUSE 4: {sf_testwarehouse4}")
-        ####TEST
         # HOCON format will be parsed by the Feathr job
         config_str = """
             JDBC_SF_URL: {JDBC_SF_URL}
