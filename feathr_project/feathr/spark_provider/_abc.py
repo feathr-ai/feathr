@@ -15,7 +15,6 @@ class SparkJobLauncher(ABC):
         """
         pass
 
-
     @abstractmethod
     def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str],
                           reference_files_path: List[str], job_tags: Dict[str, str] = None,
@@ -33,6 +32,7 @@ class SparkJobLauncher(ABC):
             properties (Dict[str, str]): Additional System Properties for the spark job
         """
         pass
+
     @abstractmethod
     def wait_for_completion(self, timeout_seconds: Optional[float]) -> bool:
         """Returns true if the job completed successfully
