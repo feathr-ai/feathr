@@ -5,7 +5,7 @@ from feathr.secrets.akv_client import AzureKeyVaultClient
 from feathr.secrets.aws_secretmanager import AWSSecretManagerClient
 
 class _EnvVaraibleUtil(object):
-    def __init__(self, config_path: str, secret_manager_client = None):
+    def __init__(self, config_path: str, secret_manager_client):
         """Initialize the environment variable utils client
 
         Args:
@@ -14,7 +14,7 @@ class _EnvVaraibleUtil(object):
         """
         self.config_path = config_path
         # Set to none first to avoid invalid reference
-        self.secret_manager_client = secret_manager_client
+        self.secret_manager_client = None
         if self.get_environment_variable_with_default('secrets', 'azure_key_vault', 'name'):
             self.secret_manager_client = AzureKeyVaultClient(
                 secret_namespace=self.get_environment_variable_with_default('secrets', 'azure_key_vault', 'name'),
