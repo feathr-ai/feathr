@@ -38,7 +38,7 @@ class _EnvVaraibleUtil(object):
             """
 
         # if envs exist, just return the existing env variable without reading the file
-        env_keyword = "__".join(args)
+        env_keyword = "__".join(args).lower()
         upper_env_keyword = env_keyword.upper()
         # make it work for lower case and upper case.
         env_variable = os.environ.get(
