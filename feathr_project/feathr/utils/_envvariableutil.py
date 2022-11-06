@@ -2,7 +2,7 @@ import os
 import yaml
 from loguru import logger
 from feathr.secrets.akv_client import AzureKeyVaultClient
-from azure.core.exceptions import ResourceNotFoundError
+from azure.core.exceptions import ResouceNotFoundError
 from feathr.secrets.aws_secretmanager import AWSSecretManagerClient
 
 class _EnvVaraibleUtil(object):
@@ -70,7 +70,7 @@ class _EnvVaraibleUtil(object):
         if self.secret_manager_client:
             try:
                 return self.secret_manager_client.get_feathr_secret(env_keyword)
-            except ResourceNotFoundError:
+            except ResouceNotFoundError:
                 # print out warning message if cannot find the env variable in all the resources
                 logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
                 return None
@@ -101,7 +101,7 @@ class _EnvVaraibleUtil(object):
         if self.secret_manager_client:
             try:
                 return self.secret_manager_client.get_feathr_secret(variable_key)
-            except ResourceNotFoundError:
+            except ResouceNotFoundError:
                 # print out warning message if cannot find the env variable in all the resources
                 logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', variable_key)
                 return None
