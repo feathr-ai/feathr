@@ -5,9 +5,9 @@ from feathr.client import FeathrClient
 from azure.keyvault.secrets import SecretClient
 from test_fixture import secret_test_setup
 from feathr.constants import OUTPUT_FORMAT
-import botocore
-import botocore.session
-from aws_secretsmanager_caching import SecretCache, SecretCacheConfig
+import botocore 
+import botocore.session 
+from aws_secretsmanager_caching import SecretCache, SecretCacheConfig 
 
 
 def test_feathr_get_secrets_from_azure_key_vault():
@@ -19,15 +19,12 @@ def test_feathr_get_secrets_from_azure_key_vault():
         __file__).parent.resolve() / "test_user_workspace"
 
     secret_client = SecretClient(
-        # hard code the CI key vault endpoint
-        vault_url="https://feathrazuretest3-kv.vault.azure.net",
-        credential=DefaultAzureCredential(
-            exclude_cli_credential=False, exclude_interactive_browser_credential=False)
+        vault_url="https://feathrazuretest3-kv.vault.azure.net", # hard code the CI key vault endpoint
+        credential=DefaultAzureCredential(exclude_cli_credential=False,exclude_interactive_browser_credential=False)
     )
-    client: FeathrClient = secret_test_setup(os.path.join(
-        test_workspace_dir, "feathr_config_secret_test_azure_key_vault.yaml"), secret_manager_client=secret_client)
+    client: FeathrClient = secret_test_setup(os.path.join(test_workspace_dir, "feathr_config_secret_test_azure_key_vault.yaml"), secret_manager_client=secret_client)
 
-    # `redis_host` should be read from secret management service since it's not available in the environment variable, and not in the config file, we expect we get it from azure key_vault
+    # `redis_host` should be there since it's not available in the environment variable, and not in the config file, we expect we get it from azure key_vault
     assert client.redis_host is not None
 
 
@@ -39,15 +36,22 @@ def test_feathr_get_secrets_from_aws_secret_manager():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
 
+    secret_name = "secretname3"
+    region_name = "us-east-1"
+
+    # Create a Secrets Manager client
+    # session = boto3.Session()
+    # s3 = session.client('s3')
+    # ddb = session.resource('dynamodb')
+
     client = botocore.session.get_session().create_client(
         service_name='secretsmanager',
-        region_name="us-east-1"
+        region_name=region_name
     )
     cache_config = SecretCacheConfig()
-    secret_cache = SecretCache(config=cache_config, client=client)
+    cache = SecretCache( config = cache_config, client = client)
 
-    client: FeathrClient = secret_test_setup(os.path.join(
-        test_workspace_dir, "feathr_config_secret_test_aws_secret_manager.yaml"), secret_manager_client=secret_cache)
+    client: FeathrClient = secret_test_setup(os.path.join(test_workspace_dir, "feathr_config_secret_test_aws_secret_manager.yaml"), secret_manager_client=cache)
 
-    # `redis_host` should be read from secret management service since it's not available in the environment variable, and not in the config file, we expect we get it from azure key_vault
+    # `redis_host` should be there since it's not available in the environment variable, and not in the config file, we expect we get it from azure key_vault
     assert client.redis_host is not None
