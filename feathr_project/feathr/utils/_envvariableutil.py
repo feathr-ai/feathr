@@ -1,8 +1,8 @@
 import os
 import yaml
 from loguru import logger
-from feathr.secrets.akv_client import AzureKeyVaultClient
 from azure.core.exceptions import ResouceNotFoundError
+from feathr.secrets.akv_client import AzureKeyVaultClient
 from feathr.secrets.aws_secretmanager import AWSSecretManagerClient
 
 class _EnvVaraibleUtil(object):
