@@ -38,7 +38,7 @@ class _EnvVaraibleUtil(object):
             """
 
         # if envs exist, just return the existing env variable without reading the file
-        env_keyword = "__".join(args)
+        env_keyword = "__".join(args).lower()
         upper_env_keyword = env_keyword.upper()
         # make it work for lower case and upper case.
         env_variable = os.environ.get(
@@ -66,18 +66,16 @@ class _EnvVaraibleUtil(object):
                 except yaml.YAMLError as exc:
                     logger.warning(exc)
 
-        # If it's not available in the feathr_config.yaml file, Feathr will try to retrieve the value from key vault
+       # If it's not available in the feathr_config.yaml file, Feathr will try to retrieve the value from key vault
         if self.secret_manager_client:
             try:
                 return self.secret_manager_client.get_feathr_secret(upper_env_keyword)
-            except ResourceNotFoundError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
-                return None
-            except KeyError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
-                return None
+            except (ResourceNotFoundError, KeyError):
+                try:
+                    return self.secret_manager_client.get_feathr_secret(env_keyword)
+                except (ResourceNotFoundError, KeyError):
+                    logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
+                    return None
 
     def get_environment_variable(self, variable_key):
         """Gets the environment variable for the variable key.
@@ -100,12 +98,11 @@ class _EnvVaraibleUtil(object):
 
         if self.secret_manager_client:
             try:
-                return self.secret_manager_client.get_feathr_secret(variable_key)
-            except ResourceNotFoundError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', variable_key)
-                return None
-            except KeyError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', variable_key)
-                return None
+                return self.secret_manager_client.get_feathr_secret(variable_key.lower())
+            except (ResourceNotFoundError, KeyError):
+                try:
+                    return self.secret_manager_client.get_feathr_secret(variable_key.upper())
+                except (ResourceNotFoundError, KeyError):
+                    # print out warning message if cannot find the env variable in all the resources
+                    logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', variable_key)
+                    return None
