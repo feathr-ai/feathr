@@ -1,7 +1,6 @@
 import os
 import yaml
 from loguru import logger
-from azure.core.exceptions import ResouceNotFoundError
 from feathr.secrets.akv_client import AzureKeyVaultClient
 from feathr.secrets.aws_secretmanager import AWSSecretManagerClient
 
@@ -68,16 +67,7 @@ class _EnvVaraibleUtil(object):
 
         # If it's not available in the feathr_config.yaml file, Feathr will try to retrieve the value from key vault
         if self.secret_manager_client:
-            try:
-                return self.secret_manager_client.get_feathr_secret(env_keyword)
-            except ResouceNotFoundError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
-                return None
-            except KeyError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', env_keyword)
-                return None
+            return self.secret_manager_client.get_feathr_secret(env_keyword)
 
     def get_environment_variable(self, variable_key):
         """Gets the environment variable for the variable key.
@@ -99,13 +89,4 @@ class _EnvVaraibleUtil(object):
         logger.info(variable_key + ' is not set in the environment variables.')
 
         if self.secret_manager_client:
-            try:
-                return self.secret_manager_client.get_feathr_secret(variable_key)
-            except ResouceNotFoundError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', variable_key)
-                return None
-            except KeyError:
-                # print out warning message if cannot find the env variable in all the resources
-                logger.warning('Environment variable {} not found in environment variable, default YAML config file, or key vault service.', variable_key)
-                return None
+            return self.secret_manager_client.get_feathr_secret(variable_key)
