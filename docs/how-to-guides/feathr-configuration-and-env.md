@@ -56,20 +56,15 @@ Step 2: Initialize a secret management client and pass it to Feathr.
 
 For Azure Key Vault:
 ```python
-from azure.keyvault.secrets import SecretClient
-secret_client = SecretClient(
-                vault_url = f"https://<replace_with_key_vault_name>.vault.azure.net",
+
+SecretClient(
+                vault_url = f"https://{self.akv_name}.vault.azure.net",
                 credential=DefaultAzureCredential()
             )
-feathr_client = FeathrClient(..., secret_manager_client = secret_client)
 ```
 
-For AWS Secrets Manager, users need to create a SecretCache object and pass it to Feathr client, like below:
+For AWS Secrets Manager:
 ```python
-import botocore 
-import botocore.session 
-from aws_secretsmanager_caching import SecretCache, SecretCacheConfig 
-
 client = botocore.session.get_session().create_client(
     service_name='secretsmanager',
     aws_access_key_id = '<replace_your_aws_access_key_id>',
@@ -78,8 +73,6 @@ client = botocore.session.get_session().create_client(
 )
 cache_config = SecretCacheConfig()
 cache = SecretCache( config = cache_config, client = client)
-feathr_client = FeathrClient(..., secret_manager_client = cache)
-
 ```
 
 # A list of environment variables that Feathr uses
