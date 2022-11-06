@@ -30,4 +30,4 @@ class AWSSecretManagerClient(FeathrSecretsManagementClient):
         except KeyError as e:
             logger.error(
                 f"Secret {secret_name} cannot be found in secretsmanager {self.secret_id}.")
-            raise
+            raise e
