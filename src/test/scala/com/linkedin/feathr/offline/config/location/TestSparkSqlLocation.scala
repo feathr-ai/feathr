@@ -39,5 +39,7 @@ class TestSparkSqlLocation extends TestFeathr{
       Row("Python", 100000)
     )
     assertEquals(df.collect(), expectedRows)
+
+    ss.sqlContext.dropTempTable("test_spark_sql_table")
   }
 }
