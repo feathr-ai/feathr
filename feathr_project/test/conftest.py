@@ -5,6 +5,21 @@ import pytest
 from feathr import FeathrClient
 
 
+def pytest_addoption(parser):
+    """Pytest command line argument options.
+    E.g.
+    `python -m pytest feathr_project/test/ --resource-prefix your_feathr_resource_prefix`
+    """
+    parser.addoption(
+        "--resource-prefix", action="store", default="feathrazuretest3", help="Test Azure resource prefix"
+    )
+
+
+@pytest.fixture
+def resource_prefix(request):
+    return request.config.getoption("--resource-prefix")
+
+
 @pytest.fixture(scope="session")
 def workspace_dir() -> str:
     """Workspace directory path containing data files and configs for testing."""

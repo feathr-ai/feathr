@@ -101,9 +101,10 @@ def get_result_df(
 
     elif client.spark_runtime == "databricks":
         if not res_url.startswith("dbfs:"):
-            raise ValueError(
-                f"In Databricks, the result files are expected to be stored at a DBFS storage but res_url = {res_url}."
+            logger.warning(
+                f"In Databricks, the result files are expected to be stored in DBFS, but the res_url {res_url} is not a dbfs path. Prefixing it with 'dbfs:/'"
             )
+            res_url = f"dbfs:/{res_url.lstrip('/')}"
 
         if is_databricks():  # Check if the function is being called from Databricks
             if local_cache_path is not None:
@@ -111,12 +112,9 @@ def get_result_df(
                     "Result files are already in DBFS and thus `local_cache_path` will be ignored."
                 )
             local_cache_path = res_url
-        elif local_cache_path is None:  # Download the result from dbfs to local
-            local_cache_path = TemporaryDirectory().name
 
-    else:
-        logger.warning("This utility function currently supports local spark and databricks. You may encounter unexpected results on other platforms.")
-    # TODO elif azure_synapse
+    if local_cache_path is None:
+        local_cache_path = TemporaryDirectory().name
 
     if local_cache_path != res_url:
         logger.info(f"{res_url} files will be downloaded into {local_cache_path}")

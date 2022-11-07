@@ -23,22 +23,25 @@ NOTEBOOK_PATHS = {
 
 
 @pytest.mark.notebooks
-def test__nyc_taxi_demo(tmp_path):
+def test__nyc_taxi_demo(resource_prefix, tmp_path):
     notebook_name = "nyc_taxi_demo"
 
     output_tmpdir = TemporaryDirectory()
     output_notebook_path = str(tmp_path.joinpath(f"{notebook_name}.ipynb"))
+
+    print(f"Running {notebook_name} notebook as {output_notebook_path}")
 
     pm.execute_notebook(
         input_path=NOTEBOOK_PATHS[notebook_name],
         output_path=output_notebook_path,
         # kernel_name="python3",
         parameters=dict(
-            RESOURCE_PREFIX="feathrazuretest3",  # Use the test resource group
+            RESOURCE_PREFIX=resource_prefix,
             PROJECT_NAME=notebook_name,
             DATA_STORE_PATH=output_tmpdir.name,
             SPARK_CLUSTER="local",
             USE_CLI_AUTH=False,
+            REGISTER_FEATURES=False,
             SCRAP_RESULTS=True,
         ),
     )
@@ -47,10 +50,7 @@ def test__nyc_taxi_demo(tmp_path):
     nb = sb.read_notebook(output_notebook_path)
     outputs = nb.scraps
 
-    assert outputs["materialized_feature_values"].data["239"] == pytest.approx([5707., 1480.], abs=1.)
-    assert outputs["materialized_feature_values"].data["265"] == pytest.approx([10000., 4160.], abs=1.)
+    assert outputs["materialized_feature_values"].data["239"] == pytest.approx([1480., 5707.], abs=1.)
+    assert outputs["materialized_feature_values"].data["265"] == pytest.approx([4160., 10000.], abs=1.)
     assert outputs["rmse"].data == pytest.approx(5., abs=2.)
     assert outputs["mae"].data == pytest.approx(2., abs=1.)
-
-    # clean up
-    output_tmpdir.cleanup()

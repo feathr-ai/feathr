@@ -91,10 +91,6 @@ def test__get_result_df__with_local_cache_path(
         # Test ValueError when res_url is None
         (False, "local", None, ValueError),
         (True, "databricks", None, ValueError),
-        # Test ValueError when res_url is not a dbfs path but client.spark_runtime is databricks
-        (False, "databricks", "some_local_path", ValueError),
-        # Test ValueError when res_url does not exists or not able to access.
-        (False, "local", "some_doesnt_exist_path", Exception),
     ]
 )
 def test__get_result_df__exceptions(
@@ -112,6 +108,9 @@ def test__get_result_df__exceptions(
 
     # Mock is_data_bricks
     mocker.patch("feathr.utils.job_utils.is_databricks", return_value=is_databricks)
+
+    # Mock _load_files_to_pandas_df
+    mocker.patch("feathr.utils.job_utils._load_files_to_pandas_df")
 
     with pytest.raises(expected_error):
         get_result_df(client)
