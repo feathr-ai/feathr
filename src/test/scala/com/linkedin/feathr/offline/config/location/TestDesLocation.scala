@@ -78,6 +78,25 @@ class TestDesLocation extends FunSuite {
     }
   }
 
+  test("Deserialize Snowflake") {
+    val configDoc =
+      """
+        |{
+        | dbtable: "TABLE"
+        | database: "DATABASE"
+        | schema: "SCHEMA"
+        |}""".stripMargin
+    val ds = jackson.readValue(configDoc, classOf[Snowflake])
+    ds match {
+      case Snowflake(database, schema, dbtable, query) => {
+        assert(database == "DATABASE")
+        assert(schema == "SCHEMA")
+        assert(dbtable == "TABLE")
+      }
+      case _ => assert(false)
+    }
+  }
+
   test("Test load Sqlite") {
     val path = s"${System.getProperty("user.dir")}/src/test/resources/mockdata/sqlite/test.db"
     val configDoc =
