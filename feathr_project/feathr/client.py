@@ -22,7 +22,6 @@ from feathr.definition.query_feature_list import FeatureQuery
 from feathr.definition.settings import ObservationSettings
 from feathr.definition.sink import Sink
 from feathr.protobuf.featureValue_pb2 import FeatureValue
-from feathr.registry.feature_registry import default_registry_client
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr.spark_provider._localspark_submission import _FeathrLocalSparkJobLauncher
 from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
