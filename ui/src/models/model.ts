@@ -20,7 +20,7 @@ export interface FeatureAttributes {
   key: FeatureKey[];
   name: string;
   qualifiedName: string;
-  tags: string[];
+  tags: Object;
   transformation: FeatureTransformation;
   type: FeatureType;
 }
