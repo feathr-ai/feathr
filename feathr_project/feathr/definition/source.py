@@ -179,7 +179,8 @@ class SnowflakeSource(Source):
         tm = Template("""  
             {{source.name}}: {
                 type: SNOWFLAKE
-                config: {
+                location: {
+                    type: "snowflake"
                     {% if source.dbtable is defined %}
                     dbtable: "{{source.dbtable}}"
                     {% endif %}

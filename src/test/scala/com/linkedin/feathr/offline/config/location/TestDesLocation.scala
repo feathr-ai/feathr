@@ -82,6 +82,7 @@ class TestDesLocation extends FunSuite {
     val configDoc =
       """
         |{
+        | type: "snowflake"
         | dbtable: "TABLE"
         | database: "DATABASE"
         | schema: "SCHEMA"

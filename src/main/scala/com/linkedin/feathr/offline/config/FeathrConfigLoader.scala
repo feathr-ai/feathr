@@ -751,7 +751,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
         }
       case "PASSTHROUGH" => SimplePath("PASSTHROUGH")
       case "SNOWFLAKE" =>
-        Option(node.get("config")) match {
+        Option(node.get("location")) match {
           case Some(field: ObjectNode) =>
             LocationUtils.getMapper().treeToValue(field, classOf[Snowflake])
           case None => throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR,
