@@ -33,6 +33,14 @@ from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
 from feathr.definition.source import InputContext
+from azure.identity import DefaultAzureCredential
+from jinja2 import Template
+from feathr.registry._feathr_registry_client import _FeatureRegistry
+from feathr.registry._feature_registry_purview import _PurviewRegistry
+from loguru import logger
+from feathr.definition.config_helper import FeathrConfigHelper
+from pyhocon import ConfigFactory
+
 
 
 class FeathrClient(object):
@@ -169,8 +177,23 @@ class FeathrClient(object):
 
         self.secret_names = []
 
+        # initialize config helper
+        self.config_helper = FeathrConfigHelper()
+
         # initialize registry
-        self.registry = default_registry_client(self.project_name, config_path=config_path, credential=self.credential)
+        self.registry = None
+        registry_endpoint = self.envutils.get_environment_variable_with_default("feature_registry", "api_endpoint")
+        azure_purview_name = self.envutils.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
+        if registry_endpoint:
+            self.registry = _FeatureRegistry(self.project_name, endpoint=registry_endpoint, project_tags=project_registry_tag, credential=credential)
+        elif azure_purview_name:
+            registry_delimiter = self.envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
+            # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
+            self.registry = _PurviewRegistry(self.project_name, azure_purview_name, registry_delimiter, project_registry_tag, config_path = config_path, credential=credential)
+        else:
+            # no registry configured
+            logger.info("Feathr registry is not configured. Consider setting the Feathr registry component for a richer feature store experience.")
+            
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
@@ -194,7 +217,7 @@ class FeathrClient(object):
         if from_context:
             # make sure those items are in `self`
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
-                self.registry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+                self.config_helper.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
                 self.registry.register_features(self.local_workspace_dir, from_context=from_context, anchor_list=self.anchor_list, derived_feature_list=self.derived_feature_list)
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to register features")
@@ -221,9 +244,8 @@ class FeathrClient(object):
             else:
                 source_names[anchor.source.name] = anchor.source
 
-        preprocessingPyudfManager = _PreprocessingPyudfManager()
         _PreprocessingPyudfManager.build_anchor_preprocessing_metadata(anchor_list, self.local_workspace_dir)
-        self.registry.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
+        self.config_helper.save_to_feature_config_from_context(anchor_list, derived_feature_list, self.local_workspace_dir)
         self.anchor_list = anchor_list
         self.derived_feature_list = derived_feature_list
 
@@ -453,7 +475,7 @@ class FeathrClient(object):
         # otherwise users will be confused on what are the available features
         # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
         if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
-            self.registry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+            self.config_helper.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
         else:
             raise RuntimeError("Please call FeathrClient.build_features() first in order to get offline features")
 
@@ -661,7 +683,7 @@ class FeathrClient(object):
             # otherwise users will be confused on what are the available features
             # in build_features it will assign anchor_list and derived_feature_list variable, hence we are checking if those two variables exist to make sure the above condition is met
             if 'anchor_list' in dir(self) and 'derived_feature_list' in dir(self):
-                self.registry.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
+                self.config_helper.save_to_feature_config_from_context(self.anchor_list, self.derived_feature_list, self.local_workspace_dir)
             else:
                 raise RuntimeError("Please call FeathrClient.build_features() first in order to materialize the features")
 
@@ -755,7 +777,7 @@ class FeathrClient(object):
         # keys can't be only accessed through environment
         access_key = self.envutils.get_environment_variable('S3_ACCESS_KEY')
         secret_key = self.envutils.get_environment_variable('S3_SECRET_KEY')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             S3_ENDPOINT: {S3_ENDPOINT}
             S3_ACCESS_KEY: "{S3_ACCESS_KEY}"
@@ -770,7 +792,7 @@ class FeathrClient(object):
         # if ADLS Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
         key = self.envutils.get_environment_variable('ADLS_KEY')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             ADLS_ACCOUNT: {ADLS_ACCOUNT}
             ADLS_KEY: "{ADLS_KEY}"
@@ -784,7 +806,7 @@ class FeathrClient(object):
         # if BLOB Account is set in the feathr_config, then we need other environment variables
         # keys can't be only accessed through environment
         key = self.envutils.get_environment_variable('BLOB_KEY')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             BLOB_ACCOUNT: {BLOB_ACCOUNT}
             BLOB_KEY: "{BLOB_KEY}"
@@ -800,7 +822,7 @@ class FeathrClient(object):
         driver = self.envutils.get_environment_variable('JDBC_DRIVER')
         auth_flag = self.envutils.get_environment_variable('JDBC_AUTH_FLAG')
         token = self.envutils.get_environment_variable('JDBC_TOKEN')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             JDBC_TABLE: {JDBC_TABLE}
             JDBC_USER: {JDBC_USER}
@@ -817,7 +839,7 @@ class FeathrClient(object):
         user = self.envutils.get_environment_variable_with_default('monitoring', 'database', 'sql', 'user')
         password = self.envutils.get_environment_variable('MONITORING_DATABASE_SQL_PASSWORD')
         if url:
-            # HOCCON format will be parsed by the Feathr job
+            # HOCON format will be parsed by the Feathr job
             config_str = """
                 MONITORING_DATABASE_SQL_URL: "{url}"
                 MONITORING_DATABASE_SQL_USER: {user}
@@ -834,7 +856,7 @@ class FeathrClient(object):
         sf_user = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'user')
         sf_role = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'role')
         sf_password = self.envutils.get_environment_variable('JDBC_SF_PASSWORD')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             JDBC_SF_URL: {JDBC_SF_URL}
             JDBC_SF_USER: {JDBC_SF_USER}
@@ -847,7 +869,7 @@ class FeathrClient(object):
         """Construct the Kafka config string. The endpoint, access key, secret key, and other parameters can be set via
         environment variables."""
         sasl = self.envutils.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
-        # HOCCON format will be parsed by the Feathr job
+        # HOCON format will be parsed by the Feathr job
         config_str = """
             KAFKA_SASL_JAAS_CONFIG: "{sasl}"
             """.format(sasl=sasl)
