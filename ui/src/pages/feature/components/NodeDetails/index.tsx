@@ -1,5 +1,6 @@
 import React from "react";
 import { useParams, useSearchParams } from "react-router-dom";
+import { Scrollbars } from "react-custom-scrollbars-2";
 import { fetchFeature, fetchDataSource } from "@/api";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useQuery } from "react-query";
@@ -7,6 +8,8 @@ import { Spin, Typography } from "antd";
 import { FeatureType } from "@/utils/utils";
 import FeatureNodeDetail from "./FeatureNodeDetail";
 import SourceNodeDetial from "./SourceNodeDetial";
+
+import styles from "./index.module.less";
 
 const { Paragraph } = Typography;
 
@@ -37,10 +40,11 @@ const NodeDetails = () => {
 
   return (
     <Spin
+      wrapperClassName={styles.wrap}
       spinning={isLoading}
       indicator={<LoadingOutlined style={{ fontSize: 36 }} spin />}
     >
-      <div style={{ minHeight: "calc(100vh - 300px)" }}>
+      <Scrollbars style={{ height: "calc(100vh - 300px)" }} autoHide>
         {data ? (
           isSource ? (
             <SourceNodeDetial source={data} />
@@ -55,7 +59,7 @@ const NodeDetails = () => {
             </Paragraph>
           )
         )}
-      </div>
+      </Scrollbars>
     </Spin>
   );
 };

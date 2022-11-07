@@ -1,6 +1,8 @@
 import React from "react";
 import { Card, Descriptions } from "antd";
 
+import { isEmpty } from "@/utils/utils";
+
 export interface CardDescriptionsProps {
   title?: string;
   mapping: any[];
@@ -10,7 +12,7 @@ export interface CardDescriptionsProps {
 const CardDescriptions = (props: CardDescriptionsProps) => {
   const { title, mapping, descriptions } = props;
 
-  return descriptions ? (
+  return !isEmpty(descriptions) ? (
     <Card className="card" title={title}>
       <Descriptions column={1}>
         {mapping.reduce((list: any, item) => {
