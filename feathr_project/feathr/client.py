@@ -1,39 +1,38 @@
 import base64
+import copy
 import logging
 import os
 import tempfile
 from typing import Dict, List, Union
-from feathr.definition.feature import FeatureBase
-import copy
 
-import redis
 from azure.identity import DefaultAzureCredential
+from feathr.definition.transformation import WindowAggTransformation
 from jinja2 import Template
 from pyhocon import ConfigFactory
-from feathr.definition.sink import Sink
-from feathr.registry.feature_registry import default_registry_client
+import redis
 
-from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
-from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
-from feathr.spark_provider._localspark_submission import _FeathrDLocalSparkJobLauncher
-
-from feathr.definition._materialization_utils import _to_materialization_config
-from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr.constants import *
-from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
+from feathr.definition._materialization_utils import _to_materialization_config
+from feathr.definition.anchor import FeatureAnchor
+from feathr.definition.feature import FeatureBase
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.materialization_settings import MaterializationSettings
 from feathr.definition.monitoring_settings import MonitoringSettings
-from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.definition.query_feature_list import FeatureQuery
 from feathr.definition.settings import ObservationSettings
-from feathr.definition.feature_derivations import DerivedFeature
-from feathr.definition.anchor import FeatureAnchor
+from feathr.definition.sink import Sink
+from feathr.protobuf.featureValue_pb2 import FeatureValue
+from feathr.registry.feature_registry import default_registry_client
+from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
+from feathr.spark_provider._localspark_submission import _FeathrLocalSparkJobLauncher
+from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
+from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
 from feathr.utils._envvariableutil import _EnvVaraibleUtil
 from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
-from feathr.utils.spark_job_params import FeatureJoinJobParams, FeatureGenerationJobParams
+from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
+from feathr.definition.source import InputContext
 
 
 class FeathrClient(object):
@@ -114,7 +113,7 @@ class FeathrClient(object):
         self.credential = credential
         if self.spark_runtime not in {'azure_synapse', 'databricks', 'local'}:
             raise RuntimeError(
-                'Only \'azure_synapse\' and \'databricks\' are currently supported.')
+                f'{self.spark_runtime} is not supported. Only \'azure_synapse\', \'databricks\' and \'local\' are currently supported.')
         elif self.spark_runtime == 'azure_synapse':
             # Feathr is a spark-based application so the feathr jar compiled from source code will be used in the
             # Spark job submission. The feathr jar hosted in cloud saves the time users needed to upload the jar from
@@ -161,7 +160,7 @@ class FeathrClient(object):
             self._FEATHR_JOB_JAR_PATH = \
                 self.envutils.get_environment_variable_with_default(
                     'spark_config', 'local', 'feathr_runtime_location')
-            self.feathr_spark_launcher = _FeathrDLocalSparkJobLauncher(
+            self.feathr_spark_launcher = _FeathrLocalSparkJobLauncher(
                 workspace_path = self.envutils.get_environment_variable_with_default('spark_config', 'local', 'workspace'),
                 master = self.envutils.get_environment_variable_with_default('spark_config', 'local', 'master')
                 )
@@ -216,7 +215,7 @@ class FeathrClient(object):
                                    f"definitions. Anchor name of {anchor} is already defined in {anchor_names[anchor.name]}")
             else:
                 anchor_names[anchor.name] = anchor
-            if anchor.source.name in source_names:
+            if anchor.source.name in source_names and (anchor.source is not source_names[anchor.source.name]):
                 raise RuntimeError(f"Source name should be unique but there are duplicate source names in your source "
                                    f"definitions. Source name of {anchor.source} is already defined in {source_names[anchor.source.name]}")
             else:
@@ -354,7 +353,7 @@ class FeathrClient(object):
             else:
                 typed_result.append(raw_feature)
         return typed_result
-    
+
     def delete_feature_from_redis(self, feature_table, key, feature_name) -> None:
         """
         Delete feature from Redis
@@ -364,7 +363,7 @@ class FeathrClient(object):
             key: the key of the entity
             feature_name: feature name to be deleted
         """
-        
+
         redis_key = self._construct_redis_key(feature_table, key)
         if self.redis_client.hexists(redis_key, feature_name):
             self.redis_client.delete(redis_key, feature_name)
@@ -575,20 +574,20 @@ class FeathrClient(object):
     def _get_feature_key(self, feature_name: str):
         features = []
         if 'derived_feature_list' in dir(self):
-            features += self.derived_feature_list 
+            features += self.derived_feature_list
         if 'anchor_list' in dir(self):
             for anchor in self.anchor_list:
-                features += anchor.features  
+                features += anchor.features
         for feature in features:
             if feature.name == feature_name:
                 keys = feature.key
-                return set(key.key_column for key in keys) 
+                return set(key.key_column for key in keys)
         self.logger.warning(f"Invalid feature name: {feature_name}. Please call FeathrClient.build_features() first in order to materialize the features.")
         return None
-        
+
     # Validation on feature keys:
     # Features within a set of aggregation or planned to be merged should have same keys
-    # The param "allow_empty_key" shows if empty keys are acceptable 
+    # The param "allow_empty_key" shows if empty keys are acceptable
     def _valid_materialize_keys(self, features: List[str], allow_empty_key=False):
         keys = None
         for feature in features:
@@ -612,17 +611,38 @@ class FeathrClient(object):
                         return False
         return True
     
-    def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False):
+    def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False, allow_materialize_non_agg_feature: bool = False):
         """Materialize feature data
 
         Args:
             settings: Feature materialization settings
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
+            allow_materialize_non_agg_feature: Materializing non-aggregated features (the features without WindowAggTransformation) doesn't output meaningful results so it's by default set to False, but if you really want to materialize non-aggregated features, set this to True.
         """
         feature_list = settings.feature_names
-        if len(feature_list) > 0 and not self._valid_materialize_keys(feature_list):
-            raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
+        if len(feature_list) > 0:
+            if 'anchor_list' in dir(self):
+                anchors = [anchor for anchor in self.anchor_list if isinstance(anchor.source, InputContext)]
+                anchor_feature_names = set(feature.name  for anchor in anchors for feature in anchor.features)
+                for feature in feature_list:
+                    if feature in anchor_feature_names:
+                        raise RuntimeError(f"Materializing features that are defined on INPUT_CONTEXT is not supported. {feature} is defined on INPUT_CONTEXT so you should remove it from the feature list in MaterializationSettings.")
+            if not self._valid_materialize_keys(feature_list):
+                raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
         
+        if not allow_materialize_non_agg_feature:
+            # Check if there are non-aggregation features in the list
+            for fn in feature_list:
+                # Check over anchor features
+                for anchor in self.anchor_list:
+                    for feature in anchor.features:
+                        if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
+                            raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features. If you want to materialize {fn}, please set allow_materialize_non_agg_feature to True.")
+                # Check over derived features
+                for feature in self.derived_feature_list:
+                    if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
+                        raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features. If you want to materialize {fn}, please set allow_materialize_non_agg_feature to True.")
+
         # Collect secrets from sinks
         secrets = []
         for sink in settings.sinks:
@@ -632,7 +652,7 @@ class FeathrClient(object):
         # produce materialization config
         for end in settings.get_backfill_cutoff_time():
             settings.backfill_time.end = end
-            config = _to_materialization_config(settings)         
+            config = _to_materialization_config(settings)
             config_file_name = "feature_gen_conf/auto_gen_config_{}.conf".format(end.timestamp())
             config_file_path = os.path.join(self.local_workspace_dir, config_file_name)
             write_to_file(content=config, full_file_name=config_file_path)
@@ -854,7 +874,7 @@ class FeathrClient(object):
                 feature_dict[feature.name] = feature
         for feature in registry_derived_feature_list:
                 feature_dict[feature.name] = feature
-        return feature_dict 
+        return feature_dict
 
     def _reshape_config_str(self, config_str:str):
         if self.spark_runtime == 'local':
