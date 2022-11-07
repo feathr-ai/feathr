@@ -23,11 +23,11 @@ def test_observation_setting_with_timestamp():
 
 
 def test_observation_setting_without_timestamp():
+
     observation_settings = ObservationSettings(
-        observation_path='jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse'
-                         '=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL')
+        observation_path='snowflake://snowflake_account/?dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL')
     config = observation_settings.to_feature_config()
     expected_config = """            
-            observationPath:"jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL"
+            observationPath:"snowflake://snowflake_account/?dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL"
         """
     assert ''.join(config.split()) == ''.join(expected_config.split())

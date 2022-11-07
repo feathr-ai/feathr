@@ -66,9 +66,10 @@ def test_feathr_get_offline_features():
     feature_query = FeatureQuery(
         feature_list=['f_snowflake_call_center_division_name', 'f_snowflake_call_center_zipcode'],
         key=call_sk_id)
+
+    observation_path = client.get_snowflake_path(database="SNOWFLAKE_SAMPLE_DATA",schema="TPCDS_SF10TCL",dbtable="CALL_CENTER")
     settings = ObservationSettings(
-        observation_path='jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse'
-                         '=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL')
+        observation_path=observation_path)
 
     now = datetime.now()
      # set output folder based on different runtime
