@@ -114,6 +114,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         if not main_jar_path:
             # We don't have the main jar, use Maven
             # Add Maven dependency to the job configuration
+            logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
             if "spark.jars.packages" in cfg:
                 cfg["spark.jars.packages"] = ",".join(
                     [cfg["spark.jars.packages"], FEATHR_MAVEN_ARTIFACT])
@@ -124,7 +125,6 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                 # This is a JAR job
                 # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
                 # so we have to use a dummy jar as the main file.
-                logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
                 # Use the no-op jar as the main file
                 # This is a dummy jar which contains only one `org.example.Noop` class with one empty `main` function which does nothing
                 current_dir = pathlib.Path(__file__).parent.resolve()
