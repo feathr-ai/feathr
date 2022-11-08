@@ -13,6 +13,9 @@ def check(r):
 
 
 class _FeatureRegistryAWS(_FeatureRegistry):
+    """
+    Feature Registry AWS Implementation
+    """
     def __init__(self, project_name: str, endpoint: str, project_tags: Dict[str, str] = None, credential=None,
                  config_path=None):
         self.project_name = project_name
