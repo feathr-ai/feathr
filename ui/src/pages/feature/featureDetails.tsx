@@ -177,7 +177,7 @@ const FeatureDetails = () => {
               mapping={TransformationMap}
               descriptions={transformation}
             />
-            {key.map((item, index) => {
+            {key?.map((item, index) => {
               return (
                 <CardDescriptions
                   key={index}
