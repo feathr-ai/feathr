@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.source.accessor
 
-import com.linkedin.feathr.offline.config.location.{GenericLocation, Jdbc, PathList, SimplePath}
+import com.linkedin.feathr.offline.config.location.{GenericLocation, Jdbc, PathList, SimplePath, Snowflake}
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
@@ -32,6 +32,7 @@ private[offline] class NonTimeBasedDataSourceAccessor(
       case PathList(paths) => paths.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
       case Jdbc(_, _, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
       case GenericLocation(_, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
+      case Snowflake(_, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
       case _ => fileLoaderFactory.createFromLocation(source.location).loadDataFrame()
     }
 
