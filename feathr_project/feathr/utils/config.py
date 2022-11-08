@@ -1,3 +1,4 @@
+import collections.abc
 from copy import deepcopy
 import os
 import json
@@ -13,7 +14,7 @@ DEFAULT_FEATHR_CONFIG = {
     "project_config": {},  # "project_name"
     "feature_registry": {},  # "api_endpoint"
     "spark_config": {
-        # "spark_cluster". Currently support 'azure_synapse', 'databricks', and 'local'
+        "spark_cluster": "local",  # Currently support 'azure_synapse', 'databricks', and 'local'
         "spark_result_output_parts": "1",
     },
     "offline_store": {
@@ -47,72 +48,97 @@ DEFAULT_DATABRICKS_CLUSTER_CONFIG = {
 DEFAULT_AZURE_SYNAPSE_SPARK_POOL_CONFIG = {
     "executor_size": "Small",
     "executor_num": 2,
+    "pool_name": "spark3",
 }
 
 
 def generate_config(
     resource_prefix: str,
     project_name: str,
-    spark_cluster: str,
-    cluster_name: str = None,
-    databricks_url: str = None,
     output_filepath: str = None,
+    databricks_workspace_token_value: str = None,
+    databricks_cluster_id: str = None,
+    redis_password: str = None,
+    adls_key: str = None,
     use_env_vars: bool = True,
+    **kwargs,
 ) -> str:
-    """Generate a feathr config yaml file. Note, if environment variables are set, they will be used instead of the
-    provided arguments.
+    """Generate a feathr config yaml file.
+    Note, `use_env_vars` argument gives an option to either use environment variables for generating the config file
+    or not. Feathr client will use environment variables anyway if they are set.
 
-    Some credential variables are intentionally not included in the argument and the outut config file
-    to avoid leaking secrets. E.g. DATABRICKS_WORKSPACE_TOKEN_VALUE and REDIS_PASSWORD.
-    Those values should be passed via the environment variables regardless of the `use_env_vars` flag.
+    Keyword arguments follow the same naming convention as the feathr config. E.g. to set Databricks as the target
+    cluster, use `spark_config__spark_cluster="databricks"`.
+    See https://feathr-ai.github.io/feathr/quickstart_synapse.html#step-4-update-feathr-config for more details.
 
     Note:
         This utility function assumes Azure resources are deployed using the Azure Resource Manager (ARM) template,
         and infers resource names based on the given `resource_prefix`. If you deploy resources manually, you may need
-        to create the config file manually.
+        to pass each resource url manually, e.g. `spark_config__azure_synapse__dev_url="your-resource-url"`.
 
     Args:
-        resource_prefix: Resource name prefix.
-        project_name: Project name.
-        spark_cluster: Spark cluster to use. Either 'local', 'databricks', or 'azure_synapse'.
-        cluster_name (optional): Synapse spark pool name or Databricks cluster id if applicable.
-            If not provided, a new (job) cluster will be created and used.
-        databricks_url (optional): Databricks workspace url if applicable.
+        resource_prefix: Resource name prefix used when deploying Feathr resources by using ARM template.
+        project_name: Feathr project name.
+        cluster_name (optional): Databricks cluster or Azure Synapse spark pool name to use an existing one.
         output_filepath (optional): Output filepath.
         use_env_vars (optional): Whether to use environment variables if they are set.
+        databricks_workspace_token_value (optional): Databricks workspace token. If provided, the value will be stored
+            as the environment variable.
+        databricks_cluster_id (optional): Databricks cluster id to use an existing cluster.
+        redis_password (optional): Redis password. If provided, the value will be stored as the environment variable.
+        adls_key (optional): ADLS key. If provided, the value will be stored as the environment variable.
 
     Returns:
-        str: Generated config file path. output_filepath if provided. Otherwise, NamedTemporaryFile path.
+        str: Generated config file path. This will be identical to `output_filepath` if provided.
     """
-    if use_env_vars:
-        spark_cluster = os.getenv("SPARK_CONFIG__SPARK_CLUSTER", spark_cluster)
+    # Set keys
+    if databricks_workspace_token_value:
+        os.environ["DATABRICKS_WORKSPACE_TOKEN_VALUE"] = databricks_workspace_token_value
+    if redis_password:
+        os.environ["REDIS_PASSWORD"] = redis_password
+    if adls_key:
+        os.environ["ADLS_KEY"] = adls_key
 
+    # Set configs
     config = deepcopy(DEFAULT_FEATHR_CONFIG)
     config["project_config"]["project_name"] = project_name
     config["feature_registry"]["api_endpoint"] = f"https://{resource_prefix}webapp.azurewebsites.net/api/v1"
-    config["spark_config"]["spark_cluster"] = spark_cluster
     config["online_store"]["redis"]["host"] = f"{resource_prefix}redis.redis.cache.windows.net"
 
+    # Update configs using kwargs
+    new_config = _config_kwargs_to_dict(**kwargs)
+    _update_config(config, new_config)
+
     # Set platform specific configurations
-    if spark_cluster == "local":
+    if config["spark_config"]["spark_cluster"] == "local":
         _set_local_spark_config()
-    elif spark_cluster == "azure_synapse":
+    elif config["spark_config"]["spark_cluster"] == "azure_synapse":
         _set_azure_synapse_config(
             config=config,
             resource_prefix=resource_prefix,
             project_name=project_name,
-            cluster_name=cluster_name,
-            use_env_vars=use_env_vars,
         )
-    elif spark_cluster == "databricks":
+    elif config["spark_config"]["spark_cluster"] == "databricks":
         _set_databricks_config(
             config=config,
             project_name=project_name,
-            workspace_url=databricks_url,
-            cluster_name=cluster_name,
-            use_env_vars=use_env_vars,
+            cluster_id=databricks_cluster_id,
         )
 
+    # Maybe update configs with environment variables
+    if use_env_vars:
+        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__SPARK_CLUSTER")
+        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL")
+        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME")
+        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR")
+        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__DATABRICKS__WORK_DIR")
+        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL")
+        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE")
+
+    # Verify config
+    _verify_config(config)
+
+    # Write config to file
     if not output_filepath:
         output_filepath = NamedTemporaryFile(mode="w", delete=False).name
 
@@ -134,76 +160,107 @@ def _set_azure_synapse_config(
     config: Dict,
     resource_prefix: str,
     project_name: str,
-    cluster_name: str = None,
-    use_env_vars: bool = True,
 ):
-    """Set environment variables for Azure Synapse spark cluster.
-    One may need to set ADLS_KEY"""
+    """Set environment variables for Azure Synapse spark cluster."""
 
-    dev_url = f"https://{resource_prefix}syws.dev.azuresynapse.net"
-    workspace_dir = f"abfss://{resource_prefix}fs@{resource_prefix}dls.dfs.core.windows.net/{project_name}"
+    if "azure_synapse" not in config["spark_config"]:
+        config["spark_config"]["azure_synapse"] = dict()
 
-    if use_env_vars:
-        dev_url = os.getenv("SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL", dev_url)
-        cluster_name = os.getenv("SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME", cluster_name)
-        workspace_dir = os.getenv("SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR", workspace_dir)
+    if "dev_url" not in config["spark_config"]["azure_synapse"]:
+        config["spark_config"]["azure_synapse"]["dev_url"] = f"https://{resource_prefix}syws.dev.azuresynapse.net"
 
-    if not cluster_name:
-        raise ValueError("Azure Synapse spark pool name is not provided.")
+    if "workspace_dir" not in config["spark_config"]["azure_synapse"]:
+        config["spark_config"]["azure_synapse"]["workspace_dir"] =\
+            f"abfss://{resource_prefix}fs@{resource_prefix}dls.dfs.core.windows.net/{project_name}"
 
-    config["spark_config"]["azure_synapse"] = {
-        "dev_url": dev_url,
-        "pool_name": cluster_name,
-        "workspace_dir": workspace_dir,
-        **DEFAULT_AZURE_SYNAPSE_SPARK_POOL_CONFIG,
-    }
+    for k, v in DEFAULT_AZURE_SYNAPSE_SPARK_POOL_CONFIG.items():
+        if k not in config["spark_config"]["azure_synapse"]:
+            config["spark_config"]["azure_synapse"][k] = v
 
 
 def _set_databricks_config(
     config: Dict,
     project_name: str,
-    workspace_url: str,
-    cluster_name: str = None,
-    use_env_vars: bool = True,
+    cluster_id: str = None,
 ):
-    if is_databricks():
-        # If this functions is being called in Databricks, we may use the context to override the provided arguments.
-        ctx = dbutils.notebook.entry_point.getDbutils().notebook().getContext()
-        workspace_url = "https://" + ctx.tags().get("browserHostName").get()
-        workspace_token = ctx.apiToken().get()
-    else:
-        workspace_token = os.getenv("DATABRICKS_WORKSPACE_TOKEN_VALUE", None)
+    if "databricks" not in config["spark_config"]:
+        config["spark_config"]["databricks"] = dict()
 
-    work_dir = f"dbfs:/{project_name}"
-    databricks_config = {
-        "run_name": "FEATHR_FILL_IN",
-        "libraries": [{"jar": "FEATHR_FILL_IN"}],
-        "spark_jar_task": {
-            "main_class_name": "FEATHR_FILL_IN",
-            "parameters": ["FEATHR_FILL_IN"],
-        },
-    }
-    if cluster_name is None:
-        databricks_config["new_cluster"] = DEFAULT_DATABRICKS_CLUSTER_CONFIG
-    else:
-        databricks_config["existing_cluster_id"] = cluster_name
-    config_template = json.dumps(databricks_config)
+    if "work_dir" not in config["spark_config"]["databricks"]:
+        config["spark_config"]["databricks"]["work_dir"] = f"dbfs:/{project_name}"
 
-    if use_env_vars:
-        work_dir = os.getenv("SPARK_CONFIG__DATABRICKS__WORK_DIR", work_dir)
-        workspace_url = os.getenv("SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL", workspace_url)
-        workspace_token = os.getenv("DATABRICKS_WORKSPACE_TOKEN_VALUE", workspace_token)
-        config_template = os.getenv("SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE", config_template)
+    if "config_template" not in config["spark_config"]["databricks"]:
+        databricks_config = {
+            "run_name": "FEATHR_FILL_IN",
+            "libraries": [{"jar": "FEATHR_FILL_IN"}],
+            "spark_jar_task": {
+                "main_class_name": "FEATHR_FILL_IN",
+                "parameters": ["FEATHR_FILL_IN"],
+            },
+        }
+        if cluster_id is None:
+            databricks_config["new_cluster"] = DEFAULT_DATABRICKS_CLUSTER_CONFIG
+        else:
+            databricks_config["existing_cluster_id"] = cluster_id
 
-    if not workspace_url:
-        raise ValueError("Databricks workspace url is not provided.")
+        config["spark_config"]["databricks"]["config_template"] = json.dumps(databricks_config)
 
-    if not workspace_token:
-        raise ValueError("Databricks workspace token is not provided.")
 
-    os.environ["DATABRICKS_WORKSPACE_TOKEN_VALUE"] = workspace_token
-    config["spark_config"]["databricks"] = {
-        "work_dir": work_dir,
-        "workspace_instance_url": workspace_url,
-        "config_template": config_template,
-    }
+def _config_kwargs_to_dict(**kwargs) -> Dict:
+    """Parse config's keyword arguments to dictionary.
+    e.g. `spark_config__spark_cluster="local"` will be parsed to `{"spark_config": {"spark_cluster": "local"}}`.
+    """
+    config = dict()
+
+    for conf_key, conf_value in kwargs.items():
+        if conf_value is None:
+            continue
+
+        conf = config
+        keys = conf_key.split("__")
+        for k in keys[:-1]:
+            if k not in conf:
+                conf[k] = dict()
+            conf = conf[k]
+        conf[keys[-1]] = conf_value
+
+    return config
+
+
+def _update_config(config: Dict, new_config: Dict):
+    """Update config dictionary with the values in `new_config`."""
+    for k, v in new_config.items():
+        if k in config and isinstance(v, collections.abc.Mapping):
+            _update_config(config[k], v)
+        else:
+            config[k] = v
+
+
+def _verify_config(config: Dict):
+    """Verify config."""
+    if config["spark_config"]["spark_cluster"] == "azure_synapse":
+        if "ADLS_KEY" not in os.environ:
+            raise ValueError("ADLS_KEY must be set in environment variables")
+
+    elif config["spark_config"]["spark_cluster"] == "databricks":
+        if "DATABRICKS_WORKSPACE_TOKEN_VALUE" not in os.environ:
+            raise ValueError("Databricks workspace token is not provided.")
+        elif "workspace_instance_url" not in config["spark_config"]["databricks"]:
+            raise ValueError("Databricks workspace url is not provided.")
+
+
+def _maybe_update_config_with_env_var(config: Dict, env_var_name: str):
+    """Update config dictionary with the values in environment variables.
+    e.g. `SPARK_CONFIG__SPARK_CLUSTER` will be parsed to `{"spark_config": {"spark_cluster": "local"}}`.
+    """
+    if env_var_name not in os.environ:
+        return
+
+    keys = env_var_name.lower().split("__")
+    conf = config
+    for k in keys[:-1]:
+        if k not in conf:
+            conf[k] = dict()
+        conf = conf[k]
+
+    conf[keys[-1]] = os.environ[env_var_name]
