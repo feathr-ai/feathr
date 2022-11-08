@@ -97,6 +97,6 @@ def test_client_get_snowflake_observation_path():
 
 
     client = snowflake_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
-    snowflake_path_actual = client.get_snowfake_path(database="DATABASE", schema="SCHEMA", dbtable="TABLE")
+    snowflake_path_actual = client.get_snowflake_path(database="DATABASE", schema="SCHEMA", dbtable="TABLE")
     snowflake_path_expected = "snowflake://snowflake_account/?sfDatabase=DATABASE&sfSchema=SCHEMA&dbtable=TABLE"
     assert snowflake_path_actual == snowflake_path_expected
