@@ -10,6 +10,7 @@ from feathr.utils.job_utils import get_result_df
 from test_fixture import basic_test_setup
 from test_utils.constants import Constants
 
+
 # test parquet file read/write without an extension name
 def test_feathr_get_offline_features_with_parquet():
     """
@@ -38,7 +39,7 @@ def test_feathr_get_offline_features_with_parquet():
     else:
         output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".parquet"])
 
-    
+
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path,
@@ -47,12 +48,10 @@ def test_feathr_get_offline_features_with_parquet():
 
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
-    
+
     # download result and just assert the returned result is not empty
     res_df = get_result_df(client)
     assert res_df.shape[0] > 0
-
-
 
 
 # test delta lake read/write without an extension name
@@ -83,7 +82,7 @@ def test_feathr_get_offline_features_with_delta_lake():
     else:
         output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), "_deltalake"])
 
-    
+
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path,
@@ -92,15 +91,13 @@ def test_feathr_get_offline_features_with_delta_lake():
 
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
-    
+
     # wait for a few secs for the resource to come up in the databricks API
     time.sleep(5)
-    # download result and just assert the returned result is not empty
-    res_df = get_result_df(client)
-    
 
+    # download result and just assert the returned result is not empty
+    # if users are using delta format in synapse, skip this check, due to issue https://github.com/delta-io/delta-rs/issues/582
     result_format: str = client.get_job_tags().get(OUTPUT_FORMAT, "")
     if not (client.spark_runtime == 'azure_synapse' and result_format == 'delta'):
-        # if users are using delta format in synapse, skip this check, due to issue https://github.com/delta-io/delta-rs/issues/582
+        res_df = get_result_df(client)
         assert res_df.shape[0] > 0
-

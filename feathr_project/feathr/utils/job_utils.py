@@ -22,9 +22,9 @@ def get_result_pandas_df(
     Args:
         client: Feathr client
         data_format: Format to read the downloaded files. Currently support `parquet`, `delta`, `avro`, and `csv`.
-            Default to `avro` if not specified.
+            Default to use client's job tags if exists.
         res_url: Result URL to download files from. Note that this will not block the job so you need to make sure
-            the job is finished and the result URL contains actual data.
+            the job is finished and the result URL contains actual data. Default to use client's job tags if exists.
         local_cache_path (optional): Specify the absolute download path. if the user does not provide this,
             the function will create a temporary directory.
 
@@ -47,9 +47,9 @@ def get_result_spark_df(
         spark: Spark session
         client: Feathr client
         data_format: Format to read the downloaded files. Currently support `parquet`, `delta`, `avro`, and `csv`.
-            Default to `avro` if not specified.
+            Default to use client's job tags if exists.
         res_url: Result URL to download files from. Note that this will not block the job so you need to make sure
-            the job is finished and the result URL contains actual data.
+            the job is finished and the result URL contains actual data. Default to use client's job tags if exists.
         local_cache_path (optional): Specify the absolute download path. if the user does not provide this,
             the function will create a temporary directory.
 
@@ -71,9 +71,9 @@ def get_result_df(
     Args:
         client: Feathr client
         data_format: Format to read the downloaded files. Currently support `parquet`, `delta`, `avro`, and `csv`.
-            Default to `avro` if not specified.
+            Default to use client's job tags if exists.
         res_url: Result URL to download files from. Note that this will not block the job so you need to make sure
-            the job is finished and the result URL contains actual data.
+            the job is finished and the result URL contains actual data. Default to use client's job tags if exists.
         local_cache_path (optional): Specify the absolute download directory. if the user does not provide this,
             the function will create a temporary directory.
         spark (optional): Spark session. If provided, the function returns spark Dataframe.
@@ -82,8 +82,21 @@ def get_result_df(
     Returns:
         Either Spark or pandas DataFrame.
     """
+    if data_format is None:
+        # May use data format from the job tags
+        if client.get_job_tags() and client.get_job_tags().get(OUTPUT_FORMAT):
+            data_format = client.get_job_tags().get(OUTPUT_FORMAT)
+        else:
+            raise ValueError("Cannot determine the data format. Please provide the data_format argument.")
+
+    data_format = data_format.lower()
+
     if is_databricks() and client.spark_runtime != "databricks":
         raise RuntimeError(f"The function is called from Databricks but the client.spark_runtime is {client.spark_runtime}.")
+
+    # TODO Loading Synapse Delta table result into pandas has a bug: https://github.com/delta-io/delta-rs/issues/582
+    if not spark and client.spark_runtime == "azure_synapse" and data_format == "delta":
+        raise RuntimeError(f"Loading Delta table result from Azure Synapse into pandas DataFrame is not supported. You maybe able to use spark DataFrame to load the result instead.")
 
     # use a result url if it's provided by the user, otherwise use the one provided by the job
     res_url: str = res_url or client.get_job_result_uri(block=True, timeout_sec=1200)
@@ -120,15 +133,7 @@ def get_result_df(
         logger.info(f"{res_url} files will be downloaded into {local_cache_path}")
         client.feathr_spark_launcher.download_result(result_path=res_url, local_folder=local_cache_path)
 
-    # Use the provided format or one in the job tags.
-    if data_format is None:
-        if client.get_job_tags() and client.get_job_tags().get(OUTPUT_FORMAT):
-            data_format = client.get_job_tags().get(OUTPUT_FORMAT)
-        else:
-            raise ValueError("Cannot determine the data format. Please provide the data_format argument.")
-
     result_df = None
-
     try:
         if spark is not None:
             if data_format == "csv":
@@ -154,17 +159,8 @@ def _load_files_to_pandas_df(dir_path: str, data_format: str = "avro") -> pd.Dat
 
     elif data_format == "delta":
         from deltalake import DeltaTable
-
         delta = DeltaTable(dir_path)
-        # if client.spark_runtime != "azure_synapse":
-        # don't detect for synapse result with Delta as there's a problem with underlying system
-        # Issues are tracked here: https://github.com/delta-io/delta-rs/issues/582
         return delta.to_pyarrow_table().to_pandas()
-        # else:
-        # TODO -- Proper warning messages. Is this applied to all the other formats?
-        # raise RuntimeError(
-        #     "Please use Azure Synapse to read the result in the Azure Synapse cluster. Reading local results is not supported for Azure Synapse."
-        # )
 
     elif data_format == "avro":
         import pandavro as pdx
