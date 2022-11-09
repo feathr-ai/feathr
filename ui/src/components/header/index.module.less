@@ -1,0 +1,48 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 200px;
+  right: 0;
+  z-index: 19;
+  background-color: rgb(255 255 255 / 40%);
+  backdrop-filter: blur(8px);
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  padding-block: 0;
+  padding-inline: 8px;
+  border-block-end: 1px solid rgb(0 0 0 / 6%);
+  justify-content: space-between;
+  display: flex;
+  height: auto;
+  line-height: 48px;
+  padding: 0 16px;
+  flex-wrap: wrap;
+  align-items: center;
+
+  .right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  :global {
+    .dropdown-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px;
+      padding: 2px 4px;
+      transition: all 0.3s;
+
+      &:hover {
+        cursor: pointer;
+        background: rgba(0, 0, 0, 0.025);
+      }
+    }
+  }
+}
+.vacancy {
+  background: #fff;
+  height: 50px;
+}
