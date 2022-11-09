@@ -11,13 +11,16 @@ def pytest_addoption(parser):
     `python -m pytest feathr_project/test/ --resource-prefix your_feathr_resource_prefix`
     """
     parser.addoption(
-        "--resource-prefix", action="store", default="feathrazuretest3", help="Test Azure resource prefix"
+        "--config-path",
+        action="store",
+        default=str(Path(__file__).parent.resolve().joinpath("test_user_workspace", "feathr_config.yaml")),
+        help="Test config path",
     )
 
 
 @pytest.fixture
-def resource_prefix(request):
-    return request.config.getoption("--resource-prefix")
+def config_path(request):
+    return request.config.getoption("--config-path")
 
 
 @pytest.fixture(scope="session")

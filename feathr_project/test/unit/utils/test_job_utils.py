@@ -10,6 +10,7 @@ from pytest_mock import MockerFixture
 from pyspark.sql import DataFrame, SparkSession
 
 from feathr import FeathrClient
+from feathr.constants import OUTPUT_FORMAT, OUTPUT_PATH_TAG
 from feathr.utils.job_utils import (
     get_result_df,
     get_result_pandas_df,
@@ -86,11 +87,24 @@ def test__get_result_df__with_local_cache_path(
 
 
 @pytest.mark.parametrize(
-    "is_databricks,spark_runtime,res_url,expected_error", [
-        (True, "local", None, RuntimeError),  # Test RuntimeError when the function is running at Databricks but client.spark_runtime is not databricks
+    "is_databricks,spark_runtime,res_url,data_format,expected_error", [
+        # Test RuntimeError when the function is running at Databricks but client.spark_runtime is not databricks
+        (True, "local", "some_url", "some_format", RuntimeError),
+        (True, "azure_synapse", "some_url", "some_format", RuntimeError),
+        (True, "databricks", "some_url", "some_format", None),
+        (False, "local", "some_url", "some_format", None),
+        (False, "azure_synapse", "some_url", "some_format", None),
+        (False, "databricks", "some_url", "some_format", None),
         # Test ValueError when res_url is None
-        (False, "local", None, ValueError),
-        (True, "databricks", None, ValueError),
+        (True, "databricks", None, "some_format", ValueError),
+        (False, "local", None, "some_format", ValueError),
+        (False, "azure_synapse", None, "some_format", ValueError),
+        (False, "databricks", None, "some_format", ValueError),
+        # Test ValueError when data_format is None
+        (True, "databricks", "some_url", None, ValueError),
+        (False, "local", "some_url", None, ValueError),
+        (False, "azure_synapse", "some_url", None, ValueError),
+        (False, "databricks", "some_url", None, ValueError),
     ]
 )
 def test__get_result_df__exceptions(
@@ -98,13 +112,10 @@ def test__get_result_df__exceptions(
     is_databricks: bool,
     spark_runtime: str,
     res_url: str,
+    data_format: str,
     expected_error: Type[Exception],
 ):
     """Test exceptions"""
-    # Mock client
-    client = MagicMock()
-    client.get_job_result_uri = MagicMock(return_value=res_url)
-    client.spark_runtime = spark_runtime
 
     # Mock is_data_bricks
     mocker.patch("feathr.utils.job_utils.is_databricks", return_value=is_databricks)
@@ -112,8 +123,27 @@ def test__get_result_df__exceptions(
     # Mock _load_files_to_pandas_df
     mocker.patch("feathr.utils.job_utils._load_files_to_pandas_df")
 
-    with pytest.raises(expected_error):
-        get_result_df(client)
+    # Either job tags or argument should yield the same result
+    for job_tag in [None, {OUTPUT_FORMAT: data_format, OUTPUT_PATH_TAG: res_url}]:
+        # Mock client
+        client = MagicMock()
+        client.get_job_result_uri = MagicMock(return_value=res_url)
+        client.get_job_tags = MagicMock(return_value=job_tag)
+        client.spark_runtime = spark_runtime
+
+        if expected_error is None:
+            get_result_df(
+                client=client,
+                res_url=None if job_tag else res_url,
+                data_format=None if job_tag else data_format,
+            )
+        else:
+            with pytest.raises(expected_error):
+                get_result_df(
+                    client=client,
+                    res_url=None if job_tag else res_url,
+                    data_format=None if job_tag else data_format,
+                )
 
 
 @pytest.mark.parametrize(

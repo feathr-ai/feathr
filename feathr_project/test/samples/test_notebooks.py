@@ -23,7 +23,7 @@ NOTEBOOK_PATHS = {
 
 
 @pytest.mark.notebooks
-def test__nyc_taxi_demo(resource_prefix, tmp_path):
+def test__nyc_taxi_demo(config_path, tmp_path):
     notebook_name = "nyc_taxi_demo"
 
     output_tmpdir = TemporaryDirectory()
@@ -36,10 +36,8 @@ def test__nyc_taxi_demo(resource_prefix, tmp_path):
         output_path=output_notebook_path,
         # kernel_name="python3",
         parameters=dict(
-            RESOURCE_PREFIX=resource_prefix,
-            PROJECT_NAME=notebook_name,
+            FEATHR_CONFIG_PATH=config_path,
             DATA_STORE_PATH=output_tmpdir.name,
-            SPARK_CLUSTER="local",
             USE_CLI_AUTH=False,
             REGISTER_FEATURES=False,
             SCRAP_RESULTS=True,

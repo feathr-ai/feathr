@@ -120,11 +120,12 @@ def get_result_df(
         logger.info(f"{res_url} files will be downloaded into {local_cache_path}")
         client.feathr_spark_launcher.download_result(result_path=res_url, local_folder=local_cache_path)
 
-    # use user provided format, if there isn't one, then otherwise use the one provided by the job;
-    # if none of them is available, "avro" is the default format.
-    data_format: str = data_format or client.get_job_tags().get(OUTPUT_FORMAT, "")
-    if data_format is None or data_format == "":
-        data_format = "avro"
+    # Use the provided format or one in the job tags.
+    if data_format is None:
+        if client.get_job_tags() and client.get_job_tags().get(OUTPUT_FORMAT):
+            data_format = client.get_job_tags().get(OUTPUT_FORMAT)
+        else:
+            raise ValueError("Cannot determine the data format. Please provide the data_format argument.")
 
     result_df = None
 

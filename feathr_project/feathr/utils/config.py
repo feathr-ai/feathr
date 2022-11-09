@@ -48,7 +48,6 @@ DEFAULT_DATABRICKS_CLUSTER_CONFIG = {
 DEFAULT_AZURE_SYNAPSE_SPARK_POOL_CONFIG = {
     "executor_size": "Small",
     "executor_num": 2,
-    "pool_name": "spark3",
 }
 
 
@@ -161,20 +160,19 @@ def _set_azure_synapse_config(
     resource_prefix: str,
     project_name: str,
 ):
-    """Set environment variables for Azure Synapse spark cluster."""
+    """Set configs for Azure Synapse spark cluster."""
 
-    if "azure_synapse" not in config["spark_config"]:
-        config["spark_config"]["azure_synapse"] = dict()
+    config["spark_config"]["azure_synapse"] = config["spark_config"].get("azure_synapse", {})
 
-    if "dev_url" not in config["spark_config"]["azure_synapse"]:
+    if not config["spark_config"]["azure_synapse"].get("dev_url"):
         config["spark_config"]["azure_synapse"]["dev_url"] = f"https://{resource_prefix}syws.dev.azuresynapse.net"
 
-    if "workspace_dir" not in config["spark_config"]["azure_synapse"]:
+    if not config["spark_config"]["azure_synapse"].get("workspace_dir"):
         config["spark_config"]["azure_synapse"]["workspace_dir"] =\
             f"abfss://{resource_prefix}fs@{resource_prefix}dls.dfs.core.windows.net/{project_name}"
 
     for k, v in DEFAULT_AZURE_SYNAPSE_SPARK_POOL_CONFIG.items():
-        if k not in config["spark_config"]["azure_synapse"]:
+        if not config["spark_config"]["azure_synapse"].get(k):
             config["spark_config"]["azure_synapse"][k] = v
 
 
@@ -183,13 +181,14 @@ def _set_databricks_config(
     project_name: str,
     cluster_id: str = None,
 ):
-    if "databricks" not in config["spark_config"]:
-        config["spark_config"]["databricks"] = dict()
+    """Set configs for Databricks spark cluster."""
 
-    if "work_dir" not in config["spark_config"]["databricks"]:
+    config["spark_config"]["databricks"] = config["spark_config"].get("databricks", {})
+
+    if not config["spark_config"]["databricks"].get("work_dir"):
         config["spark_config"]["databricks"]["work_dir"] = f"dbfs:/{project_name}"
 
-    if "config_template" not in config["spark_config"]["databricks"]:
+    if not config["spark_config"]["databricks"].get("config_template"):
         databricks_config = {
             "run_name": "FEATHR_FILL_IN",
             "libraries": [{"jar": "FEATHR_FILL_IN"}],
@@ -239,13 +238,26 @@ def _update_config(config: Dict, new_config: Dict):
 def _verify_config(config: Dict):
     """Verify config."""
     if config["spark_config"]["spark_cluster"] == "azure_synapse":
-        if "ADLS_KEY" not in os.environ:
+        if not os.environ.get("ADLS_KEY"):
             raise ValueError("ADLS_KEY must be set in environment variables")
+        elif (
+            not os.environ.get("SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL") and
+            config["spark_config"]["azure_synapse"].get("dev_url") is None
+        ):
+            raise ValueError("Azure Synapse dev endpoint is not provided.")
+        elif (
+            not os.environ.get("SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME") and
+            config["spark_config"]["azure_synapse"].get("pool_name") is None
+        ):
+            raise ValueError("Azure Synapse pool name is not provided.")
 
     elif config["spark_config"]["spark_cluster"] == "databricks":
-        if "DATABRICKS_WORKSPACE_TOKEN_VALUE" not in os.environ:
+        if not os.environ.get("DATABRICKS_WORKSPACE_TOKEN_VALUE"):
             raise ValueError("Databricks workspace token is not provided.")
-        elif "workspace_instance_url" not in config["spark_config"]["databricks"]:
+        elif (
+            not os.environ.get("SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL") and
+            config["spark_config"]["databricks"].get("workspace_instance_url") is None
+        ):
             raise ValueError("Databricks workspace url is not provided.")
 
 
@@ -253,7 +265,7 @@ def _maybe_update_config_with_env_var(config: Dict, env_var_name: str):
     """Update config dictionary with the values in environment variables.
     e.g. `SPARK_CONFIG__SPARK_CLUSTER` will be parsed to `{"spark_config": {"spark_cluster": "local"}}`.
     """
-    if env_var_name not in os.environ:
+    if not os.environ.get(env_var_name):
         return
 
     keys = env_var_name.lower().split("__")
