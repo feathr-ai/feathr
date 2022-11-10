@@ -1,11 +1,10 @@
 package com.linkedin.feathr.offline.util
 
-import org.apache.spark.sql.internal.SQLConf
-import Transformations.sortColumns
 import com.linkedin.feathr.offline.config.datasource.{DataSourceConfigUtils, DataSourceConfigs}
-import com.linkedin.feathr.offline.job.FeatureGenJob
+import com.linkedin.feathr.offline.util.Transformations.sortColumns
 import org.apache.avro.generic.GenericRecord
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 private[offline] object FeathrTestUtils {

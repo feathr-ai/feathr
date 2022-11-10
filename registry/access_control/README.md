@@ -58,7 +58,7 @@ Admin roles can add or delete roles in management UI page or through management 
 | RBAC_API_AUDIENCE   | Used as audience to decode jwt tokens                                            |
 
 ## Notes
-
+Please notice that User Role records are **NOT** case sensitive. All records will be converted to lower case before saving to database.
 Supported scenarios status are tracked below:
 
 - General Foundations:

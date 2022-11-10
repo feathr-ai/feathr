@@ -1,18 +1,19 @@
 package com.linkedin.feathr.offline.derived
 
-import com.linkedin.feathr.{common, offline}
-import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig}
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
-import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
+import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig}
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.client.plugins.{FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor}
-import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
-import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinAsDerivation, SparkUdfDerivation}
+import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction}
+import com.linkedin.feathr.offline.derived.strategies._
 import com.linkedin.feathr.offline.join.algorithms.{SequentialJoinConditionBuilder, SparkJoinWithJoinCondition}
 import com.linkedin.feathr.offline.logical.FeatureGroups
-import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
+import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
 import com.linkedin.feathr.sparkcommon.FeatureDerivationFunctionSpark
+import com.linkedin.feathr.{common, offline}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -20,7 +21,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * This class is responsible for applying feature derivations.
  * @param derivationStrategies strategies for executing various derivation functions.
  */
-private[offline] class DerivedFeatureEvaluator(derivationStrategies: DerivationStrategies) {
+private[offline] class DerivedFeatureEvaluator(derivationStrategies: DerivationStrategies, mvelContext: Option[FeathrExpressionExecutionContext]) {
 
   /**
    * Calculate a derived feature, this function support all kinds of derived features
@@ -39,23 +40,26 @@ private[offline] class DerivedFeatureEvaluator(derivationStrategies: DerivationS
 
     derivedFeature.derivation match {
       case g: SeqJoinDerivationFunction =>
-        val resultDF = derivationStrategies.sequentialJoinDerivationStrategy(keyTag, keyTagList, contextDF, derivedFeature, g)
+        val resultDF = derivationStrategies.sequentialJoinDerivationStrategy(keyTag, keyTagList, contextDF, derivedFeature, g, mvelContext)
         convertFeatureColumnToQuinceFds(producedFeatureColName, derivedFeature, resultDF)
       case h: FeatureDerivationFunctionSpark =>
-        val resultDF = derivationStrategies.customDerivationSparkStrategy(keyTag, keyTagList, contextDF, derivedFeature, h)
+        val resultDF = derivationStrategies.customDerivationSparkStrategy(keyTag, keyTagList, contextDF, derivedFeature, h, mvelContext)
+        convertFeatureColumnToQuinceFds(producedFeatureColName, derivedFeature, resultDF)
+      case s: SQLFeatureDerivationFunction =>
+        val resultDF = derivationStrategies.sqlDerivationSparkStrategy(keyTag, keyTagList, contextDF, derivedFeature, s, mvelContext)
         convertFeatureColumnToQuinceFds(producedFeatureColName, derivedFeature, resultDF)
       case x: FeatureDerivationFunction =>
         // We should do the FDS conversion inside the rowBasedDerivationStrategy here. The result of rowBasedDerivationStrategy
         // can be NTV FeatureValue or TensorData-based Feature. NTV FeatureValue has fixed FDS schema. However, TensorData
         // doesn't have fixed DataFrame schema so that we can't return TensorData but has to return FDS.
-        val resultDF = derivationStrategies.rowBasedDerivationStrategy(keyTag, keyTagList, contextDF, derivedFeature, x)
+        val resultDF = derivationStrategies.rowBasedDerivationStrategy(keyTag, keyTagList, contextDF, derivedFeature, x, mvelContext)
         offline.FeatureDataFrame(resultDF, getTypeConfigs(producedFeatureColName, derivedFeature, resultDF))
       case derivation =>
         FeathrUdfPluginContext.getRegisteredUdfAdaptor(derivation.getClass) match {
           case Some(adaptor: FeatureDerivationFunctionAdaptor) =>
             // replicating the FeatureDerivationFunction case above
             val featureDerivationFunction = adaptor.adaptUdf(derivation)
-            val resultDF = derivationStrategies.rowBasedDerivationStrategy(keyTag, keyTagList, contextDF, derivedFeature, featureDerivationFunction)
+            val resultDF = derivationStrategies.rowBasedDerivationStrategy(keyTag, keyTagList, contextDF, derivedFeature, featureDerivationFunction, mvelContext)
             offline.FeatureDataFrame(resultDF, getTypeConfigs(producedFeatureColName, derivedFeature, resultDF))
           case _ =>
             throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Unsupported feature derivation function for feature ${derivedFeature.producedFeatureNames.head}.")
@@ -108,17 +112,18 @@ private[offline] class DerivedFeatureEvaluator(derivationStrategies: DerivationS
 private[offline] object DerivedFeatureEvaluator {
   private val log = Logger.getLogger(getClass)
 
-  def apply(derivationStrategies: DerivationStrategies): DerivedFeatureEvaluator = new DerivedFeatureEvaluator(derivationStrategies)
+  def apply(derivationStrategies: DerivationStrategies, mvelContext: Option[FeathrExpressionExecutionContext]): DerivedFeatureEvaluator = new DerivedFeatureEvaluator(derivationStrategies, mvelContext)
 
   def apply(ss: SparkSession,
             featureGroups: FeatureGroups,
-            dataPathHandlers: List[DataPathHandler]): DerivedFeatureEvaluator = {
+            dataPathHandlers: List[DataPathHandler],
+            mvelContext: Option[FeathrExpressionExecutionContext]): DerivedFeatureEvaluator = {
     val defaultStrategies = strategies.DerivationStrategies(
       new SparkUdfDerivation(),
-      new RowBasedDerivation(featureGroups.allTypeConfigs),
-      new SequentialJoinAsDerivation(ss, featureGroups, SparkJoinWithJoinCondition(SequentialJoinConditionBuilder), dataPathHandlers)
-      )
-    new DerivedFeatureEvaluator(defaultStrategies)
+      new RowBasedDerivation(featureGroups.allTypeConfigs, mvelContext),
+      new SequentialJoinAsDerivation(ss, featureGroups, SparkJoinWithJoinCondition(SequentialJoinConditionBuilder), dataPathHandlers),
+      new SqlDerivationSpark())
+    new DerivedFeatureEvaluator(defaultStrategies, mvelContext)
   }
 
   /**
@@ -132,7 +137,9 @@ private[offline] object DerivedFeatureEvaluator {
   def evaluateFromFeatureValues(
       keyTag: Seq[Int],
       derivedFeature: DerivedFeature,
-      contextFeatureValues: Map[common.ErasedEntityTaggedFeature, common.FeatureValue]): Map[common.ErasedEntityTaggedFeature, common.FeatureValue] = {
+      contextFeatureValues: Map[common.ErasedEntityTaggedFeature, common.FeatureValue],
+      mvelContext: Option[FeathrExpressionExecutionContext]
+    ): Map[common.ErasedEntityTaggedFeature, common.FeatureValue] = {
     try {
       val linkedInputParams = derivedFeature.consumedFeatureNames.map {
         case ErasedEntityTaggedFeature(calleeTag, featureName) =>
@@ -141,7 +148,13 @@ private[offline] object DerivedFeatureEvaluator {
       // for features with value `null`, convert Some(null) to None, to avoid null pointer exception in downstream analysis
       val keyedContextFeatureValues = contextFeatureValues.map(kv => (kv._1.getErasedTagFeatureName, kv._2))
       val resolvedInputArgs = linkedInputParams.map(taggedFeature => keyedContextFeatureValues.get(taggedFeature.getErasedTagFeatureName).flatMap(Option(_)))
-      val unlinkedOutput = derivedFeature.getAsFeatureDerivationFunction.getFeatures(resolvedInputArgs)
+      val derivedFunc = derivedFeature.getAsFeatureDerivationFunction match {
+        case derivedFunc: MvelFeatureDerivationFunction =>
+          derivedFunc.mvelContext = mvelContext
+          derivedFunc
+        case func => func
+      }
+      val unlinkedOutput = derivedFunc.getFeatures(resolvedInputArgs)
       val callerKeyTags = derivedFeature.producedFeatureNames.map(ErasedEntityTaggedFeature(keyTag, _))
 
       // This would indicate a problem with the DerivedFeature, where there are a different number of features included in

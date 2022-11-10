@@ -1,16 +1,27 @@
-import React from "react";
-import { Card, Typography } from "antd";
-import DataSourceList from "../../components/dataSourceList";
+import { PageHeader } from "antd";
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
-const { Title } = Typography;
+import DataSourceTable from "./components/DataSourceTable";
+import SearchBar from "./components/SearchBar";
 
 const DataSources = () => {
+  const [searchParams] = useSearchParams();
+
+  const [project, setProject] = useState<string | undefined>(
+    searchParams.get("project") || undefined
+  );
+
+  const onSearch = ({ project }: { project: string }) => {
+    setProject(project);
+  };
+
   return (
     <div className="page">
-      <Card>
-        <Title level={3}>Data Sources</Title>
-        <DataSourceList />
-      </Card>
+      <PageHeader ghost={false} title="Data Sources">
+        <SearchBar defaultProject={project} onSearch={onSearch} />
+        <DataSourceTable project={project} />
+      </PageHeader>
     </div>
   );
 };

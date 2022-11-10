@@ -43,7 +43,7 @@ private[feathr] class MVELSourceKeyExtractor(val anchorExtractorV1: AnchorExtrac
       .toDF()
   }
 
-  def getKey(datum: GenericRowWithSchema): Seq[String] = {
+  def getKey(datum: Any): Seq[String] = {
     anchorExtractorV1.getKeyFromRow(datum)
   }
 
@@ -55,7 +55,7 @@ private[feathr] class MVELSourceKeyExtractor(val anchorExtractorV1: AnchorExtrac
    */
   override def getKeyColumnNames(datum: Option[Any]): Seq[String] = {
     if (datum.isDefined) {
-      val size = getKey(datum.get.asInstanceOf[GenericRowWithSchema]).size
+      val size = getKey(datum.get).size
       (1 to size).map(JOIN_KEY_PREFIX + _)
     } else {
       // return empty join key to signal empty dataset
@@ -86,5 +86,6 @@ private[feathr] class MVELSourceKeyExtractor(val anchorExtractorV1: AnchorExtrac
   // this helps to reduce the number of joins
   // to the observation data
   // The default toString does not work, because toString of each object have different values
-  override def toString: String = getClass.getSimpleName + " with keyExprs:" + keyExprs.mkString(" key:")
+  override def toString: String = getClass.getSimpleName + " with keyExprs:" + keyExprs.mkString(" key:") +
+    "anchorExtractor:" + anchorExtractorV1.toString
 }

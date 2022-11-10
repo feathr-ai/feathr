@@ -105,12 +105,12 @@ And below shows the join definitions:
 feature_query = FeatureQuery(
     feature_list=["feature_X"], key=UserId)
 settings = ObservationSettings(
-    observation_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
+    observation_path="abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv",
     event_timestamp_column="Date",
     timestamp_format="MM/DD")
 client.get_offline_features(observation_settings=settings,
                             feature_query=feature_query,
-                            output_path="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output.avro")
+                            output_path="abfss://{adls_fs_name}@{adls_account}.dfs.core.windows.net/demo_data/output.avro")
 ```
 
 ## Advanced Point-in-time Lookup

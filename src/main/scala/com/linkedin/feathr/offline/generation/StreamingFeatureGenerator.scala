@@ -6,7 +6,7 @@ import com.linkedin.feathr.common.JoiningFeatureParams
 import com.linkedin.feathr.offline.config.location.KafkaEndpoint
 import com.linkedin.feathr.offline.generation.outputProcessor.PushToRedisOutputProcessor.TABLE_PARAM_CONFIG_NAME
 import com.linkedin.feathr.offline.generation.outputProcessor.RedisOutputUtils
-import com.linkedin.feathr.offline.job.FeatureTransformation.getFeatureJoinKey
+import com.linkedin.feathr.offline.job.FeatureTransformation.getFeatureKeyColumnNames
 import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
 import com.linkedin.feathr.offline.logical.FeatureGroups
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
@@ -111,7 +111,7 @@ class StreamingFeatureGenerator(dataPathHandlers: List[DataPathHandler]) {
           // Apply feature transformation
           val transformedResult = DataFrameBasedSqlEvaluator.transform(anchor.featureAnchor.extractor.asInstanceOf[SimpleAnchorExtractorSpark],
             withKeyColumnDF, featureNamePrefixPairs, anchor.featureAnchor.featureTypeConfigs)
-          val outputJoinKeyColumnNames = getFeatureJoinKey(keyExtractor, withKeyColumnDF)
+          val outputJoinKeyColumnNames = getFeatureKeyColumnNames(keyExtractor, withKeyColumnDF)
           val selectedColumns = outputJoinKeyColumnNames ++ anchor.selectedFeatures.filter(keyTaggedFeatures.map(_.featureName).contains(_))
           val cleanedDF = transformedResult.df.select(selectedColumns.head, selectedColumns.tail:_*)
           val keyColumnNames = FeatureTransformation.getStandardizedKeyNames(outputJoinKeyColumnNames.size)

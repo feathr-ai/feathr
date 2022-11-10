@@ -65,3 +65,35 @@ Next we will verify the functionality of Aerospike database by performing basic 
 	# View the config
 	asadm -e "show config"
 ```
+
+# Configure feathr core Spark to connect with Aerospike
+
+1. To connect to Aerospike (with Aerospike SDK, or Spark), username and password need to be configured. 
+Guidance for setting up username and password:
+https://docs.aerospike.com/server/operations/configure/security/access-control
+
+2. To connect to Aerospike with Spark, a spark conector jar needs to be submitted to your Spark runtime. 
+Link to spark connector: 
+https://docs.aerospike.com/connect/spark
+
+3. To use Aerospike as the online store, create `AerospikeSink` and add it to the `MaterializationSettings`, then use it with `FeathrClient.materialize_features`, e.g..
+
+```
+name = 'aerospike_output'
+os.environ[f"{name.upper()}_USER"] = "as_user_name"
+os.environ[f"{name.upper()}_PASSWORD"] = "some_magic_word"
+as_sink = AerospikeSink(name=name,seedhost="ip_address", port=3000, namespace="test", setname="test")
+client.materialize_features(..., materialization_settings=MaterializationSettings(..., sinks=[as_sink]))
+```
+
+
+# Known limitations for Aerospike:
+Aerospike has its own limitations on the data . 
+One limitation is that worth attention is, for any incoming data row, ANY column name should not be longer than 15 bytes.
+
+So when using feathr, do not define feature names longer than 15 ascii characters.
+
+Check 
+https://docs.aerospike.com/guide/limitations for more details.
+
+

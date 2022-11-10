@@ -52,27 +52,20 @@ jobs:
     
     
     steps:
-      - name: Deploy to Feathr SQL Registry Azure Web App
-        id: deploy-to-sql-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'feathr-sql-registry'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FEATHR_SQL_REGISTRY }}
-          images: 'index.docker.io/feathrfeaturestore/feathr-registry:nightly'
-    
       - name: Deploy to Feathr Purview Registry Azure Web App
         id: deploy-to-purview-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'feathr-purview-registry'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FEATHR_PURVIEW_REGISTRY }}
-          images: 'index.docker.io/feathrfeaturestore/feathr-registry:nightly'
+        uses: distributhor/workflow-webhook@v3.0.1
+        env:
+          webhook_url: ${{ secrets.AZURE_WEBAPP_FEATHR_PURVIEW_REGISTRY_WEBHOOK }}
 
       - name: Deploy to Feathr RBAC Registry Azure Web App
         id: deploy-to-rbac-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'feathr-rbac-registry'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FEATHR_RBAC_REGISTRY }}
-          images: 'index.docker.io/feathrfeaturestore/feathr-registry:nightly'
-
+        uses: distributhor/workflow-webhook@v3.0.1
+        env:
+          webhook_url: ${{ secrets.AZURE_WEBAPP_FEATHR_RBAC_REGISTRY_WEBHOOK }}
+          
+      - name: Deploy to Feathr SQL Registry Azure Web App
+        id: deploy-to-sql-webapp
+        uses: distributhor/workflow-webhook@v3.0.1
+        env:
+          webhook_url: ${{ secrets.AZURE_WEBAPP_FEATHR_SQL_REGISTRY_WEBHOOK }}

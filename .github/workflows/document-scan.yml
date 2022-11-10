@@ -1,6 +1,9 @@
 name: Feathr Documents' Broken Link Check
 
-on: [push]
+on:
+  push:
+    branches: [main]
+
 jobs:
   check-links:
     runs-on: ubuntu-latest

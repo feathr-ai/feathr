@@ -22,6 +22,7 @@ from tqdm import tqdm
 
 from feathr.spark_provider._abc import SparkJobLauncher
 from feathr.constants import *
+from feathr.version import get_maven_artifact_fullname
 
 class LivyStates(Enum):
     """ Adapt LivyStates over to relax the dependency for azure-synapse-spark pacakge.
@@ -114,17 +115,17 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         if not main_jar_path:
             # We don't have the main jar, use Maven
             # Add Maven dependency to the job configuration
+            logger.info(f"Main JAR file is not set, using default package '{get_maven_artifact_fullname()}' from Maven")
             if "spark.jars.packages" in cfg:
                 cfg["spark.jars.packages"] = ",".join(
-                    [cfg["spark.jars.packages"], FEATHR_MAVEN_ARTIFACT])
+                    [cfg["spark.jars.packages"], get_maven_artifact_fullname()])
             else:
-                cfg["spark.jars.packages"] = FEATHR_MAVEN_ARTIFACT
+                cfg["spark.jars.packages"] = get_maven_artifact_fullname()
 
             if not python_files:
                 # This is a JAR job
                 # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
                 # so we have to use a dummy jar as the main file.
-                logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
                 # Use the no-op jar as the main file
                 # This is a dummy jar which contains only one `org.example.Noop` class with one empty `main` function which does nothing
                 current_dir = pathlib.Path(__file__).parent.resolve()
@@ -325,7 +326,7 @@ class _SynapseJobRunner(object):
     def get_driver_log(self, job_id) -> str:
         # @see: https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/connect-monitor-azure-synapse-spark-application-level-metrics
         app_id = self.get_spark_batch_job(job_id).app_id
-        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stdout/?isDownload=true" % (self._synapse_dev_url, self._spark_pool_name, job_id, app_id)
+        url = "%s/sparkhistory/api/v1/sparkpools/%s/livyid/%s/applications/%s/driverlog/stderr/?isDownload=true" % (self._synapse_dev_url, self._spark_pool_name, job_id, app_id)
         token = self._credential.get_token("https://dev.azuresynapse.net/.default").token
         req = urllib.request.Request(url=url, headers={"authorization": "Bearer %s" % token})
         resp = urllib.request.urlopen(req)

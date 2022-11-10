@@ -50,7 +50,7 @@ class TestAnchoredFeatureJoinStep extends TestFeathr with MockitoSugar {
     val mockAnchorStepInput = mock[AnchorJoinStepInput]
     when(mockAnchorStepInput.observation).thenReturn(ss.emptyDataFrame)
     val basicAnchoredFeatureJoinStep =
-      AnchoredFeatureJoinStep(SqlTransformedLeftJoinKeyColumnAppender, IdentityJoinKeyColumnAppender, SparkJoinWithJoinCondition(EqualityJoinConditionBuilder))
+      AnchoredFeatureJoinStep(SqlTransformedLeftJoinKeyColumnAppender, IdentityJoinKeyColumnAppender, SparkJoinWithJoinCondition(EqualityJoinConditionBuilder), None)
     val FeatureDataFrameOutput(FeatureDataFrame(outputDF, inferredFeatureType)) =
       basicAnchoredFeatureJoinStep.joinFeatures(Seq(ErasedEntityTaggedFeature(Seq(0), "featureName1")), mockAnchorStepInput)(mockExecutionContext)
 
@@ -77,7 +77,7 @@ class TestAnchoredFeatureJoinStep extends TestFeathr with MockitoSugar {
       KeyedTransformedResult(Seq("joinKey1", "joinKey2"), mockTransformedResult),
       KeyedTransformedResult(Seq("joinKey2", "joinKey3"), mockTransformedResult))
     val basicAnchoredFeatureJoinStep =
-      AnchoredFeatureJoinStep(SqlTransformedLeftJoinKeyColumnAppender, IdentityJoinKeyColumnAppender, SparkJoinWithJoinCondition(EqualityJoinConditionBuilder))
+      AnchoredFeatureJoinStep(SqlTransformedLeftJoinKeyColumnAppender, IdentityJoinKeyColumnAppender, SparkJoinWithJoinCondition(EqualityJoinConditionBuilder), None)
     basicAnchoredFeatureJoinStep.joinFeaturesOnSingleDF(
       Seq(0),
       Seq("leftJoinKeyColumn"),
@@ -103,7 +103,7 @@ class TestAnchoredFeatureJoinStep extends TestFeathr with MockitoSugar {
     // observation DF
     val leftDF = getDefaultDataFrame()
     val basicAnchoredFeatureJoinStep =
-      AnchoredFeatureJoinStep(SqlTransformedLeftJoinKeyColumnAppender, IdentityJoinKeyColumnAppender, SparkJoinWithJoinCondition(EqualityJoinConditionBuilder))
+      AnchoredFeatureJoinStep(SqlTransformedLeftJoinKeyColumnAppender, IdentityJoinKeyColumnAppender, SparkJoinWithJoinCondition(EqualityJoinConditionBuilder), None)
     val resultDF = basicAnchoredFeatureJoinStep.joinFeaturesOnSingleDF(Seq(0), Seq("x"), leftDF, (Seq("feature1", "feature2"), keyedTransformedResults))(
       mockExecutionContext)
     resultDF.show()
@@ -141,7 +141,7 @@ class TestAnchoredFeatureJoinStep extends TestFeathr with MockitoSugar {
 
     // observation DF
     val leftDF = getDefaultDataFrame()
-    val basicAnchoredFeatureJoinStep = AnchoredFeatureJoinStep(SqlTransformedLeftJoinKeyColumnAppender, IdentityJoinKeyColumnAppender, mockJoiner)
+    val basicAnchoredFeatureJoinStep = AnchoredFeatureJoinStep(SqlTransformedLeftJoinKeyColumnAppender, IdentityJoinKeyColumnAppender, mockJoiner, None)
     val resultDF = basicAnchoredFeatureJoinStep.joinFeaturesOnSingleDF(Seq(0), Seq("x"), leftDF, (Seq("feature1", "feature2"), keyedTransformedResults))(
       mockExecutionContext)
     // Verify that the joiner was called by validating an empty DataFrame was indeed returned

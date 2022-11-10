@@ -1,9 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import App from "./app";
-import "antd/dist/antd.min.css";
-import "./index.less";
 import "./site.css";
+
+dayjs.extend(utc);
 
 ReactDOM.render(
   <React.StrictMode>

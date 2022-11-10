@@ -17,6 +17,7 @@ from .definition.aggregation import *
 from .definition.settings import *
 from .utils.job_utils import *
 from .utils.feature_printer import *
+from .version import __version__
 
 # skipped class as they are internal methods:
 # RepoDefinitions, HoconConvertible,
@@ -46,6 +47,7 @@ __all__ = [
     'RedisSink',
     'HdfsSink',
     'MonitoringSqlSink',
+    'AerospikeSink',
     'FeatureQuery',
     'LookupFeature',
     'Aggregation',
@@ -72,4 +74,5 @@ __all__ = [
     'ObservationSettings',
     'FeaturePrinter',
     'SparkExecutionConfiguration',
+    __version__,
  ]

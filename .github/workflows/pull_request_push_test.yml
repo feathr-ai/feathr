@@ -22,11 +22,15 @@ on:
       - "docs/**"
       - "ui/**"
       - "**/README.md"
+  
+  schedule:
+    # Runs daily at 1 PM UTC (9 PM CST), will send notification to TEAMS_WEBHOOK
+    - cron: '00 13 * * *'
 
 jobs:
   sbt_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -41,7 +45,7 @@ jobs:
 
   python_lint:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
@@ -61,7 +65,7 @@ jobs:
 
   databricks_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -87,8 +91,7 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest pytest-xdist databricks-cli
-          python -m pip install -e ./feathr_project/
+          python -m pip install -e ./feathr_project/[all]
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Set env variable and upload jars
         env:
@@ -123,7 +126,6 @@ jobs:
           COSMOS1_KEY: ${{secrets.COSMOS1_KEY}}
           SQL1_USER: ${{secrets.SQL1_USER}}
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
-
         run: |
           # run only test with databricks. run in 4 parallel jobs
           pytest -n 6 feathr_project/test/
@@ -131,7 +133,7 @@ jobs:
   azure_synapse_test:
     # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -165,8 +167,7 @@ jobs:
       - name: Install Feathr Package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest pytest-xdist
-          python -m pip install -e ./feathr_project/
+          python -m pip install -e ./feathr_project/[all]
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Run Feathr with Azure Synapse
         env:
@@ -197,3 +198,83 @@ jobs:
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
           pytest -n 6 feathr_project/test/
+
+  local_spark_test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: "8"
+          distribution: "temurin"
+      - name: Build JAR
+        run: |
+          sbt assembly
+          # remote folder for CI upload
+          echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
+          # get local jar name without paths so version change won't affect it
+          echo "FEATHR_LOCAL_JAR_NAME=$(ls target/scala-2.12/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
+          # get local jar name without path
+          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls target/scala-2.12/*.jar)" >> $GITHUB_ENV
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install Feathr Package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ./feathr_project/[all]
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Run Feathr with Local Spark
+        env:
+          PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_local"
+          SPARK_CONFIG__SPARK_CLUSTER: local
+          REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
+          AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
+          AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
+          AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
+          S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
+          S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
+          ADLS_ACCOUNT: ${{secrets.ADLS_ACCOUNT}}
+          ADLS_KEY: ${{secrets.ADLS_KEY}}
+          BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
+          BLOB_KEY: ${{secrets.BLOB_KEY}}
+          JDBC_TABLE: ${{secrets.JDBC_TABLE}}
+          JDBC_USER: ${{secrets.JDBC_USER}}
+          JDBC_PASSWORD: ${{secrets.JDBC_PASSWORD}}
+          JDBC_DRIVER: ${{secrets.JDBC_DRIVER}}
+          JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
+          KAFKA_SASL_JAAS_CONFIG: ${{secrets.KAFKA_SASL_JAAS_CONFIG}}
+          MONITORING_DATABASE_SQL_PASSWORD: ${{secrets.MONITORING_DATABASE_SQL_PASSWORD}}
+          COSMOS1_KEY: ${{secrets.COSMOS1_KEY}}
+          SQL1_USER: ${{secrets.SQL1_USER}}
+          SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
+        run: |
+          # skip cloud related tests
+          pytest feathr_project/test/test_local_spark_e2e.py
+
+  failure_notification:
+    # If any failure, warning message will be sent
+    needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name == 'schedule'
+    steps:
+     - name: Warning
+       run: |
+        curl -H 'Content-Type: application/json' -d '{"text": "[WARNING] Daily CI has failure, please check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' ${{ secrets.TEAMS_WEBHOOK }}
+
+  notification:
+    # Final Daily Report with all job status
+    needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
+    runs-on: ubuntu-latest
+    if: always() && github.event_name == 'schedule'
+    steps:
+      - name: Get Date
+        run: echo "NOW=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+      - name: Notification
+        run: |
+          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. SBT Test ${{needs.sbt_test.result}}, 2. Python Lint Test ${{needs.python_lint.result}}, 3. Databricks Test ${{needs.databricks_test.result}}, 4. Synapse Test ${{needs.azure_synapse_test.result}} , 5. LOCAL SPARK TEST ${{needs.local_spark_test.result}}. Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' ${{ secrets.TEAMS_WEBHOOK }}

@@ -6,7 +6,7 @@ parent: How-to Guides
 
 # Azure Resource Provisioning
 
-The provided Azure Resource Manager (ARM) template deploys the following resources, please make sure you have enough quota in the subscription and region you are deploying this in. You can view your quota and make request on Azure [portal](https://ms.portal.azure.com/#view/Microsoft_Azure_Capacity/QuotaMenuBlade/~/overview)
+The provided Azure Resource Manager (ARM) template deploys the following resources, please make sure you have enough quota in the subscription and region you are deploying this in. You can view your quota and make request on Azure [portal](https://ms.portal.azure.com/#view/Microsoft_Azure_Capacity/QuotaMenuBlade/~/overview).
 
 1. Azure Storage account
 2. Azure Purview (metadata store if you selected Azure-Purview as registry backend)
@@ -17,7 +17,9 @@ The provided Azure Resource Manager (ARM) template deploys the following resourc
 7. Azure Event Hub
 8. Azure Redis
 
-Please note, you need to have **owner access** in the resource group you are deploying this in. Owner access is required to assign role to managed identity within ARM template so it can access key vault and store secrets.
+### Please Note: you need to have the **Owner Role** in the resource group you are deploying this in. Owner access is required to assign role to managed identity within the ARM template so it can access key vault and store secrets. It is also required by the permission section in our sample notebooks. If you don't have such permission, you might want to contact your IT admin to see if they can do that.
+
+Although we recommend end users deploy the resources using the ARM template, we understand that in many situations where users want to reuse existing resources instead of creating new resources; or users may have permission issues. See [Manually connecting existing resources](#manually-connecting-existing-resources) for more details.
 
 ## Architecture
 
@@ -32,10 +34,12 @@ Feathr has native cloud integration and getting started with Feathr is very stra
 
 The very first step is to create an Azure Active Directory (AAD) application to enable authentication on the Feathr UI (which gets created as part of the deployment script). Currently it is not possible to create one through ARM template but you can easily create one by running the following CLI commands in the [Cloud Shell](https://shell.azure.com/bash).
 
+### Please make note of the Client ID and Tenant ID for the AAD app, you will need it in the ARM template deployment section.
+
 ```bash
 # This is the prefix you want to name your resources with, make a note of it, you will need it during deployment.
 #  Note: please keep the `resourcePrefix` short (less than 15 chars), since some of the Azure resources need the full name to be less than 24 characters. Only lowercase alphanumeric characters are allowed for resource prefix.
-resource_prefix="userprefix1"
+resource_prefix="yourprefix"
 
 # Please don't change this name, a corresponding webapp with same name gets created in subsequent steps.
 sitename="${resource_prefix}webapp"
@@ -73,7 +77,7 @@ az rest --method PATCH --uri "https://graph.microsoft.com/v1.0/applications/$aad
 
 Click the button below to deploy a minimal set of Feathr resources. This is not for production use as we choose a minimal set of resources, but treat it as a template that you can modify for further use. Note that you should have "Owner" access in your subscription to perform some of the actions.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flinkedin%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ffeathr-ai%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
 ### 3. Grant Key Vault and Synapse access to selected users (Optional)
 
@@ -111,7 +115,6 @@ https://{resource_prefix}webapp.azurewebsites.net
 
 ![feathr ui landing page](../images/feathr-ui-landingpage.png)
 
-
 ### 5. Initialize RBAC access table (Optional)
 
 If you want to use RBAC access for your deployment, you also need to manually initialize the user access table. Replace `[your-email-account]` with the email account that you are currently using, and this email will be the global admin for Feathr feature registry.
@@ -128,7 +131,7 @@ For more details on RBAC, refer to [Feathr Registry Access Control](../how-to-gu
 
 ## Next Steps
 
-Follow the quick start guide [here](https://linkedin.github.io/feathr/quickstart_synapse.html) to try out a notebook example.
+Follow the quick start guide [here](https://feathr-ai.github.io/feathr/quickstart_synapse.html) to try out a notebook example.
 
 ## Known Issues/Workaround
 
@@ -144,6 +147,6 @@ Follow the quick start guide [here](https://linkedin.github.io/feathr/quickstart
    - Once the login is successful, you will see the query editor screen. Run the below queries in the editor and create the required schema.
      ![sql-query-editor-auth](../images/sql-query-editor-open.png)
 
-   - [SQL Registry DB Schema](https://github.com/linkedin/feathr/blob/main/registry/sql-registry/scripts/schema.sql)
+   - [SQL Registry DB Schema](https://github.com/feathr-ai/feathr/blob/main/registry/sql-registry/scripts/schema.sql)
 
-   - [RBAC DB Schema](https://github.com/linkedin/feathr/blob/main/registry/access_control/scripts/schema.sql)
+   - [RBAC DB Schema](https://github.com/feathr-ai/feathr/blob/main/registry/access_control/scripts/schema.sql)

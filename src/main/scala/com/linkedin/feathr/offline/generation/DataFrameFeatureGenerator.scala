@@ -5,11 +5,12 @@ import com.linkedin.feathr.common.{Header, JoiningFeatureParams, TaggedFeatureNa
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource.{getDefaultValues, getFeatureTypes}
 import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
-import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinDerivationStrategy, SparkUdfDerivation}
+import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinDerivationStrategy, SparkUdfDerivation, SqlDerivationSpark}
 import com.linkedin.feathr.offline.derived.{DerivedFeature, DerivedFeatureEvaluator}
 import com.linkedin.feathr.offline.evaluator.DerivedFeatureGenStage
 import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan}
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
@@ -20,7 +21,9 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * Feature generator that is responsible for generating anchored and derived features.
  * @param logicalPlan        logical plan for feature generation job.
  */
-private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler]) extends Serializable {
+private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan,
+                                                 dataPathHandlers: List[DataPathHandler],
+                                                 mvelContext: Option[FeathrExpressionExecutionContext]) extends Serializable {
   @transient val incrementalAggSnapshotLoader = IncrementalAggSnapshotLoader
   @transient val anchorToDataFrameMapper = new AnchorToDataSourceMapper(dataPathHandlers)
   @transient val featureGenFeatureGrouper = FeatureGenFeatureGrouper()
@@ -72,7 +75,7 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
         val anchoredDFThisStage = anchorDFRDDMap.filterKeys(anchoredFeaturesThisStage.toSet)
 
         FeatureTransformation
-          .transformFeatures(anchoredDFThisStage, anchoredFeatureNamesThisStage, None, Some(incrementalAggContext))
+          .transformFeatures(anchoredDFThisStage, anchoredFeatureNamesThisStage, None, Some(incrementalAggContext), mvelContext)
           .map(f => (f._1, (offline.FeatureDataFrame(f._2.transformedResult.df, f._2.transformedResult.inferredFeatureTypes), f._2.joinKey)))
     }.toMap
 
@@ -117,18 +120,20 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
     DerivedFeatureEvaluator(
       DerivationStrategies(
         new SparkUdfDerivation(),
-        new RowBasedDerivation(featureGroups.allTypeConfigs),
+        new RowBasedDerivation(featureGroups.allTypeConfigs, mvelContext),
         new SequentialJoinDerivationStrategy {
           override def apply(
               keyTags: Seq[Int],
               keyTagList: Seq[String],
               df: DataFrame,
               derivedFeature: DerivedFeature,
-              derivationFunction: SeqJoinDerivationFunction): DataFrame = {
+              derivationFunction: SeqJoinDerivationFunction, mvelContext: Option[FeathrExpressionExecutionContext]): DataFrame = {
             // Feature generation does not support sequential join features
             throw new FeathrException(
               ErrorLabel.FEATHR_ERROR,
               s"Feature Generation does not support Sequential Join features : ${derivedFeature.producedFeatureNames.head}")
           }
-        }))
+        },
+        new SqlDerivationSpark()
+      ), mvelContext)
 }

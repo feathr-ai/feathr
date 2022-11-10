@@ -8,90 +8,122 @@ import {
   ProjectOutlined,
   RocketOutlined,
 } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import VersionBar from "./VersionBar";
+
+import styles from "./index.module.less";
+
+export interface SiderMenuProps {
+  collapsedWidth?: number;
+  siderWidth?: number;
+}
 
 const { Title } = Typography;
 const { Sider } = Layout;
 
-const SideMenu = () => {
-  const enableRBAC = window.environment?.enableRBAC;
-  const showManagement = enableRBAC
-    ? enableRBAC
-    : process.env.REACT_APP_ENABLE_RBAC;
+const menuItems = [
+  {
+    key: "",
+    icon: <HomeOutlined style={{ fontSize: "20px", color: "#e28743" }} />,
+    label: <Link to="/">Home</Link>,
+  },
+  {
+    key: "projects",
+    icon: <ProjectOutlined style={{ fontSize: "20px", color: "#177ddc" }} />,
+    label: <Link to="/projects">Projects</Link>,
+  },
+  {
+    key: "datasources",
+    icon: <DatabaseOutlined style={{ fontSize: "20px", color: "#13a8a8" }} />,
+    label: <Link to="/dataSources">Data Sources</Link>,
+  },
+  {
+    key: "features",
+    icon: <CopyOutlined style={{ fontSize: "20px", color: "#d89614" }} />,
+    label: <Link to="/features">Features</Link>,
+  },
+  {
+    key: "jobs",
+    icon: <RocketOutlined style={{ fontSize: "20px", color: "#642ab5" }} />,
+    label: <Link to="/jobs">Jobs</Link>,
+  },
+  {
+    key: "monitoring",
+    icon: <EyeOutlined style={{ fontSize: "20px", color: "#e84749" }} />,
+    label: <Link to="/monitoring">Monitoring</Link>,
+  },
+];
+
+const enableRBAC = window.environment?.enableRBAC;
+const showManagement = enableRBAC
+  ? enableRBAC
+  : process.env.REACT_APP_ENABLE_RBAC;
+
+if (showManagement === "true") {
+  menuItems.push({
+    key: "management",
+    icon: <ControlOutlined style={{ fontSize: "20px", color: "#6495ed" }} />,
+    label: <Link to="/management">Management</Link>,
+  });
+}
+
+const getMenuKey = (pathname: string) => {
+  return pathname.split("/")[1].toLocaleLowerCase();
+};
+
+const defaultProps = {
+  collapsedWidth: 60,
+  siderWidth: 200,
+};
+
+const SideMenu = (props: SiderMenuProps) => {
+  const location = useLocation();
+
+  const { siderWidth, collapsedWidth } = { ...defaultProps, ...props };
+
+  const [collapsed] = useState<boolean>(false);
+
+  const [current, setcurrent] = useState<string>(getMenuKey(location.pathname));
+
+  useEffect(() => {
+    setcurrent(getMenuKey(location.pathname));
+  }, [location.pathname]);
 
   return (
-    <Sider theme="dark">
-      <Title
-        level={1}
+    <>
+      <div
         style={{
-          fontSize: "36px",
-          color: "white",
-          margin: "10px",
-          paddingLeft: "35px",
+          width: collapsed ? collapsedWidth : siderWidth,
+          overflow: "hidden",
+          flex: `0 0 ${collapsed ? collapsedWidth : siderWidth}px`,
+          maxWidth: collapsed ? collapsedWidth : siderWidth,
+          minWidth: collapsed ? collapsedWidth : siderWidth,
+          transition: "all 0.2s ease 0s",
         }}
-      >
-        Feathr
-      </Title>
-      <Menu
-        theme="dark"
-        mode="inline"
-        defaultSelectedKeys={["/"]}
-        defaultOpenKeys={["/"]}
-      >
-        <Menu.Item
-          key="/home"
-          icon={<HomeOutlined style={{ fontSize: "20px", color: "#e28743" }} />}
+      />
+      <Sider className={styles.siderMenu} theme="dark" width={siderWidth}>
+        <Title
+          level={1}
+          style={{
+            fontSize: "36px",
+            color: "white",
+            margin: "10px",
+            paddingLeft: "35px",
+          }}
         >
-          <Link to="/home">Home</Link>
-        </Menu.Item>
-        <Menu.Item
-          key="/projects"
-          icon={
-            <ProjectOutlined style={{ fontSize: "20px", color: "#177ddc" }} />
-          }
-        >
-          <Link to="/projects">Projects</Link>
-        </Menu.Item>
-        <Menu.Item
-          key="/dataSources"
-          icon={
-            <DatabaseOutlined style={{ fontSize: "20px", color: "#13a8a8" }} />
-          }
-        >
-          <Link to="/dataSources">Data Sources</Link>
-        </Menu.Item>
-        <Menu.Item
-          key="/features"
-          icon={<CopyOutlined style={{ fontSize: "20px", color: "#d89614" }} />}
-        >
-          <Link to="/features">Features</Link>
-        </Menu.Item>
-        <Menu.Item
-          key="/jobs"
-          icon={
-            <RocketOutlined style={{ fontSize: "20px", color: "#642ab5" }} />
-          }
-        >
-          <Link to="/jobs">Jobs</Link>
-        </Menu.Item>
-        <Menu.Item
-          key="/monitoring"
-          icon={<EyeOutlined style={{ fontSize: "20px", color: "#e84749" }} />}
-        >
-          <Link to="/monitoring">Monitoring</Link>
-        </Menu.Item>
-        {showManagement === "true" && (
-          <Menu.Item
-            key="/management"
-            icon={
-              <ControlOutlined style={{ fontSize: "20px", color: "#6495ed" }} />
-            }
-          >
-            <Link to="/management">Management</Link>
-          </Menu.Item>
-        )}
-      </Menu>
-    </Sider>
+          Feathr
+        </Title>
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[current]}
+          items={menuItems}
+        />
+
+        <VersionBar className={styles.versionBar} />
+      </Sider>
+    </>
   );
 };
 
