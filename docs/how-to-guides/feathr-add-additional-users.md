@@ -4,7 +4,7 @@ title: Adding Additional Users to your Feathr environment
 parent: How-to Guides
 ---
 
-# Updating Feathr Registry and Feathr Client
+# Adding Additional Users to your Feathr environment
 
 They are all optional steps are are for reference only:
 
