@@ -84,8 +84,7 @@ setup(
         # it brings a different version of msrest(0.7.0) which is incompatible with azure-core==1.22.1. Hence we need to pin it.
         # See this for more details: https://github.com/Azure/azure-sdk-for-python/issues/24765
         "msrest<=0.6.21",
-        "typing_extensions>=4.2.0",
-        "aws-requests-auth>=0.4.3"
+        "typing_extensions>=4.2.0"
     ],
     tests_require=[  # TODO: This has been depricated
         "pytest",
