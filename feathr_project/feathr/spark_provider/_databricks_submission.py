@@ -15,6 +15,7 @@ from databricks_cli.dbfs.api import DbfsApi
 from databricks_cli.runs.api import RunsApi
 from databricks_cli.sdk.api_client import ApiClient
 from feathr.constants import *
+from feathr.version import get_maven_artifact_fullname
 from feathr.spark_provider._abc import SparkJobLauncher
 from loguru import logger
 from requests.structures import CaseInsensitiveDict
@@ -166,8 +167,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
 
         # the feathr main jar file is anyway needed regardless it's pyspark or scala spark
         if not main_jar_path:
-            logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
-            submission_params['libraries'][0]['maven'] = { "coordinates": FEATHR_MAVEN_ARTIFACT }
+            logger.info(f"Main JAR file is not set, using default package '{get_maven_artifact_fullname()}' from Maven")
+            submission_params['libraries'][0]['maven'] = { "coordinates": get_maven_artifact_fullname() }
         else:
             submission_params['libraries'][0]['jar'] = self.upload_or_get_cloud_path(main_jar_path)
         # see here for the submission parameter definition https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs#--request-structure-6
