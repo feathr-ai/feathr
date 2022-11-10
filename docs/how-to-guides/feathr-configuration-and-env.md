@@ -87,7 +87,7 @@ Feathr will get the configurations in the following order:
 # Explanation for selected configurations
 
 ## MAVEN_ARTIFACT_VERSION
-Default maven version is the same as the version of Feathr. If you want to use a different version of Feathr, you can specify it with this configuration.
+By default, Feathr client will use the same version runtime jar from Maven for Spark job submission. If you want to use a different version jar from Maven, you need to explicitly set system env MAVEN_ARTIFACT_VERSION.
 
 For example, if you want to use Feathr 0.9.0, you can set `os.environ["MAVEN_ARTIFACT_VERSION"] = "0.9.0"`.
 
