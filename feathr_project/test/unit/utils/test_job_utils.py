@@ -157,30 +157,35 @@ def test__get_result_df__exceptions(
 )
 def test__get_result_df(
     workspace_dir: str,
-    feathr_client: FeathrClient,
     data_format: str,
     output_filename: str,
     expected_count: int,
 ):
     """Test get_result_df returns pandas DataFrame"""
-    # Note: make sure the output file exists in the test_user_workspace
-    res_url = str(Path(workspace_dir, "mock_results", output_filename))
-    local_cache_path = res_url
+    for spark_runtime in ["local", "databricks", "azure_synapse"]:
+        # Note: make sure the output file exists in the test_user_workspace
+        res_url = str(Path(workspace_dir, "mock_results", output_filename))
+        local_cache_path = res_url
 
-    # Mock feathr_spark_launcher.download_result
-    feathr_client.feathr_spark_launcher.download_result = MagicMock()
+        # Mock client
+        client = MagicMock()
+        client.spark_runtime = spark_runtime
 
-    if feathr_client.spark_runtime == "databricks":
-        res_url = f"dbfs:/{res_url}"
+        # Mock feathr_spark_launcher.download_result
+        if client.spark_runtime == "databricks":
+            res_url = f"dbfs:/{res_url}"
+        if client.spark_runtime == "azure_synapse" and data_format == "delta":
+            # TODO currently pass the delta table test on Synapse result due to the delta table package bug.
+            continue
 
-    df = get_result_df(
-        client=feathr_client,
-        data_format=data_format,
-        res_url=res_url,
-        local_cache_path=local_cache_path,
-    )
-    assert isinstance(df, pd.DataFrame)
-    assert len(df) == expected_count
+        df = get_result_df(
+            client=client,
+            data_format=data_format,
+            res_url=res_url,
+            local_cache_path=local_cache_path,
+        )
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) == expected_count
 
 
 @pytest.mark.parametrize(
@@ -194,29 +199,30 @@ def test__get_result_df(
 )
 def test__get_result_df__with_spark_session(
     workspace_dir: str,
-    feathr_client: FeathrClient,
     spark: SparkSession,
     data_format: str,
     output_filename: str,
     expected_count: int,
 ):
     """Test get_result_df returns spark DataFrame"""
-    # Note: make sure the output file exists in the test_user_workspace
-    res_url = str(Path(workspace_dir, "mock_results", output_filename))
-    local_cache_path = res_url
+    for spark_runtime in ["local", "databricks", "azure_synapse"]:
+        # Note: make sure the output file exists in the test_user_workspace
+        res_url = str(Path(workspace_dir, "mock_results", output_filename))
+        local_cache_path = res_url
 
-    # Mock feathr_spark_launcher.download_result
-    feathr_client.feathr_spark_launcher.download_result = MagicMock()
+        # Mock client
+        client = MagicMock()
+        client.spark_runtime = spark_runtime
 
-    if feathr_client.spark_runtime == "databricks":
-        res_url = f"dbfs:/{res_url}"
+        if client.spark_runtime == "databricks":
+            res_url = f"dbfs:/{res_url}"
 
-    df = get_result_df(
-        client=feathr_client,
-        data_format=data_format,
-        res_url=res_url,
-        spark=spark,
-        local_cache_path=local_cache_path,
-    )
-    assert isinstance(df, DataFrame)
-    assert df.count() == expected_count
+        df = get_result_df(
+            client=client,
+            data_format=data_format,
+            res_url=res_url,
+            spark=spark,
+            local_cache_path=local_cache_path,
+        )
+        assert isinstance(df, DataFrame)
+        assert df.count() == expected_count
