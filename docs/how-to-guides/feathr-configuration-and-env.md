@@ -82,14 +82,14 @@ Feathr will get the configurations in the following order:
 | FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME  (Deprecated Soon)              | Configure the name of the purview endpoint.                                                                                                                                                                                                                | Required if using Purview directly without registry service. Deprecate soon, see [here](#deprecation) for more details. |
 | FEATURE_REGISTRY__PURVIEW__DELIMITER  (Deprecated Soon)                 | See [here](#FEATURE_REGISTRY__PURVIEW__DELIMITER) for more details.                                                                                                                                                                                        | Required if using Purview directly without registry service. Deprecate soon, see [here](#deprecation) for more details. |
 | FEATURE_REGISTRY__PURVIEW__TYPE_SYSTEM_INITIALIZATION (Deprecated Soon) | Controls whether the type system (think this as the "schema" for the registry) will be initialized or not. Usually this is only required to be set to `True` to initialize schema, and then you can set it to `False` to shorten the initialization time.  | Required if using Purview directly without registry service. Deprecate soon, see [here](#deprecation) for more details. |
-| FEATHR_MAVEN_VERSION                                                    | Version number like `0.9.0`. Used to define maven package version when main jar is not defined.                                                                                                                                                            | Optional if custom maven package version is needed.                                                                     |
+| MAVEN_ARTIFACT_VERSION                                                    | Version number like `0.9.0`. Used to define maven package version when main jar is not defined.                                                                                                                                                            | Optional if custom maven package version is needed.                                                                     |
 
 # Explanation for selected configurations
 
-## FEATHR_MAVEN_VERSION
+## MAVEN_ARTIFACT_VERSION
 Default maven version is the same as the version of Feathr. If you want to use a different version of Feathr, you can specify it with this configuration.
 
-For example, if you want to use Feathr 0.7.2, you can set `FEATHR_MAVEN_VERSION` to `0.7.2`. 
+For example, if you want to use Feathr 0.9.0, you can set `os.environ["MAVEN_ARTIFACT_VERSION"] = "0.9.0"`.
 
 ## KAFKA_SASL_JAAS_CONFIG
 

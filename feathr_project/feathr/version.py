@@ -5,6 +5,6 @@ def get_version():
 
 # Decouple Feathr MAVEN Version from Feathr Python SDK Version
 import os
-def get_maven_artifact():
-    maven_version = os.environ.get("FEATHR_MAVEN_VERSION", __version__)
-    return f"com.linkedin.feathr:feathr_2.12:{maven_version}"
+def get_maven_artifact_fullname():
+    maven_artifact_version = os.environ.get("MAVEN_ARTIFACT_VERSION", __version__)
+    return f"com.linkedin.feathr:feathr_2.12:{maven_artifact_version}"
