@@ -587,8 +587,7 @@ class PurviewRegistry(Registry):
             """
             Try to find existing entity/process first, if found, return the existing entity's GUID
             """
-            id = self.get_entity_id(entity.qualifiedName)
-            response =  self.purview_client.get_entity(id)['entities'][0]
+            response =  self.purview_client.get_entity(qualifiedName=entity.qualifiedName)['entities'][0]
             j = entity.to_json()
             if j["typeName"] == response["typeName"]:
                 if j["typeName"] == "Process":
