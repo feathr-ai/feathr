@@ -20,7 +20,6 @@ import RoleManagement from "./pages/management/roleManagement";
 import Home from "./pages/home/home";
 import Projects from "./pages/project/projects";
 import { getMsalConfig } from "./utils/utils";
-import Footer from "@/components/footer";
 
 const queryClient = new QueryClient();
 
@@ -34,7 +33,7 @@ const App = () => {
           <BrowserRouter>
             <Layout style={{ minHeight: "100vh", position: "relative" }}>
               <SideMenu />
-              <Layout>
+              <Layout style={{ position: "relative" }}>
                 <Header />
                 <Layout.Content>
                   <Routes>
@@ -69,7 +68,6 @@ const App = () => {
                     />
                   </Routes>
                 </Layout.Content>
-                <Footer />
               </Layout>
             </Layout>
           </BrowserRouter>

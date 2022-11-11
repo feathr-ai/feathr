@@ -8,6 +8,8 @@ import { FeatureType } from "@/utils/utils";
 import FeatureNodeDetail from "./FeatureNodeDetail";
 import SourceNodeDetial from "./SourceNodeDetial";
 
+import styles from "./index.module.less";
+
 const { Paragraph } = Typography;
 
 const NodeDetails = () => {
@@ -37,10 +39,11 @@ const NodeDetails = () => {
 
   return (
     <Spin
+      wrapperClassName={styles.wrap}
       spinning={isLoading}
       indicator={<LoadingOutlined style={{ fontSize: 36 }} spin />}
     >
-      <div style={{ minHeight: "calc(100vh - 300px)" }}>
+      <div style={{ height: "calc(100vh - 300px)", overflow: "auto" }}>
         {data ? (
           isSource ? (
             <SourceNodeDetial source={data} />

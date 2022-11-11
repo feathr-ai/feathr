@@ -7,6 +7,7 @@ import {
   FeatureKeyMap,
   TypeMap,
 } from "@/utils/attributesMapping";
+import { getJSONMap } from "@/utils/utils";
 
 export interface FeatureNodeDetialProps {
   feature: Feature;
@@ -16,8 +17,9 @@ const FeatureNodeDetial = (props: FeatureNodeDetialProps) => {
   const { feature } = props;
 
   const { attributes } = feature;
-  const { transformation, key, type } = attributes;
-  const FeatureKey = key?.[0];
+  const { transformation, key, type, tags } = attributes;
+
+  const tagsMap = getJSONMap(tags);
 
   return (
     <Space
@@ -31,12 +33,18 @@ const FeatureNodeDetial = (props: FeatureNodeDetialProps) => {
         mapping={TransformationMap}
         descriptions={transformation}
       />
-      <CardDescriptions
-        title="Entity Key"
-        mapping={FeatureKeyMap}
-        descriptions={FeatureKey}
-      />
+      {key?.map((item, index) => {
+        return (
+          <CardDescriptions
+            key={index}
+            title={`Entity Key ${index + 1}`}
+            mapping={FeatureKeyMap}
+            descriptions={item}
+          />
+        );
+      })}
       <CardDescriptions title="Type" mapping={TypeMap} descriptions={type} />
+      <CardDescriptions title="Tags" mapping={tagsMap} descriptions={tags} />
     </Space>
   );
 };

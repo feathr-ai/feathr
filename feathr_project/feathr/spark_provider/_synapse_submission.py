@@ -22,6 +22,7 @@ from tqdm import tqdm
 
 from feathr.spark_provider._abc import SparkJobLauncher
 from feathr.constants import *
+from feathr.version import get_maven_artifact_fullname
 
 class LivyStates(Enum):
     """ Adapt LivyStates over to relax the dependency for azure-synapse-spark pacakge.
@@ -114,12 +115,12 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         if not main_jar_path:
             # We don't have the main jar, use Maven
             # Add Maven dependency to the job configuration
-            logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
+            logger.info(f"Main JAR file is not set, using default package '{get_maven_artifact_fullname()}' from Maven")
             if "spark.jars.packages" in cfg:
                 cfg["spark.jars.packages"] = ",".join(
-                    [cfg["spark.jars.packages"], FEATHR_MAVEN_ARTIFACT])
+                    [cfg["spark.jars.packages"], get_maven_artifact_fullname()])
             else:
-                cfg["spark.jars.packages"] = FEATHR_MAVEN_ARTIFACT
+                cfg["spark.jars.packages"] = get_maven_artifact_fullname()
 
             if not python_files:
                 # This is a JAR job
