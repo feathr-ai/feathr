@@ -18,6 +18,8 @@ from feathr.definition._materialization_utils import _to_materialization_config
 from test_fixture import basic_test_setup
 from test_fixture import get_online_test_table_name
 from test_utils.constants import Constants
+from logging import raiseExceptions
+import pytest
 
 def test_feature_materialization_config():
     backfill_time = BackfillTime(start=datetime(2020, 5, 20), end=datetime(2020, 5,20), step=timedelta(days=1))
@@ -256,3 +258,20 @@ def test_delete_feature_from_redis():
 
     assert len(res) == 1
     assert res[0] == None
+
+def test_feature_list_on_input_context():
+    with pytest.raises(RuntimeError) as e_info:
+        test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
+
+        client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+        online_test_table = get_online_test_table_name('nycTaxiCITableDeletion')
+        redisSink = RedisSink(table_name=online_test_table)
+        settings = MaterializationSettings(name="py_udf",
+                                       sinks=[redisSink],
+                                       feature_names=[
+                                           "f_location_avg_fare",
+                                           "f_day_of_week"
+                                       ])
+        client.materialize_features(settings, allow_materialize_non_agg_feature=True)
+    assert e_info is not None
+    assert e_info.value.args[0] == "Materializing features that are defined on INPUT_CONTEXT is not supported. f_day_of_week is defined on INPUT_CONTEXT so you should remove it from the feature list in MaterializationSettings."  
