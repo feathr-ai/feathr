@@ -37,6 +37,20 @@ class FeathrRegistry(ABC):
         pass
 
     @abstractmethod
+    def delete_anchored_feature(self, project_name: str, anchor_name: str, feature_name: str):
+        """
+        Deletes anchor feature
+        """
+        pass
+
+    @abstractmethod
+    def delete_derived_feature(self, project_name: str, feature_name: str):
+        """
+        Deletes derived feature
+        """
+        pass
+
+    @abstractmethod
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """[Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
 
