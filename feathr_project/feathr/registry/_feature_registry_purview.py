@@ -1083,29 +1083,6 @@ derivations: {
             feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
 
         return feature_list
-    
-    def delete_project(self, project_name: str):
-        """
-        Deletes project
-        """
-        r = self._delete(f"/projects/{project_name}")
-        return r
-
-    def delete_anchored_feature(self, project_name: str, anchor_name: str, feature_name: str):
-        """
-        Deletes anchored feature
-        """
-        qualified_name = f"{project_name}__{anchor_name}__{feature_name}"
-        r = self._delete(f"/features/{qualified_name}")
-        return r
-    
-    def delete_derived_feature(self, project_name: str, feature_name: str):
-        """
-        Deletes derived feature
-        """
-        qualified_name = f"{project_name}__{feature_name}"
-        r = self._delete(f"/features/{qualified_name}")
-        return r
    
     def get_feature_by_fqdn_type(self, qualifiedName, typeName):
         """
