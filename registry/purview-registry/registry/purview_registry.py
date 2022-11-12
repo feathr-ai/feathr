@@ -192,6 +192,55 @@ class PurviewRegistry(Registry):
             upstream_entities + downstream_entities,
             upstream_edges + downstream_edges)
 
+    def delete_feature(self, id_or_name: Union[str, UUID]) -> str:
+        """
+        Deletes either AnchorFeature or DerivedFeature recursively
+        """
+        id = self.get_entity_id(id_or_name)
+        visited = []
+        children = []
+        visited.append(id)
+        children.append(id)
+        while children:
+            child = children.pop(0)
+            downstream_entities, _ = self._bfs(child, RelationshipType.Produces)
+            neighbors = self.get_all_neighbours(child)
+            downstream_guids = [x.id for x in downstream_entities]
+            edge_guids = [str(x.id) for x in neighbors]
+            ## Delete all edges associated with entity
+            self.purview_client.delete_entity(edge_guids)
+            ## Delete current entity
+            self.purview_client.delete_entity(str(child))
+            for downstream_entity in downstream_guids:
+                if downstream_entity not in visited:
+                    visited.append(downstream_entity)
+                    children.append(downstream_entity)
+        return str(id)
+    
+    def delete_project(self, project_id: str, project: EntitiesAndRelations) -> str:
+        """
+        Deletes project by deleting all child components first
+        """
+        project_id = self.get_entity_id(project_id)
+        entity_mappings = project.entities
+        entity_mappings.pop(project_id)
+        for entity_id, entity in entity_mappings.items():
+            if entity.entity_type in (EntityType.AnchorFeature, EntityType.DerivedFeature):
+                self.delete_feature(entity_id)
+            else:
+                neighbors = self.get_all_neighbours(entity_id)
+                edge_guids = [str(x.id) for x in neighbors]
+                ## Delete all edges associated with entity
+                self.purview_client.delete_entity(edge_guids)
+                ## Delete entity
+                self.purview_client.delete_entity(entity_id)
+        ## Finally delete project
+        neighbors = self.get_all_neighbours(project_id)
+        edge_guids = [str(x.id) for x in neighbors]
+        self.purview_client.delete_entity(edge_guids)
+        self.purview_client.delete_entity(project_id)
+        return project_id
+
     def _get_edges(self, ids: list[UUID]) -> list[Edge]:
         all_edges = set()
         for id in ids:

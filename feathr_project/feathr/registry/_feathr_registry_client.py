@@ -137,6 +137,29 @@ class _FeatureRegistry(FeathrRegistry):
             "qualifiedName": r["attributes"]["qualifiedName"],
         } for r in resp]
 
+    def delete_project(self, project_name: str):
+        """
+        Deletes project
+        """
+        r = self._delete(f"/projects/{project_name}")
+        return r
+
+    def delete_anchored_feature(self, project_name: str, anchor_name: str, feature_name: str):
+        """
+        Deletes anchored feature
+        """
+        qualified_name = f"{project_name}__{anchor_name}__{feature_name}"
+        r = self._delete(f"/features/{qualified_name}")
+        return r
+    
+    def delete_derived_feature(self, project_name: str, feature_name: str):
+        """
+        Deletes derived feature
+        """
+        qualified_name = f"{project_name}__{feature_name}"
+        r = self._delete(f"/features/{qualified_name}")
+        return r
+
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """
         [Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
@@ -187,6 +210,10 @@ class _FeatureRegistry(FeathrRegistry):
     def _get(self, path: str) -> dict:
         logging.debug("PATH: ", path)
         return check(requests.get(f"{self.endpoint}{path}", headers=self._get_auth_header())).json()
+    
+    def _delete(self, path: str) -> dict:
+        logging.debug("PATH: ", path)
+        return check(requests.delete(f"{self.endpoint}{path}", headers=self._get_auth_header())).json()
 
     def _post(self, path: str, body: dict) -> dict:
         logging.debug("PATH: ", path)

@@ -244,6 +244,24 @@ class FeathrClient(object):
         `project_name` must not be None or empty string because it violates the RBAC policy
         """
         return self.registry.list_registered_features(project_name)
+    
+    def delete_project(self, project_name: str):
+        """
+        Deletes given feature for 
+        """
+        return self.registry.delete_project(project_name)
+    
+    def delete_anchored_feature(self, project_name: str, anchor_name: str, feature_name: str):
+        """
+        Deletes anchored feature associated with project and anchor
+        """
+        return self.registry.delete_anchored_feature(project_name, anchor_name, feature_name)
+    
+    def delete_derived_feature(self, project_name: str, feature_name: str):
+        """
+        Deletes derived feature 
+        """
+        return self.registry.delete_derived_feature(project_name, feature_name)
 
     def _get_registry_client(self):
         """

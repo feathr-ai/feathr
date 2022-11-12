@@ -111,3 +111,17 @@ class Registry(ABC):
         Create a new derived feature under the project
         """
         pass
+    
+    @abstractmethod
+    def delete_feature(self, id: Union[str,UUID]) -> str:
+        """
+        Deletes feature
+        """
+        pass
+
+    @abstractmethod
+    def delete_project(self, project_id: str, project: EntitiesAndRelations) -> str:
+        """
+        Deletes project
+        """
+        pass

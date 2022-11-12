@@ -92,3 +92,11 @@ class Registry(ABC):
     @abstractmethod
     def create_project_derived_feature(self, project_id: UUID, definition: DerivedFeatureDef) -> UUID:
         pass
+
+    @abstractmethod
+    def delete_feature(self, id: Union[str,UUID]) -> str:
+        pass
+
+    @abstractmethod
+    def delete_project(self, project_id: Union[str, UUID], project: EntitiesAndRelations) -> str:
+        pass

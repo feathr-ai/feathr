@@ -11,7 +11,7 @@ RUN npm install && npm run build
 FROM python:3.9
 
 ## Install dependencies
-RUN apt-get update -y && apt-get install -y nginx
+RUN apt-get update -y && apt-get install -y nginx freetds-dev
 COPY ./registry /usr/src/registry
 WORKDIR /usr/src/registry/sql-registry
 RUN pip install -r requirements.txt

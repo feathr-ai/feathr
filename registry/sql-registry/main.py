@@ -86,6 +86,14 @@ def get_projects_ids() -> dict:
 def get_projects(project: str) -> dict:
     return registry.get_project(project).to_dict()
 
+@router.delete("/projects/{project}")
+def delete_project(project: str) -> str:
+    project_entity = registry.get_project(project)
+    if project_entity is None:
+        raise HTTPException(
+            status_code=404, details=f"Project {project} not found"
+        )
+    return registry.delete_project(project, project_entity)
 
 @router.get("/projects/{project}/datasources")
 def get_project_datasources(project: str) -> list:
@@ -135,12 +143,18 @@ def get_feature(feature: str) -> dict:
             status_code=404, detail=f"Feature {feature} not found")
     return e.to_dict()
 
+@router.delete("/features/{feature}")
+def delete_feature(feature: str) -> str:
+    e = registry.get_entity(feature)
+    if e.entity_type not in [EntityType.DerivedFeature, EntityType.AnchorFeature]:
+        raise HTTPException(
+            status_code=404, detail=f"Feature {feature} not found")
+    return registry.delete_feature(feature)
 
 @router.get("/features/{feature}/lineage")
 def get_feature_lineage(feature: str) -> dict:
     lineage = registry.get_lineage(feature)
     return lineage.to_dict()
-
 
 @router.post("/projects")
 def new_project(definition: dict) -> dict:

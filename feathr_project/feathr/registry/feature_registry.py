@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from re import L
 
 from typing import Any, Dict, List, Optional, Tuple
 from feathr.definition.feature_derivations import DerivedFeature
@@ -25,6 +26,13 @@ class FeathrRegistry(ABC):
     def list_registered_features(self, project_name: str) -> List[str]:
         """List all the already registered features under the given project.
         `project_name` must not be None or empty string because it violates the RBAC policy
+        """
+        pass
+
+    @abstractmethod
+    def delete_project(self, project_name: str):
+        """
+        Deletes project given project name. Project name must not be empty.
         """
         pass
 
