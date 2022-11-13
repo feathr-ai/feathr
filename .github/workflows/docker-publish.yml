@@ -51,25 +51,25 @@ jobs:
 
     steps:
       - name: Deploy to Azure Web App feathr-registry-purview
-        id: deploy-to-purview-webapp
+        id: deploy-to-feathr-registry-purview
         uses: distributhor/workflow-webhook@v3.0.1
         env:
           webhook_url: ${{ secrets.AZURE_WEBAPP_FEATHR_REGISTRY_PURVIEW_WEBHOOK }}
 
       - name: Deploy to Azure Web App feathr-registry-purview-rbac
-        id: deploy-to-rbac-webapp
+        id: deploy-to-feathr-registry-purview-rbac
         uses: distributhor/workflow-webhook@v3.0.1
         env:
           webhook_url: ${{ secrets.AZURE_WEBAPP_FEATHR_REGISTRY_PURVIEW_RBAC_WEBHOOK }}
 
       - name: Deploy to Azure Web App feathr-registry-sql
-        id: deploy-to-sql-webapp
+        id: deploy-to-feathr-registry-sql
         uses: distributhor/workflow-webhook@v3.0.1
         env:
           webhook_url: ${{ secrets.AZURE_WEBAPP_FEATHR_REGISTRY_SQL_WEBHOOK }}
 
       - name: Deploy to Azure Web App feathr-registry-sql-rbac
-        id: deploy-to-sql-webapp
+        id: deploy-to-feathr-registry-sql-rbac
         uses: distributhor/workflow-webhook@v3.0.1
         env:
           webhook_url: ${{ secrets.AZURE_WEBAPP_FEATHR_REGISTRY_SQL_RBAC_WEBHOOK }}
