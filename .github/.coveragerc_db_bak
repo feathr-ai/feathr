@@ -1,0 +1,4 @@
+[report]
+omit = 
+    feathr_project/feathr/spark_provider/_synapse_submission.py,
+    feathr_project/registry/_feature_registry_purview.py

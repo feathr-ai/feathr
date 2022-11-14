@@ -128,8 +128,8 @@ jobs:
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
         run: |
           # run only test with databricks. run in 4 parallel jobs
-          pytest -n 6 feathr_project/test/
-
+          # pytest -n 6 feathr_project/test/
+          pytest --cov-report term-missing --cov=feathr_project/feathr feathr_project/test/test_local_spark_e2e.py --cov-config=feathr_project/.coveragerc
   azure_synapse_test:
     # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
     runs-on: ubuntu-latest
@@ -256,7 +256,7 @@ jobs:
         run: |
           # skip cloud related tests
           # pytest feathr_project/test/test_local_spark_e2e.py
-          pytest --cov-report term-missing --cov=feathr_project/feathr feathr_project/test/test_local_spark_e2e.py
+          pytest --cov-report term-missing --cov=feathr_project/feathr feathr_project/test/test_local_spark_e2e.py --cov-config=.github/workflows/.coveragerc_db_bak
   failure_notification:
     # If any failure, warning message will be sent
     needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
