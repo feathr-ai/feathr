@@ -256,7 +256,7 @@ jobs:
         run: |
           # skip cloud related tests
           # pytest feathr_project/test/test_local_spark_e2e.py
-          pytest --cov-report term-missing --cov=feathr_project/feathr feathr_project/test/test_local_spark_e2e.py --cov-config=.github/workflows/.coveragerc_db_bak
+          pytest --cov-report term-missing --cov=feathr_project/feathr feathr_project/test/test_local_spark_e2e.py --cov-config=.github/workflows/.coveragerc_db
   failure_notification:
     # If any failure, warning message will be sent
     needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
