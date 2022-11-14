@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from re import L
 
 from typing import Any, Dict, List, Optional, Tuple
 from feathr.definition.feature_derivations import DerivedFeature
