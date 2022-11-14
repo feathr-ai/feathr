@@ -129,7 +129,7 @@ jobs:
         run: |
           # run only test with databricks. run in 4 parallel jobs
           # pytest -n 6 feathr_project/test/
-          pytest --cov-report term-missing --cov=feathr_project/feathr feathr_project/test/test_local_spark_e2e.py --cov-config=feathr_project/.coveragerc
+          pytest -n 6 --cov-report term-missing --cov=feathr_project/feathr feathr_project/test/test_local_spark_e2e.py --cov-config=.github/workflows/.coveragerc_db
   azure_synapse_test:
     # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
     runs-on: ubuntu-latest
@@ -197,11 +197,12 @@ jobs:
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 4 parallel jobs to make the time shorter
-          pytest -n 6 feathr_project/test/
+          # pytest -n 6 feathr_project/test/
+          pytest -n 6 --cov-report term-missing --cov=feathr_project/feathr feathr_project/test/test_local_spark_e2e.py --cov-config=.github/workflows/.coveragerc_sy
 
   local_spark_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'coverage'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
         with:
