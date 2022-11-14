@@ -201,7 +201,7 @@ jobs:
 
   local_spark_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'coverage'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -255,8 +255,8 @@ jobs:
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
         run: |
           # skip cloud related tests
-          pytest feathr_project/test/test_local_spark_e2e.py
-
+          # pytest feathr_project/test/test_local_spark_e2e.py
+          pytest --cov-report term-missing --cov=feathr_project/feathr feathr_project/test/ feathr_project/test/test_local_spark_e2e.py
   failure_notification:
     # If any failure, warning message will be sent
     needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
