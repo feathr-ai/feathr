@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Input File Format for Feathr
+title: Input File for Feathr
 parent: How-to Guides
 ---
 
@@ -18,3 +18,10 @@ Many Spark users will use delta lake format to store the results. In those cases
 ![Spark Output](../images/spark-output.png)
 
 Please note that although the results are shown as "parquet", you should use the path of the parent folder and use `delta` format to read the folder.
+
+# TimePartitionPattern for input files
+When data sources are defined by 'HdfsSource', feathr supports 'time_partition_pattern' to match paths of input files. For example, given time_partition_pattern = 'yyyy/MM/dd' and a 'base_path', all available input files under paths 'base_path'/yyyy/MM/dd will be visited and used as data sources.
+
+More reference on the APIs:
+
+- [MaterializationSettings API doc](https://feathr.readthedocs.io/en/latest/feathr.html#feathr.MaterializationSettings)

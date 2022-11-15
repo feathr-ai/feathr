@@ -10,6 +10,7 @@ from feathr.definition.transformation import WindowAggTransformation
 from jinja2 import Template
 from pyhocon import ConfigFactory
 import redis
+from loguru import logger
 
 from feathr.constants import *
 from feathr.definition._materialization_utils import _to_materialization_config
@@ -33,7 +34,7 @@ from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
 from feathr.definition.source import InputContext
-
+from feathr.version import get_version
 
 class FeathrClient(object):
     """Feathr client.
@@ -171,6 +172,8 @@ class FeathrClient(object):
 
         # initialize registry
         self.registry = default_registry_client(self.project_name, config_path=config_path, credential=self.credential)
+
+        logger.info(f"Feathr Client {get_version()} initialized successfully")
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
