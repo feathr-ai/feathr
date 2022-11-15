@@ -47,9 +47,6 @@ setup(
     },
     packages=find_packages(),
     include_package_data=True,
-    package_data = {
-        "noop": "feathr/spark_provider/noop-1.0.jar",
-    },
     # consider
     install_requires=[
         "click<=8.1.3",
