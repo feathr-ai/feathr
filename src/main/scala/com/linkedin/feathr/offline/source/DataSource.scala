@@ -18,7 +18,7 @@ import scala.util.{Failure, Success, Try}
  * @param timeWindowParams     those fields related to time window features.
  * @param timePartitionPattern format of the time partitioned feature
  */
-private[offline] case class DaSource(
+private[offline] case class DataSource(
                                         val location: DataLocation,
                                         sourceType: SourceFormatType,
                                         timeWindowParams: Option[TimeWindowParams],
