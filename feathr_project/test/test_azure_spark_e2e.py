@@ -42,8 +42,7 @@ def test_feathr_materialize_to_offline():
     if client.spark_runtime == 'databricks':
         output_path = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
     else:
-        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
-    
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""]) 
     offline_sink = HdfsSink(output_path=output_path)
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[offline_sink],

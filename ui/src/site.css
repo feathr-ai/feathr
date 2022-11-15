@@ -1,6 +1,5 @@
 .page {
   margin: 16px;
-  padding-bottom: 100px;
 }
 
 .card {
@@ -61,5 +60,5 @@
 }
 
 .display-flex {
-  display: "flex";
+  display: flex;
 }

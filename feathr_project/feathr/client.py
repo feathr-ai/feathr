@@ -10,6 +10,7 @@ from feathr.definition.transformation import WindowAggTransformation
 from jinja2 import Template
 from pyhocon import ConfigFactory
 import redis
+from loguru import logger
 
 from feathr.constants import *
 from feathr.definition._materialization_utils import _to_materialization_config
@@ -32,7 +33,8 @@ from feathr.utils._envvariableutil import _EnvVaraibleUtil
 from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
-
+from feathr.definition.source import InputContext
+from feathr.version import get_version
 
 class FeathrClient(object):
     """Feathr client.
@@ -170,6 +172,8 @@ class FeathrClient(object):
 
         # initialize registry
         self.registry = default_registry_client(self.project_name, config_path=config_path, credential=self.credential)
+
+        logger.info(f"Feathr Client {get_version()} initialized successfully")
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.
@@ -609,7 +613,7 @@ class FeathrClient(object):
                         self.logger.error(f"Inconsistent feature keys. Current keys are {str(keys)}")
                         return False
         return True
-    
+
     def materialize_features(self, settings: MaterializationSettings, execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {}, verbose: bool = False, allow_materialize_non_agg_feature: bool = False):
         """Materialize feature data
 
@@ -619,9 +623,16 @@ class FeathrClient(object):
             allow_materialize_non_agg_feature: Materializing non-aggregated features (the features without WindowAggTransformation) doesn't output meaningful results so it's by default set to False, but if you really want to materialize non-aggregated features, set this to True.
         """
         feature_list = settings.feature_names
-        if len(feature_list) > 0 and not self._valid_materialize_keys(feature_list):
-            raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
-        
+        if len(feature_list) > 0:
+            if 'anchor_list' in dir(self):
+                anchors = [anchor for anchor in self.anchor_list if isinstance(anchor.source, InputContext)]
+                anchor_feature_names = set(feature.name  for anchor in anchors for feature in anchor.features)
+                for feature in feature_list:
+                    if feature in anchor_feature_names:
+                        raise RuntimeError(f"Materializing features that are defined on INPUT_CONTEXT is not supported. {feature} is defined on INPUT_CONTEXT so you should remove it from the feature list in MaterializationSettings.")
+            if not self._valid_materialize_keys(feature_list):
+                raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
+
         if not allow_materialize_non_agg_feature:
             # Check if there are non-aggregation features in the list
             for fn in feature_list:
