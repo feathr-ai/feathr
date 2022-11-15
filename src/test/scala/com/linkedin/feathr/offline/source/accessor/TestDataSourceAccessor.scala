@@ -54,6 +54,15 @@ class TestDataSourceAccessor extends TestFeathr {
     val source = DataSource("localTimeAwareTestFeatureData/daily", SourceFormatType.TIME_SERIES_PATH, None, Some("yyyy/MM/dd"))
     val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=sourceInterval, expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
     assertTrue(accessor.isInstanceOf[PathPartitionedTimeSeriesSourceAccessor])
+    assertEquals(source.postPath, "")
+  }
+
+  @Test(description = "It should create a PathPartitionedTimeSeriesSourceAccessor from a path with time path pattern and postfix path")
+  def testCreateFromPartitionedFilesWithTimePathPatternAndPostfixPath(): Unit = {
+    val source = DataSource("localTimeAwareTestFeatureData/daily", SourceFormatType.TIME_SERIES_PATH, None, Some("yyyy/MM/dd"), Some("postfixPath"))
+    val accessor = DataSourceAccessor(ss = ss, source = source, dateIntervalOpt = sourceInterval, expectDatumType = None, failOnMissingPartition = false, dataPathHandlers = List())
+    assertTrue(accessor.isInstanceOf[PathPartitionedTimeSeriesSourceAccessor])
+    assertEquals(source.postPath, "postfixPath")
   }
 
   @Test(description = "It should create a NonTimeBasedDataSourceAccessor from a single file")

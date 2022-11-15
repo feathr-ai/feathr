@@ -135,10 +135,13 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
       addTimestampColumn: Boolean): DataSourceAccessor = {
     val pathGenerator = new TimeBasedHdfsPathGenerator(pathChecker)
     val dateTimeResolution = pathInfo.dateTimeResolution
-    val pathList = pathGenerator.generate(pathInfo, timeInterval, !failOnMissingPartition)
+    val postPath = source.postPath
+    val postfixPath = if(postPath.isEmpty || postPath.startsWith("/")) postPath else "/" + postPath
+    val pathList = pathGenerator.generate(pathInfo, timeInterval, !failOnMissingPartition, postfixPath)
     val timeFormatString = pathInfo.datePathPattern
+
     val dataframes = pathList.map(path => {
-      val timeStr = path.substring(path.length - timeFormatString.length)
+      val timeStr = path.substring(path.length - (timeFormatString.length + postfixPath.length), path.length - postfixPath.length)
       val time = OfflineDateTimeUtils.createTimeFromString(timeStr, timeFormatString)
       val interval = DateTimeInterval.createFromInclusive(time, time, dateTimeResolution)
       val df = fileLoaderFactory.create(path).loadDataFrame()
@@ -149,7 +152,8 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
       throw new FeathrInputDataException(
         ErrorLabel.FEATHR_USER_ERROR,
         s"Input data is empty for creating TimeSeriesSource. No available " +
-          s"date partition exist in HDFS for path ${pathInfo.basePath} between ${timeInterval.getStart} and ${timeInterval.getEnd}")
+          s"date partition exist in HDFS for path ${pathInfo.basePath} between ${timeInterval.getStart} and ${timeInterval.getEnd} " +
+           s"with postfix path ${postfixPath}")
     }
     val datePartitions = dataframes.map {
       case (df, interval) =>
