@@ -613,8 +613,12 @@ class PurviewRegistry(Registry):
             pass
 
         entity.lastModifiedTS="0"
-        results = self.purview_client.upload_entities(
-            batch=entity)
+        results = None
+        try:
+            results = self.purview_client.upload_entities(
+                batch=entity)
+        except AtlasException as e:
+            raise PreconditionError("Feature registration failed.", e)
         if results:
             d = {x.guid: x for x in [entity]}
             for k, v in results['guidAssignments'].items():
