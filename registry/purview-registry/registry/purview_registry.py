@@ -217,7 +217,7 @@ class PurviewRegistry(Registry):
                     children.append(downstream_entity)
         return str(id)
     
-    def delete_project(self, project_id: str, project: EntitiesAndRelations) -> str:
+    def delete_project(self, project_id: Union[str, UUID], project: EntitiesAndRelations) -> str:
         """
         Deletes project by deleting all child components first
         """

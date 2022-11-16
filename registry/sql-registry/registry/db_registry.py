@@ -129,7 +129,7 @@ class DbRegistry(Registry):
                         children.append(downstream_entity)
         return str(id)
 
-    def delete_project(self, project_id: str, project: EntitiesAndRelations):
+    def delete_project(self, project_id: Union[str,UUID], project: EntitiesAndRelations):
         """
         Deletes Project by first deleting all children entities and then finally deleting project
         """
