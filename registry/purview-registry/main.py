@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from registry import *
-from registry.purview_registry import PurviewRegistry, ConflictError
+from registry.purview_registry import PreconditionError, PurviewRegistry, ConflictError
 from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
 
 rp = "/v1"
@@ -56,6 +56,13 @@ def exc_to_content(e: Exception) -> dict:
 async def conflict_error_handler(_, exc: ConflictError):
     return JSONResponse(
         status_code=409,
+        content=exc_to_content(exc),
+    )
+
+@app.exception_handler(PreconditionError)
+async def precondition_error_handler(_, exc: ConflictError):
+    return JSONResponse(
+        status_code=412,
         content=exc_to_content(exc),
     )
 

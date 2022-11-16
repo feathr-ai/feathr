@@ -33,6 +33,9 @@ TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_v1>"
 class ConflictError(Exception):
     pass
 
+class PreconditionError(Exception):
+    pass
+
 class PurviewRegistry(Registry):
     def __init__(self,azure_purview_name: str, registry_delimiter: str = "__", credential=None,register_types = True):
         self.registry_delimiter = registry_delimiter
@@ -617,7 +620,7 @@ class PurviewRegistry(Registry):
             for k, v in results['guidAssignments'].items():
                 d[k].guid = v
         else:
-            raise RuntimeError("Feature registration failed.", results)
+            raise PreconditionError("Feature registration failed.", results)
             
     def _generate_fully_qualified_name(self, segments):
         return self.registry_delimiter.join(segments)
