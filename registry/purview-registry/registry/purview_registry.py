@@ -610,7 +610,6 @@ class PurviewRegistry(Registry):
             else:
                 raise ConflictError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
         except AtlasException as e:
-            print("XXXXXX", e)
             pass
 
         entity.lastModifiedTS="0"
