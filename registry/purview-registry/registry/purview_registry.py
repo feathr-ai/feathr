@@ -590,7 +590,7 @@ class PurviewRegistry(Registry):
             """
             Try to find existing entity/process first, if found, return the existing entity's GUID
             """
-            response =  self.purview_client.get_entity(qualifiedName=entity.qualifiedName)['entities'][0]
+            response =  self.purview_client.get_entity(qualifiedName=entity.qualifiedName, typeName=entity.typeName)['entities'][0]
             j = entity.to_json()
             if j["typeName"] == response["typeName"]:
                 if j["typeName"] == "Process":
@@ -610,6 +610,7 @@ class PurviewRegistry(Registry):
             else:
                 raise ConflictError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
         except AtlasException as e:
+            print("XXXXXX", e)
             pass
 
         entity.lastModifiedTS="0"
