@@ -120,7 +120,7 @@ def add_userrole(project: str, user: str, role: str, reason: str, access: UserAc
 def delete_userrole(user: str, role: str, reason: str, access: UserAccess= Depends(project_manage_access)):
     return rbac.delete_userrole(access.project_name, user, role, reason, access.user_name)
 
-class RegistryException(Exception):
+class RegistryException(HTTPException):
     def __init__(self, status_code, detail: Any = None) -> None:
         super().__init__(status_code=status_code,
                          detail=detail, headers={"WWW-Authenticate": "Bearer"})
