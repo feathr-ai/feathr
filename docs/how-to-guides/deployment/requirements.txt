@@ -1,4 +1,4 @@
 pip
-git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
+git+https://github.com/feathr-ai/feathr.git#subdirectory=feathr_project
 pandavro
 aiohttp
