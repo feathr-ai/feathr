@@ -211,7 +211,6 @@ class SnowflakeSource(Source):
             } 
         """)
         msg = tm.render(source=self)
-        print(f"FEATURE CONFNIG: {msg}")
         return msg
 
     def __str__(self):
