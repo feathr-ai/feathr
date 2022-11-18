@@ -611,6 +611,9 @@ class PurviewRegistry(Registry):
                 raise ConflictError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
         except AtlasException as e:
             pass
+        except KeyError as e:
+            # This is because the response is empty when the entity is not found
+            pass
 
         entity.lastModifiedTS="0"
         results = None
