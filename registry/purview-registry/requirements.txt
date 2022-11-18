@@ -2,7 +2,7 @@ azure-core
 azure-purview-catalog==1.0.0b2
 fastapi
 opencensus-ext-azure
-pyapacheatlas=0.13.1
+pyapacheatlas
 pydantic
 uvicorn
 loguru
