@@ -8,14 +8,11 @@ parent: How-to Guides
 
 This document describes various advanced usages on Feathr
 
-# Defining a feature on multiple keys (composite keys)
-
-
 # Adding Additional Users to your Feathr environment
 
-They are all optional steps are are for reference only:
+They are all optional steps are are for reference only. Some of the steps are optional if you are not using those services (such as Synapse)
 
-- Update the key vault permission
+1. Update the key vault permission as well as the Synapse cluster permission:
 
 ```bash
 userId=<email_id_of_account_requesting_access>
@@ -28,3 +25,7 @@ az keyvault set-policy -n $keyvault_name --secret-permissions get list --object-
 az role assignment create --assignee $userId --role "Storage Blob Data Contributor"
 az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $userId
 ```
+
+2. Grant users access control in the Feathr UI by going to the "management" page, as below shows:
+
+![Feathr Registry Update](../images/feathr-add-users.jpg)
