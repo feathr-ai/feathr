@@ -101,7 +101,7 @@ assembly / assemblyMergeStrategy := {
     case _ => MergeStrategy.first
 }
 
-// Some systems(like Hadoop) use different versinos of protobuf(like v2) so we have to shade it.
+// Some systems(like Hadoop) use different versions of protobuf (like v2) so we have to shade it.
 assemblyShadeRules in assembly := Seq(
   ShadeRule.rename("com.google.protobuf.**" -> "shade.protobuf.@1").inAll,
 )
