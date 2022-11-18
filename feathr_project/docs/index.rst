@@ -10,7 +10,7 @@ If you are an end user, read `Feathr User APIs`.
 If you have any suggestions for our API documentation, please help us improve it by
 creating_ a Github issue for us.
 
-.. _creating: https://github.com/linkedin/feathr/issues/new
+.. _creating: https://github.com/feathr-ai/feathr/issues/new
 
 Feathr APIs for End Users
 ==================================

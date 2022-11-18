@@ -18,7 +18,7 @@ RUN apt-get update && \
 
 RUN mkdir /feathr
 WORKDIR /feathr
-RUN pip install git+https://github.com/linkedin/feathr.git#subdirectory=feathr_project
+RUN pip install git+https://github.com/feathr-ai/feathr.git#subdirectory=feathr_project
 
 # install code-server
 RUN mkdir -p /opt/code-server && \
