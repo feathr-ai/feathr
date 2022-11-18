@@ -116,17 +116,18 @@ class DbRegistry(Registry):
         children = []
         visited.append(id)
         children.append(id)
-        with self.conn.transaction() as c:
-            while children:
-                child = children.pop(0)
-                downstream_entities, _ = self._bfs(child, RelationshipType.Produces)
-                downstream_entity_keys = [x.id for x in downstream_entities]
+        while children:
+            child = children.pop(0)
+            downstream_entities, _ = self._bfs(child, RelationshipType.Produces)
+            downstream_entity_keys = [x.id for x in downstream_entities]
+            # Different transaction for each child due to transaction lock
+            with self.conn.transaction() as c:
                 self._delete_all_entity_edges(c, child)
                 self._delete_entity(c, child)
-                for downstream_entity in downstream_entity_keys:
-                    if downstream_entity not in visited:
-                        visited.append(downstream_entity)
-                        children.append(downstream_entity)
+            for downstream_entity in downstream_entity_keys:
+                if downstream_entity not in visited:
+                    visited.append(downstream_entity)
+                    children.append(downstream_entity)
         return str(id)
 
     def delete_project(self, project_id: Union[str,UUID], project: EntitiesAndRelations):
@@ -136,15 +137,18 @@ class DbRegistry(Registry):
         project_id = self.get_entity_id(project_id)
         entity_mappings = project.entities
         entity_mappings.pop(project_id)
-        with self.conn.transaction() as c:
-            ## Delete Children Entities first. Check for Feature Entitites to ensure they are recursively deleted
-            for entity_id, entity in entity_mappings.items():
-                if entity.entity_type in (EntityType.AnchorFeature, EntityType.DerivedFeature):
-                    self.delete_feature(entity_id)
-                else:
+        ## Delete Children Entities first. Check for Feature Entitites to ensure they are recursively deleted
+        for entity_id, entity in entity_mappings.items():
+            if entity.entity_type in (EntityType.AnchorFeature, EntityType.DerivedFeature):
+                self.delete_feature(entity_id)
+            else:
+                ## Separate transaction for each entity due to locking
+                with self.conn.transaction() as c:
                     self._delete_all_entity_edges(c, entity_id)
                     self._delete_entity(c, entity_id)
-            ## Finally delete project
+        ## Finally delete project
+        ## Separate transaction for project entity due to locking
+        with self.conn.transaction() as c:
             self._delete_all_entity_edges(c, project_id)
             self._delete_entity(c, project_id)
         return project_id

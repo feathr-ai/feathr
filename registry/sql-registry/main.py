@@ -94,7 +94,7 @@ def delete_project(project: str) -> str:
         raise HTTPException(
             status_code=404, details=f"Project {project} not found"
         )
-    return registry.delete_project(entity_id, project_entity)
+    return str(registry.delete_project(entity_id, project_entity))
 
 @router.get("/projects/{project}/datasources")
 def get_project_datasources(project: str) -> list:
