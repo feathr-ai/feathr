@@ -170,7 +170,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
     def wait_for_completion(self, timeout_seconds: Optional[float]) -> bool:
         """
         Returns true if the job completed successfully
-        """
+        """          
         start_time = time.time()
         while (timeout_seconds is None) or (time.time() - start_time < timeout_seconds):
             status = self.get_status()
@@ -179,7 +179,9 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                 return True
             elif status in {LivyStates.ERROR.value, LivyStates.DEAD.value, LivyStates.KILLED.value}:
                 logger.error("Feathr job has failed.")
-                logger.error(self._api.get_driver_log(self.current_job_info.id).decode('utf-8'))
+                error_msg = self._api.get_driver_log(self.current_job_info.id).decode('utf-8')
+                logger.error(error_msg)
+                logger.error("The size of the whole error log is: {}. The logs might be truncated in some cases (such as in Visual Studio Code) so only the top a few lines of the error message is displayed. If you cannot see the whole log, you may want to extend the setting for output size limit.", len(error_msg))
                 return False
             else:
                 time.sleep(30)

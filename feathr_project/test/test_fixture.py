@@ -379,3 +379,33 @@ def get_online_test_table_name(table_name: str):
     res_table = '_'.join([table_name, str(now.minute), str(now.second)])
     print("The online Redis table is", res_table)
     return res_table
+
+def time_partition_pattern_test_setup(config_path: str, data_source_path: str):
+    now = datetime.now()
+    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
+    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
+    client = FeathrClient(config_path=config_path)
+
+    batch_source = HdfsSource(name="testTimePartitionSource",
+                          path=data_source_path,
+                          time_partition_pattern="yyyy/MM/dd"
+                          )
+    key = TypedKey(key_column="key0",
+               key_column_type=ValueType.INT32)
+    agg_features = [
+    Feature(name="f_loc_avg_output",
+            key=[key],
+            feature_type=FLOAT,
+            transform="f_location_avg_fare"),
+    Feature(name="f_loc_max_output",
+            feature_type=FLOAT,
+            key=[key],
+            transform="f_location_max_fare"),
+    ]
+
+    agg_anchor = FeatureAnchor(name="testTimePartitionFeatures",
+                           source=batch_source,
+                           features=agg_features)
+    client.build_features(anchor_list=[agg_anchor])
+    return client

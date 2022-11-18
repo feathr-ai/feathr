@@ -17,8 +17,8 @@ project_config:
     # the environemnt variables are optional, however you will need them if you want to use some of the services:
     - ADLS_ACCOUNT
     - ADLS_KEY
-    - WASB_ACCOUNT
-    - WASB_KEY
+    - BLOB_ACCOUNT
+    - BLOB_KEY
     - S3_ACCESS_KEY
     - S3_SECRET_KEY
     - JDBC_TABLE
