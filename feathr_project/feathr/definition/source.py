@@ -167,16 +167,16 @@ class SnowflakeSource(Source):
             self.query = query
         self.database = database
         self.schema = schema
-        self.path = self._get_snowflake_path()
+        self.path = self._get_snowflake_path(dbtable, query)
 
-    def _get_snowflake_path(self) -> str:
+    def _get_snowflake_path(self, dbtable: Optional[str] = None, query: Optional[str] = None) -> str:
         """
         Returns snowflake path for registry.
         """
-        if hasattr(self, 'dbtable'):
-            return f"snowflake://snowflake_account/?sfDatabase={self.database}&sfSchema={self.schema}&dbtable={self.dbtable}"
+        if dbtable:
+            return f"snowflake://snowflake_account/?sfDatabase={self.database}&sfSchema={self.schema}&dbtable={dbtable}"
         else:
-            return f"snowflake://snowflake_account/?sfDatabase={self.database}&sfSchema={self.schema}&query={self.query}"
+            return f"snowflake://snowflake_account/?sfDatabase={self.database}&sfSchema={self.schema}&query={query}"
     
     def parse_snowflake_path(url: str) -> Dict[str, str]:
         """
@@ -211,6 +211,7 @@ class SnowflakeSource(Source):
             } 
         """)
         msg = tm.render(source=self)
+        print(f"FEATURE CONFNIG: {msg}")
         return msg
 
     def __str__(self):
