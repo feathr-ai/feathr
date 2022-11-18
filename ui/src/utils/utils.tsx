@@ -48,3 +48,13 @@ export const getFeatureDetailUrl = (project: string, feature: Feature) => {
       return;
   }
 };
+
+export const getJSONMap = (json: any = {}) => {
+  return Object.keys(json).map((key) => {
+    return { label: key, key };
+  });
+};
+
+export const isEmpty = (obj: any = {}) => {
+  return !obj || Object.getOwnPropertyNames(obj).length === 0;
+};

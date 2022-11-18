@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 from loguru import logger
 from pyspark import *
 
-from feathr.constants import FEATHR_MAVEN_ARTIFACT
+from feathr.version import get_maven_artifact_fullname
 from feathr.spark_provider._abc import SparkJobLauncher
 
 
@@ -77,7 +77,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
 
         # Get conf and package arguments
         cfg = configuration.copy() if configuration else {}
-        maven_dependency = f"{cfg.pop('spark.jars.packages', self.packages)},{FEATHR_MAVEN_ARTIFACT}"
+        maven_dependency = f"{cfg.pop('spark.jars.packages', self.packages)},{get_maven_artifact_fullname()}"
         spark_args = self._init_args(job_name=job_name, confs=cfg)
 
         if not main_jar_path:
@@ -86,7 +86,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 # This is a JAR job
                 # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
                 # so we have to use a dummy jar as the main file.
-                logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
+                logger.info(f"Main JAR file is not set, using default package '{get_maven_artifact_fullname()}' from Maven")
                 # Use the no-op jar as the main file
                 # This is a dummy jar which contains only one `org.example.Noop` class with one empty `main` function
                 # which does nothing
