@@ -5,14 +5,21 @@ from pathlib import Path
 
 # Use the README.md from /docs
 root_path = Path(__file__).resolve().parent.parent
-long_description = (root_path / "docs/README.md").read_text(encoding="utf8")
+readme_path = root_path / "docs/README.md"
+if readme_path.exists():
+    long_description = readme_path.read_text(encoding="utf8")
+else:
+    # In some build environments (specifically in conda), we may not have the README file
+    # readily available. In these cases, just set long_description to the URL of README.md.
+    long_description = "See https://github.com/feathr-ai/feathr/blob/main/docs/README.md"
 
 try:
     exec(open("feathr/version.py").read())
 except IOError:
     print("Failed to load Feathr version file for packaging.",
           file=sys.stderr)
-    sys.exit(-1)
+    # Temp workaround for conda build. For long term fix, Jay will need to update manifest.in file.
+    VERSION = "0.9.0"
 
 VERSION = __version__  # noqa
 os.environ["FEATHR_VERSION]"] = VERSION
