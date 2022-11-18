@@ -18,7 +18,8 @@ try:
 except IOError:
     print("Failed to load Feathr version file for packaging.",
           file=sys.stderr)
-    sys.exit(-1)
+    # Temp workaround for conda build. For long term fix, Jay will need to update manifest.in file.
+    VERSION = "0.9.0"
 
 VERSION = __version__  # noqa
 os.environ["FEATHR_VERSION]"] = VERSION
