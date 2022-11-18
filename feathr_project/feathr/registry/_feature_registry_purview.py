@@ -1083,6 +1083,24 @@ derivations: {
             feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
 
         return feature_list
+    
+    def delete_project(self, project_name: str):
+        """
+        Deletes project given project name. Project name must not be empty.
+        """
+        raise NotImplementedError("Delete functionality supported through API")
+
+    def delete_anchored_feature(self, project_name: str, anchor_name: str, feature_name: str):
+        """
+        Deletes anchor feature
+        """
+        raise NotImplementedError("Delete functionality supported through API")
+
+    def delete_derived_feature(self, project_name: str, feature_name: str):
+        """
+        Deletes derived feature
+        """
+        raise NotImplementedError("Delete functionality supported through API")
    
     def get_feature_by_fqdn_type(self, qualifiedName, typeName):
         """
