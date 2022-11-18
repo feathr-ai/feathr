@@ -15,13 +15,13 @@ licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
 
 // Project metadata
-homepage := Some(url("https://github.com/linkedin/feathr"))
+homepage := Some(url("https://github.com/feathr-ai/feathr"))
 scmInfo := Some(
   ScmInfo(
-    url("https://github.com/linkedin/feathr"),
+    url("https://github.com/feathr-ai/feathr"),
     "scm:git@github.com:linkedin/feathr.git"
   )
 )
 developers := List(
-    Developer(id="feathr_dev", name="Feathr Dev", email="feathrai@gmail.com", url=url("https://github.com/linkedin/feathr"))
+    Developer(id="feathr_dev", name="Feathr Dev", email="feathrai@gmail.com", url=url("https://github.com/feathr-ai/feathr"))
 )

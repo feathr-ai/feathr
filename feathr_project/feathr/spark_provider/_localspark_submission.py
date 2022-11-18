@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional
 from loguru import logger
 from pyspark import *
 
+from feathr.constants import OUTPUT_PATH_TAG
 from feathr.version import get_maven_artifact_fullname
 from feathr.spark_provider._abc import SparkJobLauncher
 
