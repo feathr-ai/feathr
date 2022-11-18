@@ -33,8 +33,13 @@ from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
 from feathr.definition.source import InputContext
-
-
+from azure.identity import DefaultAzureCredential
+from jinja2 import Template
+from loguru import logger
+from feathr.definition.config_helper import FeathrConfigHelper
+from pyhocon import ConfigFactory
+from feathr.registry._feathr_registry_client import _FeatureRegistry
+from feathr.registry._feature_registry_purview import _PurviewRegistry
 class FeathrClient(object):
     """Feathr client.
 
@@ -173,7 +178,19 @@ class FeathrClient(object):
         self.config_helper = FeathrConfigHelper()
 
         # initialize registry
-        self.registry = default_registry_client(self.project_name, config_path=config_path, credential=self.credential)
+        self.registry = None
+        registry_endpoint = self.envutils.get_environment_variable_with_default("feature_registry", "api_endpoint")
+        azure_purview_name = self.envutils.get_environment_variable_with_default('feature_registry', 'purview', 'purview_name')
+        if registry_endpoint:
+            self.registry = _FeatureRegistry(self.project_name, endpoint=registry_endpoint, project_tags=project_registry_tag, credential=credential)
+        elif azure_purview_name:
+            registry_delimiter = self.envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
+            # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
+            self.registry = _PurviewRegistry(self.project_name, azure_purview_name, registry_delimiter, project_registry_tag, config_path = config_path, credential=credential)
+        else:
+            # no registry configured
+            logger.info("Feathr registry is not configured. Consider setting the Feathr registry component for richer feature store experience.")
+        
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.

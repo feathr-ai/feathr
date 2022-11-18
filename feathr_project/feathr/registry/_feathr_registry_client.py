@@ -89,7 +89,7 @@ class _FeatureRegistry(FeathrRegistry):
             exclude_interactive_browser_credential=False) if credential is None else credential
         self.project_id = None
 
-    def register_features(self, workspace_path: Optional[Path] = None, from_context: bool = True, anchor_list=[], derived_feature_list=[]):
+    def register_features(self, workspace_path: Optional[Path] = None, from_context: bool = True, anchor_list: List[FeatureAnchor]=[], derived_feature_list=[]):
         """Register Features for the specified workspace. 
         Args:
             workspace_path (str, optional): path to a workspace. Defaults to None, not used in this implementation.
