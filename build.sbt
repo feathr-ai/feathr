@@ -2,7 +2,7 @@ import sbt.Keys.publishLocalConfiguration
 
 ThisBuild / resolvers += Resolver.mavenLocal
 ThisBuild / scalaVersion     := "2.12.15"
-ThisBuild / version          := "0.9.0-rc2"
+ThisBuild / version          := "0.9.0"
 ThisBuild / organization     := "com.linkedin.feathr"
 ThisBuild / organizationName := "linkedin"
 val sparkVersion = "3.1.3"
@@ -101,7 +101,7 @@ assembly / assemblyMergeStrategy := {
     case _ => MergeStrategy.first
 }
 
-// Some systems(like Hadoop) use different versinos of protobuf(like v2) so we have to shade it.
+// Some systems(like Hadoop) use different versions of protobuf (like v2) so we have to shade it.
 assemblyShadeRules in assembly := Seq(
   ShadeRule.rename("com.google.protobuf.**" -> "shade.protobuf.@1").inAll,
 )
