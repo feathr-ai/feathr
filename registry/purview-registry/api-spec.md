@@ -287,8 +287,8 @@ Get everything defined in the project
 
 Response Type: [`EntitiesAndRelationships`](#entitiesandrelationships)
 
-### `DELETE /projects/{project}`
-Deletes project
+### `GET /dependent/{entity}`
+Gets downstream/dependent entities for given entity
 
 ### `GET /projects/{project}/datasources`
 Get all sources defined in the project.
@@ -323,8 +323,8 @@ Response Type: Object
 | entity          | [`Entity`](#entity)   |                             |
 | referredEntities| `map<string, object>` | For compatibility, not used |
 
-### `DELETE /features/{feature}`
-Deletes feature
+### `DELETE /entity/{entity}`
+Deletes entity
 
 ### `POST /projects`
 Create new project
