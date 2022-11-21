@@ -55,17 +55,14 @@ assert df1.qualified_name == "unit_test_project_1__df1"
 # df1 has only 1 input anchor feature "af1"
 assert df1.attributes.input_anchor_features[0].id == af1_id
 
-# Delete Anchor Feature
-af1_delid = r.delete_feature(af1_id)
-assert str(af1_delid) == str(af1_id)
+df1_downstream_entities = r.get_dependent_entities(df1_id)
+assert len(df1_downstream_entities) == 0
 
-# Try getting anchor feature but KeyError exception should be thrown
-anchor_exists = 1
-try:
-    af1 = r.get_entity(af1_id)
-except KeyError:
-    anchor_exists = 0
-assert anchor_exists == 0
+af1_downstream_entities = r.get_dependent_entities(af1_id)
+assert len(af1_downstream_entities) == 1
+
+#Delete derived feature
+r.delete_entity(df1_id)
 
 # Try getting derived feature but KeyError exception should be thrown
 derived_exists = 1
@@ -75,16 +72,7 @@ except KeyError:
     derived_exists = 0
 assert derived_exists == 0
 
-# Delete Project
-project1_delid = r.delete_project(project1_id)
-assert str(project1_delid) == str(project1_id)
-
-# Try getting project but KeyError exception should be thrown
-project_exists = 1
-try:
-    project1_id = r.get_entity(project1_id)
-except KeyError:
-    project_exists = 0
-assert project_exists == 0
+af1_downstream_entities = r.get_dependent_entities(af1_id)
+assert len(af1_downstream_entities) == 0
 
 # cleanup()

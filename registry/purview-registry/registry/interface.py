@@ -94,9 +94,15 @@ class Registry(ABC):
         pass
 
     @abstractmethod
-    def delete_feature(self, id: Union[str,UUID]) -> str:
+    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> list[Entity]:
+        """
+        Given entity id, returns list of all entities that are downstream/dependent on given entity
+        """
         pass
 
     @abstractmethod
-    def delete_project(self, project_id: Union[str, UUID], project: EntitiesAndRelations) -> str:
+    def delete_entity(self, entity_id: Union[str, UUID]):
+        """
+        Deletes given entity
+        """
         pass

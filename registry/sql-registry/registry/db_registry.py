@@ -106,52 +106,31 @@ class DbRegistry(Registry):
         all_edges = self._get_edges(ids)
         return EntitiesAndRelations([project] + children, list(edges.union(all_edges)))
     
-    def delete_feature(self, id: Union[str,UUID]):
+    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> list[Entity]:
         """
-        Deletes Feature. An AnchorFeature or DerivedFeature can produce additional downstream features.
-        Hence, to delete all downstream features we use BFS.
+        Given entity id, returns list of all entities that are downstream/dependant on the given entity
         """
-        id = self.get_entity_id(id)
-        visited = []
-        children = []
-        visited.append(id)
-        children.append(id)
-        while children:
-            child = children.pop(0)
-            downstream_entities, _ = self._bfs(child, RelationshipType.Produces)
-            downstream_entity_keys = [x.id for x in downstream_entities]
-            # Different transaction for each child due to transaction lock
-            with self.conn.transaction() as c:
-                self._delete_all_entity_edges(c, child)
-                self._delete_entity(c, child)
-            for downstream_entity in downstream_entity_keys:
-                if downstream_entity not in visited:
-                    visited.append(downstream_entity)
-                    children.append(downstream_entity)
-        return str(id)
-
-    def delete_project(self, project_id: Union[str,UUID], project: EntitiesAndRelations):
+        entity_id = self.get_entity_id(entity_id)
+        entity = self.get_entity(entity_id)
+        downstream_entities = []
+        if entity.entity_type == EntityType.Project:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Contains)
+        if entity.entity_type == EntityType.Source:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
+        if entity.entity_type == EntityType.Anchor:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Contains)
+        if entity.entity_type in (EntityType.AnchorFeature, EntityType.DerivedFeature):
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
+        return [e for e in downstream_entities if str(e.id) != str(entity_id)]
+    
+    def delete_entity(self, entity_id: Union[str, UUID]):
         """
-        Deletes Project by first deleting all children entities and then finally deleting project
+        Deletes given entity
         """
-        project_id = self.get_entity_id(project_id)
-        entity_mappings = project.entities
-        entity_mappings.pop(project_id)
-        ## Delete Children Entities first. Check for Feature Entitites to ensure they are recursively deleted
-        for entity_id, entity in entity_mappings.items():
-            if entity.entity_type in (EntityType.AnchorFeature, EntityType.DerivedFeature):
-                self.delete_feature(entity_id)
-            else:
-                ## Separate transaction for each entity due to locking
-                with self.conn.transaction() as c:
-                    self._delete_all_entity_edges(c, entity_id)
-                    self._delete_entity(c, entity_id)
-        ## Finally delete project
-        ## Separate transaction for project entity due to locking
+        entity_id = self.get_entity_id(entity_id)
         with self.conn.transaction() as c:
-            self._delete_all_entity_edges(c, project_id)
-            self._delete_entity(c, project_id)
-        return project_id
+                self._delete_all_entity_edges(c, entity_id)
+                self._delete_entity(c, entity_id)
 
     def search_entity(self,
                       keyword: str,

@@ -191,55 +191,35 @@ class PurviewRegistry(Registry):
         return EntitiesAndRelations(
             upstream_entities + downstream_entities,
             upstream_edges + downstream_edges)
-
-    def delete_feature(self, id_or_name: Union[str, UUID]) -> str:
-        """
-        Deletes either AnchorFeature or DerivedFeature recursively
-        """
-        id = self.get_entity_id(id_or_name)
-        visited = []
-        children = []
-        visited.append(id)
-        children.append(id)
-        while children:
-            child = children.pop(0)
-            downstream_entities, _ = self._bfs(child, RelationshipType.Produces)
-            neighbors = self.get_all_neighbours(child)
-            downstream_guids = [x.id for x in downstream_entities]
-            edge_guids = [str(x.id) for x in neighbors]
-            ## Delete all edges associated with entity
-            self.purview_client.delete_entity(edge_guids)
-            ## Delete current entity
-            self.purview_client.delete_entity(str(child))
-            for downstream_entity in downstream_guids:
-                if downstream_entity not in visited:
-                    visited.append(downstream_entity)
-                    children.append(downstream_entity)
-        return str(id)
     
-    def delete_project(self, project_id: Union[str, UUID], project: EntitiesAndRelations) -> str:
+    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> list[Entity]:
         """
-        Deletes project by deleting all child components first
+        Given entity id, returns list of all entities that are downstream/dependent on given entity
         """
-        project_id = self.get_entity_id(project_id)
-        entity_mappings = project.entities
-        entity_mappings.pop(project_id)
-        for entity_id, entity in entity_mappings.items():
-            if entity.entity_type in (EntityType.AnchorFeature, EntityType.DerivedFeature):
-                self.delete_feature(entity_id)
-            else:
-                neighbors = self.get_all_neighbours(entity_id)
-                edge_guids = [str(x.id) for x in neighbors]
-                ## Delete all edges associated with entity
-                self.purview_client.delete_entity(edge_guids)
-                ## Delete entity
-                self.purview_client.delete_entity(entity_id)
-        ## Finally delete project
-        neighbors = self.get_all_neighbours(project_id)
+        entity_id = self.get_entity_id(entity_id)
+        entity = self.get_entity(entity_id)
+        downstream_entities = []
+        if entity.entity_type == EntityType.Project:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Contains)
+        if entity.entity_type == EntityType.Source:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
+        if entity.entity_type == EntityType.Anchor:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Contains)
+        if entity.entity_type in (EntityType.AnchorFeature, EntityType.DerivedFeature):
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
+        return [e for e in downstream_entities if str(e.id) != str(entity_id)]
+    
+    def delete_entity(self, entity_id: Union[str, UUID]):
+        """
+        Deletes given entity
+        """
+        entity_id = self.get_entity_id(entity_id)
+        neighbors = self.get_all_neighbours(entity_id)
         edge_guids = [str(x.id) for x in neighbors]
+        # Delete all edges associated with entity
         self.purview_client.delete_entity(edge_guids)
-        self.purview_client.delete_entity(project_id)
-        return project_id
+        #Delete entity
+        self.purview_client.delete_entity(str(entity_id))
 
     def _get_edges(self, ids: list[UUID]) -> list[Edge]:
         all_edges = set()
@@ -250,7 +230,7 @@ class PurviewRegistry(Registry):
                     and neighbour.to_id in ids:
                     all_edges.add(neighbour)
         return list(all_edges)
-        
+    
     def _create_edge_from_process(self, name:str, guid: str) -> Edge:
         names = name.split(self.registry_delimiter)
         return Edge(guid, names[1], names[2], RelationshipType.new(names[0]))

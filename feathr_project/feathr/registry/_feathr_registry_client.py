@@ -136,29 +136,23 @@ class _FeatureRegistry(FeathrRegistry):
             "id": r["guid"],
             "qualifiedName": r["attributes"]["qualifiedName"],
         } for r in resp]
-
-    def delete_project(self, project_name: str):
-        """
-        Deletes project
-        """
-        r = self._delete(f"/projects/{project_name}")
-        return r
-
-    def delete_anchored_feature(self, project_name: str, anchor_name: str, feature_name: str):
-        """
-        Deletes anchored feature
-        """
-        qualified_name = f"{project_name}__{anchor_name}__{feature_name}"
-        r = self._delete(f"/features/{qualified_name}")
-        return r
     
-    def delete_derived_feature(self, project_name: str, feature_name: str):
+    def list_dependent_entities(self, qualified_name: str):
         """
-        Deletes derived feature
+        Returns list of dependent entities for provided entity
         """
-        qualified_name = f"{project_name}__{feature_name}"
-        r = self._delete(f"/features/{qualified_name}")
-        return r
+        resp = self._get(f"/dependent/{qualified_name}")
+        return [{
+            "name": r["attributes"]["name"],
+            "id": r["guid"],
+            "qualifiedName": r["attributes"]["qualifiedName"],
+        } for r in resp]
+    
+    def delete_entity(self, qualified_name: str):
+        """
+        Deletes entity if it has no dependent entities
+        """
+        self._delete(f"/entity/{qualified_name}")
 
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """

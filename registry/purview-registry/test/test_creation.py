@@ -22,17 +22,13 @@ derived = registry.create_project_derived_feature(proj_id, DerivedFeatureDef(qua
 
 print(proj_id,source_id,anchor1_id,feature1,derived)
 
-# Delete Anchor Feature
-feature1_delid = registry.delete_feature(feature1)
-assert str(feature1) == str(feature1_delid)
+derived_downstream_entities = registry.get_dependent_entities(derived)
+assert len(derived_downstream_entities) == 0
 
-# Try getting anchor feature but KeyError exception should be thrown
-anchor_exists = 1
-try:
-    af1 = registry.get_entity(feature1)
-except KeyError:
-    anchor_exists = 0
-assert anchor_exists == 0
+feature1_downstream_entities = registry.get_dependent_entities(feature1)
+assert len(feature1_downstream_entities) == 1
+
+registry.delete_entity(derived)
 
 # Try getting derived feature but KeyError exception should be thrown
 derived_exists = 1
@@ -42,16 +38,7 @@ except KeyError:
     derived_exists = 0
 assert derived_exists == 0
 
-# Delete Project
-project1_delid = registry.delete_project(proj_id)
-assert str(project1_delid) == str(proj_id)
-
-# Try getting project but KeyError exception should be thrown
-project_exists = 1
-try:
-    project1_id = registry.get_entity(proj_id)
-except KeyError:
-    project_exists = 0
-assert project_exists == 0
+feature1_downstream_entities = registry.get_dependent_entities(feature1)
+assert len(feature1_downstream_entities) == 0
 
 # cleanup()

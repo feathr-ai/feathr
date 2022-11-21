@@ -245,23 +245,17 @@ class FeathrClient(object):
         """
         return self.registry.list_registered_features(project_name)
     
-    def delete_project(self, project_name: str):
+    def list_dependent_entities(self, qualified_name: str):
         """
-        Deletes given feature for 
+        Lists all dependent/downstream entities for a given entity
         """
-        return self.registry.delete_project(project_name)
+        return self.registry.list_dependent_entities(qualified_name)
     
-    def delete_anchored_feature(self, project_name: str, anchor_name: str, feature_name: str):
+    def delete_entity(self, qualified_name: str):
         """
-        Deletes anchored feature associated with project and anchor
+        Deletes a single entity if it has no downstream/dependent entities
         """
-        return self.registry.delete_anchored_feature(project_name, anchor_name, feature_name)
-    
-    def delete_derived_feature(self, project_name: str, feature_name: str):
-        """
-        Deletes derived feature 
-        """
-        return self.registry.delete_derived_feature(project_name, feature_name)
+        return self.registry.delete_entity(qualified_name)
 
     def _get_registry_client(self):
         """

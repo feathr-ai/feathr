@@ -56,15 +56,22 @@ def get_projects_ids() -> dict:
 def get_projects(project: str) -> dict:
     return to_camel(registry.get_project(project).to_dict())
 
-@router.delete("/projects/{project}",tags=["Project"])
-def delete_project(project: str) -> str:
-    entity_id = registry.get_entity_id(project)
-    project_entity = registry.get_project(entity_id)
-    if project_entity is None:
+@router.get("/dependent/{entity}")
+def get_dependent_entities(entity: str) -> list:
+    entity_id = registry.get_entity_id(entity)
+    downstream_entities = registry.get_dependent_entities(entity_id)
+    return list([e.to_dict() for e in downstream_entities])
+
+@router.delete("/entity/{entity}")
+def delete_entity(entity: str):
+    entity_id = registry.get_entity_id(entity)
+    downstream_entities = registry.get_dependent_entities(entity_id)
+    if len(downstream_entities) > 0:
         raise HTTPException(
-            status_code=404, details=f"Project {project} not found"
+           status_code=500, detail=f"""Entity cannot be deleted as it has downstream/dependent entities.
+            Entities: {list([e.qualified_name for e in downstream_entities])}"""
         )
-    return registry.delete_project(entity_id, project_entity)
+    registry.delete_entity(entity_id)
 
 @router.get("/projects/{project}/datasources",tags=["Project"])
 def get_project_datasources(project: str) -> list:
@@ -98,15 +105,6 @@ def get_feature(feature: str) -> dict:
         raise HTTPException(
             status_code=404, detail=f"Feature {feature} not found")
     return to_camel(e.to_dict())
-
-@router.delete("/features/{feature}", tags=["Feature"])
-def delete_feature(feature: str) -> str:
-    entity_id = registry.get_entity_id(feature)
-    e = registry.get_entity(entity_id)
-    if e.entity_type not in [EntityType.DerivedFeature, EntityType.AnchorFeature]:
-        raise HTTPException(
-            status_code=404, detail=f"Feature {feature} not found")
-    return registry.delete_feature(entity_id)
 
 @router.get("/features/{feature}/lineage",tags=["Feature"])
 def get_feature_lineage(feature: str) -> dict:
