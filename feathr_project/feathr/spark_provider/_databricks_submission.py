@@ -13,6 +13,7 @@ from urllib.request import urlopen
 import requests
 from databricks_cli.dbfs.api import DbfsApi
 from databricks_cli.runs.api import RunsApi
+from databricks_cli.dbfs.dbfs_path import DbfsPath
 from databricks_cli.sdk.api_client import ApiClient
 from feathr.constants import *
 from feathr.version import get_maven_artifact_fullname
@@ -274,4 +275,26 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             raise RuntimeError('Currently only paths starting with dbfs is supported for downloading results from a databricks cluster. The path should start with \"dbfs:\" .')
 
         DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=result_path, dst=local_folder)
+        
+    def copy_files(self, source_path: str, target_path: str, overwrite = False):
+        """
+        Supports copying files from the source folder to the target folder. Only support paths starting with `dbfs:/` and only support copying files from/to one folder
+        """
+        if not source_path.startswith('dbfs') or not target_path.startswith('dbfs'):
+            raise RuntimeError('Currently only paths starting with dbfs are supported for copying databricks cluster. The paths should start with \"dbfs:\" .')
+        
+        DbfsApi(self.api_client).cp(recursive=True, overwrite=overwrite, src=source_path, dst=target_path)
 
+    def dir_exists(self, dir_path: str):
+        """
+        Check if a directory of hdfs already exists
+        """
+        if not dir_path.startswith('dbfs'):
+            raise RuntimeError('Currently only paths starting with dbfs is supported. The paths should start with \"dbfs:\" .')
+        
+        try:
+            files = DbfsApi(self.api_client).list_files(DbfsPath(dir_path))
+            return len(files) > 0
+        except:
+            return False
+       

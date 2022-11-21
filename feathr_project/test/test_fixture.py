@@ -380,28 +380,45 @@ def get_online_test_table_name(table_name: str):
     print("The online Redis table is", res_table)
     return res_table
 
-def time_partition_pattern_test_setup(config_path: str, data_source_path: str):
+def time_partition_pattern_test_setup(config_path: str, data_source_path: str, resolution: str = 'DAILY', postfix_path: str = ""):
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
     os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
     os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
     client = FeathrClient(config_path=config_path)
 
-    batch_source = HdfsSource(name="testTimePartitionSource",
+    if resolution == 'DAILY':
+        if postfix_path != "":
+            batch_source = HdfsSource(name="testTimePartitionSource",
+                          path=data_source_path,
+                          time_partition_pattern="yyyy/MM/dd",
+                          postfix_path=postfix_path
+                        )
+        else:
+            batch_source = HdfsSource(name="testTimePartitionSource",
                           path=data_source_path,
                           time_partition_pattern="yyyy/MM/dd"
-                          )
+                        )
+    else:
+        batch_source = HdfsSource(name="testTimePartitionSource",
+                          path=data_source_path,
+                          time_partition_pattern="yyyy/MM/dd/HH"
+                        )
     key = TypedKey(key_column="key0",
                key_column_type=ValueType.INT32)
     agg_features = [
     Feature(name="f_loc_avg_output",
             key=[key],
             feature_type=FLOAT,
-            transform="f_location_avg_fare"),
+            transform=WindowAggTransformation(agg_expr="f_location_avg_fare",
+                                              agg_func="AVG",
+                                              window="3d")),
     Feature(name="f_loc_max_output",
             feature_type=FLOAT,
             key=[key],
-            transform="f_location_max_fare"),
+            transform=WindowAggTransformation(agg_expr="f_location_max_fare",
+                                              agg_func="MAX",
+                                              window="3d")),
     ]
 
     agg_anchor = FeatureAnchor(name="testTimePartitionFeatures",

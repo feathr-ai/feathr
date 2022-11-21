@@ -724,7 +724,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
     }
 
     val timePartitionPattern = Option(node.get("timePartitionPattern")).map(_.textValue())
-    val postfixPath = Option(node.get("postfixFilePath")).map(_.textValue())
+    val postfixPath = Option(node.get("postfixPath")).map(_.textValue())
 
     // Check for time-stamped features (hasTimeSnapshot) or time-window features (isTimeSeries)
     val sourceFormatType =

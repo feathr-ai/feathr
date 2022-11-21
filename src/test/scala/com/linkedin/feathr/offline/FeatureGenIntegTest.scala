@@ -134,7 +134,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
         |  swaSource: {
         |    location: { path: "slidingWindowAgg/localSWAAnchorTestFeatureData/daily" }
         |    timePartitionPattern: "yyyy/MM/dd"
-        |    postfixFilePath: "postfixPath"
+        |    postfixPath: "postfixPath"
         |    timeWindowParameters: {
         |      timestampColumn: "timestamp"
         |      timestampColumnFormat: "yyyy-MM-dd"
