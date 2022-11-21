@@ -20,6 +20,14 @@ class FeathrRegistry(ABC):
         """
         pass
 
+
+    @abstractmethod
+    def list_registered_features(self, project_name: str) -> List[str]:
+        """List all the already registered features under the given project.
+        `project_name` must not be None or empty string because it violates the RBAC policy
+        """
+        pass
+
     @abstractmethod
     def list_dependent_entities(self, qualified_name: str):
         """
