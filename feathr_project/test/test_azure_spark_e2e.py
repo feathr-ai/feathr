@@ -215,7 +215,7 @@ def test_feathr_get_offline_features():
     with runner.isolated_filesystem():
         runner.invoke(init, [])
         client = basic_test_setup(
-            "./feathr_user_workspace/feathr_config_bak.yaml")
+            "./feathr_user_workspace/feathr_config.yaml")
 
         location_id = TypedKey(key_column="DOLocationID",
                                key_column_type=ValueType.INT32,
@@ -449,7 +449,7 @@ def test_feathr_materialize_with_time_partition_pattern():
     else:
         output_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_test'
         
-    client_consumer: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"), output_path+'/df0/daily')
+    client_consumer: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), output_path+'/df0/daily')
 
     backfill_time_tpp = BackfillTime(start=datetime(
         2020, 5, 21), end=datetime(2020, 5, 21), step=timedelta(days=1))
@@ -473,7 +473,8 @@ def test_feathr_materialize_with_time_partition_pattern():
     # by default, it will write to a folder appended with date
     res_df = get_result_df(client_consumer, "avro", output_path_tpp + "/df0/daily/2020/05/21")
     assert res_df.shape[0] > 0
-    
+   
+@pytest.mark.skip(reason="Will add back when updated scala jar is applied")    
 def test_feathr_materialize_with_time_partition_pattern_postfix_path():  
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
