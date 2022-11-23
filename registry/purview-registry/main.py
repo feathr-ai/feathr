@@ -68,7 +68,7 @@ def delete_entity(entity: str):
     downstream_entities = registry.get_dependent_entities(entity_id)
     if len(downstream_entities) > 0:
         raise HTTPException(
-           status_code=500, detail=f"""Entity cannot be deleted as it has downstream/dependent entities.
+           status_code=412, detail=f"""Entity cannot be deleted as it has downstream/dependent entities.
             Entities: {list([e.qualified_name for e in downstream_entities])}"""
         )
     registry.delete_entity(entity_id)
