@@ -7,7 +7,7 @@ from feathr.definition.anchor import FeatureAnchor
 from feathr.definition.dtype import FeatureType, str_to_value_type, value_type_to_str
 from feathr.definition.feature import Feature
 from feathr.definition.feature_derivations import DerivedFeature
-from feathr.definition.source import HdfsSource, JdbcSource, Source
+from feathr.definition.source import HdfsSource, JdbcSource, Source, SnowflakeSource
 from pyapacheatlas.core import AtlasProcess,AtlasEntity
 
 from feathr.definition.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
@@ -39,6 +39,12 @@ def source_to_def(v: Source) -> dict:
         ret = {
             "name": v.name,
             "type": "hdfs",
+            "path": v.path,
+        }
+    elif isinstance(v, SnowflakeSource):
+        ret = {
+            "name": v.name,
+            "type": "SNOWFLAKE",
             "path": v.path,
         }
     elif isinstance(v, JdbcSource):

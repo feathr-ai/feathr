@@ -55,6 +55,7 @@ class FeathrRegistry(ABC):
 def default_registry_client(project_name: str, config_path:str = "./feathr_config.yaml", project_registry_tag: Dict[str, str]=None, credential = None) -> FeathrRegistry:
     from feathr.registry._feathr_registry_client import _FeatureRegistry
     from feathr.registry._feature_registry_purview import _PurviewRegistry
+ 
     envutils = _EnvVaraibleUtil(config_path)
     registry_endpoint = envutils.get_environment_variable_with_default("feature_registry", "api_endpoint")
     if registry_endpoint:

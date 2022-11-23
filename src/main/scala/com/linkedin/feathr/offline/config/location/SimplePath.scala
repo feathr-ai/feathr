@@ -19,7 +19,13 @@ case class SimplePath(@JsonProperty("path") path: String) extends DataLocation {
 
   override def getPathList: List[String] = List(path)
 
-  override def isFileBasedLocation(): Boolean = true
+  override def isFileBasedLocation(): Boolean = {
+    if (path.startsWith("jdbc:")) {
+      false
+    } else {
+      true
+    }
+  }
 
   override def toString: String = s"SimplePath(path=${path})"
 }

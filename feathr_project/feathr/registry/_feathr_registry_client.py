@@ -21,7 +21,7 @@ from feathr.definition.dtype import FeatureType, str_to_value_type, value_type_t
 from feathr.definition.feature import Feature, FeatureBase
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.repo_definitions import RepoDefinitions
-from feathr.definition.source import GenericSource, HdfsSource, InputContext, JdbcSource, Source
+from feathr.definition.source import GenericSource, HdfsSource, InputContext, JdbcSource, SnowflakeSource, Source
 from feathr.definition.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
 from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
@@ -397,6 +397,12 @@ def source_to_def(v: Source) -> dict:
             "type": urlparse(v.path).scheme,
             "path": v.path,
         }
+    elif isinstance(v, SnowflakeSource):
+        ret = {
+            "name": v.name,
+            "type": "SNOWFLAKE",
+            "path": v.path,
+        }
     elif isinstance(v, JdbcSource):
         ret = {
             "name": v.name,
@@ -446,6 +452,21 @@ def dict_to_source(v: dict) -> Source:
                             timestamp_format=v["attributes"].get(
                                 "timestampFormat"),
                             registry_tags=v["attributes"].get("tags", {}))
+    elif type == "SNOWFLAKE":
+        snowflake_path = v["attributes"]["path"]
+        snowflake_parameters = SnowflakeSource.parse_snowflake_path(snowflake_path)
+        source = SnowflakeSource(name=v["attributes"]["name"],
+                                dbtable=snowflake_parameters.get("dbtable", None),
+                                query=snowflake_parameters.get("query", None),
+                                database=snowflake_parameters["sfDatabase"],
+                                schema=snowflake_parameters["sfSchema"],
+                                preprocessing=_correct_function_indentation(
+                                    v["attributes"].get("preprocessing")),
+                                event_timestamp_column=v["attributes"].get(
+                                    "eventTimestampColumn"),
+                                timestamp_format=v["attributes"].get(
+                                    "timestampFormat"),
+                                registry_tags=v["attributes"].get("tags", {}))
     elif type == "generic":
         options = v["attributes"].copy()
         # These are not options

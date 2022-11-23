@@ -10,6 +10,7 @@ private[feathr] class SnowflakeResourceInfoSetter extends ResourceInfoSetter() {
       ss.conf.set("sfURL", getAuthFromContext("JDBC_SF_URL", dataSourceConfig))
       ss.conf.set("sfUser", getAuthFromContext("JDBC_SF_USER", dataSourceConfig))
       ss.conf.set("sfRole", getAuthFromContext("JDBC_SF_ROLE", dataSourceConfig))
+      ss.conf.set("sfWarehouse", getAuthFromContext("JDBC_SF_WAREHOUSE", dataSourceConfig))
       ss.conf.set("sfPassword", getAuthFromContext("JDBC_SF_PASSWORD", dataSourceConfig))
     })
   }

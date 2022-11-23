@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.source.dataloader.hdfs
 
 import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.source.dataloader._
-import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
+import com.linkedin.feathr.offline.source.dataloader.jdbc.{JdbcUtils, SnowflakeUtils}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
 import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
@@ -23,6 +23,8 @@ object FileFormat {
   val PATHLIST = "PATHLIST"
   // Detail JDBC Sql Type, please refer to dataloader.jdbc.SqlDbType
   val JDBC = "JDBC"
+  // Snowflake type
+  val SNOWFLAKE = "SNOWFLAKE"
 
   private val AVRO_DATASOURCE = "avro"
   // Use Spark native orc reader instead of hive-orc since Spark 2.3
@@ -44,6 +46,7 @@ object FileFormat {
       case p if p.endsWith(".avro.json") => AVRO_JSON
       case p if p.endsWith(".avro") => AVRO
       case p if p.startsWith("jdbc:") => JDBC
+      case p if p.startsWith("snowflake:") => SNOWFLAKE
       case _ =>
         // if we cannot tell the file format from the file extensions, we should read from `spark.feathr.inputFormat` to get the format that's sepcified by user.
         if (ss.conf.get("spark.feathr.inputFormat","").nonEmpty) ss.conf.get("spark.feathr.inputFormat") else PATHLIST
@@ -81,6 +84,7 @@ object FileFormat {
       case p if p.endsWith(".avro.json") => AVRO_JSON
       case p if p.endsWith(".avro") => AVRO
       case p if p.startsWith("jdbc:") => JDBC
+      case p if p.startsWith("snowflake:") => SNOWFLAKE
       case _ =>
         // if we cannot tell the file format from the file extensions, we should read from `spark.feathr.inputFormat` to get the format that's sepcified by user.
         dataIOParameters.getOrElse(DATA_FORMAT, ss.conf.get("spark.feathr.inputFormat", AVRO)).toUpperCase
@@ -106,6 +110,8 @@ object FileFormat {
       case JDBC =>
         // TODO: We should stop using JDBC URL as simple path, otherwise the code will be full of such hack
         JdbcUtils.loadDataFrame(ss, existingHdfsPaths.head)
+      case SNOWFLAKE =>
+        SnowflakeUtils.loadDataFrame(ss, existingHdfsPaths.head)
       case _ =>
         // Allow dynamic config of the file format if users want to use one
         if (ss.conf.getOption("spark.feathr.inputFormat").nonEmpty) ss.read.format(ss.conf.get("spark.feathr.inputFormat")).load(existingHdfsPaths: _*)
