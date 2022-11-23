@@ -40,6 +40,7 @@ from feathr.definition.config_helper import FeathrConfigHelper
 from pyhocon import ConfigFactory
 from feathr.registry._feathr_registry_client import _FeatureRegistry
 from feathr.registry._feature_registry_purview import _PurviewRegistry
+from feathr.version import get_version
 class FeathrClient(object):
     """Feathr client.
 
@@ -191,6 +192,7 @@ class FeathrClient(object):
             # no registry configured
             logger.info("Feathr registry is not configured. Consider setting the Feathr registry component for richer feature store experience.")
         
+        logger.info(f"Feathr client {get_version()} initialized successfully.")
 
     def _check_required_environment_variables_exist(self):
         """Checks if the required environment variables(form feathr_config.yaml) is set.

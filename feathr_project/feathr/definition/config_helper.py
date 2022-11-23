@@ -59,8 +59,7 @@ class FeathrConfigHelper(object):
                 definitions.transformations.add(
                     vars(derived_feature)["transform"])
             else:
-                raise RuntimeError(
-                    "Object cannot be parsed. `derived_feature_list` should be a list of `DerivedFeature`.")
+                raise RuntimeError(f"Please make sure you pass a list of `DerivedFeature` objects to the `derived_feature_list` argument. {str(type(derived_feature))} is detected.")
 
         for anchor in anchor_list:
             # obj is `FeatureAnchor`
@@ -74,7 +73,8 @@ class FeathrConfigHelper(object):
                     definitions.features.add(feature)
                     definitions.transformations.add(vars(feature)["transform"])
                 else:
-                    raise RuntimeError("Object cannot be parsed.")
+                    
+                    raise RuntimeError(f"Please make sure you pass a list of `Feature` objects. {str(type(feature))} is detected.")
 
         return definitions
 
