@@ -16,6 +16,7 @@ The local spark provider only requires users to have a [local spark environment]
 
 ### Environment Setup
 Please make sure that `Spark` and `feathr` are installed and the `SPARK_LOCAL_IP` is set. 
+`JAVA_HOME` and Java environment is also required.
 
 ### Local Feathr Config
 To use local spark environment, user need to set `spark_cluster: 'local'`. If `feathr_runtime_location` is not set, Feathr will use default Maven package instead.
@@ -72,8 +73,9 @@ In this version of local spark provider, users are only able to test `get_offlin
 `local-spark-provider` enable users to test features without deploying any cloud resources. However, please use it ONLY in test or trial scenarios. For production usage, cloud spark providers are highly recommended. 
 
 ### Tips:
-If you want to submit more customized params to Spark, a workaround is to generate a sample script and then update it with your own params.
-
+- If you want to submit more customized params to Spark, a workaround is to generate a sample script and then update it with your own params.
+- Cold start will be slow since it needs to download quite a few Maven packages to local environment. But after that it should be very fast to use it locally
+- Windows is currently not supported. Linux/MacOS is fully tested. If you are on Windows machine, consider using WSL.
 ### Use Cases:
 Following use cases are covered in CI test:
 - `get_offline_features()` without UDFs
@@ -85,3 +87,4 @@ Following use cases are covered in CI test:
 - `materialize_features()` into online store with local spark environment.
 - advanced `udf` support
 - more data sources
+
