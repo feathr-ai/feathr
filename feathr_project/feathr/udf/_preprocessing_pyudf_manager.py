@@ -176,6 +176,7 @@ feature_names_funcs = {
         for feature_name in feature_names:
             if feature_name in features_with_preprocessing:
                 has_py_udf_preprocessing = True
+                break
 
         if has_py_udf_preprocessing:
             pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)

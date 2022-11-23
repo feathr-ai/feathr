@@ -3,6 +3,7 @@ import os
 from setuptools import setup, find_packages
 from pathlib import Path
 
+
 # Use the README.md from /docs
 root_path = Path(__file__).resolve().parent.parent
 readme_path = root_path / "docs/README.md"
@@ -22,7 +23,7 @@ except IOError:
     VERSION = "0.9.0"
 
 VERSION = __version__  # noqa
-os.environ["FEATHR_VERSION]"] = VERSION
+os.environ["FEATHR_VERSION"] = VERSION
 
 extras_require=dict(
     dev=[

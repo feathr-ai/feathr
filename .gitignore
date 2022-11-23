@@ -213,3 +213,6 @@ null/*
 project/.bloop
 metals.sbt
 .bsp/sbt.json
+
+# Feathr output debug folder
+**/debug/

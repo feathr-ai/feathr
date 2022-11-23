@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 import json
 import os
@@ -10,6 +11,7 @@ from typing import Any, Dict, List, Optional
 from loguru import logger
 from pyspark import *
 
+from feathr.constants import OUTPUT_PATH_TAG
 from feathr.version import get_maven_artifact_fullname
 from feathr.spark_provider._abc import SparkJobLauncher
 
@@ -40,6 +42,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         self.retry_sec = retry_sec
         self.packages = self._get_default_package()
         self.master = master or "local[*]"
+        self.job_tags = None
 
     def upload_or_get_cloud_path(self, local_path_or_http_path: str):
         """For Local Spark Case, no need to upload to cloud workspace."""
@@ -52,6 +55,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         main_class_name: str,
         arguments: List[str] = None,
         python_files: List[str] = None,
+        job_tags: Dict[str, str] = None,
         configuration: Dict[str, str] = {},
         properties: Dict[str, str] = {},
         **_,
@@ -66,9 +70,10 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
             main_class_name: name of your main class
             arguments: all the arguments you want to pass into the spark job
             python_files: required .zip, .egg, or .py files of spark job
+            job_tags: tags of the job, for example you might want to put your user ID, or a tag with a certain information
             configuration: Additional configs for the spark job
             properties: System properties configuration
-            **_: Not used arguments in local spark mode, such as reference_files_path and job_tags
+            **_: Not used arguments in local spark mode, such as reference_files_path
         """
         logger.warning(
             f"Local Spark Mode only support basic params right now and should be used only for testing purpose."
@@ -124,6 +129,8 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         self.latest_spark_proc = proc
 
         logger.info(f"Local Spark job submit with pid: {proc.pid}.")
+
+        self.job_tags = deepcopy(job_tags)
 
         return proc
 
@@ -197,6 +204,22 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
     def get_status(self) -> str:
         """Get the status of the job, only a placeholder for local spark"""
         return self.latest_spark_proc.returncode
+
+    def get_job_result_uri(self) -> str:
+        """Get job output path
+
+        Returns:
+            str: output_path
+        """
+        return self.job_tags.get(OUTPUT_PATH_TAG, None) if self.job_tags else None
+
+    def get_job_tags(self) -> Dict[str, str]:
+        """Get job tags
+
+        Returns:
+            Dict[str, str]: a dict of job tags
+        """
+        return self.job_tags
 
     def _init_args(self, job_name: str, confs: Dict[str, str]) -> List[str]:
         logger.info(f"Spark job: {job_name} is running on local spark with master: {self.master}.")
