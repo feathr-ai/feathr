@@ -259,6 +259,20 @@ class FeathrClient(object):
         # Pretty print anchor_list
         if verbose and self.anchor_list:
             FeaturePrinter.pretty_print_anchors(self.anchor_list)
+    
+    def get_snowflake_path(self, database: str, schema: str, dbtable: str = None, query: str = None) -> str:
+        """
+        Returns snowflake path given dataset location information.
+        Either dbtable or query must be specified but not both.
+        """
+        if dbtable is not None and query is not None:
+            raise RuntimeError("Both dbtable and query are specified. Can only specify one..")
+        if dbtable is None and query is None:
+            raise RuntimeError("One of dbtable or query must be specified..")
+        if dbtable:
+            return f"snowflake://snowflake_account/?sfDatabase={database}&sfSchema={schema}&dbtable={dbtable}"
+        else:
+            return f"snowflake://snowflake_account/?sfDatabase={database}&sfSchema={schema}&query={query}"
 
     def list_registered_features(self, project_name: str = None) -> List[str]:
         """List all the already registered features under the given project.
@@ -854,14 +868,16 @@ class FeathrClient(object):
         sf_url = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'url')
         sf_user = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'user')
         sf_role = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'role')
+        sf_warehouse = self.envutils.get_environment_variable_with_default('offline_store', 'snowflake', 'warehouse')
         sf_password = self.envutils.get_environment_variable('JDBC_SF_PASSWORD')
         # HOCON format will be parsed by the Feathr job
         config_str = """
             JDBC_SF_URL: {JDBC_SF_URL}
             JDBC_SF_USER: {JDBC_SF_USER}
             JDBC_SF_ROLE: {JDBC_SF_ROLE}
+            JDBC_SF_WAREHOUSE: {JDBC_SF_WAREHOUSE}
             JDBC_SF_PASSWORD: {JDBC_SF_PASSWORD}
-            """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role)
+            """.format(JDBC_SF_URL=sf_url, JDBC_SF_USER=sf_user, JDBC_SF_PASSWORD=sf_password, JDBC_SF_ROLE=sf_role, JDBC_SF_WAREHOUSE=sf_warehouse)
         return self._reshape_config_str(config_str)
 
     def _get_kafka_config_str(self):
