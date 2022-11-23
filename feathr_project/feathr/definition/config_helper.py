@@ -17,6 +17,7 @@ from jinja2 import Template
 import sys
 from feathr.utils._file_utils import write_to_file
 import importlib
+import os
 
 class FeathrConfigHelper(object):
     def __init__(self) -> None:
