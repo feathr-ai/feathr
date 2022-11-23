@@ -66,9 +66,10 @@ def test_feathr_get_offline_features():
     feature_query = FeatureQuery(
         feature_list=['f_snowflake_call_center_division_name', 'f_snowflake_call_center_zipcode'],
         key=call_sk_id)
+
+    observation_path = client.get_snowflake_path(database="SNOWFLAKE_SAMPLE_DATA",schema="TPCDS_SF10TCL",dbtable="CALL_CENTER")
     settings = ObservationSettings(
-        observation_path='jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse'
-                         '=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL')
+        observation_path=observation_path)
 
     now = datetime.now()
      # set output folder based on different runtime
@@ -87,3 +88,15 @@ def test_feathr_get_offline_features():
     res = get_result_df(client)
     # just assume there are results.
     assert res.shape[0] > 1
+
+def test_client_get_snowflake_observation_path():
+    """
+    Test get_snowflake_path() returns correct snowflake observation path
+    """
+    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
+
+
+    client = snowflake_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    snowflake_path_actual = client.get_snowflake_path(database="DATABASE", schema="SCHEMA", dbtable="TABLE")
+    snowflake_path_expected = "snowflake://snowflake_account/?sfDatabase=DATABASE&sfSchema=SCHEMA&dbtable=TABLE"
+    assert snowflake_path_actual == snowflake_path_expected

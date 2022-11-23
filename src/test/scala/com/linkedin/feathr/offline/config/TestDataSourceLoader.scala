@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.FeathrJacksonScalaModule
-import com.linkedin.feathr.offline.config.location.{Jdbc, LocationUtils}
+import com.linkedin.feathr.offline.config.location.{Jdbc, LocationUtils, Snowflake}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import org.scalatest.FunSuite
 
@@ -33,6 +33,38 @@ class TestDataSourceLoader extends FunSuite {
     val ds = jackson.readValue(configDoc, classOf[DataSource])
     assert(ds.path=="abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/green_tripdata_2020-04.csv")
     assert(ds.sourceType == SourceFormatType.FIXED_PATH)
+  }
+
+  test("Test Deserialize Snowflake DataSource") {
+    val jackson = LocationUtils.getMapper()
+    val configDoc =
+      """
+        |{
+        |  location: {
+        |    type: "snowflake"
+        |    database: "DATABASE"
+        |    schema: "SCHEMA"
+        |    dbtable: "TABLE"
+        |  }
+        |  timeWindowParameters: {
+        |    timestampColumn: "lpep_dropoff_datetime"
+        |    timestampColumnFormat: "yyyy-MM-dd HH:mm:ss"
+        |  }
+        |}
+        |""".stripMargin
+    val ds = jackson.readValue(configDoc, classOf[DataSource])
+    ds.location match {
+      case Snowflake(database, schema, dbtable, query) => {
+        assert(database == "DATABASE")
+        assert(schema == "SCHEMA")
+        assert(dbtable == "TABLE")
+      }
+      case _ => assert(false)
+    }
+    assert(ds.timeWindowParams.nonEmpty)
+    assert(ds.timePartitionPattern.isEmpty)
+    assert(ds.timeWindowParams.get.timestampColumn == "lpep_dropoff_datetime")
+    assert(ds.timeWindowParams.get.timestampColumnFormat == "yyyy-MM-dd HH:mm:ss")
   }
 
   test("Test Deserialize DataSource")     {

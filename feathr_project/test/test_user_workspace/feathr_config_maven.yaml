@@ -64,6 +64,7 @@ offline_store:
     url: "dqllago-ol19457.snowflakecomputing.com"
     user: "feathrintegration"
     role: "ACCOUNTADMIN"
+    warehouse: "COMPUTE_WH"
 
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks

@@ -10,7 +10,7 @@ from feathr import (BackfillTime, MaterializationSettings)
 from feathr import Feature
 from feathr import FeatureAnchor
 from feathr import FeatureQuery
-from feathr import HdfsSource
+from feathr import HdfsSource, SnowflakeSource
 from feathr import ObservationSettings
 from feathr import RedisSink
 from feathr import STRING, FLOAT, INT32, ValueType
@@ -402,14 +402,13 @@ def test_feathr_get_offline_features_from_snowflake():
     """
     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
     client = snowflake_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
-    batch_source = HdfsSource(name="nycTaxiBatchSource",
-                              path="jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration"
-                                   "&sfWarehouse=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA"
-                                   "&sfSchema=TPCDS_SF10TCL",
-                              preprocessing=snowflake_preprocessing,
-                              event_timestamp_column="lpep_dropoff_datetime",
-                              timestamp_format="yyyy-MM-dd HH:mm:ss")
-
+    batch_source = SnowflakeSource(name="nycTaxiBatchSource",
+                                    database="SNOWFLAKE_SAMPLE_DATA",
+                                    schema="TPCDS_SF10TCL",
+                                    dbtable="CALL_CENTER",
+                                    preprocessing=snowflake_preprocessing,
+                                                            event_timestamp_column="lpep_dropoff_datetime",
+                                                            timestamp_format="yyyy-MM-dd HH:mm:ss")
     call_sk_id = TypedKey(key_column="CC_CALL_CENTER_SK",
                           key_column_type=ValueType.STRING,
                           description="call center sk",
@@ -435,9 +434,10 @@ def test_feathr_get_offline_features_from_snowflake():
     feature_query = FeatureQuery(
         feature_list=['f_snowflake_call_center_division_name_with_preprocessing', 'f_snowflake_call_center_zipcode_with_preprocessing'],
         key=call_sk_id)
+
+    observation_path = client.get_snowflake_path(database="SNOWFLAKE_SAMPLE_DATA", schema="TPCDS_SF10TCL", dbtable="CALL_CENTER")
     settings = ObservationSettings(
-        observation_path='jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse'
-                         '=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL')
+        observation_path=observation_path)
 
     now = datetime.now()
     # set output folder based on different runtime
