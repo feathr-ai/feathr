@@ -87,7 +87,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         
         return self._datalake.copy_files(source_path, target_path)
     
-    def dir_exists(self, dir_path: str) -> bool:
+    def cloud_dir_exists(self, dir_path: str) -> bool:
         """
         Checks if a directory already exists in the datalake
         """

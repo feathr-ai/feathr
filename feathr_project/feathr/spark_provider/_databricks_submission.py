@@ -278,14 +278,21 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         
     def copy_files(self, source_path: str, target_path: str, overwrite = False):
         """
-        Supports copying files from the source folder to the target folder. Only support paths starting with `dbfs:/` and only support copying files from/to one folder
+        Supports copying files/folder from local or dbfs to the target path in dbfs. Only support dst paths starting with `dbfs:/`
         """
-        if not source_path.startswith('dbfs') or not target_path.startswith('dbfs'):
+        if not target_path.startswith('dbfs'):
             raise RuntimeError('Currently only paths starting with dbfs are supported for copying databricks cluster. The paths should start with \"dbfs:\" .')
-        
-        DbfsApi(self.api_client).cp(recursive=True, overwrite=overwrite, src=source_path, dst=target_path)
-
-    def dir_exists(self, dir_path: str):
+        if self.cloud_dir_exists(target_path) and not overwrite:
+            return
+        if source_path.startswith('dbfs'):
+            DbfsApi(self.api_client).cp(recursive=True, overwrite=overwrite, src=source_path, dst=target_path)
+        elif os.path.exists(source_path):
+            if os.path.isfile(source_path):
+                DbfsApi(self.api_client).cp(recursive=False, overwrite=overwrite, src=source_path, dst=target_path)
+            else:
+                DbfsApi(self.api_client).cp(recursive=True, overwrite=overwrite, src=source_path, dst=target_path)
+    
+    def cloud_dir_exists(self, dir_path: str):
         """
         Check if a directory of hdfs already exists
         """
@@ -294,7 +301,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         
         try:
             files = DbfsApi(self.api_client).list_files(DbfsPath(dir_path))
-            return len(files) > 0
+            return True
         except:
             return False
        

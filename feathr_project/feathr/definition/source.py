@@ -107,7 +107,7 @@ class HdfsSource(Source):
             {  
                 location: 
                 {    
-                    path: "/data/somePath/daily"  
+                    path: "/data/somePath/daily/"  
                 }  
                 timePartitionPattern: "yyyy/MM/dd" 
             }

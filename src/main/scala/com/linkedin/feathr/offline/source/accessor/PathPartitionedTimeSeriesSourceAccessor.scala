@@ -149,11 +149,16 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
     })
 
     if (dataframes.isEmpty) {
-      throw new FeathrInputDataException(
-        ErrorLabel.FEATHR_USER_ERROR,
-        s"Input data is empty for creating TimeSeriesSource. No available " +
-          s"date partition exist in HDFS for path ${pathInfo.basePath} between ${timeInterval.getStart} and ${timeInterval.getEnd} " +
-           s"with postfix path ${postfixPath}")
+      val errMsg = s"Input data is empty for creating TimeSeriesSource. No available " +
+        s"date partition exist in HDFS for path ${pathInfo.basePath} between ${timeInterval.getStart} and ${timeInterval.getEnd} "
+      val errMsgPf = errMsg + s"with postfix path ${postfixPath}"
+      if (postfixPath.isEmpty) {
+        throw new FeathrInputDataException(
+          ErrorLabel.FEATHR_USER_ERROR, errMsg)
+      } else {
+        throw new FeathrInputDataException(
+          ErrorLabel.FEATHR_USER_ERROR, errMsgPf)
+      }
     }
     val datePartitions = dataframes.map {
       case (df, interval) =>

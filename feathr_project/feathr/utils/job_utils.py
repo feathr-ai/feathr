@@ -78,10 +78,12 @@ def get_result_df(client: FeathrClient, format: str = None, res_url: str = None,
 
 def copy_files(client: FeathrClient, source_url: str, target_url: str = None):
     source_url: str = source_url or client.get_job_result_uri(block=True, timeout_sec=1200)
-    if source_url is None or target_url is None:
+    if source_url is None:
         raise RuntimeError("source_url None. Please make sure either you provide a source_url or make sure the job finished in FeathrClient has a valid result URI.")
+    if target_url is None:
+        raise RuntimeError("target_url None. Please make sure you provide a target_url.")
 
     client.feathr_spark_launcher.copy_files(source_url, target_url)
     
-def dir_exsits(client: FeathrClient, dir_path: str) -> bool:
-    return client.feathr_spark_launcher.dir_exists(dir_path)
+def cloud_dir_exsits(client: FeathrClient, dir_path: str) -> bool:
+    return client.feathr_spark_launcher.cloud_dir_exists(dir_path)
