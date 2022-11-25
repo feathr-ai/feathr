@@ -18,7 +18,7 @@ def setup_module():
         __file__).parent.resolve() / "test_user_workspace"
    
     # Create data sources to support testing with 'timePartitionPattern' cases below
-    client_producer: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
+    client_producer: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     if client_producer.spark_runtime == 'databricks':
         output_path = 'dbfs:/timePartitionPattern_test'
@@ -67,13 +67,13 @@ def test_feathr_materialize_with_time_partition_pattern():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     
-    client_dummy = FeathrClient(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
+    client_dummy = FeathrClient(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     if client_dummy.spark_runtime == 'databricks':
         source_path = 'dbfs:/timePartitionPattern_test/df0/daily/'
     else:
         source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_test/df0/daily/'
       
-    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"), source_path)
+    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path)
     
     backfill_time_tpp = BackfillTime(start=datetime(
         2020, 5, 2), end=datetime(2020, 5, 2), step=timedelta(days=1))
@@ -101,13 +101,13 @@ def test_feathr_materialize_with_time_partition_pattern_postfix_path():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
    
-    client_dummy = FeathrClient(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
+    client_dummy = FeathrClient(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     if client_dummy.spark_runtime == 'databricks':
         source_path = 'dbfs:/timePartitionPattern_postfix_test/df0/daily/'
     else:
         source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_postfix_test/df0/daily/'
     
-    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"), source_path, postfix_path='postfixPath')
+    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path, postfix_path='postfixPath')
 
     backfill_time_pf = BackfillTime(start=datetime(
         2020, 5, 2), end=datetime(2020, 5, 2), step=timedelta(days=1))
@@ -135,13 +135,13 @@ def test_feathr_materialize_with_time_partition_pattern_hourly():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
    
-    client_dummy = FeathrClient(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
+    client_dummy = FeathrClient(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     if client_dummy.spark_runtime == 'databricks':
         source_path = 'dbfs:/timePartitionPattern_hourly_test/df0/daily/'
     else:
         source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_hourly_test/df0/daily/'
     
-    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"), source_path, 'HOURLY')
+    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path, 'HOURLY')
 
     backfill_time_tpp = BackfillTime(start=datetime(
         2020, 5, 2), end=datetime(2020, 5, 2), step=timedelta(days=1))
@@ -170,13 +170,13 @@ def test_feathr_get_offline_with_time_partition_pattern_postfix_path():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
    
-    client_dummy = FeathrClient(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
+    client_dummy = FeathrClient(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     if client_dummy.spark_runtime == 'databricks':
         source_path = 'dbfs:/timePartitionPattern_postfix_test/df0/daily/'
     else:
         source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_postfix_test/df0/daily/'
     
-    [client, feature_query, settings] = time_partition_pattern_feature_join_test_setup(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"), source_path, postfix_path='postfixPath')
+    [client, feature_query, settings] = time_partition_pattern_feature_join_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path, postfix_path='postfixPath')
 
     now = datetime.now()
     if client.spark_runtime == 'databricks':
