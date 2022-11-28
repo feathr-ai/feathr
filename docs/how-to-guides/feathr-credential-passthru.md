@@ -35,3 +35,12 @@ client.materialize_features(settings, allow_materialize_non_agg_feature=True, ex
 In this code block, replace the `appId`, `clientSecret`, and `tenant` placeholder values in this code block with the values that you collected while completing the first step.
 
 3. Don't forget your other configuration settings, such as the ones that are specific to Feathr in [Feathr Job Configuration during Run Time](./feathr-job-configuration.md).
+
+4. Azure SQL Database Credential pass through is also supported. To achieve so you need to pass your token to environment variables and set `auth` parameter to `TOKEN` in `JdbcSource` or `JdbcSink`. For example:
+```python
+name = 'output'
+sink = client.JdbcSink(name, some_jdbc_url, dbtable, "TOKEN")
+
+os.environ[f"{name.upper()}_TOKEN_"] = self.credential.get_token("https://management.azure.com/.default").token
+client.get_offline_features(..., output_path=sink)
+```

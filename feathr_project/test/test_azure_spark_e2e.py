@@ -451,8 +451,8 @@ def test_feathr_materialize_with_time_partition_pattern():
     # by default, it will write to a folder appended with date
     res_df = get_result_df(client_consumer, "avro", output_path_tpp + "/df0/daily/2020/05/20")
     assert res_df.shape[0] > 0
-    
-    
+
+
 if __name__ == "__main__":
     test_feathr_materialize_to_aerospike()
     test_feathr_get_offline_features_to_sql()

@@ -62,6 +62,20 @@ client.get_offline_features(...)
 
 These values will be automatically passed to the Feathr core when submitting the job.
 
+If you want to use token, the code will be like this:
+```
+src1_name="source1"
+source1 = JdbcSource(name=src1_name, url="jdbc:...", dbtable="table1", auth="TOKEN")
+anchor1 = FeatureAnchor(name="anchor_name",
+                        source=source1,
+                        features=[some_features, some_other_features])
+```
+And you need to set 1 environment variable before submitting jobs:
+```
+os.environ[f"{src1_name.upper()}_TOKEN"] = "some_token"
+```
+This method can be used to pass through AAD credentials to Azure SQL database.
+
 ## Using SQL database as the offline store
 
 To use SQL database as the offline store, you can use `JdbcSink` as the `output_path` parameter of `FeathrClient.get_offline_features`, e.g.:
@@ -76,6 +90,7 @@ os.environ[f"{name.upper()}_USER"] = "some_user_name"
 os.environ[f"{name.upper()}_PASSWORD"] = "some_magic_word"
 client.get_offline_features(..., output_path=sink)
 ```
+"TOKEN" auth type is also supported in `JdbcSink`.
 
 ## Using SQL database as the online store
 
