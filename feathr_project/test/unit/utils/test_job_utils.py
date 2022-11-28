@@ -226,3 +226,41 @@ def test__get_result_df__with_spark_session(
         )
         assert isinstance(df, DataFrame)
         assert df.count() == expected_count
+
+
+@pytest.mark.parametrize(
+    "format,output_filename,expected_count", [
+        ("csv", "output.csv", 5),
+    ]
+)
+def test__get_result_df__arg_alias(
+    workspace_dir: str,
+    format: str,
+    output_filename: str,
+    expected_count: int,
+):
+    """Test get_result_df returns pandas DataFrame with the argument alias `format` instead of using `data_format`"""
+    for spark_runtime in ["local", "databricks", "azure_synapse"]:
+        # Note: make sure the output file exists in the test_user_workspace
+        res_url = str(Path(workspace_dir, "mock_results", output_filename))
+        local_cache_path = res_url
+
+        # Mock client
+        client = MagicMock()
+        client.spark_runtime = spark_runtime
+
+        # Mock feathr_spark_launcher.download_result
+        if client.spark_runtime == "databricks":
+            res_url = f"dbfs:/{res_url}"
+        if client.spark_runtime == "azure_synapse" and format == "delta":
+            # TODO currently pass the delta table test on Synapse result due to the delta table package bug.
+            continue
+
+        df = get_result_df(
+            client=client,
+            format=format,
+            res_url=res_url,
+            local_cache_path=local_cache_path,
+        )
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) == expected_count
