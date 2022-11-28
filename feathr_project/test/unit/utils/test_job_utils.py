@@ -26,7 +26,12 @@ def test__get_result_pandas_df(mocker: MockerFixture):
     res_url = "some_res_url"
     local_cache_path = "some_local_cache_path"
     get_result_pandas_df(client, data_format, res_url, local_cache_path)
-    mocked_get_result_df.assert_called_once_with(client, data_format, res_url, local_cache_path)
+    mocked_get_result_df.assert_called_once_with(
+        client=client,
+        data_format=data_format,
+        res_url=res_url,
+        local_cache_path=local_cache_path,
+    )
 
 
 def test__get_result_spark_df(mocker: MockerFixture):
@@ -38,7 +43,13 @@ def test__get_result_spark_df(mocker: MockerFixture):
     res_url = "some_res_url"
     local_cache_path = "some_local_cache_path"
     get_result_spark_df(spark, client, data_format, res_url, local_cache_path)
-    mocked_get_result_df.assert_called_once_with(client, data_format, res_url, local_cache_path, spark=spark)
+    mocked_get_result_df.assert_called_once_with(
+        client=client,
+        data_format=data_format,
+        res_url=res_url,
+        local_cache_path=local_cache_path,
+        spark=spark,
+    )
 
 
 @pytest.mark.parametrize(

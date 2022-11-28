@@ -31,7 +31,7 @@ def get_result_pandas_df(
     Returns:
         pandas DataFrame
     """
-    return get_result_df(client, data_format, res_url, local_cache_path)
+    return get_result_df(client=client, data_format=data_format, res_url=res_url, local_cache_path=local_cache_path)
 
 
 def get_result_spark_df(
@@ -56,7 +56,13 @@ def get_result_spark_df(
     Returns:
         Spark DataFrame
     """
-    return get_result_df(client, data_format, res_url, local_cache_path, spark=spark)
+    return get_result_df(
+        client=client,
+        data_format=data_format,
+        res_url=res_url,
+        local_cache_path=local_cache_path,
+        spark=spark,
+    )
 
 
 def get_result_df(
