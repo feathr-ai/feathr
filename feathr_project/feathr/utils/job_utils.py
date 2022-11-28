@@ -62,6 +62,7 @@ def get_result_spark_df(
 def get_result_df(
     client: FeathrClient,
     data_format: str = None,
+    format: str = None,
     res_url: str = None,
     local_cache_path: str = None,
     spark: SparkSession = None,
@@ -72,6 +73,7 @@ def get_result_df(
         client: Feathr client
         data_format: Format to read the downloaded files. Currently support `parquet`, `delta`, `avro`, and `csv`.
             Default to use client's job tags if exists.
+        format: An alias for `data_format` (for backward compatibility).
         res_url: Result URL to download files from. Note that this will not block the job so you need to make sure
             the job is finished and the result URL contains actual data. Default to use client's job tags if exists.
         local_cache_path (optional): Specify the absolute download directory. if the user does not provide this,
@@ -82,6 +84,9 @@ def get_result_df(
     Returns:
         Either Spark or pandas DataFrame.
     """
+    if format is not None:
+        data_format = format
+
     if data_format is None:
         # May use data format from the job tags
         if client.get_job_tags() and client.get_job_tags().get(OUTPUT_FORMAT):
