@@ -196,7 +196,7 @@ jobs:
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 6 parallel jobs to make the time shorter
-          pytest -n 6 --cov-report term-missing --cov=feathr_project/feathr feathr_project/test --cov-config=.github/workflows/.coveragerc_sy
+          pytest -n 6 -m "not databricks" --cov-report term-missing --cov=feathr_project/feathr feathr_project/test --cov-config=.github/workflows/.coveragerc_sy
 
   local_spark_test:
     runs-on: ubuntu-latest
