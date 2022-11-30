@@ -12,6 +12,7 @@ multi_line_output = 3
 [tool.pytest.ini_options]
 markers = [
     "notebooks: Jupyter notebook tests",
+    "integration: Integration tests"
 ]
 
 [build-system]

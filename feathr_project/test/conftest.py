@@ -29,12 +29,22 @@ def workspace_dir() -> str:
     return str(Path(__file__).parent.resolve().joinpath("test_user_workspace"))
 
 
+@pytest.fixture
+def mock_data_path(workspace_dir):
+    return str(Path(workspace_dir).joinpath(
+        "mockdata",
+        "feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net",
+        "demo_data",
+        "green_tripdata_2020-04.csv",
+    ))
+
+
 @pytest.fixture(scope="function")
-def feathr_client(workspace_dir) -> FeathrClient:
+def feathr_client(config_path) -> FeathrClient:
     """Test function-scoped Feathr client.
-    Note, cluster target (local, databricks, synapse) maybe overriden by the environment variables set at test machine.
+    Note, cluster target (local, databricks, synapse) maybe overridden by the environment variables set at test machine.
     """
-    return FeathrClient(config_path=str(Path(workspace_dir, "feathr_config.yaml")))
+    return FeathrClient(config_path=config_path)
 
 
 @pytest.fixture(scope="module")
