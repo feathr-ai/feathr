@@ -28,7 +28,7 @@ on:
     - cron: '00 13 * * *'
 
 jobs:
-  sbt_test:
+  gradle_test:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
@@ -41,7 +41,7 @@ jobs:
           java-version: "8"
           distribution: "temurin"
       - name: Run tests
-        run: sbt clean && sbt test
+        run: ./gradlew clean && ./gradlew test
 
   python_lint:
     runs-on: ubuntu-latest
@@ -75,15 +75,15 @@ jobs:
         with:
           java-version: "8"
           distribution: "temurin"
-      - name: Build JAR
+      - name: Gradle build
         run: |
-          sbt assembly
+          ./gradlew build
           # remote folder for CI upload
           echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
           # get local jar name without paths so version change won't affect it
-          echo "FEATHR_LOCAL_JAR_NAME=$(ls target/scala-2.12/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_NAME=$(ls build/libs/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
           # get local jar name without path
-          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls target/scala-2.12/*.jar)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls build/libs/*.jar)" >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -142,15 +142,16 @@ jobs:
         with:
           java-version: "8"
           distribution: "temurin"
-      - name: Build JAR
+
+      - name: Gradle build
         run: |
-          sbt assembly
+          ./gradlew build
           # remote folder for CI upload
           echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
           # get local jar name without paths so version change won't affect it
-          echo "FEATHR_LOCAL_JAR_NAME=$(ls target/scala-2.12/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_NAME=$(ls build/libs/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
           # get local jar name without path
-          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls target/scala-2.12/*.jar)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls build/libs/*.jar)" >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -210,15 +211,16 @@ jobs:
         with:
           java-version: "8"
           distribution: "temurin"
-      - name: Build JAR
+
+      - name: Gradle build
         run: |
-          sbt assembly
+          ./gradlew build
           # remote folder for CI upload
           echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
           # get local jar name without paths so version change won't affect it
-          echo "FEATHR_LOCAL_JAR_NAME=$(ls target/scala-2.12/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_NAME=$(ls build/libs/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
           # get local jar name without path
-          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls target/scala-2.12/*.jar)" >> $GITHUB_ENV
+          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls build/libs/*.jar)" >> $GITHUB_ENV
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -258,7 +260,7 @@ jobs:
 
   failure_notification:
     # If any failure, warning message will be sent
-    needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
+    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
     runs-on: ubuntu-latest
     if: failure() && github.event_name == 'schedule'
     steps:
@@ -268,7 +270,7 @@ jobs:
 
   notification:
     # Final Daily Report with all job status
-    needs: [sbt_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
+    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'schedule'
     steps:
@@ -276,4 +278,4 @@ jobs:
         run: echo "NOW=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - name: Notification
         run: |
-          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. SBT Test ${{needs.sbt_test.result}}, 2. Python Lint Test ${{needs.python_lint.result}}, 3. Databricks Test ${{needs.databricks_test.result}}, 4. Synapse Test ${{needs.azure_synapse_test.result}} , 5. LOCAL SPARK TEST ${{needs.local_spark_test.result}}. Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' ${{ secrets.TEAMS_WEBHOOK }}
+          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. Gradle Test ${{needs.gradle_test.result}}, 2. Python Lint Test ${{needs.python_lint.result}}, 3. Databricks Test ${{needs.databricks_test.result}}, 4. Synapse Test ${{needs.azure_synapse_test.result}} , 5. LOCAL SPARK TEST ${{needs.local_spark_test.result}}. Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' ${{ secrets.TEAMS_WEBHOOK }}
