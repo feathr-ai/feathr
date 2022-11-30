@@ -6,7 +6,7 @@ from feathr import (BackfillTime, MaterializationSettings)
 from feathr import FeathrClient
 
 from feathr import HdfsSink
-from feathr.utils.job_utils import get_result_df, copy_files, cloud_dir_exsits
+from feathr.utils.job_utils import get_result_df, copy_cloud_dir, cloud_dir_exists
 from test_fixture import (basic_test_setup, time_partition_pattern_feature_gen_test_setup, time_partition_pattern_feature_join_test_setup)
 from test_utils.constants import Constants
 
@@ -30,7 +30,7 @@ def setup_module():
         output_hourly_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_hourly_test/df0/daily/2020/05/01/00'
      
     source_url = output_path + "/df0/daily/2020/05/01" 
-    if not cloud_dir_exsits(client_producer, source_url):
+    if not cloud_dir_exists(client_producer, source_url):
         backfill_time = BackfillTime(start=datetime(
             2020, 5, 1), end=datetime(2020, 5, 1), step=timedelta(days=1))
         offline_sink = HdfsSink(output_path=output_path)
@@ -45,19 +45,19 @@ def setup_module():
         client_producer.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
     
         # Check if data sources prepared well
-        res_df = get_result_df(client_producer, "avro", source_url)
+        res_df = get_result_df(client_producer, data_format="avro", res_url=source_url)
         assert res_df.shape[0] > 0
     
     # Copy created data sources to another folder to support 'postfix_path' test  
-    if not cloud_dir_exsits(client_producer, output_pf_path):
-        copy_files(client_producer, source_url, output_pf_path)
-        res_df_pf = get_result_df(client_producer, "avro", output_pf_path)
+    if not cloud_dir_exists(client_producer, output_pf_path):
+        copy_cloud_dir(client_producer, source_url, output_pf_path)
+        res_df_pf = get_result_df(client_producer, data_format="avro", res_url=output_pf_path)
         assert res_df_pf.shape[0] > 0
     
     # Copy created data sources to another folder to support 'hourly' test
-    if not cloud_dir_exsits(client_producer, output_hourly_path):
-        copy_files(client_producer, source_url, output_hourly_path)
-        res_df_hourly = get_result_df(client_producer, "avro", output_hourly_path)
+    if not cloud_dir_exists(client_producer, output_hourly_path):
+        copy_cloud_dir(client_producer, source_url, output_hourly_path)
+        res_df_hourly = get_result_df(client_producer, data_format="avro", res_url=output_hourly_path)
         assert res_df_hourly.shape[0] > 0
 
 def test_feathr_materialize_with_time_partition_pattern():
@@ -91,7 +91,7 @@ def test_feathr_materialize_with_time_partition_pattern():
     client.materialize_features(settings_tpp)
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
-    res_df = get_result_df(client, "avro", output_path_tpp + "/df0/daily/2020/05/02")
+    res_df = get_result_df(client, data_format="avro", res_url=output_path_tpp + "/df0/daily/2020/05/02")
     assert res_df.shape[0] > 0
      
 def test_feathr_materialize_with_time_partition_pattern_postfix_path():
@@ -125,7 +125,7 @@ def test_feathr_materialize_with_time_partition_pattern_postfix_path():
     client.materialize_features(settings_pf)
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
-    res_df = get_result_df(client, "avro", output_path_pf + "/df0/daily/2020/05/02")
+    res_df = get_result_df(client, data_format="avro", res_url=output_path_pf + "/df0/daily/2020/05/02")
     assert res_df.shape[0] > 0
     
 def test_feathr_materialize_with_time_partition_pattern_hourly():
@@ -160,7 +160,7 @@ def test_feathr_materialize_with_time_partition_pattern_hourly():
     client.materialize_features(settings_tpp)
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
-    res_df = get_result_df(client, "avro", output_path_tpp + "/df0/daily/2020/05/02/00")
+    res_df = get_result_df(client, data_format="avro", res_url=output_path_tpp + "/df0/daily/2020/05/02/00")
     assert res_df.shape[0] > 0
 
 def test_feathr_get_offline_with_time_partition_pattern_postfix_path():
@@ -189,5 +189,5 @@ def test_feathr_get_offline_with_time_partition_pattern_postfix_path():
                             output_path=output_path)
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
-    res_df = get_result_df(client, format="avro", res_url = output_path)
+    res_df = get_result_df(client, data_format="avro", res_url = output_path)
     assert res_df.shape[0] > 0

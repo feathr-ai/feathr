@@ -159,6 +159,7 @@ def get_result_df(
     except Exception as e:
         logger.error(f"Failed to load result files from {local_cache_path} with format {data_format}.")
         raise e
+    
     return result_df
 
 def copy_cloud_dir(client: FeathrClient, source_url: str, target_url: str = None):

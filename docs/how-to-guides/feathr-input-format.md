@@ -22,15 +22,15 @@ Please note that although the results are shown as "parquet", you should use the
 # TimePartitionPattern for input files
 When data sources are defined by `HdfsSource`, feathr supports `time_partition_pattern` to match paths of input data source files. For example, given time_partition_pattern = 'yyyy/MM/dd' and a 'base_path', all available input files under paths '{base_path}/{yyyy}/{MM}/{dd}' may will be visited and used as data sources.
 
-This pattern of path will be treated as 'timestamp' of the related data for both feature join and feature generation. E.g If the path is '{base_path}/2020/05/20', timestamp of this piece of data would be treated as '2020-05-20'
+This pattern of path will be treated as 'timestamp' of the related data for both 'get_offline_features' and 'materialize_features'. E.g If the path is '{base_path}/2020/05/20', timestamp of this piece of data would be treated as '2020-05-20'
 
 This pattern can only be worked with aggregation features for now. It cannot be recognized for other cases.
 
 ## How to control paths to visit
-Normally, it's not necessary to visit all data sources that match the path pattern. We may only need parts of them to be used in our jobs. Feathr have different ways to support that for feature generation and feature join. 
-### For feature join (get_offline_features):
+Normally, it's not necessary to visit all data sources that match the path pattern. We may only need parts of them to be used in our jobs. Feathr have different ways to support that for 'get_offline_features' and 'materialize_features'. 
+### For 'get_offline_features':
 Paths would be visited is decided by your dataset and feature's definition. Eg. If you have a piece of data has the timestamp '2020/05/01' in your dataset and you have a feature want to be joined with it, related data source under the path '{base_path}/2020/05/01' will be visited.
-### For feature generation (materialize_features):
+### For 'materialize_features':
 We can decide a time range by `BackfillTime` and `window`(in `WindowAggTransformation`) in the definition of feature. Eg. If we have a backfill_time = datetime(2020, 5, 21) and 'window=3d', then feathr will try to visit data under paths: ['{base_path}/2020/05/18', '{base_path}/2020/05/19', '{base_path}/2020/05/20'].
 
 For more details, please check the code example as a reference:

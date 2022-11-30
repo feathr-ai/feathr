@@ -78,7 +78,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             if self.cloud_dir_exists(tar_dir_path):
                 logger.warning('Target cloud directory {} already exists. Please use another one.', tar_dir_path)
                 return tar_dir_path
-            DbfsApi(self.api_client).cp(recursive=True, src=local_path_or_cloud_src_path, dst=tar_dir_path)
+            DbfsApi(self.api_client).cp(recursive=True, overwrite=False, src=local_path_or_cloud_src_path, dst=tar_dir_path)
             logger.info('{} is copied to location: {}',
                     local_path_or_cloud_src_path, tar_dir_path)
             return tar_dir_path

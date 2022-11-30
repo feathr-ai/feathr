@@ -74,7 +74,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
             [_, source_exist] = self._datalake._dir_exists(local_path_or_cloud_src_path)
             if not source_exist:
                 raise RuntimeError(f"Source folder:{local_path_or_cloud_src_path} doesn't exist. Please make sure it's a valid path")
-            [dir_client, target_exist] = self._dir_exists(tar_dir_path)
+            [dir_client, target_exist] = self._datalake._dir_exists(tar_dir_path)
             if target_exist:
                 logger.warning('Target cloud directory {} already exists. Please use another one.', tar_dir_path)
                 return tar_dir_path
