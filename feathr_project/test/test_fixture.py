@@ -8,8 +8,8 @@ from datetime import datetime, timedelta
 
 from feathr import (BOOLEAN, FLOAT, INPUT_CONTEXT, INT32, STRING,
                     DerivedFeature, Feature, FeatureAnchor, HdfsSource,
-                    TypedKey, ValueType, WindowAggTransformation, FeatureQuery,
-                    ObservationSettings)
+                    TypedKey, ValueType, WindowAggTransformation, SnowflakeSource,
+                    FeatureQuery,ObservationSettings)
 from feathr import FeathrClient
 from pyspark.sql import DataFrame
 
@@ -97,9 +97,11 @@ def snowflake_test_setup(config_path: str):
     os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci_snowflake','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
 
     client = FeathrClient(config_path=config_path)
-    batch_source = HdfsSource(name="snowflakeSampleBatchSource",
-                              path="jdbc:snowflake://dqllago-ol19457.snowflakecomputing.com/?user=feathrintegration&sfWarehouse=COMPUTE_WH&dbtable=CALL_CENTER&sfDatabase=SNOWFLAKE_SAMPLE_DATA&sfSchema=TPCDS_SF10TCL",
-                              )
+    batch_source = SnowflakeSource(name="snowflakeSampleBatchSource",
+                                   database="SNOWFLAKE_SAMPLE_DATA",
+                                   schema="TPCDS_SF10TCL",
+                                   dbtable="CALL_CENTER")
+ 
     call_sk_id = TypedKey(key_column="CC_CALL_CENTER_SK",
                           key_column_type=ValueType.INT32,
                           description="call center sk",

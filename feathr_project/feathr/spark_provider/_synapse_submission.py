@@ -61,16 +61,37 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         self._synapse_dev_url = synapse_dev_url
         self._pool_name = pool_name
 
-    def upload_or_get_cloud_path(self, local_path_or_http_path: str):
+    def upload_or_get_cloud_path(self, local_path_or_cloud_src_path: str, tar_dir_path: Optional[str] = None):
         """
-        Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
+        Supports transferring file from an http path to cloud working storage, or upload directly from a local storage,
+        or copying files from a source datalake directory to a target datalake directory
         """
-        logger.info('Uploading {} to cloud..', local_path_or_http_path)
+        if local_path_or_cloud_src_path.startswith('abfs') or local_path_or_cloud_src_path.startswith('wasb'):
+            if tar_dir_path is None or not (tar_dir_path.startswith('abfs') or tar_dir_path.startswith('wasb')):
+                raise RuntimeError(
+                f"Failed to copy files from dbfs directory: {local_path_or_cloud_src_path}. {tar_dir_path} is not a valid target directory path"
+            )
+            [_, source_exist] = self._datalake._dir_exists(local_path_or_cloud_src_path)
+            if not source_exist:
+                raise RuntimeError(f"Source folder:{local_path_or_cloud_src_path} doesn't exist. Please make sure it's a valid path")
+            [dir_client, target_exist] = self._dir_exists(tar_dir_path)
+            if target_exist:
+                logger.warning('Target cloud directory {} already exists. Please use another one.', tar_dir_path)
+                return tar_dir_path
+            dir_client.create_directory()
+            tem_dir_obj = tempfile.TemporaryDirectory()
+            self._datalake.download_file(local_path_or_cloud_src_path, tem_dir_obj.name)
+            self._datalake.upload_file_to_workdir(tem_dir_obj.name, tar_dir_path, dir_client)
+            logger.info('{} is uploaded to location: {}',
+                    local_path_or_cloud_src_path, tar_dir_path)
+            return tar_dir_path
+                            
+        logger.info('Uploading {} to cloud..', local_path_or_cloud_src_path)
         res_path = self._datalake.upload_file_to_workdir(
-            local_path_or_http_path)
+            local_path_or_cloud_src_path)
 
         logger.info('{} is uploaded to location: {}',
-                    local_path_or_http_path, res_path)
+                    local_path_or_cloud_src_path, res_path)
         return res_path
 
     def download_result(self, result_path: str, local_folder: str):
@@ -80,12 +101,6 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
 
         return self._datalake.download_file(result_path, local_folder)
     
-    def copy_files(self, source_path: str, target_path: str):
-        """
-        Supports copying files from one directory in datalake to another
-        """
-        
-        return self._datalake.copy_files(source_path, target_path)
     
     def cloud_dir_exists(self, dir_path: str) -> bool:
         """
@@ -509,20 +524,4 @@ class _DataLakeFiler(object):
         dir_client = self.file_system_client.get_directory_client(
                 '/'.join(datalake_path_split[3:]))
         return [dir_client, dir_client.exists()]
-    
-    def copy_files(self, source_path: str, target_path: str, over_write: bool = False):
-        '''
-        Copy files from one directory of datalake to another
-        '''
-        [_, source_exist] = self._dir_exists(source_path)
-        if not source_exist:
-            raise RuntimeError(f"Source folder:{source_path} doesn't exist. Please make sure it's a valid path")
-        [dir_client, target_exist] = self._dir_exists(target_path)
-        if target_exist and not over_write:
-            return
-        dir_client.create_directory()
-        tem_dir_obj = tempfile.TemporaryDirectory()
-        self.download_file(source_path, tem_dir_obj.name)
-        self.upload_file_to_workdir(tem_dir_obj.name, target_path, dir_client)
-        
         

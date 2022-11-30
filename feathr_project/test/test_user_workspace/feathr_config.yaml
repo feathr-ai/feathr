@@ -64,6 +64,7 @@ offline_store:
     url: "dqllago-ol19457.snowflakecomputing.com"
     user: "feathrintegration"
     role: "ACCOUNTADMIN"
+    warehouse: "COMPUTE_WH"
 
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks
@@ -85,7 +86,7 @@ spark_config:
     feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.9.0.jar"
   databricks:
     # workspace instance
-    workspace_instance_url: 'https://adb-2474129336842816.16.azuredatabricks.net/'
+    workspace_instance_url: 'https://adb-4121774437039026.6.azuredatabricks.net'
     workspace_token_value: ''
     # config string including run time information, spark version, machine size, etc.
     # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
