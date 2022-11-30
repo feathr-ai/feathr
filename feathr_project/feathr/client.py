@@ -280,13 +280,13 @@ class FeathrClient(object):
         `project_name` must not be None or empty string because it violates the RBAC policy
         """
         return self.registry.list_registered_features(project_name)
-    
+
     def list_dependent_entities(self, qualified_name: str):
         """
         Lists all dependent/downstream entities for a given entity
         """
         return self.registry.list_dependent_entities(qualified_name)
-    
+
     def delete_entity(self, qualified_name: str):
         """
         Deletes a single entity if it has no downstream/dependent entities
@@ -543,6 +543,7 @@ class FeathrClient(object):
         - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
+        
         # submit the jars
         return self.feathr_spark_launcher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
@@ -763,18 +764,22 @@ class FeathrClient(object):
             generation_config_path=os.path.abspath(feature_gen_conf_path),
             feature_config=os.path.join(self.local_workspace_dir, "feature_conf/"))
 
-        job_tags = { OUTPUT_PATH_TAG: output_path }
-        # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
-        if execution_configurations is not None and OUTPUT_FORMAT in execution_configurations:
-            job_tags[OUTPUT_FORMAT] = execution_configurations[OUTPUT_FORMAT]
-        else:
-            job_tags[OUTPUT_FORMAT] = "avro"
+        # When using offline sink (i.e. output_path is not None)
+        job_tags = {}
+        if output_path:
+            job_tags[OUTPUT_PATH_TAG] = output_path
+            # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
+            if execution_configurations is not None and OUTPUT_FORMAT in execution_configurations:
+                job_tags[OUTPUT_FORMAT] = execution_configurations[OUTPUT_FORMAT]
+            else:
+                job_tags[OUTPUT_FORMAT] = "avro"
         '''
         - Job tags are for job metadata and it's not passed to the actual spark job (i.e. not visible to spark job), more like a platform related thing that Feathr want to add (currently job tags only have job output URL and job output format, ). They are carried over with the job and is visible to every Feathr client. Think this more like some customized metadata for the job which would be weird to be put in the spark job itself.
         - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to
         - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
+
         optional_params = []
         if self.envutils.get_environment_variable('KAFKA_SASL_JAAS_CONFIG'):
             optional_params = optional_params + ['--kafka-config', self._get_kafka_config_str()]
