@@ -70,10 +70,11 @@ class FeatureRegistryTests(unittest.TestCase):
         client.register_features()
         time.sleep(30)
         [full_registration, keys] = client.get_features_from_registry(client.project_name, return_keys = True, verbose = True)
-
+        assert len(keys['f_location_avg_fare']) == 2
+        
         now = datetime.now()
         os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)])
-
+        
         client: FeathrClient = registry_test_setup_partially(os.path.join(test_workspace_dir, "feathr_config.yaml"))
         new_project_name = client.project_name
         client.register_features()
@@ -89,6 +90,7 @@ class FeatureRegistryTests(unittest.TestCase):
 
         # after a full registration, another registration should not affect the registered anchor features.
         assert len(full_registration.items())==len(appended_registration.items())
+        
 
     @pytest.mark.skip(reason="Underlying implementation changed, not applicable")
     def test_get_feature_from_registry(self):
