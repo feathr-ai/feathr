@@ -63,16 +63,16 @@ client.get_offline_features(...)
 These values will be automatically passed to the Feathr core when submitting the job.
 
 If you want to use token, the code will be like this:
-```
-src1_name="source1"
-source1 = JdbcSource(name=src1_name, url="jdbc:...", dbtable="table1", auth="TOKEN")
-anchor1 = FeatureAnchor(name="anchor_name",
-                        source=source1,
+```python
+src_name="source_name"
+source = JdbcSource(name=src_name, url="jdbc:...", dbtable="table_name", auth="TOKEN")
+anchor = FeatureAnchor(name="anchor_name",
+                        source=source,
                         features=[some_features, some_other_features])
 ```
 And you need to set 1 environment variable before submitting jobs:
 ```
-os.environ[f"{src1_name.upper()}_TOKEN"] = "some_token"
+os.environ[f"{src_name.upper()}_TOKEN"] = "some_token"
 ```
 This method can be used to pass through AAD credentials to Azure SQL database.
 

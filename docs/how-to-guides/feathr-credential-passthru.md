@@ -38,9 +38,9 @@ In this code block, replace the `appId`, `clientSecret`, and `tenant` placeholde
 
 4. Azure SQL Database Credential pass through is also supported. To achieve so you need to pass your token to environment variables and set `auth` parameter to `TOKEN` in `JdbcSource` or `JdbcSink`. For example:
 ```python
-name = 'output'
-sink = client.JdbcSink(name, some_jdbc_url, dbtable, "TOKEN")
+output_name = 'output'
+sink = client.JdbcSink(name=output_name, url="some_jdbc_url", dbtable="table_name", auth="TOKEN")
 
-os.environ[f"{name.upper()}_TOKEN_"] = self.credential.get_token("https://management.azure.com/.default").token
+os.environ[f"{output_name.upper()}_TOKEN"] = self.credential.get_token("https://management.azure.com/.default").token
 client.get_offline_features(..., output_path=sink)
 ```
