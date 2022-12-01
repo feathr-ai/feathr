@@ -55,4 +55,24 @@ assert df1.qualified_name == "unit_test_project_1__df1"
 # df1 has only 1 input anchor feature "af1"
 assert df1.attributes.input_anchor_features[0].id == af1_id
 
+df1_downstream_entities = r.get_dependent_entities(df1_id)
+assert len(df1_downstream_entities) == 0
+
+af1_downstream_entities = r.get_dependent_entities(af1_id)
+assert len(af1_downstream_entities) == 1
+
+#Delete derived feature
+r.delete_entity(df1_id)
+
+# Try getting derived feature but KeyError exception should be thrown
+derived_exists = 1
+try:
+    df1 = r.get_entity(df1_id)
+except KeyError:
+    derived_exists = 0
+assert derived_exists == 0
+
+af1_downstream_entities = r.get_dependent_entities(af1_id)
+assert len(af1_downstream_entities) == 0
+
 # cleanup()
