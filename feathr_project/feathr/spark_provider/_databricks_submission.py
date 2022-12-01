@@ -68,8 +68,8 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
         or copying files from a source dbfs directory to a target dbfs directory
         """
-        if local_path_or_cloud_src_path.startswith('dbfs'):
-            if tar_dir_path is None or not tar_dir_path.startswith('dbfs'):
+        if local_path_or_cloud_src_path.startswith('dbfs') and tar_dir_path is not None:
+            if not tar_dir_path.startswith('dbfs'):
                 raise RuntimeError(
                 f"Failed to copy files from dbfs directory: {local_path_or_cloud_src_path}. {tar_dir_path} is not a valid target directory path"
             )
