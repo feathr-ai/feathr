@@ -29,6 +29,20 @@ class FeathrRegistry(ABC):
         pass
 
     @abstractmethod
+    def list_dependent_entities(self, qualified_name: str):
+        """
+        Returns list of dependent entities for provided entity
+        """
+        pass
+
+    @abstractmethod
+    def delete_entity(self, qualified_name: str):
+        """
+        Deletes entity if it has no dependent entities
+        """
+        pass
+
+    @abstractmethod
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """[Sync Features from registry to local workspace, given a project_name, will write project's features from registry to to user's local workspace]
 

@@ -21,3 +21,24 @@ derived = registry.create_project_derived_feature(proj_id, DerivedFeatureDef(qua
                                           name="df1", feature_type=ft1, transformation=t1, key=[k], input_anchor_features=[feature1], input_derived_features=[]))
 
 print(proj_id,source_id,anchor1_id,feature1,derived)
+
+derived_downstream_entities = registry.get_dependent_entities(derived)
+assert len(derived_downstream_entities) == 0
+
+feature1_downstream_entities = registry.get_dependent_entities(feature1)
+assert len(feature1_downstream_entities) == 1
+
+registry.delete_entity(derived)
+
+# Try getting derived feature but KeyError exception should be thrown
+derived_exists = 1
+try:
+    df1 = registry.get_entity(derived)
+except KeyError:
+    derived_exists = 0
+assert derived_exists == 0
+
+feature1_downstream_entities = registry.get_dependent_entities(feature1)
+assert len(feature1_downstream_entities) == 0
+
+# cleanup()

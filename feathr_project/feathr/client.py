@@ -279,6 +279,18 @@ class FeathrClient(object):
         `project_name` must not be None or empty string because it violates the RBAC policy
         """
         return self.registry.list_registered_features(project_name)
+    
+    def list_dependent_entities(self, qualified_name: str):
+        """
+        Lists all dependent/downstream entities for a given entity
+        """
+        return self.registry.list_dependent_entities(qualified_name)
+    
+    def delete_entity(self, qualified_name: str):
+        """
+        Deletes a single entity if it has no downstream/dependent entities
+        """
+        return self.registry.delete_entity(qualified_name)
 
     def _get_registry_client(self):
         """
