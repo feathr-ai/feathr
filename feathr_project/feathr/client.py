@@ -929,27 +929,32 @@ class FeathrClient(object):
             prop_and_value[prop] = self.envutils.get_environment_variable_with_default(prop)
         return prop_and_value
 
-    def get_features_from_registry(self, project_name: str, verbose: bool = False) -> Dict[str, FeatureBase]:
+    def get_features_from_registry(self, project_name: str, return_keys: bool = False, verbose: bool = False) -> Dict[str, FeatureBase]:
         """
         Get feature from registry by project name. The features got from registry are automatically built.
         """
         registry_anchor_list, registry_derived_feature_list = self.registry.get_features_from_registry(project_name)
         self.build_features(registry_anchor_list, registry_derived_feature_list)
         feature_dict = {}
+        key_dict = {}
         # add those features into a dict for easier lookup
         if verbose and registry_anchor_list:
             print("Get anchor features from registry: ")
         for anchor in registry_anchor_list:
             for feature in anchor.features:
                 feature_dict[feature.name] = feature
+                key_dict[feature.name] = feature.key
                 if verbose:
                     print(json.dumps(feature_to_def(feature), indent=2))
         if verbose and registry_derived_feature_list:
             print("Get derived features from registry: ")
         for feature in registry_derived_feature_list:
                 feature_dict[feature.name] = feature
+                key_dict[feature.name] = feature.key
                 if verbose:
                     print(json.dumps(derived_feature_to_def(feature), indent=2))
+        if return_keys:
+            return [feature_dict, key_dict]
         return feature_dict
 
     def _reshape_config_str(self, config_str:str):
