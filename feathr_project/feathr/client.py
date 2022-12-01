@@ -21,7 +21,7 @@ from feathr.definition.materialization_settings import MaterializationSettings
 from feathr.definition.monitoring_settings import MonitoringSettings
 from feathr.definition.query_feature_list import FeatureQuery
 from feathr.definition.settings import ObservationSettings
-from feathr.definition.sink import Sink
+from feathr.definition.sink import Sink, HdfsSink
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr.spark_provider._localspark_submission import _FeathrLocalSparkJobLauncher
@@ -191,7 +191,7 @@ class FeathrClient(object):
         else:
             # no registry configured
             logger.info("Feathr registry is not configured. Consider setting the Feathr registry component for richer feature store experience.")
-        
+
         logger.info(f"Feathr client {get_version()} initialized successfully.")
 
     def _check_required_environment_variables_exist(self):
@@ -259,7 +259,7 @@ class FeathrClient(object):
         # Pretty print anchor_list
         if verbose and self.anchor_list:
             FeaturePrinter.pretty_print_anchors(self.anchor_list)
-    
+
     def get_snowflake_path(self, database: str, schema: str, dbtable: str = None, query: str = None) -> str:
         """
         Returns snowflake path given dataset location information.
@@ -518,7 +518,7 @@ class FeathrClient(object):
                                                        observation_path=feathr_feature['observationPath'],
                                                        feature_config=os.path.join(self.local_workspace_dir, 'feature_conf/'),
                                                        job_output_path=output_path)
-        job_tags = {OUTPUT_PATH_TAG:feature_join_job_params.job_output_path}
+        job_tags = { OUTPUT_PATH_TAG: feature_join_job_params.job_output_path }
         # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
         if execution_configurations is not None and OUTPUT_FORMAT in execution_configurations:
             job_tags[OUTPUT_FORMAT] = execution_configurations[OUTPUT_FORMAT]
@@ -679,11 +679,16 @@ class FeathrClient(object):
                     if feature.name == fn and not isinstance(feature.transform, WindowAggTransformation):
                         raise RuntimeError(f"Feature {fn} is not an aggregation feature. Currently Feathr only supports materializing aggregation features. If you want to materialize {fn}, please set allow_materialize_non_agg_feature to True.")
 
-        # Collect secrets from sinks
+        # Collect secrets from sinks. Get output_path as well if the sink is offline sink (HdfsSink) for later use.
         secrets = []
+        output_path = None
         for sink in settings.sinks:
             if hasattr(sink, "get_required_properties"):
                 secrets.extend(sink.get_required_properties())
+            if isinstance(sink, HdfsSink):
+                # Note, for now we only cache one output path from one of HdfsSinks (if one passed multiple sinks).
+                output_path = sink.output_path
+
         results = []
         # produce materialization config
         for end in settings.get_backfill_cutoff_time():
@@ -703,7 +708,13 @@ class FeathrClient(object):
 
             udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(settings.feature_names, self.local_workspace_dir)
             # CLI will directly call this so the experience won't be broken
-            result = self._materialize_features_with_config(config_file_path, execution_configurations, udf_files, secrets)
+            result = self._materialize_features_with_config(
+                feature_gen_conf_path=config_file_path,
+                execution_configurations=execution_configurations,
+                udf_files=udf_files,
+                secrets=secrets,
+                output_path=output_path,
+            )
             if os.path.exists(config_file_path) and self.spark_runtime != 'local':
                 os.remove(config_file_path)
             results.append(result)
@@ -714,12 +725,23 @@ class FeathrClient(object):
 
         return results
 
-    def _materialize_features_with_config(self, feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',execution_configurations: Dict[str,str] = {}, udf_files=[], secrets=[]):
+    def _materialize_features_with_config(
+        self,
+        feature_gen_conf_path: str = 'feature_gen_conf/feature_gen.conf',
+        execution_configurations: Dict[str,str] = {},
+        udf_files: List = [],
+        secrets: List = [],
+        output_path: str = None,
+    ):
         """Materializes feature data based on the feature generation config. The feature
         data will be materialized to the destination specified in the feature generation config.
 
         Args
-          feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
+            feature_gen_conf_path: Relative path to the feature generation config you want to materialize.
+            execution_configurations: Spark job execution configurations.
+            udf_files: UDF files.
+            secrets: Secrets to access sinks.
+            output_path: The output path of the materialized features when using an offline sink.
         """
         cloud_udf_paths = [self.feathr_spark_launcher.upload_or_get_cloud_path(udf_local_path) for udf_local_path in udf_files]
 
@@ -727,6 +749,13 @@ class FeathrClient(object):
         generation_config = FeatureGenerationJobParams(
             generation_config_path=os.path.abspath(feature_gen_conf_path),
             feature_config=os.path.join(self.local_workspace_dir, "feature_conf/"))
+
+        job_tags = { OUTPUT_PATH_TAG: output_path }
+        # set output format in job tags if it's set by user, so that it can be used to parse the job result in the helper function
+        if execution_configurations is not None and OUTPUT_FORMAT in execution_configurations:
+            job_tags[OUTPUT_FORMAT] = execution_configurations[OUTPUT_FORMAT]
+        else:
+            job_tags[OUTPUT_FORMAT] = "avro"
         '''
         - Job tags are for job metadata and it's not passed to the actual spark job (i.e. not visible to spark job), more like a platform related thing that Feathr want to add (currently job tags only have job output URL and job output format, ). They are carried over with the job and is visible to every Feathr client. Think this more like some customized metadata for the job which would be weird to be put in the spark job itself.
         - Job arguments (or sometimes called job parameters)are the arguments which are command line arguments passed into the actual spark job. This is usually highly related with the spark job. In Feathr it's like the input to the scala spark CLI. They are usually not spark specific (for example if we want to specify the location of the feature files, or want to
@@ -752,13 +781,13 @@ class FeathrClient(object):
             job_name=self.project_name + '_feathr_feature_materialization_job',
             main_jar_path=self._FEATHR_JOB_JAR_PATH,
             python_files=cloud_udf_paths,
+            job_tags=job_tags,
             main_class_name=GEN_CLASS_NAME,
             arguments=arguments,
             reference_files_path=[],
             configuration=execution_configurations,
             properties=self._collect_secrets(secrets)
         )
-
 
     def wait_job_to_finish(self, timeout_sec: int = 300):
         """Waits for the job to finish in a blocking way unless it times out

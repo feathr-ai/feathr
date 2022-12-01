@@ -68,10 +68,10 @@ def get_result_spark_df(
 def get_result_df(
     client: FeathrClient,
     data_format: str = None,
-    format: str = None,
     res_url: str = None,
     local_cache_path: str = None,
     spark: SparkSession = None,
+    format: str = None,
 ) -> Union[DataFrame, pd.DataFrame]:
     """Download the job result dataset from cloud as a Spark DataFrame or pandas DataFrame.
 
@@ -79,13 +79,13 @@ def get_result_df(
         client: Feathr client
         data_format: Format to read the downloaded files. Currently support `parquet`, `delta`, `avro`, and `csv`.
             Default to use client's job tags if exists.
-        format: An alias for `data_format` (for backward compatibility).
         res_url: Result URL to download files from. Note that this will not block the job so you need to make sure
             the job is finished and the result URL contains actual data. Default to use client's job tags if exists.
         local_cache_path (optional): Specify the absolute download directory. if the user does not provide this,
             the function will create a temporary directory.
         spark (optional): Spark session. If provided, the function returns spark Dataframe.
             Otherwise, it returns pd.DataFrame.
+        format: An alias for `data_format` (for backward compatibility).
 
     Returns:
         Either Spark or pandas DataFrame.
