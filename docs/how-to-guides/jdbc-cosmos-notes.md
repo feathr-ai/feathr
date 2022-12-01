@@ -63,6 +63,7 @@ client.get_offline_features(...)
 These values will be automatically passed to the Feathr core when submitting the job.
 
 If you want to use token, the code will be like this:
+Step 1: Define the source JdbcSource
 ```python
 src_name="source_name"
 source = JdbcSource(name=src_name, url="jdbc:...", dbtable="table_name", auth="TOKEN")
@@ -70,11 +71,22 @@ anchor = FeatureAnchor(name="anchor_name",
                         source=source,
                         features=[some_features, some_other_features])
 ```
-And you need to set 1 environment variable before submitting jobs:
-```
+Step 2: Set the environment variable before submitting the job
+```python
 os.environ[f"{src_name.upper()}_TOKEN"] = "some_token"
 ```
-This method can be used to pass through AAD credentials to Azure SQL database.
+To enable Azure AD authentication in Azure SQL database, please refer to [this document](https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-overview?view=azuresql#overview).
+
+There are several ways to obtain Azure AD access token, please refer to [this document](https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens) for more details.
+
+If you want to leverage existing credential in python client, you could try:
+```python
+from azure.identity import DefaultAzureCredential
+
+credential = DefaultAzureCredential()
+token = credential.get_token("https://management.azure.com/.default").token()
+```
+
 
 ## Using SQL database as the offline store
 
