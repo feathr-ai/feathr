@@ -41,7 +41,7 @@ Read through the [commit log](https://github.com/feathr-ai/feathr/commits/main) 
 
 Before the release candidate or release is made, the version needs to be updated in following places
 
-- [build.sbt](https://github.com/feathr-ai/feathr/blob/main/build.sbt#L3) - For Maven release version
+- [build.gradle](https://github.com/feathr-ai/feathr/blob/main/gradle.properties#L3) - For Maven release version
 - [version.py](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathr/version.py#L1) - For Feathr version
 - [conf.py](https://github.com/feathr-ai/feathr/blob/main/feathr_project/docs/conf.py#L27) - For documentation version
 - [feathr_config.yaml](https://github.com/feathr-ai/feathr/blob/main/feathr_project/test/test_user_workspace/feathr_config.yaml#L84) - To set the spark runtime location for Azure Synapse and Azure Databricks used by test suite. Please update all .yaml files under this path.

@@ -40,7 +40,7 @@ class TensorCategory(Enum):
 class FeatureValueType(Enum):
     """
     The high level types associated with a feature.
-    This represents the high level semantic types supported by early versions of Frame.
+    This represents the high level semantic types supported by early versions of feathr.
     """
     BOOLEAN = "boolean"  # Boolean valued feature
     NUMERIC = "numeric"  # Numerically valued feature
