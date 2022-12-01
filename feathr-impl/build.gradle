@@ -56,11 +56,11 @@ dependencies {
   implementation spec.product.guava
   implementation spec.product.xbean
   implementation spec.product.json
-  implementation spec.product.avroUtil
   implementation spec.product.antlr
   implementation spec.product.antlrRuntime
 
   implementation spec.product.jackson.jackson_databind
+  provided spec.product.avroUtil
   provided spec.product.typesafe_config
   provided spec.product.log4j
   provided spec.product.hadoop.common
