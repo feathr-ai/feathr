@@ -188,6 +188,7 @@ class FeathrClient(object):
             registry_delimiter = self.envutils.get_environment_variable_with_default('feature_registry', 'purview', 'delimiter')
             # initialize the registry no matter whether we set purview name or not, given some of the methods are used there.
             self.registry = _PurviewRegistry(self.project_name, azure_purview_name, registry_delimiter, project_registry_tag, config_path = config_path, credential=credential)
+            logger.warning("FEATURE_REGISTRY__PURVIEW__PURVIEW_NAME deprecated soon. Please use FEATURE_REGISTRY__API_ENDPOINT instead.")
         else:
             # no registry configured
             logger.info("Feathr registry is not configured. Consider setting the Feathr registry component for richer feature store experience.")

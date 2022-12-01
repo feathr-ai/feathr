@@ -184,18 +184,6 @@ def registry_test_setup_partially(config_path: str):
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
     return client
 
-def registry_test_setup_append(config_path: str):
-    """Append features to a project. Will call `generate_entities()` and register from the 2nd anchor feature
-    """
-
-    client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
-
-    request_anchor, agg_anchor, derived_feature_list = generate_entities()
-    agg_anchor.features = agg_anchor.features[1:]
-    client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
-    return client
-
-
 def generate_entities():
     def add_new_dropoff_and_fare_amount_column(df: DataFrame):
         from pyspark.sql.functions import col
@@ -373,6 +361,29 @@ def registry_test_setup_append(config_path: str):
     # This shuffle is to make sure that each time we have random shuffle for the input and make sure the internal sorting algorithm works (we are using topological sort).
     random.shuffle(derived_feature_list)
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
+    return client
+
+def registry_test_setup_update(config_path: str, project_name: str):
+    now = datetime.now()
+    os.environ["project_config__project_name"] =  project_name
+
+    client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
+
+    # tranform in other sample is cast_float(trip_distance)>30
+    # update this to trigger 409 conflict with the existing one
+    features = [
+        Feature(name="f_is_long_trip_distance",
+                feature_type=BOOLEAN,
+                transform="cast_float(trip_distance)>10"),
+    ]
+
+    request_anchor = FeatureAnchor(name="request_features",
+                                   source=INPUT_CONTEXT,
+                                   features=features,
+                                   registry_tags={"for_test_purpose":"true"}
+                                   )
+
+    client.build_features(anchor_list=[request_anchor])
     return client
 
 def get_online_test_table_name(table_name: str):
