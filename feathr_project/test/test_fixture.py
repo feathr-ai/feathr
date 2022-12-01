@@ -257,8 +257,12 @@ def generate_entities():
                            key_column_type=ValueType.INT32,
                            description="location id in NYC",
                            full_name="nyc_taxi.location_id")
+    pu_location_id = TypedKey(key_column="PULocationID",
+                              key_column_type=ValueType.INT32,
+                           full_name="nyc_taxi.pu_location_id"
+                       )
     agg_features = [Feature(name="f_location_avg_fare",
-                            key=location_id,
+                            key=[location_id,pu_location_id],
                             feature_type=FLOAT,
                             transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
                                                               agg_func="AVG",
