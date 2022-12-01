@@ -69,7 +69,7 @@ class FeatureRegistryTests(unittest.TestCase):
         client: FeathrClient = registry_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
         client.register_features()
         time.sleep(30)
-        full_registration = client.get_features_from_registry(client.project_name, True)
+        full_registration = client.get_features_from_registry(client.project_name, return_keys = True, verbose = True)
 
         now = datetime.now()
         os.environ["project_config__project_name"] =  ''.join(['feathr_ci_registry','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)])
