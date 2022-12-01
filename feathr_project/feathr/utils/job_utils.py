@@ -31,7 +31,7 @@ def get_result_pandas_df(
     Returns:
         pandas DataFrame
     """
-    return get_result_df(client, data_format, res_url, local_cache_path)
+    return get_result_df(client=client, data_format=data_format, res_url=res_url, local_cache_path=local_cache_path)
 
 
 def get_result_spark_df(
@@ -56,7 +56,13 @@ def get_result_spark_df(
     Returns:
         Spark DataFrame
     """
-    return get_result_df(client, data_format, res_url, local_cache_path, spark=spark)
+    return get_result_df(
+        client=client,
+        data_format=data_format,
+        res_url=res_url,
+        local_cache_path=local_cache_path,
+        spark=spark,
+    )
 
 
 def get_result_df(
@@ -65,6 +71,7 @@ def get_result_df(
     res_url: str = None,
     local_cache_path: str = None,
     spark: SparkSession = None,
+    format: str = None,
 ) -> Union[DataFrame, pd.DataFrame]:
     """Download the job result dataset from cloud as a Spark DataFrame or pandas DataFrame.
 
@@ -78,10 +85,14 @@ def get_result_df(
             the function will create a temporary directory.
         spark (optional): Spark session. If provided, the function returns spark Dataframe.
             Otherwise, it returns pd.DataFrame.
+        format: An alias for `data_format` (for backward compatibility).
 
     Returns:
         Either Spark or pandas DataFrame.
     """
+    if format is not None:
+        data_format = format
+
     if data_format is None:
         # May use data format from the job tags
         if client.get_job_tags() and client.get_job_tags().get(OUTPUT_FORMAT):

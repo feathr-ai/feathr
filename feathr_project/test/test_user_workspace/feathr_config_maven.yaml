@@ -85,7 +85,7 @@ spark_config:
     # this is the default location so end users don't have to compile the runtime again.
     # feathr_runtime_location: wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-LATEST.jar
     # Unset this value will use default package on Maven
-    # feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.x.x.jar" # Use latest version of the jar
+    # feathr_runtime_location: "../../build/libs/feathr-assembly-0.x.x.jar" # Use latest version of the jar
   databricks:
     # workspace instance
     workspace_instance_url: 'https://adb-5638037984879289.9.azuredatabricks.net/'
@@ -98,7 +98,7 @@ spark_config:
 
     # this is the default location so end users don't have to compile the runtime again.
     # Unset this value will use default package on Maven
-    # feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.x.x.jar" (Use latest jar)
+    # feathr_runtime_location: "../../build/libs/feathr-assembly-0.x.x.jar" (Use latest jar)
 
 online_store:
   redis:
