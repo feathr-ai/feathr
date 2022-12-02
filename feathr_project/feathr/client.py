@@ -929,7 +929,7 @@ class FeathrClient(object):
             prop_and_value[prop] = self.envutils.get_environment_variable_with_default(prop)
         return prop_and_value
 
-    def get_features_from_registry(self, project_name: str, return_keys: bool = False, verbose: bool = False) -> Dict[str, FeatureBase]:
+    def get_features_from_registry(self, project_name: str, return_keys: bool = False, verbose: bool = False) -> Union[Dict[str, FeatureBase], tuple[Dict]]:
         """
         Get feature from registry by project name. The features got from registry are automatically built.
         """
@@ -954,7 +954,7 @@ class FeathrClient(object):
                 if verbose:
                     logger.info(json.dumps(derived_feature_to_def(feature), indent=2))
         if return_keys:
-            return [feature_dict, key_dict]
+            return feature_dict, key_dict
         return feature_dict
 
     def _reshape_config_str(self, config_str:str):
