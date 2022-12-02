@@ -11,6 +11,7 @@ from urllib.request import urlopen
 
 from databricks_cli.dbfs.api import DbfsApi
 from databricks_cli.runs.api import RunsApi
+from databricks_cli.dbfs.dbfs_path import DbfsPath
 from databricks_cli.sdk.api_client import ApiClient
 from loguru import logger
 import requests
@@ -62,18 +63,34 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         self.databricks_work_dir = databricks_work_dir
         self.api_client = ApiClient(host=self.workspace_instance_url, token=token_value)
 
-    def upload_or_get_cloud_path(self, local_path_or_http_path: str):
+    def upload_or_get_cloud_path(self, local_path_or_cloud_src_path: str, tar_dir_path: Optional[str] = None):
         """
         Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
+        or copying files from a source dbfs directory to a target dbfs directory
         """
-        src_parse_result = urlparse(local_path_or_http_path)
-        file_name = os.path.basename(local_path_or_http_path)
+        if local_path_or_cloud_src_path.startswith('dbfs') and tar_dir_path is not None:
+            if not tar_dir_path.startswith('dbfs'):
+                raise RuntimeError(
+                f"Failed to copy files from dbfs directory: {local_path_or_cloud_src_path}. {tar_dir_path} is not a valid target directory path"
+            )
+            if not self.cloud_dir_exists(local_path_or_cloud_src_path):
+                raise RuntimeError(f"Source folder:{local_path_or_cloud_src_path} doesn't exist. Please make sure it's a valid path")
+            if self.cloud_dir_exists(tar_dir_path):
+                logger.warning('Target cloud directory {} already exists. Please use another one.', tar_dir_path)
+                return tar_dir_path
+            DbfsApi(self.api_client).cp(recursive=True, overwrite=False, src=local_path_or_cloud_src_path, dst=tar_dir_path)
+            logger.info('{} is copied to location: {}',
+                    local_path_or_cloud_src_path, tar_dir_path)
+            return tar_dir_path
+        
+        src_parse_result = urlparse(local_path_or_cloud_src_path)
+        file_name = os.path.basename(local_path_or_cloud_src_path)
         # returned paths for the uploaded file. Note that we cannot use os.path.join here, since in Windows system it will yield paths like this:
         # dbfs:/feathrazure_cijob_snowflake_9_30_157692\auto_generated_derived_features.conf, where the path sep is mixed, and won't be able to be parsed by databricks.
         # so we force the path to be Linux style here.
         cloud_dest_path = self.databricks_work_dir + "/" + file_name
         if src_parse_result.scheme.startswith('http'):
-            with urlopen(local_path_or_http_path) as f:
+            with urlopen(local_path_or_cloud_src_path) as f:
                 # use REST API to avoid local temp file
                 data = f.read()
                 files = {"file": data}
@@ -81,31 +98,31 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                 r = requests.post(url=self.workspace_instance_url+'/api/2.0/dbfs/put',
                                   headers=self.auth_headers, files=files,  data={'overwrite': 'true', 'path': cloud_dest_path})
                 logger.info('{} is downloaded and then uploaded to location: {}',
-                             local_path_or_http_path, cloud_dest_path)
+                             local_path_or_cloud_src_path, cloud_dest_path)
         elif src_parse_result.scheme.startswith('dbfs'):
             # passed a cloud path
             logger.info(
-                'Skip uploading file {} as the file starts with dbfs:/', local_path_or_http_path)
-            cloud_dest_path = local_path_or_http_path
+                'Skip uploading file {} as the file starts with dbfs:/', local_path_or_cloud_src_path)
+            cloud_dest_path = local_path_or_cloud_src_path
         elif src_parse_result.scheme.startswith(('wasb','s3','gs')):
             # if the path starts with a location that's not a local path
             logger.error(
-                "File {} cannot be downloaded. Please upload the file to dbfs manually.", local_path_or_http_path
+                "File {} cannot be downloaded. Please upload the file to dbfs manually.", local_path_or_cloud_src_path
             )
             raise RuntimeError(
-                f"File {local_path_or_http_path} cannot be downloaded. Please upload the file to dbfs manually."
+                f"File {local_path_or_cloud_src_path} cannot be downloaded. Please upload the file to dbfs manually."
             )
         else:
             # else it should be a local file path or dir
-            if os.path.isdir(local_path_or_http_path):
-                logger.info("Uploading folder {}", local_path_or_http_path)
+            if os.path.isdir(local_path_or_cloud_src_path):
+                logger.info("Uploading folder {}", local_path_or_cloud_src_path)
                 dest_paths = []
-                for item in Path(local_path_or_http_path).glob('**/*.conf'):
+                for item in Path(local_path_or_cloud_src_path).glob('**/*.conf'):
                     cloud_dest_path = self._upload_local_file_to_workspace(item.resolve())
                     dest_paths.extend([cloud_dest_path])
                 cloud_dest_path = ','.join(dest_paths)
             else:
-                cloud_dest_path = self._upload_local_file_to_workspace(local_path_or_http_path)
+                cloud_dest_path = self._upload_local_file_to_workspace(local_path_or_cloud_src_path)
         return cloud_dest_path
 
     def _upload_local_file_to_workspace(self, local_path: str) -> str:
@@ -310,3 +327,17 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             )
 
         DbfsApi(self.api_client).cp(recursive=True, overwrite=True, src=result_path, dst=local_folder)
+        
+    def cloud_dir_exists(self, dir_path: str):
+        """
+        Check if a directory of hdfs already exists
+        """
+        if not dir_path.startswith('dbfs'):
+            raise RuntimeError('Currently only paths starting with dbfs is supported. The paths should start with \"dbfs:\" .')
+        
+        try:
+            DbfsApi(self.api_client).list_files(DbfsPath(dir_path))
+            return True
+        except:
+            return False
+

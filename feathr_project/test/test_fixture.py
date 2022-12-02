@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 
 from feathr import (BOOLEAN, FLOAT, INPUT_CONTEXT, INT32, STRING,
                     DerivedFeature, Feature, FeatureAnchor, HdfsSource,
-                    TypedKey, ValueType, WindowAggTransformation, SnowflakeSource)
+                    TypedKey, ValueType, WindowAggTransformation, SnowflakeSource,
+                    FeatureQuery,ObservationSettings)
 from feathr import FeathrClient
 from pyspark.sql import DataFrame
 
@@ -183,18 +184,6 @@ def registry_test_setup_partially(config_path: str):
     agg_anchor.features = agg_anchor.features[:1]
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
     return client
-
-def registry_test_setup_append(config_path: str):
-    """Append features to a project. Will call `generate_entities()` and register from the 2nd anchor feature
-    """
-
-    client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
-
-    request_anchor, agg_anchor, derived_feature_list = generate_entities()
-    agg_anchor.features = agg_anchor.features[1:]
-    client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
-    return client
-
 
 def generate_entities():
     def add_new_dropoff_and_fare_amount_column(df: DataFrame):
@@ -379,6 +368,29 @@ def registry_test_setup_append(config_path: str):
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
     return client
 
+def registry_test_setup_for_409(config_path: str, project_name: str):
+    now = datetime.now()
+    os.environ["project_config__project_name"] =  project_name
+
+    client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose":"true"})
+
+    # tranform in other sample is cast_float(trip_distance)>30
+    # update this to trigger 409 conflict with the existing one
+    features = [
+        Feature(name="f_is_long_trip_distance",
+                feature_type=BOOLEAN,
+                transform="cast_float(trip_distance)>10"),
+    ]
+
+    request_anchor = FeatureAnchor(name="request_features",
+                                   source=INPUT_CONTEXT,
+                                   features=features,
+                                   registry_tags={"for_test_purpose":"true"}
+                                   )
+
+    client.build_features(anchor_list=[request_anchor])
+    return client
+
 def get_online_test_table_name(table_name: str):
     # use different time for testing to avoid write conflicts
     now = datetime.now()
@@ -386,28 +398,45 @@ def get_online_test_table_name(table_name: str):
     print("The online Redis table is", res_table)
     return res_table
 
-def time_partition_pattern_test_setup(config_path: str, data_source_path: str):
+def time_partition_pattern_feature_gen_test_setup(config_path: str, data_source_path: str, resolution: str = 'DAILY', postfix_path: str = ""):
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
     os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
     os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
     client = FeathrClient(config_path=config_path)
 
-    batch_source = HdfsSource(name="testTimePartitionSource",
+    if resolution == 'DAILY':
+        if postfix_path != "":
+            batch_source = HdfsSource(name="testTimePartitionSource",
+                          path=data_source_path,
+                          time_partition_pattern="yyyy/MM/dd",
+                          postfix_path=postfix_path
+                        )
+        else:
+            batch_source = HdfsSource(name="testTimePartitionSource",
                           path=data_source_path,
                           time_partition_pattern="yyyy/MM/dd"
-                          )
+                        )
+    else:
+        batch_source = HdfsSource(name="testTimePartitionSource",
+                          path=data_source_path,
+                          time_partition_pattern="yyyy/MM/dd/HH"
+                        )
     key = TypedKey(key_column="key0",
                key_column_type=ValueType.INT32)
     agg_features = [
     Feature(name="f_loc_avg_output",
             key=[key],
             feature_type=FLOAT,
-            transform="f_location_avg_fare"),
+            transform=WindowAggTransformation(agg_expr="f_location_avg_fare",
+                                              agg_func="AVG",
+                                              window="3d")),
     Feature(name="f_loc_max_output",
             feature_type=FLOAT,
             key=[key],
-            transform="f_location_max_fare"),
+            transform=WindowAggTransformation(agg_expr="f_location_max_fare",
+                                              agg_func="MAX",
+                                              window="3d")),
     ]
 
     agg_anchor = FeatureAnchor(name="testTimePartitionFeatures",
@@ -415,3 +444,50 @@ def time_partition_pattern_test_setup(config_path: str, data_source_path: str):
                            features=agg_features)
     client.build_features(anchor_list=[agg_anchor])
     return client
+
+def time_partition_pattern_feature_join_test_setup(config_path: str, data_source_path: str, resolution: str = 'DAILY', postfix_path: str = ""):
+    now = datetime.now()
+    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
+    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
+    client = FeathrClient(config_path=config_path)
+    
+    if postfix_path == "":
+        if resolution == 'DAILY':
+            batch_source_tpp = HdfsSource(name="nycTaxiBatchSource",
+                          path=data_source_path,
+                          time_partition_pattern="yyyy/MM/dd"
+                        )
+        else:
+            batch_source_tpp = HdfsSource(name="nycTaxiBatchSource",
+                          path=data_source_path,
+                          time_partition_pattern="yyyy/MM/dd/HH"
+                        )
+    else:
+        batch_source_tpp = HdfsSource(name="nycTaxiBatchSource",
+                          path=data_source_path,
+                          time_partition_pattern="yyyy/MM/dd",
+                          postfix_path=postfix_path
+                        )
+    tpp_key = TypedKey(key_column="f_location_max_fare",
+                    key_column_type=FLOAT)
+    tpp_features = [
+    Feature(name="key0",
+            key=tpp_key,
+            feature_type=FLOAT,
+            transform=WindowAggTransformation(agg_expr="key0",
+                                              agg_func="LATEST",
+                                              window="3d"
+                    ))
+    ]
+    tpp_anchor = FeatureAnchor(name="tppFeatures",
+                            source=batch_source_tpp,
+                            features=tpp_features)
+    client.build_features(anchor_list=[tpp_anchor])
+    
+    feature_query = FeatureQuery(feature_list=["key0"], key=tpp_key)
+    settings = ObservationSettings(
+        observation_path='wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/tpp_source.csv',
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss")
+    return [client, feature_query, settings]

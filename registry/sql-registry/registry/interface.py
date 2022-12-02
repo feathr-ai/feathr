@@ -111,3 +111,17 @@ class Registry(ABC):
         Create a new derived feature under the project
         """
         pass
+    
+    @abstractmethod
+    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> list[Entity]:
+        """
+        Given entity id, returns list of all entities that are downstream/dependant on the given entity
+        """
+        pass
+    
+    @abstractmethod
+    def delete_entity(self, entity_id: Union[str, UUID]):
+        """
+        Deletes given entity
+        """
+        pass

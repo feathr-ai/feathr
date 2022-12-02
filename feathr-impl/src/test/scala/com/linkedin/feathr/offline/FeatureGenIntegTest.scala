@@ -122,6 +122,65 @@ class FeatureGenIntegTest extends FeathrIntegTest {
       |}
     """.stripMargin
 
+  /**
+   * Test timePartitionPattern in the middle of data sources path
+   */
+  @Test
+  def testTimePartitionPatternMiddlePath(): Unit = {
+    val applicationConfig = generateSimpleApplicationConfig(features = "f3, f4")
+    val featureDefConfig =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWAAnchorTestFeatureData/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    postfixPath: "postfixPath"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |anchors: {
+        |  swaAnchorWithKeyExtractor: {
+        |    source: "swaSource"
+        |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
+        |    features: {
+        |      f3: {
+        |        def: "aggregationWindow"
+        |        aggregation: SUM
+        |        window: 3d
+        |      }
+        |    }
+        |  }
+        |
+        |  swaAnchorWithKeyExtractor2: {
+        |    source: "swaSource"
+        |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
+        |    features: {
+        |      f4: {
+        |        def: "aggregationWindow"
+        |        aggregation: SUM
+        |        window: 3d
+        |      }
+        |    }
+        |  }
+        |}
+      """.stripMargin
+    val dfs = localFeatureGenerate(applicationConfig, featureDefConfig)
+    // group by dataframe
+    val dfCount = dfs.groupBy(_._2.data).size
+    // we should have 8 dataframes, each one contains a group of feature above
+    assertEquals(dfCount, 1)
+    // group by dataframe
+    val featureList =
+      dfs.head._2.data.collect().sortBy(row => (row.getAs[String]("key0"), row.getAs[String]("key1")))
+    assertEquals(featureList.size, 4)
+    assertEquals(featureList(0).getAs[Float]("f3"), 1f, 1e-5)
+    assertEquals(featureList(0).getAs[Float]("f4"), 1f, 1e-5)
+    assertEquals(featureList(1).getAs[Float]("f3"), 1f, 1e-5)
+    assertEquals(featureList(1).getAs[Float]("f4"), 1f, 1e-5)
+  }
 
   /**
    * Test sliding window aggregation feature using key extractor in multiple anchors

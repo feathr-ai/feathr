@@ -23,7 +23,7 @@ private[offline] class TimeBasedHdfsPathGenerator(pathChecker: PathChecker) {
    * @param ignoreMissingFiles if set to true, the missing files will be removed from the returned list.
    * @return a sequence of paths with date
    */
-  def generate(pathInfo: PathInfo, timeInterval: DateTimeInterval, ignoreMissingFiles: Boolean): Seq[String] = {
+  def generate(pathInfo: PathInfo, timeInterval: DateTimeInterval, ignoreMissingFiles: Boolean, postfixPath: String = ""): Seq[String] = {
     val dateTimeResolution = pathInfo.dateTimeResolution
     val adjustedInterval = timeInterval.adjustWithDateTimeResolution(dateTimeResolution)
     val factDataStartTime = adjustedInterval.getStart
@@ -32,7 +32,7 @@ private[offline] class TimeBasedHdfsPathGenerator(pathChecker: PathChecker) {
     val numUnits = chronUnit.between(factDataStartTime, factDataEndTime).toInt
     val formatter = DateTimeFormatter.ofPattern(pathInfo.datePathPattern).withZone(OfflineDateTimeUtils.DEFAULT_ZONE_ID)
     val filePaths = (0 until numUnits)
-        .map(offset => pathInfo.basePath + formatter.format(factDataStartTime.plus(offset, chronUnit))).distinct
+        .map(offset => pathInfo.basePath + formatter.format(factDataStartTime.plus(offset, chronUnit)) + postfixPath).distinct
 
     if (ignoreMissingFiles) {
       filePaths.filter(pathChecker.exists)
