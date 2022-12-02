@@ -159,9 +159,20 @@ def get_result_df(
     except Exception as e:
         logger.error(f"Failed to load result files from {local_cache_path} with format {data_format}.")
         raise e
-
+    
     return result_df
 
+def copy_cloud_dir(client: FeathrClient, source_url: str, target_url: str = None):
+    source_url: str = source_url or client.get_job_result_uri(block=True, timeout_sec=1200)
+    if source_url is None:
+        raise RuntimeError("source_url None. Please make sure either you provide a source_url or make sure the job finished in FeathrClient has a valid result URI.")
+    if target_url is None:
+        raise RuntimeError("target_url None. Please make sure you provide a target_url.")
+
+    client.feathr_spark_launcher.upload_or_get_cloud_path(source_url, target_url)
+    
+def cloud_dir_exists(client: FeathrClient, dir_path: str) -> bool:
+    return client.feathr_spark_launcher.cloud_dir_exists(dir_path)
 
 def _load_files_to_pandas_df(dir_path: str, data_format: str = "avro") -> pd.DataFrame:
 
