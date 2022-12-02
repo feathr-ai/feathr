@@ -28,6 +28,12 @@ class RelativeTimeRange(BaseTimeRange):
 
 class ObservationSettings(HoconConvertible):
     """Time settings of the observation data. Used in feature join.
+    The data time settings pertaining to how much of the input dataset is to be loaded from the timestamp column.
+    This is a way in which the input data can be restricted to allow only a fixed interval of dates to be joined with the feature data.
+    This restriction will apply on the timestamp column of the input data.
+
+    For example, startDate: "20200522", endDate: "20200525" implies this feature should be joined with the input data starting from
+    22nd May 2020 to 25th May, 2020 with both dates included.
 
     Attributes:
         observation_path (str): Path to the observation dataset, i.e. input dataset to get with features.
@@ -66,19 +72,19 @@ class ObservationSettings(HoconConvertible):
         if observation_time_range:
             if isinstance(observation_time_range, AbsoluteTimeRange):
                 self.observation_data_time_settings = f"""{{
-                            absoluteTimeRange: {{
-                                startTime: "{observation_time_range.start_time}"
-                                endTime: "{observation_time_range.end_time}"
-                                timeFormat: "{observation_time_range.time_format}"
-                            }}
-                        }}"""
+                    absoluteTimeRange: {{
+                        startTime: "{observation_time_range.start_time}"
+                        endTime: "{observation_time_range.end_time}"
+                        timeFormat: "{observation_time_range.time_format}"
+                    }}
+                }}"""
             elif isinstance(observation_time_range, RelativeTimeRange):
                 self.observation_data_time_settings = f"""{{
-                            relativeTimeRange: {{
-                                offset: {observation_time_range.offset}
-                                window: {observation_time_range.window}
-                            }}
-                        }}"""
+                    relativeTimeRange: {{
+                        offset: {observation_time_range.offset}
+                        window: {observation_time_range.window}
+                    }}
+                }}"""
             else:
                 raise ValueError(f"Unsupported observation_time_range type {type(observation_time_range)}")
 
@@ -88,31 +94,31 @@ class ObservationSettings(HoconConvertible):
                 raise ValueError("use_latest_feature_data cannot set together with event_timestamp_column")
 
             self.join_time_settings = """{
-                        useLatestFeatureData: true
-                    }"""
+                    useLatestFeatureData: true
+                }"""
         elif event_timestamp_column:
             self.join_time_settings = f"""{{
-                        timestampColumn: {{
-                            def: "{event_timestamp_column}"
-                            format: "{timestamp_format}"
-                        }}
-                    }}"""
+                    timestampColumn: {{
+                        def: "{event_timestamp_column}"
+                        format: "{timestamp_format}"
+                    }}
+                }}"""
 
         # TODO implement `simulateTimeDelay: 1d` -- This is the global setting, and should be applied to all the features
         # except those specified using timeDelayOverride (should introduce "timeDelayOverride" to Feature spec).
 
     def to_feature_config(self) -> str:
         tm = Template("""
-                {% if (setting.observation_data_time_settings is not none) or (setting.join_time_settings is not none) %}
-                settings: {
-                    {% if setting.observation_data_time_settings is not none %}
-                    observationDataTimeSettings: {{setting.observation_data_time_settings}}
-                    {% endif %}
-                    {% if setting.join_time_settings is not none %}
-                    joinTimeSettings: {{setting.join_time_settings}}
-                    {% endif %}
-                }
+            {% if (setting.observation_data_time_settings is not none) or (setting.join_time_settings is not none) %}
+            settings: {
+                {% if setting.observation_data_time_settings is not none %}
+                observationDataTimeSettings: {{setting.observation_data_time_settings}}
                 {% endif %}
-                observationPath: "{{setting.observation_path}}"
+                {% if setting.join_time_settings is not none %}
+                joinTimeSettings: {{setting.join_time_settings}}
+                {% endif %}
+            }
+            {% endif %}
+            observationPath: "{{setting.observation_path}}"
             """)
         return tm.render(setting=self)
