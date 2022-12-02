@@ -939,20 +939,20 @@ class FeathrClient(object):
         key_dict = {}
         # add those features into a dict for easier lookup
         if verbose and registry_anchor_list:
-            print("Get anchor features from registry: ")
+            logger.info("Get anchor features from registry: ")
         for anchor in registry_anchor_list:
             for feature in anchor.features:
                 feature_dict[feature.name] = feature
                 key_dict[feature.name] = feature.key
                 if verbose:
-                    print(json.dumps(feature_to_def(feature), indent=2))
+                    logger.info(json.dumps(feature_to_def(feature), indent=2))
         if verbose and registry_derived_feature_list:
-            print("Get derived features from registry: ")
+            logger.info("Get derived features from registry: ")
         for feature in registry_derived_feature_list:
                 feature_dict[feature.name] = feature
                 key_dict[feature.name] = feature.key
                 if verbose:
-                    print(json.dumps(derived_feature_to_def(feature), indent=2))
+                    logger.info(json.dumps(derived_feature_to_def(feature), indent=2))
         if return_keys:
             return [feature_dict, key_dict]
         return feature_dict
