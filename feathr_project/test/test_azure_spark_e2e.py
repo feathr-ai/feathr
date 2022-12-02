@@ -20,9 +20,9 @@ from feathr import TypedKey
 from feathr import ValueType
 from feathr.utils.job_utils import get_result_df
 from feathrcli.cli import init
-from test_fixture import (basic_test_setup, get_online_test_table_name, time_partition_pattern_test_setup)
+from test_fixture import (basic_test_setup, get_online_test_table_name)
 from test_utils.constants import Constants
-
+  
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_materialize_to_offline():
@@ -245,6 +245,45 @@ def test_feathr_get_offline_features_to_sql():
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
+@pytest.mark.skip(reason="Marked as skipped as we need to setup token and enable SQL AAD login for this test")
+def test_feathr_get_offline_features_to_sql_with_token():
+    """
+    Test get_offline_features() can save data to SQL.
+    """
+    # runner.invoke(init, [])
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+
+    location_id = TypedKey(key_column="DOLocationID",
+                            key_column_type=ValueType.INT32,
+                            description="location id in NYC",
+                            full_name="nyc_taxi.location_id")
+
+    feature_query = FeatureQuery(
+        feature_list=["f_location_avg_fare"], key=location_id)
+    settings = ObservationSettings(
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss")
+
+    now = datetime.now()
+    
+    # Set DB token before submitting job
+    # os.environ[f"SQL1_TOKEN"] = "some_token"
+    os.environ["SQL1_TOKEN"] = client.credential.get_token("https://management.azure.com/.default").token
+    output_path = JdbcSink(name="sql1",
+                            url="jdbc:sqlserver://feathrazureci.database.windows.net:1433;database=feathrci;encrypt=true;",
+                            dbtable=f'feathr_ci_sql_token_{str(now)[:19].replace(" ", "_").replace(":", "_").replace("-", "_")}',
+                            auth="TOKEN")
+
+    client.get_offline_features(observation_settings=settings,
+                                feature_query=feature_query,
+                                output_path=output_path)
+
+    # assuming the job can successfully run; otherwise it will throw exception
+    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+
 def test_feathr_materialize_to_cosmosdb():
     """
     Test FeathrClient() CosmosDbSink.
@@ -394,66 +433,8 @@ def test_feathr_materialize_to_aerospike():
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
-def test_feathr_materialize_with_time_partition_pattern():
-    """
-    Test FeathrClient() using HdfsSource with 'timePartitionPattern'.
-    """
-    test_workspace_dir = Path(
-        __file__).parent.resolve() / "test_user_workspace"
-    # os.chdir(test_workspace_dir)
-    # Create data source first
-    client_producer: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
-
-    backfill_time = BackfillTime(start=datetime(
-        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-
-    if client_producer.spark_runtime == 'databricks':
-        output_path = 'dbfs:/timePartitionPattern_test'
-    else:
-        output_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_test'
-
-    offline_sink = HdfsSink(output_path=output_path)
-    settings = MaterializationSettings("nycTaxiTable",
-                sinks=[offline_sink],
-                feature_names=[
-                    "f_location_avg_fare", "f_location_max_fare"],
-                backfill_time=backfill_time)
-    client_producer.materialize_features(settings)
-    # assuming the job can successfully run; otherwise it will throw exception
-    client_producer.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
-
-    # download result and just assert the returned result is not empty
-    # by default, it will write to a folder appended with date
-    res_df = get_result_df(client_producer, "avro", output_path + "/df0/daily/2020/05/20")
-    assert res_df.shape[0] > 0
-
-    client_consumer: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), output_path+'/df0/daily')
-
-    backfill_time_tpp = BackfillTime(start=datetime(
-        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-
-    now = datetime.now()
-    if client_consumer.spark_runtime == 'databricks':
-        output_path_tpp = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
-    else:
-        output_path_tpp = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
-    offline_sink_tpp = HdfsSink(output_path=output_path_tpp)
-    settings_tpp = MaterializationSettings("nycTaxiTable",
-                                       sinks=[offline_sink_tpp],
-                                       feature_names=[
-                                           "f_loc_avg_output", "f_loc_max_output"],
-                                       backfill_time=backfill_time_tpp)
-    client_consumer.materialize_features(settings_tpp, allow_materialize_non_agg_feature=True)
-    # assuming the job can successfully run; otherwise it will throw exception
-    client_consumer.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
-
-    # download result and just assert the returned result is not empty
-    # by default, it will write to a folder appended with date
-    res_df = get_result_df(client_consumer, "avro", output_path_tpp + "/df0/daily/2020/05/20")
-    assert res_df.shape[0] > 0
-
-
 if __name__ == "__main__":
     test_feathr_materialize_to_aerospike()
     test_feathr_get_offline_features_to_sql()
     test_feathr_materialize_to_cosmosdb()
+

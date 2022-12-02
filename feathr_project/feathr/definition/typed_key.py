@@ -20,6 +20,10 @@ class TypedKey:
                  full_name: Optional[str] = None,
                  description: Optional[str] = None,
                  key_column_alias: Optional[str] = None) -> None:
+        # Validate the key_column type
+        if not isinstance(key_column_type, ValueType):
+            raise KeyError(f'key_column_type must be a ValueType, like Value.INT32, but got {key_column_type}')
+        
         self.key_column = key_column
         self.key_column_type = key_column_type
         self.full_name = full_name
