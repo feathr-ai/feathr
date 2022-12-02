@@ -30,6 +30,11 @@ class FeatureBase(HoconConvertible):
                  registry_tags: Optional[Dict[str, str]] = None,
                  ):
         FeatureBase.validate_feature_name(name)
+
+        # Validate the feature type
+        if not isinstance(feature_type, FeatureType):
+            raise KeyError(f'Feature type must be a FeatureType class, like INT32, but got {feature_type}')
+
         self.name = name
         self.feature_type = feature_type
         self.registry_tags=registry_tags
