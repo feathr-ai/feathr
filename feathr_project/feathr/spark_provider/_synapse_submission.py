@@ -22,6 +22,7 @@ from tqdm import tqdm
 
 from feathr.spark_provider._abc import SparkJobLauncher
 from feathr.constants import *
+from feathr.version import get_maven_artifact_fullname
 
 class LivyStates(Enum):
     """ Adapt LivyStates over to relax the dependency for azure-synapse-spark pacakge.
@@ -114,17 +115,17 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         if not main_jar_path:
             # We don't have the main jar, use Maven
             # Add Maven dependency to the job configuration
+            logger.info(f"Main JAR file is not set, using default package '{get_maven_artifact_fullname()}' from Maven")
             if "spark.jars.packages" in cfg:
                 cfg["spark.jars.packages"] = ",".join(
-                    [cfg["spark.jars.packages"], FEATHR_MAVEN_ARTIFACT])
+                    [cfg["spark.jars.packages"], get_maven_artifact_fullname()])
             else:
-                cfg["spark.jars.packages"] = FEATHR_MAVEN_ARTIFACT
+                cfg["spark.jars.packages"] = get_maven_artifact_fullname()
 
             if not python_files:
                 # This is a JAR job
                 # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
                 # so we have to use a dummy jar as the main file.
-                logger.info(f"Main JAR file is not set, using default package '{FEATHR_MAVEN_ARTIFACT}' from Maven")
                 # Use the no-op jar as the main file
                 # This is a dummy jar which contains only one `org.example.Noop` class with one empty `main` function which does nothing
                 current_dir = pathlib.Path(__file__).parent.resolve()
@@ -169,7 +170,7 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
     def wait_for_completion(self, timeout_seconds: Optional[float]) -> bool:
         """
         Returns true if the job completed successfully
-        """
+        """          
         start_time = time.time()
         while (timeout_seconds is None) or (time.time() - start_time < timeout_seconds):
             status = self.get_status()
@@ -178,7 +179,9 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                 return True
             elif status in {LivyStates.ERROR.value, LivyStates.DEAD.value, LivyStates.KILLED.value}:
                 logger.error("Feathr job has failed.")
-                logger.error(self._api.get_driver_log(self.current_job_info.id).decode('utf-8'))
+                error_msg = self._api.get_driver_log(self.current_job_info.id).decode('utf-8')
+                logger.error(error_msg)
+                logger.error("The size of the whole error log is: {}. The logs might be truncated in some cases (such as in Visual Studio Code) so only the top a few lines of the error message is displayed. If you cannot see the whole log, you may want to extend the setting for output size limit.", len(error_msg))
                 return False
             else:
                 time.sleep(30)
@@ -432,8 +435,6 @@ class _DataLakeFiler(object):
 
         # returns the paths to all the files in the target director in ADLS
         # get all the paths that are not under a directory
-        test_paths = self.file_system_client.get_paths(
-            path=parse_result.path, recursive=False)
         result_paths = [basename(file_path.name) for file_path in self.file_system_client.get_paths(
             path=parse_result.path, recursive=False) if not file_path.is_directory]
 

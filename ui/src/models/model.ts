@@ -20,7 +20,7 @@ export interface FeatureAttributes {
   key: FeatureKey[];
   name: string;
   qualifiedName: string;
-  tags: string[];
+  tags: Object;
   transformation: FeatureTransformation;
   type: FeatureType;
 }
@@ -80,11 +80,21 @@ export interface DataSourceAttributes {
   tags: string[];
   timestampFormat: string;
   type: string;
+  qualified_name: string;
+  timestamp_format: string;
+  event_timestamp_column: string;
+}
+
+export interface RelationData {
+  fromEntityId: string;
+  relationshipId: string;
+  relationshipType: string;
+  toEntityId: string;
 }
 
 export interface FeatureLineage {
-  guidEntityMap: any;
-  relations: any;
+  guidEntityMap: Record<string, Feature>;
+  relations: RelationData[];
 }
 
 export interface UserRole {

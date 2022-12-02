@@ -14,7 +14,7 @@ from feathr.client import FeathrClient
 from feathr.registry._feathr_registry_client import _FeatureRegistry
 from feathrcli.cli import init
 from test_fixture import registry_test_setup
-from test_fixture import registry_test_setup_append, registry_test_setup_partially
+from test_fixture import registry_test_setup_append, registry_test_setup_partially, registry_test_setup_for_409
 from test_utils.constants import Constants
 
 class FeatureRegistryTests(unittest.TestCase):
@@ -58,18 +58,15 @@ class FeatureRegistryTests(unittest.TestCase):
 
                 # Sync workspace from registry, will get all conf files back
                 client.get_features_from_registry(client.project_name)
+                
+                # Register the same feature with different definition and expect an error.
+                client: FeathrClient = registry_test_setup_for_409(os.path.join(test_workspace_dir, config_path), client.project_name)
 
-                feature_query = FeatureQuery(
-                    feature_list=["f_location_avg_fare", "f_trip_time_rounded", "f_is_long_trip_distance"],
-                    key=TypedKey(key_column="DOLocationID",key_column_type=ValueType.INT32))
-                settings = ObservationSettings(
-                    observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
-                    event_timestamp_column="lpep_dropoff_datetime",
-                    timestamp_format="yyyy-MM-dd HH:mm:ss")
-                client.get_offline_features(observation_settings=settings,
-                                            feature_query=feature_query,
-                                            output_path=output_path)
-                client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+                with pytest.raises(RuntimeError) as exc_info:
+                    client.register_features()
+                
+                # <ExceptionInfo RuntimeError('Failed to call registry API, status is 409, error is {"message":"Entity feathr_ci_registry_53_3_476999__request_features__f_is_long_trip_distance already exists"}')
+            assert "status is 409" in str(exc_info.value)
 
     def test_feathr_register_features_partially(self):
         """

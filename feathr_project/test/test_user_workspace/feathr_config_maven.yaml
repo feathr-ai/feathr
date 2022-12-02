@@ -25,8 +25,8 @@ project_config:
     # the environemnt variables are optional, however you will need them if you want to use some of the services:
     - ADLS_ACCOUNT
     - ADLS_KEY
-    - WASB_ACCOUNT
-    - WASB_KEY
+    - BLOB_ACCOUNT
+    - BLOB_KEY
     - S3_ACCESS_KEY
     - S3_SECRET_KEY
     - JDBC_TABLE
@@ -41,7 +41,7 @@ offline_store:
     adls_enabled: true
 
   # paths starts with wasb:// or wasbs://
-  # WASB_ACCOUNT and WASB_KEY should be set in environment variable
+  # BLOB_ACCOUNT and BLOB_KEY should be set in environment variable
   wasb:
     wasb_enabled: true
 
@@ -64,6 +64,7 @@ offline_store:
     url: "dqllago-ol19457.snowflakecomputing.com"
     user: "feathrintegration"
     role: "ACCOUNTADMIN"
+    warehouse: "COMPUTE_WH"
 
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks
@@ -84,7 +85,7 @@ spark_config:
     # this is the default location so end users don't have to compile the runtime again.
     # feathr_runtime_location: wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-LATEST.jar
     # Unset this value will use default package on Maven
-    # feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.x.x.jar" # Use latest version of the jar
+    # feathr_runtime_location: "../../build/libs/feathr-assembly-0.x.x.jar" # Use latest version of the jar
   databricks:
     # workspace instance
     workspace_instance_url: 'https://adb-5638037984879289.9.azuredatabricks.net/'
@@ -97,7 +98,7 @@ spark_config:
 
     # this is the default location so end users don't have to compile the runtime again.
     # Unset this value will use default package on Maven
-    # feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.x.x.jar" (Use latest jar)
+    # feathr_runtime_location: "../../build/libs/feathr-assembly-0.x.x.jar" (Use latest jar)
 
 online_store:
   redis:

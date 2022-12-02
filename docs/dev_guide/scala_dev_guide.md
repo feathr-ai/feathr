@@ -13,10 +13,9 @@ IntelliJ is the recommended IDE to use when developing Feathr. Please visit Inte
 in your local machine. To import Feathr as a new project:
 1. Git clone Feathr into your local machine. i.e. via https `git clone https://github.com/feathr-ai/feathr.git` or ssh `git clone git@github.com:feathr-ai/feathr.git`
 2. In IntelliJ, select `File` > `New` > `Project from Existing Sources...` and select `feathr` from the directory you cloned.
-3. Under `Import project from external model` select `sbt`. Click `Next`.
-4. Under `Project JDK` specify a valid Java `1.8` JDK and select SBT shell for `project reload` and `builds`.
+3. Under `Import project from external model` select `gradle`. Click `Next`.
+4. Under `Project JDK` specify a valid Java `1.8` JDK.
 5. Click `Finish`.
-6. You should see something like `[success] Total time: 5 s, completed Jun 1, 2022 9:43:26 PM` in sbt shell.
 
 ### Setup Verification
 
@@ -34,28 +33,28 @@ Please checkout [Databricks' Scala Style Guide](https://github.com/databricks/sc
 
 ## Building and Testing
 
-Feathr is compiled using [SBT](https://www.scala-sbt.org/1.x/docs/Command-Line-Reference.html).
+Feathr is compiled using [Gradle](https://docs.gradle.org/current/userguide/command_line_interface.html).
 
 To compile, run
 ```
-sbt assembly
+./gradlew build
 ```
 
 To compile with certain java version, run
 ```
-sbt assembly -java-home "/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home"
+./gradlew build -Dorg.gradle.java.home=/JDK_PATH
 ```
 
-The jar files are compiled and placed in `feathr/target/scala-2.12/feathr-assembly-X.X.X.jar `.
+The jar files are compiled and placed in `feathr/build/libs/feathr-X.X.X.jar `.
 
 To execute tests, run
 ```
-sbt test
+./gradlew test
 ```
 
 To execute a single test suite, run
 ```
-sbt 'testOnly com.linkedin.feathr.offline.AnchoredFeaturesIntegTest'
+./gradlew test --tests com.linkedin.feathr.offline.AnchoredFeaturesIntegTest
 ```
 
-Refer to [SBT docs](https://www.scala-sbt.org/1.x/docs/Command-Line-Reference.html) for more commands.
+Refer to [Gradle docs](https://docs.gradle.org/current/userguide/command_line_interface.html) for more commands.

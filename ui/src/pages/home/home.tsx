@@ -1,14 +1,16 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { Card, Col, Row, Typography } from "antd";
+
 import {
   CopyOutlined,
   DatabaseOutlined,
   EyeOutlined,
   ProjectOutlined,
 } from "@ant-design/icons";
+import { Card, Col, Row, Typography } from "antd";
+import cs from "classnames";
+import { Link } from "react-router-dom";
 
-import "./home.css";
+import styles from "./index.module.less";
 
 const { Title } = Typography;
 const { Meta } = Card;
@@ -42,7 +44,7 @@ const features = [
 
 const Home = () => {
   return (
-    <div className="page home">
+    <div className={cs("page", styles.home)}>
       <Card>
         <Title level={2}>Welcome to Feathr Feature Store</Title>
         <span>
@@ -71,7 +73,7 @@ const Home = () => {
             >
               <Card>
                 <Meta
-                  className="card-meta"
+                  className={styles.cardMeta}
                   avatar={item.icon}
                   title={
                     <Title level={2} ellipsis>
@@ -94,7 +96,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#-documentation"
+                  href="https://github.com/feathr-ai/feathr#-documentation"
                   rel="noreferrer"
                 >
                   Documentation
@@ -104,7 +106,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#%EF%B8%8F-running-feathr-on-cloud-with-a-few-simple-steps"
+                  href="https://github.com/feathr-ai/feathr#%EF%B8%8F-running-feathr-on-cloud-with-a-few-simple-steps"
                   rel="noreferrer"
                 >
                   Running Feathr on Cloud
@@ -114,7 +116,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#%EF%B8%8F-cloud-integrations-and-architecture"
+                  href="https://github.com/feathr-ai/feathr#%EF%B8%8F-cloud-integrations-and-architecture"
                   rel="noreferrer"
                 >
                   Cloud Integrations and Architecture on Cloud
@@ -124,7 +126,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#-slack-channel"
+                  href="https://github.com/feathr-ai/feathr#-slack-channel"
                   rel="noreferrer"
                 >
                   Slack Channel
@@ -135,7 +137,7 @@ const Home = () => {
               <li>
                 <a
                   target="_blank"
-                  href="https://github.com/linkedin/feathr#-community-guidelines"
+                  href="https://github.com/feathr-ai/feathr#-community-guidelines"
                   rel="noreferrer"
                 >
                   Community Guidelines

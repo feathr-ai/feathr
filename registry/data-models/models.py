@@ -1,12 +1,13 @@
+from registry.data-models.transformation.models import *
+from registry.data-models.common.models import SemanticVersion, FeathrModel, Function
+from typing import Optional
 from pydantic import BaseModel
-from typing import List
+
 
 """
 This file defines abstract backend data models for feature registry.
 Backend data models will be used by backend API server to talk to feature registry backend.
 Purpose of this is to decouple backend data models from API specific data models.
-For each feature registry provider/implementation, they will extend this abstract
-data models and backend API.
 Diagram of the data models:  ./data-model-diagram.md
 """
 
@@ -43,11 +44,7 @@ class ProjectId(BaseModel):
     id: str  # id of a project
 
 
-class Source(BaseModel):
-    """
-    Source of the feature.
-    It defines where the feature is extracted or derived from.
-    """
+class Source(FeathrModel):
     pass
 
 
@@ -56,7 +53,8 @@ class DataSource(Source):
     Data source of the feature.
     It defines the raw data source the feature is extracted from.
     """
-    pass
+    clazz: Optional[Clazz]  # Fully qualified Java class name for data model
+    keyFunction: Optional[Function]
 
 
 class FeatureSource(BaseModel):
@@ -65,6 +63,7 @@ class FeatureSource(BaseModel):
     creating other derived features.
     """
     input_feature_name_id: FeatureNameId  # Input feature name Key
+    alias: Optional[str]  # A feature's alias to be used in transformation function.
 
 
 class MultiFeatureSource(Source):
@@ -73,7 +72,6 @@ class MultiFeatureSource(Source):
     It defines one to many features where the feature is derived from.
     """
     sources: List[FeatureSource]  # All source features which the feature is derived from
-    pass
 
 
 class Transformation(BaseModel):
@@ -81,10 +79,10 @@ class Transformation(BaseModel):
     The transformation of a Feature.
     A transformation function represents the transformation logic to produce feature value from the source of FeatureAnchor
     """
-    pass
+    transformationFunction: Function
 
 
-class Feature(BaseModel):
+class Feature(FeathrModel):
     """
     Actual implementation of FeatureName.
     An implementation defines where a feature is extracted from (Source) and how it is computed (Transformation).
@@ -100,6 +98,7 @@ class AnchorFeature(Feature):
     """
     Feature implementation of FeatureName which anchored to a data source.
     """
+    anchor_id: AnchorId  # ID of the anchor this feature belongs to
     source: DataSource  # Raw data source where the feature is extracted from
 
 
@@ -110,7 +109,7 @@ class DerivedFeature(Feature):
     source: MultiFeatureSource  # Source features where the feature is derived from
 
 
-class FeatureName(BaseModel):
+class FeatureName(FeathrModel):
     """
     Named Feature Interface that can be backed by multiple Feature implementations across
     different environments accessing different sources (data lake access for batch training,
@@ -122,9 +121,11 @@ class FeatureName(BaseModel):
     id: FeatureNameId  # unique ID for FeatureName, used to extract data for current FeatureName
     project_id: ProjectId  # ID of the project the FeatureName belongs to
     feature_ids: List[FeatureId]  # List of ids of feature that the FeatureName has
+    semanticVersion: Optional[SemanticVersion]  # Semantic version associated with this FeatureName
+    featureType: Optional[FeatureType]  # Information about featureName, like feature type, format and value.
 
 
-class Project(BaseModel):
+class Project(FeathrModel):
     """
     Group of FeatureNames. It can be a project the team is working on,
     or a namespace which related FeatureNames have.
@@ -134,7 +135,7 @@ class Project(BaseModel):
     anchor_ids: List[AnchorId]   # List of Anchor ids that the project has
 
 
-class Anchor(BaseModel):
+class Anchor(FeathrModel):
     """
     Group of AnchorFeatures which anchored on same DataSource.
     This is mainly used by feature producer gather information about DataSource

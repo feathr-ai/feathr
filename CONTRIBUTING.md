@@ -40,7 +40,11 @@ Our open source community strives to:
 - **Be respectful**: We are a world-wide community of professionals, and we conduct ourselves professionally. Disagreement is no excuse for poor behavior and poor manners.
 - **Understand disagreements**: Disagreements, both social and technical, are useful learning opportunities. Seek to understand the other viewpoints and resolve differences constructively.
 - **Remember that we’re different**. The strength of our community comes from its diversity, people from a wide range of backgrounds. Different people have different perspectives on issues. Being unable to understand why someone holds a viewpoint doesn’t mean that they’re wrong. Focus on helping to resolve issues and learning from mistakes.
+- 
 
 ## Attribution & Acknowledgements
 
 This code of conduct is based on the Open Code of Conduct from the [TODOGroup](https://todogroup.org/blog/open-code-of-conduct/).
+
+# Committers
+Benjamin Le, David Stein, Edwin Cheung, Hangfei Lin, Jimmy Guo, Jinghui Mo, Li Lu, Rama Ramani, Ray Zhang, Xiaoyong Zhu

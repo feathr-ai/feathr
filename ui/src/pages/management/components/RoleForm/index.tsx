@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useState } from "react";
 import { Form, Select, Input, Button, message } from "antd";
-import { listUserRole, addUserRole } from "../../../../api";
+import { listUserRole, addUserRole } from "@/api";
 
 export interface RoleFormProps {
   getRole?: (isAdmin: boolean) => void;
@@ -92,7 +92,9 @@ const RoleForm = (props: RoleFormProps, ref: any) => {
       <Item label="Scope" name="scope" rules={ValidateRule.scope}>
         <Select
           showSearch
-          placeholder="Select project Name or Global"
+          placeholder={
+            'Select project name in the drop-down list, or use "global" to grant access for all the projects.'
+          }
           options={scopeOptions}
           filterOption={(input: string, option?: any) => {
             return (option!.value as unknown as string)

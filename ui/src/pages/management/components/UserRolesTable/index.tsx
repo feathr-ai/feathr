@@ -6,12 +6,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Table, Tag, Button, message, Popconfirm } from "antd";
+import { Tag, Button, message, Popconfirm } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import { ColumnsType } from "antd/lib/table";
 import dayjs from "dayjs";
-import { UserRole } from "../../../../models/model";
-import { listUserRole, deleteUserRole } from "../../../../api";
+import { UserRole } from "@/models/model";
+import { listUserRole, deleteUserRole } from "@/api";
+import ResizeTable, { ResizeColumnType } from "@/components/ResizeTable";
 
 export interface UserRolesTableProps {}
 
@@ -74,25 +74,32 @@ const UserRolesTable = (props: UserRolesTableProps, ref: any) => {
     }
   };
 
-  const columns: ColumnsType<UserRole> = [
+  const columns: ResizeColumnType<UserRole>[] = [
     {
+      key: "scope",
       title: "Scope (Project / Global)",
       dataIndex: "scope",
       ellipsis: true,
+      width: 330,
+      minWidth: 190,
     },
     {
       title: "Role",
       dataIndex: "roleName",
+      ellipsis: true,
       width: 120,
     },
     {
       title: "User",
       dataIndex: "userName",
       ellipsis: true,
+      width: 300,
+      minWidth: 100,
     },
     {
       title: "Permissions",
       dataIndex: "access",
+      ellipsis: true,
       width: 240,
       render: (col: string[]) => {
         return col.map((tag) => {
@@ -110,6 +117,7 @@ const UserRolesTable = (props: UserRolesTableProps, ref: any) => {
       title: "Reason",
       dataIndex: "createReason",
       ellipsis: true,
+      width: 300,
     },
     {
       title: "Create By",
@@ -138,6 +146,7 @@ const UserRolesTable = (props: UserRolesTableProps, ref: any) => {
       title: "Action",
       fixed: "right",
       width: 130,
+      resize: false,
       render: (col: string, record: UserRole) => {
         return (
           <Popconfirm
@@ -170,12 +179,12 @@ const UserRolesTable = (props: UserRolesTableProps, ref: any) => {
   }, [fetchData]);
 
   return (
-    <Table
+    <ResizeTable
       rowKey="id"
       loading={loading}
       columns={columns}
       dataSource={tableData}
-      scroll={{ x: 1200 }}
+      scroll={{ x: "100%" }}
     />
   );
 };
