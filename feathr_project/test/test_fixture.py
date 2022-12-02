@@ -363,7 +363,7 @@ def registry_test_setup_append(config_path: str):
     client.build_features(anchor_list=[agg_anchor, request_anchor], derived_feature_list=derived_feature_list)
     return client
 
-def registry_test_setup_update(config_path: str, project_name: str):
+def registry_test_setup_for_409(config_path: str, project_name: str):
     now = datetime.now()
     os.environ["project_config__project_name"] =  project_name
 
