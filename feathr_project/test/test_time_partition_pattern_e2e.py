@@ -9,7 +9,7 @@ from feathr import HdfsSink
 from feathr.utils.job_utils import get_result_df, copy_cloud_dir, cloud_dir_exists
 from test_fixture import (basic_test_setup, time_partition_pattern_feature_gen_test_setup, time_partition_pattern_feature_join_test_setup)
 from test_utils.constants import Constants
-
+'''
 def setup_module():
     """
     Prepare data sources for 'timePartitionPattern' test cases
@@ -59,7 +59,7 @@ def setup_module():
         copy_cloud_dir(client_producer, source_url, output_hourly_path)
         res_df_hourly = get_result_df(client_producer, data_format="avro", res_url=output_hourly_path)
         assert res_df_hourly.shape[0] > 0
-
+'''
 def test_feathr_materialize_with_time_partition_pattern():
     """
     Test FeathrClient() using HdfsSource with 'timePartitionPattern'.
