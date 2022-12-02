@@ -86,6 +86,22 @@ def get_projects_ids() -> dict:
 def get_projects(project: str) -> dict:
     return registry.get_project(project).to_dict()
 
+@router.get("/dependent/{entity}")
+def get_dependent_entities(entity: str) -> list:
+    entity_id = registry.get_entity_id(entity)
+    downstream_entities = registry.get_dependent_entities(entity_id)
+    return list([e.to_dict() for e in downstream_entities])
+
+@router.delete("/entity/{entity}")
+def delete_entity(entity: str):
+    entity_id = registry.get_entity_id(entity)
+    downstream_entities = registry.get_dependent_entities(entity_id)
+    if len(downstream_entities) > 0:
+        raise HTTPException(
+            status_code=412, detail=f"""Entity cannot be deleted as it has downstream/dependent entities.
+            Entities: {list([e.qualified_name for e in downstream_entities])}"""
+        )
+    registry.delete_entity(entity_id)
 
 @router.get("/projects/{project}/datasources")
 def get_project_datasources(project: str) -> list:
@@ -135,12 +151,10 @@ def get_feature(feature: str) -> dict:
             status_code=404, detail=f"Feature {feature} not found")
     return e.to_dict()
 
-
 @router.get("/features/{feature}/lineage")
 def get_feature_lineage(feature: str) -> dict:
     lineage = registry.get_lineage(feature)
     return lineage.to_dict()
-
 
 @router.post("/projects")
 def new_project(definition: dict) -> dict:

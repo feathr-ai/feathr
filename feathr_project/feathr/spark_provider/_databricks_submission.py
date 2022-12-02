@@ -291,7 +291,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
         result = RunsApi(self.api_client).get_run(self.res_job_id)
 
         if "new_cluster" in result["cluster_spec"]:
-            custom_tags = result["cluster_spec"]["new_cluster"]["custom_tags"]
+            custom_tags = result["cluster_spec"]["new_cluster"].get("custom_tags")
             return custom_tags
         else:
             # this is not a new cluster; it's an existing cluster.
