@@ -61,7 +61,7 @@ class SlidingWindowEmbeddingAggregation(Function):
     """
     Sliding window embedding aggregation produces a single embedding by performing element-wise operations or
     discretion on a collection of embeddings within a given time interval. It ensures point-in-time correctness,
-    when joining with label data, Frame looks back the configurable time window from each entry's timestamp and produce
+    when joining with label data, feathr looks back the configurable time window from each entry's timestamp and produce
     the aggregated embedding.
     """
     aggregationType: SlidingWindowEmbeddingAggregationType  # Represents supported types for embedding aggregation.

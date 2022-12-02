@@ -912,6 +912,18 @@ class _PurviewRegistry(FeathrRegistry):
             feature_list.append({"name":entity["name"],'id':entity['id'],"qualifiedName":entity['qualifiedName']})
 
         return feature_list
+    
+    def list_dependent_entities(self, qualified_name: str):
+        """
+        Returns list of dependent entities for provided entity
+        """
+        raise NotImplementedError("Delete functionality supported through API")
+
+    def delete_entity(self, qualified_name: str):
+        """
+        Deletes entity if it has no dependent entities
+        """
+        raise NotImplementedError("Delete functionality supported through API")
    
     def get_feature_by_fqdn_type(self, qualifiedName, typeName):
         """

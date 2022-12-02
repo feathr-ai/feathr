@@ -285,6 +285,9 @@ Response Type: `dict`
 ### `GET /projects/{project}`
 Get everything defined in the project
 
+### `GET /dependent/{entity}`
+Gets downstream/dependent entities for given entity
+
 Response Type: [`EntitiesAndRelationships`](#entitiesandrelationships)
 
 ### `GET /projects/{project}/datasources`
@@ -319,6 +322,9 @@ Response Type: Object
 |-----------------|-----------------------|-----------------------------|
 | entity          | [`Entity`](#entity)   |                             |
 | referredEntities| `map<string, object>` | For compatibility, not used |
+
+### `DELETE /entity/{entity}`
+Deletes entity
 
 ### `POST /projects`
 Create new project

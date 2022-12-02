@@ -37,7 +37,7 @@ def test_feathr_materialize_to_offline():
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-    
+
     now = datetime.now()
     if client.spark_runtime == 'databricks':
         output_path = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
@@ -55,7 +55,7 @@ def test_feathr_materialize_to_offline():
 
     # download result and just assert the returned result is not empty
     # by default, it will write to a folder appended with date
-    res_df = get_result_df(client, "avro", output_path + "/df0/daily/2020/05/20")
+    res_df = get_result_df(client, data_format="avro", res_url=output_path + "/df0/daily/2020/05/20")
     assert res_df.shape[0] > 0
 
 def test_feathr_online_store_agg_features():
@@ -411,7 +411,7 @@ def test_feathr_materialize_with_time_partition_pattern():
         output_path = 'dbfs:/timePartitionPattern_test'
     else:
         output_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_test'
-    
+
     offline_sink = HdfsSink(output_path=output_path)
     settings = MaterializationSettings("nycTaxiTable",
                 sinks=[offline_sink],
@@ -426,7 +426,7 @@ def test_feathr_materialize_with_time_partition_pattern():
     # by default, it will write to a folder appended with date
     res_df = get_result_df(client_producer, "avro", output_path + "/df0/daily/2020/05/20")
     assert res_df.shape[0] > 0
-    
+
     client_consumer: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), output_path+'/df0/daily')
 
     backfill_time_tpp = BackfillTime(start=datetime(
@@ -451,8 +451,8 @@ def test_feathr_materialize_with_time_partition_pattern():
     # by default, it will write to a folder appended with date
     res_df = get_result_df(client_consumer, "avro", output_path_tpp + "/df0/daily/2020/05/20")
     assert res_df.shape[0] > 0
-    
-    
+
+
 if __name__ == "__main__":
     test_feathr_materialize_to_aerospike()
     test_feathr_get_offline_features_to_sql()

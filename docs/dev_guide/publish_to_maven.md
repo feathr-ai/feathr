@@ -10,8 +10,10 @@ parent: Developer Guides
 ---
 
 ### Prerequisites
-- Install JDK8, for macOS: `brew install --cask adoptopenjdk`
-- Install SBT, for macOS: `brew install sbt`
+- Install JDK8, for macOS: 
+  `brew tap adoptopenjdk/openjdk
+   brew install --cask adoptopenjdk8`
+- Install Gradle, for macOS: `brew install gradle`
 - Install GPG, for macOS: `brew install gpg`
 - Sonatype account credential
 
@@ -27,7 +29,7 @@ parent: Developer Guides
                 "Central Repo Test <central@example.com>"
             Change (N)ame, (E)mail, or (O)kay/(Q)uit? O
             ```
-     * Save key passphrase, which is needed during the sbt publishSigned step
+     * Save key passphrase, which is needed during the gradle publishSigned step
      * Verify your gpg metadata, and note the uid. In this example it is `CA925CD6C9E8D064FF05B4728190C4130ABA0F98`
         *   ```
             $ gpg --list-keys
@@ -47,45 +49,49 @@ parent: Developer Guides
             * upload to http://keyserver.ubuntu.com/ via `submit key`
 
         * Upload via command line. Currently this hasn't succeeded, if succeeded, please alter the steps here with your fix.
-            *   ```
+            * ```
                 $ gpg --keyserver keyserver.ubuntu.com --recv-keys CA925CD6C9E8D064FF05B4728190C4130ABA0F98
                 ```
+        * Export your keyring file to somewhere on your disk (not to be checked in).
+          * ```
+              $ gpg --export-secret-keys --armor <key id> <path to secring.gpg>
+              ```
 ---
 
 2.  Set up `Sonatype` credentials    
     * Get account details to login to https://oss.sonatype.org/. Reachout to Feathr team, such as @jaymo001, @hangfei or @blrchen
-    * Setup the credentials locally
-        * Create sonatype configuration file
-            *   ```
-                vim $HOME/.sbt/1.0/sonatype.sbt
-                ```
-        * Paste the following with the sonatype credentials
-            *   ```
-                credentials += Credentials("Sonatype Nexus Repository Manager",
-                        "oss.sonatype.org",
-                        "<REPLACE_WITH_SONATYPE_USERNAME>",
-                        "<REPLACE_WITH_SONATYPE_PASSWORD>")
-                ```
----
-3. Increase version number in build.sbt, search for `ThisBuild / version` and replace the version number with the next version number.
-    *   ```
-        ThisBuild / version          := "0.6.0"
-        ```
+      * Setup the credentials locally
+                  ```
+          * Paste the following with the sonatype credentials to your gradle.properties file
+              *   ```
+                  signing.keyId=<Last 8 characters from your gpg key>
+                  signing.password=<Password used to created your gpg key>
+                  signing.secretKeyRingFile=<path to secring.gpg>
+                  mavenCentralUsername=<sonatype user name>
+                  mavenCentralPassword=<sonatype password>
 
+                  ```
 ---
-4. Publish to sonatype/maven via sbt
+3. Increase version number in gradle.properties and build.gradle files, and replace the version number with the next version number.
+    *   ```
+        version="0.6.0"
+        ```
+4. Publish to sonatype/maven via gradle
     * In your feathr directory, clear your cache to prevent stale errors
         *   ```
-            rm -rf target/sonatype-staging/
+            rm -rf build/
             ```
-    * Start sbt console by running
-        *   ```
-            sbt -java-home /Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
+    * Execute command in your terminal to publish to sonatype staging
+        * ```
+            ./gradlew publish -Dorg.gradle.java.home=<jdk/path>
             ```
-    * Execute command in sbt console to publish to maven
-        *   ```
-            reload; publishSigned; sonatypeBundleRelease
-            ```
+    * Execute command in your terminal release the staged artifact into central maven.
+        * ```
+             ./gradlew closeAndReleaseRepository -Dorg.gradle.java.home=<jdk/path>
+    * To publish to local maven, execute the below command
+      * ```
+           ./gradlew publishToMavenLocal -Dorg.gradle.java.home=<jdk/path>
+           ```
 ---
 
 5. Upon release, new version will be published to Central: this typically occurs within 30 minutes, though updates to search can take up to 24 hours. See the [Sonatype documentation](https://central.sonatype.org/publish/publish-guide/#releasing-to-central) for more information.
@@ -95,8 +101,9 @@ parent: Developer Guides
 6. After new version is released via Maven, use the released version to run a test to ensure it actually works. You can do this by running a codebase that imports Feathr scala code.
 
 ## Troubleshooting
-- If you get something like `[error] gpg: signing failed: Inappropriate ioctl for device`, run `export GPG_TTY=$(tty)` in your terminal and restart sbt console.
-- If the published jar fails to run in Spark with error `java.lang.UnsupportedClassVersionError: com/feathr-ai/feathr/common/exception/FeathrInputDataException has been compiled by a more recent version of the Java Runtime (class file version 62.0), this version of the Java Runtime only recognizes class file versions up to 52.0`, make sure you complied with the right Java version with -java-home parameter in sbt console.
+- If you get something like `[error] gpg: signing failed: Inappropriate ioctl for device`, run `export GPG_TTY=$(tty)` in your terminal and restart console.
+- If the published jar fails to run in Spark with error `java.lang.UnsupportedClassVersionError: com/feathr-ai/feathr/common/exception/FeathrInputDataException has been compiled by a more recent version of the Java Runtime (class file version 62.0), this version of the Java Runtime only recognizes class file versions up to 52.0`, 
+  make sure you complied with the right Java version with -Dorg.gradle.java.home parameter in your console.
 
 ## CI Automatic Publishing
 There is a Github Action that automates the above process, you can find it [here](../../.github/workflows/publish-to-maven.yml). This action is triggered anytime a new tag is created, which is usually for release purposes. To manually trigger the pipeline for testing purposes tag can be created using following commands
@@ -138,28 +145,18 @@ Following are some of the things to keep in mind while attempting to do somethin
     uid           [ultimate] YOUR NAME <YOUR_EMAIL>
     ssb   abc123 2022-08-24 [E] [expires: 2024-08-23]
     ```
-1. Make sure you are using the right credential host in [sonatype.sbt](../../sonatype.sbt)
+1. Make sure you are using the right credential host in [build.gradle](../../build.gradle)
     - For accounts created before Feb 2021 use __oss.sonatype.org__ 
     - For accounts created after Feb 2021 use __s01.oss.sonatype.org__
-    
-
-1. Make sure you are using latest release of sbt-pgp package, or atleast the one close to the dev box on which gpg keypair is generated. You can change the version in [build.sbt](../../build.sbt)
-    ```bash
-    addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.1.2")
-    ```
-
-1. We are using sbt-ci-release plugin, that makes the publishing process easier. Read more about it [here](https://github.com/sbt/sbt-ci-release). You can add this in [build.sbt](../../build.sbt)
-    ```bash
-    addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.5.10")
     ```
 ### References
 
-- https://github.com/xerial/sbt-sonatype
+- https://github.com/johnsonlee/sonatype-publish-plugin
 
 - https://www.linuxbabe.com/security/a-practical-guide-to-gpg-part-1-generate-your-keypair
 
 - https://central.sonatype.org/publish/publish-guide/#deployment
 
-- https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html
+- https://blog.sonatype.com/new-sonatype-scan-gradle-plugin
 
-- https://github.com/sbt/sbt-ci-release
+- https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
