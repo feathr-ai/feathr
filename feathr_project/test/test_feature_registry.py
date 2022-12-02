@@ -69,7 +69,7 @@ class FeatureRegistryTests(unittest.TestCase):
         client: FeathrClient = registry_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
         client.register_features()
         time.sleep(30)
-        [full_registration, keys] = client.get_features_from_registry(client.project_name, return_keys = True, verbose = True)
+        full_registration, keys = client.get_features_from_registry(client.project_name, return_keys = True, verbose = True)
         assert len(keys['f_location_avg_fare']) == 2
         
         now = datetime.now()
