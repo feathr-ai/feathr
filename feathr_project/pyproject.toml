@@ -11,7 +11,8 @@ multi_line_output = 3
 
 [tool.pytest.ini_options]
 markers = [
-    "notebooks: Jupyter notebook tests",
+    "notebooks: Jupyter notebook tests. Target Spark platform can be either Azure Synapse, Databricks, or Local Spark.",
+    "databricks: Jupyter notebook tests. Target Spark platform must be Databricks",
 ]
 
 [build-system]

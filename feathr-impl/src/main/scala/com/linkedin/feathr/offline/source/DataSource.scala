@@ -22,10 +22,14 @@ private[offline] case class DataSource(
                                         val location: DataLocation,
                                         sourceType: SourceFormatType,
                                         timeWindowParams: Option[TimeWindowParams],
-                                        timePartitionPattern: Option[String])
+                                        timePartitionPattern: Option[String],
+                                        postfixPath: Option[String]
+                                       )
   extends Serializable {
   private lazy val ss: SparkSession = SparkSession.builder().getOrCreate()
   val path: String = resolveLatest(location.getPath, None)
+  // 'postfixPath' only works for paths with timePartitionPattern
+  val postPath: String = if(timePartitionPattern.isDefined && postfixPath.isDefined) postfixPath.get else ""
   val pathList: Array[String] =
     if (location.isInstanceOf[SimplePath] && sourceType == SourceFormatType.LIST_PATH) {
       path.split(";").map(resolveLatest(_, None))
@@ -64,9 +68,12 @@ object DataSource {
   def apply(rawPath: String,
             sourceType: SourceFormatType,
             timeWindowParams: Option[TimeWindowParams] = None,
-            timePartitionPattern: Option[String] = None): DataSource = DataSource(SimplePath(rawPath), sourceType, timeWindowParams, timePartitionPattern)
+            timePartitionPattern: Option[String] = None,
+            postfixPath: Option[String] = None
+            ): DataSource = DataSource(SimplePath(rawPath), sourceType, timeWindowParams, timePartitionPattern, postfixPath)
+
 
   def apply(inputLocation: DataLocation,
-            sourceType: SourceFormatType): DataSource = DataSource(inputLocation, sourceType, None, None)
+            sourceType: SourceFormatType): DataSource = DataSource(inputLocation, sourceType, None, None, None)
 
 }

@@ -39,6 +39,8 @@ extras_require=dict(
         "matplotlib==3.6.1",
         "papermill>=2.1.2,<3",      # to test run notebooks
         "scrapbook>=0.5.0,<1.0.0",  # to scrap notebook outputs
+        "scikit-learn",             # for notebook examples
+        "plotly",                   # for plotting
     ],
 )
 extras_require["all"] = list(set(sum([*extras_require.values()], [])))

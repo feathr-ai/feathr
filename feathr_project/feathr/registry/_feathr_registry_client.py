@@ -136,6 +136,23 @@ class _FeatureRegistry(FeathrRegistry):
             "id": r["guid"],
             "qualifiedName": r["attributes"]["qualifiedName"],
         } for r in resp]
+    
+    def list_dependent_entities(self, qualified_name: str):
+        """
+        Returns list of dependent entities for provided entity
+        """
+        resp = self._get(f"/dependent/{qualified_name}")
+        return [{
+            "name": r["attributes"]["name"],
+            "id": r["guid"],
+            "qualifiedName": r["attributes"]["qualifiedName"],
+        } for r in resp]
+    
+    def delete_entity(self, qualified_name: str):
+        """
+        Deletes entity if it has no dependent entities
+        """
+        self._delete(f"/entity/{qualified_name}")
 
     def get_features_from_registry(self, project_name: str) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]:
         """
@@ -187,6 +204,10 @@ class _FeatureRegistry(FeathrRegistry):
     def _get(self, path: str) -> dict:
         logging.debug("PATH: ", path)
         return check(requests.get(f"{self.endpoint}{path}", headers=self._get_auth_header())).json()
+    
+    def _delete(self, path: str) -> dict:
+        logging.debug("PATH: ", path)
+        return check(requests.delete(f"{self.endpoint}{path}", headers=self._get_auth_header())).json()
 
     def _post(self, path: str, body: dict) -> dict:
         logging.debug("PATH: ", path)
