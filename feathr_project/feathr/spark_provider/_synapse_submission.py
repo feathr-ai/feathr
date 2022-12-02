@@ -10,10 +10,11 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from os.path import basename
 from enum import Enum
+import tempfile
 from azure.identity import (ChainedTokenCredential, DefaultAzureCredential,
                             DeviceCodeCredential, EnvironmentCredential,
                             ManagedIdentityCredential)
-from azure.storage.filedatalake import DataLakeServiceClient
+from azure.storage.filedatalake import DataLakeServiceClient, DataLakeDirectoryClient
 from azure.synapse.spark import SparkClient
 from azure.synapse.spark.models import SparkBatchJobOptions
 from loguru import logger
@@ -60,16 +61,37 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         self._synapse_dev_url = synapse_dev_url
         self._pool_name = pool_name
 
-    def upload_or_get_cloud_path(self, local_path_or_http_path: str):
+    def upload_or_get_cloud_path(self, local_path_or_cloud_src_path: str, tar_dir_path: Optional[str] = None):
         """
-        Supports transferring file from an http path to cloud working storage, or upload directly from a local storage.
+        Supports transferring file from an http path to cloud working storage, or upload directly from a local storage,
+        or copying files from a source datalake directory to a target datalake directory
         """
-        logger.info('Uploading {} to cloud..', local_path_or_http_path)
+        if local_path_or_cloud_src_path.startswith('abfs') or local_path_or_cloud_src_path.startswith('wasb'):
+            if tar_dir_path is None or not (tar_dir_path.startswith('abfs') or tar_dir_path.startswith('wasb')):
+                raise RuntimeError(
+                f"Failed to copy files from dbfs directory: {local_path_or_cloud_src_path}. {tar_dir_path} is not a valid target directory path"
+            )
+            [_, source_exist] = self._datalake._dir_exists(local_path_or_cloud_src_path)
+            if not source_exist:
+                raise RuntimeError(f"Source folder:{local_path_or_cloud_src_path} doesn't exist. Please make sure it's a valid path")
+            [dir_client, target_exist] = self._datalake._dir_exists(tar_dir_path)
+            if target_exist:
+                logger.warning('Target cloud directory {} already exists. Please use another one.', tar_dir_path)
+                return tar_dir_path
+            dir_client.create_directory()
+            tem_dir_obj = tempfile.TemporaryDirectory()
+            self._datalake.download_file(local_path_or_cloud_src_path, tem_dir_obj.name)
+            self._datalake.upload_file_to_workdir(tem_dir_obj.name, tar_dir_path, dir_client)
+            logger.info('{} is uploaded to location: {}',
+                    local_path_or_cloud_src_path, tar_dir_path)
+            return tar_dir_path
+                            
+        logger.info('Uploading {} to cloud..', local_path_or_cloud_src_path)
         res_path = self._datalake.upload_file_to_workdir(
-            local_path_or_http_path)
+            local_path_or_cloud_src_path)
 
         logger.info('{} is uploaded to location: {}',
-                    local_path_or_http_path, res_path)
+                    local_path_or_cloud_src_path, res_path)
         return res_path
 
     def download_result(self, result_path: str, local_folder: str):
@@ -78,6 +100,15 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
         """
 
         return self._datalake.download_file(result_path, local_folder)
+    
+    
+    def cloud_dir_exists(self, dir_path: str) -> bool:
+        """
+        Checks if a directory already exists in the datalake
+        """
+        
+        [_, exists] = self._datalake._dir_exists(dir_path)
+        return exists
 
     def submit_feathr_job(self, job_name: str, main_jar_path: str = None,  main_class_name: str = None, arguments: List[str] = None,
                           python_files: List[str]= None, reference_files_path: List[str] = None, job_tags: Dict[str, str] = None,
@@ -373,7 +404,7 @@ class _DataLakeFiler(object):
         self.datalake_dir = datalake_dir + \
             '/' if datalake_dir[-1] != '/' else datalake_dir
 
-    def upload_file_to_workdir(self, src_file_path: str) -> str:
+    def upload_file_to_workdir(self, src_file_path: str, tar_dir_path: Optional[str] = "", tar_dir_client: Optional[DataLakeDirectoryClient] = None) -> str:
         """
         Handles file upload to the corresponding datalake storage. If a path starts with "wasb" or "abfs",
         it will skip uploading and return the original path; otherwise it will upload the source file to the working
@@ -399,24 +430,32 @@ class _DataLakeFiler(object):
             if os.path.isdir(src_file_path):
                 logger.info("Uploading folder {}", src_file_path)
                 dest_paths = []
-                for item in Path(src_file_path).glob('**/*.conf'):
-                    returned_path = self.upload_file(item.resolve())
-                    dest_paths.extend([returned_path])
+                if tar_dir_client is not None:
+                    # Only supports uploading local files/dir to datalake dir for now
+                     for item in Path(src_file_path).iterdir():
+                        returned_path = self.upload_file(item.resolve(), tar_dir_path, tar_dir_client)
+                        dest_paths.extend([returned_path]) 
+                else:
+                    for item in Path(src_file_path).glob('**/*.conf'):
+                        returned_path = self.upload_file(item.resolve())
+                        dest_paths.extend([returned_path])
                 returned_path = ','.join(dest_paths)
             else:
                 returned_path = self.upload_file(src_file_path)
         return returned_path
 
-    def upload_file(self, src_file_path)-> str:
+    def upload_file(self, src_file_path, tar_dir_path: Optional[str]="", tar_dir_client: Optional[DataLakeDirectoryClient] = None)-> str:
         file_name = basename(src_file_path)
         logger.info("Uploading file {}", file_name)
-        file_client = self.dir_client.create_file(file_name)
-        returned_path = self.datalake_dir + file_name
+        # TODO: add handling for only tar_dir_client or tar_dir_path is provided
+        file_client = self.dir_client.create_file(file_name) if tar_dir_client is None else tar_dir_client.create_file(file_name)
+        returned_path = self.datalake_dir + file_name if tar_dir_path == "" else tar_dir_path + file_name
         with open(src_file_path, 'rb') as f:
             data = f.read()
             file_client.upload_data(data, overwrite=True)
         logger.info("{} is uploaded to location: {}", src_file_path, returned_path)
         return returned_path
+        
 
     def download_file(self, target_adls_directory: str, local_dir_cache: str):
         """
@@ -473,4 +512,16 @@ class _DataLakeFiler(object):
                 local_file.write(downloaded_bytes)
                 local_file.close()
             except Exception as e:
-                logger.error(e)
+                logger.error(e)       
+                
+    def _dir_exists(self, dir_path:str):
+        '''
+        Check if a directory in datalake already exists. Will also return the directory client
+        '''
+        datalake_path_split = list(filter(None, re.split('/|@', dir_path)))
+        if len(datalake_path_split) <= 3:
+            raise RuntimeError("Invalid directory path for datalake: {dir_path}")
+        dir_client = self.file_system_client.get_directory_client(
+                '/'.join(datalake_path_split[3:]))
+        return [dir_client, dir_client.exists()]
+        
