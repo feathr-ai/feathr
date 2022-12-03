@@ -10,8 +10,8 @@ buildscript {
   buildscript.repositories.addAll(project.repositories)
   dependencies {
     classpath 'com.linkedin.pegasus:gradle-plugins:' + pegasusVersion
-    classpath 'net.snowflake:3.13.18'
-    classpath 'net.snowflake:2.10.0-spark_3.2'
+    classpath 'net.snowflake:snowflake-jdbc:3.13.18'
+    classpath 'net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2'
     classpath 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
     classpath 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
   }
