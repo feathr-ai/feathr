@@ -29,14 +29,15 @@ def workspace_dir() -> str:
     return str(Path(__file__).parent.resolve().joinpath("test_user_workspace"))
 
 
-@pytest.fixture
-def mock_data_path(workspace_dir):
-    return str(Path(workspace_dir).joinpath(
-        "mockdata",
-        "feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net",
-        "demo_data",
-        "green_tripdata_2020-04.csv",
-    ))
+# TODO we can use this later
+# @pytest.fixture
+# def mock_data_path(workspace_dir):
+#     return str(Path(workspace_dir).joinpath(
+#         "mockdata",
+#         "feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net",
+#         "demo_data",
+#         "green_tripdata_2020-04.csv",
+#     ))
 
 
 @pytest.fixture(scope="function")
