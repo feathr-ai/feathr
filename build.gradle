@@ -10,10 +10,6 @@ buildscript {
   buildscript.repositories.addAll(project.repositories)
   dependencies {
     classpath 'com.linkedin.pegasus:gradle-plugins:' + pegasusVersion
-    classpath 'net.snowflake:snowflake-jdbc:3.13.18'
-    classpath 'net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2'
-    classpath 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
-    classpath 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
   }
 }
 
@@ -59,6 +55,7 @@ jar {
   from {
     configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
   }
+  zip64 = true
 }
 
 dependencies {
@@ -68,6 +65,10 @@ dependencies {
   implementation project(":feathr-impl")
   // needed to include data models in jar
   extraLibs project(path: ':feathr-data-models', configuration: 'dataTemplate')
+  implementation 'net.snowflake:snowflake-jdbc:3.13.18'
+  implementation 'net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2'
+  implementation 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
+  implementation 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
 }
 
 ext {
