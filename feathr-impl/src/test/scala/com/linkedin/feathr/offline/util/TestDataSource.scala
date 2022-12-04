@@ -86,7 +86,7 @@ class TestDataSource extends TestFeathr {
   @Test(description = "Test resolve latest")
   def testResolveLatest(): Unit = {
       val path = SimplePath("src/test/resources/decayTest/daily/#LATEST/#LATEST/#LATEST")
-      assertEquals(new DataSource(path, SourceFormatType.FIXED_PATH, None, None).path,
+      assertEquals(new DataSource(path, SourceFormatType.FIXED_PATH, None, None, None).path,
         "src/test/resources/decayTest/daily/2019/05/20")
   }
 }

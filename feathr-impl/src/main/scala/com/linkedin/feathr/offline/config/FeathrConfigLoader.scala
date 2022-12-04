@@ -723,6 +723,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
     }
 
     val timePartitionPattern = Option(node.get("timePartitionPattern")).map(_.textValue())
+    val postfixPath = Option(node.get("postfixPath")).map(_.textValue())
 
     // Check for time-stamped features (hasTimeSnapshot) or time-window features (isTimeSeries)
     val sourceFormatType =
@@ -802,7 +803,7 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
     if (path.isInstanceOf[KafkaEndpoint]) {
       DataSource(path, sourceFormatType)
     } else {
-      DataSource(path, sourceFormatType, Option(timeWindowParameters), timePartitionPattern)
+      DataSource(path, sourceFormatType, Option(timeWindowParameters), timePartitionPattern, postfixPath)
     }
   }
 }
