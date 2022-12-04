@@ -69,6 +69,10 @@ dependencies {
   implementation 'net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2'
   implementation 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
   implementation 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
+  implementation 'com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21'
+  implementation 'org.eclipse.jetty:jetty-util:9.3.24.v20180605'
+  implementation 'org.apache.kafka:kafka-clients:3.1.0'
+
 }
 
 ext {
