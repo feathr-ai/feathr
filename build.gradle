@@ -73,6 +73,7 @@ dependencies {
   implementation 'com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8'
   implementation 'org.eclipse.jetty:jetty-util:9.3.24.v20180605'
   implementation 'org.apache.kafka:kafka-clients:3.1.0'
+  implementation 'org.apache.spark:spark-core_2.12:3.1.3'
 
 }
 
