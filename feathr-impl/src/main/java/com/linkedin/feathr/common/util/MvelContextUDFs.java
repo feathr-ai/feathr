@@ -365,6 +365,31 @@ public class MvelContextUDFs {
   }
 
   /**
+   * Returns a standard dotProduct of two vector objects.
+   * Use {@link MvelContextUDFs#cosineSimilarity(Object, Object)} for normalized dot-product.
+   */
+  @ExportToMvel
+  public static Double dotProduct(Object obj1, Object obj2) {
+    if (obj1 == null || obj2 == null) {
+      return null;
+    }
+    Map<String, Float> mapA = CoercionUtils.coerceToVector(obj1);
+    Map<String, Float> mapB = CoercionUtils.coerceToVector(obj2);
+    double dotProduct = 0;
+
+    for (Map.Entry<String, Float> entry : mapA.entrySet()) {
+      String k = entry.getKey();
+      float valA = entry.getValue();
+      Float valB = mapB.get(k);
+      if (valB != null) {
+        dotProduct += ((double) valA * valB);
+      }
+    }
+
+    return dotProduct;
+  }
+
+  /**
    * convert input to lower case string
    * @param input input string
    * @return lower case input
