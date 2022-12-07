@@ -35,9 +35,8 @@ extras_require=dict(
         "pytest-mock>=3.8.1",
     ],
     notebook=[
-        "azure-cli",                # Azure CLI credentials
-        "jupyter==1.0.0",
-        "matplotlib==3.6.1",
+        "jupyter>=1.0.0",
+        "matplotlib>=3.6.1",
         "papermill>=2.1.2,<3",      # to test run notebooks
         "scrapbook>=0.5.0,<1.0.0",  # to scrap notebook outputs
         "scikit-learn",             # for notebook examples
