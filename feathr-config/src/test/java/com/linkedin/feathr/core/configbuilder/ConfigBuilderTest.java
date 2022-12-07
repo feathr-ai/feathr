@@ -20,15 +20,4 @@ public class ConfigBuilderTest {
       fail("Test failed", e);
     }
   }
-
-  @Test
-  public void testFeatureCareers() {
-    ConfigBuilder configBuilder = ConfigBuilder.get();
-    try {
-      FeatureDefConfig obsFeatureDefConfigObj
-          = configBuilder.buildFeatureDefConfig("frame-feature-careers-featureDef-offline.conf");
-    } catch (ConfigBuilderException e) {
-      fail("Test failed", e);
-    }
-  }
 }

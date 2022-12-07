@@ -20,14 +20,6 @@ public class FrameConfigFileCheckerTest {
     _classLoader = Thread.currentThread().getContextClassLoader();
   }
 
-  @Test(description = "A valid Frame config file with valid syntax should return true.")
-  public void testValidFrameConfigFile() {
-    URL url = _classLoader.getResource("frame-feature-careers-featureDef-offline.conf");
-
-    boolean configFile = FrameConfigFileChecker.isConfigFile(url);
-    assertTrue(configFile);
-  }
-
   @Test(description = "Test that a txt file should throw exception.", expectedExceptions = ConfigBuilderException.class)
   public void testTxtFile() {
     URL url = _classLoader.getResource("Foo.txt");
