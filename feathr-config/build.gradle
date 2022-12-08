@@ -18,8 +18,8 @@ repositories {
 dependencies {
   implementation project(":feathr-data-models")
   implementation project(path: ':feathr-data-models', configuration: 'dataTemplate')
-  implementation spec.product.avro
-  implementation spec.product.pegasus.data
+  compileOnly spec.product.pegasus.data
+  compileOnly spec.product.avro
   implementation spec.product.typesafe_config
   implementation spec.product.log4j
   implementation spec.product.jsonSchemaVali

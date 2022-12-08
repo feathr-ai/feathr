@@ -91,10 +91,10 @@ ext {
 project.ext.spec = [
     'product' : [
         'pegasus' : [
-            'd2' : 'com.linkedin.pegasus:d2:29.33.3',
-            'data' : 'com.linkedin.pegasus:data:29.33.3',
-            'dataAvro1_6' : 'com.linkedin.pegasus:data-avro-1_6:29.33.3',
-            'generator': 'com.linkedin.pegasus:generator:29.33.3',
+            'd2' : 'com.linkedin.pegasus:d2:29.40.11',
+            'data' : 'com.linkedin.pegasus:data:29.40.11',
+            'dataAvro1_6' : 'com.linkedin.pegasus:data-avro-1_6:29.40.11',
+            'generator': 'com.linkedin.pegasus:generator:29.40.11',
         ],
         'jackson' : [
             'dataformat_csv' : "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.12.6",
