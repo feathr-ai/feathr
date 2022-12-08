@@ -466,7 +466,7 @@ def time_partition_pattern_feature_join_test_setup(config_path: str, data_source
                           postfix_path=postfix_path
                         )
     tpp_key = TypedKey(key_column="f_location_max_fare",
-                    key_column_type=FLOAT)
+                    key_column_type=ValueType.FLOAT)
     tpp_features = [
     Feature(name="key0",
             key=tpp_key,

@@ -144,49 +144,4 @@ public class ConfigValidatorTest {
       fail("Caught exception: " + e.getMessage(), e);
     }
   }
-
-  /**
-   * In galene library, Frame-Galene online scoring uses frame-core to read frame-galene.conf as FeatureDef conf.
-   * For now, we need to make sure the syntax used in frame-galene.conf is supported in validation
-   */
-  @Test(description = "Tests syntax validation of an valid Frame-Galene scoring config")
-  public void testFrameGaleneScoringConfigWithValidSyntax() {
-    try (ConfigDataProvider cdp = new ResourceConfigDataProvider("frame-galene.conf")) {
-      ValidationResult obsResult = _validator.validate(FeatureDef, SYNTACTIC, cdp);
-      if (obsResult.getValidationStatus() != VALID) {
-        String details = obsResult.getDetails().orElse("");
-      }
-
-      assertEquals(obsResult.getValidationStatus(), VALID);
-
-    } catch (Exception e) {
-      fail("Caught exception: " + e.getMessage(), e);
-    }
-  }
-
-  @Test(description = "Tests build of identifying valid FrameGalene configs")
-  public void testFrameGaleneConfigValidCases() {
-    ConfigRenderOptions _renderOptions = ConfigRenderOptions.defaults()
-        .setComments(false)
-        .setOriginComments(false)
-        .setFormatted(true)
-        .setJson(true);
-    ConfigParseOptions _parseOptions = ConfigParseOptions.defaults()
-        .setSyntax(ConfigSyntax.CONF)   // HOCON document
-        .setAllowMissing(false);
-    InputStream inputStream = JoinConfig.class.getClassLoader()
-        .getResourceAsStream("FeatureDefConfigSchema.json");
-    JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
-    Schema schema = SchemaLoader.load(rawSchema);
-    Config myCfg = ConfigFactory.parseResources("frame-feature-careers-featureDef-offline.conf", _parseOptions);
-    String jsonStr = myCfg.root().render(_renderOptions);
-    JSONTokener tokener = new JSONTokener(jsonStr);
-    JSONObject root = new JSONObject(tokener);
-    try {
-      schema.validate(root);
-    } catch (ValidationException e) {
-      System.out.println(e.toJSON());
-      throw e;
-    }
-  }
 }
