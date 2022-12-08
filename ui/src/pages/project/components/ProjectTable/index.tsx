@@ -31,7 +31,7 @@ const ProjectTable = (props: ProjectTableProps, ref: any) => {
     {
       key: "action",
       title: "Action",
-      width: 130,
+      width: 240,
       resize: false,
       render: (record: Project) => {
         const { name } = record;

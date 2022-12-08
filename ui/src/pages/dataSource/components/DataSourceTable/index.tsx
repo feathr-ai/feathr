@@ -93,7 +93,7 @@ const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
     {
       title: "Action",
       fixed: "right",
-      width: 130,
+      width: 200,
       resize: false,
       render: (record: DataSource) => {
         const { guid } = record;

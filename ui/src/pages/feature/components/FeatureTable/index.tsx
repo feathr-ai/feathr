@@ -98,7 +98,7 @@ const FeatureTable = (props: FeatureTableProps, ref: any) => {
     {
       title: "Action",
       fixed: "right",
-      width: 100,
+      width: 200,
       resize: false,
       render: (record: Feature) => {
         const { guid } = record;
