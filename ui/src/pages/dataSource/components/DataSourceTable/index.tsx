@@ -1,10 +1,11 @@
 import React, { forwardRef, useRef } from "react";
-import { Button } from "antd";
+import { Button, message, notification, Popconfirm, Space } from "antd";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { DataSource } from "@/models/model";
-import { fetchDataSources } from "@/api";
+import { fetchDataSources, deleteEntity } from "@/api";
 import ResizeTable, { ResizeColumnType } from "@/components/ResizeTable";
+import { DeleteOutlined } from "@ant-design/icons";
 
 export interface DataSourceTableProps {
   project?: string;
@@ -95,22 +96,42 @@ const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
       width: 130,
       resize: false,
       render: (record: DataSource) => {
+        const { guid } = record;
         return (
-          <Button
-            type="primary"
-            ghost
-            onClick={() => {
-              navigate(getDetialUrl(record.guid));
-            }}
-          >
-            View Details
-          </Button>
+          <Space size="middle">
+            <Button
+              type="primary"
+              ghost
+              onClick={() => {
+                navigate(getDetialUrl(guid));
+              }}
+            >
+              View Details
+            </Button>
+            <Popconfirm
+              title="Are you sure to delete this data source?"
+              placement="topRight"
+              onConfirm={() => {
+                return new Promise((resolve) => {
+                  onDelete(guid, resolve);
+                });
+              }}
+            >
+              <Button type="primary" danger ghost icon={<DeleteOutlined />}>
+                Detete
+              </Button>
+            </Popconfirm>
+          </Space>
         );
       },
     },
   ];
 
-  const { isLoading, data: tableData } = useQuery<DataSource[]>(
+  const {
+    isLoading,
+    data: tableData,
+    refetch,
+  } = useQuery<DataSource[]>(
     ["dataSources", project],
     async () => {
       if (project) {
@@ -126,6 +147,24 @@ const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
     }
   );
 
+  const onDelete = async (
+    entity: string,
+    resolve: (value?: unknown) => void
+  ) => {
+    try {
+      await deleteEntity(entity);
+      message.success("The date source is deleted successfully.");
+      refetch();
+    } catch (e: any) {
+      notification.error({
+        message: "",
+        description: e.detail,
+        placement: "top",
+      });
+    } finally {
+      resolve();
+    }
+  };
   return (
     <ResizeTable
       rowKey="guid"

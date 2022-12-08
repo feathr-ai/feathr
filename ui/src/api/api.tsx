@@ -245,3 +245,20 @@ export const authAxios = async (msalInstance: PublicClientApplication) => {
   );
   return axios;
 };
+
+export const deleteEntity = async (enity: string) => {
+  const axios = await authAxios(msalInstance);
+  return axios.delete(`${getApiBaseUrl()}/entity/${enity}`);
+};
+
+export const getDependent = async (entity: string) => {
+  const axios = await authAxios(msalInstance);
+  return await axios
+    .get(`${getApiBaseUrl()}/dependent/${entity}`)
+    .then((response) => {
+      return response;
+    })
+    .catch((error) => {
+      return error.response;
+    });
+};

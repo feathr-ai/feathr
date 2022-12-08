@@ -1,10 +1,11 @@
 import React, { forwardRef } from "react";
-import { Button, Space } from "antd";
+import { Button, Space, notification, Popconfirm, message } from "antd";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { Project } from "@/models/model";
-import { fetchProjects } from "@/api";
+import { fetchProjects, deleteEntity } from "@/api";
 import ResizeTable, { ResizeColumnType } from "@/components/ResizeTable";
+import { DeleteOutlined } from "@ant-design/icons";
 
 export interface ProjectTableProps {
   project?: string;
@@ -54,13 +55,30 @@ const ProjectTable = (props: ProjectTableProps, ref: any) => {
             >
               View Lineage
             </Button>
+            <Popconfirm
+              title="Are you sure to delete this project?"
+              placement="topRight"
+              onConfirm={() => {
+                return new Promise((resolve) => {
+                  onDelete(name, resolve);
+                });
+              }}
+            >
+              <Button type="primary" danger ghost icon={<DeleteOutlined />}>
+                Detete
+              </Button>
+            </Popconfirm>
           </Space>
         );
       },
     },
   ];
 
-  const { isLoading, data: tableData } = useQuery<Project[]>(
+  const {
+    isLoading,
+    data: tableData,
+    refetch,
+  } = useQuery<Project[]>(
     ["Projects", project],
     async () => {
       const reuslt = await fetchProjects();
@@ -78,6 +96,25 @@ const ProjectTable = (props: ProjectTableProps, ref: any) => {
       refetchOnWindowFocus: false,
     }
   );
+
+  const onDelete = async (
+    entity: string,
+    resolve: (value?: unknown) => void
+  ) => {
+    try {
+      await deleteEntity(entity);
+      message.success("The project is deleted successfully.");
+      refetch();
+    } catch (e: any) {
+      notification.error({
+        message: "",
+        description: e.detail,
+        placement: "top",
+      });
+    } finally {
+      resolve();
+    }
+  };
 
   return (
     <ResizeTable
