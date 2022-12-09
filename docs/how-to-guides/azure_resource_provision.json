@@ -41,8 +41,7 @@
       "sqlAdminPassword": {
         "type": "SecureString",
         "metadata": {
-          "description": "Specify the password for SQL Database admin. Please note that the password can't contain semicolon (;) 
-          as it conflicts with connection string delimiter"
+          "description": "Specify the password for SQL Database admin. Please note that the password can not contain semicolon (;) as it conflicts with connection string delimiter"
         }
       },
       "registryBackend": {
