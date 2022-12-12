@@ -367,6 +367,18 @@ class KafKaSource(Source):
 
 class SparkSqlSource(Source):
     def __init__(self, name: str, sql: Optional[str] = None, table: Optional[str] = None, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+        """ SparkSqlSource can use either a sql query or a table name as the source for Feathr job.
+        name: name of the source
+        sql: sql query to use as the source, either sql or table must be specified
+        table: table name to use as the source, either sql or table must be specified
+        preprocessing (Optional[Callable]): A preprocessing python function that transforms the source data for further feature transformation.
+        event_timestamp_column (Optional[str]): The timestamp field of your record. As sliding window aggregation feature assume each record in the source data should have a timestamp column.
+        timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are:
+                                                    - `epoch` (seconds since epoch), for example `1647737463`
+                                                    - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
+                                                    - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+        registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
+        """
         super().__init__(name, event_timestamp_column,
                          timestamp_format, registry_tags=registry_tags)
         self.source_type = 'sparksql'
