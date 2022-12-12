@@ -278,7 +278,7 @@ class SparkSqlSource(Source):
                     {% if source.sql is defined %}
                     sql: "{{source.sql}}"
                     {% elif source.table is defined %}
-                    sql: "{{source.table}}"
+                    table: "{{source.table}}"
                     {% endif %}
                 }
                 {% if source.event_timestamp_column is defined %}
