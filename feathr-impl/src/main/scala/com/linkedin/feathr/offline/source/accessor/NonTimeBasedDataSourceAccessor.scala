@@ -1,12 +1,6 @@
 package com.linkedin.feathr.offline.source.accessor
 
-<<<<<<< HEAD:src/main/scala/com/linkedin/feathr/offline/source/accessor/NonTimeBasedDataSourceAccessor.scala
-import com.linkedin.feathr.offline.config.location.{GenericLocation, Jdbc, PathList, SimplePath, SparkSqlLocation}
-||||||| ca9aa214:src/main/scala/com/linkedin/feathr/offline/source/accessor/NonTimeBasedDataSourceAccessor.scala
-import com.linkedin.feathr.offline.config.location.{GenericLocation, Jdbc, PathList, SimplePath}
-=======
-import com.linkedin.feathr.offline.config.location.{GenericLocation, Jdbc, PathList, SimplePath, Snowflake}
->>>>>>> main:feathr-impl/src/main/scala/com/linkedin/feathr/offline/source/accessor/NonTimeBasedDataSourceAccessor.scala
+import com.linkedin.feathr.offline.config.location.{GenericLocation, Jdbc, PathList, SimplePath, Snowflake, SparkSqlLocation}
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.{CaseInsensitiveGenericRecordWrapper, DataLoaderFactory}
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
