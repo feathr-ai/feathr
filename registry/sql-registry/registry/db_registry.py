@@ -105,6 +105,32 @@ class DbRegistry(Registry):
             df.attributes.input_features = features
         all_edges = self._get_edges(ids)
         return EntitiesAndRelations([project] + children, list(edges.union(all_edges)))
+    
+    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> list[Entity]:
+        """
+        Given entity id, returns list of all entities that are downstream/dependant on the given entity
+        """
+        entity_id = self.get_entity_id(entity_id)
+        entity = self.get_entity(entity_id)
+        downstream_entities = []
+        if entity.entity_type == EntityType.Project:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Contains)
+        if entity.entity_type == EntityType.Source:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
+        if entity.entity_type == EntityType.Anchor:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Contains)
+        if entity.entity_type in (EntityType.AnchorFeature, EntityType.DerivedFeature):
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
+        return [e for e in downstream_entities if str(e.id) != str(entity_id)]
+    
+    def delete_entity(self, entity_id: Union[str, UUID]):
+        """
+        Deletes given entity
+        """
+        entity_id = self.get_entity_id(entity_id)
+        with self.conn.transaction() as c:
+                self._delete_all_entity_edges(c, entity_id)
+                self._delete_entity(c, entity_id)
 
     def search_entity(self,
                       keyword: str,
@@ -386,6 +412,20 @@ class DbRegistry(Registry):
             "to_id": str(to_id),
             "type": type.name
         })
+    
+    def _delete_all_entity_edges(self, cursor, entity_id: UUID):
+        """
+        Deletes all edges associated with an entity
+        """
+        sql = fr'''DELETE FROM edges WHERE from_id = %s OR to_id = %s'''
+        cursor.execute(sql, (str(entity_id), str(entity_id)))
+    
+    def _delete_entity(self, cursor, entity_id: UUID):
+        """
+        Deletes entity from entities table
+        """
+        sql = fr'''DELETE FROM entities WHERE entity_id = %s'''
+        cursor.execute(sql, str(entity_id))
 
     def _fill_entity(self, e: Entity) -> Entity:
         """

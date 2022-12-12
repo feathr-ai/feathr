@@ -42,7 +42,7 @@ export const SourceAttributesMap: Array<{
   { label: "Path", key: "path" },
   { label: "Preprocessing", key: "preprocessing" },
   { label: "Event Timestamp Column", key: "event_timestamp_column" },
-  { label: "Timestamp Forma", key: "timestamp_format" },
+  { label: "Timestamp Format", key: "timestamp_format" },
   { label: "Qualified Name", key: "qualified_name" },
   { label: "Tags", key: "tags" },
 ];

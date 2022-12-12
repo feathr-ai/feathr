@@ -25,8 +25,8 @@ project_config:
     # the environemnt variables are optional, however you will need them if you want to use some of the services:
     - ADLS_ACCOUNT
     - ADLS_KEY
-    - WASB_ACCOUNT
-    - WASB_KEY
+    - BLOB_ACCOUNT
+    - BLOB_KEY
     - S3_ACCESS_KEY
     - S3_SECRET_KEY
     - JDBC_TABLE
@@ -41,7 +41,7 @@ offline_store:
     adls_enabled: true
 
   # paths starts with wasb:// or wasbs://
-  # WASB_ACCOUNT and WASB_KEY should be set in environment variable
+  # BLOB_ACCOUNT and BLOB_KEY should be set in environment variable
   wasb:
     wasb_enabled: true
 
@@ -64,6 +64,7 @@ offline_store:
     url: "dqllago-ol19457.snowflakecomputing.com"
     user: "feathrintegration"
     role: "ACCOUNTADMIN"
+    warehouse: "COMPUTE_WH"
 
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks
@@ -82,10 +83,10 @@ spark_config:
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
     # this is the default location so end users don't have to compile the runtime again.
     # feathr_runtime_location: wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-LATEST.jar
-    feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.9.0-rc2.jar"
+    feathr_runtime_location: "../../build/libs/feathr_2.12-0.11.1-rc1.jar"
   databricks:
     # workspace instance
-    workspace_instance_url: 'https://adb-2474129336842816.16.azuredatabricks.net/'
+    workspace_instance_url: 'https://adb-4121774437039026.6.azuredatabricks.net'
     workspace_token_value: ''
     # config string including run time information, spark version, machine size, etc.
     # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
@@ -93,7 +94,7 @@ spark_config:
     # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
     work_dir: 'dbfs:/feathr_getting_started'
     # this is the default location so end users don't have to compile the runtime again.
-    feathr_runtime_location: "../../target/scala-2.12/feathr-assembly-0.9.0-rc2.jar"
+    feathr_runtime_location: "../../build/libs/feathr_2.12-0.11.1-rc1.jar"
 
 online_store:
   redis:

@@ -1,11 +1,13 @@
 import os
+import traceback
 from re import sub
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from registry import *
-from registry.purview_registry import PurviewRegistry
+from registry.purview_registry import PreconditionError, PurviewRegistry, ConflictError
 from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
 
 rp = "/v1"
@@ -44,6 +46,56 @@ app.add_middleware(CORSMiddleware,
                    )
 
 
+def exc_to_content(e: Exception) -> dict:
+    content={"message": str(e)}
+    if os.environ.get("REGISTRY_DEBUGGING"):
+        content["traceback"] = "".join(traceback.TracebackException.from_exception(e).format())
+    return content
+
+@app.exception_handler(ConflictError)
+async def conflict_error_handler(_, exc: ConflictError):
+    return JSONResponse(
+        status_code=409,
+        content=exc_to_content(exc),
+    )
+
+@app.exception_handler(PreconditionError)
+async def precondition_error_handler(_, exc: ConflictError):
+    return JSONResponse(
+        status_code=412,
+        content=exc_to_content(exc),
+    )
+
+
+@app.exception_handler(ValueError)
+async def value_error_handler(_, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content=exc_to_content(exc),
+    )
+
+@app.exception_handler(TypeError)
+async def type_error_handler(_, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content=exc_to_content(exc),
+    )
+
+
+@app.exception_handler(KeyError)
+async def key_error_handler(_, exc: KeyError):
+    return JSONResponse(
+        status_code=404,
+        content=exc_to_content(exc),
+    )
+
+@app.exception_handler(IndexError)
+async def index_error_handler(_, exc: IndexError):
+    return JSONResponse(
+        status_code=404,
+        content=exc_to_content(exc),
+    )
+
 @router.get("/projects",tags=["Project"])
 def get_projects() -> list[str]:
     return registry.get_projects()
@@ -56,6 +108,22 @@ def get_projects_ids() -> dict:
 def get_projects(project: str) -> dict:
     return to_camel(registry.get_project(project).to_dict())
 
+@router.get("/dependent/{entity}")
+def get_dependent_entities(entity: str) -> list:
+    entity_id = registry.get_entity_id(entity)
+    downstream_entities = registry.get_dependent_entities(entity_id)
+    return list([e.to_dict() for e in downstream_entities])
+
+@router.delete("/entity/{entity}")
+def delete_entity(entity: str):
+    entity_id = registry.get_entity_id(entity)
+    downstream_entities = registry.get_dependent_entities(entity_id)
+    if len(downstream_entities) > 0:
+        raise HTTPException(
+           status_code=412, detail=f"""Entity cannot be deleted as it has downstream/dependent entities.
+            Entities: {list([e.qualified_name for e in downstream_entities])}"""
+        )
+    registry.delete_entity(entity_id)
 
 @router.get("/projects/{project}/datasources",tags=["Project"])
 def get_project_datasources(project: str) -> list:
@@ -89,7 +157,6 @@ def get_feature(feature: str) -> dict:
         raise HTTPException(
             status_code=404, detail=f"Feature {feature} not found")
     return to_camel(e.to_dict())
-
 
 @router.get("/features/{feature}/lineage",tags=["Feature"])
 def get_feature_lineage(feature: str) -> dict:

@@ -3,7 +3,7 @@
 .AppleDouble
 .LSOverride
 metastore_db
-src/integTest
+feathr-impl/src/integTest
 test-output
 temp
 
@@ -189,17 +189,16 @@ cython_debug/
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-target/
 .idea
 .project/target
 .project/project
 .DS_store
-.DS_Store
 *.jar
-src/main/scala/META-INF/MANIFEST.MF
+feathr-impl/src/main/scala/META-INF/MANIFEST.MF
 *.MF
 feathr_project/feathr_cli.egg-info/*
 *.pyc
+*.iml
 
 # VS Code
 .vscode
@@ -207,9 +206,21 @@ feathr_project/feathr_cli.egg-info/*
 #Local Build
 null/*
 
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
 # For Metal Server
 .metals/
 .bloop/
 project/.bloop
 metals.sbt
+feathr-data-models/src/mainGeneratedDataTemplate/
+
 .bsp/sbt.json
+
+# Feathr output debug folder
+**/debug/
+

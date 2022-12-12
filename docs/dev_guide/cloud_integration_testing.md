@@ -7,7 +7,7 @@ parent: Developer Guides
 
 We use [GitHub Actions](https://github.com/feathr-ai/feathr/tree/main/.github/workflows) to do cloud integration test. Currently the integration test has 4 jobs:
 
-- running `sbt test` to verify if the scala/spark related code has passed all the test
+- running `./gradlew test` to verify if the scala/spark related code has passed all the test
 - running `flake8` to lint python scripts and make sure there are no obvious syntax errors
 - running the built jar in databricks environment with end to end test to make sure it passed the end to end test
 - running the built jar in Azure Synapse environment with end to end test to make sure it passed the end to end test

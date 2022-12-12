@@ -29,6 +29,13 @@ TYPEDEF_ANCHOR_FEATURE="feathr_anchor_feature_v1"
 TYPEDEF_ARRAY_ANCHOR=f"array<feathr_anchor_v1>"
 TYPEDEF_ARRAY_DERIVED_FEATURE=f"array<feathr_derived_feature_v1>"
 TYPEDEF_ARRAY_ANCHOR_FEATURE=f"array<feathr_anchor_feature_v1>"
+
+class ConflictError(Exception):
+    pass
+
+class PreconditionError(Exception):
+    pass
+
 class PurviewRegistry(Registry):
     def __init__(self,azure_purview_name: str, registry_delimiter: str = "__", credential=None,register_types = True):
         self.registry_delimiter = registry_delimiter
@@ -191,6 +198,35 @@ class PurviewRegistry(Registry):
         return EntitiesAndRelations(
             upstream_entities + downstream_entities,
             upstream_edges + downstream_edges)
+    
+    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> list[Entity]:
+        """
+        Given entity id, returns list of all entities that are downstream/dependent on given entity
+        """
+        entity_id = self.get_entity_id(entity_id)
+        entity = self.get_entity(entity_id)
+        downstream_entities = []
+        if entity.entity_type == EntityType.Project:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Contains)
+        if entity.entity_type == EntityType.Source:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
+        if entity.entity_type == EntityType.Anchor:
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Contains)
+        if entity.entity_type in (EntityType.AnchorFeature, EntityType.DerivedFeature):
+            downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
+        return [e for e in downstream_entities if str(e.id) != str(entity_id)]
+    
+    def delete_entity(self, entity_id: Union[str, UUID]):
+        """
+        Deletes given entity
+        """
+        entity_id = self.get_entity_id(entity_id)
+        neighbors = self.get_all_neighbours(entity_id)
+        edge_guids = [str(x.id) for x in neighbors]
+        # Delete all edges associated with entity
+        self.purview_client.delete_entity(edge_guids)
+        #Delete entity
+        self.purview_client.delete_entity(str(entity_id))
 
     def _get_edges(self, ids: list[UUID]) -> list[Edge]:
         all_edges = set()
@@ -201,7 +237,7 @@ class PurviewRegistry(Registry):
                     and neighbour.to_id in ids:
                     all_edges.add(neighbour)
         return list(all_edges)
-        
+    
     def _create_edge_from_process(self, name:str, guid: str) -> Edge:
         names = name.split(self.registry_delimiter)
         return Edge(guid, names[1], names[2], RelationshipType.new(names[0]))
@@ -583,13 +619,12 @@ class PurviewRegistry(Registry):
             """
             Try to find existing entity/process first, if found, return the existing entity's GUID
             """
-            id = self.get_entity_id(entity.qualifiedName)
-            response =  self.purview_client.get_entity(id)['entities'][0]
+            response =  self.purview_client.get_entity(qualifiedName=entity.qualifiedName, typeName=entity.typeName)['entities'][0]
             j = entity.to_json()
             if j["typeName"] == response["typeName"]:
                 if j["typeName"] == "Process":
                     if response["attributes"]["qualifiedName"] != j["attributes"]["qualifiedName"]:
-                        raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
+                        raise ConflictError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
                 else:
                     if "type" in response['attributes'] and response["typeName"] in (TYPEDEF_ANCHOR_FEATURE, TYPEDEF_DERIVED_FEATURE):
                         conf = ConfigFactory.parse_string(response['attributes']['type'])
@@ -598,23 +633,30 @@ class PurviewRegistry(Registry):
                     keys.add("qualifiedName")
                     for k in keys:
                         if response["attributes"][k] != j["attributes"][k]:
-                            raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
+                            raise ConflictError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
                 entity.guid = response["guid"]
                 return
             else:
-                raise RuntimeError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
+                raise ConflictError("The requested entity %s conflicts with the existing entity in PurView" % j["attributes"]["qualifiedName"])
         except AtlasException as e:
+            pass
+        except KeyError as e:
+            # This is because the response is empty when the entity is not found
             pass
 
         entity.lastModifiedTS="0"
-        results = self.purview_client.upload_entities(
-            batch=entity)
+        results = None
+        try:
+            results = self.purview_client.upload_entities(
+                batch=entity)
+        except AtlasException as e:
+            raise PreconditionError("Feature registration failed.", e)
         if results:
             d = {x.guid: x for x in [entity]}
             for k, v in results['guidAssignments'].items():
                 d[k].guid = v
         else:
-            raise RuntimeError("Feature registration failed.", results)
+            raise PreconditionError("Feature registration failed.", results)
             
     def _generate_fully_qualified_name(self, segments):
         return self.registry_delimiter.join(segments)

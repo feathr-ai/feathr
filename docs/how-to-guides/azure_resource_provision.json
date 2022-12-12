@@ -35,13 +35,13 @@
       "sqlAdminUsername": {
         "type": "String",
         "metadata": {
-          "description": "Specifies the username for SQL Database admin"
+          "description": "Specify the username for SQL Database admin"
         }
       },
       "sqlAdminPassword": {
         "type": "SecureString",
         "metadata": {
-          "description": "Specifies the password for SQL Database admin"
+          "description": "Specify the password for SQL Database admin. Please note that the password can not contain semicolon (;) as it conflicts with connection string delimiter"
         }
       },
       "registryBackend": {
@@ -111,7 +111,7 @@
       "destinationBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('bacpacBlobName'))]",
       "bacpacDeploymentScriptName": "CopyBacpacFile",
       "bacpacDbExtensionName": "registryRbacDbImport",
-      "preBuiltdockerImage": "feathrfeaturestore/feathr-registry:releases-v0.8.0"
+      "preBuiltdockerImage": "feathrfeaturestore/feathr-registry:releases-v0.9.0"
     },
     "functions": [],
     "resources": [

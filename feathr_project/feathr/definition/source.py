@@ -6,6 +6,7 @@ from feathr.definition.feathrconfig import HoconConvertible
 
 from jinja2 import Template
 from loguru import logger
+from urllib.parse import urlparse, parse_qs
 import json
 
 
@@ -101,13 +102,29 @@ class HdfsSource(Source):
                                                     - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
                                                     - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
         registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
+        time_partition_pattern(Optional[str]): Format of the time partitioned feature data. e.g. yyyy/MM/DD. All formats defined in dateTimeFormatter are supported.
+        config:
+            timeSnapshotHdfsSource: 
+            {  
+                location: 
+                {    
+                    path: "/data/somePath/daily/"  
+                }  
+                timePartitionPattern: "yyyy/MM/dd" 
+            }
+        Given the above HDFS path: /data/somePath/daily, 
+        then the expectation is that the following sub directorie(s) should exist:
+        /data/somePath/daily/{yyyy}/{MM}/{dd}
+        postfix_path(Optional[str]): postfix path followed by the 'time_partition_pattern'. Given above config, if we have 'postfix_path' defined all contents under paths of the pattern '{path}/{yyyy}/{MM}/{dd}/{postfix_path}' will be visited.
     """
 
-    def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+    def __init__(self, name: str, path: str, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None, time_partition_pattern: Optional[str] = None, postfix_path: Optional[str] = None) -> None:
         super().__init__(name, event_timestamp_column,
                          timestamp_format, registry_tags=registry_tags)
         self.path = path
         self.preprocessing = preprocessing
+        self.time_partition_pattern = time_partition_pattern
+        self.postfix_path = postfix_path
         if path.startswith("http"):
             logger.warning(
                 "Your input path {} starts with http, which is not supported. Consider using paths starting with wasb[s]/abfs[s]/s3.", path)
@@ -116,6 +133,97 @@ class HdfsSource(Source):
         tm = Template("""  
             {{source.name}}: {
                 location: {path: "{{source.path}}"}
+                {% if source.time_partition_pattern %}
+                timePartitionPattern: "{{source.time_partition_pattern}}"
+                {% endif %}
+                {% if source.postfix_path %}
+                postfixPath: "{{source.postfix_path}}"
+                {% endif %}
+                {% if source.event_timestamp_column %}
+                    timeWindowParameters: {
+                        timestampColumn: "{{source.event_timestamp_column}}"
+                        timestampColumnFormat: "{{source.timestamp_format}}"
+                    }
+                {% endif %}
+            } 
+        """)
+        msg = tm.render(source=self)
+        return msg
+
+    def __str__(self):
+        return str(self.preprocessing) + '\n' + self.to_feature_config()
+
+    def to_argument(self):
+        return self.path
+
+class SnowflakeSource(Source):
+    """
+    A data source for Snowflake
+
+    Attributes:
+        name (str): name of the source
+        database (str): Snowflake Database
+        schema (str): Snowflake Schema
+        dbtable (Optional[str]): Snowflake Table
+        query (Optional[str]): Query instead of snowflake table
+        Either one of query or dbtable must be specified but not both.
+        preprocessing (Optional[Callable]): A preprocessing python function that transforms the source data for further feature transformation.
+        event_timestamp_column (Optional[str]): The timestamp field of your record. As sliding window aggregation feature assume each record in the source data should have a timestamp column.
+        timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are:
+                                                    - `epoch` (seconds since epoch), for example `1647737463`
+                                                    - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
+                                                    - Any date formats supported by [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+        registry_tags: A dict of (str, str) that you can pass to feature registry for better organization. For example, you can use {"deprecated": "true"} to indicate this source is deprecated, etc.
+    """
+    def __init__(self, name: str, database: str, schema: str, dbtable: Optional[str] = None, query: Optional[str] = None, preprocessing: Optional[Callable] = None, event_timestamp_column: Optional[str] = None, timestamp_format: Optional[str] = "epoch", registry_tags: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(name, event_timestamp_column,
+                         timestamp_format, registry_tags=registry_tags)
+        self.preprocessing=preprocessing
+        if dbtable is not None and query is not None:
+            raise RuntimeError("Both dbtable and query are specified. Can only specify one..")
+        if dbtable is None and query is None:
+            raise RuntimeError("One of dbtable or query must be specified..")
+        if dbtable is not None:
+            self.dbtable = dbtable
+        if query is not None:
+            self.query = query
+        self.database = database
+        self.schema = schema
+        self.path = self._get_snowflake_path(dbtable, query)
+
+    def _get_snowflake_path(self, dbtable: Optional[str] = None, query: Optional[str] = None) -> str:
+        """
+        Returns snowflake path for registry.
+        """
+        if dbtable:
+            return f"snowflake://snowflake_account/?sfDatabase={self.database}&sfSchema={self.schema}&dbtable={dbtable}"
+        else:
+            return f"snowflake://snowflake_account/?sfDatabase={self.database}&sfSchema={self.schema}&query={query}"
+    
+    def parse_snowflake_path(url: str) -> Dict[str, str]:
+        """
+        Parses snowflake path into dictionary of components for registry.
+        """
+        parse_result = urlparse(url)
+        parsed_queries = parse_qs(parse_result.query)
+        updated_dict = {key: parsed_queries[key][0] for key in parsed_queries}
+        return updated_dict
+    
+    def to_feature_config(self) -> str:
+        tm = Template("""  
+            {{source.name}}: {
+                type: SNOWFLAKE
+                location: {
+                    type: "snowflake"
+                    {% if source.dbtable is defined %}
+                    dbtable: "{{source.dbtable}}"
+                    {% endif %}
+                    {% if source.query is defined %}
+                    query: "{{source.query}}"
+                    {% endif %}
+                    database: "{{source.database}}"
+                    schema: "{{source.schema}}"
+                }
                 {% if source.event_timestamp_column %}
                     timeWindowParameters: {
                         timestampColumn: "{{source.event_timestamp_column}}"

@@ -3,25 +3,34 @@ import os
 from setuptools import setup, find_packages
 from pathlib import Path
 
+
 # Use the README.md from /docs
 root_path = Path(__file__).resolve().parent.parent
-long_description = (root_path / "docs/README.md").read_text(encoding="utf8")
+readme_path = root_path / "docs/README.md"
+if readme_path.exists():
+    long_description = readme_path.read_text(encoding="utf8")
+else:
+    # In some build environments (specifically in conda), we may not have the README file
+    # readily available. In these cases, just set long_description to the URL of README.md.
+    long_description = "See https://github.com/feathr-ai/feathr/blob/main/docs/README.md"
 
 try:
     exec(open("feathr/version.py").read())
 except IOError:
     print("Failed to load Feathr version file for packaging.",
           file=sys.stderr)
-    sys.exit(-1)
+    # Temp workaround for conda build. For long term fix, Jay will need to update manifest.in file.
+    VERSION = "0.9.0"
 
 VERSION = __version__  # noqa
-os.environ["FEATHR_VERSION]"] = VERSION
+os.environ["FEATHR_VERSION"] = VERSION
 
 extras_require=dict(
     dev=[
         "black>=22.1.0",    # formatter
         "isort",            # sort import statements
         "pytest>=7",
+        "pytest-cov",
         "pytest-xdist",
         "pytest-mock>=3.8.1",
     ],
@@ -30,6 +39,8 @@ extras_require=dict(
         "matplotlib==3.6.1",
         "papermill>=2.1.2,<3",      # to test run notebooks
         "scrapbook>=0.5.0,<1.0.0",  # to scrap notebook outputs
+        "scikit-learn",             # for notebook examples
+        "plotly",                   # for plotting
     ],
 )
 extras_require["all"] = list(set(sum([*extras_require.values()], [])))

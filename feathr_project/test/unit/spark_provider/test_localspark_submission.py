@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_mock import MockerFixture
 
+from feathr.constants import OUTPUT_PATH_TAG
 from feathr.spark_provider._localspark_submission import _FeathrLocalSparkJobLauncher
 
 
@@ -15,9 +16,17 @@ def local_spark_job_launcher(tmp_path) -> _FeathrLocalSparkJobLauncher:
     )
 
 
+@pytest.mark.parametrize(
+    "job_tags,expected_result_uri", [
+        (None, None),
+        ({OUTPUT_PATH_TAG: "output"}, "output"),
+    ]
+)
 def test__local_spark_job_launcher__submit_feathr_job(
     mocker: MockerFixture,
     local_spark_job_launcher: _FeathrLocalSparkJobLauncher,
+    job_tags: Dict[str, str],
+    expected_result_uri: str,
 ):
     # Mock necessary components
     local_spark_job_launcher._init_args = MagicMock(return_value=[])
@@ -31,10 +40,15 @@ def test__local_spark_job_launcher__submit_feathr_job(
         job_name="unit-test",
         main_jar_path="",
         main_class_name="",
+        job_tags=job_tags,
     )
 
     # Assert if the mocked spark process has called once
     mocked_spark_proc.assert_called_once()
+
+    # Assert job tags
+    assert local_spark_job_launcher.get_job_tags() == job_tags
+    assert local_spark_job_launcher.get_job_result_uri() == expected_result_uri
 
 
 @pytest.mark.parametrize(
