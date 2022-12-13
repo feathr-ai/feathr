@@ -1,5 +1,4 @@
 from pathlib import Path
-from tempfile import TemporaryDirectory
 import yaml
 
 import pytest
@@ -29,7 +28,6 @@ NOTEBOOK_PATHS = {
 def test__nyc_taxi_demo(config_path, tmp_path):
     notebook_name = "nyc_taxi_demo"
 
-    output_tmpdir = TemporaryDirectory()
     output_notebook_path = str(tmp_path.joinpath(f"{notebook_name}.ipynb"))
 
     print(f"Running {notebook_name} notebook as {output_notebook_path}")
@@ -40,7 +38,6 @@ def test__nyc_taxi_demo(config_path, tmp_path):
         # kernel_name="python3",
         parameters=dict(
             FEATHR_CONFIG_PATH=config_path,
-            DATA_STORE_PATH=output_tmpdir.name,
             USE_CLI_AUTH=False,
             REGISTER_FEATURES=False,
             SCRAP_RESULTS=True,
@@ -74,7 +71,6 @@ def test__feature_embedding(config_path, tmp_path):
             USE_CLI_AUTH=False,
             REGISTER_FEATURES=False,
             SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL=conf["spark_config"]["databricks"]["workspace_instance_url"],
-            CLEAN_UP=True,
         ),
     )
 
@@ -83,8 +79,7 @@ def test__feature_embedding(config_path, tmp_path):
 def test__fraud_detection_demo(config_path, tmp_path):
     notebook_name = "fraud_detection_demo"
 
-    output_tmpdir = TemporaryDirectory()
-    output_notebook_path = "output.ipynb"  # TODO str(tmp_path.joinpath(f"{notebook_name}.ipynb"))
+    output_notebook_path = str(tmp_path.joinpath(f"{notebook_name}.ipynb"))
 
     print(f"Running {notebook_name} notebook as {output_notebook_path}")
 
@@ -94,7 +89,6 @@ def test__fraud_detection_demo(config_path, tmp_path):
         # kernel_name="python3",
         parameters=dict(
             FEATHR_CONFIG_PATH=config_path,
-            DATA_STORE_PATH=output_tmpdir.name,  # TODO we don't have this <--
             USE_CLI_AUTH=False,
             SCRAP_RESULTS=True,
         ),
