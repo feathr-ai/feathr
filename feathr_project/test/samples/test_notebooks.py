@@ -98,4 +98,4 @@ def test__fraud_detection_demo(config_path, tmp_path):
     nb = sb.read_notebook(output_notebook_path)
     outputs = nb.scraps
 
-    assert outputs["materialized_feature_values"].data == pytest.approx(['GB', False, 0, 2000, 0.0, 0, 0, 0.0, 0.0], abs=1.)
+    assert outputs["materialized_feature_values"].data == pytest.approx([False, 0, 9, 239.0, 1, 1, 239.0, 33816.0], abs=1.)
