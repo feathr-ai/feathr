@@ -217,6 +217,7 @@ build
 .bloop/
 project/.bloop
 metals.sbt
+feathr-data-models/src/mainGeneratedDataTemplate/
 
 .bsp/sbt.json
 

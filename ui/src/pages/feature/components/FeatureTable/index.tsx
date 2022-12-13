@@ -1,12 +1,13 @@
 import React, { forwardRef, useRef } from "react";
-import { Button } from "antd";
+import { Button, notification, message, Popconfirm, Space } from "antd";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { Feature } from "@/models/model";
-import { fetchFeatures } from "@/api";
+import { fetchFeatures, deleteEntity } from "@/api";
 import ResizeTable, { ResizeColumnType } from "@/components/ResizeTable";
+import { DeleteOutlined } from "@ant-design/icons";
 
-export interface DataSourceTableProps {
+export interface FeatureTableProps {
   project?: string;
   keyword?: string;
 }
@@ -16,7 +17,7 @@ export interface SearchModel {
   roleName?: string;
 }
 
-const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
+const FeatureTable = (props: FeatureTableProps, ref: any) => {
   const navigate = useNavigate();
 
   const { project, keyword } = props;
@@ -97,25 +98,45 @@ const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
     {
       title: "Action",
       fixed: "right",
-      width: 100,
+      width: 200,
       resize: false,
       render: (record: Feature) => {
+        const { guid } = record;
         return (
-          <Button
-            type="primary"
-            ghost
-            onClick={() => {
-              navigate(getDetialUrl(record.guid));
-            }}
-          >
-            View Details
-          </Button>
+          <Space size="middle">
+            <Button
+              type="primary"
+              ghost
+              onClick={() => {
+                navigate(getDetialUrl(guid));
+              }}
+            >
+              View Details
+            </Button>
+            <Popconfirm
+              title="Are you sure to delete this feature?"
+              placement="topRight"
+              onConfirm={() => {
+                return new Promise((resolve) => {
+                  onDelete(guid, resolve);
+                });
+              }}
+            >
+              <Button type="primary" danger ghost icon={<DeleteOutlined />}>
+                Detete
+              </Button>
+            </Popconfirm>
+          </Space>
         );
       },
     },
   ];
 
-  const { isLoading, data: tableData } = useQuery<Feature[]>(
+  const {
+    isLoading,
+    data: tableData,
+    refetch,
+  } = useQuery<Feature[]>(
     ["dataSources", project, keyword],
     async () => {
       if (project) {
@@ -131,6 +152,25 @@ const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
     }
   );
 
+  const onDelete = async (
+    entity: string,
+    resolve: (value?: unknown) => void
+  ) => {
+    try {
+      await deleteEntity(entity);
+      message.success("The feature is deleted successfully.");
+      refetch();
+    } catch (e: any) {
+      notification.error({
+        message: "",
+        description: e.detail,
+        placement: "top",
+      });
+    } finally {
+      resolve();
+    }
+  };
+
   return (
     <ResizeTable
       rowKey="guid"
@@ -142,10 +182,10 @@ const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
   );
 };
 
-const DataSourceTableComponent = forwardRef<unknown, DataSourceTableProps>(
-  DataSourceTable
+const FeatureTableComponent = forwardRef<unknown, FeatureTableProps>(
+  FeatureTable
 );
 
-DataSourceTableComponent.displayName = "DataSourceTableComponent";
+FeatureTableComponent.displayName = "FeatureTableComponent";
 
-export default DataSourceTableComponent;
+export default FeatureTableComponent;
