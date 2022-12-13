@@ -4,7 +4,7 @@ import logging
 import os
 import tempfile
 import json
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 
 from azure.identity import DefaultAzureCredential
 from feathr.definition.transformation import WindowAggTransformation
@@ -23,6 +23,7 @@ from feathr.definition.monitoring_settings import MonitoringSettings
 from feathr.definition.query_feature_list import FeatureQuery
 from feathr.definition.settings import ObservationSettings
 from feathr.definition.sink import Sink, HdfsSink
+from feathr.definition.typed_key import TypedKey
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr.spark_provider._localspark_submission import _FeathrLocalSparkJobLauncher
@@ -947,7 +948,7 @@ class FeathrClient(object):
             prop_and_value[prop] = self.envutils.get_environment_variable_with_default(prop)
         return prop_and_value
 
-    def get_features_from_registry(self, project_name: str, return_keys: bool = False, verbose: bool = False) -> Union[Dict[str, FeatureBase], tuple]:
+    def get_features_from_registry(self, project_name: str, return_keys: bool = False, verbose: bool = False) -> Union[Dict[str, FeatureBase], Tuple[Dict[str, FeatureBase], Dict[str, Union[TypedKey, List[TypedKey]]]]]:
         """
         Get feature from registry by project name. The features got from registry are automatically built.
         """
