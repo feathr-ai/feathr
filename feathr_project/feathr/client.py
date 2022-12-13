@@ -543,7 +543,7 @@ class FeathrClient(object):
         - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
-        
+
         # submit the jars
         return self.feathr_spark_launcher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',
@@ -673,7 +673,7 @@ class FeathrClient(object):
         if len(feature_list) > 0:
             if 'anchor_list' in dir(self):
                 anchors = [anchor for anchor in self.anchor_list if isinstance(anchor.source, InputContext)]
-                anchor_feature_names = set(feature.name  for anchor in anchors for feature in anchor.features)
+                anchor_feature_names = set(feature.name for anchor in anchors for feature in anchor.features)
                 for feature in feature_list:
                     if feature in anchor_feature_names:
                         raise RuntimeError(f"Materializing features that are defined on INPUT_CONTEXT is not supported. {feature} is defined on INPUT_CONTEXT so you should remove it from the feature list in MaterializationSettings.")

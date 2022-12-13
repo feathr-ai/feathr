@@ -21,6 +21,7 @@ SAMPLES_DIR = (
 NOTEBOOK_PATHS = {
     "nyc_taxi_demo": str(SAMPLES_DIR.joinpath("nyc_taxi_demo.ipynb")),
     "feature_embedding": str(SAMPLES_DIR.joinpath("feature_embedding.ipynb")),
+    "fraud_detection_demo": str(SAMPLES_DIR.joinpath("fraud_detection_demo.ipynb")),
 }
 
 
@@ -76,3 +77,31 @@ def test__feature_embedding(config_path, tmp_path):
             CLEAN_UP=True,
         ),
     )
+
+
+@pytest.mark.notebooks
+def test__fraud_detection_demo(config_path, tmp_path):
+    notebook_name = "fraud_detection_demo"
+
+    output_tmpdir = TemporaryDirectory()
+    output_notebook_path = str(tmp_path.joinpath(f"{notebook_name}.ipynb"))
+
+    print(f"Running {notebook_name} notebook as {output_notebook_path}")
+
+    pm.execute_notebook(
+        input_path=NOTEBOOK_PATHS[notebook_name],
+        output_path=output_notebook_path,
+        # kernel_name="python3",
+        parameters=dict(
+            FEATHR_CONFIG_PATH=config_path,
+            DATA_STORE_PATH=output_tmpdir.name,
+            USE_CLI_AUTH=False,
+            SCRAP_RESULTS=True,
+        ),
+    )
+
+    # Read results from the Scrapbook and assert expected values
+    nb = sb.read_notebook(output_notebook_path)
+    outputs = nb.scraps
+
+    assert outputs["materialized_feature_values"].data == pytest.approx(['GB', False, 0, 2000, 0.0, 0, 0, 0.0, 0.0], abs=1.)

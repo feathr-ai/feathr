@@ -6,6 +6,10 @@ FRAUD_DETECTION_ACCOUNT_INFO_URL = (
     "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/frauddetection/Account_Info.csv"
 )
 
-FRAUD_DETECTION_TRANSACTIONS_URL = (
+FRAUD_DETECTION_FRAUD_TRANSACTIONS_URL = (
     "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/frauddetection/Fraud_Transactions.csv"
+)
+
+FRAUD_DETECTION_UNTAGGED_TRANSACTIONS_URL = (
+    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/frauddetection/Untagged_Transactions.csv"
 )
