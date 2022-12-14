@@ -26,6 +26,7 @@ def test__generate_config__output_filepath(
         resource_prefix=resource_prefix,
         project_name=project_name,
         output_filepath=output_filepath,
+        spark_config__spark_cluster="local",
     )
 
     # Assert if the config file was generated in the specified output path.

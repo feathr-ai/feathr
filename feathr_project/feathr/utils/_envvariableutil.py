@@ -5,8 +5,9 @@ from feathr.secrets.akv_client import AzureKeyVaultClient
 from azure.core.exceptions import ResourceNotFoundError
 
 class _EnvVaraibleUtil(object):
-    """A utility class to read config variables from environment variables.
-    If use_env_vars set to False, it will return the default value from the config file.
+    """A utility class to read config variables.
+    If use_env_vars set to False, `get_environment_variable_with_default` will not use os environment variables.
+    Note, `get_environment_variable` still uses os environment variables.
     """
 
     def __init__(self, config_path: str, use_env_vars: bool = True):
@@ -14,7 +15,7 @@ class _EnvVaraibleUtil(object):
 
         Args:
             config_path: Config file path.
-            use_env_vars (optional): Whether to use environment variables. Defaults to True.
+            use_env_vars (optional): Whether to use os environment variables instead of config file. Defaults to True.
         """
         self.config_path = config_path
         self.use_env_vars = use_env_vars
@@ -35,7 +36,7 @@ class _EnvVaraibleUtil(object):
 
         Returns:
             Feathr client's config variable. It will retrieve the value in the following order:
-                - From the environment variable if `use_env_vars == True` and the key is set in the environment variables.
+                - From the environment variable if `use_env_vars == True` and the key is set in the os environment variables.
                 - From the config yaml file.
                 - From the Azure Key Vault.
             If the key is not found in any of the above, it will return None.
@@ -61,12 +62,12 @@ class _EnvVaraibleUtil(object):
 
         Returns:
             Feathr client's config variable. It will retrieve the value in the following order:
-                - From the environment variable if `use_env_vars == True` and the key is set in the environment variables.
+                - From the environment variable if the key is set in the os environment variables.
                 - From the Azure Key Vault.
             If the key is not found in any of the above, it will return None.
         """
         env_var = (
-            (self._get_variable_from_env(variable_key) if self.use_env_vars else None) or
+            self._get_variable_from_env(variable_key) or
             (self._get_variable_from_akv(variable_key) if self.akv_name else None)
         )
 
