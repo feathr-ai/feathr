@@ -3,7 +3,7 @@ import copy
 import logging
 import os
 import tempfile
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 from azure.identity import DefaultAzureCredential
 from feathr.definition.transformation import WindowAggTransformation
@@ -53,21 +53,31 @@ class FeathrClient(object):
     The users of this client is responsible for set up all the necessary information needed to start a Redis client via
     environment variable or a Spark cluster. Host address, port and password are needed to start the Redis client.
 
-    Attributes:
-        config_path (str, optional): config path. See [Feathr Config Template](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
-        local_workspace_dir (str, optional): set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
-        credential (optional): credential to access cloud resources,  most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
-        project_registry_tag (Dict[str, str]): adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
-
     Raises:
         RuntimeError: Fail to create the client since necessary environment variables are not set for Redis
-        client creation.
+            client creation.
     """
-    def __init__(self, config_path:str = "./feathr_config.yaml", local_workspace_dir: str = None, credential=None, project_registry_tag: Dict[str, str]=None):
+    def __init__(
+        self,
+        config_path:str = "./feathr_config.yaml",
+        local_workspace_dir: str = None,
+        credential: Any = None,
+        project_registry_tag: Dict[str, str] = None,
+        use_env_vars: bool = True,
+    ):
+        """Initialize Feathr Client.
+
+        Args:
+            config_path (optional): Config yaml file path. See [Feathr Config Template](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
+            local_workspace_dir (optional): Set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
+            credential (optional): Azure credential to access cloud resources, most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
+            project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
+            use_env_vars (optional): Whether to use environment variables to set up the client. If set to False, the client will not use environment variables to set up the client. Defaults to True.
+        """
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
-        self.envutils = _EnvVaraibleUtil(config_path)
+        self.envutils = _EnvVaraibleUtil(config_path, use_env_vars)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
@@ -543,7 +553,7 @@ class FeathrClient(object):
         - Job configuration are like "configurations" for the spark job and are usually spark specific. For example, we want to control the no. of write parts for spark
         Job configurations and job arguments (or sometimes called job parameters) have quite some overlaps (i.e. you can achieve the same goal by either using the job arguments/parameters vs. job configurations). But the job tags should just be used for metadata purpose.
         '''
-        
+
         # submit the jars
         return self.feathr_spark_launcher.submit_feathr_job(
             job_name=self.project_name + '_feathr_feature_join_job',

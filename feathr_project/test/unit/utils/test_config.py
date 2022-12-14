@@ -1,7 +1,4 @@
-from copy import deepcopy
-import os
 from pathlib import Path
-from unittest.mock import MagicMock
 import yaml
 
 import pytest
@@ -29,7 +26,6 @@ def test__generate_config__output_filepath(
         resource_prefix=resource_prefix,
         project_name=project_name,
         output_filepath=output_filepath,
-        use_env_vars=False,
     )
 
     # Assert if the config file was generated in the specified output path.
@@ -81,7 +77,6 @@ def test__generate_config__spark_cluster(
         resource_prefix="test_prefix",
         project_name="test_project",
         spark_config__spark_cluster=spark_cluster,
-        use_env_vars=False,
         **kwargs,
     )
 
