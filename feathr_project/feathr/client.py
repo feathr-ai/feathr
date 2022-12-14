@@ -305,7 +305,9 @@ class FeathrClient(object):
 
         Args:
             feature_table: the name of the feature table.
-            key: the key/key list of the entity
+            key: the key/key list of the entity; 
+                 for key list, please make sure the order is consistent with the one in feature's definition;
+                 the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
 
         Return:
@@ -326,7 +328,9 @@ class FeathrClient(object):
 
         Args:
             feature_table: the name of the feature table.
-            keys: list of keys/key lists for the entities
+            keys: list of keys/key lists for the entities;
+                  for key lists, please make sure each order is consistent with the one in feature's definition;
+                  the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
 
         Return:
