@@ -63,8 +63,6 @@ def test__feature_embedding(config_path, tmp_path):
 
     print(f"Running {notebook_name} notebook as {output_notebook_path}")
 
-    conf = yaml.safe_load(Path(config_path).read_text())
-
     pm.execute_notebook(
         input_path=NOTEBOOK_PATHS[notebook_name],
         output_path=output_notebook_path,
@@ -72,7 +70,6 @@ def test__feature_embedding(config_path, tmp_path):
         parameters=dict(
             USE_CLI_AUTH=False,
             REGISTER_FEATURES=False,
-            SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL=conf["spark_config"]["databricks"]["workspace_instance_url"],
             CLEAN_UP=True,
         ),
     )
