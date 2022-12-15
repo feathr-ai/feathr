@@ -67,7 +67,7 @@ class FeathrClient(object):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
-        self._COMPOSITE_KEY_EPARATOR = '#'
+        self._COMPOSITE_KEY_SEPARATOR = '#'
         self.envutils = _EnvVaraibleUtil(config_path)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
@@ -328,7 +328,7 @@ class FeathrClient(object):
 
         Args:
             feature_table: the name of the feature table.
-            keys: list of keys/key lists for the entities;
+            keys: list of keys/composite keys for the entities;
                   for key lists, please make sure each order is consistent with the one in feature's definition;
                   the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
@@ -353,7 +353,7 @@ class FeathrClient(object):
             decoded_pipeline_result.append(self._decode_proto(feature_list))
         for i in range(len(keys)):
             if isinstance(keys[i], List):
-                keys[i] = self._COMPOSITE_KEY_EPARATOR.join(keys[i])
+                keys[i] = self._COMPOSITE_KEY_SEPARATOR.join(keys[i])
         return dict(zip(keys, decoded_pipeline_result))
 
     def _decode_proto(self, feature_list):
