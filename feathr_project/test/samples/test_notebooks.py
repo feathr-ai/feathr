@@ -57,7 +57,7 @@ def test__nyc_taxi_demo(config_path, tmp_path):
 
 
 @pytest.mark.databricks
-def test__feature_embedding(config_path, tmp_path):
+def test__feature_embedding(tmp_path):
     notebook_name = "feature_embedding"
     output_notebook_path = str(tmp_path.joinpath(f"{notebook_name}.ipynb"))
 
