@@ -33,7 +33,7 @@ DEFAULT_FEATHR_CONFIG = {
 # New databricks job cluster config
 DEFAULT_DATABRICKS_CLUSTER_CONFIG = {
     "spark_version": "11.2.x-scala2.12",
-    "node_type_id": "Standard_D3_v2",
+    "node_type_id": "Standard_F4s",  # May change this if out of quota
     "num_workers": 1,
     "spark_conf": {
         "FEATHR_FILL_IN": "FEATHR_FILL_IN",
