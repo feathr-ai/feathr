@@ -5,7 +5,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 import feathr.utils._envvariableutil
-from feathr.utils._envvariableutil import _EnvVaraibleUtil
+from feathr.utils._envvariableutil import EnvConfigReader
 
 
 TEST_CONFIG_KEY = "test__config__key"
@@ -26,13 +26,13 @@ test:
         (False, TEST_CONFIG_ENV_VAL, TEST_CONFIG_FILE_VAL),
     ]
 )
-def test__envvariableutil__get_environment_variable_with_default(
+def test__envvariableutil__get(
     mocker: MockerFixture,
     use_env_vars: bool,
     env_value: str,
     expected_value: str,
 ):
-    """Test `get_environment_variable_with_default` method if it returns the correct value
+    """Test `get` method if it returns the correct value
     along with `use_env_vars` argument.
     """
     if env_value:
@@ -41,8 +41,8 @@ def test__envvariableutil__get_environment_variable_with_default(
     f = NamedTemporaryFile(delete=True)
     f.write(TEST_CONFIG_FILE_CONTENT.encode())
     f.seek(0)
-    env_var_util = _EnvVaraibleUtil(config_path=f.name, use_env_vars=use_env_vars)
-    assert env_var_util.get_environment_variable_with_default(*TEST_CONFIG_KEY.split("__")) == expected_value
+    env_config = EnvConfigReader(config_path=f.name, use_env_vars=use_env_vars)
+    assert env_config.get(TEST_CONFIG_KEY) == expected_value
 
 
 @pytest.mark.parametrize(
@@ -53,13 +53,13 @@ def test__envvariableutil__get_environment_variable_with_default(
         (False, TEST_CONFIG_ENV_VAL, TEST_CONFIG_ENV_VAL),
     ]
 )
-def test__envvariableutil__get_environment_variable(
+def test__envvariableutil__get_from_env_or_akv(
     mocker: MockerFixture,
     use_env_vars: bool,
     env_value: str,
     expected_value: str,
 ):
-    """Test `get_environment_variable` method if it returns the environment variable regardless of `use_env_vars` argument.
+    """Test `get_from_env_or_akv` method if it returns the environment variable regardless of `use_env_vars` argument.
 
     Args:
         mocker (MockerFixture): _description_
@@ -73,5 +73,5 @@ def test__envvariableutil__get_environment_variable(
     f = NamedTemporaryFile(delete=True)
     f.write(TEST_CONFIG_FILE_CONTENT.encode())
     f.seek(0)
-    env_var_util = _EnvVaraibleUtil(config_path=f.name, use_env_vars=use_env_vars)
-    assert env_var_util.get_environment_variable(TEST_CONFIG_KEY) == expected_value
+    env_config = EnvConfigReader(config_path=f.name, use_env_vars=use_env_vars)
+    assert env_config.get_from_env_or_akv(TEST_CONFIG_KEY) == expected_value
