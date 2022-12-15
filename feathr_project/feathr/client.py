@@ -446,7 +446,7 @@ class FeathrClient(object):
 
     def _construct_redis_key(self, feature_table, key):
         if isinstance(key, List):
-            key = self._COMPOSITE_KEY_EPARATOR.join(key)
+            key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
 
     def _construct_redis_client(self):
