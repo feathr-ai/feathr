@@ -30,12 +30,11 @@ DEFAULT_FEATHR_CONFIG = {
     }
 }
 
-
 # New databricks job cluster config
 DEFAULT_DATABRICKS_CLUSTER_CONFIG = {
     "spark_version": "11.2.x-scala2.12",
     "node_type_id": "Standard_D3_v2",
-    "num_workers": 2,
+    "num_workers": 1,
     "spark_conf": {
         "FEATHR_FILL_IN": "FEATHR_FILL_IN",
         # Exclude conflicting packages if use feathr <= v0.8.0:
@@ -43,11 +42,10 @@ DEFAULT_DATABRICKS_CLUSTER_CONFIG = {
     },
 }
 
-
 # New Azure Synapse spark pool config
 DEFAULT_AZURE_SYNAPSE_SPARK_POOL_CONFIG = {
     "executor_size": "Small",
-    "executor_num": 2,
+    "executor_num": 1,
 }
 
 
