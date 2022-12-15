@@ -329,7 +329,7 @@ class FeathrClient(object):
         Args:
             feature_table: the name of the feature table.
             keys: list of keys/composite keys for the entities;
-                  for key lists, please make sure each order is consistent with the one in feature's definition;
+                  for composite keys, please make sure each order of them is consistent with the one in feature's definition;
                   the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
 
