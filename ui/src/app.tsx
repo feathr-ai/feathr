@@ -2,8 +2,6 @@ import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "antd";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { InteractionType } from "@azure/msal-browser";
-import { MsalAuthenticationTemplate, MsalProvider } from "@azure/msal-react";
 import Header from "./components/header/header";
 import SideMenu from "./components/sidemenu/siteMenu";
 import Features from "./pages/feature/features";
@@ -19,61 +17,59 @@ import ResponseErrors from "./pages/responseErrors/responseErrors";
 import RoleManagement from "./pages/management/roleManagement";
 import Home from "./pages/home/home";
 import Projects from "./pages/project/projects";
-import { getMsalConfig } from "./utils/utils";
+
+import AzureMsal from "./components/AzureMsal";
 
 const queryClient = new QueryClient();
 
-const msalClient = getMsalConfig();
+const enableRBAC = window.environment?.enableRBAC;
+const authEnable: boolean =
+  (enableRBAC ? enableRBAC : process.env.REACT_APP_ENABLE_RBAC) === "true";
 
 const App = () => {
   return (
-    <MsalProvider instance={msalClient}>
-      <MsalAuthenticationTemplate interactionType={InteractionType.Redirect}>
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <Layout style={{ minHeight: "100vh", position: "relative" }}>
-              <SideMenu />
-              <Layout style={{ position: "relative" }}>
-                <Header />
-                <Layout.Content>
-                  <Routes>
-                    <Route index element={<Home />} />
-                    <Route path="/home" element={<Home />} />
-                    <Route path="/projects" element={<Projects />} />
-                    <Route path="/dataSources" element={<DataSources />} />
-                    <Route path="/features" element={<Features />} />
-                    <Route path="/new-feature" element={<NewFeature />} />
-                    <Route
-                      path="/projects/:project/features/:featureId"
-                      element={<FeatureDetails />}
-                    />
-                    <Route
-                      path="/projects/:project/dataSources/:dataSourceId"
-                      element={<DataSourceDetails />}
-                    />
-                    <Route
-                      path="/projects/:project/lineage"
-                      element={<LineageGraph />}
-                    />
-                    <Route path="/jobs" element={<Jobs />} />
-                    <Route path="/monitoring" element={<Monitoring />} />
-                    <Route path="/management" element={<Management />} />
-                    <Route
-                      path="/role-management"
-                      element={<RoleManagement />}
-                    />
-                    <Route
-                      path="/responseErrors/:status/:detail"
-                      element={<ResponseErrors />}
-                    />
-                  </Routes>
-                </Layout.Content>
-              </Layout>
+    <AzureMsal enable={authEnable}>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Layout style={{ minHeight: "100vh", position: "relative" }}>
+            <SideMenu />
+            <Layout style={{ position: "relative" }}>
+              <Header />
+              <Layout.Content>
+                <Routes>
+                  <Route index element={<Home />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/dataSources" element={<DataSources />} />
+                  <Route path="/features" element={<Features />} />
+                  <Route path="/new-feature" element={<NewFeature />} />
+                  <Route
+                    path="/projects/:project/features/:featureId"
+                    element={<FeatureDetails />}
+                  />
+                  <Route
+                    path="/projects/:project/dataSources/:dataSourceId"
+                    element={<DataSourceDetails />}
+                  />
+                  <Route
+                    path="/projects/:project/lineage"
+                    element={<LineageGraph />}
+                  />
+                  <Route path="/jobs" element={<Jobs />} />
+                  <Route path="/monitoring" element={<Monitoring />} />
+                  <Route path="/management" element={<Management />} />
+                  <Route path="/role-management" element={<RoleManagement />} />
+                  <Route
+                    path="/responseErrors/:status/:detail"
+                    element={<ResponseErrors />}
+                  />
+                </Routes>
+              </Layout.Content>
             </Layout>
-          </BrowserRouter>
-        </QueryClientProvider>
-      </MsalAuthenticationTemplate>
-    </MsalProvider>
+          </Layout>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </AzureMsal>
   );
 };
 
