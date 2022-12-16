@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import tempfile
-from typing import Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template

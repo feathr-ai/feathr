@@ -1,11 +1,10 @@
-import os
 from tempfile import NamedTemporaryFile
 
 import pytest
 from pytest_mock import MockerFixture
 
-import feathr_project.feathr.utils._env_config_reader
-from feathr_project.feathr.utils._env_config_reader import EnvConfigReader
+import feathr.utils._env_config_reader
+from feathr.utils._env_config_reader import EnvConfigReader
 
 
 TEST_CONFIG_KEY = "test__config__key"
