@@ -23,12 +23,13 @@ class EnvConfigReader(object):
             config_path: Config file path.
             use_env_vars (optional): Whether to use os environment variables instead of config file. Defaults to True.
         """
-        config_path = Path(config_path)
-        if config_path.is_file():
-            try:
-                self.yaml_config = yaml.safe_load(config_path.read_text())
-            except yaml.YAMLError as e:
-                logger.warning(e)
+        if config_path is not None:
+            config_path = Path(config_path)
+            if config_path.is_file():
+                try:
+                    self.yaml_config = yaml.safe_load(config_path.read_text())
+                except yaml.YAMLError as e:
+                    logger.warning(e)
 
         self.use_env_vars = use_env_vars
 

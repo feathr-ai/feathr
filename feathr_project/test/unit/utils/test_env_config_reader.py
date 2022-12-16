@@ -4,8 +4,8 @@ from tempfile import NamedTemporaryFile
 import pytest
 from pytest_mock import MockerFixture
 
-import feathr.utils._envvariableutil
-from feathr.utils._envvariableutil import EnvConfigReader
+import feathr_project.feathr.utils._env_config_reader
+from feathr_project.feathr.utils._env_config_reader import EnvConfigReader
 
 
 TEST_CONFIG_KEY = "test__config__key"
@@ -36,7 +36,7 @@ def test__envvariableutil__get(
     along with `use_env_vars` argument.
     """
     if env_value:
-        mocker.patch.object(feathr.utils._envvariableutil.os, "environ", {TEST_CONFIG_KEY: env_value})
+        mocker.patch.object(feathr.utils._env_config_reader.os, "environ", {TEST_CONFIG_KEY: env_value})
 
     f = NamedTemporaryFile(delete=True)
     f.write(TEST_CONFIG_FILE_CONTENT.encode())
@@ -68,7 +68,7 @@ def test__envvariableutil__get_from_env_or_akv(
         expected_value (str): _description_
     """
     if env_value:
-        mocker.patch.object(feathr.utils._envvariableutil.os, "environ", {TEST_CONFIG_KEY: env_value})
+        mocker.patch.object(feathr.utils._env_config_reader.os, "environ", {TEST_CONFIG_KEY: env_value})
 
     f = NamedTemporaryFile(delete=True)
     f.write(TEST_CONFIG_FILE_CONTENT.encode())

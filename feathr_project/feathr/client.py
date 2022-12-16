@@ -1,46 +1,46 @@
 import base64
 import copy
+import json
 import logging
 import os
 import tempfile
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 from azure.identity import DefaultAzureCredential
-from feathr.definition.transformation import WindowAggTransformation
 from jinja2 import Template
+from loguru import logger
 from pyhocon import ConfigFactory
 import redis
-from loguru import logger
 
 from feathr.constants import *
 from feathr.definition._materialization_utils import _to_materialization_config
 from feathr.definition.anchor import FeatureAnchor
+from feathr.definition.config_helper import FeathrConfigHelper
 from feathr.definition.feature import FeatureBase
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.materialization_settings import MaterializationSettings
 from feathr.definition.monitoring_settings import MonitoringSettings
 from feathr.definition.query_feature_list import FeatureQuery
 from feathr.definition.settings import ObservationSettings
-from feathr.definition.sink import Sink, HdfsSink
+from feathr.definition.sink import HdfsSink, Sink
+from feathr.definition.source import InputContext
+from feathr.definition.transformation import WindowAggTransformation
+from feathr.definition.typed_key import TypedKey
 from feathr.protobuf.featureValue_pb2 import FeatureValue
+from feathr.registry._feathr_registry_client import _FeatureRegistry, derived_feature_to_def, feature_to_def
+from feathr.registry._feature_registry_purview import _PurviewRegistry
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr.spark_provider._localspark_submission import _FeathrLocalSparkJobLauncher
 from feathr.spark_provider._synapse_submission import _FeathrSynapseJobLauncher
 from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
 from feathr.udf._preprocessing_pyudf_manager import _PreprocessingPyudfManager
-from feathr.utils._envvariableutil import EnvConfigReader
+from feathr.utils._env_config_reader import EnvConfigReader
 from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
-from feathr.definition.source import InputContext
-from azure.identity import DefaultAzureCredential
-from jinja2 import Template
-from loguru import logger
-from feathr.definition.config_helper import FeathrConfigHelper
-from pyhocon import ConfigFactory
-from feathr.registry._feathr_registry_client import _FeatureRegistry
-from feathr.registry._feature_registry_purview import _PurviewRegistry
 from feathr.version import get_version
+
+
 class FeathrClient(object):
     """Feathr client.
 
@@ -77,7 +77,7 @@ class FeathrClient(object):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
-        self.env_config = EnvConfigReader(config_path, use_env_vars)
+        self.env_config = EnvConfigReader(config_path=config_path, use_env_vars=use_env_vars)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
@@ -956,19 +956,32 @@ class FeathrClient(object):
             prop_and_value[prop] = self.env_config.get(prop)
         return prop_and_value
 
-    def get_features_from_registry(self, project_name: str) -> Dict[str, FeatureBase]:
+    def get_features_from_registry(self, project_name: str, return_keys: bool = False, verbose: bool = False) -> Union[Dict[str, FeatureBase], Tuple[Dict[str, FeatureBase], Dict[str, Union[TypedKey, List[TypedKey]]]]]:
         """
         Get feature from registry by project name. The features got from registry are automatically built.
         """
         registry_anchor_list, registry_derived_feature_list = self.registry.get_features_from_registry(project_name)
         self.build_features(registry_anchor_list, registry_derived_feature_list)
         feature_dict = {}
+        key_dict = {}
         # add those features into a dict for easier lookup
+        if verbose and registry_anchor_list:
+            logger.info("Get anchor features from registry: ")
         for anchor in registry_anchor_list:
             for feature in anchor.features:
                 feature_dict[feature.name] = feature
+                key_dict[feature.name] = feature.key
+                if verbose:
+                    logger.info(json.dumps(feature_to_def(feature), indent=2))
+        if verbose and registry_derived_feature_list:
+            logger.info("Get derived features from registry: ")
         for feature in registry_derived_feature_list:
                 feature_dict[feature.name] = feature
+                key_dict[feature.name] = feature.key
+                if verbose:
+                    logger.info(json.dumps(derived_feature_to_def(feature), indent=2))
+        if return_keys:
+            return feature_dict, key_dict
         return feature_dict
 
     def _reshape_config_str(self, config_str:str):
