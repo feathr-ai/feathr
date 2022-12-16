@@ -15,6 +15,10 @@ def is_jupyter() -> bool:
     Returns:
         bool: True if the module is running on Jupyter notebook or Jupyter console, False otherwise.
     """
+    # Should check is_databricks() and is_synapse() first since they also use the same ZMQ interactive shell.
+    if is_databricks() or is_synapse():
+        return False
+
     try:
         # Pre-loaded module `get_ipython()` tells you whether you are running inside IPython or not.
         shell_name = get_ipython().__class__.__name__
@@ -33,13 +37,23 @@ def is_databricks() -> bool:
     Returns:
         bool: True if the module is running on Databricks notebook, False otherwise.
     """
+    if str(Path(".").resolve()) == "/databricks/driver":
+        return True
+    else:
+        return False
+
+
+def is_synapse() -> bool:
+    """Check if the module is running on Azure Synapse.
+
+    Returns:
+        bool: True if the module is running on Azure Synapse notebook, False otherwise.
+    """
     try:
-        if str(Path(".").resolve()) == "/databricks/driver":
+        # Try to use existing spark session.
+        if spark.sparkContext.getConf().get("spark.synapse.pool.name"):
             return True
         else:
             return False
     except NameError:
         return False
-
-
-# TODO maybe add is_synapse()
