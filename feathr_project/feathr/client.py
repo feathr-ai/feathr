@@ -3,7 +3,8 @@ import copy
 import logging
 import os
 import tempfile
-from typing import Dict, List, Union
+import json
+from typing import Dict, List, Union, Tuple
 
 from azure.identity import DefaultAzureCredential
 from feathr.definition.transformation import WindowAggTransformation
@@ -22,6 +23,7 @@ from feathr.definition.monitoring_settings import MonitoringSettings
 from feathr.definition.query_feature_list import FeatureQuery
 from feathr.definition.settings import ObservationSettings
 from feathr.definition.sink import Sink, HdfsSink
+from feathr.definition.typed_key import TypedKey
 from feathr.protobuf.featureValue_pb2 import FeatureValue
 from feathr.spark_provider._databricks_submission import _FeathrDatabricksJobLauncher
 from feathr.spark_provider._localspark_submission import _FeathrLocalSparkJobLauncher
@@ -38,7 +40,7 @@ from jinja2 import Template
 from loguru import logger
 from feathr.definition.config_helper import FeathrConfigHelper
 from pyhocon import ConfigFactory
-from feathr.registry._feathr_registry_client import _FeatureRegistry
+from feathr.registry._feathr_registry_client import _FeatureRegistry, feature_to_def, derived_feature_to_def
 from feathr.registry._feature_registry_purview import _PurviewRegistry
 from feathr.version import get_version
 class FeathrClient(object):
@@ -946,19 +948,32 @@ class FeathrClient(object):
             prop_and_value[prop] = self.envutils.get_environment_variable_with_default(prop)
         return prop_and_value
 
-    def get_features_from_registry(self, project_name: str) -> Dict[str, FeatureBase]:
+    def get_features_from_registry(self, project_name: str, return_keys: bool = False, verbose: bool = False) -> Union[Dict[str, FeatureBase], Tuple[Dict[str, FeatureBase], Dict[str, Union[TypedKey, List[TypedKey]]]]]:
         """
         Get feature from registry by project name. The features got from registry are automatically built.
         """
         registry_anchor_list, registry_derived_feature_list = self.registry.get_features_from_registry(project_name)
         self.build_features(registry_anchor_list, registry_derived_feature_list)
         feature_dict = {}
+        key_dict = {}
         # add those features into a dict for easier lookup
+        if verbose and registry_anchor_list:
+            logger.info("Get anchor features from registry: ")
         for anchor in registry_anchor_list:
             for feature in anchor.features:
                 feature_dict[feature.name] = feature
+                key_dict[feature.name] = feature.key
+                if verbose:
+                    logger.info(json.dumps(feature_to_def(feature), indent=2))
+        if verbose and registry_derived_feature_list:
+            logger.info("Get derived features from registry: ")
         for feature in registry_derived_feature_list:
                 feature_dict[feature.name] = feature
+                key_dict[feature.name] = feature.key
+                if verbose:
+                    logger.info(json.dumps(derived_feature_to_def(feature), indent=2))
+        if return_keys:
+            return feature_dict, key_dict
         return feature_dict
 
     def _reshape_config_str(self, config_str:str):
