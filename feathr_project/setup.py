@@ -84,6 +84,7 @@ setup(
         "azure-storage-file-datalake<=12.5.0",
         "azure-synapse-spark<=0.7.0",
         # fixing Azure Machine Learning authentication issue per https://stackoverflow.com/a/72262694/3193073
+        "aiohttp==3.8.3",  # pin to resolve Synapse import issue
         "azure-identity>=1.8.0",
         "azure-keyvault-secrets<=4.6.0",
         # In 1.23.0, azure-core is using ParamSpec which might cause issues in some of the databricks runtime.

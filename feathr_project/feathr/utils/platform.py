@@ -1,6 +1,7 @@
 """Platform utilities.
 Refs: https://github.com/microsoft/recommenders/blob/main/recommenders/utils/notebook_utils.py
 """
+import os
 from pathlib import Path
 
 
@@ -37,6 +38,7 @@ def is_databricks() -> bool:
     Returns:
         bool: True if the module is running on Databricks notebook, False otherwise.
     """
+    # Note, this is a hacky way to check if the code is running on Databricks.
     if str(Path(".").resolve()) == "/databricks/driver":
         return True
     else:
@@ -49,11 +51,8 @@ def is_synapse() -> bool:
     Returns:
         bool: True if the module is running on Azure Synapse notebook, False otherwise.
     """
-    try:
-        # Try to use existing spark session.
-        if spark.sparkContext.getConf().get("spark.synapse.pool.name"):
-            return True
-        else:
-            return False
-    except NameError:
+    # Note, this is a hacky way to check if the code is running on Synapse.
+    if "SYNAPSE_ENABLE_CONFIG_MERGE_RULE" in os.environ:
+        return True
+    else:
         return False
