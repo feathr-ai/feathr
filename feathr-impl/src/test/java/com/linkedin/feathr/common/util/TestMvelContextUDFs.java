@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.scalatest.testng.TestNGSuite;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -23,7 +22,7 @@ import static org.testng.Assert.*;
 /**
  * Unit tests for {@link MvelContextUDFs}
  */
-public class TestMvelContextUDFs extends TestNGSuite {
+public class TestMvelContextUDFs {
   @Test
   public void testGetDataType() {
     Assert.assertEquals(get_data_type("A"), "java.lang.String");

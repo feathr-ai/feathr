@@ -1,21 +1,19 @@
 package com.linkedin.feathr.offline.config.location
 
-import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.caseclass.mapper.CaseClassObjectMapper
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.FeathrJacksonScalaModule
 import com.linkedin.feathr.offline.config.DataSourceLoader
 import com.linkedin.feathr.offline.config.location.LocationUtils.envSubstitute
-import com.linkedin.feathr.offline.config.location.{DataLocation, Jdbc, SimplePath}
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.source.DataSource
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SparkSession
 import org.apache.hadoop.mapred.JobConf
-import org.scalatest.FunSuite
+import org.apache.spark.sql.SparkSession
+import org.scalatest.funsuite.AnyFunSuite
 
-class TestDesLocation extends FunSuite {
+class TestDesLocation extends AnyFunSuite {
   val jackson = (new ObjectMapper(new HoconFactory) with CaseClassObjectMapper)
     .registerModule(FeathrJacksonScalaModule) // DefaultScalaModule causes a fail on holdem
     .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)

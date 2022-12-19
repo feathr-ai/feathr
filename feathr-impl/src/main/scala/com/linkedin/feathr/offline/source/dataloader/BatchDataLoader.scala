@@ -4,8 +4,6 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataExceptio
 import com.linkedin.feathr.offline.config.location.DataLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
-import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
-import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
@@ -16,7 +14,9 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * @param ss the spark session
  * @param path input data path
  */
-private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation, dataLoaderHandlers: List[DataLoaderHandler]) extends DataLoader {
+private[offline] class BatchDataLoader(val ss: SparkSession,
+                                       val location: DataLocation,
+                                       val dataLoaderHandlers: List[DataLoaderHandler]) extends DataLoader {
 
   /**
    * get the schema of the source. It's only used in the deprecated DataSource.getDataSetAndSchema
@@ -48,25 +48,22 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
    * @return an dataframe
    */
   override def loadDataFrame(): DataFrame = {
-    loadDataFrame(Map(), new JobConf(ss.sparkContext.hadoopConfiguration))
+     loadDataFrameWithRetry(Map(), new JobConf(ss.sparkContext.hadoopConfiguration), MAX_DATA_LOAD_RETRY)
   }
-
   /**
    * load the source data as dataframe.
    * @param dataIOParameters extra parameters
    * @param jobConf Hadoop JobConf to be passed
+   * @param retry number of times to retry when data loading fails
    * @return an dataframe
    */
-  def loadDataFrame(dataIOParameters: Map[String, String], jobConf: JobConf): DataFrame = {
+  def loadDataFrameWithRetry(dataIOParameters: Map[String, String], jobConf: JobConf, retry: Int): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParametersWithSplitSize = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize) ++ dataIOParameters
     val dataPath = location.getPath
 
     log.info(s"Loading ${location} as DataFrame, using parameters ${dataIOParametersWithSplitSize}")
-
-    // Get csvDelimiterOption set with spark.feathr.inputFormat.csvOptions.sep and check if it is set properly (Only for CSV and TSV)
-    val csvDelimiterOption = checkDelimiterOption(ss.sqlContext.getConf("spark.feathr.inputFormat.csvOptions.sep", ","))
 
     try {
       import scala.util.control.Breaks._
@@ -87,12 +84,20 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
       }
       df
     } catch {
-      case feathrException: FeathrInputDataException =>
-        println(feathrException.toString)
-        throw feathrException // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
-      case e: Throwable => //TODO: Analyze all thrown exceptions, instead of swalling them all, and reading as a csv
-        println(e.toString)
-        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(dataPath)
+      case _: Throwable =>
+        // If data loading from source failed, retry it automatically, as it might due to data source still being written into.
+        log.info(s"Loading ${location} failed, retrying for ${retry}-th time..")
+        if (retry > 0) {
+          Thread.sleep(DATA_LOAD_WAIT_IN_MS)
+          loadDataFrameWithRetry(dataIOParameters, jobConf, retry - 1)
+        } else {
+          // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
+          throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} after ${MAX_DATA_LOAD_RETRY} retries.")
+        }
     }
   }
+  // Retry 2 times if data source loading fails
+  val MAX_DATA_LOAD_RETRY = 2
+  // Wait for 10 minutes and retry if data source loading fails
+  val DATA_LOAD_WAIT_IN_MS = 10*60*1000
 }

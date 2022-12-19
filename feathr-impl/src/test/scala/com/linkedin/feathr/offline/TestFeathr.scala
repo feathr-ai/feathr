@@ -10,14 +10,13 @@ import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.sql.SparkSession
-import org.scalatest.testng.TestNGSuite
 import org.testng.annotations.{AfterClass, BeforeClass}
 
 import scala.collection.convert.wrapAll._
 import scala.reflect.ClassTag
 
 // abstract class for all feathr tests
-abstract class TestFeathr extends TestNGSuite {
+abstract class TestFeathr {
   protected var ss: SparkSession = _
   protected var conf: Configuration = _
   protected var feathr: FeathrClient = _
