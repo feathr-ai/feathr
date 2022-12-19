@@ -7,15 +7,15 @@ NYC_TAXI_SMALL_URL = (
 # Fraud detection sample datasets.
 # Ref: https://github.com/microsoft/r-server-fraud-detection
 FRAUD_DETECTION_ACCOUNT_INFO_URL = (
-    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/frauddetection/Account_Info.csv"
+    "https://raw.github.com/microsoft/r-server-fraud-detection/master/Data/Account_Info.csv"
 )
 
 FRAUD_DETECTION_FRAUD_TRANSACTIONS_URL = (
-    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/frauddetection/Fraud_Transactions.csv"
+    "https://raw.github.com/microsoft/r-server-fraud-detection/master/Data/Fraud_Transactions.csv"
 )
 
 FRAUD_DETECTION_UNTAGGED_TRANSACTIONS_URL = (
-    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/frauddetection/Untagged_Transactions.csv"
+    "https://raw.github.com/microsoft/r-server-fraud-detection/master/Data/Untagged_Transactions.csv"
 )
 
 # Product recommendation sample datasets.
@@ -39,5 +39,5 @@ PRODUCT_RECOMMENDATION_PRODUCT_DETAIL_URL = (
 # Hotel review sample datasets.
 # Ref: https://www.kaggle.com/datasets/datafiniti/hotel-reviews
 HOTEL_REVIEWS_URL = (
-    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/hotel_reviews_100_with_id.csv"
+    "https://raw.github.com/Azure-Samples/azure-search-python-samples/main/AzureML-Custom-Skill/datasets/hotel_reviews_1000.csv"
 )
