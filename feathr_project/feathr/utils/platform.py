@@ -1,8 +1,4 @@
-"""Platform utilities.
-Refs: https://github.com/microsoft/recommenders/blob/main/recommenders/utils/notebook_utils.py
-"""
 import os
-from pathlib import Path
 
 
 def is_jupyter() -> bool:
@@ -39,7 +35,7 @@ def is_databricks() -> bool:
         bool: True if the module is running on Databricks notebook, False otherwise.
     """
     # Note, this is a hacky way to check if the code is running on Databricks.
-    if str(Path(".").resolve()) == "/databricks/driver":
+    if "DATABRICKS_RUNTIME_VERSION" in os.environ:
         return True
     else:
         return False
