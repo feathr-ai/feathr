@@ -1,15 +1,20 @@
 package com.linkedin.feathr.offline.util
 
-import java.util.Properties
-
+import com.linkedin.feathr.offline.config.location.SimplePath
+import com.linkedin.feathr.offline.generation.SparkIOUtils
 import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
-private[offline] object FeathrUtils {
+import java.util.Properties
+import java.util.concurrent.atomic.AtomicLong
+
+private[feathr] object FeathrUtils {
 
   val ENVIRONMENT = "offline"
   val ENABLE_DEBUG_OUTPUT = "debug.enabled"
+  val DEBUG_FEATURE_NAMES = "debug.feature.names"
   val DEBUG_OUTPUT_PATH = "debug.output.path"
   val DEBUG_OUTPUT_PART_NUM = "debug.output.num.parts"
   val FEATHR_PARAMS_PREFIX = "spark.feathr."
@@ -35,18 +40,27 @@ private[offline] object FeathrUtils {
   val ENABLE_SLICK_JOIN = "enable.slickJoin"
   val ENABLE_METRICS = "enable.metrics"
   val ENABLE_CHECKPOINT = "enable.checkpoint"
+  val CHECKPOINT_FREQUENCY = "checkpoint.frequency"
   val ROW_BLOOMFILTER_MAX_THRESHOLD = "row.bloomfilter.maxThreshold"
   val SPARK_JOIN_MAX_PARALLELISM = "max.parallelism"
   val CHECKPOINT_OUTPUT_PATH = "checkpoint.dir"
   val SPARK_JOIN_MIN_PARALLELISM = "min.parallelism"
   val MAX_DATA_LOAD_RETRY = "max.data.load.retry"
   val DATA_LOAD_WAIT_IN_MS = "data.load.wait.in.ms"
+  val ENABLE_SANITY_CHECK_MODE = "enable.sanity.check.mode"
+  val SANITY_CHECK_MODE_ROW_COUNT = "sanity.check.row.count"
+  val STRING_PARAMETER_DELIMITER = ","
 
+  // Used to check if the current dataframe has satisfied the checkpoint frequency
+  val checkPointSequenceNumber = new AtomicLong(0)
   val defaultParams: Map[String, String] = Map(
     ENABLE_DEBUG_OUTPUT -> "false",
+    DEBUG_FEATURE_NAMES -> "",
     DEBUG_OUTPUT_PATH -> "/tmp/debug/feathr/output",
     CHECKPOINT_OUTPUT_PATH -> "/tmp/feathr/checkpoints",
     ENABLE_CHECKPOINT -> "false",
+    // Check point every {CHECKPOINT_FREQUENCY} dataframes
+    CHECKPOINT_FREQUENCY -> "10",
     DEBUG_OUTPUT_PART_NUM -> "200",
     FAIL_ON_MISSING_PARTITION -> "false",
     SEQ_JOIN_ARRAY_EXPLODE_ENABLED -> "true",
@@ -68,7 +82,9 @@ private[offline] object FeathrUtils {
     ENABLE_METRICS -> "false",
     // cap it to 10000 to make sure memoryOverhead is less than 2g (Feathr default value)
     SPARK_JOIN_MAX_PARALLELISM -> "10000",
-    SPARK_JOIN_MIN_PARALLELISM -> "10")
+    SPARK_JOIN_MIN_PARALLELISM -> "10",
+    ENABLE_SANITY_CHECK_MODE -> "false",
+    SANITY_CHECK_MODE_ROW_COUNT -> "10")
 
   /**
    * Get Feathr Offline version string from .properties file that gets created at build time
@@ -127,5 +143,62 @@ private[offline] object FeathrUtils {
   private def isDebugOutputEnabled(sparkConf: SparkConf): Boolean = {
     FeathrUtils.getFeathrJobParam(sparkConf, FeathrUtils.ENABLE_DEBUG_OUTPUT).toBoolean
   }
+
+  /**
+   * Dump a dataframe to disk if debug mode is enabled.
+   * The function will check the features against the 'spark.feathr.debug.feature.names',
+   * making sure there's overlap before dumping the dataframe.
+   * @param ss spark session
+   * @param df input dataframe
+   * @param features features in the input dataframe
+   * @param tag tag used in the log
+   * @param pathSuffix path suffix used to dump the dataframe
+   */
+  def dumpDebugInfo(ss: SparkSession,
+                            df: DataFrame,
+                            features: Set[String],
+                            tag: String,
+                            pathSuffix: String): Unit = {
+    if (isDebugMode(ss)) {
+      val basePath = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.DEBUG_OUTPUT_PATH)
+      val debugFeatureNames = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.DEBUG_FEATURE_NAMES)
+        .split(FeathrUtils.STRING_PARAMETER_DELIMITER).toSet
+      val featureNames = "features_" + features.mkString("_") + "_"
+      if (debugFeatureNames.isEmpty || features.intersect(debugFeatureNames).nonEmpty) {
+        val savePath = SimplePath(basePath + "/" + featureNames + pathSuffix)
+        log.info(s"${tag}, Start dumping data ${featureNames} to ${savePath}")
+        if (!df.isEmpty) {
+          SparkIOUtils.writeDataFrame(df, savePath, Map(), List())
+        }
+        log.info(s"{tag}. Finish dumping data ${featureNames} to ${savePath}")
+      } else {
+        log.info(s"{tag}. Skipping dumping data as feature names to debug are ${debugFeatureNames}, " +
+          s"and current dataframe has feature ${featureNames}")
+      }
+    }
+  }
+
+  def isDebugMode(ss: SparkSession) = {
+    FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ENABLE_DEBUG_OUTPUT).toBoolean
+  }
+
+  /**
+   * Check if we should checkpoint for the current call
+ *
+   * @param ss SparkSession
+   * @return
+   */
+  def shouldCheckPoint(ss: SparkSession): Boolean = {
+    val enableCheckPoint = getFeathrJobParam(ss, FeathrUtils.ENABLE_CHECKPOINT).toBoolean
+    if (enableCheckPoint) {
+      val currentCount = checkPointSequenceNumber.getAndIncrement()
+      val checkpoint_frequency = getFeathrJobParam(ss, FeathrUtils.CHECKPOINT_FREQUENCY).toInt
+      currentCount % checkpoint_frequency == 0
+    } else {
+      false
+    }
+  }
+
+  @transient lazy val log = LogManager.getLogger(getClass.getName)
 
 }

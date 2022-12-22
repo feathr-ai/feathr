@@ -3,10 +3,11 @@ package com.linkedin.feathr.offline.source.accessor
 import com.linkedin.feathr.offline.config.location.{GenericLocation, Jdbc, PathList, SimplePath, Snowflake, SparkSqlLocation}
 import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.source.DataSource
-import com.linkedin.feathr.offline.source.dataloader.{CaseInsensitiveGenericRecordWrapper, DataLoaderFactory}
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
 import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.util.SourceUtils.processSanityCheckMode
 import org.apache.avro.generic.{GenericRecord, IndexedRecord}
 import org.apache.avro.specific.SpecificRecordBase
 import org.apache.spark.rdd.RDD
@@ -62,6 +63,6 @@ private[offline] class NonTimeBasedDataSourceAccessor(
       println()
       println()
     }
-    df
+    processSanityCheckMode(ss, df)
   }
 }

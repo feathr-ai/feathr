@@ -2,20 +2,19 @@ package com.linkedin.feathr.offline.client
 
 import com.linkedin.feathr.common.exception._
 import com.linkedin.feathr.common.{FeatureInfo, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
-import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.config.{ConflictsAutoCorrectionSetting, FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig, JoinConfigSettings}
 import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, FeatureGenKeyTagAnalyzer, StreamingFeatureGenerator}
 import com.linkedin.feathr.offline.job._
 import com.linkedin.feathr.offline.join.DataFrameFeatureJoiner
-import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan, MultiStageJoinPlanner}
+import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.util._
 import org.apache.logging.log4j.LogManager
-import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.internal.SQLConf
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.util.{Failure, Success}
 import java.util.UUID

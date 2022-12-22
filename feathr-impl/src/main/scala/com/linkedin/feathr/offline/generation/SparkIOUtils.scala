@@ -74,8 +74,9 @@ object SparkIOUtils {
           val output_format = outputDF.sqlContext.getConf("spark.feathr.outputFormat", "avro")
           // if the output format is set by spark configurations "spark.feathr.outputFormat"
           // we will use that as the job output format; otherwise use avro as default for backward compatibility
-          outputDF.write.mode(SaveMode.Overwrite).format(output_format).save(path)
-          outputDF
+          if(!outputDF.isEmpty) {
+            outputDF.write.mode(SaveMode.Overwrite).format(output_format).save(path)
+          }
         }
         case _ => outputLocation.writeDf(SparkSession.builder().getOrCreate(), outputDF, None)
       }

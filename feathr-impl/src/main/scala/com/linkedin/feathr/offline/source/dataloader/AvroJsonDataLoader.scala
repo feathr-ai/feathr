@@ -3,6 +3,7 @@ package com.linkedin.feathr.offline.source.dataloader
 import com.databricks.spark.avro.SchemaConverterUtils
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
+import com.linkedin.feathr.offline.util.SourceUtils.processSanityCheckMode
 import org.apache.avro.Schema
 import org.apache.avro.generic.{GenericDatumReader, GenericRecord}
 import org.apache.avro.io.DecoderFactory
@@ -40,7 +41,8 @@ private[offline] class AvroJsonDataLoader(ss: SparkSession, path: String) extend
    */
   override def loadDataFrame(): DataFrame = {
     val res = AvroJsonDataLoader.loadJsonFileAsAvroToRDD(ss, path)
-    AvroJsonDataLoader.convertRDD2DF(ss, res)
+    val df = AvroJsonDataLoader.convertRDD2DF(ss, res)
+    processSanityCheckMode(ss, df)
   }
 }
 

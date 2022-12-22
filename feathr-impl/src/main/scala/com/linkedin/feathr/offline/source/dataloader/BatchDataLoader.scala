@@ -5,9 +5,9 @@ import com.linkedin.feathr.offline.config.location.DataLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
 import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
-import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
 import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.util.SourceUtils.processSanityCheckMode
 import com.linkedin.feathr.offline.util.FeathrUtils.DATA_LOAD_WAIT_IN_MS
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -60,7 +60,8 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
   override def loadDataFrame(): DataFrame = {
     val retry = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.MAX_DATA_LOAD_RETRY).toInt
     val retryCount = if (ss.sparkContext.isLocal) SQLConf.get.getConf(LocalFeatureJoinJob.MAX_DATA_LOAD_RETRY) else retry
-    loadDataFrameWithRetry(Map(), new JobConf(ss.sparkContext.hadoopConfiguration), retryCount)
+    val df = loadDataFrameWithRetry(Map(), new JobConf(ss.sparkContext.hadoopConfiguration), retryCount)
+    processSanityCheckMode(ss, df)
   }
 
   /**

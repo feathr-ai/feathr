@@ -110,6 +110,7 @@ private[offline] object DataSourceAccessor {
       // case 1: the timePartitionPattern exists
       val pathInfo = pathAnalyzer.analyze(source.path, source.timePartitionPattern.get)
       PathPartitionedTimeSeriesSourceAccessor(
+        ss,
         pathChecker,
         fileLoaderFactory,
         partitionLimiter,
@@ -124,6 +125,7 @@ private[offline] object DataSourceAccessor {
         // case 2: if it's daily/hourly data, load the partitions
         val pathInfo = pathAnalyzer.analyze(source.path)
         PathPartitionedTimeSeriesSourceAccessor(
+          ss,
           pathChecker,
           fileLoaderFactory,
           partitionLimiter,
