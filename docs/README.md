@@ -1,7 +1,6 @@
 <html>
     <h1 align="center">
       <img src="./images/feathr_logo.png" width="256"/>
-</p>
     </h1>
     <h3 align="center">
       An enterprise-grade, high-performance feature store
