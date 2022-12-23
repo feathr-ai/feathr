@@ -1,6 +1,7 @@
 <html>
     <h1 align="center">
-      Feathr
+      <img src="./images/feathr_logo.png" width="256"/>
+</p>
     </h1>
     <h3 align="center">
       An enterprise-grade, high-performance feature store
@@ -12,6 +13,7 @@
       <a href="https://feathr-ai.github.io/feathr/">Docs</a>.
     </h3>
 </html>
+
 
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/feathr-ai/feathr/blob/main/LICENSE)
