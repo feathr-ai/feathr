@@ -371,7 +371,7 @@ private[offline] object FDSConversionUtils {
     }
     // we need to sort arrays according to dimension array of the 1d sparse tensor, i.e. the first array
     val valType = targetType.asInstanceOf[StructType].fields(1).dataType.asInstanceOf[ArrayType].elementType
-    val indexArray = arrays(0).asInstanceOf[Array[Any]]
+    val indexArray = arrays(0).toArray
     val sortedArrays = if (indexArray.nonEmpty) {
       val firstElement = indexArray.head
       val sortedArrays = firstElement match {

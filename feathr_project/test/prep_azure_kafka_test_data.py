@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 from avro.io import BinaryEncoder, DatumWriter
 from confluent_kafka import Producer
-from feathr.utils._envvariableutil import _EnvVaraibleUtil
+from feathr.utils._env_config_reader import EnvConfigReader
 """
 Produce some sample data for streaming feature using Kafka"""
 KAFKA_BROKER = "feathrazureci.servicebus.windows.net:9093"
@@ -40,8 +40,8 @@ def send_avro_record_to_kafka(topic, record):
     bytes_writer = io.BytesIO()
     encoder = BinaryEncoder(bytes_writer)
     writer.write(record, encoder)
-    envutils = _EnvVaraibleUtil()
-    sasl = envutils.get_environment_variable('KAFKA_SASL_JAAS_CONFIG')
+    env_config = EnvConfigReader(config_path=None)
+    sasl = env_config.get_from_env_or_akv('KAFKA_SASL_JAAS_CONFIG')
     conf = {
         'bootstrap.servers': KAFKA_BROKER,
         'security.protocol': 'SASL_SSL',
@@ -74,8 +74,8 @@ avro_schema_json = json.dumps({
     ]
 })
 
-while True:    
-# This while loop is used to keep the process runinng and producing data stream; 
+while True:
+# This while loop is used to keep the process runinng and producing data stream;
 # If no need please remove it
     for record in trips_df.drop(columns=['created']).to_dict('record'):
         record["datetime"] = (
