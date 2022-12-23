@@ -21,6 +21,7 @@ NOTEBOOK_PATHS = {
     "nyc_taxi_demo": str(SAMPLES_DIR.joinpath("nyc_taxi_demo.ipynb")),
     "feature_embedding": str(SAMPLES_DIR.joinpath("feature_embedding.ipynb")),
     "fraud_detection_demo": str(SAMPLES_DIR.joinpath("fraud_detection_demo.ipynb")),
+    "product_recommendation_demo_advanced": str(SAMPLES_DIR.joinpath("product_recommendation_demo_advanced.ipynb")),
 }
 
 
@@ -99,3 +100,32 @@ def test__fraud_detection_demo(config_path, tmp_path):
     outputs = nb.scraps
 
     assert outputs["materialized_feature_values"].data == pytest.approx([False, 0, 9, 239.0, 1, 1, 239.0, 33816.0], abs=1.)
+
+
+@pytest.mark.notebooks
+def test__product_recommendation_demo_advanced(config_path, tmp_path):
+    notebook_name = "product_recommendation_demo_advanced"
+
+    output_notebook_path = str(tmp_path.joinpath(f"{notebook_name}.ipynb"))
+
+    print(f"Running {notebook_name} notebook as {output_notebook_path}")
+
+    pm.execute_notebook(
+        input_path=NOTEBOOK_PATHS[notebook_name],
+        output_path=output_notebook_path,
+        # kernel_name="python3",
+        parameters=dict(
+            FEATHR_CONFIG_PATH=config_path,
+            USE_CLI_AUTH=False,
+            REGISTER_FEATURES=False,
+            SCRAP_RESULTS=True,
+        ),
+    )
+
+    # Read results from the Scrapbook and assert expected values
+    nb = sb.read_notebook(output_notebook_path)
+    outputs = nb.scraps
+
+    assert outputs["user_features"].data == pytest.approx([17, 300.0], abs=0.1)
+    assert outputs["product_features"].data == pytest.approx([17.0], abs=0.1)
+    assert outputs["rmse"].data == pytest.approx(0.49343, abs=2.0)
