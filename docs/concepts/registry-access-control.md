@@ -38,20 +38,20 @@ Feature level access control is **NOT** supported yet. Users are encouraged to g
 ### Role
 
 A _role_ is a collection of permissions. We have 3 built-in roles with different permissions:
-| Role | Description | Permissions |
+| Role     | Description                | Permissions         |
 | -------- | -------------------------- | ------------------- |
-| Admin | The owner of project | Read, Write, Manage |
-| Producer | The contributor of project | Read, Write |
-| Consumer | The reader of project | Read |
+| Admin    | The owner of project       | Read, Write, Manage |
+| Producer | The contributor of project | Read, Write         |
+| Consumer | The reader of project      | Read                |
 
 ### Permission
 
 _permission_ refers to the a certain kind of access to registry metadata or role assignment records.
-| Permission | Description |
-| ---------- | --------------------------------------------------------- |
-| Read | Read registry meta data; `GET` Registry APIs |
-| Write | Write registry meta data; `POST` Registry APIs |
-| Manage | Create and manage role assignment records with management APIs |
+| Permission | Description                                                    |
+| ---------- | -------------------------------------------------------------- |
+| Read       | Read registry meta data; `GET` Registry APIs                   |
+| Write      | Write registry meta data; `POST` Registry APIs                 |
+| Manage     | Create and manage role assignment records with management APIs |
 
 ### User
 
