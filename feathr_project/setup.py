@@ -64,7 +64,7 @@ setup(
         "click<=8.1.3",
         "py4j<=0.10.9.7",
         "loguru<=0.6.0",
-        "pandas<=1.5.0",
+        "pandas>=1.5.0",
         "redis<=4.4.0",
         "requests<=2.28.1",
         "tqdm<=4.64.1",
