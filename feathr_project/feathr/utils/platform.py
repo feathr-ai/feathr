@@ -1,7 +1,4 @@
-"""Platform utilities.
-Refs: https://github.com/microsoft/recommenders/blob/main/recommenders/utils/notebook_utils.py
-"""
-from pathlib import Path
+import os
 
 
 def is_jupyter() -> bool:
@@ -15,6 +12,10 @@ def is_jupyter() -> bool:
     Returns:
         bool: True if the module is running on Jupyter notebook or Jupyter console, False otherwise.
     """
+    # Should check is_databricks() and is_synapse() first since they also use the same ZMQ interactive shell.
+    if is_databricks() or is_synapse():
+        return False
+
     try:
         # Pre-loaded module `get_ipython()` tells you whether you are running inside IPython or not.
         shell_name = get_ipython().__class__.__name__
@@ -33,13 +34,21 @@ def is_databricks() -> bool:
     Returns:
         bool: True if the module is running on Databricks notebook, False otherwise.
     """
-    try:
-        if str(Path(".").resolve()) == "/databricks/driver":
-            return True
-        else:
-            return False
-    except NameError:
+    # Note, this is a hacky way to check if the code is running on Databricks.
+    if "DATABRICKS_RUNTIME_VERSION" in os.environ:
+        return True
+    else:
         return False
 
 
-# TODO maybe add is_synapse()
+def is_synapse() -> bool:
+    """Check if the module is running on Azure Synapse.
+
+    Returns:
+        bool: True if the module is running on Azure Synapse notebook, False otherwise.
+    """
+    # Note, this is a hacky way to check if the code is running on Synapse.
+    if "SYNAPSE_ENABLE_CONFIG_MERGE_RULE" in os.environ:
+        return True
+    else:
+        return False
