@@ -67,6 +67,7 @@ def test__feature_embedding(tmp_path):
         output_path=output_notebook_path,
         # kernel_name="python3",
         parameters=dict(
+            DATABRICKS_NODE_SIZE="Standard_D4s_v4",  # use Dv4 due to the quota limit of Dv2 at US East 2 region.
             USE_CLI_AUTH=False,
             REGISTER_FEATURES=False,
             CLEAN_UP=True,
