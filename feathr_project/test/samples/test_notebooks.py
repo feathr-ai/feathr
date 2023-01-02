@@ -57,13 +57,11 @@ def test__nyc_taxi_demo(config_path, tmp_path):
 
 
 @pytest.mark.databricks
-def test__feature_embedding(config_path, tmp_path):
+def test__feature_embedding(tmp_path):
     notebook_name = "feature_embedding"
     output_notebook_path = str(tmp_path.joinpath(f"{notebook_name}.ipynb"))
 
     print(f"Running {notebook_name} notebook as {output_notebook_path}")
-
-    conf = yaml.safe_load(Path(config_path).read_text())
 
     pm.execute_notebook(
         input_path=NOTEBOOK_PATHS[notebook_name],
@@ -72,7 +70,6 @@ def test__feature_embedding(config_path, tmp_path):
         parameters=dict(
             USE_CLI_AUTH=False,
             REGISTER_FEATURES=False,
-            SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL=conf["spark_config"]["databricks"]["workspace_instance_url"],
             CLEAN_UP=True,
         ),
     )

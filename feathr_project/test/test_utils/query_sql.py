@@ -1,5 +1,5 @@
 import psycopg2
-from feathr._envvariableutil import _EnvVaraibleUtil
+from feathr.utils._env_config_reader import EnvConfigReader
 
 # script to query SQL database for debugging purpose
 
@@ -7,7 +7,7 @@ def show_table(cursor, table_name):
     cursor.execute("select * from " + table_name + ";")
     print(cursor.fetchall())
 
-    q = """                              
+    q = """
     SELECT column_name, data_type, is_nullable
     FROM information_schema.columns
     WHERE table_name = %s;
@@ -22,7 +22,8 @@ def show_table(cursor, table_name):
 host = "featuremonitoring.postgres.database.azure.com"
 dbname = "postgres"
 user = "demo"
-password = _EnvVaraibleUtil.get_environment_variable('SQL_TEST_PASSWORD')
+env_config = EnvConfigReader(config_path=None)
+password = env_config.get_from_env_or_akv('SQL_TEST_PASSWORD')
 sslmode = "require"
 
 # Construct connection string
