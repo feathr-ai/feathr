@@ -326,7 +326,7 @@ class PurviewRegistry(Registry):
             entity_type = entity['entityType']
             if type and entity_type in [str(x) for x in type]:
                 if project:
-                    if not (qualified_name.startswith(project) or entity_id == str(project)):
+                    if not (qualified_name.startswith(str(project)) or entity_id == str(project)):
                         continue
                 result.append(EntityRef(UUID(entity_id),entity_type,qualified_name))
         return result
