@@ -4,7 +4,7 @@ import { fetchProjects } from "@/api";
 import { useQuery } from "react-query";
 
 export interface ProjectsSelectProps {
-  width?: number;
+  width?: number | string;
   defaultValue?: string;
   onChange?: (value: string) => void;
 }

@@ -6,7 +6,7 @@ const NewFeature = () => {
   return (
     <div className="page">
       <PageHeader title="Create Feature" ghost={false}>
-        <FeatureForm isNew={true} editMode={true} />
+        <FeatureForm />
       </PageHeader>
     </div>
   );

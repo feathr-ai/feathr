@@ -33,13 +33,14 @@ export interface FeatureType {
 }
 
 export interface FeatureTransformation {
-  transformExpr: string;
-  filter: string;
-  aggFunc: string;
-  limit: string;
-  groupBy: string;
-  window: string;
-  defExpr: string;
+  transformExpr?: string;
+  filter?: string;
+  aggFunc?: string;
+  limit?: string;
+  groupBy?: string;
+  window?: string;
+  defExpr?: string;
+  udfExpr?: string;
 }
 
 export interface FeatureKey {
@@ -117,3 +118,29 @@ export interface Role {
   roleName: string;
   reason: string;
 }
+
+export interface NewFeature {
+  name: string;
+  featureType: FeatureType;
+  transformation: FeatureTransformation;
+  key?: FeatureKey[];
+  tags?: Object;
+  inputAnchorFeatures?: string[];
+  inputDerivedFeatures?: string[];
+  // qualifiedName: string;
+}
+
+export const ValueType = [
+  "UNSPECIFIED",
+  "BOOLEAN",
+  "INT",
+  "LONG",
+  "FLOAT",
+  "DOUBLE",
+  "STRING",
+  "BYTES",
+];
+
+export const TensorCategory = ["DENSE", "SPARSE"];
+
+export const VectorType = ["TENSOR"];
