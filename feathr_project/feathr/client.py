@@ -78,7 +78,6 @@ class FeathrClient(object):
         # Redis key separator
         self._KEY_SEPARATOR = ':'
         self._COMPOSITE_KEY_SEPARATOR = '#'
-        self.envutils = _EnvVaraibleUtil(config_path)
         self.env_config = EnvConfigReader(config_path=config_path, use_env_vars=use_env_vars)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
