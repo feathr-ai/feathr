@@ -20,12 +20,14 @@ class DbConnection(ABC):
     def query(self, sql: str, *args, **kwargs) -> list[dict]:
         pass
 
+# already has one in 'db_registry.py'; shall we remove it?
+'''
 def quote(id):
     if isinstance(id, str):
         return f"'{id}'"
     else:
         return ",".join([f"'{i}'" for i in id])
-
+'''
 
 def parse_conn_str(s: str) -> dict:
     """
