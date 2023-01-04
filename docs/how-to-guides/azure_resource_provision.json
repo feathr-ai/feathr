@@ -42,7 +42,7 @@
       ],
       "type": "String",
       "metadata": {
-        "description": "Backend for registry metadata storage. Current supported registry backends are Azure SQL, Azure Purview and Azure Cosmos DB"
+        "description": "Backend for registry metadata storage. Current supported registry backends are Azure SQL, Azure Purview and Azure Cosmos DB. If you select Azure CosmosDB, follow instructions here to configure - https://feathr-ai.github.io/feathr/how-to-guides/jdbc-cosmos-notes.html#using-cosmosdb-as-the-online-store"
       }
     },
     "enableRBAC": {
