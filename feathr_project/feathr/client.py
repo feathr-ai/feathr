@@ -77,6 +77,7 @@ class FeathrClient(object):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
+        self._COMPOSITE_KEY_SEPARATOR = '#'
         self.env_config = EnvConfigReader(config_path=config_path, use_env_vars=use_env_vars)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
@@ -314,7 +315,9 @@ class FeathrClient(object):
 
         Args:
             feature_table: the name of the feature table.
-            key: the key of the entity
+            key: the key/key list of the entity; 
+                 for key list, please make sure the order is consistent with the one in feature's definition;
+                 the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
 
         Return:
@@ -335,7 +338,9 @@ class FeathrClient(object):
 
         Args:
             feature_table: the name of the feature table.
-            keys: list of keys for the entities
+            keys: list of keys/composite keys for the entities;
+                  for composite keys, please make sure each order of them is consistent with the one in feature's definition;
+                  the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
 
         Return:
@@ -356,7 +361,9 @@ class FeathrClient(object):
         decoded_pipeline_result = []
         for feature_list in pipeline_result:
             decoded_pipeline_result.append(self._decode_proto(feature_list))
-
+        for i in range(len(keys)):
+            if isinstance(keys[i], List):
+                keys[i] = self._COMPOSITE_KEY_SEPARATOR.join(keys[i])
         return dict(zip(keys, decoded_pipeline_result))
 
     def _decode_proto(self, feature_list):
@@ -448,6 +455,8 @@ class FeathrClient(object):
                 self.redis_client.delete(*keys)
 
     def _construct_redis_key(self, feature_table, key):
+        if isinstance(key, List):
+            key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
 
     def _construct_redis_client(self):

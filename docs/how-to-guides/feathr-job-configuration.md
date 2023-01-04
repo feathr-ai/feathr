@@ -33,3 +33,11 @@ Examples when using the above job configurations when materializing features:
 ```python
 client.materialize_features(settings, execution_configurations=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}))
 ```
+
+## Config not applied issue
+Please note that `execution_configurations` argument only works when using a new job cluster in Databricks : [Cluster spark config not applied](https://learn.microsoft.com/en-us/azure/databricks/kb/clusters/cluster-spark-config-not-applied)
+
+If you are using an existing cluster, please manually add them to the cluster spark configuration. This can be done in Databrick Cluster UI : [Edit a cluster](https://learn.microsoft.com/en-us/azure/databricks/clusters/clusters-manage#--edit-a-cluster)
+
+
+
