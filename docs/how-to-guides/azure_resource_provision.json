@@ -37,12 +37,22 @@
       "defaultValue": "Azure-SQL",
       "allowedValues": [
         "Azure-SQL",
-        "Azure-Purview",
+        "Azure-Purview"
+      ],
+      "type": "String",
+      "metadata": {
+        "description": "Backend for registry metadata storage. Current supported registry backends are Azure SQL and Azure Purview."
+      }
+    },
+    "onlineStore": {
+      "defaultValue": "Azure-Redis",
+      "allowedValues": [
+        "Azure-Redis",
         "Azure-CosmosDB"
       ],
       "type": "String",
       "metadata": {
-        "description": "Backend for registry metadata storage. Current supported registry backends are Azure SQL, Azure Purview and Azure Cosmos DB. If you select Azure CosmosDB, follow instructions here to configure - https://feathr-ai.github.io/feathr/how-to-guides/jdbc-cosmos-notes.html#using-cosmosdb-as-the-online-store"
+        "description": "Current supported online stores are Azure Redis and Azure Cosmos DB. If you select Azure Cosmos DB, follow instructions here to configure - https://feathr-ai.github.io/feathr/how-to-guides/jdbc-cosmos-notes.html#using-cosmosdb-as-the-online-store"
       }
     },
     "enableRBAC": {
@@ -102,11 +112,9 @@
     "bacpacDeploymentScriptName": "CopyBacpacFile",
     "bacpacDbExtensionName": "registryRbacDbImport",
     "preBuiltdockerImage": "feathrfeaturestore/feathr-registry:releases-v0.9.0",
-    "accountName": "[concat(parameters('resourcePrefix'),'cosmosacct' )]",
-    "databaseName": "[concat(parameters('resourcePrefix'),'cosmosdb' )]",
-    "containerName": "[concat(parameters('resourcePrefix'),'cosmoscontainer' )]"
-
-
+    "cosmosDBAccountName": "[concat(parameters('resourcePrefix'),'cosmosacct' )]",
+    "cosmosDBDatabaseName": "[concat(parameters('resourcePrefix'),'cosmosdb' )]",
+    "cosmosDBContainerName": "[concat(parameters('resourcePrefix'),'cosmoscontainer' )]"
   },
   "functions": [],
   "resources": [
@@ -154,7 +162,8 @@
           "name": "Basic",
           "family": "C",
           "capacity": 2
-        }
+        },
+        "condition": "[equals(parameters('onlineStore'),'Azure-Redis')]"
       },
       "resources": [
         {
@@ -168,7 +177,9 @@
           ],
           "properties": {
             "value": "[concat(variables('redisCacheName'),'.redis.cache.windows.net:6380,password=', listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey, ',ssl=True')]"
-          }
+          },
+          "condition": "[equals(parameters('onlineStore'),'Azure-Redis')]"
+
         },
         {
           "type": "Microsoft.KeyVault/vaults/secrets",
@@ -181,7 +192,9 @@
           ],
           "properties": {
             "value": "[listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey]"
-          }
+          },
+          "condition": "[equals(parameters('onlineStore'),'Azure-Redis')]"
+
         }
       ]
     },
@@ -544,7 +557,7 @@
     {
       "type": "Microsoft.DocumentDB/databaseAccounts",
       "apiVersion": "2022-05-15",
-      "name": "[variables('accountName')]",
+      "name": "[variables('cosmosDBAccountName')]",
       "location": "[variables('location')]",
       "kind": "GlobalDocumentDB",
       "properties": {
@@ -563,31 +576,31 @@
         "databaseAccountOfferType": "Standard",
         "enableAutomaticFailover": false
       },
-      "condition": "[equals(parameters('registryBackend'),'Azure-CosmosDB')]"
+      "condition": "[equals(parameters('onlineStore'),'Azure-CosmosDB')]"
 
     },
     {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
       "apiVersion": "2022-05-15",
-      "name": "[format('{0}/{1}', variables('accountName'), variables('databaseName'))]",
+      "name": "[format('{0}/{1}', variables('cosmosDBAccountName'), variables('cosmosDBDatabaseName'))]",
       "properties": {
         "resource": {
-          "id": "[variables('databaseName')]"
+          "id": "[variables('cosmosDBDatabaseName')]"
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('accountName'))]"
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBAccountName'))]"
       ],
-      "condition": "[equals(parameters('registryBackend'),'Azure-CosmosDB')]"
+      "condition": "[equals(parameters('onlineStore'),'Azure-CosmosDB')]"
 
     },
     {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
       "apiVersion": "2022-08-15",
-      "name": "[format('{0}/{1}/{2}',variables('accountName'), variables('databaseName'), variables('containerName'))]",
+      "name": "[format('{0}/{1}/{2}',variables('cosmosDBAccountName'), variables('cosmosDBDatabaseName'), variables('cosmosDBContainerName'))]",
       "properties": {
         "resource": {
-          "id": "[variables('containerName')]",
+          "id": "[variables('cosmosDBContainerName')]",
           "partitionKey": {
             "paths": [
               "/id"
@@ -614,9 +627,9 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', split(format('{0}/{1}', toLower(variables('accountName')), variables('databaseName')), '/')[0], split(format('{0}/{1}', variables('accountName'), variables('databaseName')), '/')[1])]"
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', split(format('{0}/{1}', toLower(variables('cosmosDBAccountName')), variables('cosmosDBDatabaseName')), '/')[0], split(format('{0}/{1}', variables('cosmosDBAccountName'), variables('cosmosDBDatabaseName')), '/')[1])]"
       ],
-      "condition": "[equals(parameters('registryBackend'),'Azure-CosmosDB')]"
+      "condition": "[equals(parameters('onlineStore'),'Azure-CosmosDB')]"
 
     }
   ],
