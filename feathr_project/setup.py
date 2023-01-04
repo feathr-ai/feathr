@@ -35,8 +35,9 @@ extras_require=dict(
         "pytest-mock>=3.8.1",
     ],
     notebook=[
-        "jupyter==1.0.0",
-        "matplotlib==3.6.1",
+        "azure-cli==2.37.0",
+        "jupyter>=1.0.0",
+        "matplotlib>=3.6.1",
         "papermill>=2.1.2,<3",      # to test run notebooks
         "scrapbook>=0.5.0,<1.0.0",  # to scrap notebook outputs
         "scikit-learn",             # for notebook examples
@@ -63,7 +64,8 @@ setup(
         "click<=8.1.3",
         "py4j<=0.10.9.7",
         "loguru<=0.6.0",
-        "pandas<=1.5.0",
+        "pandas>=1.5.0",
+        "numpy<=1.20.3",  # pin numpy due to pyspark's deprecated np.bool access
         "redis<=4.4.0",
         "requests<=2.28.1",
         "tqdm<=4.64.1",
