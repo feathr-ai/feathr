@@ -1,5 +1,5 @@
-import FlowGraph from "./FlowGraph";
+import FlowGraph from './FlowGraph'
 
-export * from "./interface";
+export * from './interface'
 
-export default FlowGraph;
+export default FlowGraph
