@@ -287,7 +287,8 @@ jobs:
           PURVIEW_NAME: 'feathrazuretest3-purview1'
           CONNECTION_STR: 'Server=tcp:feathrtestsql4.database.windows.net,1433;Initial Catalog=testsql;Persist Securit    y Info=False;User ID=feathr@feathrtestsql4;Password=Password01!;MultipleActiveResultSets=False;Encrypt=True;TrustSrverCertificate=False;Connection Timeout=30;'
         run: |
-          ./registry/test/run_test_cases.sh
+          pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
+          pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py
 
   failure_notification:
     # If any failure, warning message will be sent
