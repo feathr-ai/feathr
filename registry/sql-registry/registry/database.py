@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import logging
 import threading
 import os
+from typing import List
 
 # Checks if the platform is Max (Darwin).
 # If so, imports _scproxy that is necessary for pymssql to work on MacOS
@@ -17,7 +18,7 @@ providers = []
 
 class DbConnection(ABC):
     @abstractmethod
-    def query(self, sql: str, *args, **kwargs) -> list[dict]:
+    def query(self, sql: str, *args, **kwargs) -> List[dict]:
         pass
 
 # already has one in 'db_registry.py'; shall we remove it?
@@ -66,7 +67,7 @@ class MssqlConnection(DbConnection):
     def make_connection(self):
         self.conn = pymssql.connect(**self.params)
 
-    def query(self, sql: str, *args, **kwargs) -> list[dict]:
+    def query(self, sql: str, *args, **kwargs) -> List[dict]:
         """
         Make SQL query and return result
         """
