@@ -386,8 +386,10 @@ class SparkSqlSource(Source):
             raise ValueError("Either `sql` or `table` must be specified")
         if sql is not None and table is not None:
             raise ValueError("Only one of `sql` or `table` can be specified")
-        self.sql = sql
-        self.table = table
+        if sql is not None:
+            self.sql = sql
+        if table is not None:
+            self.table = table
         self.preprocessing = preprocessing
 
     def to_feature_config(self) -> str:
