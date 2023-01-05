@@ -152,8 +152,8 @@ def _spark_sql_test_setup(config_path: str, sql_source: SparkSqlSource):
 
 
 def _sql_query_source():
-    return SparkSqlSource(name="sparkSqlQuerySource", sql="SELECT * from green_tripdata_2020_05_with_index", event_timestamp_column="lpep_dropoff_datetime", timestamp_format="yyyy-MM-dd HH:mm:ss")
+    return SparkSqlSource(name="sparkSqlQuerySource", sql="SELECT * FROM green_tripdata_2020_04_with_index", event_timestamp_column="lpep_dropoff_datetime", timestamp_format="yyyy-MM-dd HH:mm:ss")
 
 
 def _sql_table_source():
-    return SparkSqlSource(name="sparkSqlTableSource", table="green_tripdata_2020_05_with_index", event_timestamp_column="lpep_dropoff_datetime", timestamp_format="yyyy-MM-dd HH:mm:ss")
+    return SparkSqlSource(name="sparkSqlTableSource", table="green_tripdata_2020_04_with_index", event_timestamp_column="lpep_dropoff_datetime", timestamp_format="yyyy-MM-dd HH:mm:ss")
