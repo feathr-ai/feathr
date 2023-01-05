@@ -1,5 +1,5 @@
-import ResizeTable from "./ResizeTable";
+import ResizeTable from './ResizeTable'
 
-export * from "./interface";
+export * from './interface'
 
-export default ResizeTable;
+export default ResizeTable
