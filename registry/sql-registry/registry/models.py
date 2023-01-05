@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, List
 from uuid import UUID
 import json
 import re
@@ -133,7 +133,7 @@ class FeatureType(ToDict):
     def __init__(self,
                  type: Union[str, VectorType],
                  tensor_category: Union[str, TensorCategory],
-                 dimension_type: list[Union[str, ValueType]],
+                 dimension_type: List[Union[str, ValueType]],
                  val_type: Union[str, ValueType]):
         self.type = _to_type(type, VectorType)
         self.tensor_category = _to_type(tensor_category, TensorCategory)
@@ -353,7 +353,7 @@ class Entity(ToDict):
 class ProjectAttributes(Attributes):
     def __init__(self,
                  name: str,
-                 children: list[Union[dict, Entity]] = [],
+                 children: List[Union[dict, Entity]] = [],
                  tags: dict = {},
                  **kwargs):
         self.name = name
@@ -371,7 +371,7 @@ class ProjectAttributes(Attributes):
         return self._children
 
     @children.setter
-    def children(self, v: list[Union[dict, Entity]]):
+    def children(self, v: List[Union[dict, Entity]]):
         for f in v:
             if isinstance(f, Entity):
                 self._children.append(f)
@@ -524,7 +524,7 @@ class AnchorFeatureAttributes(Attributes):
                  name: str,
                  type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
-                 key: list[Union[dict, TypedKey]],
+                 key: List[Union[dict, TypedKey]],
                  tags: dict = {}):
         self.qualified_name = qualified_name
         self.name = name
@@ -554,9 +554,9 @@ class DerivedFeatureAttributes(Attributes):
                  name: str,
                  type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
-                 key: list[Union[dict, TypedKey]],
-                 input_anchor_features: list[Union[dict, EntityRef, Entity]] = [],
-                 input_derived_features: list[Union[dict, EntityRef, Entity]] = [],
+                 key: List[Union[dict, TypedKey]],
+                 input_anchor_features: List[Union[dict, EntityRef, Entity]] = [],
+                 input_derived_features: List[Union[dict, EntityRef, Entity]] = [],
                  tags: dict = {},
                  **kwargs):
         self.qualified_name = qualified_name
@@ -650,7 +650,7 @@ class Edge(ToDict):
 
 
 class EntitiesAndRelations(ToDict):
-    def __init__(self, entities: list[Entity], edges: list[Edge]):
+    def __init__(self, entities: List[Entity], edges: List[Edge]):
         self.entities = dict([(e.id, e) for e in entities])
         self.edges = set(edges)
 
@@ -723,7 +723,7 @@ class AnchorFeatureDef:
                  name: str,
                  feature_type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
-                 key: list[Union[dict, TypedKey]],
+                 key: List[Union[dict, TypedKey]],
                  qualified_name: str = "",
                  tags: dict = {}):
         self.qualified_name = qualified_name
@@ -747,9 +747,9 @@ class DerivedFeatureDef:
                  name: str,
                  feature_type: Union[dict, FeatureType],
                  transformation: Union[dict, Transformation],
-                 key: list[Union[dict, TypedKey]],
-                 input_anchor_features: list[Union[str, UUID]],
-                 input_derived_features: list[Union[str, UUID]],
+                 key: List[Union[dict, TypedKey]],
+                 input_anchor_features: List[Union[str, UUID]],
+                 input_derived_features: List[Union[str, UUID]],
                  qualified_name: str = "",
                  tags: dict = {}):
         self.qualified_name = qualified_name
@@ -761,7 +761,7 @@ class DerivedFeatureDef:
         self.input_derived_features = _to_uuid(input_derived_features)
         self.tags = tags
 
-    def to_attr(self, input_features: list[EntityRef]) -> DerivedFeatureAttributes:
+    def to_attr(self, input_features: List[EntityRef]) -> DerivedFeatureAttributes:
         attr = DerivedFeatureAttributes(qualified_name=self.qualified_name,
                                 name=self.name,
                                 type=self.feature_type,
