@@ -1,6 +1,6 @@
 from typing import Optional, Tuple, Union
 from uuid import UUID, uuid4
-from typing import List
+from typing import List, Set
 from pydantic import UUID4
 from registry import Registry
 from registry import connect
@@ -522,7 +522,7 @@ class DbRegistry(Registry):
         edges = list([Edge(**c) for c in connections])
         return (entities, edges)
 
-    def _bfs_step(self, ids: List[UUID], conn_type: RelationshipType) -> set[dict]:
+    def _bfs_step(self, ids: List[UUID], conn_type: RelationshipType) -> Set[dict]:
         """
         One step of the BFS process
         Returns all edges that connect to node ids the next step
