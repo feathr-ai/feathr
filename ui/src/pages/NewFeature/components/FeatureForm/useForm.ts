@@ -23,6 +23,17 @@ const typeOptions = VectorType.map((value: string) => ({
 
 export type Options = SelectProps['options']
 
+export const enum FeatureEnum {
+  Anchor,
+  Derived
+}
+
+export const enum TransformationTypeEnum {
+  Expression,
+  Window,
+  UDF
+}
+
 export const useForm = (form: FormInstance<any>) => {
   const navigate = useNavigate()
 
@@ -35,8 +46,11 @@ export const useForm = (form: FormInstance<any>) => {
   const [derivedFeatureOptions, setDerivedFeatureOptions] = useState<Options>([])
 
   const project = Form.useWatch('project', form)
-  const featureType = Form.useWatch('featureType', form)
-  const selectTransformationType = Form.useWatch('selectTransformationType', form)
+  const featureType = Form.useWatch<FeatureEnum>('featureType', form)
+  const selectTransformationType = Form.useWatch<TransformationTypeEnum>(
+    'selectTransformationType',
+    form
+  )
 
   const fetchData = async (project: string) => {
     try {
@@ -83,7 +97,7 @@ export const useForm = (form: FormInstance<any>) => {
     setCreateLoading(true)
     try {
       const tags = values.tags?.reduce((tags: any, item: any) => {
-        tags[item.name] = item.value
+        tags[item.name] = item.value || ''
         return tags
       }, {} as any)
 
@@ -111,7 +125,7 @@ export const useForm = (form: FormInstance<any>) => {
         }
       }
 
-      if (values.featureType === 1) {
+      if (values.featureType === FeatureEnum.Anchor) {
         await createAnchorFeature(project, values.anchor, newFeature)
       } else {
         await createDerivedFeature(project, newFeature)
@@ -133,8 +147,8 @@ export const useForm = (form: FormInstance<any>) => {
 
   useEffect(() => {
     form.setFieldsValue({
-      featureType: 1,
-      selectTransformationType: 1
+      featureType: FeatureEnum.Anchor,
+      selectTransformationType: TransformationTypeEnum.Expression
     })
   }, [form])
 

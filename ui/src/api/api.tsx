@@ -150,9 +150,6 @@ export const addUserRole = async (role: Role) => {
     .then((response) => {
       return response
     })
-    .catch((error) => {
-      return error.response
-    })
 }
 
 export const deleteUserRole = async (userrole: UserRole) => {
@@ -169,9 +166,6 @@ export const deleteUserRole = async (userrole: UserRole) => {
     })
     .then((response) => {
       return response
-    })
-    .catch((error) => {
-      return error.response
     })
 }
 
@@ -238,14 +232,9 @@ export const deleteEntity = async (enity: string) => {
 
 export const getDependent = async (entity: string) => {
   const axios = await authAxios(msalInstance)
-  return await axios
-    .get(`${getApiBaseUrl()}/dependent/${entity}`)
-    .then((response) => {
-      return response
-    })
-    .catch((error) => {
-      return error.response
-    })
+  return await axios.get(`${getApiBaseUrl()}/dependent/${entity}`).then((response) => {
+    return response
+  })
 }
 
 export const createAnchorFeature = async (
@@ -259,9 +248,6 @@ export const createAnchorFeature = async (
     .then((response) => {
       return response
     })
-    .catch((error) => {
-      return error.response
-    })
 }
 
 export const createDerivedFeature = async (project: string, derivedFeature: NewFeature) => {
@@ -270,8 +256,5 @@ export const createDerivedFeature = async (project: string, derivedFeature: NewF
     .post(`${getApiBaseUrl()}/projects/${project}/derivedfeatures`, derivedFeature)
     .then((response) => {
       return response
-    })
-    .catch((error) => {
-      return error.response
     })
 }

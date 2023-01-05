@@ -5,7 +5,7 @@ import { Button, Divider, Form, Input, Radio, Select, Space } from 'antd'
 
 import ProjectsSelect from '@/components/ProjectsSelect'
 
-import { useForm } from './useForm'
+import { useForm, FeatureEnum, TransformationTypeEnum } from './useForm'
 
 export interface FeatureFormProps {}
 
@@ -65,11 +65,11 @@ const FeatureForm = (props: FeatureFormProps, ref: any) => {
         </Item>
         <Item label="Select Feature Type" name="featureType">
           <Radio.Group>
-            <Radio value={1}>Anchor Feature</Radio>
-            <Radio value={2}>Derived Feature</Radio>
+            <Radio value={FeatureEnum.Anchor}>Anchor Feature</Radio>
+            <Radio value={FeatureEnum.Derived}>Derived Feature</Radio>
           </Radio.Group>
         </Item>
-        {featureType === 1 ? (
+        {featureType === FeatureEnum.Anchor ? (
           <>
             <Item
               rules={[
@@ -205,13 +205,13 @@ const FeatureForm = (props: FeatureFormProps, ref: any) => {
         <Item label="Select Transformation Type" name="selectTransformationType">
           <Radio.Group>
             <Space direction="vertical">
-              <Radio value={1}>Expression Transformation</Radio>
-              <Radio value={2}>Window Transformation</Radio>
-              <Radio value={3}>UDF Transformation</Radio>
+              <Radio value={TransformationTypeEnum.Expression}>Expression Transformation</Radio>
+              <Radio value={TransformationTypeEnum.Window}>Window Transformation</Radio>
+              <Radio value={TransformationTypeEnum.UDF}>UDF Transformation</Radio>
             </Space>
           </Radio.Group>
         </Item>
-        {selectTransformationType === 1 && (
+        {selectTransformationType === TransformationTypeEnum.Expression && (
           <Item
             rules={[
               {
@@ -224,7 +224,7 @@ const FeatureForm = (props: FeatureFormProps, ref: any) => {
             <Input />
           </Item>
         )}
-        {selectTransformationType === 2 && (
+        {selectTransformationType === TransformationTypeEnum.Window && (
           <>
             <Item
               rules={[
@@ -254,7 +254,7 @@ const FeatureForm = (props: FeatureFormProps, ref: any) => {
             </Item>
           </>
         )}
-        {selectTransformationType === 3 && (
+        {selectTransformationType === TransformationTypeEnum.UDF && (
           <Item name="udfExpr" label="UDF Transformation" rules={[{ required: true }]}>
             <Input />
           </Item>
