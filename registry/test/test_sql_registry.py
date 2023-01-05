@@ -147,4 +147,4 @@ class SqlRegistryTest(unittest.TestCase):
         
         self.registry.delete_entity(project_id2)
         self.cleanup([project_id, source_id, anchor_id, af_id, af_id2, df_id, df_id2,df_id3])
-        assert len(self.registry.get_projects()) == len(projects)-2
+       

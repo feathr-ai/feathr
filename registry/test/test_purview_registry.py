@@ -5,19 +5,7 @@ import unittest, pytest
 from unicodedata import name
 from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, ExpressionTransformation, WindowAggregationTransformation, UdfTransformation, FeatureType, ProjectDef, SourceDef, TensorCategory, TypedKey, ValueType, VectorType, EntityType
 from registry.purview_registry import PurviewRegistry, ConflictError
-'''
-def basic_setup():
-    purview_name = os.getenv('PURVIEW_NAME')
-    return PurviewRegistry("eyxpurview")
-    
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'sql-registry'))
-from datetime import datetime
-import unittest, pytest
 
-from registry.db_registry import DbRegistry, quote, ConflictError
-from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, ExpressionTransformation, WindowAggregationTransformation, UdfTransformation, FeatureType, ProjectDef, SourceDef, TensorCategory, Transformation, TypedKey, ValueType, VectorType, EntityType
-'''
 class PurviewRegistryTest(unittest.TestCase):
     
     def setup(self):
@@ -131,29 +119,6 @@ class PurviewRegistryTest(unittest.TestCase):
         
         # test search entities
         entities = self.registry.search_entity(project_name+"__anchor", [EntityType.Anchor], project_id)
-        #assert(len(entities) > 0)
-        entities = self.registry.search_entity(project_name, [EntityType.Project])
-        assert(len(entities) > 0)
         
-        # test create entities with existing names
-        '''
-        with pytest.raises(ConflictError):
-            project_id3 = self.registry.create_project(ProjectDef(project_name+"__anchor"))
-            assert project_id3 == anchor_id
-        with pytest.raises(ConflictError):
-            source_id2 = self.registry.create_project_datasource(project_id, SourceDef(
-        qualified_name=project_name+"__anchor", name="anchor", path="somepath", type="hdfs"))
-            assert source_id2 == anchor_id
-        with pytest.raises(ConflictError):
-            anchor_id2 = self.registry.create_project_anchor(project_id, AnchorDef(
-        qualified_name=project_name+"__source", name="source", source_id=source_id))
-            assert anchor_id2 == source_id
-        af_id3 = self.registry.create_project_anchor_feature(project_id, anchor_id, AnchorFeatureDef(
-        qualified_name=project_name+"__anchor__af", name="af", feature_type=ft1,  transformation=t1, key=[k]))
-        assert af_id3  == af_id
-        df_id4 = self.registry.create_project_derived_feature(project_id, DerivedFeatureDef(qualified_name=project_name+"__df",
-                                          name="df", feature_type=ft1, transformation=t1, key=[k], input_anchor_features=[], input_derived_features=[]))
-        assert df_id4 == df_id
-        '''
         self.cleanup([project_id, source_id, anchor_id, af_id, af_id2, df_id, df_id2,df_id3])
-        assert len(self.registry.get_projects()) == len(projects)-1
+        

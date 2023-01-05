@@ -1,3 +1,5 @@
+Cython
+pydantic 
 pymssql
 fastapi
 uvicorn
