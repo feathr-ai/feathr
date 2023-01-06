@@ -310,7 +310,7 @@ class FeathrClient(object):
         """
         return self.registry._get_registry_client()
 
-    def get_online_features(self, feature_table, key, feature_names):
+    def get_online_features(self, feature_table: str, key: Any, feature_names: List[str]):
         """Fetches feature value for a certain key from a online feature table.
 
         Args:
@@ -333,7 +333,7 @@ class FeathrClient(object):
         res = self.redis_client.hmget(redis_key, *feature_names)
         return self._decode_proto(res)
 
-    def multi_get_online_features(self, feature_table, keys, feature_names):
+    def multi_get_online_features(self, feature_table: str, keys: List[Any], feature_names: List[str]):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
 
         Args:
@@ -692,7 +692,7 @@ class FeathrClient(object):
         if len(feature_list) > 0:
             if 'anchor_list' in dir(self):
                 anchors = [anchor for anchor in self.anchor_list if isinstance(anchor.source, InputContext)]
-                anchor_feature_names = set(feature.name  for anchor in anchors for feature in anchor.features)
+                anchor_feature_names = set(feature.name for anchor in anchors for feature in anchor.features)
                 for feature in feature_list:
                     if feature in anchor_feature_names:
                         raise RuntimeError(f"Materializing features that are defined on INPUT_CONTEXT is not supported. {feature} is defined on INPUT_CONTEXT so you should remove it from the feature list in MaterializationSettings.")
