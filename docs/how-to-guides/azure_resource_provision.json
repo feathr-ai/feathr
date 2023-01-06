@@ -149,6 +149,7 @@
       ]
     },
     {
+      "condition": "[equals(parameters('onlineStore'),'Azure-Redis')]",
       "type": "Microsoft.Cache/redis",
       "apiVersion": "2021-06-01",
       "name": "[variables('redisCacheName')]",
@@ -162,41 +163,41 @@
           "name": "Basic",
           "family": "C",
           "capacity": 2
-        },
-        "condition": "[equals(parameters('onlineStore'),'Azure-Redis')]"
-      },
-      "resources": [
-        {
-          "type": "Microsoft.KeyVault/vaults/secrets",
-          "apiVersion": "2021-10-01",
-          "name": "[concat(variables('keyVaultName'), '/FEATHR-ONLINE-STORE-CONN')]",
-          "location": "[resourceGroup().location]",
-          "dependsOn": [
-            "[variables('keyVault')]",
-            "[variables('redisCache')]"
-          ],
-          "properties": {
-            "value": "[concat(variables('redisCacheName'),'.redis.cache.windows.net:6380,password=', listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey, ',ssl=True')]"
-          },
-          "condition": "[equals(parameters('onlineStore'),'Azure-Redis')]"
-
-        },
-        {
-          "type": "Microsoft.KeyVault/vaults/secrets",
-          "apiVersion": "2021-10-01",
-          "name": "[concat(variables('keyVaultName'), '/REDIS-PASSWORD')]",
-          "location": "[resourceGroup().location]",
-          "dependsOn": [
-            "[variables('keyVault')]",
-            "[variables('redisCache')]"
-          ],
-          "properties": {
-            "value": "[listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey]"
-          },
-          "condition": "[equals(parameters('onlineStore'),'Azure-Redis')]"
-
         }
-      ]
+      }
+    },
+    {
+      "condition": "[equals(parameters('onlineStore'),'Azure-Redis')]",
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[concat(variables('keyVaultName'), '/FEATHR-ONLINE-STORE-CONN')]",
+      "location": "[resourceGroup().location]",
+
+      "dependsOn": [
+        "[variables('keyVault')]",
+        "[if(equals(parameters('onlineStore'),'Azure-Redis'),variables('redisCache'),variables('keyVault'))]"
+      ],
+      "properties": {
+        "value": "[if(equals(parameters('onlineStore'),'Azure-Redis'),concat(variables('redisCacheName'),'.redis.cache.windows.net:6380,password=', listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey, ',ssl=True'),'')]"
+      }
+
+    },
+    {
+      "condition": "[equals(parameters('onlineStore'),'Azure-Redis')]",
+
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-10-01",
+      "name": "[concat(variables('keyVaultName'), '/REDIS-PASSWORD')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[variables('keyVault')]",
+        "[if(equals(parameters('onlineStore'),'Azure-Redis'),variables('redisCache'),variables('keyVault'))]"
+
+      ],
+      "properties": {
+        "value": "[if(equals(parameters('onlineStore'),'Azure-Redis'),listKeys(concat('Microsoft.Cache/redis/', variables('redisCacheName')), '2021-06-01').primaryKey,'')]"
+      }
+
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
@@ -366,7 +367,8 @@
       "location": "[variables('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName'))]",
-        "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName'))]",
+        "[if(or (equals(parameters('enableRBAC'),'Yes'), equals(parameters('registryBackend'),'Azure-SQL')),resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName')),resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName')))]",
+        // "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName'))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]"
       ],
       "kind": "app,linux,container",
@@ -403,7 +405,7 @@
             },
             {
               "name": "CONNECTION_STR",
-              "value": "[concat('Server=tcp:',reference(variables('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('sqlDatabaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlserverName')).administratorLogin,';Password=',parameters('sqlAdminPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+              "value": "[if(or (equals (parameters('enableRBAC'),'Yes'), equals(parameters('registryBackend'),'Azure-SQL')),concat('Server=tcp:',reference(variables('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('sqlDatabaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlserverName')).administratorLogin,';Password=',parameters('sqlAdminPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'), '')]"
             },
             {
               "name": "REACT_APP_ENABLE_RBAC",
@@ -526,6 +528,7 @@
       }
     },
     {
+      "condition": "[or(equals(parameters('registryBackend'),'Azure-SQL'),equals(parameters('enableRBAC'), 'Yes'))]",
       "type": "Microsoft.Sql/servers/databases",
       "apiVersion": "2021-11-01-preview",
       "name": "[concat(string(variables('sqlServerName')), '/', string(variables('sqlDatabaseName')))]",
