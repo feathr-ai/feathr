@@ -368,7 +368,6 @@
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName'))]",
         "[if(or (equals(parameters('enableRBAC'),'Yes'), equals(parameters('registryBackend'),'Azure-SQL')),resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName')),resourceId('Microsoft.Web/serverfarms', variables('webAppPlanName')))]",
-        // "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), variables('sqlDatabaseName'))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName'))]"
       ],
       "kind": "app,linux,container",
