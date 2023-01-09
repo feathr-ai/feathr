@@ -10,13 +10,8 @@ class PurviewRegistryTest(unittest.TestCase):
     
     def setup(self):
         purview_name = os.getenv('PURVIEW_NAME')
-        # set 'PURVIEW_NAME' for temporary test
-        if purview_name is None:
-            purview_name = 'feathrazuretest3-purview1'
-        '''
         if purview_name is None:
             raise RuntimeError("Failed to run Purview registry test case. Cannot get environment variable: 'PURVIEW_NAME'")
-        '''
         self.registry = PurviewRegistry(purview_name)
     
     def cleanup(self, ids):
