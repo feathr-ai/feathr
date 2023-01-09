@@ -73,7 +73,11 @@ dependencies {
   implementation 'net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2'
   provided 'com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21'
   // Pay attention to the spark version for this package and it behaves diffrerently on Synapse and databricks
-  provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.11.1'
+  // Versions tried so far - 
+  // 1. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.11.1'
+  // 2. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.15.0
+  // 3. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
+  provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.15.0'
   provided 'com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8'
   provided 'org.eclipse.jetty:jetty-util:9.3.24.v20180605'
   provided 'org.apache.kafka:kafka-clients:3.1.0'
