@@ -1,5 +1,5 @@
 from abc import ABC, abstractclassmethod, abstractmethod
-from typing import Union, List
+from typing import Union, List, Dict
 from uuid import UUID
 from registry.models import *
 
@@ -13,7 +13,7 @@ class Registry(ABC):
         pass
 
     @abstractmethod
-    def get_projects_ids(self) -> dict:
+    def get_projects_ids(self) -> Dict:
         """
         Returns the ids to names mapping of all projects
         """

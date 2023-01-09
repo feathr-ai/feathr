@@ -1,6 +1,6 @@
 from typing import Optional, Tuple, Union
 from uuid import UUID, uuid4
-from typing import List, Set
+from typing import List, Set, Dict
 from pydantic import UUID4
 from registry import Registry
 from registry import connect
@@ -28,7 +28,7 @@ class DbRegistry(Registry):
             f"select qualified_name from entities where entity_type=%s", str(EntityType.Project))
         return list([r["qualified_name"] for r in ret])
     
-    def get_projects_ids(self) -> dict:
+    def get_projects_ids(self) -> Dict:
         projects = {}
         ret = self.conn.query(
             f"select entity_id, qualified_name from entities where entity_type=%s", str(EntityType.Project))
@@ -522,7 +522,7 @@ class DbRegistry(Registry):
         edges = list([Edge(**c) for c in connections])
         return (entities, edges)
 
-    def _bfs_step(self, ids: List[UUID], conn_type: RelationshipType) -> Set[dict]:
+    def _bfs_step(self, ids: List[UUID], conn_type: RelationshipType) -> Set[Dict]:
         """
         One step of the BFS process
         Returns all edges that connect to node ids the next step

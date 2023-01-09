@@ -1,7 +1,7 @@
 import copy
 from http.client import CONFLICT, HTTPException
 import itertools
-from typing import Any, Optional, Tuple, Union, List
+from typing import Any, Optional, Tuple, Union, List, Dict
 from urllib.error import HTTPError
 from uuid import UUID
 
@@ -61,7 +61,7 @@ class PurviewRegistry(Registry):
         result_entities = result['value']
         return [x['qualifiedName'] for x in result_entities]
 
-    def get_projects_ids(self) -> dict:
+    def get_projects_ids(self) -> Dict:
         """
         Returns the names and ids of all projects"""
         searchTerm = {"entityType": str(EntityType.Project)}

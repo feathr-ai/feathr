@@ -3,7 +3,7 @@ from contextlib import contextmanager
 import logging
 import threading
 import os
-from typing import List
+from typing import List, Dict
 
 # Checks if the platform is Max (Darwin).
 # If so, imports _scproxy that is necessary for pymssql to work on MacOS
@@ -18,7 +18,7 @@ providers = []
 
 class DbConnection(ABC):
     @abstractmethod
-    def query(self, sql: str, *args, **kwargs) -> List[dict]:
+    def query(self, sql: str, *args, **kwargs) -> List[Dict]:
         pass
 
 # already has one in 'db_registry.py'; shall we remove it?
@@ -30,7 +30,7 @@ def quote(id):
         return ",".join([f"'{i}'" for i in id])
 '''
 
-def parse_conn_str(s: str) -> dict:
+def parse_conn_str(s: str) -> Dict:
     """
     TODO: Not a sound and safe implementation, but useful enough in this case
     as the connection string is provided by users themselves.
@@ -67,7 +67,7 @@ class MssqlConnection(DbConnection):
     def make_connection(self):
         self.conn = pymssql.connect(**self.params)
 
-    def query(self, sql: str, *args, **kwargs) -> List[dict]:
+    def query(self, sql: str, *args, **kwargs) -> List[Dict]:
         """
         Make SQL query and return result
         """
