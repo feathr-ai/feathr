@@ -77,7 +77,8 @@ dependencies {
   // 1. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.11.1'
   // 2. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.15.0
   // 3. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
-  provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.15.0'
+  // provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.15.0'
+  provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-3_2-12:4.15.0'
   provided 'com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8'
   provided 'org.eclipse.jetty:jetty-util:9.3.24.v20180605'
   provided 'org.apache.kafka:kafka-clients:3.1.0'
