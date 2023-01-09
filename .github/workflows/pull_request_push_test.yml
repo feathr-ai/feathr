@@ -288,8 +288,8 @@ jobs:
           PURVIEW_NAME: ${{secrets.PURVIEW_NAME}}
           CONNECTION_STR: ${{secrets.CONNECTION_STR}}
         run: |
+          pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
           pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py
-          # pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
 
   failure_notification:
     # If any failure, warning message will be sent
