@@ -59,7 +59,7 @@ jar {
 
   // Explicitly exclude com/linkedin/data files from the final jar. They can cause issues in other downstream applications.
   exclude 'com/linkedin/data/**'
-  exclude 'org/apache/hadoop/**'
+  //exclude 'org/apache/hadoop/**'
   zip64 = true
 }
 
