@@ -62,7 +62,7 @@ If you want to set up everything manually, you can checkout the [Feathr CLI depl
 
 - For more details on Feathr, read our [documentation](https://feathr-ai.github.io/feathr/).
 - For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
-- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
+- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf) and [here](./talks/Feathr%20Community%20Talk%20%E2%80%93%20An%20Enterprise-Grade%20High%20Performance%20Feature%20Store.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
 
 ## 🧪 Samples
 

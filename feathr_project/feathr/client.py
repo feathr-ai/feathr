@@ -77,6 +77,7 @@ class FeathrClient(object):
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
+        self._COMPOSITE_KEY_SEPARATOR = '#'
         self.env_config = EnvConfigReader(config_path=config_path, use_env_vars=use_env_vars)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
@@ -309,12 +310,14 @@ class FeathrClient(object):
         """
         return self.registry._get_registry_client()
 
-    def get_online_features(self, feature_table, key, feature_names):
+    def get_online_features(self, feature_table: str, key: Any, feature_names: List[str]):
         """Fetches feature value for a certain key from a online feature table.
 
         Args:
             feature_table: the name of the feature table.
-            key: the key of the entity
+            key: the key/key list of the entity; 
+                 for key list, please make sure the order is consistent with the one in feature's definition;
+                 the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
 
         Return:
@@ -330,12 +333,14 @@ class FeathrClient(object):
         res = self.redis_client.hmget(redis_key, *feature_names)
         return self._decode_proto(res)
 
-    def multi_get_online_features(self, feature_table, keys, feature_names):
+    def multi_get_online_features(self, feature_table: str, keys: List[Any], feature_names: List[str]):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
 
         Args:
             feature_table: the name of the feature table.
-            keys: list of keys for the entities
+            keys: list of keys/composite keys for the entities;
+                  for composite keys, please make sure each order of them is consistent with the one in feature's definition;
+                  the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
 
         Return:
@@ -356,7 +361,9 @@ class FeathrClient(object):
         decoded_pipeline_result = []
         for feature_list in pipeline_result:
             decoded_pipeline_result.append(self._decode_proto(feature_list))
-
+        for i in range(len(keys)):
+            if isinstance(keys[i], List):
+                keys[i] = self._COMPOSITE_KEY_SEPARATOR.join(keys[i])
         return dict(zip(keys, decoded_pipeline_result))
 
     def _decode_proto(self, feature_list):
@@ -448,6 +455,8 @@ class FeathrClient(object):
                 self.redis_client.delete(*keys)
 
     def _construct_redis_key(self, feature_table, key):
+        if isinstance(key, List):
+            key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
 
     def _construct_redis_client(self):
@@ -683,7 +692,7 @@ class FeathrClient(object):
         if len(feature_list) > 0:
             if 'anchor_list' in dir(self):
                 anchors = [anchor for anchor in self.anchor_list if isinstance(anchor.source, InputContext)]
-                anchor_feature_names = set(feature.name  for anchor in anchors for feature in anchor.features)
+                anchor_feature_names = set(feature.name for anchor in anchors for feature in anchor.features)
                 for feature in feature_list:
                     if feature in anchor_feature_names:
                         raise RuntimeError(f"Materializing features that are defined on INPUT_CONTEXT is not supported. {feature} is defined on INPUT_CONTEXT so you should remove it from the feature list in MaterializationSettings.")
