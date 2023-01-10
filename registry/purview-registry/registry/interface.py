@@ -1,19 +1,19 @@
 from abc import ABC, abstractclassmethod, abstractmethod
-from typing import Union
+from typing import Union, List, Dict
 from uuid import UUID
 from registry.models import *
 
 
 class Registry(ABC):
     @abstractmethod
-    def get_projects(self) -> list[str]:
+    def get_projects(self) -> List[str]:
         """
         Returns the names of all projects
         """
         pass
 
     @abstractmethod
-    def get_projects_ids(self) -> dict:
+    def get_projects_ids(self) -> Dict:
         """
         Returns the ids to names mapping of all projects
         """
@@ -27,7 +27,7 @@ class Registry(ABC):
         pass
 
     @abstractmethod
-    def get_entities(self, ids: list[UUID]) -> list[Entity]:
+    def get_entities(self, ids: List[UUID]) -> List[Entity]:
         """
         Get list of entities by their ids
         """
@@ -41,7 +41,7 @@ class Registry(ABC):
         pass
 
     @abstractmethod
-    def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
+    def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> List[Edge]:
         """
         Get list of edges with specified type that connect to this entity.
         The edge contains fromId and toId so we can follow to the entity it connects to
@@ -66,8 +66,8 @@ class Registry(ABC):
     @abstractmethod
     def search_entity(self,
                       keyword: str,
-                      type: list[EntityType],
-                      project: Optional[Union[str, UUID]] = None) -> list[EntityRef]:
+                      type: List[EntityType],
+                      project: Optional[Union[str, UUID]] = None) -> List[EntityRef]:
         """
         Search entities with specified type that also match the keyword in a project
         """
@@ -94,7 +94,7 @@ class Registry(ABC):
         pass
 
     @abstractmethod
-    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> list[Entity]:
+    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> List[Entity]:
         """
         Given entity id, returns list of all entities that are downstream/dependent on given entity
         """

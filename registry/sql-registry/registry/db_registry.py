@@ -1,6 +1,6 @@
 from typing import Optional, Tuple, Union
 from uuid import UUID, uuid4
-
+from typing import List, Set, Dict
 from pydantic import UUID4
 from registry import Registry
 from registry import connect
@@ -23,12 +23,12 @@ class DbRegistry(Registry):
     def __init__(self):
         self.conn = connect()
 
-    def get_projects(self) -> list[str]:
+    def get_projects(self) -> List[str]:
         ret = self.conn.query(
             f"select qualified_name from entities where entity_type=%s", str(EntityType.Project))
         return list([r["qualified_name"] for r in ret])
     
-    def get_projects_ids(self) -> dict:
+    def get_projects_ids(self) -> Dict:
         projects = {}
         ret = self.conn.query(
             f"select entity_id, qualified_name from entities where entity_type=%s", str(EntityType.Project))
@@ -39,7 +39,7 @@ class DbRegistry(Registry):
     def get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
         return self._fill_entity(self._get_entity(id_or_name))
 
-    def get_entities(self, ids: list[UUID]) -> list[Entity]:
+    def get_entities(self, ids: List[UUID]) -> List[Entity]:
         return list([self._fill_entity(e) for e in self._get_entities(ids)])
 
     def get_entity_id(self, id_or_name: Union[str, UUID]) -> UUID:
@@ -55,7 +55,7 @@ class DbRegistry(Registry):
             raise KeyError(f"Entity {id_or_name} not found")
         return ret[0]["entity_id"]
 
-    def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
+    def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> List[Edge]:
         rows = self.conn.query(fr'''
             select edge_id, from_id, to_id, conn_type
             from edges
@@ -106,7 +106,7 @@ class DbRegistry(Registry):
         all_edges = self._get_edges(ids)
         return EntitiesAndRelations([project] + children, list(edges.union(all_edges)))
     
-    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> list[Entity]:
+    def get_dependent_entities(self, entity_id: Union[str, UUID]) -> List[Entity]:
         """
         Given entity id, returns list of all entities that are downstream/dependant on the given entity
         """
@@ -134,10 +134,10 @@ class DbRegistry(Registry):
 
     def search_entity(self,
                       keyword: str,
-                      type: list[EntityType],
+                      type: List[EntityType],
                       project: Optional[Union[str, UUID]] = None,
                       start: Optional[int] = None,
-                      size: Optional[int] = None) -> list[EntityRef]:
+                      size: Optional[int] = None) -> List[EntityRef]:
         """
         WARN: This search function is implemented via `like` operator, which could be extremely slow.
         """
@@ -456,7 +456,7 @@ class DbRegistry(Registry):
             return e
         return e
 
-    def _get_edges(self, ids: list[UUID], types: list[RelationshipType] = []) -> list[Edge]:
+    def _get_edges(self, ids: List[UUID], types: List[RelationshipType] = []) -> List[Edge]:
         if not ids:
             return []
         sql = fr"""select edge_id, from_id, to_id, conn_type from edges
@@ -486,7 +486,7 @@ class DbRegistry(Registry):
         row["attributes"] = json.loads(row["attributes"])
         return _to_type(row, Entity)
 
-    def _get_entities(self, ids: list[UUID]) -> list[Entity]:
+    def _get_entities(self, ids: List[UUID]) -> List[Entity]:
         if not ids:
             return []
         rows = self.conn.query(fr'''select entity_id, qualified_name, entity_type, attributes
@@ -499,7 +499,7 @@ class DbRegistry(Registry):
             ret.append(Entity(**row))
         return ret
 
-    def _bfs(self, id: UUID, conn_type: RelationshipType) -> Tuple[list[Entity], list[Edge]]:
+    def _bfs(self, id: UUID, conn_type: RelationshipType) -> Tuple[List[Entity], List[Edge]]:
         """
         Breadth first traversal
         Starts from `id`, follow edges with `conn_type` only.
@@ -522,7 +522,7 @@ class DbRegistry(Registry):
         edges = list([Edge(**c) for c in connections])
         return (entities, edges)
 
-    def _bfs_step(self, ids: list[UUID], conn_type: RelationshipType) -> set[dict]:
+    def _bfs_step(self, ids: List[UUID], conn_type: RelationshipType) -> Set[Dict]:
         """
         One step of the BFS process
         Returns all edges that connect to node ids the next step
