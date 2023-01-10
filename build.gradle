@@ -75,11 +75,12 @@ dependencies {
   // Pay attention to the spark version for this package and it behaves diffrerently on Synapse and databricks
   // Versions tried so far - 
   // 1. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.11.1'
-  // 2. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.15.0
+  // 2. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.15.0 - Enabling this one again to get back to one databricks failure.
+  provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.15.0
   // 3. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
   // 4. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.15.0'
   // Trying this config again, and removing the changes to spark config in yaml file
-  provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-3_2-12:4.15.0'
+  // 5. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-3_2-12:4.15.0' - This one didn't work at all and resulted in lot of errors both for databricks and synapse.
   provided 'com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8'
   provided 'org.eclipse.jetty:jetty-util:9.3.24.v20180605'
   provided 'org.apache.kafka:kafka-clients:3.1.0'
