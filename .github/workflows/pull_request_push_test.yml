@@ -257,6 +257,39 @@ jobs:
         run: |
           # skip cloud related tests
           pytest --cov-report term-missing --cov=feathr_project/feathr/spark_provider feathr_project/test/test_local_spark_e2e.py --cov-config=.github/workflows/.coveragerc_local
+  
+  registry_test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'registry test'))
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: "8"
+          distribution: "temurin"
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install Feathr Package
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f ./registry/test/requirements.txt ]; then pip install -r ./registry/test/requirements.txt; fi
+          if [ -f ./registry/purview-registry/requirements.txt ]; then pip install -r ./registry/purview-registry/requirements.txt; fi
+          if [ -f ./registry/sql-registry/requirements.txt ]; then pip install -r ./registry/sql-registry/requirements.txt; fi
+      - name: Run Registry Test Cases
+        env:
+          AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
+          AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
+          AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
+          PURVIEW_NAME: ${{secrets.PURVIEW_NAME}}
+          CONNECTION_STR: ${{secrets.CONNECTION_STR}}
+        run: |
+          pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
+          pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py
 
   failure_notification:
     # If any failure, warning message will be sent
