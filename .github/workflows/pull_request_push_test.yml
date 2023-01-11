@@ -285,7 +285,7 @@ jobs:
           AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
           AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
           AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
-          PURVIEW_NAME: ${{secrets.PURVIEW_NAME}}
+          PURVIEW_NAME: "feathrazuretest3-purview1"
           CONNECTION_STR: ${{secrets.CONNECTION_STR}}
         run: |
           pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
