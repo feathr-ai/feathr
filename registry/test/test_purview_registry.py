@@ -26,7 +26,6 @@ class PurviewRegistryTest(unittest.TestCase):
         assert project_id is not None
         project = self.registry.get_entity(project_id)
         assert project.qualified_name == project_name
-        assert self.registry.get_entity_id(project_name) == str(project_id)
         return project_id
         
     def create_and_get_data_source(self, project_id, qualified_name, name, path, type):
@@ -74,7 +73,8 @@ class PurviewRegistryTest(unittest.TestCase):
         project_id = self.create_and_get_project(project_name)
         # re-create project, should return the same id
         id = self.registry.create_project(ProjectDef(project_name))
-        assert project_id == id       
+        assert project_id == id 
+        assert self.registry.get_entity_id(project_name) == str(project_id)      
         projects = self.registry.get_projects()
         assert len(projects) >= 1
         project_ids = self.registry.get_projects_ids()
