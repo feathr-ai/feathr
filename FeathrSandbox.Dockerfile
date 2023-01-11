@@ -1,6 +1,7 @@
 # TODO: persist the SQLite file in the volumes
 # TODO: always use feathr from current folder 
 # TODO: predownload the maven packages
+# TODO: make sure redis can use without password
 
 # docker run -it --rm -p 8888:8888 jupyter/all-spark-notebook
 
