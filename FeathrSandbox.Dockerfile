@@ -1,5 +1,6 @@
 # TODO: persist the SQLite file in the volumes
-
+# TODO: always use feathr from current folder 
+# TODO: predownload the maven packages
 
 # docker run -it --rm -p 8888:8888 jupyter/all-spark-notebook
 
@@ -40,12 +41,15 @@ COPY ./deploy/nginx.conf /etc/nginx/nginx.conf
 WORKDIR /usr/src/registry
 COPY ./deploy/start.sh .
 
+# COPY ./feathr_project .
+# RUN pip install -e ./feathr_project
+# RUN rm -rf ./feathr_project
 RUN pip install feathr
 
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
 
 RUN echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/redis.list
 
-
+RUN redis-server &
 RUN ["chmod", "+x", "./start.sh"]
-CMD ["/bin/sh", "-c", "./start.sh"]
+# CMD ["/bin/sh", "-c", "./start.sh"]
