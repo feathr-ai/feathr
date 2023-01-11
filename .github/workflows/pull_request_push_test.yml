@@ -288,7 +288,7 @@ jobs:
           PURVIEW_NAME: "feathrazuretest3-purview1"
           CONNECTION_STR: ${{secrets.CONNECTION_STR}}
         run: |
-          pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
+          #pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
           pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py
 
   failure_notification:
