@@ -61,11 +61,12 @@ setup(
     include_package_data=True,
     # consider
     install_requires=[
-        "click<=8.1.3",
+        "click",
         "py4j<=0.10.9.7",
-        "loguru<=0.6.0",
-        "pandas>=1.5.0",
-        "numpy<=1.20.3",  # pin numpy due to pyspark's deprecated np.bool access
+        "loguru",
+        "pandas",
+        # "numpy<=1.20.3",  # pin numpy due to pyspark's deprecated np.bool access
+        "numpy",
         "redis<=4.4.0",
         "requests<=2.28.1",
         "tqdm<=4.64.1",
@@ -75,7 +76,7 @@ setup(
         "pyyaml<=6.0",
         "Jinja2<=3.1.2",
         "pyarrow<=9.0.0",
-        "pyspark>=3.1.2",
+        # "pyspark>=3.1.2",
         "python-snappy<=0.6.1",
         "deltalake>=0.6.2",
         "graphlib_backport<=1.0.3",

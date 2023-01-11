@@ -46,7 +46,7 @@ COPY ./deploy/start.sh /usr/src/registry/
 # always install feathr from main
 # COPY ./feathr_project /tmp/feathr_project
 # RUN python -m pip install /tmp/feathr_project/
-RUN python -m pip install feathr
+# RUN python -m pip install feathr
 
 # RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
 
@@ -56,6 +56,8 @@ RUN python -m pip install feathr
 RUN sed -i 's/# requirepass foobared/requirepass foobared/g' /etc/redis/redis.conf
 
 RUN redis-server &
+WORKDIR /home/jovyan
+ADD 
 
 RUN ["chmod", "+x", "/usr/src/registry/start.sh"]
 RUN ["/bin/sh", "-c", "/usr/src/registry/start.sh"]
