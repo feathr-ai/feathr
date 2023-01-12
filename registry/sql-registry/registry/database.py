@@ -51,7 +51,11 @@ class SQLiteConnection(DbConnection):
         if "Server=" not in conn_str:
             logging.debug("`CONNECTION_STR` is not in ADO connection string format")
             return None
-        params = parse_conn_str(conn_str)
+        params = {
+        "host": "localhost",
+        "database": "feathr_registry.db",
+        # "charset": "utf-8",   ## For unknown reason this causes connection failure
+    }
         if not autocommit:
             params["autocommit"] = False
         return SQLiteConnection(params)
@@ -62,7 +66,8 @@ class SQLiteConnection(DbConnection):
         self.mutex = threading.Lock()
 
     def make_connection(self):
-        self.conn = sqlite3.connect(**self.params)
+        self.conn = sqlite3.connect("feathr_registry.db")
+        self.conn.row_factory = sqlite3.Row
 
     def query(self, sql: str, *args, **kwargs) -> list[dict]:
         """
@@ -74,7 +79,7 @@ class SQLiteConnection(DbConnection):
         while True:
             try:
                 with self.mutex:
-                    c = self.conn.cursor(as_dict=True)
+                    c = self.conn.cursor()
                     c.execute(sql, *args, **kwargs)
                     return c.fetchall()
             except sqlite3.OperationalError:
@@ -112,7 +117,7 @@ class SQLiteConnection(DbConnection):
         try:
             # As one MssqlConnection has only one connection, we need to create a new one to disable `autocommit`
             conn = MssqlConnection.connect(autocommit=False).conn
-            cursor = conn.cursor(as_dict=True)
+            cursor = conn.cursor()
             yield cursor
         except Exception as e:
             logging.warning(f"Exception: {e}")
@@ -205,7 +210,8 @@ class MssqlConnection(DbConnection):
                 conn.commit()
 
 
-providers.append(MssqlConnection, SQLiteConnection)
+# providers.append(MssqlConnection)
+providers.append(SQLiteConnection)
 
 
 def connect(*args, **kargs):

@@ -26,10 +26,8 @@ FROM jupyter/all-spark-notebook
 
 USER root
 
-
-
 ## Install dependencies
-RUN apt-get update -y && apt-get install -y nginx freetds-dev sqlite3 libsqlite3-dev lsb-release redis gnupg redis-server
+RUN apt-get update -y && apt-get install -y nginx freetds-dev sqlite3 libsqlite3-dev lsb-release redis gnupg redis-server lsof
 COPY ./registry /usr/src/registry
 WORKDIR /usr/src/registry/sql-registry
 RUN pip install -r requirements.txt
@@ -44,8 +42,8 @@ WORKDIR /usr/src/registry
 COPY ./deploy/start.sh /usr/src/registry/
 
 # always install feathr from main
-# COPY ./feathr_project /tmp/feathr_project
-# RUN python -m pip install /tmp/feathr_project/
+COPY ./feathr_project /tmp/feathr_project
+RUN python -m pip install /tmp/feathr_project/
 # RUN python -m pip install feathr
 
 # RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
@@ -55,9 +53,22 @@ COPY ./deploy/start.sh /usr/src/registry/
 # set redis password, since currently Feathr require the password to be set.
 RUN sed -i 's/# requirepass foobared/requirepass foobared/g' /etc/redis/redis.conf
 
-RUN redis-server &
-WORKDIR /home/jovyan
-ADD 
 
+WORKDIR /home/jovyan/work
+USER jovyan
+ADD --chown=jovyan https://raw.githubusercontent.com/xiaoyongzhu/feathr/feathr-sandbox/docs/samples/local_quickstart_nyc_taxi_demo.ipynb .
+
+
+USER root
+WORKDIR /usr/src/registry
 RUN ["chmod", "+x", "/usr/src/registry/start.sh"]
-RUN ["/bin/sh", "-c", "/usr/src/registry/start.sh"]
+COPY ./docker/feathr_init_sql.py .
+RUN python feathr_init_sql.py
+# remove ^M chars in Linux to make sure the script can run
+RUN sed -i "s/\r//g" /usr/src/registry/start.sh
+CMD ["/bin/bash", "/usr/src/registry/start.sh"]
+
+WORKDIR /home/jovyan/work
+
+
+

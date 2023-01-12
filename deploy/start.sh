@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# start redis
+nohup redis-server &
+
 # Generate static env.config.js for UI app
 envfile=/usr/share/nginx/html/env-config.js
 echo "window.environment = {" > $envfile
@@ -37,12 +40,13 @@ if [ "x$REACT_APP_ENABLE_RBAC" == "x" ]; then
     echo "RBAC flag not configured, only launch registry app"
     if [ "x$PURVIEW_NAME" == "x" ]; then
         echo "Purview flag is not configured, run SQL registry"
-        cd sql-registry
-        nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
+        cd /usr/src/registry/sql-registry
+        nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT &
+        cd -
     else
         echo "Purview flag is configured, run Purview registry"
         cd purview-registry
-        nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
+        nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT &
     fi
 else
     echo "RBAC flag configured, launch both rbac and reigstry apps"
@@ -66,3 +70,6 @@ else
     export RBAC_CONNECTION_STR="${CONNECTION_STR}"
     uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
 fi
+
+# start the notebooks
+start-notebook.sh

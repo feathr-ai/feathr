@@ -85,8 +85,7 @@ class _FeatureRegistry(FeathrRegistry):
         self.project_name = project_name
         self.project_tags = project_tags
         self.endpoint = endpoint
-        self.credential = DefaultAzureCredential(
-            exclude_interactive_browser_credential=False) if credential is None else credential
+        self.credential = None
         self.project_id = None
 
     def register_features(self, workspace_path: Optional[Path] = None, from_context: bool = True, anchor_list: List[FeatureAnchor]=[], derived_feature_list=[]):
@@ -215,7 +214,8 @@ class _FeatureRegistry(FeathrRegistry):
         return check(requests.post(f"{self.endpoint}{path}", headers=self._get_auth_header(), json=body)).json()
 
     def _get_auth_header(self) -> dict:
-        return {"Authorization": f'Bearer {self.credential.get_token("https://management.azure.com/.default").token}'}
+        # return {"Authorization": f'Bearer {self.credential.get_token("https://management.azure.com/.default").token}'}
+        return None
     
 
 def check(r):

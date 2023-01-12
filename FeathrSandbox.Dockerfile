@@ -56,6 +56,11 @@ RUN python -m pip install feathr
 RUN sed -i 's/# requirepass foobared/requirepass foobared/g' /etc/redis/redis.conf
 
 RUN redis-server &
+WORKDIR /home/jovyan
+ADD https://raw.githubusercontent.com/xiaoyongzhu/feathr/feathr-sandbox/docs/samples/local_quickstart_nyc_taxi_demo.ipynb .
 
 RUN ["chmod", "+x", "/usr/src/registry/start.sh"]
-RUN ["/bin/sh", "-c", "/usr/src/registry/start.sh"]
+# RUN ["/bin/sh", "-c", "/usr/src/registry/start.sh"]
+
+
+# Fix redis start issues (redis server doesn't start)
