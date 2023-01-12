@@ -1,5 +1,5 @@
 import sqlite3
-con = sqlite3.connect("feathr_registry.db")
+con = sqlite3.connect("/usr/src/registry/sql-registry/feathr_registry.db")
 cur = con.cursor()
 
 cur.execute("CREATE TABLE IF NOT EXISTS entities(entity_id varchar PRIMARY KEY,qualified_name varchar, entity_type varchar, attributes NVARCHAR) ")

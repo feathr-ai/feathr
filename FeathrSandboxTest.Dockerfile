@@ -28,6 +28,16 @@ USER root
 
 ## Install dependencies
 RUN apt-get update -y && apt-get install -y nginx freetds-dev sqlite3 libsqlite3-dev lsb-release redis gnupg redis-server lsof
+
+
+# always install feathr from main
+COPY ./feathr_project /tmp/feathr_project
+RUN python -m pip install /tmp/feathr_project/
+# RUN python -m pip install feathr
+
+
+
+# install registry
 COPY ./registry /usr/src/registry
 WORKDIR /usr/src/registry/sql-registry
 RUN pip install -r requirements.txt
@@ -41,10 +51,7 @@ COPY ./deploy/nginx.conf /etc/nginx/nginx.conf
 WORKDIR /usr/src/registry
 COPY ./deploy/start.sh /usr/src/registry/
 
-# always install feathr from main
-COPY ./feathr_project /tmp/feathr_project
-RUN python -m pip install /tmp/feathr_project/
-# RUN python -m pip install feathr
+
 
 # RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
 

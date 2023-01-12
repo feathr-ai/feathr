@@ -66,7 +66,11 @@ class SQLiteConnection(DbConnection):
         self.mutex = threading.Lock()
 
     def make_connection(self):
-        self.conn = sqlite3.connect("feathr_registry.db")
+        # use ` check_same_thread=False` otherwise an error like 
+        # sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 140309046605632 and this is thread id 140308968896064.
+        # will be thrown out
+        # TODO: remove hard coded path
+        self.conn = sqlite3.connect("/usr/src/registry/sql-registry/feathr_registry.db",  check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
 
     def query(self, sql: str, *args, **kwargs) -> list[dict]:
