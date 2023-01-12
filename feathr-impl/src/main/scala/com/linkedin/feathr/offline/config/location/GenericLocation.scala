@@ -161,8 +161,8 @@ object GenericLocationAdHocPatches {
         keyDf.write.format(location.format)
           .options(location.options)
           .option("spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog")
-          .option("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountEndpoint", endpoint)
-          .option("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", key)
+          .option("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountEndpoint", ss.conf.get("spark.cosmos.accountEndpoint")
+          .option("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", ss.conf.get("spark.cosmos.accountKey"))
           .mode(location.mode.getOrElse("append")) // CosmosDb doesn't support ErrorIfExist mode in batch mode
           .save()
       case "org.elasticsearch.spark.sql" => {
@@ -186,8 +186,8 @@ object GenericLocationAdHocPatches {
           .option("es.mapping.exclude", "_id") // Exclude doc id column from the doc body
           .option("es.write.operation", "upsert") // As we already have `_id` column, we should use "upsert", otherwise there could be duplicates in the output
           .option("spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog")
-          .option("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountEndpoint", endpoint)
-          .option("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", key)
+          .option("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountEndpoint", ss.conf.get("spark.cosmos.accountEndpoint")
+          .option("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", ss.conf.get("spark.cosmos.accountKey"))
           .options(location.options)
           .mode(location.mode.getOrElse("overwrite")) // I don't see if ElasticSearch uses it in any doc
           .save()
