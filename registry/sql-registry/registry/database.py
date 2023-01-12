@@ -73,15 +73,14 @@ class SQLiteConnection(DbConnection):
         """
         Make SQL query and return result
         """
-        logging.debug(f"SQL: `{sql}`")
+        print(f"SQL: `{sql}`")
         # NOTE: Only one cursor is allowed at the same time
         retry = 0
         while True:
             try:
-                with self.mutex:
-                    c = self.conn.cursor()
-                    c.execute(sql, *args, **kwargs)
-                    return c.fetchall()
+                c = self.conn.cursor()
+                c.execute(sql, *args, **kwargs)
+                return c.fetchall()
             except sqlite3.OperationalError:
                 logging.warning("Database error, retrying...")
                 # Reconnect

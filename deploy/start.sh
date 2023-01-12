@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# start redis
-nohup redis-server &
+
 
 # Generate static env.config.js for UI app
 envfile=/usr/share/nginx/html/env-config.js
@@ -41,7 +40,10 @@ if [ "x$REACT_APP_ENABLE_RBAC" == "x" ]; then
     if [ "x$PURVIEW_NAME" == "x" ]; then
         echo "Purview flag is not configured, run SQL registry"
         cd /usr/src/registry/sql-registry
+        # start redis
+        nohup redis-server &
         nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT &
+        # TODO: move this to a more neutural folder since Redis doesn't have anything to do with Feathr
         cd -
     else
         echo "Purview flag is configured, run Purview registry"
