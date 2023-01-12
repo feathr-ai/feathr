@@ -1,15 +1,35 @@
 from typing import Optional, Tuple, Union
 from uuid import UUID, uuid4
-
+import sqlalchemy as db
 from pydantic import UUID4
 from registry import Registry
 from registry import connect
 from registry.models import AnchorAttributes, AnchorDef, AnchorFeatureAttributes, AnchorFeatureDef, DerivedFeatureAttributes, DerivedFeatureDef, Edge, EntitiesAndRelations, Entity, EntityRef, EntityType, ProjectAttributes, ProjectDef, RelationshipType, SourceAttributes, SourceDef, _to_type, _to_uuid
 import json
+from sqlalchemy.orm import Session
 
 class ConflictError(Exception):
     pass
 
+from sqlalchemy.ext.declarative import declarative_base
+Base = declarative_base()
+class Entities(Base):
+
+    __tablename__ = 'entities'
+
+    entity_id = db.Column('entity_id', db.String(50),nullable=False, primary_key=True)
+    qualified_name =  db.Column('qualified_name', db.String(200), nullable=False)
+    entity_type = db.Column('entity_type', db.String(100),nullable=False)
+    attributes = db.Column('attributes', db.String(2000), nullable=False)
+
+class Edges(Base):
+
+    __tablename__ = 'edges'
+
+    edge_id = db.Column('edge_id', db.String(50),nullable=False, primary_key=True)
+    from_id =  db.Column('from_id', db.String(50), nullable=False)
+    to_id = db.Column('to_id', db.String(20), nullable=False)
+    conn_type = db.Column('conn_type', db.String(20), nullable=False) 
 
 def quote(id):
     if isinstance(id, str):
@@ -22,18 +42,48 @@ def quote(id):
 class DbRegistry(Registry):
     def __init__(self):
         self.conn = connect()
+        engine = db.create_engine('sqlite:///test1.sqlite') #Create test.sqlite automatically
+        self.sql_session = Session(engine)
+        self.connection = engine.connect()
+        metadata = db.MetaData()
+
+
+        self.entities_table = db.Table('entities', metadata,
+                    db.Column('entity_id', db.String(50),nullable=False, primary_key=True),
+                    db.Column('qualified_name', db.String(200), nullable=False),
+                    db.Column('entity_type', db.String(100),nullable=False),
+                    db.Column('attributes', db.String(2000), nullable=False) #TODO: sqlite doesn't enforce length but others might
+                    )
+        self.edges_table = db.Table('edges', metadata,
+                    db.Column('edge_id', db.String(50),nullable=False, primary_key=True),
+                    db.Column('from_id', db.String(50), nullable=False),
+                    db.Column('to_id', db.String(20), nullable=False),
+                    db.Column('conn_type', db.String(20), nullable=False) 
+                    )
+        metadata.create_all(engine) #Creates the table
+
+
 
     def get_projects(self) -> list[str]:
+
+        query = db.select(self.entities_table.c.qualified_name).where((self.entities_table.c.entity_type == str(EntityType.Project))) # & is also supported
+        result = self.connection.execute(query).fetchall()
+        return result
+
         ret = self.conn.query(
             f"select qualified_name from entities where entity_type=%s", str(EntityType.Project))
         return list([r["qualified_name"] for r in ret])
     
     def get_projects_ids(self) -> dict:
         projects = {}
-        ret = self.conn.query(
-            f"select entity_id, qualified_name from entities where entity_type=%s", str(EntityType.Project))
-        for r in ret:
-            projects[r['entity_id']] = r['qualified_name']
+        query = db.select(self.entities_table.c.entity_id,self.entities_table.c.qualified_name).where((self.entities_table.c.entity_type == str(EntityType.Project))) # & is also supported
+        result = self.connection.execute(query).fetchall()
+        # ret = self.conn.query(
+        #     f"select entity_id, qualified_name from entities where entity_type=%s", str(EntityType.Project))
+        
+        # return a dict; the result will be a list of tuples
+        for r in result:
+            projects[r[0]] = r[1]
         return projects
 
     def get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
@@ -51,18 +101,22 @@ class DbRegistry(Registry):
             pass
         print("id_or_name", id_or_name)
         # It is a name
-        ret = self.conn.query(f"select entity_id from entities where qualified_name={str(id_or_name)}")
+        # ret = self.conn.query(f"select entity_id from entities where qualified_name={str(id_or_name)}")
+        query = db.select(self.entities_table.c.entity_id).where((self.entities_table.c.qualified_name == str(id_or_name))) # & is also supported
+        ret = self.connection.execute(query).fetchall()
         if len(ret) == 0:
             raise KeyError(f"Entity {id_or_name} not found")
         return ret[0]["entity_id"]
 
     def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> list[Edge]:
-        rows = self.conn.query(fr'''
-            select edge_id, from_id, to_id, conn_type
-            from edges
-            where from_id = %s
-            and conn_type = %s
-        ''', (str(self.get_entity_id(id_or_name)), relationship.name))
+        query = db.select(self.edges_table.c.edge_id, self.edges_table.c.from_id, self.edges_table.c.to_id,self.edges_table.c.conn_type).where((self.edges_table.c.from_id == str(self.get_entity_id(id_or_name))) & (self.edges_table.c.conn_type == relationship.name)) # & is also supported
+        rows = self.connection.execute(query).fetchall()
+        # rows = self.conn.query(fr'''
+        #     select edge_id, from_id, to_id, conn_type
+        #     from edges
+        #     where from_id = %s
+        #     and conn_type = %s
+        # ''', (str(self.get_entity_id(id_or_name)), relationship.name))
         return list([Edge(**row) for row in rows])
 
     def get_lineage(self, id_or_name: Union[str, UUID]) -> EntitiesAndRelations:
@@ -168,8 +222,8 @@ class DbRegistry(Registry):
         definition.qualified_name = definition.name
         with self.conn.transaction() as c:
             # First we try to find existing entity with the same qualified name
-            c.execute(f'''select entity_id, entity_type, attributes from entities where qualified_name = "{definition.qualified_name}"''' )
-            r = c.fetchall()
+            query = db.select(self.entities_table.c.entity_id, self.entities_table.c.entity_type, self.entities_table.c.attributes).where((self.entities_table.c.qualified_name == definition.qualified_name)) # & is also supported
+            r = self.connection.execute(query).fetchall()
             if r:
                 if len(r) > 1:
                     assert False, "Data inconsistency detected, %d entities have same qualified_name %s" % (
@@ -181,8 +235,10 @@ class DbRegistry(Registry):
                 # Just return the existing project id
                 return _to_uuid(r[0]["entity_id"])
             id = uuid4()
-            sql_query = f'''insert into entities (entity_id, entity_type, qualified_name, attributes) values ("{str(id)}", "{str(EntityType.Project)}", "{definition.qualified_name}, {definition.to_attr().to_json()})'''
-            c.execute(sql_query)
+            query = db.insert(self.entities_table).values(entity_id= str(id), entity_type=str(EntityType.Project), qualified_name=definition.qualified_name, attributes =definition.to_attr().to_json())
+            r = self.connection.execute(query)
+            # sql_query = f'''insert into entities (entity_id, entity_type, qualified_name, attributes) values ("{str(id)}", "{str(EntityType.Project)}", "{definition.qualified_name}, {definition.to_attr().to_json()})'''
+            # c.execute(sql_query)
             return id
 
     def create_project_datasource(self, project_id: UUID, definition: SourceDef) -> UUID:
@@ -453,14 +509,18 @@ class DbRegistry(Registry):
         return list([_to_type(row, Edge) for row in rows])
 
     def _get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
-        row = self.conn.query(fr'''
-            select entity_id, qualified_name, entity_type, attributes
-            from entities
-            where entity_id = %s
-        ''', self.get_entity_id(id_or_name))
+        query = db.select(self.entities_table.c.entity_id, self.entities_table.c.qualified_name, self.entities_table.c.entity_type, self.entities_table.c.attributes).where((self.entities_table.c.entity_id == str(self.get_entity_id(id_or_name)))) # & is also supported
+        row = self.connection.execute(query).fetchall()
+        print(row)
+        # row = self.conn.query(fr'''
+        #     select entity_id, qualified_name, entity_type, attributes
+        #     from entities
+        #     where entity_id = %s
+        # ''', self.get_entity_id(id_or_name))
         if not row:
             raise KeyError(f"Entity {id_or_name} not found")
         row=row[0]
+        row = row._asdict()
         row["attributes"] = json.loads(row["attributes"])
         return _to_type(row, Entity)
 
