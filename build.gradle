@@ -77,6 +77,7 @@ dependencies {
   // 1. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.11.1'
   // 2. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.15.0 - Enabling this one again to get back to one databricks failure.
   provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.11.1'
+  //Adding new comment to kick off 
   // 3. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
   // 4. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.15.0'
   // Trying this config again, and removing the changes to spark config in yaml file
