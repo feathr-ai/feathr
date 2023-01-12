@@ -158,6 +158,7 @@ object GenericLocationAdHocPatches {
           //  to avoid using `id` column for non-unique data, but both workarounds have pros and cons.
           df
         }
+        // Adding additional options to make sure they are available at write time. Similar to RedisSink in RedisOutputUtils.scala
         keyDf.write.format(location.format)
           .options(location.options)
           .option("spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog")
