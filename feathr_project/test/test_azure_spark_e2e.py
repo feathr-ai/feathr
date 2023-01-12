@@ -7,6 +7,8 @@ from feathr import (BOOLEAN, FLOAT, INPUT_CONTEXT, INT32, STRING,
 from feathr import FeathrClient
 from feathr.definition.sink import CosmosDbSink, ElasticSearchSink
 from feathr.definition.source import HdfsSource
+from feathr.spark_provider.feathr_configurations import SparkExecutionConfiguration
+
 
 import pytest
 from click.testing import CliRunner
@@ -300,6 +302,7 @@ def test_feathr_materialize_to_cosmosdb():
                                        sinks=[sink],
                                        feature_names=[
                                            "f_location_avg_fare", "f_location_max_fare"],
+                                        execution_configurations=SparkExecutionConfiguration({"spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog"}),
                                        backfill_time=backfill_time)
     client.materialize_features(settings)
     # assuming the job can successfully run; otherwise it will throw exception
