@@ -302,9 +302,8 @@ def test_feathr_materialize_to_cosmosdb():
                                        sinks=[sink],
                                        feature_names=[
                                            "f_location_avg_fare", "f_location_max_fare"],
-                                        execution_configurations=SparkExecutionConfiguration({"spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog"}),
                                        backfill_time=backfill_time)
-    client.materialize_features(settings)
+    client.materialize_features(settings,execution_configurations=SparkExecutionConfiguration({"spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog"}))
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
