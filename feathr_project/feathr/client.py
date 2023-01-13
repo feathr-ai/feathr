@@ -310,7 +310,7 @@ class FeathrClient(object):
         """
         return self.registry._get_registry_client()
 
-    def get_online_features(self, feature_table, key, feature_names):
+    def get_online_features(self, feature_table: str, key: Any, feature_names: List[str]):
         """Fetches feature value for a certain key from a online feature table.
 
         Args:
@@ -333,7 +333,7 @@ class FeathrClient(object):
         res = self.redis_client.hmget(redis_key, *feature_names)
         return self._decode_proto(res)
 
-    def multi_get_online_features(self, feature_table, keys, feature_names):
+    def multi_get_online_features(self, feature_table: str, keys: List[Any], feature_names: List[str]):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
 
         Args:
@@ -662,7 +662,7 @@ class FeathrClient(object):
         for feature in features:
             new_keys = self._get_feature_key(feature)
             if new_keys is None:
-                self.logger.error(f"Key of feature: {feature} is empty. If this feature is not from INPUT_CONTEXT, you might want to double check on the feature definition to see whether the key is empty or not.")
+                self.logger.error(f"Key of feature: {feature} is empty. Please confirm the feature is defined. In addition, if this feature is not from INPUT_CONTEXT, you might want to double check on the feature definition to see whether the key is empty or not.")
                 return False
             # If only get one key and it's "NOT_NEEDED", it means the feature has an empty key.
             if ','.join(new_keys) == "NOT_NEEDED" and not allow_empty_key:
@@ -692,12 +692,12 @@ class FeathrClient(object):
         if len(feature_list) > 0:
             if 'anchor_list' in dir(self):
                 anchors = [anchor for anchor in self.anchor_list if isinstance(anchor.source, InputContext)]
-                anchor_feature_names = set(feature.name  for anchor in anchors for feature in anchor.features)
+                anchor_feature_names = set(feature.name for anchor in anchors for feature in anchor.features)
                 for feature in feature_list:
                     if feature in anchor_feature_names:
                         raise RuntimeError(f"Materializing features that are defined on INPUT_CONTEXT is not supported. {feature} is defined on INPUT_CONTEXT so you should remove it from the feature list in MaterializationSettings.")
             if not self._valid_materialize_keys(feature_list):
-                raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
+                raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys or they are not defined. Currently Feathr only supports materializing features of the same keys.")
 
         if not allow_materialize_non_agg_feature:
             # Check if there are non-aggregation features in the list
