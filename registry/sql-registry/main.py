@@ -8,12 +8,10 @@ from starlette.middleware.cors import CORSMiddleware
 from registry import *
 from registry.db_registry import DbRegistry, ConflictError
 from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
-import uvicorn
 
 rp = "/"
 try:
-    # rp = os.environ["API_BASE"]
-    rp = "api/v1"
+    rp = os.environ["API_BASE"]
     if rp[0] != '/':
         rp = '/' + rp
 except:
@@ -194,8 +192,3 @@ def new_project_derived_feature(project: str, definition: Dict) -> Dict:
 
 
 app.include_router(prefix=rp, router=router)
-
-os.environ["CONNECTION_STR"]="Server="
-os.environ["API_BASE"]="api/v1"
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
