@@ -19,6 +19,7 @@ The Sandbox is ideal for:
 - Feathr devs to test new features since this docker should everything they need
 - Feathr users who want to get started quickly
 
+## Getting Started
 
 To get started, simply run the command:
 
@@ -60,7 +61,7 @@ The Feathr sandbox comes with:
 
 ## Build Docker Container
 
-In the Feathr root directory, run command like below:
+If you want to build the Feathr sandbox, run the below command in the Feathr root directory:
 
 ```bash
 docker build -f FeathrSandbox.Dockerfile -t feathrfeaturestore/feathr-sandbox .
