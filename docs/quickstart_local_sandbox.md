@@ -5,11 +5,18 @@ title: Quick Start Guide with Local Sandbox
 
 # Feathr Quick Start Guide with Local Sandbox
 
-We provide a local sandbox so users can use Feathr easily (TODO: expand on the motivation)
+We provide a local sandbox so users can use Feathr easily. The goal of the Feathr Sandbox is to:
+
+- make it easier for users to get started, 
+- make it easy to validate feature definitions and new ideas
+- make it easier for Feathr devs to setup environment and develop new things
+- Interactive experience, usually try to run a job takes less than 1 min.
+
+As an end user, they can become productive in less than 5 mins.
 
 The Sandbox is ideal for:
 
-- Feathr devs to test new features
+- Feathr devs to test new features since this docker should everything they need
 - Feathr users who want to get started quickly
 
 
@@ -19,10 +26,11 @@ To get started, simply run the command:
 docker run -it --rm -p 8888:8888  -p 8000:8000 -p 80:80 --env CONNECTION_STR="Server=" --env API_BASE="api/v1" -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
 ```
 
-It should pop up a Jupyter link like this. Click to start the Jupyter Notebook and you should be able to see the Feathr sample notebook as well as some sample Python scripts
+It should pop up a Jupyter link like below. Click to start the Jupyter Notebook and you should be able to see the Feathr sample notebook to run. Click the triangle button on the Jupyter notebook so the whole notebook will run locally.
 
-`http://127.0.0.1:8888/lab?token=b4b05e6d7f419038ddc1176589cc0b9e79b02c3cbc86defe`
-
+```bash
+http://127.0.0.1:8888/lab?token=b4b05e6d7f419038ddc1176589cc0b9e79b02c3cbc86defe
+```
 ![Feathr Notebook](./images/feathr-sandbox.png)
 
 
@@ -42,6 +50,7 @@ After executing those scripts, you should be able to see a project called `local
 
 The Feathr sandbox comes with:
 - Built-in Jupyter Notebook
+- A local spark environment for dev/test purpose
 - Feathr samples that can run locally
 - A local Feathr registry backed by SQLite
 - Feathr UI
@@ -56,8 +65,3 @@ In the Feathr root directory, run command like below:
 ```bash
 docker build -f FeathrSandbox.Dockerfile -t feathrfeaturestore/feathr-sandbox .
 ```
-
-
-## Known issues
-
-Materialization job doesn't work and we are working on a fix. It used to work in 0.9.0 so might be a regression issue
