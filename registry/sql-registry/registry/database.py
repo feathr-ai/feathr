@@ -95,8 +95,10 @@ class MssqlConnection(DbConnection):
         """
         Start a transaction so we can run multiple SQL in one batch.
         User should use `with` with the returned value, look into db_registry.py for more real usage.
+
         NOTE: `self.query` and `self.execute` will use a different MSSQL connection so any change made
         in this transaction will *not* be visible in these calls.
+
         The minimal implementation could look like this if the underlying engine doesn't support transaction.
         ```
         @contextmanager
