@@ -39,7 +39,7 @@ RUN python -m pip install /tmp/feathr_project/
 
 # install registry
 COPY ./registry /usr/src/registry
-WORKDIR /usr/src/registry/sql-registry
+WORKDIR /usr/src/registry/sql-registry-orm
 RUN pip install -r requirements.txt
 
 ## Remove default nginx index page and copy ui static bundle files
@@ -49,7 +49,7 @@ COPY ./deploy/nginx.conf /etc/nginx/nginx.conf
 
 ## Start service and then start nginx
 WORKDIR /usr/src/registry
-COPY ./deploy/start.sh /usr/src/registry/
+COPY ./deploy/start_local.sh /usr/src/registry/
 
 
 
@@ -64,18 +64,19 @@ RUN sed -i 's/# requirepass foobared/requirepass foobared/g' /etc/redis/redis.co
 WORKDIR /home/jovyan/work
 USER jovyan
 ADD --chown=jovyan https://raw.githubusercontent.com/xiaoyongzhu/feathr/feathr-sandbox/docs/samples/local_quickstart_nyc_taxi_demo.ipynb .
-
+COPY ./docker/feathr_init_script.py .
+RUN python feathr_init_script.py
 
 USER root
 WORKDIR /usr/src/registry
-RUN ["chmod", "+x", "/usr/src/registry/start.sh"]
-COPY ./docker/feathr_init_sql.py .
-RUN python feathr_init_sql.py
+RUN ["chmod", "+x", "/usr/src/registry/start_local.sh"]
+
 # remove ^M chars in Linux to make sure the script can run
-RUN sed -i "s/\r//g" /usr/src/registry/start.sh
-CMD ["/bin/bash", "/usr/src/registry/start.sh"]
+RUN sed -i "s/\r//g" /usr/src/registry/start_local.sh
+
+# run the service so we can initialize
+# RUN  ["/bin/bash", "/usr/src/registry/start.sh"]
+CMD ["/bin/bash", "/usr/src/registry/start_local.sh"]
+
 
 WORKDIR /home/jovyan/work
-
-
-

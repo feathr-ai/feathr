@@ -2,7 +2,6 @@ import importlib
 import inspect
 import json
 import logging
-from loguru import logger
 import os
 from pathlib import Path
 import sys
@@ -122,7 +121,7 @@ class _FeatureRegistry(FeathrRegistry):
             if not hasattr(df, "_registry_id"):
                 df._registry_id = self._create_derived_feature(df)
         url = '/'.join(self.endpoint.split('/')[:3])       
-        logger.info(f"Check project lineage by this link: {url}/projects/{self.project_name}/lineage")
+        logging.info(f"Check project lineage by this link: {url}/projects/{self.project_name}/lineage")
 
     def list_registered_features(self, project_name: str) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -201,16 +200,16 @@ class _FeatureRegistry(FeathrRegistry):
         return id
 
     def _get(self, path: str) -> dict:
-        logger.debug("PATH: ", path)
+        logging.debug("PATH: ", path)
         return check(requests.get(f"{self.endpoint}{path}", headers=self._get_auth_header())).json()
     
     def _delete(self, path: str) -> dict:
-        logger.debug("PATH: ", path)
+        logging.debug("PATH: ", path)
         return check(requests.delete(f"{self.endpoint}{path}", headers=self._get_auth_header())).json()
 
     def _post(self, path: str, body: dict) -> dict:
-        logger.debug("PATH: ", path)
-        logger.debug("BODY: ", json.dumps(body, indent=2))
+        logging.debug("PATH: ", path)
+        logging.debug("BODY: ", json.dumps(body, indent=2))
         return check(requests.post(f"{self.endpoint}{path}", headers=self._get_auth_header(), json=body)).json()
 
     def _get_auth_header(self) -> dict:

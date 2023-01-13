@@ -71,24 +71,6 @@ class SQLiteConnection(DbConnection):
         self.make_connection()
         self.mutex = threading.Lock()
 
-        engine = db.create_engine('sqlite:////tmp/feathr_registry.db') #Create test.sqlite automatically
-        connection = engine.connect()
-        metadata = db.MetaData()
-
-        entities_table = db.Table('entities', metadata,
-                    db.Column('entity_id', db.String(50),nullable=False, primary_key=True),
-                    db.Column('qualified_name', db.String(200), nullable=False),
-                    db.Column('entity_type', db.String(100),nullable=False),
-                    db.Column('attributes', db.String(2000), nullable=False) #TODO: sqlite doesn't enforce length but others might
-                    )
-        edges_table = db.Table('edges', metadata,
-                    db.Column('edge_id', db.String(50),nullable=False, primary_key=True),
-                    db.Column('from_id', db.String(50), nullable=False),
-                    db.Column('to_id', db.String(20), nullable=False),
-                    db.Column('conn_type', db.String(20), nullable=False) 
-                    )
-        metadata.create_all(engine) #Creates the table
-
 
     def make_connection(self):
         # use ` check_same_thread=False` otherwise an error like 

@@ -76,7 +76,7 @@ setup(
         "pyyaml<=6.0",
         "Jinja2<=3.1.2",
         "pyarrow<=9.0.0",
-        # "pyspark>=3.1.2",
+        "pyspark>=3.1.2",
         "python-snappy<=0.6.1",
         "deltalake>=0.6.2",
         "graphlib_backport<=1.0.3",
@@ -85,7 +85,7 @@ setup(
         "databricks-cli<=0.17.3",
         "avro<=1.11.1",
         "azure-storage-file-datalake",
-        # "azure-synapse-spark",
+        "azure-synapse-spark",
         # Synapse's aiohttp package is old and does not work with Feathr. We pin to a newer version here.
         "aiohttp==3.8.3",
         # fixing Azure Machine Learning authentication issue per https://stackoverflow.com/a/72262694/3193073

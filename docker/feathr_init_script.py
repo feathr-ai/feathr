@@ -1,8 +1,3 @@
-# initialize Feathr execution environment
-# Mostly it should initialize the SQLite database schema, as well as run a basic Feathr job so the container can cache the required maven pacakges
-
-# Also consider adding some sample code
-
 import glob
 import os
 import tempfile
@@ -35,8 +30,8 @@ import pyspark.sql.functions as F
 import feathr
 print(feathr.__version__)
 
-
 os.environ['SPARK_LOCAL_IP'] = "127.0.0.1"
+os.environ['REDIS_PASSWORD'] = "foobared" # default password for Redis
 
 import tempfile
 yaml_config = f"""
@@ -69,28 +64,24 @@ spark_config:
 online_store:
   redis:
     # Redis configs to access Redis cluster
-    host: '<redis_host_name>'
-    port: 6380
-    ssl_enabled: True
+    host: '127.0.0.1'
+    port: 6379
+    ssl_enabled: False
 
 feature_registry:
   # The API endpoint of the registry service
-  api_endpoint: "https://feathr-sql-registry.azurewebsites.net/api/v1"
+  api_endpoint: "http://127.0.0.1:8000/api/v1"
 """
 
 tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
 with open(tmp.name, "w") as text_file:
     text_file.write(yaml_config)
 
-
 client = FeathrClient(tmp.name)
-
-DATA_FILE_PATH = "/tmp/green_tripdata_2020-04_with_index.csv"
-
 import pandas as pd
+DATA_FILE_PATH = "/tmp/green_tripdata_2020-04_with_index.csv"
 df_raw = pd.read_csv("https://azurefeathrstorage.blob.core.windows.net/public/sample_data/green_tripdata_2020-04_with_index.csv")
 df_raw.to_csv(DATA_FILE_PATH, index=False)
-
 
 TIMESTAMP_COL = "lpep_dropoff_datetime"
 TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss"
@@ -108,7 +99,6 @@ batch_source = HdfsSource(
     preprocessing=preprocessing,
     timestamp_format=TIMESTAMP_FORMAT,
 )
-
 
 # We define f_trip_distance and f_trip_time_duration features separately
 # so that we can reuse them later for the derived features.
@@ -196,7 +186,6 @@ agg_feature_anchor = FeatureAnchor(
     features=agg_features,
 )
 
-
 f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
                                           feature_type=FLOAT,
                                           input_features=[
@@ -216,6 +205,12 @@ client.build_features(
     derived_feature_list=derived_feature,
 )
 
+
+# This cell is optional if you want to use the feathr registry.
+# client.register_features()
+# client.list_registered_features(client.project_name)
+# res = client.get_features_from_registry(client.project_name)
+# print(res)
 
 feature_names = [feature.name for feature in features + agg_features]
 feature_names
@@ -237,28 +232,10 @@ settings = ObservationSettings(
     event_timestamp_column=TIMESTAMP_COL,
     timestamp_format=TIMESTAMP_FORMAT,
 )
-# client.get_offline_features(
-#     observation_settings=settings,
-#     feature_query=query,
-#     output_path=offline_features_path,
-# )
+client.get_offline_features(
+    observation_settings=settings,
+    feature_query=query,
+    output_path=offline_features_path,
+)
 
-# client.wait_job_to_finish(timeout_sec=5000)
-
-
-materialized_feature_names = [feature.name for feature in agg_features]
-materialized_feature_names
-
-FEATURE_TABLE_NAME = "nycTaxiDemoFeature"
-
-backfill_time = BackfillTime(start=datetime(
-    2020, 4, 1), end=datetime(2020, 4, 1), step=timedelta(days=1))
-redisSink = RedisSink(table_name=FEATURE_TABLE_NAME)
-settings = MaterializationSettings(FEATURE_TABLE_NAME + ".job",
-                                    sinks=[redisSink],
-                                    feature_names=[
-                                        "f_location_avg_fare", "f_location_max_fare"],
-                                    backfill_time=backfill_time)
-client.materialize_features(settings)
-
-client.wait_job_to_finish(5000)
+client.wait_job_to_finish(timeout_sec=5000)
