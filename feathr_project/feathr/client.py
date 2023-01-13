@@ -458,6 +458,15 @@ class FeathrClient(object):
         if isinstance(key, List):
             key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
+    def _str_to_bool(s):
+        """Define a function to detect convert string to bool, since Redis client sometimes require a bool and sometimes require a str
+        """
+        if s == 'True' or s == True:
+            return True
+        elif s == 'False' or s == False:
+            return False
+        else:
+            raise ValueError # evil ValueError that doesn't tell you what the wrong value was
 
     def _construct_redis_client(self):
         """Constructs the Redis client. The host, port, credential and other parameters can be set via environment
@@ -467,12 +476,11 @@ class FeathrClient(object):
         host = self.redis_host
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
-
         redis_client = redis.Redis(
             host=host,
             port=port,
             password=password,
-            ssl=ssl_enabled)
+            ssl=self._str_to_bool(ssl_enabled))
         self.logger.info('Redis connection is successful and completed.')
         self.redis_client = redis_client
 
@@ -846,7 +854,7 @@ class FeathrClient(object):
         REDIS_HOST: "{REDIS_HOST}"
         REDIS_PORT: {REDIS_PORT}
         REDIS_SSL_ENABLED: {REDIS_SSL_ENABLED}
-        """.format(REDIS_PASSWORD=password, REDIS_HOST=host, REDIS_PORT=port, REDIS_SSL_ENABLED=ssl_enabled)
+        """.format(REDIS_PASSWORD=password, REDIS_HOST=host, REDIS_PORT=port, REDIS_SSL_ENABLED=str(ssl_enabled))
         return self._reshape_config_str(config_str)
 
     def _get_s3_config_str(self):
