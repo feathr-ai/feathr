@@ -57,9 +57,8 @@ jar {
   }
   exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 
-  // Explicitly exclude com/linkedin/data and org/apache/hadoop files from the final jar. They can cause issues in other downstream applications.
+  // Explicitly exclude com/linkedin/data files from the final jar. They can cause issues in other downstream applications.
   exclude 'com/linkedin/data/**'
-  exclude 'org/apache/hadoop/**'
   zip64 = true
 }
 
@@ -72,8 +71,18 @@ dependencies {
   extraLibs project(path: ':feathr-data-models', configuration: 'dataTemplate')
   implementation 'net.snowflake:snowflake-jdbc:3.13.18'
   implementation 'net.snowflake:spark-snowflake_2.12:2.10.0-spark_3.2'
-  provided 'com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21'
-  provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.11.1'
+  implementation 'com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21'
+  // Pay attention to the spark version for this package and it behaves diffrerently on Synapse and databricks
+  // Versions tried so far - 
+  // 1. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.11.1'
+  // 2. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.15.0 - Enabling this one again to get back to one databricks failure.
+  //Test comment to kick off build
+  implementation 'com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.15.0'
+  //Adding new comment to kick off 
+  // 3. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.11.1'
+  // 4. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.15.0'
+  // Trying this config again, and removing the changes to spark config in yaml file
+  // 5. provided 'com.azure.cosmos.spark:azure-cosmos-spark_3-3_2-12:4.15.0' - This one didn't work at all and resulted in lot of errors both for databricks and synapse.
   provided 'com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8'
   provided 'org.eclipse.jetty:jetty-util:9.3.24.v20180605'
   provided 'org.apache.kafka:kafka-clients:3.1.0'
@@ -130,6 +139,7 @@ project.ext.spec = [
         'avro' : "org.apache.avro:avro:1.10.2",
         "avroUtil": "com.linkedin.avroutil1:helper-all:0.2.100",
         "azure": "com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21",
+        "cosmos": "com.azure.cosmos.spark:azure-cosmos-spark_3-2_2-12:4.15.0",
         'fastutil' : "it.unimi.dsi:fastutil:8.1.1",
         'mvel' : "org.mvel:mvel2:2.2.8.Final",
         'protobuf' : "com.google.protobuf:protobuf-java:2.6.1",
