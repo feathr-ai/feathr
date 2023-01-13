@@ -51,14 +51,17 @@ class EnvConfigReader(object):
         Returns:
             Feathr client's config value.
         """
-        conf_var = (
-            (self._get_variable_from_env(key) if self.use_env_vars else None) or
-            (self._get_variable_from_file(key) if self.yaml_config else None) or
-            (self._get_variable_from_akv(key) if self.akv_name else None) or
-            default
-        )
+        res1 = (self._get_variable_from_env(key) if self.use_env_vars else None) 
+        res2 = (self._get_variable_from_file(key) if self.yaml_config else None) 
+        res3 = (self._get_variable_from_akv(key) if self.akv_name else None) 
 
-        return conf_var
+        # rewrite the logic below to make sure:
+        # First we have the order (i.e. res1 > res2 > res3 > default)
+        # Also previously we use OR for the result, which will yield a bug where say res1=None, res2=False, res3=None. Using OR will result to None result, although res2 actually have value
+        for res in [res1, res2, res3]:
+            if res is not None:
+                return res
+        return default
 
     def get_from_env_or_akv(self, key: str) -> str:
         """Gets the Feathr config variable for the given key. This function ignores `use_env_vars` attribute and force to
