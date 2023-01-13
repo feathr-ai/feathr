@@ -42,7 +42,7 @@ def quote(id):
 class DbRegistry(Registry):
     def __init__(self):
         self.conn = connect()
-        engine = db.create_engine('sqlite:///test1.sqlite') #Create test.sqlite automatically
+        engine = db.create_engine('sqlite:///tmp/feathr_registry.sqlite?check_same_thread=False') #Create test.sqlite automatically
         self.sql_session = Session(engine)
         self.connection = engine.connect()
         metadata = db.MetaData()
@@ -79,11 +79,9 @@ class DbRegistry(Registry):
     def get_projects(self) -> list[str]:
 
         query = db.select(self.entities_table.c.qualified_name).where((self.entities_table.c.entity_type == str(EntityType.Project))) 
-        result = self.connection.execute(query).fetchall()
-        return result
-
-        ret = self.conn.query(
-            f"select qualified_name from entities where entity_type=%s", str(EntityType.Project))
+        ret = self._fetch_helper(query)
+        # ret = self.conn.query(
+        #     f"select qualified_name from entities where entity_type=%s", str(EntityType.Project))
         return list([r["qualified_name"] for r in ret])
     
     def get_projects_ids(self) -> dict:
@@ -99,7 +97,6 @@ class DbRegistry(Registry):
         return projects
 
     def get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
-        print("id_or_name in `get_entity`", id_or_name)
         return self._fill_entity(self._get_entity(id_or_name))
 
     def get_entities(self, ids: list[UUID]) -> list[Entity]:
@@ -540,25 +537,32 @@ class DbRegistry(Registry):
     def _get_edges(self, ids: list[UUID], types: list[RelationshipType] = []) -> list[Edge]:
         if not ids:
             return []
-        sql = fr"""select edge_id, from_id, to_id, conn_type from edges
-        where from_id in %(ids)s
-        and to_id in %(ids)s"""
+
         if len(types) > 0:
-            sql = fr"""select edge_id, from_id, to_id, conn_type from edges
-            where conn_type in %(types)s
-            and from_id in %(ids)s
-            and to_id in %(ids)s"""
+            query = self.sql_session.query(Edges.edge_id,Edges.from_id, Edges.to_id, Edges.conn_type).filter((Edges.from_id.in_(tuple([str(id) for id in ids]))) & (Edges.to_id.in_(tuple([str(id) for id in ids]))) & (Edges.conn_type.in_(tuple([t.name for t in types]))) )
+        else:
+            query = self.sql_session.query(Edges.edge_id,Edges.from_id, Edges.to_id, Edges.conn_type).filter((Edges.from_id.in_(tuple([str(id) for id in ids]))) & (Edges.to_id.in_(tuple([str(id) for id in ids]))))
         
-        rows = self.conn.query(sql, {
-            "ids": tuple([str(id) for id in ids]),
-            "types": tuple([t.name for t in types]),
-        })
+        rows = self._fetch_helper(query)
+
+        # sql = fr"""select edge_id, from_id, to_id, conn_type from edges
+        # where from_id in %(ids)s
+        # and to_id in %(ids)s"""
+        # if len(types) > 0:
+        #     sql = fr"""select edge_id, from_id, to_id, conn_type from edges
+        #     where conn_type in %(types)s
+        #     and from_id in %(ids)s
+        #     and to_id in %(ids)s"""
+        
+        # rows = self.conn.query(sql, {
+        #     "ids": tuple([str(id) for id in ids]),
+        #     "types": tuple([t.name for t in types]),
+        # })
         return list([_to_type(row, Edge) for row in rows])
 
     def _get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
         query = db.select(self.entities_table.c.entity_id, self.entities_table.c.qualified_name, self.entities_table.c.entity_type, self.entities_table.c.attributes).where((self.entities_table.c.entity_id == str(self.get_entity_id(id_or_name)))) 
         row = self._fetch_helper(query)
-        print("_get_entity", row)
         # row = self.conn.query(fr'''
         #     select entity_id, qualified_name, entity_type, attributes
         #     from entities

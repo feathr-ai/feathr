@@ -202,8 +202,6 @@ class _FeatureRegistry(FeathrRegistry):
 
     def _get(self, path: str) -> dict:
         logger.debug("PATH: ", path)
-        print("PATH: ", path)
-        print("path", f"{self.endpoint}{path}")
         return check(requests.get(f"{self.endpoint}{path}", headers=self._get_auth_header())).json()
     
     def _delete(self, path: str) -> dict:
@@ -213,9 +211,6 @@ class _FeatureRegistry(FeathrRegistry):
     def _post(self, path: str, body: dict) -> dict:
         logger.debug("PATH: ", path)
         logger.debug("BODY: ", json.dumps(body, indent=2))
-        print("_post PATH: ", path)
-        print("_post endpoint: ", self.endpoint)
-        print("BODY: ", json.dumps(body, indent=2))
         return check(requests.post(f"{self.endpoint}{path}", headers=self._get_auth_header(), json=body)).json()
 
     def _get_auth_header(self) -> dict:
