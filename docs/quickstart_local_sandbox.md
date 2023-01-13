@@ -12,7 +12,7 @@ We provide a local sandbox so users can use Feathr easily. The goal of the Feath
 - make it easier for Feathr devs to setup environment and develop new things
 - Interactive experience, usually try to run a job takes less than 1 min.
 
-As an end user, they can become productive in less than 5 mins.
+As an end user, you can become productive in less than 5 mins and try out Feathr.
 
 The Sandbox is ideal for:
 
