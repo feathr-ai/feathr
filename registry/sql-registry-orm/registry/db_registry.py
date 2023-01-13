@@ -42,7 +42,7 @@ def quote(id):
 class DbRegistry(Registry):
     def __init__(self):
         self.conn = connect()
-        engine = db.create_engine('sqlite:///tmp/feathr_registry.sqlite?check_same_thread=False') #Create test.sqlite automatically
+        engine = db.create_engine('sqlite:////tmp/feathr_registry.sqlite?check_same_thread=False') #Create test.sqlite automatically
         self.sql_session = Session(engine)
         self.connection = engine.connect()
         metadata = db.MetaData()
