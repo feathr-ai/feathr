@@ -57,8 +57,9 @@ jar {
   }
   exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 
-  // Explicitly exclude com/linkedin/data files from the final jar. They can cause issues in other downstream applications.
+  // Explicitly exclude com/linkedin/data and org/apache/hadoop files from the final jar. They can cause issues in other downstream applications.
   exclude 'com/linkedin/data/**'
+  exclude 'org/apache/hadoop/**'
   zip64 = true
 }
 
