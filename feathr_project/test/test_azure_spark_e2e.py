@@ -303,7 +303,7 @@ def test_feathr_materialize_to_cosmosdb():
                                        feature_names=[
                                            "f_location_avg_fare", "f_location_max_fare"],
                                        backfill_time=backfill_time)
-    client.materialize_features(settings,execution_configurations={"spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog"})
+    client.materialize_features(settings,execution_configurations={"spark.sql.catalog.cosmosCatalog": "com.azure.cosmos.spark.CosmosCatalog"})
     # client.materialize_features(settings, execution_configurations={ "spark.feathr.outputFormat": "parquet"})
 
     # assuming the job can successfully run; otherwise it will throw exception
