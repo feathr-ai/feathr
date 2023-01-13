@@ -23,12 +23,20 @@ It should pop up a Jupyter link like this. Click to start the Jupyter Notebook a
 
 `http://127.0.0.1:8888/lab?token=b4b05e6d7f419038ddc1176589cc0b9e79b02c3cbc86defe`
 
+![Feathr Notebook](./images/feathr-sandbox.png)
 
-The Feathr UI can be visited at:
+
+After running the Notebooks, all the features will be registered in the UI, and you can visit the Feathr UI at:
 
 ```bash
 http://localhost:80
 ```
+
+
+After executing those scripts, you should be able to see a project called `local_spark` in the Feathr UI. You can also view lineage there.
+![Feathr UI](./images/feathr-sandbox-ui.png)
+
+![Feathr UI](./images/feathr-sandbox-lineage.png)
 
 ## Components
 
