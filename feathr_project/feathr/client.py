@@ -458,7 +458,7 @@ class FeathrClient(object):
         if isinstance(key, List):
             key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
-    def _str_to_bool(s):
+    def _str_to_bool(self, s):
         """Define a function to detect convert string to bool, since Redis client sometimes require a bool and sometimes require a str
         """
         if s == 'True' or s == True:
