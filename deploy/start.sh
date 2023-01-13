@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 # Generate static env.config.js for UI app
 envfile=/usr/share/nginx/html/env-config.js
 echo "window.environment = {" > $envfile
@@ -60,18 +58,11 @@ else
     echo "RBAC flag not configured or not equal to true, only launch registry app"
     if [ "x$PURVIEW_NAME" == "x" ]; then
         echo "Purview flag is not configured, run SQL registry"
-        cd /usr/src/registry/sql-registry-orm
-        # start redis
-        nohup redis-server &
-        nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT &
-        # TODO: move this to a more neutural folder since Redis doesn't have anything to do with Feathr
-        cd -
+        cd sql-registry
+        uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
     else
         echo "Purview flag is configured, run Purview registry"
         cd purview-registry
-         nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT &
+        uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
     fi
 fi
-
-# start the notebooks
-# start-notebook.sh
