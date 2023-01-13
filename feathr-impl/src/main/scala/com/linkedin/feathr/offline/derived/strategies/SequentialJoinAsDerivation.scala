@@ -290,6 +290,8 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
       throw new FeathrConfigException(
         ErrorLabel.FEATHR_USER_ERROR,
         s"Empty aggregation is not supported for feature ${derivedFeature.producedFeatureNames.head}, in sequential join.")
+    } else if (aggregationFunction == FIRST.toString) {
+      applyFirstAggregation(seqJoinProducedFeatureName, joined, groupByCol)
     } else if (aggregationFunction == UNION.toString) {
       applyUnionAggregation(seqJoinProducedFeatureName, joined, groupByCol)
     } else if (Seq(SUM, MAX, MIN, AVG).map(_.toString).contains(aggregationFunction)) {
@@ -313,6 +315,20 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
             s"Unsupported aggregation type ${aggregationFunction} for the seqJoin feature ${derivedFeature.producedFeatureNames.head}")
       }
     }
+  }
+
+  /**
+   * Apply FIRST Aggregate function for SeqJoin/LookUp Feature.
+   * Note: The function is non-deterministic because its results depends on the order of the rows which may be non-deterministic after a shuffle.
+   * This is designed to be used only when the there's only one looked up feature value in a LookUp feature
+   * @param seqJoinProducedFeatureName name of the column which will have the seqJoin feature
+   * @param joinedDF           Dataframe produced after the SeqJoin and before aggregation
+   * @param groupByCol  groupby column
+   * @return  dataframe with only the groupBy columns and the aggregated feature value result
+   */
+  private[feathr] def applyFirstAggregation(seqJoinProducedFeatureName: String, joinedDF: DataFrame, groupByCol: String): DataFrame = {
+    val (groupedDF, preservedColumns) = getGroupedDF(joinedDF, groupByCol, seqJoinProducedFeatureName)
+    groupedDF.agg(first(seqJoinProducedFeatureName).alias(seqJoinProducedFeatureName), preservedColumns: _*)
   }
 
   /**

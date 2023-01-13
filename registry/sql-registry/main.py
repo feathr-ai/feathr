@@ -1,6 +1,6 @@
 import os
 import traceback
-from typing import Optional
+from typing import Optional, Dict, List
 from uuid import UUID
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
@@ -30,7 +30,7 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"],
                    )
 
-def exc_to_content(e: Exception) -> dict:
+def exc_to_content(e: Exception) -> Dict:
     content={"message": str(e)}
     if os.environ.get("REGISTRY_DEBUGGING"):
         content["traceback"] = "".join(traceback.TracebackException.from_exception(e).format())
@@ -75,19 +75,19 @@ async def index_error_handler(_, exc: IndexError):
 
 
 @router.get("/projects")
-def get_projects() -> list[str]:
+def get_projects() -> List[str]:
     return registry.get_projects()
 
 @router.get("/projects-ids")
-def get_projects_ids() -> dict:
+def get_projects_ids() -> Dict:
     return registry.get_projects_ids()
 
 @router.get("/projects/{project}")
-def get_projects(project: str) -> dict:
+def get_projects(project: str) -> Dict:
     return registry.get_project(project).to_dict()
 
 @router.get("/dependent/{entity}")
-def get_dependent_entities(entity: str) -> list:
+def get_dependent_entities(entity: str) -> List:
     entity_id = registry.get_entity_id(entity)
     downstream_entities = registry.get_dependent_entities(entity_id)
     return list([e.to_dict() for e in downstream_entities])
@@ -104,7 +104,7 @@ def delete_entity(entity: str):
     registry.delete_entity(entity_id)
 
 @router.get("/projects/{project}/datasources")
-def get_project_datasources(project: str) -> list:
+def get_project_datasources(project: str) -> List:
     p = registry.get_entity(project)
     source_ids = [s.id for s in p.attributes.sources]
     sources = registry.get_entities(source_ids)
@@ -112,7 +112,7 @@ def get_project_datasources(project: str) -> list:
 
 
 @router.get("/projects/{project}/datasources/{datasource}")
-def get_datasource(project: str, datasource: str) -> dict:
+def get_datasource(project: str, datasource: str) -> Dict:
     p = registry.get_entity(project)
     for s in p.attributes.sources:
         if str(s.id) == datasource:
@@ -123,7 +123,7 @@ def get_datasource(project: str, datasource: str) -> dict:
 
 
 @router.get("/projects/{project}/features")
-def get_project_features(project: str, keyword: Optional[str] = None, page: Optional[int] = None, limit: Optional[int] = None) -> list:
+def get_project_features(project: str, keyword: Optional[str] = None, page: Optional[int] = None, limit: Optional[int] = None) -> List:
     if keyword:
         start =  None
         size = None
@@ -144,7 +144,7 @@ def get_project_features(project: str, keyword: Optional[str] = None, page: Opti
 
 
 @router.get("/features/{feature}")
-def get_feature(feature: str) -> dict:
+def get_feature(feature: str) -> Dict:
     e = registry.get_entity(feature)
     if e.entity_type not in [EntityType.DerivedFeature, EntityType.AnchorFeature]:
         raise HTTPException(
@@ -152,32 +152,32 @@ def get_feature(feature: str) -> dict:
     return e.to_dict()
 
 @router.get("/features/{feature}/lineage")
-def get_feature_lineage(feature: str) -> dict:
+def get_feature_lineage(feature: str) -> Dict:
     lineage = registry.get_lineage(feature)
     return lineage.to_dict()
 
 @router.post("/projects")
-def new_project(definition: dict) -> dict:
+def new_project(definition: Dict) -> Dict:
     id = registry.create_project(ProjectDef(**to_snake(definition)))
     return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/datasources")
-def new_project_datasource(project: str, definition: dict) -> dict:
+def new_project_datasource(project: str, definition: Dict) -> Dict:
     project_id = registry.get_entity_id(project)
     id = registry.create_project_datasource(project_id, SourceDef(**to_snake(definition)))
     return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/anchors")
-def new_project_anchor(project: str, definition: dict) -> dict:
+def new_project_anchor(project: str, definition: Dict) -> Dict:
     project_id = registry.get_entity_id(project)
     id = registry.create_project_anchor(project_id, AnchorDef(**to_snake(definition)))
     return {"guid": str(id)}
 
 
 @router.post("/projects/{project}/anchors/{anchor}/features")
-def new_project_anchor_feature(project: str, anchor: str, definition: dict) -> dict:
+def new_project_anchor_feature(project: str, anchor: str, definition: Dict) -> Dict:
     project_id = registry.get_entity_id(project)
     anchor_id = registry.get_entity_id(anchor)
     id = registry.create_project_anchor_feature(project_id, anchor_id, AnchorFeatureDef(**to_snake(definition)))
@@ -185,7 +185,7 @@ def new_project_anchor_feature(project: str, anchor: str, definition: dict) -> d
 
 
 @router.post("/projects/{project}/derivedfeatures")
-def new_project_derived_feature(project: str, definition: dict) -> dict:
+def new_project_derived_feature(project: str, definition: Dict) -> Dict:
     project_id = registry.get_entity_id(project)
     id = registry.create_project_derived_feature(project_id, DerivedFeatureDef(**to_snake(definition)))
     return {"guid": str(id)}

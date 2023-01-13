@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, List, Dict
 from uuid import UUID
 import json
 import re
@@ -131,7 +131,7 @@ class ToDict(ABC):
     This ABC is used to convert object to dict, then JSON.
     """
     @abstractmethod
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         pass
 
     def to_json(self, indent=None) -> str:
@@ -142,7 +142,7 @@ class FeatureType(ToDict):
     def __init__(self,
                  type: Union[str, VectorType],
                  tensor_category: Union[str, TensorCategory],
-                 dimension_type: list[Union[str, ValueType]],
+                 dimension_type: List[Union[str, ValueType]],
                  val_type: Union[str, ValueType]):
         self.type = _to_type(type, VectorType)
         self.tensor_category = _to_type(tensor_category, TensorCategory)
@@ -155,7 +155,7 @@ class FeatureType(ToDict):
             and self.dimension_type == o.dimension_type \
             and self.val_type == o.val_type
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "type": self.type.name,
             "tensorCategory": self.tensor_category.name,
@@ -184,7 +184,7 @@ class TypedKey(ToDict):
             and self.key_column_type == o.key_column_type \
             and self.key_column_alias == o.key_column_alias
     
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         ret = {
             "key_column": self.key_column,
             "key_column_type": self.key_column_type.name,
@@ -220,7 +220,7 @@ class ExpressionTransformation(Transformation):
             return False
         return self.transform_expr == o.transform_expr
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "transform_expr": self.transform_expr
         }
@@ -251,7 +251,7 @@ class WindowAggregationTransformation(Transformation):
             and self.filter == o.filter \
             and self.limit == o.limit
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         ret = {
             "def_expr": self.def_expr,
         }
@@ -277,7 +277,7 @@ class UdfTransformation(Transformation):
             return False
         return self.name == o.name
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "name": self.name
         }
@@ -288,7 +288,7 @@ class EntityRef(ToDict):
                  id: UUID,
                  type: Union[str, EntityType],
                  qualified_name: Optional[str] = None,
-                 uniq_attr: dict = {}):
+                 uniq_attr: Dict = {}):
         self.id = id
         self.type = _to_type(type, EntityType)
         if qualified_name is not None:
@@ -307,7 +307,7 @@ class EntityRef(ToDict):
     def get_ref(self):
         return self
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "guid": str(self.id),
             "typeName": str(self.type),
@@ -332,7 +332,7 @@ class Entity(ToDict):
                  entity_id: Union[str, UUID],
                  qualified_name: str,
                  entity_type: Union[str, EntityType],
-                 attributes: Union[dict, Attributes],
+                 attributes: Union[Dict, Attributes],
                  **kwargs):
         self.id = _to_uuid(entity_id)
         self.qualified_name = qualified_name
@@ -348,7 +348,7 @@ class Entity(ToDict):
                          self.attributes.entity_type,
                          self.qualified_name)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "guid": str(self.id),
             "lastModifiedTS": "1",
@@ -358,7 +358,7 @@ class Entity(ToDict):
             "attributes": self.attributes.to_dict(),
         }
 
-    def to_min_repr(self) -> dict:
+    def to_min_repr(self) -> Dict:
         return {
             'qualifiedName':self.qualified_name,
             'guid':str(self.id),
@@ -369,8 +369,8 @@ class Entity(ToDict):
 class ProjectAttributes(Attributes):
     def __init__(self,
                  name: str,
-                 children: list[Union[dict, Entity]] = [],
-                 tags: dict = {},
+                 children: List[Union[Dict, Entity]] = [],
+                 tags: Dict = {},
                  **kwargs):
         self.name = name
         self.tags = tags
@@ -387,7 +387,7 @@ class ProjectAttributes(Attributes):
         return self._children
 
     @children.setter
-    def children(self, v: list[Union[dict, Entity]]):
+    def children(self, v: List[Union[Dict, Entity]]):
         for f in v:
             if isinstance(f, Entity):
                 self._children.append(f)
@@ -416,7 +416,7 @@ class ProjectAttributes(Attributes):
         return [
             e for e in self.children if e.entity_type == EntityType.DerivedFeature]
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "qualifiedName": self.name,
             "name": self.name,
@@ -437,7 +437,7 @@ class SourceAttributes(Attributes):
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
-                 tags: dict = {}):
+                 tags: Dict = {}):
         self.qualified_name = qualified_name
         self.name = name
         self.type = type
@@ -451,7 +451,7 @@ class SourceAttributes(Attributes):
     def entity_type(self) -> EntityType:
         return EntityType.Source
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         ret = {
             "qualifiedName": self.qualified_name,
             "name": self.name,
@@ -475,9 +475,9 @@ class AnchorAttributes(Attributes):
     def __init__(self,
                  qualified_name: str,
                  name: str,
-                 # source: Optional[Union[dict, EntityRef, Entity]] = None,
-                 # features: list[Union[dict, EntityRef, Entity]] = [],
-                 tags: dict = {},
+                 # source: Optional[Union[Dict, EntityRef, Entity]] = None,
+                 # features: list[Union[Dict, EntityRef, Entity]] = [],
+                 tags: Dict = {},
                  **kwargs):
         self.qualified_name = qualified_name
         self.name = name
@@ -527,7 +527,7 @@ class AnchorAttributes(Attributes):
             else:
                 raise TypeError(f)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         ret = {
             "qualifiedName": self.qualified_name,
             "name": self.name,
@@ -545,10 +545,10 @@ class AnchorFeatureAttributes(Attributes):
     def __init__(self,
                  qualified_name: str,
                  name: str,
-                 type: Union[dict, FeatureType],
-                 transformation: Union[dict, Transformation],
-                 key: list[Union[dict, TypedKey]],
-                 tags: dict = {}):
+                 type: Union[Dict, FeatureType],
+                 transformation: Union[Dict, Transformation],
+                 key: List[Union[Dict, TypedKey]],
+                 tags: Dict = {}):
         self.qualified_name = qualified_name
         self.name = name
         self.type = _to_type(type, FeatureType)
@@ -560,7 +560,7 @@ class AnchorFeatureAttributes(Attributes):
     def entity_type(self) -> EntityType:
         return EntityType.AnchorFeature
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "qualifiedName": self.qualified_name,
             "name": self.name,
@@ -575,12 +575,12 @@ class DerivedFeatureAttributes(Attributes):
     def __init__(self,
                  qualified_name: str,
                  name: str,
-                 type: Union[dict, FeatureType],
-                 transformation: Union[dict, Transformation],
-                 key: list[Union[dict, TypedKey]],
-                 input_anchor_features: list[Union[dict, EntityRef, Entity]] = [],
-                 input_derived_features: list[Union[dict, EntityRef, Entity]] = [],
-                 tags: dict = {},
+                 type: Union[Dict, FeatureType],
+                 transformation: Union[Dict, Transformation],
+                 key: List[Union[Dict, TypedKey]],
+                 input_anchor_features: List[Union[Dict, EntityRef, Entity]] = [],
+                 input_derived_features: List[Union[Dict, EntityRef, Entity]] = [],
+                 tags: Dict = {},
                  **kwargs):
         self.qualified_name = qualified_name
         self.name = name
@@ -600,7 +600,7 @@ class DerivedFeatureAttributes(Attributes):
         return self._input_anchor_features + self._input_derived_features
 
     @input_features.setter
-    def input_features(self, input_features_list: Union[dict, Entity, EntityRef]):
+    def input_features(self, input_features_list: Union[Dict, Entity, EntityRef]):
         self._input_anchor_features = []
         self._input_derived_features = []
         for feature in input_features_list:
@@ -632,7 +632,7 @@ class DerivedFeatureAttributes(Attributes):
     def input_derived_features(self):
         return self._input_derived_features
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "qualifiedName": self.qualified_name,
             "name": self.name,
@@ -663,7 +663,7 @@ class Edge(ToDict):
     def __hash__(self) -> int:
         return hash((self.from_id, self.to_id, self.conn_type))
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "relationshipId": str(self.id),
             "fromEntityId": str(self.from_id),
@@ -674,11 +674,11 @@ class Edge(ToDict):
 
 
 class EntitiesAndRelations(ToDict):
-    def __init__(self, entities: list[Entity], edges: list[Edge]):
+    def __init__(self, entities: List[Entity], edges: List[Edge]):
         self.entities = dict([(e.id, e) for e in entities])
         self.edges = set(edges)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "guidEntityMap": dict([(str(id), self.entities[id].to_dict()) for id in self.entities]),
             "relations": list([e.to_dict() for e in self.edges]),
@@ -686,7 +686,7 @@ class EntitiesAndRelations(ToDict):
 
 
 class ProjectDef:
-    def __init__(self, name: str, qualified_name: str = "", tags: dict = {}):
+    def __init__(self, name: str, qualified_name: str = "", tags: Dict = {}):
         self.name = name
         self.qualified_name = qualified_name
         self.tags = tags
@@ -704,7 +704,7 @@ class SourceDef:
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
-                 tags: dict = {}):
+                 tags: Dict = {}):
         self.qualified_name = qualified_name
         self.name = name
         self.path = path
@@ -729,7 +729,7 @@ class AnchorDef:
                  name: str,
                  source_id: Union[str, UUID],
                  qualified_name: str = "",
-                 tags: dict = {}):
+                 tags: Dict = {}):
         self.qualified_name = qualified_name
         self.name = name
         self.source_id = _to_uuid(source_id)
@@ -745,11 +745,11 @@ class AnchorDef:
 class AnchorFeatureDef:
     def __init__(self,
                  name: str,
-                 feature_type: Union[dict, FeatureType],
-                 transformation: Union[dict, Transformation],
-                 key: list[Union[dict, TypedKey]],
+                 feature_type: Union[Dict, FeatureType],
+                 transformation: Union[Dict, Transformation],
+                 key: List[Union[Dict, TypedKey]],
                  qualified_name: str = "",
-                 tags: dict = {}):
+                 tags: Dict = {}):
         self.qualified_name = qualified_name
         self.name = name
         self.feature_type = _to_type(feature_type, FeatureType)
@@ -769,13 +769,13 @@ class AnchorFeatureDef:
 class DerivedFeatureDef:
     def __init__(self,
                  name: str,
-                 feature_type: Union[dict, FeatureType],
-                 transformation: Union[dict, Transformation],
-                 key: list[Union[dict, TypedKey]],
-                 input_anchor_features: list[Union[str, UUID]],
-                 input_derived_features: list[Union[str, UUID]],
+                 feature_type: Union[Dict, FeatureType],
+                 transformation: Union[Dict, Transformation],
+                 key: List[Union[Dict, TypedKey]],
+                 input_anchor_features: List[Union[str, UUID]],
+                 input_derived_features: List[Union[str, UUID]],
                  qualified_name: str = "",
-                 tags: dict = {}):
+                 tags: Dict = {}):
         self.qualified_name = qualified_name
         self.name = name
         self.feature_type = _to_type(feature_type, FeatureType)
@@ -785,7 +785,7 @@ class DerivedFeatureDef:
         self.input_derived_features = _to_uuid(input_derived_features)
         self.tags = tags
 
-    def to_attr(self, input_features: list[EntityRef]) -> DerivedFeatureAttributes:
+    def to_attr(self, input_features: List[EntityRef]) -> DerivedFeatureAttributes:
         attr = DerivedFeatureAttributes(qualified_name=self.qualified_name,
                                 name=self.name,
                                 type=self.feature_type,

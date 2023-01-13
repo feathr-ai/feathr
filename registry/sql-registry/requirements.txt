@@ -1,3 +1,6 @@
-pymssql
-fastapi
-uvicorn
+Cython
+pydantic 
+pymssql==2.2.7
+fastapi==0.88.0
+uvicorn==0.20.0
+

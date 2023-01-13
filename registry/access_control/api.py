@@ -25,11 +25,13 @@ async def get_project(project: str, response: Response, access: UserAccess = Dep
                                                    headers=get_api_header(access.user_name)))
     return res
 
+
 @router.get("/dependent/{entity}", name="Get downstream/dependent entitites for a given entity [Read Access Required]")
 def get_dependent_entities(entity: str, access: UserAccess = Depends(project_read_access)):
     response = requests.get(url=f"{registry_url}/dependent/{entity}",
                             headers=get_api_header(access.user_name)).content.decode('utf-8')
     return json.loads(response)
+
 
 @router.get("/projects/{project}/datasources", name="Get data sources of my project [Read Access Required]")
 def get_project_datasources(project: str, response: Response, access: UserAccess = Depends(project_read_access)) -> list:
@@ -62,10 +64,13 @@ def get_feature(feature: str, response: Response, requestor: User = Depends(get_
         feature_qualifiedName, requestor, AccessType.READ)
     return res
 
+
 @router.delete("/entity/{entity}", name="Deletes a single entity by qualified name [Write Access Required]")
-def delete_entity(entity: str, access: UserAccess = Depends(project_write_access)) -> str:
-    requests.delete(url=f"{registry_url}/entity/{feature}",
-                               headers=get_api_header(access.user_name)).content.decode('utf-8')
+def delete_entity(entity: str, response: Response, access: UserAccess = Depends(project_write_access)) -> str:
+    response.status_code, res = check(requests.delete(
+        url=f"{registry_url}/entity/{entity}", headers=get_api_header(access.user_name)))
+    return res
+
 
 @router.get("/features/{feature}/lineage", name="Get Feature Lineage [Read Access Required]")
 def get_feature_lineage(feature: str, response: Response, requestor: User = Depends(get_user)) -> dict:
