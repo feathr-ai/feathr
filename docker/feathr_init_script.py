@@ -1,32 +1,15 @@
-import glob
 import os
 import tempfile
-from datetime import datetime, timedelta
-from math import sqrt
-
+from datetime import datetime
 import pandas as pd
-import pandavro as pdx
 from feathr import FeathrClient
 from feathr import BOOLEAN, FLOAT, INT32, ValueType
 from feathr import Feature, DerivedFeature, FeatureAnchor
-from feathr import BackfillTime, MaterializationSettings
 from feathr import FeatureQuery, ObservationSettings
-from feathr import RedisSink
 from feathr import INPUT_CONTEXT, HdfsSource
 from feathr import WindowAggTransformation
 from feathr import TypedKey
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
-from azure.identity import AzureCliCredential
-from azure.keyvault.secrets import SecretClient
-from pyspark.ml import Pipeline
-from pyspark.ml.evaluation import RegressionEvaluator
-from pyspark.ml.feature import VectorAssembler
-from pyspark.ml.regression import GBTRegressor
-from pyspark.sql import DataFrame, SparkSession
-import pyspark.sql.functions as F
-
-
+from pyspark.sql import DataFrame
 import feathr
 print(feathr.__version__)
 
@@ -40,7 +23,7 @@ project_config:
   project_name: 'local_spark'
   required_environment_variables:
   optional_environment_variables:
-    # the environemnt variables are optional, however you will need them if you want to use some of the services:
+    # the environment variables are optional, however you will need them if you want to use some of the services:
     - ADLS_ACCOUNT
     - ADLS_KEY
     - WASB_ACCOUNT
