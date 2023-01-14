@@ -24,8 +24,8 @@ The Sandbox is ideal for:
 To get started, simply run the command:
 
 ```bash
-# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7001: Interpret
-docker run -it --rm -p 8888:8888  -p 8000:8000 -p 80:80 -p 8080:8080 -p 7001:7001 --env CONNECTION_STR="Server=" --env API_BASE="api/v1" --env FEATHR_SANDBOX=True -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
+# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7080: Interpret
+docker run -it --rm -p 8888:8888  -p 8000:8000 -p 80:80 -p 8080:8080 -p 7080:7080 --env CONNECTION_STR="Server=" --env API_BASE="api/v1" --env FEATHR_SANDBOX=True -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
 ```
 
 It should pop up a Jupyter link in `http://127.0.0.1:8888/`. Double click on the notebook file to start the Jupyter Notebook, and you should be able to see the Feathr sample notebook. Click the triangle button on the Jupyter notebook and the whole notebook will run locally.

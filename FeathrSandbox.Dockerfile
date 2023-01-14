@@ -63,7 +63,7 @@ WORKDIR /home/jovyan/work
 USER jovyan
 # copy as the jovyan user
 # UID is like this: uid=1000(jovyan) gid=100(users) groups=100(users)
-COPY --chown=1000:100 ./docs/samples/local_quickstart_nyc_taxi_demo.ipynb .
+COPY --chown=1000:100 ./docs/samples/local_quickstart_notebook.ipynb .
 COPY --chown=1000:100 ./docker/feathr_init_script.py .
 
 # Run the script so that maven cache can be added for better experience. Otherwise users might have to wait for some time for the maven cache to be ready.
@@ -78,8 +78,8 @@ RUN ["chmod", "+x", "/usr/src/registry/start_local.sh"]
 RUN sed -i "s/\r//g" /usr/src/registry/start_local.sh
 
 WORKDIR /home/jovyan/work
-# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7001:Interpret
-EXPOSE 80 8000 8080 8888 7001
+# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7080:Interpret
+EXPOSE 80 8000 8080 8888 7080
 # run the service so we can initialize
 # RUN  ["/bin/bash", "/usr/src/registry/start.sh"]
 CMD ["/bin/bash", "/usr/src/registry/start_local.sh"]
