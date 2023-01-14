@@ -17,7 +17,7 @@ As an end user, you can become productive in less than 5 mins and try out Feathr
 The Sandbox is ideal for:
 
 - Feathr users who want to get started quickly
-- Feathr developers to test new features since this docker should everything they need. It comes with the python package as editable model so developers can iterate easily.
+- Feathr developers to test new features since this docker should everything they need. It comes with the python package as editable model so developers can iterate easily. 
 
 ## Getting Started
 
