@@ -55,6 +55,8 @@ RUN pip install -r requirements-sandbox.txt
 WORKDIR /usr/src/registry
 COPY ./deploy/start_local.sh /usr/src/registry/
 
+# install code server
+RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 # default dir by the jupyter image
 WORKDIR /home/jovyan/work

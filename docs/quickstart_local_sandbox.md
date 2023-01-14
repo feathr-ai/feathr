@@ -24,7 +24,8 @@ The Sandbox is ideal for:
 To get started, simply run the command:
 
 ```bash
-docker run -it --rm -p 8888:8888  -p 8000:8000 -p 80:80 --env CONNECTION_STR="Server=" --env API_BASE="api/v1" --env FEATHR_SANDBOX=True -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
+# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode
+docker run -it --rm -p 8888:8888  -p 8000:8000 -p 80:80 -p 8080:8080 --env CONNECTION_STR="Server=" --env API_BASE="api/v1" --env FEATHR_SANDBOX=True -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
 ```
 
 It should pop up a Jupyter link in `http://127.0.0.1:8888/`. Double click on the notebook file to start the Jupyter Notebook, and you should be able to see the Feathr sample notebook. Click the triangle button on the Jupyter notebook and the whole notebook will run locally.
@@ -60,6 +61,7 @@ The Feathr sandbox comes with:
 - Feathr UI
 - Feathr Registry API
 - Local Redis server
+- An VSCode Server so that you can do interactive development in the docker container
 
 
 ## Build Docker Container
@@ -69,3 +71,13 @@ If you want to build the Feathr sandbox, run the below command in the Feathr roo
 ```bash
 docker build -f FeathrSandbox.Dockerfile -t feathrfeaturestore/feathr-sandbox .
 ```
+
+
+## For Feathr Developers
+The Feathr package is copied to the user folder, and is installed with `pip install -e` option, which means you can do interactive development in the python package. For example you want to validate changes, instead of setting up the environment, you can simply go to the 
+
+
+note that if you are using Jupyter notebook to run the code, make sure you restart jupyter notebook so the kernel can reload Feathr package.
+You should be able to see the 
+
+![Feathr Dev Experience](./images/feathr-sandbox-dev-experience.png)
