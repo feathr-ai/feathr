@@ -74,4 +74,4 @@ else
 fi
 
 # start the notebooks
-start-notebook.sh --NotebookApp.password='' --NotebookApp.token='' --no-browser
+start-notebook.sh --ip='*' --NotebookApp.password='' --NotebookApp.token='' --no-browser 
