@@ -38,9 +38,9 @@ COPY ./deploy/nginx.conf /etc/nginx/nginx.conf
 
 # Feathr Package Installation Section
 # always install feathr from main
-COPY ./feathr_project /tmp/feathr_project
-RUN python -m pip install /tmp/feathr_project/
-# RUN python -m pip install feathr
+WORKDIR /home/jovyan/work
+COPY --chown=1000:100 ./feathr_project .
+RUN python -m pip install  -e ./feathr_project/
 
 
 # Registry Section
