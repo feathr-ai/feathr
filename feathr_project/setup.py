@@ -61,12 +61,11 @@ setup(
     include_package_data=True,
     # consider
     install_requires=[
-        "click",
+        "click<=8.1.3",
         "py4j<=0.10.9.7",
-        "loguru",
+        "loguru<=0.6.0",
         "pandas",
-        # "numpy<=1.20.3",  # pin numpy due to pyspark's deprecated np.bool access
-        "numpy",
+        "numpy<=1.20.3",  # pin numpy due to pyspark's deprecated np.bool access
         "redis<=4.4.0",
         "requests<=2.28.1",
         "tqdm<=4.64.1",
@@ -84,7 +83,7 @@ setup(
         "confluent-kafka<=1.9.2",
         "databricks-cli<=0.17.3",
         "avro<=1.11.1",
-        "azure-storage-file-datalake",
+        "azure-storage-file-datalake<=12.5.0",
         "azure-synapse-spark",
         # Synapse's aiohttp package is old and does not work with Feathr. We pin to a newer version here.
         "aiohttp==3.8.3",
