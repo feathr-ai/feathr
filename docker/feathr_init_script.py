@@ -1,3 +1,5 @@
+# Goal of this file is to run a basic Feathr script within spark so that Maven packages can be downloaded into the docker container to save time during actual run.
+# This can also serve as a sanity check
 import os
 import tempfile
 from datetime import datetime
@@ -21,20 +23,6 @@ yaml_config = f"""
 api_version: 1
 project_config:
   project_name: 'local_spark'
-  required_environment_variables:
-  optional_environment_variables:
-    # the environment variables are optional, however you will need them if you want to use some of the services:
-    - ADLS_ACCOUNT
-    - ADLS_KEY
-    - WASB_ACCOUNT
-    - WASB_KEY
-    - S3_ACCESS_KEY
-    - S3_SECRET_KEY
-    - JDBC_TABLE
-    - JDBC_USER
-    - JDBC_PASSWORD
-    - KAFKA_SASL_JAAS_CONFIG
-
 
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks, local
@@ -188,12 +176,6 @@ client.build_features(
     derived_feature_list=derived_feature,
 )
 
-
-# This cell is optional if you want to use the feathr registry.
-# client.register_features()
-# client.list_registered_features(client.project_name)
-# res = client.get_features_from_registry(client.project_name)
-# print(res)
 
 feature_names = [feature.name for feature in features + agg_features]
 feature_names
