@@ -213,16 +213,22 @@ class DbRegistry(Registry):
             
         if project:
             project_id = self.get_entity_id(project)
-            sql = fr'''select {top_clause} entity_id as id, qualified_name, entity_type as type
-                from entities
-                inner join edges on entity_id=edges.from_id and edges.conn_type='BelongsTo'
-                where
-                edges.to_id=%s and qualified_name like %s and entity_type in %s
-                order by qualified_name'''
-            rows = self.conn.query(sql, (str(project_id), '%' + keyword + '%', tuple([str(t) for t in type])))
+
+            # sql = fr'''select {top_clause} entity_id as id, qualified_name, entity_type as type
+            #     from entities
+            #     inner join edges on entity_id=edges.from_id and edges.conn_type='BelongsTo'
+            #     where
+            #     edges.to_id=%s and qualified_name like %s and entity_type in %s
+            #     order by qualified_name'''
+            # rows = self.conn.query(sql, (str(project_id), '%' + keyword + '%', tuple([str(t) for t in type])))
+            query = self.sql_session.query(Entities.entity_id.label("id"),  Entities.qualified_name, Entities.entity_type.label("type")).join(Edges, Entities.entity_id==Edges.from_id, Edges.conn_type==RelationshipType.BelongsTo).filter(Edges.to_id==str(project_id), Entities.qualified_name.ilike("%" + keyword + "%"), Entities.entity_type.in_(tuple([str(t) for t in type]))).order_by(Entities.qualified_name).limit(int(start) + int(size))
+            rows = self._fetch_helper(query)
         else:
-            sql = fr'''select {top_clause} entity_id as id, qualified_name, entity_type as type from entities where qualified_name like %s and entity_type in %s order by qualified_name'''
-            rows = self.conn.query(sql, ('%' + keyword + '%', tuple([str(t) for t in type])))
+            # sql = fr'''select {top_clause} entity_id as id, qualified_name, entity_type as type from entities where qualified_name like %s and entity_type in %s order by qualified_name'''
+            # rows = self.conn.query(sql, ('%' + keyword + '%', tuple([str(t) for t in type])))
+
+            query = self.sql_session.query(Entities.entity_id.label("id"),  Entities.qualified_name, Entities.entity_type.label("type")).filter(Entities.qualified_name.ilike("%" + keyword + "%"), Entities.entity_type.in_(tuple([str(t) for t in type]))).order_by(Entities.qualified_name).limit(int(start) + int(size))
+            rows = self._fetch_helper(query)
         if size:
             rows = rows[-size:]
         return list([EntityRef(**row) for row in rows])
