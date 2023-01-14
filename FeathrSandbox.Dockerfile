@@ -68,6 +68,7 @@ COPY --chown=1000:100 ./docker/feathr_init_script.py .
 
 # Run the script so that maven cache can be added for better experience. Otherwise users might have to wait for some time for the maven cache to be ready.
 RUN python feathr_init_script.py
+RUN python -m pip install interpret
 
 USER root
 WORKDIR /usr/src/registry
@@ -77,8 +78,8 @@ RUN ["chmod", "+x", "/usr/src/registry/start_local.sh"]
 RUN sed -i "s/\r//g" /usr/src/registry/start_local.sh
 
 WORKDIR /home/jovyan/work
-# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode
-EXPOSE 80 8000 8080 8888 
+# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7001:Interpret
+EXPOSE 80 8000 8080 8888 7001
 # run the service so we can initialize
 # RUN  ["/bin/bash", "/usr/src/registry/start.sh"]
 CMD ["/bin/bash", "/usr/src/registry/start_local.sh"]
