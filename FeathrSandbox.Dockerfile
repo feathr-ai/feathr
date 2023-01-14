@@ -41,7 +41,7 @@ RUN pip install -r requirements-sandbox.txt
 
 ## Start service and then start nginx
 WORKDIR /usr/src/registry
-COPY ./deploy/start_local.sh /usr/src/registry/
+COPY ./feathr-sandbox/start_local.sh /usr/src/registry/
 
 # install code server
 # RUN curl -fsSL https://code-server.dev/install.sh | sh
