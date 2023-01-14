@@ -16,8 +16,8 @@ As an end user, you can become productive in less than 5 mins and try out Feathr
 
 The Sandbox is ideal for:
 
-- Feathr developers to test new features since this docker should everything they need
 - Feathr users who want to get started quickly
+- Feathr developers to test new features since this docker should everything they need. It comes with the python package as editable model so developers can iterate easily.
 
 ## Getting Started
 
@@ -32,7 +32,7 @@ It should pop up a Jupyter link in `http://127.0.0.1:8888/`. Double click on the
 
 The default jupyter notebook is here:
 ```bash
-http://127.0.0.1:8888/
+http://localhost:8888/lab/workspaces/auto-w/tree/local_quickstart_notebook.ipynb
 ```
 
 ![Feathr Notebook](./images/feathr-sandbox.png)
@@ -54,6 +54,7 @@ After executing those scripts, you should be able to see a project called `local
 
 The Feathr sandbox comes with:
 - Built-in Jupyter Notebook
+- Pre-installed data science packages such as `interpret` so that data science development becomes easy
 - Pre-installed Feathr package
 - A local spark environment for dev/test purpose
 - Feathr samples that can run locally
@@ -61,7 +62,6 @@ The Feathr sandbox comes with:
 - Feathr UI
 - Feathr Registry API
 - Local Redis server
-- An VSCode Server so that you can do interactive development in the docker container
 
 
 ## Build Docker Container
@@ -81,3 +81,5 @@ note that if you are using Jupyter notebook to run the code, make sure you resta
 You should be able to see the 
 
 ![Feathr Dev Experience](./images/feathr-sandbox-dev-experience.png)
+
+In the future, an VSCode Server might be installed so that you can do interactive development in the docker container.
