@@ -182,14 +182,12 @@ feature_names = [feature.name for feature in features + agg_features]
 feature_names
 
 
-client.wait_job_to_finish(timeout_sec=5000)
-
-# Try to register the service after the spark run (so that the Feathr API can start with sufficient time)
-try:
-    client.register_features()
-except Exception as e:
-    print(e)
-print(client.list_registered_features(project_name=client.project_name))
+# # Try to register the service after the spark run (so that the Feathr API can start with sufficient time)
+# try:
+#     client.register_features()
+# except Exception as e:
+#     print(e)
+# print(client.list_registered_features(project_name=client.project_name))
 
 
 now = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -213,3 +211,5 @@ client.get_offline_features(
     feature_query=query,
     output_path=offline_features_path,
 )
+
+client.wait_job_to_finish(timeout_sec=5000)
