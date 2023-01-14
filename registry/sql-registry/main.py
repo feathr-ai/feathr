@@ -6,8 +6,13 @@ from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from registry import *
-from registry.db_registry import DbRegistry, ConflictError
+
 from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
+
+if os.environ.get("FEATHR_SANDBOX"):
+    from registry.db_registry_orm import DbRegistry, ConflictError
+else:
+    from registry.db_registry import DbRegistry, ConflictError
 
 rp = "/"
 try:

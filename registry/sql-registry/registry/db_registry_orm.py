@@ -8,6 +8,7 @@ from registry.models import AnchorAttributes, AnchorDef, AnchorFeatureAttributes
 import json
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
+
 class ConflictError(Exception):
     pass
 

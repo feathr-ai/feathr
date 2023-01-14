@@ -60,7 +60,7 @@ else
     echo "RBAC flag not configured or not equal to true, only launch registry app"
     if [ "x$PURVIEW_NAME" == "x" ]; then
         echo "Purview flag is not configured, run SQL registry"
-        cd /usr/src/registry/sql-registry-orm
+        cd /usr/src/registry/sql-registry
         # start redis with password, since Feathr requires Redis to have a password for now
         nohup redis-server --requirepass foobared &
         nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT &

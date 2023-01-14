@@ -29,36 +29,31 @@ USER root
 ## Install dependencies
 RUN apt-get update -y && apt-get install -y nginx freetds-dev sqlite3 libsqlite3-dev lsb-release redis gnupg redis-server lsof
 
+# UI Sectioin
+## Remove default nginx index page and copy ui static bundle files
+RUN rm -rf /usr/share/nginx/html/*
+COPY --from=ui-build /usr/src/ui/build /usr/share/nginx/html
+COPY ./deploy/nginx.conf /etc/nginx/nginx.conf
 
+
+# Feathr Package Installation Section
 # always install feathr from main
 COPY ./feathr_project /tmp/feathr_project
 RUN python -m pip install /tmp/feathr_project/
 # RUN python -m pip install feathr
 
 
-
+# Registry Section
 # install registry
 COPY ./registry /usr/src/registry
-WORKDIR /usr/src/registry/sql-registry-orm
-RUN pip install -r requirements.txt
+WORKDIR /usr/src/registry/sql-registry
+RUN pip install -r requirements-sandbox.txt
 
-## Remove default nginx index page and copy ui static bundle files
-RUN rm -rf /usr/share/nginx/html/*
-COPY --from=ui-build /usr/src/ui/build /usr/share/nginx/html
-COPY ./deploy/nginx.conf /etc/nginx/nginx.conf
+
 
 ## Start service and then start nginx
 WORKDIR /usr/src/registry
 COPY ./deploy/start_local.sh /usr/src/registry/
-
-
-
-# RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-
-# RUN echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/redis.list
-
-# set redis password, since currently Feathr require the password to be set.
-# RUN sed -i 's/# requirepass foobared/requirepass foobared/g' /etc/redis/redis.conf
 
 
 # default dir by the jupyter image
@@ -69,8 +64,7 @@ USER jovyan
 COPY --chown=1000:100 ./docs/samples/local_quickstart_nyc_taxi_demo.ipynb .
 COPY --chown=1000:100 ./docker/feathr_init_script.py .
 
-# TODO: merge it to the copy command
-# RUN chown jovyan ./local_quickstart_nyc_taxi_demo.ipynb
+# Run the script so that maven cache can be added for better experience. Otherwise users might have to wait for some time for the maven cache to be ready.
 RUN python feathr_init_script.py
 
 USER root
