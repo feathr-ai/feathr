@@ -55,7 +55,7 @@ COPY --chown=1000:100 ./docs/samples/local_quickstart_notebook.ipynb .
 COPY --chown=1000:100 ./docker/feathr_init_script.py .
 
 # Run the script so that maven cache can be added for better experience. Otherwise users might have to wait for some time for the maven cache to be ready.
-RUN uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT & && python feathr_init_script.py
+RUN python feathr_init_script.py
 RUN python -m pip install interpret
 
 USER root

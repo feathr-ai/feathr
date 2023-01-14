@@ -1,5 +1,9 @@
 # Goal of this file is to run a basic Feathr script within spark so that Maven packages can be downloaded into the docker container to save time during actual run.
 # This can also serve as a sanity check
+
+import subprocess
+subprocess.Popen(["uvicorn", "/usr/src/registry/sql-registry/main:app",  "--host",  "0.0.0.0" ,"--port", "8000"])
+
 import os
 import tempfile
 from datetime import datetime
