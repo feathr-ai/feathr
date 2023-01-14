@@ -74,10 +74,10 @@ RUN ["chmod", "+x", "/usr/src/registry/start_local.sh"]
 # remove ^M chars in Linux to make sure the script can run
 RUN sed -i "s/\r//g" /usr/src/registry/start_local.sh
 
-ENV JUPYTER_TOKEN=feathr
+WORKDIR /home/jovyan/work
+# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode
+EXPOSE 80 8000 8080 8888 
 # run the service so we can initialize
 # RUN  ["/bin/bash", "/usr/src/registry/start.sh"]
 CMD ["/bin/bash", "/usr/src/registry/start_local.sh"]
 
-
-WORKDIR /home/jovyan/work
