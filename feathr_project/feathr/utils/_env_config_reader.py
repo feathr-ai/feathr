@@ -61,6 +61,9 @@ class EnvConfigReader(object):
         for res in [res1, res2, res3]:
             if res is not None:
                 return res
+
+        logger.info(f"Config {key} is not found in the environment variable, configuration file, or the remote key value store.")
+        
         return default
 
     def get_from_env_or_akv(self, key: str) -> str:
@@ -88,8 +91,6 @@ class EnvConfigReader(object):
         # make it work for lower case and upper case.
         conf_var = os.environ.get(key.lower(), os.environ.get(key.upper()))
 
-        if conf_var is None:
-            logger.info(f"Config {key} is not set in the environment variables.")
 
         return conf_var
 
@@ -113,8 +114,6 @@ class EnvConfigReader(object):
                 # make it work for lower case and upper case.
                 conf_var = conf_var.get(arg.lower(), conf_var.get(arg.upper()))
 
-            if conf_var is None:
-                logger.info(f"Config {key} is not found in the config file.")
 
             return conf_var
         except Exception as e:

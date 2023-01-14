@@ -27,11 +27,13 @@ To get started, simply run the command:
 docker run -it --rm -p 8888:8888  -p 8000:8000 -p 80:80 --env CONNECTION_STR="Server=" --env API_BASE="api/v1" -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
 ```
 
-It should pop up a Jupyter link like below. Double click on the notebook file to start the Jupyter Notebook, and you should be able to see the Feathr sample notebook. Click the triangle button on the Jupyter notebook and the whole notebook will run locally.
+It should pop up a Jupyter link in `http://127.0.0.1:8888/`. Double click on the notebook file to start the Jupyter Notebook, and you should be able to see the Feathr sample notebook. Click the triangle button on the Jupyter notebook and the whole notebook will run locally.
 
+The default jupyter notebook is here:
 ```bash
-http://127.0.0.1:8888/lab?token=b4b05e6d7f419038ddc1176589cc0b9e79b02c3cbc86defe
+http://127.0.0.1:8888/
 ```
+
 ![Feathr Notebook](./images/feathr-sandbox.png)
 
 
