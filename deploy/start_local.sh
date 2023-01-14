@@ -63,7 +63,7 @@ else
         cd /usr/src/registry/sql-registry
         # start redis with password, since Feathr requires Redis to have a password for now
         nohup redis-server --requirepass foobared &
-        nohup code-server --auth none &
+        # nohup code-server --auth none &
         nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT &
         # TODO: move this to a more neutural folder since Redis doesn't have anything to do with Feathr
         cd -
