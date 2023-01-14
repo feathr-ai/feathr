@@ -52,7 +52,7 @@ USER jovyan
 # copy as the jovyan user
 # UID is like this: uid=1000(jovyan) gid=100(users) groups=100(users)
 COPY --chown=1000:100 ./docs/samples/local_quickstart_notebook.ipynb .
-COPY --chown=1000:100 ./docker/feathr_init_script.py .
+COPY --chown=1000:100 ./feathr-sandbox/feathr_init_script.py .
 
 # Run the script so that maven cache can be added for better experience. Otherwise users might have to wait for some time for the maven cache to be ready.
 RUN python feathr_init_script.py
