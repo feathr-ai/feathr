@@ -1,16 +1,4 @@
 # TODO: persist the SQLite file in the volumes
-# TODO: predownload the maven packages
-# TODO: make sure redis can use without password
-# TODO: download the notebook to the workdir
-# TODO: initialize the sql database schema
-
-
-
-# docker run -it --rm -p 8888:8888 jupyter/all-spark-notebook
-
-# You will see some prompt as http://127.0.0.1:8888/lab?token=97ba62366598f233acc830103b41221d2d12cfcd583fc028
-
-# login using this token in jupyter
 
 # Stage 1: build frontend ui
 FROM node:16-alpine as ui-build
