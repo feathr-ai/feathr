@@ -74,6 +74,7 @@ RUN ["chmod", "+x", "/usr/src/registry/start_local.sh"]
 # remove ^M chars in Linux to make sure the script can run
 RUN sed -i "s/\r//g" /usr/src/registry/start_local.sh
 
+ENV JUPYTER_TOKEN=feathr
 # run the service so we can initialize
 # RUN  ["/bin/bash", "/usr/src/registry/start.sh"]
 CMD ["/bin/bash", "/usr/src/registry/start_local.sh"]
