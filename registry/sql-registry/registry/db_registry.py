@@ -52,7 +52,10 @@ class DbRegistry(Registry):
     def __init__(self):
         self.conn = connect()
         if os.environ.get("FEATHR_SANDBOX"):
-            engine = db.create_engine('sqlite:////tmp/feathr_registry.sqlite?check_same_thread=False') #Create test.sqlite automatically
+            if os.environ.get("FEATHR_SANDBOX_REGISTRY_URL"):
+                engine = db.create_engine(f'sqlite:///{os.environ.get("FEATHR_SANDBOX_REGISTRY_URL")}?check_same_thread=False')
+            else:
+                engine = db.create_engine('sqlite:////tmp/feathr_registry.sqlite?check_same_thread=False') #Create test.sqlite automatically
             self.sql_session = Session(engine)
             self.connection = engine.connect()
             metadata = db.MetaData()
