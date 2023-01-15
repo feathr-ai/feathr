@@ -196,9 +196,10 @@ class MssqlConnection(DbConnection):
                 conn.commit()
 
 
-# This is ordered so always tyr MSSQL first for now.
+# This is ordered list. So append SQLite first
+if os.environ.get("FEATHR_SANDBOX"):
+    providers.append(SQLiteConnection)
 providers.append(MssqlConnection)
-providers.append(SQLiteConnection)
 
 
 def connect(*args, **kargs):
