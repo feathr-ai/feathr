@@ -128,8 +128,8 @@ object GenericLocationAdHocPatches {
         val databaseName = location.options.getOrElse("spark.cosmos.database", throw new FeathrException("Missing spark__cosmos__database"))
         val tableName = location.options.getOrElse("spark.cosmos.container", throw new FeathrException("Missing spark__cosmos__container"))
         ss.conf.set("spark.sql.catalog.cosmosCatalog", "com.azure.cosmos.spark.CosmosCatalog")
-        ss.conf.set("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountEndpoint", endpoint)
-        ss.conf.set("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", key)
+        // ss.conf.set("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountEndpoint", endpoint)
+        // ss.conf.set("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", key)
         ss.sql(s"CREATE DATABASE IF NOT EXISTS cosmosCatalog.${databaseName};")
         ss.sql(s"CREATE TABLE IF NOT EXISTS cosmosCatalog.${databaseName}.${tableName} using cosmos.oltp TBLPROPERTIES(partitionKeyPath = '/id')")
 
