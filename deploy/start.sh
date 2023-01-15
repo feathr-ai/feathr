@@ -33,19 +33,8 @@ nginx
 # Start API app
 LISTENING_PORT="8000"
 
-if [ "x$REACT_APP_ENABLE_RBAC" == "x" ]; then
-    echo "RBAC flag not configured, only launch registry app"
-    if [ "x$PURVIEW_NAME" == "x" ]; then
-        echo "Purview flag is not configured, run SQL registry"
-        cd sql-registry
-        uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
-    else
-        echo "Purview flag is configured, run Purview registry"
-        cd purview-registry
-        uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
-    fi
-else
-    echo "RBAC flag configured, launch both rbac and reigstry apps"
+if [ "$REACT_APP_ENABLE_RBAC" == "true" ]; then
+    echo "RBAC flag configured and set to true, launch both rbac and reigstry apps"
     if [ "x$PURVIEW_NAME" == "x" ]; then
         echo "Purview flag is not configured, run SQL registry"
         cd sql-registry
@@ -65,4 +54,15 @@ else
     export RBAC_API_AUDIENCE="${REACT_APP_AZURE_CLIENT_ID}"
     export RBAC_CONNECTION_STR="${CONNECTION_STR}"
     uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
+else
+    echo "RBAC flag not configured or not equal to true, only launch registry app"
+    if [ "x$PURVIEW_NAME" == "x" ]; then
+        echo "Purview flag is not configured, run SQL registry"
+        cd sql-registry
+        uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
+    else
+        echo "Purview flag is configured, run Purview registry"
+        cd purview-registry
+        uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT
+    fi
 fi
