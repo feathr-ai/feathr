@@ -6,10 +6,8 @@ from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from registry import *
-
-from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
-
 from registry.db_registry import DbRegistry, ConflictError
+from registry.models import AnchorDef, AnchorFeatureDef, DerivedFeatureDef, EntityType, ProjectDef, SourceDef, to_snake
 
 rp = "/"
 try:
