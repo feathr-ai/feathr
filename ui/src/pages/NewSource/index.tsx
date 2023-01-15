@@ -3,7 +3,7 @@ import React from 'react'
 import { PageHeader } from 'antd'
 import { useSearchParams } from 'react-router-dom'
 
-import FeatureForm from './components/FeatureForm'
+import ScourceForm from './components/SourceForm'
 
 const NewFeature = () => {
   const [searchParams] = useSearchParams()
@@ -12,8 +12,8 @@ const NewFeature = () => {
 
   return (
     <div className="page">
-      <PageHeader title="Create Feature" ghost={false}>
-        <FeatureForm project={project} />
+      <PageHeader title="Create Data Source" ghost={false}>
+        <ScourceForm project={project} />
       </PageHeader>
     </div>
   )

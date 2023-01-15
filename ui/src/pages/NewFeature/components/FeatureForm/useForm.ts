@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { FormInstance, Form, SelectProps, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
 import { fetchProjectLineages, createAnchorFeature, createDerivedFeature } from '@/api'
+import { Tab } from '@/components/AddTabs'
 import { ValueType, TensorCategory, VectorType, NewFeature } from '@/models/model'
 
 const valueOptions = ValueType.map((value: string) => ({
@@ -34,12 +35,14 @@ export const enum TransformationTypeEnum {
   UDF
 }
 
-export const useForm = (form: FormInstance<any>) => {
+export const useForm = (form: FormInstance<any>, projectStr?: string) => {
   const navigate = useNavigate()
 
   const [createLoading, setCreateLoading] = useState<boolean>(false)
 
   const [loading, setLoading] = useState<boolean>(false)
+
+  const tabsRef = useRef<Tab[]>([])
 
   const [anchorOptions, setAnchorOptions] = useState<Options>([])
   const [anchorFeatureOptions, setAnchorFeatureOptions] = useState<Options>([])
@@ -96,8 +99,8 @@ export const useForm = (form: FormInstance<any>) => {
   const onFinish = async (values: any) => {
     setCreateLoading(true)
     try {
-      const tags = values.tags?.reduce((tags: any, item: any) => {
-        tags[item.name] = item.value || ''
+      const tags = tabsRef.current.reduce((tags: any, item: any) => {
+        tags[item.name.trim()] = item.value.trim() || ''
         return tags
       }, {} as any)
 
@@ -124,19 +127,25 @@ export const useForm = (form: FormInstance<any>) => {
           udfExpr: values.udfExpr
         }
       }
-
+      let guid = ''
       if (values.featureType === FeatureEnum.Anchor) {
-        await createAnchorFeature(project, values.anchor, newFeature)
+        const { data } = await createAnchorFeature(project, values.anchor, newFeature)
+        guid = data.guid
       } else {
-        await createDerivedFeature(project, newFeature)
+        const { data } = await createDerivedFeature(project, newFeature)
+        guid = data.guid
       }
       message.success('New feature created')
-      navigate(`/features?project=${project}`)
+      navigate(`/projects/${project}/features/${guid}`)
     } catch (err: any) {
       message.error(err.detail || err.message)
     } finally {
       setCreateLoading(false)
     }
+  }
+
+  const onTabsChange = (tabs: Tab[]) => {
+    tabsRef.current = tabs
   }
 
   useEffect(() => {
@@ -148,7 +157,8 @@ export const useForm = (form: FormInstance<any>) => {
   useEffect(() => {
     form.setFieldsValue({
       featureType: FeatureEnum.Anchor,
-      selectTransformationType: TransformationTypeEnum.Expression
+      selectTransformationType: TransformationTypeEnum.Expression,
+      project: projectStr?.trim()
     })
   }, [form])
 
@@ -164,6 +174,7 @@ export const useForm = (form: FormInstance<any>) => {
     valueOptions,
     tensorOptions,
     typeOptions,
+    onTabsChange,
     onFinish
   }
 }

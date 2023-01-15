@@ -130,6 +130,17 @@ export interface NewFeature {
   // qualifiedName: string;
 }
 
+export interface NewDatasource {
+  eventTimestampColumn?: string
+  name: string
+  path: string
+  preprocessing?: string
+  qualifiedName: string
+  tags: any
+  timestampFormat?: string
+  type: string
+}
+
 export const ValueType = [
   'UNSPECIFIED',
   'BOOLEAN',
@@ -144,3 +155,5 @@ export const ValueType = [
 export const TensorCategory = ['DENSE', 'SPARSE']
 
 export const VectorType = ['TENSOR']
+
+export const SourceType = ['PASSTHROUGH', 'wasbs']

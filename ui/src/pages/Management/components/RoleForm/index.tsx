@@ -24,7 +24,7 @@ const ValidateRule = {
   reason: [{ required: true, message: 'Please input reason!' }]
 }
 
-const RoleForm = (props: RoleFormProps) => {
+const RoleForm = (props: RoleFormProps, ref: any) => {
   const [form] = Form.useForm()
   const { getRole } = props
   const [loading, setLoading] = useState<boolean>(false)

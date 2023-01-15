@@ -13,7 +13,7 @@ export interface FeatureTableProps {
   project?: string
   keyword?: string
 }
-const FeatureTable = (props: FeatureTableProps) => {
+const FeatureTable = (props: FeatureTableProps, ref: any) => {
   const navigate = useNavigate()
 
   const { project, keyword } = props
