@@ -14,7 +14,6 @@ class ConflictError(Exception):
 # This is a temp way so that the Feathr sandbox code can reuse existing code as much as possible
 # Eventually we might want to move to ORM based SQL access ways, but need to make sure it also works well in multi-threading
 # Currently the ORM based access way is only used in Sandbox so it's safe
-FeathrSandbox=True if os.environ.get("FEATHR_SANDBOX") else False
 
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
@@ -39,6 +38,8 @@ class Edges(Base):
     from_id =  db.Column('from_id', db.String(50), nullable=False)
     to_id = db.Column('to_id', db.String(20), nullable=False)
     conn_type = db.Column('conn_type', db.String(20), nullable=False) 
+
+
 def quote(id):
     if isinstance(id, str):
         return f"'{id}'"
@@ -50,7 +51,7 @@ def quote(id):
 class DbRegistry(Registry):
     def __init__(self):
         self.conn = connect()
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             engine = db.create_engine('sqlite:////tmp/feathr_registry.sqlite?check_same_thread=False') #Create test.sqlite automatically
             self.sql_session = Session(engine)
             self.connection = engine.connect()
@@ -85,7 +86,7 @@ class DbRegistry(Registry):
         return r
 
     def get_projects(self) -> List[str]:
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             query = db.select(self.entities_table.c.qualified_name).where((self.entities_table.c.entity_type == str(EntityType.Project))) 
             ret = self._fetch_helper(query)
         else:
@@ -95,7 +96,7 @@ class DbRegistry(Registry):
     
     def get_projects_ids(self) -> Dict:
         projects = {}
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             query = db.select(self.entities_table.c.entity_id,self.entities_table.c.qualified_name).where((self.entities_table.c.entity_type == str(EntityType.Project))) 
             ret = self._fetch_helper(query)
         else:
@@ -118,7 +119,7 @@ class DbRegistry(Registry):
         except ValueError:
             pass
         # It is a name
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             query = db.select(self.entities_table.c.entity_id).where((self.entities_table.c.qualified_name == str(id_or_name))) 
             ret = self._fetch_helper(query)
         else:
@@ -129,7 +130,7 @@ class DbRegistry(Registry):
         return ret[0]["entity_id"]
 
     def get_neighbors(self, id_or_name: Union[str, UUID], relationship: RelationshipType) -> List[Edge]:
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             query = db.select(self.edges_table.c.edge_id, self.edges_table.c.from_id, self.edges_table.c.to_id,self.edges_table.c.conn_type).where((self.edges_table.c.from_id == str(self.get_entity_id(id_or_name))) & (self.edges_table.c.conn_type == relationship.name)) 
             rows = self._fetch_helper(query)
         else:
@@ -225,7 +226,7 @@ class DbRegistry(Registry):
             
         if project:
             project_id = self.get_entity_id(project)
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = self.sql_session.query(Entities.entity_id.label("id"),  Entities.qualified_name, Entities.entity_type.label("type")).join(Edges, and_(Entities.entity_id==Edges.from_id, Edges.conn_type=='BelongsTo')).filter(Edges.to_id==str(project_id), Entities.qualified_name.ilike("%" + keyword + "%"), Entities.entity_type.in_(tuple([str(t) for t in type]))).order_by(Entities.qualified_name).slice(int(start), int(start + size))
                 rows = self._fetch_helper(query)
             else:
@@ -238,7 +239,7 @@ class DbRegistry(Registry):
                 rows = self.conn.query(sql, (str(project_id), '%' + keyword + '%', tuple([str(t) for t in type])))
                 
         else:
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = self.sql_session.query(Entities.entity_id.label("id"),  Entities.qualified_name, Entities.entity_type.label("type")).filter(Entities.qualified_name.ilike("%" + keyword + "%"), Entities.entity_type.in_(tuple([str(t) for t in type]))).order_by(Entities.qualified_name).slice(int(start), int(start + size))
                 rows = self._fetch_helper(query)
             else:
@@ -253,7 +254,7 @@ class DbRegistry(Registry):
         definition.qualified_name = definition.name
         with self.conn.transaction() as c:
             # First we try to find existing entity with the same qualified name
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.select(self.entities_table.c.entity_id, self.entities_table.c.entity_type, self.entities_table.c.attributes).where((self.entities_table.c.qualified_name == definition.qualified_name)) 
                 r = self._fetch_helper(query)
             else:
@@ -271,7 +272,7 @@ class DbRegistry(Registry):
                 # Just return the existing project id
                 return _to_uuid(r[0]["entity_id"])
             id = uuid4()
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.insert(self.entities_table).values(entity_id= str(id), entity_type=str(EntityType.Project), qualified_name=definition.qualified_name, attributes =definition.to_attr().to_json())
                 r = self.connection.execute(query)
             else:
@@ -288,7 +289,7 @@ class DbRegistry(Registry):
         # Here we start a transaction, any following step failed, everything rolls back
         with self.conn.transaction() as c:
             # First we try to find existing entity with the same qualified name
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.select(self.entities_table.c.entity_id, self.entities_table.c.entity_type, self.entities_table.c.attributes).where((self.entities_table.c.qualified_name == definition.qualified_name)) 
                 r = self._fetch_helper(query)
             else:
@@ -318,7 +319,7 @@ class DbRegistry(Registry):
                 raise ConflictError("Entity %s already exists" %
                                  definition.qualified_name)
             id = uuid4()
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.insert(self.entities_table).values(entity_id= str(id), entity_type=str(EntityType.Source), qualified_name=definition.qualified_name, attributes =definition.to_attr().to_json())
                 self.connection.execute(query)
             else:
@@ -337,7 +338,7 @@ class DbRegistry(Registry):
         # Here we start a transaction, any following step failed, everything rolls back
         with self.conn.transaction() as c:
             # First we try to find existing entity with the same qualified name
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.select(self.entities_table.c.entity_id, self.entities_table.c.entity_type, self.entities_table.c.attributes).where((self.entities_table.c.qualified_name == definition.qualified_name)) 
                 r = self._fetch_helper(query)
             else:
@@ -361,7 +362,7 @@ class DbRegistry(Registry):
                     return _to_uuid(r[0]["entity_id"])
                 raise ConflictError("Entity %s already exists" %
                                  definition.qualified_name)
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.select(self.entities_table.c.entity_id, self.entities_table.c.qualified_name).where((self.entities_table.c.entity_id == str(definition.source_id)) & (self.entities_table.c.entity_type == str(EntityType.Source))) 
                 r = self._fetch_helper(query)
             else:
@@ -374,7 +375,7 @@ class DbRegistry(Registry):
             ref = EntityRef(r[0]["entity_id"],
                             EntityType.Source, r[0]["qualified_name"])
             id = uuid4()
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.insert(self.entities_table).values(entity_id= str(id), entity_type=str(EntityType.Anchor), qualified_name=definition.qualified_name, attributes =definition.to_attr(ref).to_json())
                 self.connection.execute(query)
             else:
@@ -399,7 +400,7 @@ class DbRegistry(Registry):
         # Here we start a transaction, any following step failed, everything rolls back
         with self.conn.transaction() as c:
             # First we try to find existing entity with the same qualified name
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.select(self.entities_table.c.entity_id, self.entities_table.c.entity_type, self.entities_table.c.attributes).where((self.entities_table.c.qualified_name == definition.qualified_name)) 
                 r = self._fetch_helper(query)
             else:
@@ -429,7 +430,7 @@ class DbRegistry(Registry):
                                  definition.qualified_name)
             source_id = anchor.attributes.source.id
             id = uuid4()
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.insert(self.entities_table).values(entity_id= str(id), entity_type=str(EntityType.AnchorFeature), qualified_name=definition.qualified_name, attributes =definition.to_attr().to_json())
                 r = self.connection.execute(query)
             else:
@@ -455,7 +456,7 @@ class DbRegistry(Registry):
         # Here we start a transaction, any following step failed, everything rolls back
         with self.conn.transaction() as c:
             # First we try to find existing entity with the same qualified name
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.select(self.entities_table.c.entity_id, self.entities_table.c.entity_type, self.entities_table.c.attributes).where((self.entities_table.c.qualified_name == definition.qualified_name)) 
                 r = self._fetch_helper(query)
             else:
@@ -486,7 +487,7 @@ class DbRegistry(Registry):
             r1 = []
             # Fill `input_anchor_features`, from `definition` we have ids only, we still need qualified names
             if definition.input_anchor_features:
-                if FeathrSandbox:
+                if os.environ.get("FEATHR_SANDBOX"):
                     query = self.sql_session.query(Entities.entity_id, Entities.entity_type, Entities.qualified_name).filter(Entities.entity_id.in_(tuple([str(id) for id in definition.input_anchor_features])), Entities.entity_type == str(EntityType.AnchorFeature))
                     r1 = self._fetch_helper(query)
                 else:
@@ -499,7 +500,7 @@ class DbRegistry(Registry):
             # Fill `input_derived_features`, from `definition` we have ids only, we still need qualified names
             r2 = []
             if definition.input_derived_features:
-                if FeathrSandbox:
+                if os.environ.get("FEATHR_SANDBOX"):
                     query = self.sql_session.query(Entities.entity_id, Entities.entity_type, Entities.qualified_name).filter(Entities.entity_id.in_(tuple([str(id) for id in definition.input_derived_features])), Entities.entity_type == str(EntityType.DerivedFeature))
                     r2 = self._fetch_helper(query)
                 else:
@@ -511,7 +512,7 @@ class DbRegistry(Registry):
                     raise(ValueError("Missing input derived features"))
             refs = list([EntityRef(r["entity_id"], r["entity_type"], r["qualified_name"]) for r in r1+r2])
             id = uuid4()
-            if FeathrSandbox:
+            if os.environ.get("FEATHR_SANDBOX"):
                 query = db.insert(self.entities_table).values(entity_id= str(id), entity_type=str(EntityType.DerivedFeature), qualified_name=definition.qualified_name, attributes =definition.to_attr(refs).to_json())
                 self.connection.execute(query)
             else:
@@ -536,7 +537,7 @@ class DbRegistry(Registry):
         """
         Create an edge with specified type between 2 entities, skip if the same connection already exists
         """
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             # TODO: might not be a safe solution since it's not transactional 
             query = db.insert(self.edges_table).values(edge_id= str(uuid4()), from_id=str(from_id), to_id=str(to_id), conn_type =type.name)
             self.connection.execute(query)
@@ -560,7 +561,7 @@ class DbRegistry(Registry):
         """
         Deletes all edges associated with an entity
         """
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             row_to_delete = self.sql_session.query(Edges).filter((Edges.from_id == str(entity_id)) | Edges.to_id == str(entity_id))
             row_to_delete.delete()
             self.sql_session.commit()
@@ -572,7 +573,7 @@ class DbRegistry(Registry):
         """
         Deletes entity from entities table
         """
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             row_to_delete = self.sql_session.query(Entities).filter((Entities.entity_id == str(entity_id)))
             # self.sql_session.delete(row_to_delete)
             row_to_delete.delete()
@@ -613,7 +614,7 @@ class DbRegistry(Registry):
     def _get_edges(self, ids: List[UUID], types: List[RelationshipType] = []) -> List[Edge]:
         if not ids:
             return []
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             if len(types) > 0:
                 query = self.sql_session.query(Edges.edge_id,Edges.from_id, Edges.to_id, Edges.conn_type).filter((Edges.from_id.in_(tuple([str(id) for id in ids]))) & (Edges.to_id.in_(tuple([str(id) for id in ids]))) & (Edges.conn_type.in_(tuple([t.name for t in types]))) )
             else:
@@ -637,7 +638,7 @@ class DbRegistry(Registry):
         return list([_to_type(row, Edge) for row in rows])
 
     def _get_entity(self, id_or_name: Union[str, UUID]) -> Entity:
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             query = db.select(self.entities_table.c.entity_id, self.entities_table.c.qualified_name, self.entities_table.c.entity_type, self.entities_table.c.attributes).where((self.entities_table.c.entity_id == str(self.get_entity_id(id_or_name)))) 
             row = self._fetch_helper(query)
         else:
@@ -655,7 +656,7 @@ class DbRegistry(Registry):
     def _get_entities(self, ids: List[UUID]) -> List[Entity]:
         if not ids:
             return []
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             query = self.sql_session.query(Entities.entity_id, Entities.qualified_name,Entities.entity_type, Entities.attributes).filter(Entities.entity_id.in_(tuple([str(id) for id in ids]), ))
             rows = self._fetch_helper(query)
         else:
@@ -698,7 +699,7 @@ class DbRegistry(Registry):
         Returns all edges that connect to node ids the next step
         """
         ids = list([id["to_id"] for id in ids])
-        if FeathrSandbox:
+        if os.environ.get("FEATHR_SANDBOX"):
             query = self.sql_session.query(Edges.edge_id,Edges.from_id, Edges.to_id, Edges.conn_type).filter(Edges.conn_type == conn_type.name, Edges.from_id.in_(tuple([str(id) for id in ids])))
             r = self._fetch_helper(query)
             return r

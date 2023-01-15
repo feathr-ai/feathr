@@ -51,14 +51,14 @@ class EnvConfigReader(object):
         Returns:
             Feathr client's config value.
         """
-        res1 = (self._get_variable_from_env(key) if self.use_env_vars else None) 
-        res2 = (self._get_variable_from_file(key) if self.yaml_config else None) 
-        res3 = (self._get_variable_from_akv(key) if self.akv_name else None) 
+        res_env = (self._get_variable_from_env(key) if self.use_env_vars else None) 
+        res_file = (self._get_variable_from_file(key) if self.yaml_config else None) 
+        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None) 
 
         # rewrite the logic below to make sure:
         # First we have the order (i.e. res1 > res2 > res3 > default)
         # Also previously we use OR for the result, which will yield a bug where say res1=None, res2=False, res3=None. Using OR will result to None result, although res2 actually have value
-        for res in [res1, res2, res3]:
+        for res in [res_env, res_file, res_keyvault]:
             if res is not None:
                 return res
 
