@@ -35,7 +35,7 @@ RUN python -m pip install  -e ./feathr_project
 # install registry
 COPY ./registry /usr/src/registry
 WORKDIR /usr/src/registry/sql-registry
-RUN pip install -r requirements-sandbox.txt
+RUN pip install -r requirements.txt
 
 
 

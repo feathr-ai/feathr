@@ -1,4 +1,0 @@
-pymssql
-fastapi
-uvicorn
-sqlalchemy

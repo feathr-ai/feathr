@@ -75,31 +75,9 @@ class SQLiteConnection(DbConnection):
         # use ` check_same_thread=False` otherwise an error like 
         # sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 140309046605632 and this is thread id 140308968896064.
         # will be thrown out
-        # TODO: remove hard coded path
-        self.conn = sqlite3.connect("/tmp/feathr_registry.db",  check_same_thread=False)
-        self.conn.row_factory = sqlite3.Row
+        # Use the mem just to make sure it can connect. The actual file path will be initialized in the db_registry.py file
+        self.conn = sqlite3.connect("file::memory:?cache=shared", uri=True, check_same_thread=False)
 
-    def query(self, sql: str, *args, **kwargs) -> list[dict]:
-        """
-        Make SQL query and return result
-        """
-        print(f"SQL: `{sql}`")
-        # NOTE: Only one cursor is allowed at the same time
-        retry = 0
-        while True:
-            try:
-                c = self.conn.cursor()
-                c.execute(sql, *args, **kwargs)
-                return c.fetchall()
-            except sqlite3.OperationalError:
-                logging.warning("Database error, retrying...")
-                # Reconnect
-                self.make_connection()
-                retry += 1
-                if retry >= 3:
-                    # Stop retrying
-                    raise
-                pass
 
     @contextmanager
     def transaction(self):
@@ -137,7 +115,6 @@ class SQLiteConnection(DbConnection):
             if conn:
                 conn.commit()
 
-providers.append(SQLiteConnection)
 
 class MssqlConnection(DbConnection):
     @staticmethod
@@ -219,7 +196,9 @@ class MssqlConnection(DbConnection):
                 conn.commit()
 
 
+# This is ordered so always tyr MSSQL first for now.
 providers.append(MssqlConnection)
+providers.append(SQLiteConnection)
 
 
 def connect(*args, **kargs):
