@@ -52,18 +52,8 @@ import sqlite3
 class SQLiteConnection(DbConnection):
     @staticmethod
     def connect(autocommit = True):
-        conn_str = os.environ["CONNECTION_STR"]
-        if "Server=" not in conn_str:
-            logging.debug("`CONNECTION_STR` is not in ADO connection string format")
-            return None
-        params = {
-        "host": "localhost",
-        "database": "feathr_registry.db",
-        # "charset": "utf-8",   ## For unknown reason this causes connection failure
-    }
-        if not autocommit:
-            params["autocommit"] = False
-        return SQLiteConnection(params)
+        # This is just to implement the abstract method. It's usually not used.
+        return SQLiteConnection()
 
     def __init__(self, params):
         self.params = params
@@ -78,6 +68,9 @@ class SQLiteConnection(DbConnection):
         # Use the mem just to make sure it can connect. The actual file path will be initialized in the db_registry.py file
         self.conn = sqlite3.connect("file::memory:?cache=shared", uri=True, check_same_thread=False)
 
+    def query(self, sql: str, *args, **kwargs) -> List[Dict]:
+        # this is just to implement the abstract method.
+        pass
 
     @contextmanager
     def transaction(self):
