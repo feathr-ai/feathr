@@ -55,8 +55,7 @@ class SQLiteConnection(DbConnection):
         # This is just to implement the abstract method. It's usually not used.
         return SQLiteConnection()
 
-    def __init__(self, params):
-        self.params = params
+    def __init__(self):
         self.make_connection()
         self.mutex = threading.Lock()
 
