@@ -85,6 +85,7 @@ setup(
         "avro<=1.11.1",
         "azure-storage-file-datalake<=12.5.0",
         "azure-synapse-spark<=0.7.0",
+        "azure-cosmos==4.3.0",
         # Synapse's aiohttp package is old and does not work with Feathr. We pin to a newer version here.
         "aiohttp==3.8.3",
         # fixing Azure Machine Learning authentication issue per https://stackoverflow.com/a/72262694/3193073

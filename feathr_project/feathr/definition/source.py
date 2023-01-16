@@ -518,7 +518,7 @@ class CosmosDbSource(GenericSource):
             'spark.cosmos.container': container
         }
         super().__init__(name,
-                         format='cosmos.oltp',
+                         format='com.azure.spark.cosmos.CosmosItemsDataSource',
                          mode="APPEND",
                          options=options,
                          preprocessing=preprocessing,

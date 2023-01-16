@@ -281,7 +281,7 @@ class CosmosDbSink(GenericSink):
     Even it's possible, but we shouldn't use it as offline store as CosmosDb requires records to have unique keys, why offline feature job cannot generate unique keys.
     """
     def __init__(self, name: str, endpoint: str, database: str, container: str):        
-        super().__init__(format = "cosmos.oltp", mode="APPEND", options={
+        super().__init__(format = "com.azure.spark.cosmos.CosmosItemsDataSource", mode="APPEND", options={
             "spark.cosmos.accountEndpoint": endpoint,
             'spark.cosmos.accountKey': "${%s_KEY}" % name.upper(),
             "spark.cosmos.database": database,

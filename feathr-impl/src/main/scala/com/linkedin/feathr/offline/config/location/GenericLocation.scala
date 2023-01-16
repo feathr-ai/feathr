@@ -10,6 +10,7 @@ import net.minidev.json.annotate.JsonIgnore
 import org.apache.log4j.Logger
 import org.apache.spark.sql.functions.monotonically_increasing_id
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
+import com.azure.spark.cosmos.CosmosItemsDataSource
 
 @CaseClassDeserialize()
 case class GenericLocation(format: String, mode: Option[String] = None) extends DataLocation {
@@ -121,7 +122,7 @@ object GenericLocationAdHocPatches {
     })
 
     location.format.toLowerCase() match {
-      case "cosmos.oltp" =>
+      case "CosmosItemsDataSource" =>
         // Ensure the database and the table exist before writing
         val endpoint = location.options.getOrElse("spark.cosmos.accountEndpoint", throw new FeathrException("Missing spark__cosmos__accountEndpoint"))
         val key = location.options.getOrElse("spark.cosmos.accountKey", throw new FeathrException("Missing spark__cosmos__accountKey"))
@@ -131,7 +132,7 @@ object GenericLocationAdHocPatches {
         ss.conf.set("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountEndpoint", endpoint)
         ss.conf.set("spark.sql.catalog.cosmosCatalog.spark.cosmos.accountKey", key)
         ss.sql(s"CREATE DATABASE IF NOT EXISTS cosmosCatalog.${databaseName};")
-        ss.sql(s"CREATE TABLE IF NOT EXISTS cosmosCatalog.${databaseName}.${tableName} using cosmos.oltp TBLPROPERTIES(partitionKeyPath = '/id')")
+        ss.sql(s"CREATE TABLE IF NOT EXISTS cosmosCatalog.${databaseName}.${tableName} using CosmosItemsDataSource TBLPROPERTIES(partitionKeyPath = '/id')")
 
         // CosmosDb requires the column `id` to exist and be the primary key, and `id` must be in `string` type
         val keyDf = if (!df.columns.contains("id")) {
