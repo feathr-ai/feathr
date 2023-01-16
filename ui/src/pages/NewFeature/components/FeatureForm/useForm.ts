@@ -4,7 +4,7 @@ import { FormInstance, Form, SelectProps, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
 import { fetchProjectLineages, createAnchorFeature, createDerivedFeature } from '@/api'
-import { Tab } from '@/components/AddTabs'
+import { Tag } from '@/components/AddTags'
 import { ValueType, TensorCategory, VectorType, NewFeature } from '@/models/model'
 
 const valueOptions = ValueType.map((value: string) => ({
@@ -42,7 +42,7 @@ export const useForm = (form: FormInstance<any>, projectStr?: string) => {
 
   const [loading, setLoading] = useState<boolean>(false)
 
-  const tabsRef = useRef<Tab[]>([])
+  const tagsRef = useRef<Tag[]>([])
 
   const [anchorOptions, setAnchorOptions] = useState<Options>([])
   const [anchorFeatureOptions, setAnchorFeatureOptions] = useState<Options>([])
@@ -99,7 +99,7 @@ export const useForm = (form: FormInstance<any>, projectStr?: string) => {
   const onFinish = async (values: any) => {
     setCreateLoading(true)
     try {
-      const tags = tabsRef.current.reduce((tags: any, item: any) => {
+      const tags = tagsRef.current.reduce((tags: any, item: any) => {
         tags[item.name.trim()] = item.value.trim() || ''
         return tags
       }, {} as any)
@@ -144,8 +144,8 @@ export const useForm = (form: FormInstance<any>, projectStr?: string) => {
     }
   }
 
-  const onTabsChange = (tabs: Tab[]) => {
-    tabsRef.current = tabs
+  const onTabsChange = (tags: Tag[]) => {
+    tagsRef.current = tags
   }
 
   useEffect(() => {

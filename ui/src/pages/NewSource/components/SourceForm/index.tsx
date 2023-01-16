@@ -2,10 +2,10 @@ import React, { forwardRef } from 'react'
 
 import { Button, Col, Divider, Form, Input, Row, Select } from 'antd'
 
-import AddTabs from '@/components/AddTabs'
+import AddTags from '@/components/AddTags'
 import ProjectsSelect from '@/components/ProjectsSelect'
 
-import { useForm } from './useForm'
+import { useForm, SourceTypeEnum } from './useForm'
 
 export interface SourceFormProps {
   project?: string
@@ -29,7 +29,8 @@ const SourceForm = (props: SourceFormProps, ref: any) => {
   const { project } = props
   const [form] = Form.useForm()
 
-  const { createLoading, sourceTypeOptions, onTabsChange, onFinish } = useForm(form, project)
+  const { createLoading, sourceTypeOptions, jdbcAuthOptions, type, onTabsChange, onFinish } =
+    useForm(form, project)
 
   return (
     <>
@@ -58,9 +59,76 @@ const SourceForm = (props: SourceFormProps, ref: any) => {
         <Item label="Type" name="type" rules={[{ required: true }]}>
           <Select options={sourceTypeOptions} />
         </Item>
-        <Item name="path" label="Path" rules={[{ required: true }]}>
-          <TextArea autoSize={{ maxRows: 3, minRows: 3 }} />
-        </Item>
+        <Divider orientation="left">Datasource Attributes</Divider>
+        {(type === SourceTypeEnum.HDFS || type === SourceTypeEnum.SNOWFLAKE) && (
+          <Item name="path" label="Path" rules={[{ required: true }]}>
+            <TextArea autoSize={{ maxRows: 3, minRows: 3 }} />
+          </Item>
+        )}
+        {type === SourceTypeEnum.JDBC && (
+          <>
+            <Item name="url" label="Url" rules={[{ required: true }]}>
+              <Input />
+            </Item>
+            <Form.Item
+              name={[SourceTypeEnum.JDBC, 'value']}
+              label="Type"
+              rules={[{ required: true, message: 'This is required' }]}
+            >
+              <Input
+                addonBefore={
+                  <Item noStyle name={[SourceTypeEnum.JDBC, 'type']} rules={[{ required: true }]}>
+                    <Select style={{ width: 100 }}>
+                      <Select.Option value="dbtable">DBTABLE</Select.Option>
+                      <Select.Option value="query">QUERY</Select.Option>
+                    </Select>
+                  </Item>
+                }
+              />
+            </Form.Item>
+            <Item name="auth" label="Auth" rules={[{ required: true }]}>
+              <Select options={jdbcAuthOptions} />
+            </Item>
+          </>
+        )}
+        {type === SourceTypeEnum.COSMOSDB && (
+          <>
+            <Item name="endpoint" label="Endpoint" rules={[{ required: true }]}>
+              <Input />
+            </Item>
+            <Item name="dbtable" label="Database Table" rules={[{ required: true }]}>
+              <Input />
+            </Item>
+            <Item name="container" label="Container" rules={[{ required: true }]}>
+              <Input />
+            </Item>
+          </>
+        )}
+        {type === SourceTypeEnum.SPARKSQL && (
+          <>
+            <Form.Item
+              name={[SourceTypeEnum.SPARKSQL, 'value']}
+              label="Type"
+              rules={[{ required: true, message: 'This is required' }]}
+            >
+              <Input
+                addonBefore={
+                  <Item
+                    noStyle
+                    name={[SourceTypeEnum.SPARKSQL, 'type']}
+                    rules={[{ required: true }]}
+                  >
+                    <Select style={{ width: 100 }}>
+                      <Select.Option value="sql">SQL</Select.Option>
+                      <Select.Option value="table">TABLE</Select.Option>
+                    </Select>
+                  </Item>
+                }
+              />
+            </Form.Item>
+          </>
+        )}
+
         <Item name="preprocessing" label="Preprocessing">
           <TextArea autoSize={{ maxRows: 3, minRows: 3 }} />
         </Item>
@@ -73,7 +141,7 @@ const SourceForm = (props: SourceFormProps, ref: any) => {
         <Divider orientation="left">Datasource Tags</Divider>
         <Row>
           <Col xs={24} sm={{ span: 22, offset: 2 }}>
-            <AddTabs onChange={onTabsChange} />
+            <AddTags onChange={onTabsChange} />
           </Col>
         </Row>
         <Divider />

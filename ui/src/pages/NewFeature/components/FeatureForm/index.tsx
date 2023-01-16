@@ -3,7 +3,7 @@ import React, { forwardRef, Fragment } from 'react'
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { Button, Col, Divider, Form, Input, Radio, Row, Select, Space } from 'antd'
 
-import AddTabs from '@/components/AddTabs'
+import AddTags from '@/components/AddTags'
 import ProjectsSelect from '@/components/ProjectsSelect'
 
 import { useForm, FeatureEnum, TransformationTypeEnum } from './useForm'
@@ -101,7 +101,7 @@ const FeatureForm = (props: FeatureFormProps, ref: any) => {
         <Divider orientation="left">Feature Tags</Divider>
         <Row>
           <Col xs={24} sm={{ span: 22, offset: 2 }}>
-            <AddTabs onChange={onTabsChange} />
+            <AddTags onChange={onTabsChange} />
           </Col>
         </Row>
         <Divider orientation="left">Feature Keys</Divider>

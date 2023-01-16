@@ -6,55 +6,55 @@ import { Popconfirm, Button, Space, Table, Form, Input, Typography } from 'antd'
 import EditTable from '@/components/EditTable'
 import { EditTableInstance, EditColumnType } from '@/components/EditTable/interface'
 
-export interface AddTabsProps {
-  onChange?: (tabs: Tab[]) => void
+export interface AddTagsProps {
+  onChange?: (tabs: Tag[]) => void
 }
 
-export interface AddTabsInstance {
-  getTabs: () => Tab[]
+export interface AddTagsInstance {
+  getTags: () => Tag[]
 }
 
-export interface Tab {
+export interface Tag {
   name: string
   value: string
 }
 
 const { Link } = Typography
 
-const AddTabs = (props: AddTabsProps, ref: any) => {
+const AddTags = (props: AddTagsProps, ref: any) => {
   const [form] = Form.useForm()
 
   const { onChange } = props
 
-  const [tabs, setTabs] = useState<Tab[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
 
   const editTableRef = useRef<EditTableInstance>(null)
 
   const [editingKey, setEditingKey] = useState('')
 
-  const isEditing = (record: Tab) => record.name === editingKey
+  const isEditing = (record: Tag) => record.name === editingKey
 
-  const updateTabs = (oldTab: Tab, newTab: Tab) => {
-    const newData = [...tabs]
-    const index = newData.findIndex((item) => oldTab.name === item.name)
+  const updateTabs = (oldTag: Tag, newTag: Tag) => {
+    const newData = [...tags]
+    const index = newData.findIndex((item) => oldTag.name === item.name)
     if (index > -1) {
       const item = newData[index]
       newData.splice(index, 1, {
         ...item,
-        ...newTab
+        ...newTag
       })
-      setTabs(newData)
+      setTags(newData)
       setEditingKey('')
     } else {
-      newData.push(newTab)
-      setTabs(newData)
+      newData.push(newTag)
+      setTags(newData)
       setEditingKey('')
     }
   }
-  const onSave = (record: Tab) => {
+  const onSave = (record: Tag) => {
     const { form } = editTableRef.current!
-    form.validateFields().then((tab: Tab) => {
-      updateTabs(record, tab)
+    form.validateFields().then((tag: Tag) => {
+      updateTabs(record, tag)
     })
   }
 
@@ -62,28 +62,28 @@ const AddTabs = (props: AddTabsProps, ref: any) => {
     setEditingKey('')
   }
 
-  const onEdit = (record: Tab) => {
+  const onEdit = (record: Tag) => {
     const { form } = editTableRef.current!
     form?.setFieldsValue(record)
     setEditingKey(record.name)
   }
 
-  const onDelete = (record: Tab) => {
-    setTabs((tabs) => {
-      const index = tabs.findIndex((tab) => tab.name === record.name)
-      tabs.splice(index, 1)
-      return [...tabs]
+  const onDelete = (record: Tag) => {
+    setTags((tags) => {
+      const index = tags.findIndex((tag) => tag.name === record.name)
+      tags.splice(index, 1)
+      return [...tags]
     })
   }
 
   const onAdd = () => {
-    form.validateFields().then((value: Tab) => {
+    form.validateFields().then((value: Tag) => {
       updateTabs(value, value)
       form.resetFields()
     })
   }
 
-  const columns: EditColumnType<Tab>[] = [
+  const columns: EditColumnType<Tag>[] = [
     {
       title: 'Name',
       dataIndex: 'name',
@@ -97,7 +97,7 @@ const AddTabs = (props: AddTabsProps, ref: any) => {
     {
       title: 'Actions',
       width: 120,
-      render: (record: Tab) => {
+      render: (record: Tag) => {
         const editable = isEditing(record)
         return (
           <Space>
@@ -140,12 +140,12 @@ const AddTabs = (props: AddTabsProps, ref: any) => {
     }
   ]
 
-  useImperativeHandle<any, AddTabsInstance>(
+  useImperativeHandle<any, AddTagsInstance>(
     ref,
     () => {
       return {
-        getTabs: () => {
-          return tabs
+        getTags: () => {
+          return tags
         }
       }
     },
@@ -153,8 +153,8 @@ const AddTabs = (props: AddTabsProps, ref: any) => {
   )
 
   useEffect(() => {
-    onChange?.(tabs)
-  }, [tabs])
+    onChange?.(tags)
+  }, [tags])
 
   return (
     <EditTable
@@ -200,9 +200,9 @@ const AddTabs = (props: AddTabsProps, ref: any) => {
       isEditing={isEditing}
       columns={columns}
       pagination={false}
-      dataSource={tabs}
+      dataSource={tags}
     />
   )
 }
 
-export default forwardRef<AddTabsInstance, AddTabsProps>(AddTabs)
+export default forwardRef<AddTagsInstance, AddTagsProps>(AddTags)
