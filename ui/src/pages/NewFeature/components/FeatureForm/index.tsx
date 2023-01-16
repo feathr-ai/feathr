@@ -1,13 +1,16 @@
 import React, { forwardRef, Fragment } from 'react'
 
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
-import { Button, Divider, Form, Input, Radio, Select, Space } from 'antd'
+import { Button, Col, Divider, Form, Input, Radio, Row, Select, Space } from 'antd'
 
+import AddTags from '@/components/AddTags'
 import ProjectsSelect from '@/components/ProjectsSelect'
 
 import { useForm, FeatureEnum, TransformationTypeEnum } from './useForm'
 
-export interface FeatureFormProps {}
+export interface FeatureFormProps {
+  project?: string
+}
 
 const { Item } = Form
 
@@ -23,6 +26,7 @@ const formItemLayout = {
 }
 
 const FeatureForm = (props: FeatureFormProps, ref: any) => {
+  const { project } = props
   const [form] = Form.useForm()
 
   const {
@@ -36,8 +40,9 @@ const FeatureForm = (props: FeatureFormProps, ref: any) => {
     valueOptions,
     tensorOptions,
     typeOptions,
+    onTabsChange,
     onFinish
-  } = useForm(form)
+  } = useForm(form, project)
 
   return (
     <>
@@ -94,44 +99,11 @@ const FeatureForm = (props: FeatureFormProps, ref: any) => {
           </>
         )}
         <Divider orientation="left">Feature Tags</Divider>
-
-        <Form.List name="tags">
-          {(fields, { add, remove }) => (
-            <>
-              {fields.map(({ key, name }, index) => (
-                <Fragment key={key}>
-                  <Form.Item key={key} label="Name">
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'baseline',
-                        gap: 8
-                      }}
-                    >
-                      <Form.Item style={{ marginBottom: 0, flex: 1 }} name={[name, 'name']}>
-                        <Input maxLength={50} />
-                      </Form.Item>
-                      <Form.Item
-                        label="Value"
-                        style={{ marginBottom: 0, flex: 1 }}
-                        name={[name, 'value']}
-                      >
-                        <Input maxLength={50} />
-                      </Form.Item>
-                      <MinusCircleOutlined onClick={() => remove(name)} />
-                    </div>
-                  </Form.Item>
-                </Fragment>
-              ))}
-
-              <Form.Item label=" " colon={false}>
-                <Button block type="dashed" icon={<PlusOutlined />} onClick={() => add()}>
-                  Add tags
-                </Button>
-              </Form.Item>
-            </>
-          )}
-        </Form.List>
+        <Row>
+          <Col xs={24} sm={{ span: 22, offset: 2 }}>
+            <AddTags onChange={onTabsChange} />
+          </Col>
+        </Row>
         <Divider orientation="left">Feature Keys</Divider>
         <Form.List name="keys">
           {(fields, { add, remove }) => (

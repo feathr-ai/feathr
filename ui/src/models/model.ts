@@ -130,6 +130,35 @@ export interface NewFeature {
   // qualifiedName: string;
 }
 
+export interface NewDatasource {
+  eventTimestampColumn?: string
+  name: string
+  path?: string
+  preprocessing?: string
+  qualifiedName: string
+  tags: any
+  timestampFormat?: string
+  type: string
+
+  sourceType?: string
+  url?: string
+  dbtable?: string
+  query?: string
+  auth?: string
+
+  format?: string
+  'spark.cosmos.accountKey'?: string
+  'spark.cosmos.accountEndpoint'?: string
+  'spark.cosmos.database'?: string
+  'spark.cosmos.container'?: string
+
+  endpoint?: string
+  container?: string
+
+  sql?: string
+  table?: string
+}
+
 export const ValueType = [
   'UNSPECIFIED',
   'BOOLEAN',
@@ -144,3 +173,5 @@ export const ValueType = [
 export const TensorCategory = ['DENSE', 'SPARSE']
 
 export const VectorType = ['TENSOR']
+
+export const JdbcAuth = ['userpass', 'token', 'None']

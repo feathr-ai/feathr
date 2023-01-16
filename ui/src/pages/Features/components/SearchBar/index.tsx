@@ -33,6 +33,11 @@ const SearchBar = (props: SearchBarProps) => {
     }, 350)
   }
 
+  const onNavigateNewFeature = () => {
+    const project = form.getFieldValue('project') || ''
+    navigate(`/new-feature?project=${project}`)
+  }
+
   return (
     <div
       style={{
@@ -49,12 +54,7 @@ const SearchBar = (props: SearchBarProps) => {
           <Input placeholder="keyword" onChange={onChangeKeyword} />
         </Item>
       </Form>
-      <Button
-        type="primary"
-        onClick={() => {
-          navigate('/new-feature')
-        }}
-      >
+      <Button type="primary" onClick={onNavigateNewFeature}>
         + Create Feature
       </Button>
     </div>

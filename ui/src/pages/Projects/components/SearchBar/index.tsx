@@ -8,7 +8,7 @@ export interface SearchBarProps {
 
 const { Item } = Form
 
-const SearchBar = (props: SearchBarProps) => {
+const SearchBar = (props: SearchBarProps, ref: any) => {
   const [form] = Form.useForm()
 
   const { onSearch } = props

@@ -12,7 +12,7 @@ import { DataSource } from '@/models/model'
 export interface DataSourceTableProps {
   project?: string
 }
-const DataSourceTable = (props: DataSourceTableProps) => {
+const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
   const navigate = useNavigate()
 
   const { project } = props

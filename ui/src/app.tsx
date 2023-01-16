@@ -13,6 +13,7 @@ import Jobs from '@/pages/Jobs'
 import Management from '@/pages/Management'
 import Monitoring from '@/pages/Monitoring'
 import NewFeature from '@/pages/NewFeature'
+import NewSource from '@/pages/NewSource'
 import ProjectLineage from '@/pages/ProjectLineage'
 import Projects from '@/pages/Projects'
 import ResponseErrors from '@/pages/ResponseErrors'
@@ -44,6 +45,7 @@ const App = () => {
                   <Route path="/dataSources" element={<DataSources />} />
                   <Route path="/features" element={<Features />} />
                   <Route path="/new-feature" element={<NewFeature />} />
+                  <Route path="/new-source" element={<NewSource />} />
                   <Route
                     path="/projects/:project/features/:featureId"
                     element={<FeatureDetails />}
