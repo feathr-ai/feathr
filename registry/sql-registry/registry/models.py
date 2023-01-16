@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Optional, Union, List, Dict
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 import json
 import re
@@ -417,15 +417,15 @@ class SourceAttributes(Attributes):
                  qualified_name: str,
                  name: str,
                  type: str,
-                 path: str,
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
-                 tags: Dict = {}):
+                 tags: dict = {},
+                 **options: Dict[str, Any]):
         self.qualified_name = qualified_name
         self.name = name
         self.type = type
-        self.path = path
+        self.options = options
         self.preprocessing = preprocessing
         self.event_timestamp_column = event_timestamp_column
         self.timestamp_format = timestamp_format
@@ -435,14 +435,14 @@ class SourceAttributes(Attributes):
     def entity_type(self) -> EntityType:
         return EntityType.Source
 
-    def to_dict(self) -> Dict:
-        ret = {
+    def to_dict(self) -> dict:
+        ret = self.options.copy()
+        ret = {**ret, **{
             "qualifiedName": self.qualified_name,
             "name": self.name,
             "type": self.type,
-            "path": self.path,
             "tags": self.tags,
-        }
+        }}
         if self.preprocessing is not None:
             ret["preprocessing"] = self.preprocessing
         if self.event_timestamp_column is not None:
@@ -674,16 +674,16 @@ class ProjectDef:
 class SourceDef:
     def __init__(self,
                  name: str,
-                 path: str,
                  type: str,
                  qualified_name: str = "",
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
-                 tags: Dict = {}):
+                 tags: dict = {},
+                 **options: Dict[str, Any]):
         self.qualified_name = qualified_name
         self.name = name
-        self.path = path
+        self.options = options
         self.type = type
         self.preprocessing = preprocessing
         self.event_timestamp_column = event_timestamp_column
@@ -694,11 +694,11 @@ class SourceDef:
         return SourceAttributes(qualified_name=self.qualified_name,
                                 name=self.name,
                                 type=self.type,
-                                path=self.path,
                                 preprocessing=self.preprocessing,
                                 event_timestamp_column=self.event_timestamp_column,
                                 timestamp_format=self.timestamp_format,
-                                tags=self.tags)
+                                tags=self.tags,
+                                **self.options)
 
 class AnchorDef:
     def __init__(self,
