@@ -21,7 +21,7 @@ The Sandbox is ideal for:
 
 ## Getting Started
 
-To get started, simply run the command:
+To get started, simply run the command below. Note that the image is around 5GB so it might take a while to pull it from DockerHub.
 
 ```bash
 # 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7080: Interpret

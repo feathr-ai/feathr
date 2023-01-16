@@ -149,6 +149,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         while proc.poll() is None and (((timeout_seconds is None) or (time.time() - start_time < timeout_seconds))):
             time.sleep(1)
             try:
+                last_line = log_read.readlines()[-1]
                 if retry < 1:
                     logger.warning(
                         f"Spark job has hang for {self.retry * self.retry_sec} seconds. latest msg is {last_line}. \
@@ -158,7 +159,6 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                         self._clean_up()
                         proc.wait()
                     break
-                last_line = log_read.readlines()[-1]
                 retry = self.retry
                 if last_line == []:
                     print("_", end="")

@@ -65,6 +65,8 @@ else
         nohup redis-server --requirepass foobared &
         # nohup code-server --auth none &
         nohup uvicorn main:app --host 0.0.0.0 --port $LISTENING_PORT &
+        nohup /usr/local/kafka/bin/zookeeper-server-start.sh /usr/local/kafka/config/zookeeper.properties &
+        nohup /usr/local/kafka/bin/kafka-server-start.sh  /usr/local/kafka/config/server.properties &
         # TODO: move this to a more neutural folder since Redis doesn't have anything to do with Feathr
         cd -
     else

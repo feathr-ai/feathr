@@ -10,7 +10,7 @@ RUN echo 'REACT_APP_API_ENDPOINT=' >> .env.production
 RUN npm install && npm run build
 
 
-FROM jupyter/all-spark-notebook
+FROM jupyter/pyspark-notebook
 
 USER root
 
@@ -65,10 +65,23 @@ RUN ["chmod", "+x", "/usr/src/registry/start_local.sh"]
 # remove ^M chars in Linux to make sure the script can run
 RUN sed -i "s/\r//g" /usr/src/registry/start_local.sh
 
+
+# install a Kafka single node instance
+# Reference: https://www.looklinux.com/how-to-install-apache-kafka-single-node-on-ubuntu/
+RUN wget https://downloads.apache.org/kafka/3.3.1/kafka_2.12-3.3.1.tgz && tar xzf kafka_2.12-3.3.1.tgz && mv kafka_2.12-3.3.1 /usr/local/kafka && rm kafka_2.12-3.3.1.tgz
+
+# /usr/local/kafka/bin/zookeeper-server-start.sh /usr/local/kafka/config/zookeeper.properties
+# /usr/local/kafka/bin/kafka-server-start.sh  /usr/local/kafka/config/server.properties
+
 WORKDIR /home/jovyan/work
-# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7080:Interpret
-EXPOSE 80 8000 8080 8888 7080
+
+
+# 80: Feathr UI 
+# 8000: Feathr REST API 
+# 8888: Jupyter 
+# 8080: VsCode 
+# 7080: Interpret
+EXPOSE 80 8000 8080 8888 7080 2181
 # run the service so we can initialize
 # RUN  ["/bin/bash", "/usr/src/registry/start.sh"]
 CMD ["/bin/bash", "/usr/src/registry/start_local.sh"]
-
