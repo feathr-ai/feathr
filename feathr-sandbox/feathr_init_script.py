@@ -17,9 +17,8 @@ import feathr
 print(feathr.__version__)
 
 os.environ['SPARK_LOCAL_IP'] = "127.0.0.1"
-os.environ['REDIS_PASSWORD'] = "foobared" # default password for Redis
+os.environ['REDIS_PASSWORD'] = "foobared"  # default password for Redis
 
-import tempfile
 yaml_config = f"""
 api_version: 1
 project_config:
@@ -50,10 +49,12 @@ with open(tmp.name, "w") as text_file:
     text_file.write(yaml_config)
 
 client = FeathrClient(tmp.name)
-import pandas as pd
 DATA_FILE_PATH = "/tmp/green_tripdata_2020-04_with_index.csv"
-df_raw = pd.read_csv("https://azurefeathrstorage.blob.core.windows.net/public/sample_data/green_tripdata_2020-04_with_index.csv")
-df_raw.to_csv(DATA_FILE_PATH, index=False)
+from feathr.datasets.utils import maybe_download
+from feathr.datasets.constants import NYC_TAXI_SMALL_URL
+
+maybe_download(src_url=NYC_TAXI_SMALL_URL, dst_filepath=DATA_FILE_PATH)
+
 
 TIMESTAMP_COL = "lpep_dropoff_datetime"
 TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss"
@@ -61,8 +62,10 @@ TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss"
 
 def preprocessing(df: DataFrame) -> DataFrame:
     import pyspark.sql.functions as F
-    df = df.withColumn("fare_amount_cents", (F.col("fare_amount") * 100.0).cast("float"))
+    df = df.withColumn("fare_amount_cents",
+                       (F.col("fare_amount") * 100.0).cast("float"))
     return df
+
 
 batch_source = HdfsSource(
     name="nycTaxiBatchSource",
@@ -84,7 +87,6 @@ f_trip_time_duration = Feature(
     feature_type=FLOAT,
     transform="cast_float((to_unix_timestamp(lpep_dropoff_datetime) - to_unix_timestamp(lpep_pickup_datetime)) / 60)",
 )
-
 
 
 features = [
@@ -154,20 +156,21 @@ agg_features = [
 
 agg_feature_anchor = FeatureAnchor(
     name="agg_feature_anchor",
-    source=batch_source,  # External data source for feature. Typically a data table.
+    # External data source for feature. Typically a data table.
+    source=batch_source,
     features=agg_features,
 )
 
 f_trip_time_distance = DerivedFeature(name="f_trip_time_distance",
-                                          feature_type=FLOAT,
-                                          input_features=[
-                                              f_trip_distance, f_trip_time_duration],
-                                          transform="f_trip_distance * f_trip_time_duration")
+                                      feature_type=FLOAT,
+                                      input_features=[
+                                          f_trip_distance, f_trip_time_duration],
+                                      transform="f_trip_distance * f_trip_time_duration")
 
 f_trip_time_rounded = DerivedFeature(name="f_trip_time_rounded",
-                                         feature_type=INT32,
-                                         input_features=[f_trip_time_duration],
-                                         transform="f_trip_time_duration % 10")
+                                     feature_type=INT32,
+                                     input_features=[f_trip_time_duration],
+                                     transform="f_trip_time_duration % 10")
 
 derived_feature = [f_trip_time_distance, f_trip_time_rounded]
 
@@ -191,10 +194,7 @@ feature_names
 
 
 now = datetime.now().strftime("%Y%m%d%H%M%S")
-output_path = os.path.join("debug", f"test_output_{now}")
-
-offline_features_path = output_path
-
+offline_features_path = os.path.join("debug", f"test_output_{now}")
 
 # Features that we want to request. Can use a subset of features
 query = FeatureQuery(

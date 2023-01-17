@@ -6,7 +6,7 @@ WORKDIR /usr/src/ui
 COPY ./ui .
 
 ## Use api endpoint from same host and build production static bundle
-RUN echo 'REACT_APP_API_ENDPOINT=' >> .env.production
+RUN echo 'REACT_APP_API_ENDPOINT=http://localhost:8000' >> .env.production
 RUN npm install && npm run build
 
 
