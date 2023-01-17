@@ -1,7 +1,15 @@
 import { InteractionRequiredAuthError, PublicClientApplication } from '@azure/msal-browser'
 import Axios from 'axios'
 
-import { DataSource, Feature, FeatureLineage, Role, UserRole, NewFeature } from '@/models/model'
+import {
+  DataSource,
+  Feature,
+  FeatureLineage,
+  Role,
+  UserRole,
+  NewFeature,
+  NewDatasource
+} from '@/models/model'
 import { getMsalConfig } from '@/utils/utils'
 
 const msalInstance = getMsalConfig()
@@ -254,6 +262,15 @@ export const createDerivedFeature = async (project: string, derivedFeature: NewF
   const axios = await authAxios(msalInstance)
   return axios
     .post(`${getApiBaseUrl()}/projects/${project}/derivedfeatures`, derivedFeature)
+    .then((response) => {
+      return response
+    })
+}
+
+export const createSource = async (project: string, datasource: NewDatasource) => {
+  const axios = await authAxios(msalInstance)
+  return axios
+    .post(`${getApiBaseUrl()}/projects/${project}/datasources`, datasource)
     .then((response) => {
       return response
     })

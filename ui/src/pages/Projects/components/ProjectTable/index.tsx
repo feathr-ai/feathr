@@ -12,7 +12,7 @@ import { Project } from '@/models/model'
 export interface ProjectTableProps {
   project?: string
 }
-const ProjectTable = (props: ProjectTableProps) => {
+const ProjectTable = (props: ProjectTableProps, ref: any) => {
   const navigate = useNavigate()
 
   const { project } = props

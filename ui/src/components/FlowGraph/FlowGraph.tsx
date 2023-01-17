@@ -43,7 +43,7 @@ const defaultProps: FlowGraphProps = {
   featureType: FeatureType.AllNodes
 }
 
-const FlowGraph = (props: FlowGraphProps) => {
+const FlowGraph = (props: FlowGraphProps, ref: any) => {
   const {
     className,
     style,

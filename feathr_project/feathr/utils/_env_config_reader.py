@@ -51,14 +51,20 @@ class EnvConfigReader(object):
         Returns:
             Feathr client's config value.
         """
-        conf_var = (
-            (self._get_variable_from_env(key) if self.use_env_vars else None) or
-            (self._get_variable_from_file(key) if self.yaml_config else None) or
-            (self._get_variable_from_akv(key) if self.akv_name else None) or
-            default
-        )
+        res_env = (self._get_variable_from_env(key) if self.use_env_vars else None) 
+        res_file = (self._get_variable_from_file(key) if self.yaml_config else None) 
+        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None) 
 
-        return conf_var
+        # rewrite the logic below to make sure:
+        # First we have the order (i.e. res1 > res2 > res3 > default)
+        # Also previously we use OR for the result, which will yield a bug where say res1=None, res2=False, res3=None. Using OR will result to None result, although res2 actually have value
+        for res in [res_env, res_file, res_keyvault]:
+            if res is not None:
+                return res
+
+        logger.info(f"Config {key} is not found in the environment variable, configuration file, or the remote key value store.")
+        
+        return default
 
     def get_from_env_or_akv(self, key: str) -> str:
         """Gets the Feathr config variable for the given key. This function ignores `use_env_vars` attribute and force to
@@ -85,8 +91,6 @@ class EnvConfigReader(object):
         # make it work for lower case and upper case.
         conf_var = os.environ.get(key.lower(), os.environ.get(key.upper()))
 
-        if conf_var is None:
-            logger.info(f"Config {key} is not set in the environment variables.")
 
         return conf_var
 
@@ -110,8 +114,6 @@ class EnvConfigReader(object):
                 # make it work for lower case and upper case.
                 conf_var = conf_var.get(arg.lower(), conf_var.get(arg.upper()))
 
-            if conf_var is None:
-                logger.info(f"Config {key} is not found in the config file.")
 
             return conf_var
         except Exception as e:

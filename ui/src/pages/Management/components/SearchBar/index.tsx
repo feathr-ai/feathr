@@ -16,7 +16,7 @@ const RoleOptions = [
   { label: 'Consumer', value: 'consumer' }
 ]
 
-const SearchBar = (props: SearchBarProps) => {
+const SearchBar = (props: SearchBarProps, ref: any) => {
   const [form] = Form.useForm()
 
   const navigate = useNavigate()
