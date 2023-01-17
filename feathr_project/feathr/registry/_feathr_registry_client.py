@@ -221,7 +221,7 @@ class _FeatureRegistry(FeathrRegistry):
 def check(r):
     if not r.ok:
         raise RuntimeError(
-            f"Failed to call registry API, status is {r.status_code}, error is {r.text}")
+            f"Failed to call Feathr registry API, status is {r.status_code}, error is {r.text}")
     return r
 
 
