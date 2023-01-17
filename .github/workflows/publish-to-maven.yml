@@ -28,7 +28,6 @@ jobs:
     # CI release command defaults to publishSigned
     # Sonatype release command defaults to sonaTypeBundleRelease
       - name: Gradle publish
-        if: startsWith(github.head_ref, 'releases/v')
         run: gradle clean publish
         env:
           PGP_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
