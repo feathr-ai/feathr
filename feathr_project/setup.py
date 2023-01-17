@@ -64,8 +64,7 @@ setup(
         "click<=8.1.3",
         "py4j<=0.10.9.7",
         "loguru<=0.6.0",
-        "pandas>=1.5.0",
-        "numpy<=1.20.3",  # pin numpy due to pyspark's deprecated np.bool access
+        "pandas",
         "redis<=4.4.0",
         "requests<=2.28.1",
         "tqdm<=4.64.1",
@@ -84,7 +83,7 @@ setup(
         "databricks-cli<=0.17.3",
         "avro<=1.11.1",
         "azure-storage-file-datalake<=12.5.0",
-        "azure-synapse-spark<=0.7.0",
+        "azure-synapse-spark",
         # Synapse's aiohttp package is old and does not work with Feathr. We pin to a newer version here.
         "aiohttp==3.8.3",
         # fixing Azure Machine Learning authentication issue per https://stackoverflow.com/a/72262694/3193073
