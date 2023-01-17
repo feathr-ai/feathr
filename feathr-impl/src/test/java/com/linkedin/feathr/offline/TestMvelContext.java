@@ -30,4 +30,24 @@ public class TestMvelContext extends TestNGSuite {
     categoricalOutput2.clear();
     assertEquals(cosineSimilarity(categoricalOutput1, categoricalOutput2), 0.0F);
   }
+
+  @Test
+  public void testDotProduct() {
+    // Test basic dot product calculation
+    Map<String, Float> categoricalOutput1 = new HashMap<>();
+    categoricalOutput1.put("A", 1F);
+    categoricalOutput1.put("B", 1F);
+
+    Map<String, Float> categoricalOutput2 = new HashMap<>();
+    categoricalOutput2.put("B", 1F);
+    categoricalOutput2.put("C", 1F);
+
+    assertEquals(dotProduct(categoricalOutput1, categoricalOutput2), 1.0D);
+
+    // Test dot product of zero vectors
+    categoricalOutput1.clear();
+    assertEquals(dotProduct(categoricalOutput1, categoricalOutput2), 0.0D);
+    categoricalOutput2.clear();
+    assertEquals(dotProduct(categoricalOutput1, categoricalOutput2), 0.0D);
+  }
 }

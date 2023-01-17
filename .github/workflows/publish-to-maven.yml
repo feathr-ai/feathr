@@ -28,10 +28,28 @@ jobs:
     # CI release command defaults to publishSigned
     # Sonatype release command defaults to sonaTypeBundleRelease
       - name: Gradle publish
-        if: startsWith(github.head_ref, 'release/v')
+        if: startsWith(github.head_ref, 'releases/v')
         run: gradle clean publish
         env:
           PGP_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+
+    # Publish Released Fat Jar to Blob Storage 
+      - name: Gradle build
+        run: |
+          ./gradlew build
+          # remote folder for CI upload
+          echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_release" >> $GITHUB_ENV
+          # get local jar name without path
+          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls build/libs/*.jar)" >> $GITHUB_ENV
+      
+      - name: Azure Blob Storage Upload (Overwrite)
+        uses: fixpoint/azblob-upload-artifact@v4
+        with:
+          connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
+          name: ${{ env.CI_SPARK_REMOTE_JAR_FOLDER}}
+          path: ${{ env.FEATHR_LOCAL_JAR_FULL_NAME_PATH}}
+          container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
+          cleanup: "true"

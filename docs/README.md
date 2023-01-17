@@ -1,6 +1,6 @@
 <html>
     <h1 align="center">
-      Feathr
+      <img src="./images/feathr_logo.png" width="256"/>
     </h1>
     <h3 align="center">
       An enterprise-grade, high-performance feature store
@@ -8,10 +8,11 @@
     <h3 align="center">
       Important Links:
       <a href="https://join.slack.com/t/feathrai/shared_invite/zt-1ffva5u6v-voq0Us7bbKAw873cEzHOSg">Slack</a> &
-      <a href="https://github.com/feathr-ai/feathr/discussions">Discussions</a>.   
+      <a href="https://github.com/feathr-ai/feathr/discussions">Discussions</a>.
       <a href="https://feathr-ai.github.io/feathr/">Docs</a>.
     </h3>
-</html> 
+</html>
+
 
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/feathr-ai/feathr/blob/main/LICENSE)
@@ -61,7 +62,17 @@ If you want to set up everything manually, you can checkout the [Feathr CLI depl
 
 - For more details on Feathr, read our [documentation](https://feathr-ai.github.io/feathr/).
 - For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
-- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
+- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf) and [here](./talks/Feathr%20Community%20Talk%20%E2%80%93%20An%20Enterprise-Grade%20High%20Performance%20Feature%20Store.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
+
+## 🧪 Samples
+
+| Name                                                                                | Description                                                                                                                           | Platform                               |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| [NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)                                      | Quickstart notebook that showcases how to define, materialize, and register features with NYC taxi-fare prediction sample data.       | Azure Synapse, Databricks, Local Spark |
+| [Databricks Quickstart NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)                | Quickstart Databricks notebook with NYC taxi-fare prediction sample data.                                                             | Databricks                             |
+| [Feature Embedding](./samples/feature_embedding.ipynb)                              | Feathr UDF example showing how to define and use feature embedding with a pre-trained Transformer model and hotel review sample data. | Databricks                             |
+| [Fraud Detection Demo](./samples/fraud_detection_demo.ipynb)                        | An example to demonstrate Feature Store using multiple data sources such as user account and transaction data.                        | Azure Synapse, Databricks, Local Spark |
+| [Product Recommendation Demo](./samples/product_recommendation_demo_advanced.ipynb) | Feathr Feature Store example notebook with a product recommendation scenario                                                          | Azure Synapse, Databricks, Local Spark |
 
 ## 🛠️ Install Feathr Client Locally
 
@@ -164,9 +175,9 @@ Follow the [quick start Jupyter Notebook](https://github.com/feathr-ai/feathr/bl
 ## 🗣️ Tech Talks on Feathr
 
 - [Introduction to Feathr - Beginner's guide](https://www.youtube.com/watch?v=gZg01UKQMTY)
-- [Document Intelligence using Azure Feature Store (Feathr) and SynapseML
-  ](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
+- [Document Intelligence using Azure Feature Store (Feathr) and SynapseML](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
 - [Notebook tutorial: Build a Product Recommendation Machine Learning Model with Feathr Feature Store](https://www.youtube.com/watch?v=2KSM-NLfvY0)
+- [Feathr talk in Feature Store Summit](https://www.youtube.com/watch?v=u8nLY9Savxk)
 
 ## ⚙️ Cloud Integrations and Architecture
 

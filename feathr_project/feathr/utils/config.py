@@ -30,12 +30,11 @@ DEFAULT_FEATHR_CONFIG = {
     }
 }
 
-
 # New databricks job cluster config
 DEFAULT_DATABRICKS_CLUSTER_CONFIG = {
     "spark_version": "11.2.x-scala2.12",
-    "node_type_id": "Standard_D3_v2",
-    "num_workers": 2,
+    "node_type_id": "Standard_DS3_v2",  # Change this if necessary
+    "num_workers": 1,
     "spark_conf": {
         "FEATHR_FILL_IN": "FEATHR_FILL_IN",
         # Exclude conflicting packages if use feathr <= v0.8.0:
@@ -43,11 +42,10 @@ DEFAULT_DATABRICKS_CLUSTER_CONFIG = {
     },
 }
 
-
 # New Azure Synapse spark pool config
 DEFAULT_AZURE_SYNAPSE_SPARK_POOL_CONFIG = {
     "executor_size": "Small",
-    "executor_num": 2,
+    "executor_num": 1,
 }
 
 
@@ -59,16 +57,9 @@ def generate_config(
     databricks_cluster_id: str = None,
     redis_password: str = None,
     adls_key: str = None,
-    use_env_vars: bool = True,
     **kwargs,
 ) -> str:
     """Generate a feathr config yaml file.
-    Note, `use_env_vars` argument gives an option to either use environment variables for generating the config file
-    or not. Feathr client will use environment variables anyway if they are set.
-
-    Keyword arguments follow the same naming convention as the feathr config. E.g. to set Databricks as the target
-    cluster, use `spark_config__spark_cluster="databricks"`.
-    See https://feathr-ai.github.io/feathr/quickstart_synapse.html#step-4-update-feathr-config for more details.
 
     Note:
         This utility function assumes Azure resources are deployed using the Azure Resource Manager (ARM) template,
@@ -78,14 +69,16 @@ def generate_config(
     Args:
         resource_prefix: Resource name prefix used when deploying Feathr resources by using ARM template.
         project_name: Feathr project name.
-        cluster_name (optional): Databricks cluster or Azure Synapse spark pool name to use an existing one.
         output_filepath (optional): Output filepath.
-        use_env_vars (optional): Whether to use environment variables if they are set.
         databricks_workspace_token_value (optional): Databricks workspace token. If provided, the value will be stored
             as the environment variable.
         databricks_cluster_id (optional): Databricks cluster id to use an existing cluster.
         redis_password (optional): Redis password. If provided, the value will be stored as the environment variable.
         adls_key (optional): ADLS key. If provided, the value will be stored as the environment variable.
+        **kwargs: Keyword arguments to update the config. Keyword arguments follow the same naming convention as
+            the feathr config. E.g. to set Databricks as the target cluster,
+            use `spark_config__spark_cluster="databricks"`.
+            See https://feathr-ai.github.io/feathr/quickstart_synapse.html#step-4-update-feathr-config for more details.
 
     Returns:
         str: Generated config file path. This will be identical to `output_filepath` if provided.
@@ -100,6 +93,16 @@ def generate_config(
 
     # Set configs
     config = deepcopy(DEFAULT_FEATHR_CONFIG)
+
+    # Maybe update configs with environment variables
+    _maybe_update_config_with_env_var(config, "SPARK_CONFIG__SPARK_CLUSTER")
+    _maybe_update_config_with_env_var(config, "SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL")
+    _maybe_update_config_with_env_var(config, "SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME")
+    _maybe_update_config_with_env_var(config, "SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR")
+    _maybe_update_config_with_env_var(config, "SPARK_CONFIG__DATABRICKS__WORK_DIR")
+    _maybe_update_config_with_env_var(config, "SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL")
+    _maybe_update_config_with_env_var(config, "SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE")
+
     config["project_config"]["project_name"] = project_name
     config["feature_registry"]["api_endpoint"] = f"https://{resource_prefix}webapp.azurewebsites.net/api/v1"
     config["online_store"]["redis"]["host"] = f"{resource_prefix}redis.redis.cache.windows.net"
@@ -123,16 +126,6 @@ def generate_config(
             project_name=project_name,
             cluster_id=databricks_cluster_id,
         )
-
-    # Maybe update configs with environment variables
-    if use_env_vars:
-        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__SPARK_CLUSTER")
-        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL")
-        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME")
-        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR")
-        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__DATABRICKS__WORK_DIR")
-        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL")
-        _maybe_update_config_with_env_var(config, "SPARK_CONFIG__DATABRICKS__CONFIG_TEMPLATE")
 
     # Verify config
     _verify_config(config)

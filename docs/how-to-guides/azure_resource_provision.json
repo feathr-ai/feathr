@@ -35,13 +35,13 @@
       "sqlAdminUsername": {
         "type": "String",
         "metadata": {
-          "description": "Specifies the username for SQL Database admin"
+          "description": "Specify the username for SQL Database admin"
         }
       },
       "sqlAdminPassword": {
         "type": "SecureString",
         "metadata": {
-          "description": "Specifies the password for SQL Database admin"
+          "description": "Specify the password for SQL Database admin. Please note that the password can not contain semicolon (;) as it conflicts with connection string delimiter"
         }
       },
       "registryBackend": {
@@ -408,7 +408,11 @@
               {
               "name": "AZURE_CLIENT_ID",
               "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityName')), '2018-11-30','Full').properties.clientId]"
-              }
+              },
+              {
+              "name": "DOCKER_ENABLE_CI",
+              "value": "true"
+            }
             ]
           }
         }

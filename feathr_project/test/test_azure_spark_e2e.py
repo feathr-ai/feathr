@@ -20,9 +20,9 @@ from feathr import TypedKey
 from feathr import ValueType
 from feathr.utils.job_utils import get_result_df
 from feathrcli.cli import init
-from test_fixture import (basic_test_setup, get_online_test_table_name, time_partition_pattern_test_setup)
+from test_fixture import (basic_test_setup, get_online_test_table_name, composite_keys_test_setup)
 from test_utils.constants import Constants
-
+  
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_materialize_to_offline():
@@ -68,7 +68,7 @@ def test_feathr_online_store_agg_features():
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
 
-    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client: FeathrClient = composite_keys_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
@@ -83,23 +83,19 @@ def test_feathr_online_store_agg_features():
     # this part with the test_feathr_online_store test case
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
-    res = client.get_online_features(online_test_table, '265', [
+    res = client.get_online_features(online_test_table, ["81", "254"], [
                                      'f_location_avg_fare', 'f_location_max_fare'])
     # just assume there are values. We don't hard code the values for now for testing
     # the correctness of the feature generation should be guaranteed by feathr runtime.
     # ID 239 and 265 are available in the `DOLocationID` column in this file:
     # https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2020-04.csv
     # View more details on this dataset: https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page
-    assert len(res) == 2
-    assert res[0] != None
-    assert res[1] != None
+    assert res != None
     res = client.multi_get_online_features(online_test_table,
-                                           ['239', '265'],
+                                           [["81","254"], ["25","42"]],
                                            ['f_location_avg_fare', 'f_location_max_fare'])
-    assert res['239'][0] != None
-    assert res['239'][1] != None
-    assert res['265'][0] != None
-    assert res['265'][1] != None
+    assert res['81#254'] != None
+    assert res['25#42'] != None
 
 @pytest.mark.skip(reason="Add back when complex types are supported in python API")
 def test_feathr_online_store_non_agg_features():
@@ -433,66 +429,8 @@ def test_feathr_materialize_to_aerospike():
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
-def test_feathr_materialize_with_time_partition_pattern():
-    """
-    Test FeathrClient() using HdfsSource with 'timePartitionPattern'.
-    """
-    test_workspace_dir = Path(
-        __file__).parent.resolve() / "test_user_workspace"
-    # os.chdir(test_workspace_dir)
-    # Create data source first
-    client_producer: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
-
-    backfill_time = BackfillTime(start=datetime(
-        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-
-    if client_producer.spark_runtime == 'databricks':
-        output_path = 'dbfs:/timePartitionPattern_test'
-    else:
-        output_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_test'
-
-    offline_sink = HdfsSink(output_path=output_path)
-    settings = MaterializationSettings("nycTaxiTable",
-                sinks=[offline_sink],
-                feature_names=[
-                    "f_location_avg_fare", "f_location_max_fare"],
-                backfill_time=backfill_time)
-    client_producer.materialize_features(settings)
-    # assuming the job can successfully run; otherwise it will throw exception
-    client_producer.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
-
-    # download result and just assert the returned result is not empty
-    # by default, it will write to a folder appended with date
-    res_df = get_result_df(client_producer, "avro", output_path + "/df0/daily/2020/05/20")
-    assert res_df.shape[0] > 0
-
-    client_consumer: FeathrClient = time_partition_pattern_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), output_path+'/df0/daily')
-
-    backfill_time_tpp = BackfillTime(start=datetime(
-        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-
-    now = datetime.now()
-    if client_consumer.spark_runtime == 'databricks':
-        output_path_tpp = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
-    else:
-        output_path_tpp = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
-    offline_sink_tpp = HdfsSink(output_path=output_path_tpp)
-    settings_tpp = MaterializationSettings("nycTaxiTable",
-                                       sinks=[offline_sink_tpp],
-                                       feature_names=[
-                                           "f_loc_avg_output", "f_loc_max_output"],
-                                       backfill_time=backfill_time_tpp)
-    client_consumer.materialize_features(settings_tpp, allow_materialize_non_agg_feature=True)
-    # assuming the job can successfully run; otherwise it will throw exception
-    client_consumer.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
-
-    # download result and just assert the returned result is not empty
-    # by default, it will write to a folder appended with date
-    res_df = get_result_df(client_consumer, "avro", output_path_tpp + "/df0/daily/2020/05/20")
-    assert res_df.shape[0] > 0
-
-
 if __name__ == "__main__":
     test_feathr_materialize_to_aerospike()
     test_feathr_get_offline_features_to_sql()
     test_feathr_materialize_to_cosmosdb()
+

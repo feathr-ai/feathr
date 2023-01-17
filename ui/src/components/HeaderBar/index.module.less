@@ -1,0 +1,46 @@
+.header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 200px;
+  z-index: 19;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  height: auto;
+  padding: 0 16px;
+  line-height: 48px;
+  background-color: rgb(255 255 255 / 40%);
+  backdrop-filter: blur(8px);
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  padding-block: 0;
+  padding-inline: 8px;
+  border-block-end: 1px solid rgb(0 0 0 / 6%);
+  .right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  :global {
+    .dropdown-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 4px;
+      border-radius: 2px;
+      transition: all 0.3s;
+      &:hover {
+        background: rgb(0 0 0 / 2.5%);
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.vacancy {
+  height: 50px;
+  background: #fff;
+}
