@@ -1,6 +1,6 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Union
+from typing import Union, Set
 
 from loguru import logger
 import pandas as pd
@@ -72,6 +72,7 @@ def get_result_df(
     local_cache_path: str = None,
     spark: SparkSession = None,
     format: str = None,
+    is_file: bool = False
 ) -> Union[DataFrame, pd.DataFrame]:
     """Download the job result dataset from cloud as a Spark DataFrame or pandas DataFrame.
 
@@ -86,6 +87,7 @@ def get_result_df(
         spark (optional): Spark session. If provided, the function returns spark Dataframe.
             Otherwise, it returns pd.DataFrame.
         format: An alias for `data_format` (for backward compatibility).
+        is_file: If 'res_url' is a single file or a directory. Default as False
 
     Returns:
         Either Spark or pandas DataFrame.
@@ -142,7 +144,7 @@ def get_result_df(
 
     if local_cache_path != res_url:
         logger.info(f"{res_url} files will be downloaded into {local_cache_path}")
-        client.feathr_spark_launcher.download_result(result_path=res_url, local_folder=local_cache_path)
+        client.feathr_spark_launcher.download_result(result_path=res_url, local_folder=local_cache_path, is_file = is_file)
 
     result_df = None
     try:
@@ -207,3 +209,11 @@ def _load_files_to_pandas_df(dir_path: str, data_format: str = "avro") -> pd.Dat
         raise ValueError(
             f"{data_format} is currently not supported in get_result_df. Currently only parquet, delta, avro, and csv are supported, please consider writing a customized function to read the result."
         )
+        
+def get_column_names(client: FeathrClient, path: str, format: str = "avro", is_file = False)->Set[str]:
+    column_names = set()
+    df = get_result_df(client=client, data_format=format, res_url=path, single_file = is_file)
+    if df is None:
+        print("df is none")
+        return column_names
+    return df.columns
