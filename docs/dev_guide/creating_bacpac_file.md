@@ -11,11 +11,11 @@ BACPAC is the SQL server backup format, the BACPAC file we used in the ARM templ
 In case you need to re-create the BACPAC file, follow these steps: 
 
 1. Create a new, empty SQL database on Azure 
-![architecture](../images/bacpac-sql-database.png)
+![Create Empty Database](../images/bacpac-sql-database.png)
 
 2. Connect to the database with a SQL client, such as Azure Data Studio, run the SQL script at https://github.com/linkedin/feathr/blob/main/registry/sql-registry/scripts/schema.sql 
 
 3. Now we created the tables required by the registry service, we can use “Export” function to create the BACPAC file 
-![architecture](../images/bacpac-export.png)
+![Bacpac Export UI](../images/bacpac-export.png)
 
 After this step, the database is not needed anymore. 
