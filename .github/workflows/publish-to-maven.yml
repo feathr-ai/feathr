@@ -4,6 +4,8 @@ on:
     # This pipeline will get triggered everytime there is a new tag created.
     # It is required
     tags: ["*"]
+    branches:
+      - "gradlefix"
 
 jobs:
   publish-to-maven:
@@ -24,19 +26,6 @@ jobs:
           server-password: ORG_GRADLE_PROJECT_mavenCentralPassword
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: ORG_GRADLE_PROJECT_signingInMemoryKeyPassword
-
-    # CI release command defaults to publishSigned
-    # Sonatype release command defaults to sonaTypeBundleRelease
-    # Changing env names as documented here - https://vanniktech.github.io/gradle-maven-publish-plugin/central/#secrets
-      - name: Gradle Build and Publish to Maven central
-        run: |
-          ./gradlew publish
-          ./gradlew closeAndReleaseRepository
-        env:
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
 
     # Publish Released Fat Jar to Blob Storage 
       - name: Gradle build
