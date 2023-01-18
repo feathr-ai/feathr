@@ -1,9 +1,11 @@
 import string
-
+import os
 import pytest
+from pathlib import Path
 
 from feathr import FeatureBase
-
+from feathr import (TypedKey, ValueType, FeatureQuery, ObservationSettings)
+from feathr import FeathrClient
 
 @pytest.mark.parametrize('bad_feature_name',
                          [None,
@@ -33,4 +35,43 @@ def test_feature_name_fails_on_punctuation_chars():
                           ''])
 def test_feature_name_validates_ok(feature_name: str):
     assert FeatureBase.validate_feature_name(feature_name)
+    
+def test_feature_name_conflicts_with_dataset_columns():
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    
+    client = client = FeathrClient(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    
+    location_id = TypedKey(key_column="DOLocationID",
+                            key_column_type=ValueType.INT32,
+                            description="location id in NYC",
+                            full_name="nyc_taxi.location_id")
+    
+    feature_query = FeatureQuery(
+        feature_list=["trip_distance","fare_amount"], key=location_id)
+    settings = ObservationSettings(
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss")
+    output_path = "wasbs://fake_path"
+    with pytest.raises(RuntimeError) as e:
+        client.get_offline_features(observation_settings=settings,
+                feature_query=feature_query,
+                output_path=output_path
+        )
+        assert e.message == "Feature names exist conflicts with dataset column names: trip_distance,fare_amount"
+        
+    settings = ObservationSettings(
+        observation_path="wasbs://public@fake_file",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss")
+    output_path = "wasbs://fakepath"
+    with pytest.raises(RuntimeError) as e:
+        client.get_offline_features(observation_settings=settings,
+                feature_query=feature_query,
+                output_path=output_path,
+                dataset_column_names=set(('trip_distance','fare_amount'))
+        )
+        assert e.message == "Feature names exist conflicts with dataset column names: trip_distance,fare_amount"
+    
 

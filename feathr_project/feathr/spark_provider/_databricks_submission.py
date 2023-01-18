@@ -317,7 +317,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             )
             return None
 
-    def download_result(self, result_path: str, local_folder: str, is_file: bool = False):
+    def download_result(self, result_path: str, local_folder: str, is_file_path: bool = False):
         """
         Supports downloading files from the result folder. Only support paths starts with `dbfs:/` and only support downloading files in one folder (per Spark's design, everything will be in the result folder in a flat manner)
         """
@@ -325,7 +325,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             raise RuntimeError(
                 'Currently only paths starting with dbfs is supported for downloading results from a databricks cluster. The path should start with "dbfs:" .'
             )
-        recursive = True if not is_file else False
+        recursive = True if not is_file_path else False
         DbfsApi(self.api_client).cp(recursive=recursive, overwrite=True, src=result_path, dst=local_folder)
         
     def cloud_dir_exists(self, dir_path: str):

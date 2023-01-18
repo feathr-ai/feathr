@@ -94,16 +94,16 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                     local_path_or_cloud_src_path, res_path)
         return res_path
 
-    def download_result(self, result_path: str, local_folder: str, is_file: bool = False):
+    def download_result(self, result_path: str, local_folder: str, is_file_path: bool = False):
         """
         Supports downloading files from the result folder
         """
-        if is_file:
+        if is_file_path:
             paths = result_path.rsplit('/',1)
             if len(paths) != 2:
                 raise RuntimeError(f"Invalid single file path: {result_path}")
             return self._datalake.download_file(paths[0]+'/', local_folder, paths[1])
-        return self._datalake.download_file(result_path, local_folder, is_file)
+        return self._datalake.download_file(result_path, local_folder, None)
     
     
     def cloud_dir_exists(self, dir_path: str) -> bool:

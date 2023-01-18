@@ -500,7 +500,7 @@ class FeathrClient(object):
                              output_path: Union[str, Sink],
                              execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
                              config_file_name:str = "feature_join_conf/feature_join.conf",
-                             dataset_column_names: Set[str] = [],
+                             dataset_column_names: Set[str] = None,
                              verbose: bool = False
                              ):
         """
@@ -511,28 +511,31 @@ class FeathrClient(object):
             output_path: output path of job, i.e. the observation data with features attached.
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
             config_file_name: the name of the config file that will be passed to the spark job. The config file is used to configure the spark job. The default value is "feature_join_conf/feature_join.conf".
+            dataset_column_names: column names of observation data set. Will be used to check conflicts with feature names if cannot get real column names from observation data set.
         """
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
         feature_names = []
         for feature_query in feature_queries:
             for feature_name in feature_query.feature_list:
                 feature_names.append(feature_name)
-
-        '''
-        dataset_column_names_from_path = get_column_names(observation_settings.observation_path, observation_settings.file_format)
-        if len(dataset_column_names_from_path) == 0 and len(dataset_column_names) == 0:
-            self.logger.warning(f"Feathr is unable to read the Observation data due to permission issue. Please either grant the permission or supply the observation column names in the filed: observation_column_names.")
-        else:
-            if len(dataset_column_names_from_path) != 0:
-                dataset_column_names = dataset_column_names_from_path
-            conflict_names = []
-            if feature_name in dataset_column_names:
-                conflict_names.append(feature_name)
-            if len(conflict_names) != 0:
-                conflict_names = ",".join(conflict_names)
+        
+        if len(feature_names) > 0:
+            import feathr.utils.job_utils as job_utils
+            dataset_column_names_from_path = job_utils.get_cloud_file_column_names(self, observation_settings.observation_path, observation_settings.file_format,observation_settings.is_file_path)
+            if (dataset_column_names_from_path is None or len(dataset_column_names_from_path) == 0) and dataset_column_names is None:
+                self.logger.warning(f"Feathr is unable to read the Observation data from {observation_settings.observation_path} due to permission issue or invalid path. Please either grant the permission or supply the observation column names in the filed: observation_column_names.")
+            else:
+                if dataset_column_names_from_path is not None and len(dataset_column_names_from_path) > 0:
+                    dataset_column_names = dataset_column_names_from_path
+                conflict_names = []
+                for feature_name in feature_names:
+                    if feature_name in dataset_column_names:
+                        conflict_names.append(feature_name)
+                if len(conflict_names) != 0:
+                    conflict_names = ",".join(conflict_names)
                 # TODO: add auto-correction option
-                raise RuntimeError(f"Feature names exist conflicts with dataset column names: {conflict_names}")
-        '''    
+                    raise RuntimeError(f"Feature names exist conflicts with dataset column names: {conflict_names}")
+           
         udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(feature_names, self.local_workspace_dir)
 
         # produce join config
@@ -1031,3 +1034,25 @@ class FeathrClient(object):
             return "'{" + config_str + "}'"
         else:
             return config_str
+    '''    
+    def _get_cloud_file_column_names(self, path: str, format: str = "csv", is_file_path = True)->Set[str]:
+        # Try to load dataset in public storages without credential
+        if path.startswith(("abfss:","https:", "wasbs:")):
+            if format == "csv" and is_file_path:
+                try:
+                    df = pd.read_csv(path)
+                    return df.columns
+                except:
+                    df = None
+            # TODO: support loading other formats files
+    
+        try:
+            df = job_utils.get_result_df(self, data_format=format, res_url=path, is_file_path = is_file_path)
+        except:
+            logger.warning(f"failed to load cloud files from the path: {path} because of lack of permission or invalid path.")
+            return None
+        if df is None:
+            logger.warning(f"failed to load cloud files from the path: {path} because of lack of permission or invalid path.")
+            return None
+        return df.columns
+    '''

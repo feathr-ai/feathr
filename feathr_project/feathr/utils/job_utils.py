@@ -4,12 +4,13 @@ from typing import Union, Set
 
 from loguru import logger
 import pandas as pd
+import re
 from pyspark.sql import DataFrame, SparkSession
 
 from feathr.client import FeathrClient
 from feathr.constants import OUTPUT_FORMAT
 from feathr.utils.platform import is_databricks
-
+from feathr.spark_provider._synapse_submission import _DataLakeFiler
 
 def get_result_pandas_df(
     client: FeathrClient,
@@ -72,7 +73,7 @@ def get_result_df(
     local_cache_path: str = None,
     spark: SparkSession = None,
     format: str = None,
-    is_file: bool = False
+    is_file_path: bool = False
 ) -> Union[DataFrame, pd.DataFrame]:
     """Download the job result dataset from cloud as a Spark DataFrame or pandas DataFrame.
 
@@ -144,7 +145,7 @@ def get_result_df(
 
     if local_cache_path != res_url:
         logger.info(f"{res_url} files will be downloaded into {local_cache_path}")
-        client.feathr_spark_launcher.download_result(result_path=res_url, local_folder=local_cache_path, is_file = is_file)
+        client.feathr_spark_launcher.download_result(result_path=res_url, local_folder=local_cache_path, is_file_path = is_file_path)
 
     result_df = None
     try:
@@ -209,11 +210,30 @@ def _load_files_to_pandas_df(dir_path: str, data_format: str = "avro") -> pd.Dat
         raise ValueError(
             f"{data_format} is currently not supported in get_result_df. Currently only parquet, delta, avro, and csv are supported, please consider writing a customized function to read the result."
         )
-        
-def get_column_names(client: FeathrClient, path: str, format: str = "avro", is_file = False)->Set[str]:
-    column_names = set()
-    df = get_result_df(client=client, data_format=format, res_url=path, single_file = is_file)
+            
+def get_cloud_file_column_names(client: FeathrClient, path: str, format: str = "csv", is_file_path = True)->Set[str]:
+    # Try to load publid cloud files without credential
+    if path.startswith(("abfss:","wasbs:")):
+        paths = re.split('/|@', path)
+        if len(paths) < 4:
+            raise RuntimeError(f"invalid cloud path: ", path)
+        new_path = 'https://'+paths[3]+'/'+paths[2] + '/'
+        if len(paths) > 4:
+            new_path = new_path + '/'.join(paths[4:])
+        if format == "csv" and is_file_path:
+            try:
+                df = pd.read_csv(new_path)
+                return df.columns
+            except:
+                df = None
+        # TODO: support loading other formats files
+    
+    try:
+        df = get_result_df(client=client, data_format=format, res_url=path, is_file_path = is_file_path)
+    except:
+        logger.warning(f"failed to load cloud files from the path: {path} because of lack of permission or invalid path.")
+        return None
     if df is None:
-        print("df is none")
-        return column_names
+        logger.warning(f"failed to load cloud files from the path: {path} because of lack of permission or invalid path.")
+        return None
     return df.columns
