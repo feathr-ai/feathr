@@ -2,7 +2,6 @@ import importlib
 import inspect
 import json
 import logging
-from loguru import logger
 import os
 from pathlib import Path
 import sys
@@ -21,7 +20,7 @@ from feathr.definition.dtype import FeatureType, str_to_value_type, value_type_t
 from feathr.definition.feature import Feature, FeatureBase
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.repo_definitions import RepoDefinitions
-from feathr.definition.source import GenericSource, HdfsSource, InputContext, JdbcSource, SnowflakeSource, Source
+from feathr.definition.source import GenericSource, HdfsSource, InputContext, JdbcSource, SnowflakeSource, Source, SparkSqlSource
 from feathr.definition.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
 from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
@@ -85,8 +84,10 @@ class _FeatureRegistry(FeathrRegistry):
         self.project_name = project_name
         self.project_tags = project_tags
         self.endpoint = endpoint
+        # TODO: expand to more credential provider
+        # If FEATHR_SANDBOX is set in the environment variable, don't do auth
         self.credential = DefaultAzureCredential(
-            exclude_interactive_browser_credential=False) if credential is None else credential
+            exclude_interactive_browser_credential=False) if credential is None and not os.environ.get("FEATHR_SANDBOX") else credential
         self.project_id = None
 
     def register_features(self, workspace_path: Optional[Path] = None, from_context: bool = True, anchor_list: List[FeatureAnchor]=[], derived_feature_list=[]):
@@ -123,7 +124,7 @@ class _FeatureRegistry(FeathrRegistry):
             if not hasattr(df, "_registry_id"):
                 df._registry_id = self._create_derived_feature(df)
         url = '/'.join(self.endpoint.split('/')[:3])       
-        logger.info(f"Check project lineage by this link: {url}/projects/{self.project_name}/lineage")
+        logging.info(f"Check project lineage by this link: {url}/projects/{self.project_name}/lineage")
 
     def list_registered_features(self, project_name: str) -> List[str]:
         """List all the already registered features. If project_name is not provided or is None, it will return all
@@ -215,7 +216,9 @@ class _FeatureRegistry(FeathrRegistry):
         return check(requests.post(f"{self.endpoint}{path}", headers=self._get_auth_header(), json=body)).json()
 
     def _get_auth_header(self) -> dict:
-        return {"Authorization": f'Bearer {self.credential.get_token("https://management.azure.com/.default").token}'}
+        # if the environment is sandbox, don't do auth
+        # TODO: expand to more credential providers
+        return {"Authorization": f'Bearer {self.credential.get_token("https://management.azure.com/.default").token}'} if not os.environ.get("FEATHR_SANDBOX") else None
     
 
 def check(r):
@@ -260,6 +263,9 @@ def source_to_def(v: Source) -> dict:
     elif isinstance(v, GenericSource):
         ret = v.to_dict()
         ret["name"] = v.name
+    elif isinstance(v, SparkSqlSource):
+        ret = v.to_dict()
+        ret["name"] = v.name
     else:
         raise ValueError(f"Unsupported source type {v.__class__}")
     if hasattr(v, "preprocessing") and v.preprocessing:
@@ -281,6 +287,17 @@ def dict_to_source(v: dict) -> Source:
     source = None
     if type == INPUT_CONTEXT:
         source = InputContext()
+    elif type == "sparksql":
+        source = SparkSqlSource(name=v["attributes"]["name"],
+                            sql=v["attributes"].get("sql"),
+                            table=v["attributes"].get("table"),
+                            preprocessing=_correct_function_indentation(
+                                v["attributes"].get("preprocessing")),
+                            event_timestamp_column=v["attributes"].get(
+                                "eventTimestampColumn"),
+                            timestamp_format=v["attributes"].get(
+                                "timestampFormat"),
+                            registry_tags=v["attributes"].get("tags", {}))
     elif type == "jdbc":
         source = JdbcSource(name=v["attributes"]["name"],
                             url=v["attributes"].get("url"),

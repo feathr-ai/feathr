@@ -149,6 +149,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         while proc.poll() is None and (((timeout_seconds is None) or (time.time() - start_time < timeout_seconds))):
             time.sleep(1)
             try:
+                last_line = log_read.readlines()[-1]
                 if retry < 1:
                     logger.warning(
                         f"Spark job has hang for {self.retry * self.retry_sec} seconds. latest msg is {last_line}. \
@@ -158,7 +159,6 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                         self._clean_up()
                         proc.wait()
                     break
-                last_line = log_read.readlines()[-1]
                 retry = self.retry
                 if last_line == []:
                     print("_", end="")
@@ -178,14 +178,20 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         if proc.returncode == None:
             logger.warning(
                 f"Spark job with pid {self.latest_spark_proc.pid} not completed after {timeout_seconds} sec \
-                    time out setting. Please check."
+                    time out setting. Spark Logs:"
             )
+            with open(log_read.name) as f:
+                contents = f.read()
+                logger.error(contents)
             if self.clean_up:
                 self._clean_up()
                 proc.wait()
                 return True
         elif proc.returncode == 1:
-            logger.warning(f"Spark job with pid {self.latest_spark_proc.pid} is not successful. Please check.")
+            logger.warning(f"Spark job with pid {self.latest_spark_proc.pid} is not successful. Spark Logs:")
+            with open(log_read.name) as f:
+                contents = f.read()
+                logger.error(contents)
             return False
         else:
             logger.info(
@@ -247,7 +253,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         prefix += datetime.now().strftime("%Y%m%d%H%M%S")
         debug_path = os.path.join(debug_folder, prefix)
 
-        print(debug_path)
+        logger.info(f"Spark log path is {debug_path}")
         if not os.path.exists(debug_path):
             os.makedirs(debug_path)
 

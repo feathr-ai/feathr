@@ -1,6 +1,7 @@
 import React from 'react'
 
-import { Form } from 'antd'
+import { Button, Form } from 'antd'
+import { useNavigate } from 'react-router-dom'
 
 import ProjectsSelect from '@/components/ProjectsSelect'
 
@@ -14,7 +15,14 @@ const { Item } = Form
 const SearchBar = (props: SearchBarProps) => {
   const [form] = Form.useForm()
 
+  const navigate = useNavigate()
+
   const { defaultProject, onSearch } = props
+
+  const onNavigateNewSource = () => {
+    const project = form.getFieldValue('project') || ''
+    navigate(`/new-source?project=${project}`)
+  }
 
   return (
     <div
@@ -29,6 +37,9 @@ const SearchBar = (props: SearchBarProps) => {
           <ProjectsSelect onChange={form.submit} />
         </Item>
       </Form>
+      <Button type="primary" onClick={onNavigateNewSource}>
+        + Create Source
+      </Button>
     </div>
   )
 }

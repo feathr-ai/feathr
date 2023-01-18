@@ -14,7 +14,7 @@ project_config:
   project_name: 'local_spark'
   required_environment_variables:
   optional_environment_variables:
-    # the environemnt variables are optional, however you will need them if you want to use some of the services:
+    # the environment variables are optional, however you will need them if you want to use some of the services:
     - ADLS_ACCOUNT
     - ADLS_KEY
     - BLOB_ACCOUNT
