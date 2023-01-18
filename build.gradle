@@ -174,7 +174,7 @@ allprojects {
       pom {
         name = 'Feathr'
         description = 'An Enterprise-Grade, High Performance Feature Store'
-        url = 'https://github.com/linkedin/feathr'
+        url = 'https://github.com/feathr-ai/feathr'
         licenses {
           license {
             name = 'APL2'
@@ -190,7 +190,7 @@ allprojects {
         }
         scm {
           connection = 'scm:git@github.com:linkedin/feathr.git'
-          url = 'https://github.com/linkedin/feathr'
+          url = 'https://github.com/feathr-ai/feathr'
         }
       }
     }
