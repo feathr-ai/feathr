@@ -76,7 +76,7 @@ If you want to set up everything manually, you can checkout the [Feathr CLI depl
 
 ## 🏃 Getting Started with Feathr
 
-The easiest way to try out Feathr is to use the [Feathr Sandbox](https://feathr-ai.github.io/feathr/quickstart_local_sandbox.html) which is a self-contained container with most of Feathr's capabilities. To use it, simply run this command:
+The easiest way to try out Feathr is to use the [Feathr Sandbox](https://feathr-ai.github.io/feathr/quickstart_local_sandbox.html) which is a self-contained container with most of Feathr's capabilities and you should be productive in 5 minutes. To use it, simply run this command:
 
 ```bash
 # 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7080: Interpret
