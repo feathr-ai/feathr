@@ -288,7 +288,7 @@ class JdbcSource(Source):
                     anonymous: true
                     {% endif %}
                 }
-                {% if source.event_timestamp_column is defined %}
+                {% if source.event_timestamp_column %}
                     timeWindowParameters: {
                         timestampColumn: "{{source.event_timestamp_column}}"
                         timestampColumnFormat: "{{source.timestamp_format}}"
@@ -403,7 +403,7 @@ class SparkSqlSource(Source):
                     table: "{{source.table}}"
                     {% endif %}
                 }
-                {% if source.event_timestamp_column is defined %}
+                {% if source.event_timestamp_column %}
                 timeWindowParameters: {
                     timestampColumn: "{{source.event_timestamp_column}}"
                     timestampColumnFormat: "{{source.timestamp_format}}"
@@ -418,11 +418,11 @@ class SparkSqlSource(Source):
         return []
 
     def to_dict(self) -> Dict[str, str]:
-        ret = self.options.copy()
+        ret = {}
         ret["type"] = "sparksql"
-        if self.sql:
+        if hasattr(self, "sql"):
             ret["sql"] = self.sql
-        elif self.table:
+        elif hasattr(self, "table"):
             ret["table"] = self.table
         return ret        
     
@@ -462,7 +462,7 @@ class GenericSource(Source):
                     {{option.key}}: "{{option.value}}"
                     {% endfor %}
                 }
-                {% if source.event_timestamp_column is defined %}
+                {% if source.event_timestamp_column %}
                 timeWindowParameters: {
                     timestampColumn: "{{source.event_timestamp_column}}"
                     timestampColumnFormat: "{{source.timestamp_format}}"
