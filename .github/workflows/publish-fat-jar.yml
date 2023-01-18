@@ -19,11 +19,6 @@ jobs:
         with:
           java-version: "8"
           distribution: "temurin"
-          server-id: ossrh
-          server-username: ORG_GRADLE_PROJECT_mavenCentralUsername
-          server-password: ORG_GRADLE_PROJECT_mavenCentralPassword
-          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg-passphrase: ORG_GRADLE_PROJECT_signingInMemoryKeyPassword
 
     # Publish Released Fat Jar to Blob Storage 
       - name: Gradle build
