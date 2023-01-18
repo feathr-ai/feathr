@@ -484,15 +484,6 @@ class FeathrClient(object):
             ssl=self._str_to_bool(ssl_enabled))
         self.logger.info('Redis connection is successful and completed.')
         self.redis_client = redis_client
-
-    def _check_name_conflicts(self, observation_path: str, feature_names: List[str])->bool:
-        """
-        Check if any conflicts among feature names and observation data column names exist.
-        Args:
-            observation_path: path to the observation dataset.
-            feature_names: list of feature names
-        """
-        return False
     
     def get_offline_features(self,
                              observation_settings: ObservationSettings,
@@ -1034,25 +1025,4 @@ class FeathrClient(object):
             return "'{" + config_str + "}'"
         else:
             return config_str
-    '''    
-    def _get_cloud_file_column_names(self, path: str, format: str = "csv", is_file_path = True)->Set[str]:
-        # Try to load dataset in public storages without credential
-        if path.startswith(("abfss:","https:", "wasbs:")):
-            if format == "csv" and is_file_path:
-                try:
-                    df = pd.read_csv(path)
-                    return df.columns
-                except:
-                    df = None
-            # TODO: support loading other formats files
-    
-        try:
-            df = job_utils.get_result_df(self, data_format=format, res_url=path, is_file_path = is_file_path)
-        except:
-            logger.warning(f"failed to load cloud files from the path: {path} because of lack of permission or invalid path.")
-            return None
-        if df is None:
-            logger.warning(f"failed to load cloud files from the path: {path} because of lack of permission or invalid path.")
-            return None
-        return df.columns
-    '''
+ 
