@@ -52,8 +52,8 @@ class EnvConfigReader(object):
             Feathr client's config value.
         """
         res_env = (self._get_variable_from_env(key) if self.use_env_vars else None) 
-        res_file = (self._get_variable_from_file(key) if self.yaml_config else None) 
-        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None) 
+        res_file = (self._get_variable_from_file(key) if self.yaml_config and res_env is None else None) 
+        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name and res_env is None and res_file is None else None) 
 
         # rewrite the logic below to make sure:
         # First we have the order (i.e. res1 > res2 > res3 > default)
@@ -81,7 +81,7 @@ class EnvConfigReader(object):
             Feathr client's config value.
         """
         res_env = (self._get_variable_from_env(key) if self.use_env_vars else None) 
-        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None) 
+        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name and res_env is None else None) 
 
         # rewrite the logic below to make sure:
         # First we have the order (i.e. res1 > res2 > res3 > default)
