@@ -71,7 +71,7 @@ class FeathrClient(object):
             config_path (optional): Config yaml file path. See [Feathr Config Template](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
             local_workspace_dir (optional): Set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
             credential (optional): Azure credential to access cloud resources, most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
-            project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
+            project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project level. Default is empty
             use_env_vars (optional): Whether to use environment variables to set up the client. If set to False, the client will not use environment variables to set up the client. Defaults to True.
         """
         self.logger = logging.getLogger(__name__)
@@ -459,7 +459,7 @@ class FeathrClient(object):
             key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
 
-    def _str_to_bool(self, s):
+    def _str_to_bool(self, s, variable_name = None):
         """Define a function to detect convert string to bool, since Redis client sometimes require a bool and sometimes require a str
         """
         if s == 'True' or s == True:
@@ -467,7 +467,8 @@ class FeathrClient(object):
         elif s == 'False' or s == False:
             return False
         else:
-            raise ValueError # evil ValueError that doesn't tell you what the wrong value was
+            self.logger.warning(f'{s} is not a valid Bool value. Maybe you want to double check if it is set correctly for {variable_name}.')
+            return s
 
     def _construct_redis_client(self):
         """Constructs the Redis client. The host, port, credential and other parameters can be set via environment
@@ -477,13 +478,12 @@ class FeathrClient(object):
         host = self.redis_host
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
-        redis_client = redis.Redis(
+        self.redis_client = redis.Redis(
             host=host,
             port=port,
             password=password,
-            ssl=self._str_to_bool(ssl_enabled))
+            ssl=self._str_to_bool(ssl_enabled, "ssl_enabled"))
         self.logger.info('Redis connection is successful and completed.')
-        self.redis_client = redis_client
 
 
     def get_offline_features(self,
