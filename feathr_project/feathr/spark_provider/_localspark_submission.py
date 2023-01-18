@@ -85,7 +85,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         maven_dependency = f"{cfg.pop('spark.jars.packages', self.packages)},{get_maven_artifact_fullname()}"
         spark_args = self._init_args(job_name=job_name, confs=cfg)
         # Add additional repositories
-        spark_args.extend(["--repositories", "https://repository.mulesoft.org/nexus/content/repositories/public/"])
+        spark_args.extend(["--repositories", "https://repository.mulesoft.org/nexus/content/repositories/public/,https://linkedin.jfrog.io/artifactory/open-source/"])
         # spark_args.extend(["--repositories", "https://linkedin.jfrog.io/artifactory/open-source/"])
         
         if not main_jar_path:
