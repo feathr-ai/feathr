@@ -94,13 +94,15 @@ class FeathrClient(object):
         self.project_name = self.env_config.get(
             'project_config__project_name')
 
-        # Redis configs
-        self.redis_host = self.env_config.get(
-            'online_store__redis__host')
-        self.redis_port = self.env_config.get(
-            'online_store__redis__port')
-        self.redis_ssl_enabled = self.env_config.get(
-            'online_store__redis__ssl_enabled')
+        # Redis configs. This is optional unless users have configured Redis host.
+        if self.env_config.get('online_store__redis__host'):
+            self.redis_host = self.env_config.get(
+                'online_store__redis__host')
+            self.redis_port = self.env_config.get(
+                'online_store__redis__port')
+            self.redis_ssl_enabled = self.env_config.get(
+                'online_store__redis__ssl_enabled')
+            self._construct_redis_client()
 
         # Offline store enabled configs; false by default
         self.s3_enabled = self.env_config.get(
@@ -182,7 +184,6 @@ class FeathrClient(object):
                 master = self.env_config.get('spark_config__local__master')
                 )
 
-        self._construct_redis_client()
 
         self.secret_names = []
 
@@ -459,12 +460,12 @@ class FeathrClient(object):
             key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
 
-    def _str_to_bool(self, s, variable_name = None):
+    def _str_to_bool(self, s: str, variable_name = None):
         """Define a function to detect convert string to bool, since Redis client sometimes require a bool and sometimes require a str
         """
-        if s == 'True' or s == True:
+        if s.casefold() == 'True'.casefold() or s == True:
             return True
-        elif s == 'False' or s == False:
+        elif s.casefold() == 'False'.casefold() or s == False:
             return False
         else:
             self.logger.warning(f'{s} is not a valid Bool value. Maybe you want to double check if it is set correctly for {variable_name}.')
