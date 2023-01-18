@@ -39,6 +39,8 @@ from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
 from feathr.version import get_version
+import importlib.util
+
 
 
 class FeathrClient(object):
@@ -96,6 +98,10 @@ class FeathrClient(object):
 
         # Redis configs. This is optional unless users have configured Redis host.
         if self.env_config.get('online_store__redis__host'):
+            # For illustrative purposes.
+            spec = importlib.util.find_spec("redis")
+            if spec is None:
+                self.logger.warning('You have configured Redis host, but there is no local Redis client package. Install the package using "pip install redis". ')
             self.redis_host = self.env_config.get(
                 'online_store__redis__host')
             self.redis_port = self.env_config.get(
