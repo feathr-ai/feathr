@@ -18,7 +18,6 @@ print(feathr.__version__)
 
 os.environ['SPARK_LOCAL_IP'] = "127.0.0.1"
 os.environ['REDIS_PASSWORD'] = "foobared"  # default password for Redis
-
 yaml_config = f"""
 api_version: 1
 project_config:
@@ -30,7 +29,7 @@ spark_config:
   spark_result_output_parts: '1'
   local:
     master: 'local[*]'
-    feathr_runtime_location:
+    feathr_runtime_location: "./feathr_2.12-{feathr.__version__}.jar"
 
 online_store:
   redis:
@@ -43,6 +42,8 @@ feature_registry:
   # The API endpoint of the registry service
   api_endpoint: "http://127.0.0.1:8000/api/v1"
 """
+
+print(yaml_config)
 
 tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
 with open(tmp.name, "w") as text_file:

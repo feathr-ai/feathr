@@ -10,7 +10,30 @@ RUN echo 'REACT_APP_API_ENDPOINT=http://localhost:8000' >> .env.production
 RUN npm install && npm run build
 
 
+
+# Stage 1: build frontend ui
+FROM gradle:7.6.0-jdk8 as gradle-build
+WORKDIR /usr/src/feathr
+
+# for folers, we need to specify the dest foler name
+# COPY feathr-compute/ ./feathr-compute/
+# COPY feathr-config/ ./feathr-config/
+# COPY feathr-data-models/ ./feathr-data-models/
+# COPY feathr-impl/ ./feathr-impl/
+# COPY gradle/ ./gradle/
+# COPY gradle.properties .
+# COPY gradlew .
+# COPY gradlew.bat .
+# COPY repositories.gradle .
+# COPY settings.gradle .
+# COPY ["feathr-compute/", "feathr-config/", "feathr-data-models/", "feathr-impl/", "gradle/","gradle.properties", "gradlew", "gradlew.bat", "build.gradle", "repositories.gradle", "settings.gradle", "./"]
+COPY . .
+RUN ./gradlew build
+
+
 FROM jupyter/pyspark-notebook
+
+
 
 USER root
 
@@ -53,6 +76,7 @@ USER jovyan
 # UID is like this: uid=1000(jovyan) gid=100(users) groups=100(users)
 COPY --chown=1000:100 ./docs/samples/local_quickstart_notebook.ipynb .
 COPY --chown=1000:100 ./feathr-sandbox/feathr_init_script.py .
+COPY --chown=1000:100 --from=gradle-build /usr/src/feathr/build/libs .
 
 # Run the script so that maven cache can be added for better experience. Otherwise users might have to wait for some time for the maven cache to be ready.
 RUN python feathr_init_script.py

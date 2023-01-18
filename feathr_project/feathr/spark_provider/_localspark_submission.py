@@ -106,7 +106,23 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 print(python_files)
                 spark_args.append(python_files[0])
         else:
-            spark_args.extend(["--class", main_class_name, main_jar_path])
+            if not python_files:
+                # This is a JAR job
+                # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
+                # so we have to use a dummy jar as the main file.
+                # Use the no-op jar as the main file
+                # This is a dummy jar which contains only one `org.example.Noop` class with one empty `main` function
+                # which does nothing
+                main_jar_path = main_jar_path
+                spark_args.extend(["--packages", maven_dependency, "--class", main_class_name, main_jar_path])
+            else:
+                spark_args.extend(["--packages", maven_dependency])
+                # This is a PySpark job, no more things to
+                if python_files.__len__() > 1:
+                    spark_args.extend(["--py-files", ",".join(python_files[1:])])
+                print(python_files)
+                spark_args.append(python_files[0])
+            
 
         if arguments:
             spark_args.extend(arguments)
