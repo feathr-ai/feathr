@@ -511,15 +511,6 @@ class _DataLakeFiler(object):
 
         logger.info('Finish downloading files from {} to {}.',
                     target_adls_directory, local_dir_cache)
-
-    def _download_single_file(self, local_paths: List[str], result_paths, directory_client, file_to_write, local_idx = 0):
-        os.makedirs(os.path.dirname(local_paths[local_idx]), exist_ok=True)
-        local_file = open(local_paths[local_idx], 'wb')
-        file_client = directory_client.get_file_client(file_to_write)
-        download = file_client.download_file()
-        downloaded_bytes = download.readall()
-        local_file.write(downloaded_bytes)
-        local_file.close()
         
     def _download_file_list(self, local_paths: List[str], result_paths, directory_client):
         '''
