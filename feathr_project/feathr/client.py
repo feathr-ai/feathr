@@ -469,9 +469,9 @@ class FeathrClient(object):
     def _str_to_bool(self, s: str, variable_name = None):
         """Define a function to detect convert string to bool, since Redis client sometimes require a bool and sometimes require a str
         """
-        if s.casefold() == 'True'.casefold() or s == True:
+        if (isinstance(s, str) and s.casefold() == 'True'.casefold()) or s == True:
             return True
-        elif s.casefold() == 'False'.casefold() or s == False:
+        elif (isinstance(s, str) and s.casefold() == 'False'.casefold()) or s == False:
             return False
         else:
             self.logger.warning(f'{s} is not a valid Bool value. Maybe you want to double check if it is set correctly for {variable_name}.')
