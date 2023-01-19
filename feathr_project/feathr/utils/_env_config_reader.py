@@ -52,7 +52,7 @@ class EnvConfigReader(object):
         Returns:
             Feathr client's config value.
         """
-        res_env = self._get_variable_from_env(key))
+        res_env = self._get_variable_from_env(key)
         res_file = (self._get_variable_from_file(key) if self.yaml_config and res_env is None else None) 
         res_keyvault = (self._get_variable_from_akv(key) if self.akv_name and res_env is None and res_file is None else None) 
 
