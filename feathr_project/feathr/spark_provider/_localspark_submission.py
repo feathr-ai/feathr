@@ -178,20 +178,14 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         if proc.returncode == None:
             logger.warning(
                 f"Spark job with pid {self.latest_spark_proc.pid} not completed after {timeout_seconds} sec \
-                    time out setting. Spark Logs:"
+                    time out setting. Please check."
             )
-            with open(log_read.name) as f:
-                contents = f.read()
-                logger.error(contents)
             if self.clean_up:
                 self._clean_up()
                 proc.wait()
                 return True
         elif proc.returncode == 1:
-            logger.warning(f"Spark job with pid {self.latest_spark_proc.pid} is not successful. Spark Logs:")
-            with open(log_read.name) as f:
-                contents = f.read()
-                logger.error(contents)
+            logger.warning(f"Spark job with pid {self.latest_spark_proc.pid} is not successful. Please check.")
             return False
         else:
             logger.info(
@@ -253,7 +247,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         prefix += datetime.now().strftime("%Y%m%d%H%M%S")
         debug_path = os.path.join(debug_folder, prefix)
 
-        logger.info(f"Spark log path is {debug_path}")
+        print(debug_path)
         if not os.path.exists(debug_path):
             os.makedirs(debug_path)
 
