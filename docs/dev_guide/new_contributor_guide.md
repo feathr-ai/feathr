@@ -33,7 +33,7 @@ You can ping your questions in the community Slack channel and Feathr developers
 * "I am not sure how to setup the cluster and test my code. Can someone help me out?"
 
 ## My pull request(PR) requires testing against the database or cluster that I dont' have, how can I test?
-Develop your implementation locally first and use unit tests to ensure correctness. Later, you can ask PR reviewers to label them with `safe to test` so Github will kick off a integration test in our test cluster with your code.
+Develop your implementation locally first and use unit tests to ensure correctness. Later, you can ask PR reviewers to label them with `safe to test` so Github will kick off a integration test in our test cluster with your code. If your PR contains any change about registry server it should also be labeled with `registry test`. Then related test cases will be triggered in Github workflow.
 
 If you need more assistance regarding testing your code or development, reach out in our Slack channel.
 
