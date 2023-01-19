@@ -59,7 +59,7 @@ def test_feature_name_conflicts_with_public_dataset_columns():
                 feature_query=feature_query,
                 output_path=output_path
         )
-        assert e.message == "Feature names exist conflicts with dataset column names: trip_distance,fare_amount"
+    assert str(e.value) == "Feature names exist conflicts with dataset column names: trip_distance,fare_amount"
         
     settings = ObservationSettings(
         observation_path="wasbs://public@fake_file",
@@ -72,13 +72,13 @@ def test_feature_name_conflicts_with_public_dataset_columns():
                 output_path=output_path,
                 dataset_column_names=set(('trip_distance','fare_amount'))
         )
-        assert e.message == "Feature names exist conflicts with dataset column names: trip_distance,fare_amount"
+    assert str(e.value) == "Feature names exist conflicts with dataset column names: trip_distance,fare_amount"
     
 def test_feature_name_conflicts_with_private_dataset_columns():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
     
-    client = client = FeathrClient(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
+    client = client = FeathrClient(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     
     if client.spark_runtime == 'databricks':
         source_path = 'dbfs:/timePartitionPattern_test/df0/daily/'
@@ -92,7 +92,7 @@ def test_feature_name_conflicts_with_private_dataset_columns():
     
     feature_query = FeatureQuery(
         feature_list=["f_location_avg_fare","f_location_max_fare"], key=location_id)
-    source_path = "abfss://eyxfs@eyxdls.dfs.core.windows.net/output_8_4.avro"
+    
     settings = ObservationSettings(
         observation_path=source_path,
         event_timestamp_column="lpep_dropoff_datetime",
@@ -105,5 +105,5 @@ def test_feature_name_conflicts_with_private_dataset_columns():
                 feature_query=feature_query,
                 output_path=output_path
         )
-        assert e.message == "Feature names exist conflicts with dataset column names: trip_distance,fare_amount"
+    assert str(e.value) == "Feature names exist conflicts with dataset column names: f_location_avg_fare,f_location_max_fare"
         
