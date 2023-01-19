@@ -12,7 +12,7 @@ buildscript {
     classpath 'com.linkedin.pegasus:gradle-plugins:' + pegasusVersion
   }
 }
-
+// Minor comment to trigger a build
 plugins {
   id 'java'
   // Currently "maven-publish" has some issues with publishing to Nexus repo. So, we will use a different plugin.
