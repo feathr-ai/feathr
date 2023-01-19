@@ -81,9 +81,9 @@ def test_feature_name_conflicts_with_private_dataset_columns():
     client = client = FeathrClient(os.path.join(test_workspace_dir, "feathr_config.yaml"))
     
     if client.spark_runtime == 'databricks':
-        source_path = 'dbfs:/timePartitionPattern_test/df0/daily/'
+        source_path = 'dbfs:/timePartitionPattern_test/df0/daily/2020/05/01/'
     else:
-        source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_test/df0/daily/'
+        source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_test/df0/daily/2020/05/01/'
       
     location_id = TypedKey(key_column="DOLocationID",
                             key_column_type=ValueType.INT32,
