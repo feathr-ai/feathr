@@ -84,10 +84,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         cfg = configuration.copy() if configuration else {}
         maven_dependency = f"{cfg.pop('spark.jars.packages', self.packages)},{get_maven_artifact_fullname()}"
         spark_args = self._init_args(job_name=job_name, confs=cfg)
-        # Add additional repositories
-        spark_args.extend(["--repositories", "https://repository.mulesoft.org/nexus/content/repositories/public/,https://linkedin.jfrog.io/artifactory/open-source/"])
-        # spark_args.extend(["--repositories", "https://linkedin.jfrog.io/artifactory/open-source/"])
-        
+
         if not main_jar_path:
             # We don't have the main jar, use Maven
             if not python_files:
@@ -109,16 +106,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 print(python_files)
                 spark_args.append(python_files[0])
         else:
-            if not python_files:
-                # This is a JAR job
-                spark_args.extend(["--class", main_class_name, main_jar_path])
-            else:
-                spark_args.extend(["--packages", maven_dependency])
-                # This is a PySpark job, no more things to
-                if python_files.__len__() > 1:
-                    spark_args.extend(["--py-files", ",".join(python_files[1:])])
-                spark_args.append(python_files[0])
-            
+            spark_args.extend(["--class", main_class_name, main_jar_path])
 
         if arguments:
             spark_args.extend(arguments)
@@ -311,5 +299,4 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         packages.append("commons-io:commons-io:2.6")
         packages.append("org.apache.hadoop:hadoop-azure:2.7.4")
         packages.append("com.microsoft.azure:azure-storage:8.6.4")
-        packages.append("com.github.everit-org.json-schema:org.everit.json.schema:1.9.1")
         return ",".join(packages)
