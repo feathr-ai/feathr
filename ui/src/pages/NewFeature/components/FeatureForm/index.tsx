@@ -167,7 +167,7 @@ const FeatureForm = (props: FeatureFormProps, ref: any) => {
         <Item name="tensorCategory" label="Tensor Category" rules={[{ required: true }]}>
           <Select options={tensorOptions}></Select>
         </Item>
-        <Item name="dimensionType" label="Dimension Type" rules={[{ required: true }]}>
+        <Item name="dimensionType" label="Dimension Type">
           <Select mode="multiple" options={valueOptions} />
         </Item>
         <Item name="valType" label="Value Type" rules={[{ required: true }]}>
