@@ -20,10 +20,10 @@ jobs:
           java-version: "8"
           distribution: "temurin"
           server-id: ossrh
-          server-username: ORG_GRADLE_PROJECT_mavenCentralUsername
-          server-password: ORG_GRADLE_PROJECT_mavenCentralPassword
+          server-username: SONATYPE_USERNAME
+          server-password: SONATYPE_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg-passphrase: ORG_GRADLE_PROJECT_signingInMemoryKeyPassword
+          gpg-passphrase: PGP_PASSPHRASE
 
     # CI release command defaults to publishSigned
     # Sonatype release command defaults to sonaTypeBundleRelease
