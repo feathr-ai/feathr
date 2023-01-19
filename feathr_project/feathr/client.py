@@ -65,22 +65,24 @@ class FeathrClient(object):
         local_workspace_dir: str = None,
         credential: Any = None,
         project_registry_tag: Dict[str, str] = None,
-        use_env_vars: bool = True,
     ):
         """Initialize Feathr Client.
+        Configuration values used by the Feathr are evaluated in the following precedence, with items higher on the list taking priority.
+            1. Environment variables
+            2. Values in the configuration file
+            3. Values in the Azure Key Vault
 
         Args:
             config_path (optional): Config yaml file path. See [Feathr Config Template](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
             local_workspace_dir (optional): Set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
             credential (optional): Azure credential to access cloud resources, most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
             project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project level. Default is empty
-            use_env_vars (optional): Whether to use environment variables to set up the client. If set to False, the client will not use environment variables to set up the client. Defaults to True.
         """
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
         self._COMPOSITE_KEY_SEPARATOR = '#'
-        self.env_config = EnvConfigReader(config_path=config_path, use_env_vars=use_env_vars)
+        self.env_config = EnvConfigReader(config_path=config_path)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
@@ -322,7 +324,7 @@ class FeathrClient(object):
 
         Args:
             feature_table: the name of the feature table.
-            key: the key/key list of the entity; 
+            key: the key/key list of the entity;
                  for key list, please make sure the order is consistent with the one in feature's definition;
                  the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch

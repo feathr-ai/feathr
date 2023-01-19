@@ -16,7 +16,7 @@ class EnvConfigReader(object):
     akv_name: str = None      # Azure Key Vault name to use for retrieving config values.
     yaml_config: dict = None  # YAML config file content.
 
-    def __init__(self, config_path: str, use_env_vars: bool = True):
+    def __init__(self, config_path: str):
         """Initialize the utility class.
 
         Args:
@@ -30,8 +30,6 @@ class EnvConfigReader(object):
                     self.yaml_config = yaml.safe_load(config_path.read_text())
                 except yaml.YAMLError as e:
                     logger.warning(e)
-
-        self.use_env_vars = use_env_vars
 
         self.akv_name = self.get("secrets__azure_key_vault__name")
         self.akv_client = AzureKeyVaultClient(self.akv_name) if self.akv_name else None
@@ -51,9 +49,9 @@ class EnvConfigReader(object):
         Returns:
             Feathr client's config value.
         """
-        res_env = (self._get_variable_from_env(key) if self.use_env_vars else None) 
-        res_file = (self._get_variable_from_file(key) if self.yaml_config else None) 
-        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None) 
+        res_env = self._get_variable_from_env(key)
+        res_file = (self._get_variable_from_file(key) if self.yaml_config else None)
+        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None)
 
         # rewrite the logic below to make sure:
         # First we have the order (i.e. res1 > res2 > res3 > default)
@@ -63,7 +61,7 @@ class EnvConfigReader(object):
                 return res
 
         logger.info(f"Config {key} is not found in the environment variable, configuration file, or the remote key value store. Using default value which is {default}.")
-        
+
         return default
 
     def get_from_env_or_akv(self, key: str) -> str:
@@ -80,8 +78,8 @@ class EnvConfigReader(object):
         Returns:
             Feathr client's config value.
         """
-        res_env = (self._get_variable_from_env(key) if self.use_env_vars else None) 
-        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None) 
+        res_env = self._get_variable_from_env(key)
+        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None)
 
         # rewrite the logic below to make sure:
         # First we have the order (i.e. res1 > res2 > res3 > default)
@@ -92,8 +90,6 @@ class EnvConfigReader(object):
 
         logger.warning(f"Config {key} is not found in the environment variable or the remote key value store.")
         return None
-        
-
 
     def _get_variable_from_env(self, key: str) -> str:
         # make it work for lower case and upper case.
