@@ -65,9 +65,6 @@ setup(
         "py4j<=0.10.9.7",
         "loguru<=0.6.0",
         "pandas",
-        # pin numpy due to pyspark's deprecated np.bool access.
-        # Specifically, to resolve `AttributeError: module 'numpy' has no attribute 'bool'` when calling sparkDF.toPandas()
-        "numpy<=1.20.3",
         "redis<=4.4.0",
         "requests<=2.28.1",
         "tqdm<=4.64.1",
@@ -77,7 +74,7 @@ setup(
         "pyyaml<=6.0",
         "Jinja2<=3.1.2",
         "pyarrow<=9.0.0",
-        "pyspark>=3.1.2",
+        "pyspark>=3.1.2",  # TODO upgrade the version once pyspark publishes new release to resolve `AttributeError: module 'numpy' has no attribute 'bool'`
         "python-snappy<=0.6.1",
         "deltalake>=0.6.2",
         "graphlib_backport<=1.0.3",
