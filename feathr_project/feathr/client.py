@@ -65,7 +65,6 @@ class FeathrClient(object):
         local_workspace_dir: str = None,
         credential: Any = None,
         project_registry_tag: Dict[str, str] = None,
-        use_env_vars: bool = True,
     ):
         """Initialize Feathr Client.
 
@@ -74,13 +73,12 @@ class FeathrClient(object):
             local_workspace_dir (optional): Set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
             credential (optional): Azure credential to access cloud resources, most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
             project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project level. Default is empty
-            use_env_vars (optional): Whether to use environment variables to set up the client. If set to False, the client will not use environment variables to set up the client. Defaults to True.
         """
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
         self._COMPOSITE_KEY_SEPARATOR = '#'
-        self.env_config = EnvConfigReader(config_path=config_path, use_env_vars=use_env_vars)
+        self.env_config = EnvConfigReader(config_path=config_path)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
