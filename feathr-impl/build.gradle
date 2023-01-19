@@ -48,7 +48,6 @@ dependencies {
   implementation spec.product.jackson.dataformat_hocon
   implementation spec.product.jackson.jackson_core
   implementation spec.product.spark_redis
-  implementation spec.product.spark_cosmos
   implementation spec.product.fastutil
   implementation spec.product.hadoop.mapreduce_client_core
   implementation spec.product.mvel
@@ -78,7 +77,6 @@ dependencies {
 
   testImplementation spec.product.equalsverifier
   testImplementation spec.product.spark.spark_catalyst
-  testImplementation spec.product.spark_cosmos
   testImplementation spec.product.mockito
   testImplementation spec.product.scala.scalatest
   testImplementation spec.product.testing
