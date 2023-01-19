@@ -21,24 +21,14 @@ The Sandbox is ideal for:
 
 ## Getting Started
 
-First, make sure you have docker installed successfully on your machine by running this command:
-
-```bash
-docker run hello-world
-```
-
-To get started using Feathr, simply run the command below. Note that the image is around 5GB so it might take a while to pull it from DockerHub.
+To get started, simply run the command below. Note that the image is around 5GB so it might take a while to pull it from DockerHub.
 
 ```bash
 # 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7080: Interpret
-docker run -it --rm -p 8888:8888  -p 8000:8000 -p 8081:80 -p 8080:8080 -p 7080:7080 --env API_BASE="api/v1" --env FEATHR_SANDBOX=True -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
+docker run -it --rm -p 8888:8888  -p 8000:8000 -p 80:80 -p 8080:8080 -p 7080:7080 --env CONNECTION_STR="Server=" --env API_BASE="api/v1" --env FEATHR_SANDBOX=True -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
 ```
 
 It should pop up a Jupyter link in `http://127.0.0.1:8888/`. Double click on the notebook file to start the Jupyter Notebook, and you should be able to see the Feathr sample notebook. Click the triangle button on the Jupyter notebook and the whole notebook will run locally.
-
-If you see some errors like below, simply change the `-p 8081:80` part to `-p <new port>:80` so the Feathr UI will be redirected to the new port.
-
-`docker: Error response from daemon: driver failed programming external connectivity on endpoint hardcore_bose (ae107e924cddce6b942f96f2654369345b027ac82e5e44929a9f132e2af71746): Bind for 0.0.0.0:8081 failed: port is already allocated.`
 
 The default jupyter notebook is here:
 ```bash
@@ -51,7 +41,7 @@ http://localhost:8888/lab/workspaces/auto-w/tree/local_quickstart_notebook.ipynb
 After running the Notebooks, all the features will be registered in the UI, and you can visit the Feathr UI at:
 
 ```bash
-http://localhost:8081
+http://localhost:80
 ```
 
 
