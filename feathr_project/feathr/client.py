@@ -39,8 +39,6 @@ from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
 from feathr.version import get_version
-import importlib.util
-
 
 
 class FeathrClient(object):
@@ -73,7 +71,7 @@ class FeathrClient(object):
             config_path (optional): Config yaml file path. See [Feathr Config Template](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
             local_workspace_dir (optional): Set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
             credential (optional): Azure credential to access cloud resources, most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
-            project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project level. Default is empty
+            project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
             use_env_vars (optional): Whether to use environment variables to set up the client. If set to False, the client will not use environment variables to set up the client. Defaults to True.
         """
         self.logger = logging.getLogger(__name__)
@@ -96,19 +94,13 @@ class FeathrClient(object):
         self.project_name = self.env_config.get(
             'project_config__project_name')
 
-        # Redis configs. This is optional unless users have configured Redis host.
-        if self.env_config.get('online_store__redis__host'):
-            # For illustrative purposes.
-            spec = importlib.util.find_spec("redis")
-            if spec is None:
-                self.logger.warning('You have configured Redis host, but there is no local Redis client package. Install the package using "pip install redis". ')
-            self.redis_host = self.env_config.get(
-                'online_store__redis__host')
-            self.redis_port = self.env_config.get(
-                'online_store__redis__port')
-            self.redis_ssl_enabled = self.env_config.get(
-                'online_store__redis__ssl_enabled')
-            self._construct_redis_client()
+        # Redis configs
+        self.redis_host = self.env_config.get(
+            'online_store__redis__host')
+        self.redis_port = self.env_config.get(
+            'online_store__redis__port')
+        self.redis_ssl_enabled = self.env_config.get(
+            'online_store__redis__ssl_enabled')
 
         # Offline store enabled configs; false by default
         self.s3_enabled = self.env_config.get(
@@ -190,6 +182,7 @@ class FeathrClient(object):
                 master = self.env_config.get('spark_config__local__master')
                 )
 
+        self._construct_redis_client()
 
         self.secret_names = []
 
@@ -466,16 +459,15 @@ class FeathrClient(object):
             key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
 
-    def _str_to_bool(self, s: str, variable_name = None):
+    def _str_to_bool(self, s):
         """Define a function to detect convert string to bool, since Redis client sometimes require a bool and sometimes require a str
         """
-        if s.casefold() == 'True'.casefold() or s == True:
+        if s == 'True' or s == True:
             return True
-        elif s.casefold() == 'False'.casefold() or s == False:
+        elif s == 'False' or s == False:
             return False
         else:
-            self.logger.warning(f'{s} is not a valid Bool value. Maybe you want to double check if it is set correctly for {variable_name}.')
-            return s
+            raise ValueError # evil ValueError that doesn't tell you what the wrong value was
 
     def _construct_redis_client(self):
         """Constructs the Redis client. The host, port, credential and other parameters can be set via environment
@@ -485,12 +477,13 @@ class FeathrClient(object):
         host = self.redis_host
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
-        self.redis_client = redis.Redis(
+        redis_client = redis.Redis(
             host=host,
             port=port,
             password=password,
-            ssl=self._str_to_bool(ssl_enabled, "ssl_enabled"))
+            ssl=self._str_to_bool(ssl_enabled))
         self.logger.info('Redis connection is successful and completed.')
+        self.redis_client = redis_client
 
 
     def get_offline_features(self,
