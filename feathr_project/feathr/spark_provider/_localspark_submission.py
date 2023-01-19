@@ -82,6 +82,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
 
         # Get conf and package arguments
         cfg = configuration.copy() if configuration else {}
+        maven_dependency_without_feathr = f"{cfg.pop('spark.jars.packages', self.packages)}"
         maven_dependency = f"{cfg.pop('spark.jars.packages', self.packages)},{get_maven_artifact_fullname()}"
         spark_args = self._init_args(job_name=job_name, confs=cfg)
         # Add additional repositories
@@ -113,7 +114,9 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 # This is a JAR job
                 spark_args.extend(["--class", main_class_name, main_jar_path])
             else:
-                spark_args.extend(["--packages", maven_dependency])
+                print("main_jar_path", main_jar_path, maven_dependency_without_feathr)
+                spark_args.extend(["--jars", main_jar_path])
+                spark_args.extend(["--packages", maven_dependency_without_feathr])
                 # This is a PySpark job, no more things to
                 if python_files.__len__() > 1:
                     spark_args.extend(["--py-files", ",".join(python_files[1:])])
