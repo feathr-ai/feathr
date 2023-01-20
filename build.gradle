@@ -56,6 +56,10 @@ jar {
     configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
   }
   exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+
+  // Explicitly exclude com/linkedin/data and org/apache/hadoop files from the final jar. They can cause issues in other downstream applications.
+  exclude 'com/linkedin/data/**'
+  exclude 'org/apache/hadoop/**'
   zip64 = true
 }
 
@@ -170,7 +174,7 @@ allprojects {
       pom {
         name = 'Feathr'
         description = 'An Enterprise-Grade, High Performance Feature Store'
-        url = 'https://github.com/linkedin/feathr'
+        url = 'https://github.com/feathr-ai/feathr'
         licenses {
           license {
             name = 'APL2'
@@ -186,7 +190,7 @@ allprojects {
         }
         scm {
           connection = 'scm:git@github.com:linkedin/feathr.git'
-          url = 'https://github.com/linkedin/feathr'
+          url = 'https://github.com/feathr-ai/feathr'
         }
       }
     }

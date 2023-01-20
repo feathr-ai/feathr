@@ -1,12 +1,9 @@
-import React, { forwardRef, LegacyRef } from "react";
+import React, { forwardRef, LegacyRef } from 'react'
 
-import { ResizeHandleProps } from "./interface";
+import { ResizeHandleProps } from './interface'
 
-const ResizeHandle = (
-  props: ResizeHandleProps,
-  ref: LegacyRef<HTMLSpanElement>
-) => {
-  const { handleAxis, ...restProps } = props;
+const ResizeHandle = (props: ResizeHandleProps, ref: LegacyRef<HTMLSpanElement>) => {
+  const { handleAxis, ...restProps } = props
 
   return (
     <span
@@ -14,16 +11,14 @@ const ResizeHandle = (
       className={`react-resizable-handle react-resizable-handle-${handleAxis}`}
       {...restProps}
       onClick={(e) => {
-        e.stopPropagation();
+        e.stopPropagation()
       }}
     />
-  );
-};
+  )
+}
 
-const ResizeHandleComponent = forwardRef<HTMLSpanElement, ResizeHandleProps>(
-  ResizeHandle
-);
+const ResizeHandleComponent = forwardRef<HTMLSpanElement, ResizeHandleProps>(ResizeHandle)
 
-ResizeHandleComponent.displayName = "ResizeHandleComponent";
+ResizeHandleComponent.displayName = 'ResizeHandleComponent'
 
-export default ResizeHandleComponent;
+export default ResizeHandleComponent

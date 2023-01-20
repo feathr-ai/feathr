@@ -1,30 +1,31 @@
-import React, { forwardRef, memo } from "react";
-import cs from "classnames";
-import { RightCircleOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { Handle, NodeProps, Position } from "react-flow-renderer";
-import { LineageNodeProps } from "./interface";
+import React, { forwardRef, memo } from 'react'
 
-import styles from "./index.module.less";
+import { RightCircleOutlined } from '@ant-design/icons'
+import cs from 'classnames'
+import { Handle, NodeProps, Position } from 'react-flow-renderer'
+import { useNavigate } from 'react-router-dom'
+
+import { LineageNodeProps } from './interface'
+
+import styles from './index.module.less'
 
 const LineageNode = (props: LineageNodeProps, ref: any) => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const { label, subtitle, version, borderColor, detialUrl, active } =
-    props.data;
+  const { label, subtitle, version, borderColor, detialUrl, active } = props.data
 
-  const nodeTitle = version ? `${label} (v${version})` : label;
-  const nodeSubtitle = subtitle.replace("feathr_", "");
+  const nodeTitle = version ? `${label} (v${version})` : label
+  const nodeSubtitle = subtitle.replace('feathr_', '')
   const nodeColorStyle = {
-    border: `2px solid ${borderColor}`,
-  };
+    border: `2px solid ${borderColor}`
+  }
 
   const onNodeIconClick = () => {
     if (detialUrl) {
-      navigate(detialUrl);
+      navigate(detialUrl)
     }
     //  `/projects/${project}/features/${featureId}`);
-  };
+  }
 
   return (
     <div
@@ -36,22 +37,17 @@ const LineageNode = (props: LineageNodeProps, ref: any) => {
         <Handle type="target" position={Position.Left} />
         <div className={styles.title}>
           {nodeTitle}
-          {active && (
-            <RightCircleOutlined
-              className={styles.navigate}
-              onClick={onNodeIconClick}
-            />
-          )}
+          {active && <RightCircleOutlined className={styles.navigate} onClick={onNodeIconClick} />}
           <div className={styles.subtitle}>{nodeSubtitle}</div>
         </div>
         <Handle type="source" position={Position.Right} />
       </div>
     </div>
-  );
-};
+  )
+}
 
-const LineageNodeComponent = forwardRef<unknown, NodeProps>(LineageNode);
+const LineageNodeComponent = forwardRef<unknown, NodeProps>(LineageNode)
 
-LineageNodeComponent.displayName = "LineageNode";
+LineageNodeComponent.displayName = 'LineageNode'
 
-export default memo(LineageNodeComponent);
+export default memo(LineageNodeComponent)

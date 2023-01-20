@@ -1,32 +1,25 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { Table } from "antd";
-import cs from "classnames";
-import ResizableTitle from "./ResizableTitle";
-import {
-  ResizableTitleProps,
-  ResizeTableProps,
-  ResizeColumnType,
-} from "./interface";
+import React, { useCallback, useMemo, useState } from 'react'
 
-import styles from "./index.module.less";
+import { Table } from 'antd'
+import cs from 'classnames'
+
+import { ResizableTitleProps, ResizeTableProps, ResizeColumnType } from './interface'
+import ResizableTitle from './ResizableTitle'
+
+import styles from './index.module.less'
 
 const ResizeTable = (props: ResizeTableProps<any>) => {
-  const {
-    className,
-    columns: originColumns = [],
-    components: originComponents,
-    ...rest
-  } = props;
+  const { className, columns: originColumns = [], components: originComponents, ...rest } = props
 
   const handleResize = useCallback((index) => {
     return ((e, { size }) => {
       setColumns((prevColumns) => {
-        const nextColumns = [...prevColumns!];
-        nextColumns[index] = { ...nextColumns[index], width: size.width };
-        return nextColumns;
-      });
-    }) as ResizableTitleProps["onResize"];
-  }, []);
+        const nextColumns = [...prevColumns!]
+        nextColumns[index] = { ...nextColumns[index], width: size.width }
+        return nextColumns
+      })
+    }) as ResizableTitleProps['onResize']
+  }, [])
 
   const [columns, setColumns] = useState(
     originColumns?.map((column, index) => {
@@ -36,24 +29,24 @@ const ResizeTable = (props: ResizeTableProps<any>) => {
           onHeaderCell: (col: ResizeColumnType<any>) => ({
             width: col.width,
             minWidth: col.minWidth,
-            onResize: handleResize(index),
-          }),
-        };
+            onResize: handleResize(index)
+          })
+        }
       }
 
-      return column;
+      return column
     })
-  );
+  )
 
   const components = useMemo(() => {
     return {
       ...originComponents,
       header: {
         ...originComponents?.header,
-        cell: ResizableTitle,
-      },
-    };
-  }, [originComponents]);
+        cell: ResizableTitle
+      }
+    }
+  }, [originComponents])
 
   return (
     <Table
@@ -62,7 +55,7 @@ const ResizeTable = (props: ResizeTableProps<any>) => {
       components={components}
       {...rest}
     />
-  );
-};
+  )
+}
 
-export default ResizeTable;
+export default ResizeTable

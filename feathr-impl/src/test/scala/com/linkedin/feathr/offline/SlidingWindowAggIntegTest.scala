@@ -193,7 +193,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |features: [
         |  {
         |    key: [mId],
-        |    featureList: ["aEmbedding"]
+        |    featureList: ["aEmbedding", "memberEmbeddingAutoTZ"]
         |  }
         |]
       """.stripMargin,
@@ -219,6 +219,17 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |        aggregation: LATEST
         |        window: 3d
         |      }
+        |      memberEmbeddingAutoTZ: {
+        |        def: "embedding"
+        |        aggregation: LATEST
+        |        window: 3d
+        |        type: {
+        |          type: TENSOR
+        |          tensorCategory: SPARSE
+        |          dimensionType: [INT]
+        |          valType: FLOAT
+        |        }
+        |      }
         |    }
         |  }
         |}
@@ -229,6 +240,8 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
 
     assertEquals(featureList.size, 2)
     assertEquals(featureList(0).getAs[Row]("aEmbedding"), mutable.WrappedArray.make(Array(5.5f, 5.8f)))
+    assertEquals(featureList(0).getAs[Row]("memberEmbeddingAutoTZ"),
+      TestUtils.build1dSparseTensorFDSRow(Array(0, 1), Array(5.5f, 5.8f)))
   }
 
   /**

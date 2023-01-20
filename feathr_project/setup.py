@@ -20,7 +20,7 @@ except IOError:
     print("Failed to load Feathr version file for packaging.",
           file=sys.stderr)
     # Temp workaround for conda build. For long term fix, Jay will need to update manifest.in file.
-    VERSION = "0.9.0"
+    VERSION = "0.10.4-rc1"
 
 VERSION = __version__  # noqa
 os.environ["FEATHR_VERSION"] = VERSION
@@ -35,8 +35,9 @@ extras_require=dict(
         "pytest-mock>=3.8.1",
     ],
     notebook=[
-        "jupyter==1.0.0",
-        "matplotlib==3.6.1",
+        "azure-cli==2.37.0",
+        "jupyter>=1.0.0",
+        "matplotlib>=3.6.1",
         "papermill>=2.1.2,<3",      # to test run notebooks
         "scrapbook>=0.5.0,<1.0.0",  # to scrap notebook outputs
         "scikit-learn",             # for notebook examples
@@ -63,7 +64,7 @@ setup(
         "click<=8.1.3",
         "py4j<=0.10.9.7",
         "loguru<=0.6.0",
-        "pandas<=1.5.0",
+        "pandas",
         "redis<=4.4.0",
         "requests<=2.28.1",
         "tqdm<=4.64.1",
@@ -82,7 +83,9 @@ setup(
         "databricks-cli<=0.17.3",
         "avro<=1.11.1",
         "azure-storage-file-datalake<=12.5.0",
-        "azure-synapse-spark<=0.7.0",
+        "azure-synapse-spark",
+        # Synapse's aiohttp package is old and does not work with Feathr. We pin to a newer version here.
+        "aiohttp==3.8.3",
         # fixing Azure Machine Learning authentication issue per https://stackoverflow.com/a/72262694/3193073
         "azure-identity>=1.8.0",
         "azure-keyvault-secrets<=4.6.0",

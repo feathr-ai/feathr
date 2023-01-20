@@ -3,8 +3,8 @@
 }
 
 .card {
-  box-shadow: 5px 8px 15px 5px rgba(208, 216, 243, 0.6);
   border-radius: 8px;
+  box-shadow: 5px 8px 15px 5px rgb(208 216 243 / 60%);
 }
 
 .lineage-graph {
@@ -13,16 +13,17 @@
 
 .lineage-node-active {
   overflow: hidden;
-  border-radius: 0.25rem;
-  border-width: 2px;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+  background-color: rgb(57 35 150 / var(--tw-bg-opacity));
+  border-color: rgb(57 35 150 / var(--tw-border-opacity));
   border-style: solid;
-  --tw-border-opacity: 1;
-  border-color: rgba(57, 35, 150, var(--tw-border-opacity));
-  --tw-bg-opacity: 1;
-  background-color: rgba(57, 35, 150, var(--tw-bg-opacity));
-  --tw-text-opacity: 1;
-  color: rgba(255, 255, 255, var(--tw-text-opacity));
+  border-width: 2px;
+  border-radius: 0.25rem;
   opacity: 1;
+
+  --tw-border-opacity: 1;
+  --tw-bg-opacity: 1;
+  --tw-text-opacity: 1;
 }
 
 .lineage-node-box {
@@ -30,17 +31,17 @@
 }
 
 .lineage-node-title {
-  font-size: 15px;
   font-weight: 700;
+  font-size: 15px;
 }
 
 .lineage-node-subtitle {
-  font-size: 10px;
-  font-style: italic;
-  text-overflow: ellipsis;
   max-width: 135px;
   overflow: hidden;
+  font-size: 10px;
+  font-style: italic;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .lineage-navigate {

@@ -1,6 +1,6 @@
 <html>
     <h1 align="center">
-      Feathr
+      <img src="./images/feathr_logo.png" width="256"/>
     </h1>
     <h3 align="center">
       An enterprise-grade, high-performance feature store
@@ -12,6 +12,7 @@
       <a href="https://feathr-ai.github.io/feathr/">Docs</a>.
     </h3>
 </html>
+
 
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/feathr-ai/feathr/blob/main/LICENSE)
@@ -61,17 +62,37 @@ If you want to set up everything manually, you can checkout the [Feathr CLI depl
 
 - For more details on Feathr, read our [documentation](https://feathr-ai.github.io/feathr/).
 - For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
-- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
+- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf) and [here](./talks/Feathr%20Community%20Talk%20%E2%80%93%20An%20Enterprise-Grade%20High%20Performance%20Feature%20Store.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
 
 ## 🧪 Samples
 
-|Name|Description|Platform|
-|---|---|---|
-|[NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)|Quickstart notebook that showcases how to define, materialize, and register features with NYC taxi-fare prediction sample data.|Azure Synapse, Databricks, Local Spark|
-|[Databricks Quickstart NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)|Quickstart Databricks notebook with NYC taxi-fare prediction sample data.|Databricks|
-|[Feature Embedding](./samples/feature_embedding.ipynb)|Feathr UDF example showing how to define and use feature embedding with a pre-trained Transformer model and hotel review sample data.|Databricks|
-|[Fraud Detection Demo](./samples/fraud_detection_demo.ipynb)|An example to demonstrate Feature Store using multiple data sources such as user account and transaction data.|Azure Synapse, Databricks, Local Spark|
-|[Product Recommendation Demo](./samples/product_recommendation_demo_advanced.ipynb)|Feathr Feature Store example notebook with a product recommendation scenario|Azure Synapse, Databricks, Local Spark|
+| Name                                                                                | Description                                                                                                                           | Platform                               |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| [NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)                                      | Quickstart notebook that showcases how to define, materialize, and register features with NYC taxi-fare prediction sample data.       | Azure Synapse, Databricks, Local Spark |
+| [Databricks Quickstart NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)                | Quickstart Databricks notebook with NYC taxi-fare prediction sample data.                                                             | Databricks                             |
+| [Feature Embedding](./samples/feature_embedding.ipynb)                              | Feathr UDF example showing how to define and use feature embedding with a pre-trained Transformer model and hotel review sample data. | Databricks                             |
+| [Fraud Detection Demo](./samples/fraud_detection_demo.ipynb)                        | An example to demonstrate Feature Store using multiple data sources such as user account and transaction data.                        | Azure Synapse, Databricks, Local Spark |
+| [Product Recommendation Demo](./samples/product_recommendation_demo_advanced.ipynb) | Feathr Feature Store example notebook with a product recommendation scenario                                                          | Azure Synapse, Databricks, Local Spark |
+
+## 🏃 Getting Started with Feathr
+
+The easiest way to try out Feathr is to use the [Feathr Sandbox](https://feathr-ai.github.io/feathr/quickstart_local_sandbox.html) which is a self-contained container with most of Feathr's capabilities and you should be productive in 5 minutes. To use it, simply run this command:
+
+```bash
+# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7080: Interpret
+docker run -it --rm -p 8888:8888  -p 8000:8000 -p 8081:80 -p 8080:8080 -p 7080:7080 --env API_BASE="api/v1" --env FEATHR_SANDBOX=True -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
+```
+
+And you can view default jupyter notebook:
+```bash
+http://localhost:8888/lab/workspaces/auto-w/tree/local_quickstart_notebook.ipynb
+```
+
+After running the Notebooks, all the features will be registered in the UI, and you can visit the Feathr UI at:
+
+```bash
+http://localhost:8081
+```
 
 ## 🛠️ Install Feathr Client Locally
 
@@ -174,9 +195,9 @@ Follow the [quick start Jupyter Notebook](https://github.com/feathr-ai/feathr/bl
 ## 🗣️ Tech Talks on Feathr
 
 - [Introduction to Feathr - Beginner's guide](https://www.youtube.com/watch?v=gZg01UKQMTY)
-- [Document Intelligence using Azure Feature Store (Feathr) and SynapseML
-  ](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
+- [Document Intelligence using Azure Feature Store (Feathr) and SynapseML](https://mybuild.microsoft.com/en-US/sessions/5bdff7d5-23e6-4f0d-9175-da8325d05c2a?source=sessions)
 - [Notebook tutorial: Build a Product Recommendation Machine Learning Model with Feathr Feature Store](https://www.youtube.com/watch?v=2KSM-NLfvY0)
+- [Feathr talk in Feature Store Summit](https://www.youtube.com/watch?v=u8nLY9Savxk)
 
 ## ⚙️ Cloud Integrations and Architecture
 
