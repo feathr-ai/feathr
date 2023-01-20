@@ -229,8 +229,9 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                 f"Main JAR file is not set, using default package '{get_maven_artifact_fullname()}' from Maven")
             submission_params['libraries'][0]['maven'] = {
                 "coordinates": get_maven_artifact_fullname()}
-            # add additional maven repos
-            submission_params["libraries"][0]["maven"]["repo"] = "https://repository.mulesoft.org/nexus/content/repositories/public/,https://linkedin.jfrog.io/artifactory/open-source/"
+            # Add json-schema dependency
+            # TODO: find a proper way deal with unresolved dependencies
+            submission_params["libraries"][1]["maven"]= {"coordinates": "com.github.everit-org.json-schema:org.everit.json.schema:1.9.1","repo":"https://repository.mulesoft.org/nexus/content/repositories/public/"}
         else:
             submission_params["libraries"][0]["jar"] = self.upload_or_get_cloud_path(
                 main_jar_path)
