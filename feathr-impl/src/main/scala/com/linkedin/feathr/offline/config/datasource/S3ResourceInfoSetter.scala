@@ -12,10 +12,14 @@ private[feathr] class S3ResourceInfoSetter extends ResourceInfoSetter() {
   override def setupHadoopConfig(ss: SparkSession, context: Option[DataSourceConfig], resource: Option[Resource]): Unit = {
     ss.sparkContext
       .hadoopConfiguration.set("fs.s3a.endpoint", getAuthStr(S3_ENDPOINT, context, resource))
-    ss.sparkContext
-      .hadoopConfiguration.set("fs.s3a.access.key", getAuthStr(S3_ACCESS_KEY, context, resource))
-    ss.sparkContext
-      .hadoopConfiguration.set("fs.s3a.secret.key", getAuthStr(S3_SECRET_KEY, context, resource))
+    if (!getAuthStr(S3_ACCESS_KEY, context, resource).contains("None")) {
+      ss.sparkContext
+        .hadoopConfiguration.set("fs.s3a.access.key", getAuthStr(S3_ACCESS_KEY, context, resource))
+    }
+    if (!getAuthStr(S3_SECRET_KEY, context, resource).contains("None")) {
+      ss.sparkContext
+        .hadoopConfiguration.set("fs.s3a.secret.key", getAuthStr(S3_SECRET_KEY, context, resource))
+    }
   }
 
   def getAuthFromConfig(str: String, resource: Resource): String = {
