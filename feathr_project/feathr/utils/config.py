@@ -59,7 +59,8 @@ def generate_config(
     adls_key: str = None,
     **kwargs,
 ) -> str:
-    """Generate a feathr config yaml file.
+    """Generate a feathr config yaml file. Note, Feathr client will try to read environment variables first before read the config file.
+    See details from the FeathrClient docstrings.
 
     Note:
         This utility function assumes Azure resources are deployed using the Azure Resource Manager (ARM) template,
