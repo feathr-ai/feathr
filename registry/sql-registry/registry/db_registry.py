@@ -52,9 +52,10 @@ class DbRegistry(Registry):
     def __init__(self):
         self.conn = connect()
         if os.environ.get("FEATHR_SANDBOX"):
-            if os.environ.get("FEATHR_SANDBOX_REGISTRY_URL"):
-                print("FEATHR_SANDBOX_REGISTRY_URL is set. Please refer to https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls for how to construct the URLs.")
-                engine = db.create_engine(os.environ.get("FEATHR_SANDBOX_REGISTRY_URL"))
+            sandbox_registry_url = os.environ.get("FEATHR_SANDBOX_REGISTRY_URL")
+            if sandbox_registry_url:
+                print(f"FEATHR_SANDBOX_REGISTRY_URL is set to {sandbox_registry_url}. Please refer to https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls for how to construct the URLs.")
+                engine = db.create_engine(sandbox_registry_url)
             else:
                 engine = db.create_engine('sqlite:////tmp/feathr_registry.sqlite?check_same_thread=False') #Create test.sqlite automatically
             self.sql_session = Session(engine)

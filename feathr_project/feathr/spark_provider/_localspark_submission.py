@@ -107,14 +107,13 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 # This is a PySpark job, no more things to
                 if python_files.__len__() > 1:
                     spark_args.extend(["--py-files", ",".join(python_files[1:])])
-                print(python_files)
+                logger.info(f"Creating python files in {python_files}")
                 spark_args.append(python_files[0])
         else:
             if not python_files:
                 # This is a JAR job
                 spark_args.extend(["--class", main_class_name, main_jar_path])
             else:
-                print("main_jar_path", main_jar_path, maven_dependency_without_feathr)
                 spark_args.extend(["--jars", main_jar_path])
                 spark_args.extend(["--packages", maven_dependency_without_feathr])
                 # This is a PySpark job, no more things to
@@ -132,7 +131,9 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         cmd = " ".join(spark_args)
 
         log_append = open(f"{self.log_path}_{self.spark_job_num}.txt", "a")
-        proc = Popen(split(cmd), shell=False, stdout=log_append, stderr=STDOUT)
+        # remove stderr=STDOUT per https://stackoverflow.com/a/40046887
+        # reference code: https://github.com/lyft/airflow/blob/main/airflow/providers/apache/spark/hooks/spark_submit.py#L391
+        proc = Popen(split(cmd), shell=False, stdout=log_append)
         logger.info(f"Detail job stdout and stderr are in {self.log_path}.")
 
         self.spark_job_num += 1
@@ -208,6 +209,11 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 contents = f.read()
                 logger.error(contents)
             return False
+        elif proc.returncode == 143:
+            logger.info(
+                f"Spark job with pid {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds."
+            )
+            return True
         else:
             logger.info(
                 f"Spark job with pid {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds \
