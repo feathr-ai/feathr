@@ -74,7 +74,7 @@ setup(
         "pyyaml<=6.0",
         "Jinja2<=3.1.2",
         "pyarrow<=9.0.0",
-        "pyspark>=3.1.2",
+        "pyspark>=3.1.2",  # TODO upgrade the version once pyspark publishes new release to resolve `AttributeError: module 'numpy' has no attribute 'bool'`
         "python-snappy<=0.6.1",
         "deltalake>=0.6.2",
         "graphlib_backport<=1.0.3",

@@ -313,7 +313,7 @@ class DbRegistry(Registry):
                     json.loads(r[0]["attributes"]), SourceAttributes)
                 if attr.name == definition.name \
                         and attr.type == definition.type \
-                        and attr.path == definition.path \
+                        and attr.options == definition.options \
                         and attr.preprocessing == definition.preprocessing \
                         and attr.event_timestamp_column == definition.event_timestamp_column \
                         and attr.timestamp_format == definition.timestamp_format:

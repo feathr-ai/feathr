@@ -11,7 +11,7 @@ To maintain and improve codes quality of feathr, we expect test coverage ratio t
 
 ## How to conduct test coverage
 ### Through github workflows pipeline:
-   We already added this coverage checking into our CI pipeline. For every pull request, push and scheduled jobs, github will check the coverage when runing 'pytest' automatically. You can find the result for 'azure_synapse', 'databricks' and 'local spark', respectively from each PR and commit.
+   We already added this coverage checking into our CI pipeline. For every pull request, push and scheduled jobs, github will check the coverage when runing 'pytest' automatically. You can find the result for 'azure_synapse', 'databricks', 'local spark' and 'registry_test', respectively from each PR and commit. 
 
    An example of test coverage result:
 ![test coverage example](./images/coverage_res.png)
