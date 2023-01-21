@@ -130,6 +130,7 @@ project.ext.spec = [
         'avro' : "org.apache.avro:avro:1.10.2",
         "avroUtil": "com.linkedin.avroutil1:helper-all:0.2.100",
         "azure": "com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21",
+        "azure_cosmos": "com.azure.cosmos.spark:azure-cosmos-spark_3-1_2-12:4.16.0",
         'fastutil' : "it.unimi.dsi:fastutil:8.1.1",
         'mvel' : "org.mvel:mvel2:2.2.8.Final",
         'protobuf' : "com.google.protobuf:protobuf-java:2.6.1",
