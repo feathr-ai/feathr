@@ -53,7 +53,8 @@ class DbRegistry(Registry):
         self.conn = connect()
         if os.environ.get("FEATHR_SANDBOX"):
             if os.environ.get("FEATHR_SANDBOX_REGISTRY_URL"):
-                engine = db.create_engine(f'sqlite:///{os.environ.get("FEATHR_SANDBOX_REGISTRY_URL")}?check_same_thread=False')
+                print("FEATHR_SANDBOX_REGISTRY_URL is set. Please refer to https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls for how to construct the URLs.")
+                engine = db.create_engine(os.environ.get("FEATHR_SANDBOX_REGISTRY_URL"))
             else:
                 engine = db.create_engine('sqlite:////tmp/feathr_registry.sqlite?check_same_thread=False') #Create test.sqlite automatically
             self.sql_session = Session(engine)
