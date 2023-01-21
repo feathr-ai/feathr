@@ -107,14 +107,13 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 # This is a PySpark job, no more things to
                 if python_files.__len__() > 1:
                     spark_args.extend(["--py-files", ",".join(python_files[1:])])
-                print(python_files)
+                logger.info(f"Creating python files in {python_files}")
                 spark_args.append(python_files[0])
         else:
             if not python_files:
                 # This is a JAR job
                 spark_args.extend(["--class", main_class_name, main_jar_path])
             else:
-                print("main_jar_path", main_jar_path, maven_dependency_without_feathr)
                 spark_args.extend(["--jars", main_jar_path])
                 spark_args.extend(["--packages", maven_dependency_without_feathr])
                 # This is a PySpark job, no more things to
