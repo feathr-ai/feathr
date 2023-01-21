@@ -5,14 +5,15 @@ parent: Developer Guides
 ---
 # Cloud Integration Test/CI Pipeline
 
-We use [GitHub Actions](https://github.com/feathr-ai/feathr/tree/main/.github/workflows) to do cloud integration test. Currently the integration test has 4 jobs:
+We use [GitHub Actions](https://github.com/feathr-ai/feathr/tree/main/.github/workflows) to do cloud integration test. Currently the integration test has 5 jobs:
 
 - running `./gradlew test` to verify if the scala/spark related code has passed all the test
 - running `flake8` to lint python scripts and make sure there are no obvious syntax errors
 - running the built jar in databricks environment with end to end test to make sure it passed the end to end test
 - running the built jar in Azure Synapse environment with end to end test to make sure it passed the end to end test
+- running the end to end test cases for registry server to make sure related code can passed all the tests
 
-The above 4 jobs will ran in parallel, and if any one of them fails, the integration test will fail.
+The above 5 jobs will ran in parallel, and if any one of them fails, the integration test will fail.
 
 ## Cloud Testing Pipelines
 
