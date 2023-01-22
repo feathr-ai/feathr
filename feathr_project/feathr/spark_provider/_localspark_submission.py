@@ -131,7 +131,9 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         cmd = " ".join(spark_args)
 
         log_append = open(f"{self.log_path}_{self.spark_job_num}.txt", "a")
-        proc = Popen(split(cmd), shell=False, stdout=log_append, stderr=STDOUT)
+        # remove stderr=STDOUT per https://stackoverflow.com/a/40046887
+        # reference code: https://github.com/lyft/airflow/blob/main/airflow/providers/apache/spark/hooks/spark_submit.py#L391
+        proc = Popen(split(cmd), shell=False, stdout=log_append)
         logger.info(f"Detail job stdout and stderr are in {self.log_path}.")
 
         self.spark_job_num += 1
@@ -207,6 +209,11 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 contents = f.read()
                 logger.error(contents)
             return False
+        elif proc.returncode == 143:
+            logger.info(
+                f"Spark job with pid {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds."
+            )
+            return True
         else:
             logger.info(
                 f"Spark job with pid {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds \
