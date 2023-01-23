@@ -76,7 +76,7 @@ export const useForm = (form: FormInstance<any>, projectStr?: string) => {
           break
         case SourceTypeEnum.COSMOSDB:
           newDatasource.type = 'generic'
-          newDatasource.format = 'cosmos.oltp'
+          newDatasource.format = 'com.azure.cosmos.spark.CosmosItemsDataSource'
           newDatasource['spark.cosmos.accountKey'] = `$\{${values.name}_KEY}`.toLocaleUpperCase()
           newDatasource['spark.cosmos.accountEndpoint'] = values.endpoint
           newDatasource['spark.cosmos.database'] = values.dbtable
