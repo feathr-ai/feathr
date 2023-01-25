@@ -49,20 +49,17 @@ class EnvConfigReader(object):
         Returns:
             Feathr client's config value.
         """
-        res_env = self._get_variable_from_env(key)
-        res_file = (self._get_variable_from_file(key) if self.yaml_config else None)
-        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None)
+        val = self._get_variable_from_env(key)
+        if val is None and self.yaml_config is not None:
+            val = self._get_variable_from_file(key)
+        if val is None and self.akv_name is not None:
+            val = self._get_variable_from_akv(key)
 
-        # rewrite the logic below to make sure:
-        # First we have the order (i.e. res1 > res2 > res3 > default)
-        # Also previously we use OR for the result, which will yield a bug where say res1=None, res2=False, res3=None. Using OR will result to None result, although res2 actually have value
-        for res in [res_env, res_file, res_keyvault]:
-            if res is not None:
-                return res
-
-        logger.info(f"Config {key} is not found in the environment variable, configuration file, or the remote key value store. Using default value which is {default}.")
-
-        return default
+        if val is not None:
+            return val
+        else:
+            logger.info(f"Config {key} is not found in the environment variable, configuration file, or the remote key value store. Returning the default value: {default}.")
+            return default
 
     def get_from_env_or_akv(self, key: str) -> str:
         """Gets the Feathr config variable for the given key. This function ignores `use_env_vars` attribute and force to
@@ -78,23 +75,19 @@ class EnvConfigReader(object):
         Returns:
             Feathr client's config value.
         """
-        res_env = self._get_variable_from_env(key)
-        res_keyvault = (self._get_variable_from_akv(key) if self.akv_name else None)
+        val = self._get_variable_from_env(key)
+        if val is None and self.akv_name is not None:
+            val = self._get_variable_from_akv(key)
 
-        # rewrite the logic below to make sure:
-        # First we have the order (i.e. res1 > res2 > res3 > default)
-        # Also previously we use OR for the result, which will yield a bug where say res1=None, res2=False, res3=None. Using OR will result to None result, although res2 actually have value
-        for res in [res_env, res_keyvault]:
-            if res is not None:
-                return res
-
-        logger.warning(f"Config {key} is not found in the environment variable or the remote key value store.")
-        return None
+        if val is not None:
+            return val
+        else:
+            logger.warning(f"Config {key} is not found in the environment variable or the remote key value store.")
+            return None
 
     def _get_variable_from_env(self, key: str) -> str:
         # make it work for lower case and upper case.
         conf_var = os.environ.get(key.lower(), os.environ.get(key.upper()))
-
 
         return conf_var
 
@@ -117,7 +110,6 @@ class EnvConfigReader(object):
                     break
                 # make it work for lower case and upper case.
                 conf_var = conf_var.get(arg.lower(), conf_var.get(arg.upper()))
-
 
             return conf_var
         except Exception as e:
