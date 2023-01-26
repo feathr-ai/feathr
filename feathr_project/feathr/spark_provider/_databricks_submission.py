@@ -231,7 +231,7 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
                 "coordinates": get_maven_artifact_fullname()}
             # Add json-schema dependency
             # TODO: find a proper way deal with unresolved dependencies
-            submission_params['libraries'][1]['maven']= {
+            submission_params["libraries"][1]["maven"]= {
                 "coordinates": "com.github.everit-org.json-schema:org.everit.json.schema:1.9.1",
                 "repo":"https://repository.mulesoft.org/nexus/content/repositories/public/"
                 }
