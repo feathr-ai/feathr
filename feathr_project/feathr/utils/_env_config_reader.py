@@ -10,8 +10,7 @@ from feathr.secrets.akv_client import AzureKeyVaultClient
 class EnvConfigReader(object):
     """A utility class to read Feathr environment variables either from os environment variables,
     the config yaml file or Azure Key Vault.
-    If a key is set in the environment variable, ConfigReader will return the value of that environment variable
-    unless use_env_vars set to False.
+    If a key is set in the environment variable, ConfigReader will return the value of that environment variable.
     """
     akv_name: str = None      # Azure Key Vault name to use for retrieving config values.
     yaml_config: dict = None  # YAML config file content.
@@ -21,7 +20,6 @@ class EnvConfigReader(object):
 
         Args:
             config_path: Config file path.
-            use_env_vars (optional): Whether to use os environment variables instead of config file. Defaults to True.
         """
         if config_path is not None:
             config_path = Path(config_path)
@@ -37,7 +35,7 @@ class EnvConfigReader(object):
     def get(self, key: str, default: str = None) -> str:
         """Gets the Feathr config variable for the given key.
         It will retrieve the value in the following order:
-            - From the environment variable if `use_env_vars == True` and the key is set in the os environment variables.
+            - From the environment variable if the key is set in the os environment variables.
             - From the config yaml file if the key exists.
             - From the Azure Key Vault.
         If the key is not found in any of the above, it will return `default`.
@@ -50,6 +48,7 @@ class EnvConfigReader(object):
             Feathr client's config value.
         """
         val = self._get_variable_from_env(key)
+        # `val` could be a boolean value, so we need to check if it is None.
         if val is None and self.yaml_config is not None:
             val = self._get_variable_from_file(key)
         if val is None and self.akv_name is not None:
@@ -62,8 +61,7 @@ class EnvConfigReader(object):
             return default
 
     def get_from_env_or_akv(self, key: str) -> str:
-        """Gets the Feathr config variable for the given key. This function ignores `use_env_vars` attribute and force to
-        look up environment variables or Azure Key Vault.
+        """Gets the Feathr config variable for the given key.
         It will retrieve the value in the following order:
             - From the environment variable if the key is set in the os environment variables.
             - From the Azure Key Vault.
@@ -76,6 +74,7 @@ class EnvConfigReader(object):
             Feathr client's config value.
         """
         val = self._get_variable_from_env(key)
+        # `val` could be a boolean value, so we need to check if it is None.
         if val is None and self.akv_name is not None:
             val = self._get_variable_from_akv(key)
 
