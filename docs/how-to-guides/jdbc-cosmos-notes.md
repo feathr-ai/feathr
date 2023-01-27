@@ -106,3 +106,27 @@ client.get_offline_features(..., output_path=sink)
 ## Using SQL database as the online store
 
 Same as the offline, create JDBC sink and add it to the `MaterializationSettings`, set corresponding environment variables, then use it with `FeathrClient.materialize_features`.
+
+## Using CosmosDb as the online store
+
+To use CosmosDb as the online store, create `CosmosDbSink` and add it to the `MaterializationSettings`, then use it with `FeathrClient.materialize_features`, e.g..
+
+```
+name = 'cosmosdb_output'
+sink = CosmosDbSink(name, some_cosmosdb_url, some_cosmosdb_database, some_cosmosdb_collection)
+os.environ[f"{name.upper()}_KEY"] = "some_cosmosdb_api_key"
+client.materialize_features(..., materialization_settings=MaterializationSettings(..., sinks=[sink]))
+```
+
+Feathr client doesn't support getting feature values from CosmosDb, you need to use [official CosmosDb client](https://pypi.org/project/azure-cosmos/) to get the values:
+
+```
+from azure.cosmos import exceptions, CosmosClient, PartitionKey
+client = CosmosClient(some_cosmosdb_url, some_cosmosdb_api_key)
+db_client = client.get_database_client(some_cosmosdb_database)
+container_client = db_client.get_container_client(some_cosmosdb_collection)
+doc = container_client.read_item(some_key)
+feature_value = doc['feature_name']
+```
+
+**Note: There is currently a known issue with using azure.cosmos.spark package on databricks. Somehow this dependency is not resolving correctly on databricks when packaged through gradle and results in ClassNotFound error. To mitigate this issue, please install the azure.cosmos.spark package directly from [maven central](https://mvnrepository.com/artifact/com.azure.cosmos.spark/azure-cosmos-spark_3-1_2-12) following the steps [here](./manage-library-spark-platform.md)**
