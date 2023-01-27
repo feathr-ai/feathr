@@ -125,7 +125,7 @@ project.ext.spec = [
         ],
         'scala' : [
             'scala_library' : "org.scala-lang:scala-library:$ver.scala",
-            'scalatest' : "org.scalatest:scalatest_$ver.scala_rt:3.0.0",
+            'scalatest' : "org.scalatest:scalatest_$ver.scala_rt:3.2.9",
         ],
         'avro' : "org.apache.avro:avro:1.10.2",
         "avroUtil": "com.linkedin.avroutil1:helper-all:0.2.100",
@@ -153,7 +153,7 @@ project.ext.spec = [
         "antlr": "org.antlr:antlr4:4.8",
         "antlrRuntime": "org.antlr:antlr4-runtime:4.8",
         "jsqlparser": "com.github.jsqlparser:jsqlparser:3.1",
-
+        "scalaTestPlus": "org.scalatestplus:mockito-3-4_2.12:3.3.0.0-SNAP3",
     ]
 ]
 

@@ -19,7 +19,6 @@ import java.util.Set;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.scalatest.testng.TestNGSuite;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -27,7 +26,7 @@ import org.testng.annotations.Test;
 import static java.util.Collections.*;
 
 
-public class TestFeatureValue extends TestNGSuite {
+public class TestFeatureValue {
 
   private static final float DEFAULT_VALUE = FeatureValue.DEFAULT_VALUE;
   private static final String EMPTY_TERM = FeatureValue.EMPTY_TERM;

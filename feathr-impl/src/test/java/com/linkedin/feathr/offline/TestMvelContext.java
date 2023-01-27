@@ -1,6 +1,5 @@
 package com.linkedin.feathr.offline;
 
-import org.scalatest.testng.TestNGSuite;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
@@ -10,7 +9,7 @@ import static com.linkedin.feathr.common.util.MvelContextUDFs.*;
 import static org.testng.Assert.assertEquals;
 
 
-public class TestMvelContext extends TestNGSuite {
+public class TestMvelContext {
   @Test
   public void testCosineSimilarity() {
     // Test basic cosine similarity calculation
