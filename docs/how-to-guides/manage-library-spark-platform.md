@@ -13,4 +13,6 @@ If you want to intall maven, PyPi or private packages on your Synapse cluster, y
 
 ## Manage libraries for Azure Databricks
 
-Similarly to install an external library from PyPi, Maven or private packages, you can follow the official [databricks documentation](https://learn.microsoft.com/en-us/azure/databricks/libraries/cluster-libraries)
+Similarly to install an external library from PyPi, Maven or private packages on databricks you can follow the official [databricks documentation](https://learn.microsoft.com/en-us/azure/databricks/libraries/cluster-libraries)
+
+Note: There is currently a known issue with using azure.cosmos.spark package on databricks. Somehow this dependency is not resolving correctly on databricks when packaged through gradle and results in ClassNotFound error. To mitigate this issue, please install the azure.cosmos.spark package directly from [maven central](https://mvnrepository.com/artifact/com.azure.cosmos.spark/azure-cosmos-spark_3-1_2-12) following the above steps.
