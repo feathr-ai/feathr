@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.scalatest.testng.TestNGSuite;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -21,7 +20,7 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
 
-public class TestFeatureDependencyGraph extends TestNGSuite {
+public class TestFeatureDependencyGraph {
 
   /*
     Description of test scenario:

@@ -16,7 +16,7 @@ import org.testng.annotations.Test
 import org.testng.Assert._
 import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers._
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 
 /**
  * Unit test class for [[AnchoredFeatureJoinStep]].
