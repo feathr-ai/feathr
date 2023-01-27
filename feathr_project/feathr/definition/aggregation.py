@@ -20,3 +20,5 @@ class Aggregation(Enum):
     ELEMENTWISE_SUM = 9
     # Pick the latest value according to its timestamp
     LATEST = 10
+    # Pick the first value from the looked up values (non-deterministic)
+    FIRST = 11

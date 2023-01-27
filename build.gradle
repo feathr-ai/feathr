@@ -57,8 +57,9 @@ jar {
   }
   exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 
-  // Explicitly exclude com/linkedin/data files from the final jar. They can cause issues in other downstream applications.
+  // Explicitly exclude com/linkedin/data and org/apache/hadoop files from the final jar. They can cause issues in other downstream applications.
   exclude 'com/linkedin/data/**'
+  exclude 'org/apache/hadoop/**'
   zip64 = true
 }
 
@@ -124,7 +125,7 @@ project.ext.spec = [
         ],
         'scala' : [
             'scala_library' : "org.scala-lang:scala-library:$ver.scala",
-            'scalatest' : "org.scalatest:scalatest_$ver.scala_rt:3.0.0",
+            'scalatest' : "org.scalatest:scalatest_$ver.scala_rt:3.2.9",
         ],
         'avro' : "org.apache.avro:avro:1.10.2",
         "avroUtil": "com.linkedin.avroutil1:helper-all:0.2.100",
@@ -152,7 +153,7 @@ project.ext.spec = [
         "antlr": "org.antlr:antlr4:4.8",
         "antlrRuntime": "org.antlr:antlr4-runtime:4.8",
         "jsqlparser": "com.github.jsqlparser:jsqlparser:3.1",
-
+        "scalaTestPlus": "org.scalatestplus:mockito-3-4_2.12:3.3.0.0-SNAP3",
     ]
 ]
 
@@ -173,7 +174,7 @@ allprojects {
       pom {
         name = 'Feathr'
         description = 'An Enterprise-Grade, High Performance Feature Store'
-        url = 'https://github.com/linkedin/feathr'
+        url = 'https://github.com/feathr-ai/feathr'
         licenses {
           license {
             name = 'APL2'
@@ -189,7 +190,7 @@ allprojects {
         }
         scm {
           connection = 'scm:git@github.com:linkedin/feathr.git'
-          url = 'https://github.com/linkedin/feathr'
+          url = 'https://github.com/feathr-ai/feathr'
         }
       }
     }

@@ -6,7 +6,6 @@ import com.linkedin.feathr.common.tensor.TensorType;
 import com.linkedin.feathr.common.types.PrimitiveType;
 import java.util.Optional;
 
-import org.scalatest.testng.TestNGSuite;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -14,7 +13,7 @@ import static java.util.Collections.*;
 import static org.testng.Assert.*;
 
 
-public class AutoTensorizableTypesTest extends TestNGSuite {
+public class AutoTensorizableTypesTest {
   private static final TensorType NTV_EQUIVALENT_TENSOR_TYPE = new TensorType(PrimitiveType.FLOAT, singletonList(
       PrimitiveDimensionType.STRING));
 

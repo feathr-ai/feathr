@@ -33,7 +33,7 @@ DEFAULT_FEATHR_CONFIG = {
 # New databricks job cluster config
 DEFAULT_DATABRICKS_CLUSTER_CONFIG = {
     "spark_version": "11.2.x-scala2.12",
-    "node_type_id": "Standard_D3_v2",  # Change this if necessary
+    "node_type_id": "Standard_DS3_v2",  # Change this if necessary
     "num_workers": 1,
     "spark_conf": {
         "FEATHR_FILL_IN": "FEATHR_FILL_IN",
@@ -59,7 +59,8 @@ def generate_config(
     adls_key: str = None,
     **kwargs,
 ) -> str:
-    """Generate a feathr config yaml file.
+    """Generate a feathr config yaml file. Note, Feathr client will try to read environment variables first before read the config file.
+    See details from the FeathrClient docstrings.
 
     Note:
         This utility function assumes Azure resources are deployed using the Azure Resource Manager (ARM) template,

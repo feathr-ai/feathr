@@ -1,10 +1,25 @@
 {
+  "root": true,
   "env": {
+    "browser": true,
     "commonjs": true,
     "es6": true,
     "node": true
   },
-  "plugins": ["react", "@typescript-eslint/eslint-plugin", "prettier"],
+  "plugins": ["react", "@typescript-eslint", "prettier"],
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:jsx-a11y/recommended",
+    "plugin:import/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:json/recommended",
+    "plugin:prettier/recommended",
+    "plugin:jest/recommended"
+  ],
   "settings": {
     "import/resolver": {
       "node": {
@@ -13,38 +28,82 @@
       "typescript": {}
     }
   },
-  "extends": [
-    // https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
-    "eslint:recommended",
-    // https://github.com/facebook/create-react-app/tree/main/packages/eslint-config-react-app
-    "react-app",
-    // https://reactjs.org/docs/hooks-rules.html
-    "plugin:react-hooks/recommended",
-    "plugin:prettier/recommended",
-    "plugin:json/recommended"
-  ],
-  "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2018,
-    "sourceType": "module"
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module" 
   },
   "rules": {
-    "dot-notation": "error",
     "import/extensions": [
       "error",
       "ignorePackages",
       {
         "ts": "never",
         "tsx": "never",
+        "json": "always",
         "js": "never",
         "jsx": "never"
       }
     ],
-    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
     "import/prefer-default-export": "off",
+    "import/named": "off",
     "import/no-unresolved": "error",
     "import/no-dynamic-require": "off",
-    "import/no-mutable-exports": "warn"
+    "import/no-mutable-exports": "warn",
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "import/order": [
+      "error",
+      {
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "object"],
+        "pathGroups": [
+          {
+            "pattern": "react",
+            "group": "builtin",
+            "position": "before"
+          },
+          {
+            "pattern": "{.,..}/**/*.less",
+            "group": "object",
+            "position": "after"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["react"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
+
+    "react/jsx-sort-props": [
+      "error",
+      {
+        "callbacksLast": true,
+        "shorthandFirst": true,
+        "shorthandLast": false,
+        "multiline": "first",
+        "ignoreCase": false,
+        "noSortAlphabetically": true,
+        "reservedFirst": ["key", "ref"],
+        "locale": "auto"
+      }
+    ],
+    "react-hooks/exhaustive-deps": "off",
+
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+
+    "@typescript-eslint/no-unused-vars": ["warn", { "args": "none" }],
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+
+    "dot-notation": "error",
+    "quotes": ["error", "single"]
   },
   "overrides": [
     {

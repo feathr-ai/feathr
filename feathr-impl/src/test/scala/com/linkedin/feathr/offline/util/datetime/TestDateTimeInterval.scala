@@ -3,14 +3,14 @@ package com.linkedin.feathr.offline.util.datetime
 import com.linkedin.feathr.common.DateTimeResolution
 import com.linkedin.feathr.offline.TestUtils.{createDailyInterval, createHourlyInterval}
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils.createTimeFromString
-import org.scalatest.testng.TestNGSuite
+
 import org.testng.annotations.Test
 import org.testng.Assert.{assertEquals, assertFalse, assertTrue}
 
 /**
  * unit tests for [[DateTimeInterval]]
  */
-class TestDateTimeInterval extends TestNGSuite {
+class TestDateTimeInterval {
 
   @Test(description = "test creation of DateTimeInterval")
   def testCreation(): Unit = {

@@ -39,6 +39,8 @@ from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
 from feathr.version import get_version
+import importlib.util
+
 
 
 class FeathrClient(object):
@@ -63,21 +65,24 @@ class FeathrClient(object):
         local_workspace_dir: str = None,
         credential: Any = None,
         project_registry_tag: Dict[str, str] = None,
-        use_env_vars: bool = True,
     ):
         """Initialize Feathr Client.
+        Configuration values used by the Feathr are evaluated in the following precedence, with items higher on the list taking priority.
+            1. Environment variables
+            2. Values in the configuration file
+            3. Values in the Azure Key Vault
 
         Args:
             config_path (optional): Config yaml file path. See [Feathr Config Template](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
             local_workspace_dir (optional): Set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
             credential (optional): Azure credential to access cloud resources, most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
-            project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
-            use_env_vars (optional): Whether to use environment variables to set up the client. If set to False, the client will not use environment variables to set up the client. Defaults to True.
+            project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project level. Default is empty
         """
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
-        self.env_config = EnvConfigReader(config_path=config_path, use_env_vars=use_env_vars)
+        self._COMPOSITE_KEY_SEPARATOR = '#'
+        self.env_config = EnvConfigReader(config_path=config_path)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
@@ -93,13 +98,19 @@ class FeathrClient(object):
         self.project_name = self.env_config.get(
             'project_config__project_name')
 
-        # Redis configs
-        self.redis_host = self.env_config.get(
-            'online_store__redis__host')
-        self.redis_port = self.env_config.get(
-            'online_store__redis__port')
-        self.redis_ssl_enabled = self.env_config.get(
-            'online_store__redis__ssl_enabled')
+        # Redis configs. This is optional unless users have configured Redis host.
+        if self.env_config.get('online_store__redis__host'):
+            # For illustrative purposes.
+            spec = importlib.util.find_spec("redis")
+            if spec is None:
+                self.logger.warning('You have configured Redis host, but there is no local Redis client package. Install the package using "pip install redis". ')
+            self.redis_host = self.env_config.get(
+                'online_store__redis__host')
+            self.redis_port = self.env_config.get(
+                'online_store__redis__port')
+            self.redis_ssl_enabled = self.env_config.get(
+                'online_store__redis__ssl_enabled')
+            self._construct_redis_client()
 
         # Offline store enabled configs; false by default
         self.s3_enabled = self.env_config.get(
@@ -181,7 +192,6 @@ class FeathrClient(object):
                 master = self.env_config.get('spark_config__local__master')
                 )
 
-        self._construct_redis_client()
 
         self.secret_names = []
 
@@ -309,12 +319,14 @@ class FeathrClient(object):
         """
         return self.registry._get_registry_client()
 
-    def get_online_features(self, feature_table, key, feature_names):
+    def get_online_features(self, feature_table: str, key: Any, feature_names: List[str]):
         """Fetches feature value for a certain key from a online feature table.
 
         Args:
             feature_table: the name of the feature table.
-            key: the key of the entity
+            key: the key/key list of the entity;
+                 for key list, please make sure the order is consistent with the one in feature's definition;
+                 the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
 
         Return:
@@ -330,12 +342,14 @@ class FeathrClient(object):
         res = self.redis_client.hmget(redis_key, *feature_names)
         return self._decode_proto(res)
 
-    def multi_get_online_features(self, feature_table, keys, feature_names):
+    def multi_get_online_features(self, feature_table: str, keys: List[Any], feature_names: List[str]):
         """Fetches feature value for a list of keys from a online feature table. This is the batch version of the get API.
 
         Args:
             feature_table: the name of the feature table.
-            keys: list of keys for the entities
+            keys: list of keys/composite keys for the entities;
+                  for composite keys, please make sure each order of them is consistent with the one in feature's definition;
+                  the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
 
         Return:
@@ -356,7 +370,9 @@ class FeathrClient(object):
         decoded_pipeline_result = []
         for feature_list in pipeline_result:
             decoded_pipeline_result.append(self._decode_proto(feature_list))
-
+        for i in range(len(keys)):
+            if isinstance(keys[i], List):
+                keys[i] = self._COMPOSITE_KEY_SEPARATOR.join(keys[i])
         return dict(zip(keys, decoded_pipeline_result))
 
     def _decode_proto(self, feature_list):
@@ -448,7 +464,20 @@ class FeathrClient(object):
                 self.redis_client.delete(*keys)
 
     def _construct_redis_key(self, feature_table, key):
+        if isinstance(key, List):
+            key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
+
+    def _str_to_bool(self, s: str, variable_name = None):
+        """Define a function to detect convert string to bool, since Redis client sometimes require a bool and sometimes require a str
+        """
+        if (isinstance(s, str) and s.casefold() == 'True'.casefold()) or s == True:
+            return True
+        elif (isinstance(s, str) and s.casefold() == 'False'.casefold()) or s == False:
+            return False
+        else:
+            self.logger.warning(f'{s} is not a valid Bool value. Maybe you want to double check if it is set correctly for {variable_name}.')
+            return s
 
     def _construct_redis_client(self):
         """Constructs the Redis client. The host, port, credential and other parameters can be set via environment
@@ -458,14 +487,12 @@ class FeathrClient(object):
         host = self.redis_host
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
-
-        redis_client = redis.Redis(
+        self.redis_client = redis.Redis(
             host=host,
             port=port,
             password=password,
-            ssl=ssl_enabled)
+            ssl=self._str_to_bool(ssl_enabled, "ssl_enabled"))
         self.logger.info('Redis connection is successful and completed.')
-        self.redis_client = redis_client
 
 
     def get_offline_features(self,
@@ -653,7 +680,7 @@ class FeathrClient(object):
         for feature in features:
             new_keys = self._get_feature_key(feature)
             if new_keys is None:
-                self.logger.error(f"Key of feature: {feature} is empty. If this feature is not from INPUT_CONTEXT, you might want to double check on the feature definition to see whether the key is empty or not.")
+                self.logger.error(f"Key of feature: {feature} is empty. Please confirm the feature is defined. In addition, if this feature is not from INPUT_CONTEXT, you might want to double check on the feature definition to see whether the key is empty or not.")
                 return False
             # If only get one key and it's "NOT_NEEDED", it means the feature has an empty key.
             if ','.join(new_keys) == "NOT_NEEDED" and not allow_empty_key:
@@ -683,12 +710,12 @@ class FeathrClient(object):
         if len(feature_list) > 0:
             if 'anchor_list' in dir(self):
                 anchors = [anchor for anchor in self.anchor_list if isinstance(anchor.source, InputContext)]
-                anchor_feature_names = set(feature.name  for anchor in anchors for feature in anchor.features)
+                anchor_feature_names = set(feature.name for anchor in anchors for feature in anchor.features)
                 for feature in feature_list:
                     if feature in anchor_feature_names:
                         raise RuntimeError(f"Materializing features that are defined on INPUT_CONTEXT is not supported. {feature} is defined on INPUT_CONTEXT so you should remove it from the feature list in MaterializationSettings.")
             if not self._valid_materialize_keys(feature_list):
-                raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys. Currently Feathr only supports materializing features of the same keys.")
+                raise RuntimeError(f"Invalid materialization features: {feature_list}, since they have different keys or they are not defined. Currently Feathr only supports materializing features of the same keys.")
 
         if not allow_materialize_non_agg_feature:
             # Check if there are non-aggregation features in the list
@@ -837,7 +864,7 @@ class FeathrClient(object):
         REDIS_HOST: "{REDIS_HOST}"
         REDIS_PORT: {REDIS_PORT}
         REDIS_SSL_ENABLED: {REDIS_SSL_ENABLED}
-        """.format(REDIS_PASSWORD=password, REDIS_HOST=host, REDIS_PORT=port, REDIS_SSL_ENABLED=ssl_enabled)
+        """.format(REDIS_PASSWORD=password, REDIS_HOST=host, REDIS_PORT=port, REDIS_SSL_ENABLED=str(ssl_enabled))
         return self._reshape_config_str(config_str)
 
     def _get_s3_config_str(self):

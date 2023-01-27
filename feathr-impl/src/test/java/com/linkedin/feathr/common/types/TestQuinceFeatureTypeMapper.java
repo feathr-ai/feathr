@@ -6,7 +6,6 @@ import com.linkedin.feathr.common.tensor.PrimitiveDimensionType;
 import com.linkedin.feathr.common.tensor.TensorCategory;
 import com.linkedin.feathr.common.tensor.TensorType;
 import com.linkedin.feathr.common.value.QuinceFeatureTypeMapper;
-import org.scalatest.testng.TestNGSuite;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -14,7 +13,7 @@ import static java.util.Collections.*;
 import static org.testng.Assert.*;
 
 
-public class TestQuinceFeatureTypeMapper extends TestNGSuite {
+public class TestQuinceFeatureTypeMapper {
   @DataProvider
   public Object[][] quinceTypeMapperCases() {
     return new Object[][] {

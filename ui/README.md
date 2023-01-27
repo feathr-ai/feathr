@@ -53,10 +53,10 @@ Following tools are used to lint and format code:
 
 #### Linting
 
-If ESLint plugin is installed, vscode will pickup configuration from [.eslintrc](.eslintrc) and automatically lint the code on save. To lint code for entire code base, simply run:
+If ESLint plugin is installed, vscode will pick up configuration from [.eslintrc](.eslintrc) and automatically lint the code on save. To lint code for entire code base, simply run:
 
 ```
-npm run lint:fix
+npm run lint-eslint
 ```
 
 This command will automatically fix all problems that can be fixed, and list the rest problems requires manual fix.
