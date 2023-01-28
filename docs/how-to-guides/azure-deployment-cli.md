@@ -8,6 +8,8 @@ parent: How-to Guides
 
 Due to the complexity of the possible cloud environment, it is almost impossible to create a script that works for all the cloud setup use cases. We have a quick start guide below that will facilitate this process.
 
+__Note: We strongly recommend to use the ARM template for deployment purposes as this document is not updated frequently and if you understand the risks and are more hands on then please proceed. You will have to do the configuration manually for it to work with feathr__
+
 ## Provision Azure Resources using CLI
 
 1. Use the content below as a detailed explanation of [Azure resource provisioning script](./azure_resource_provision.sh). **DO NOT** run that script directly given the complexity of cloud environment setup. Instead, follow the steps in this documentation so you can always go back and check your step in case of some failures.
