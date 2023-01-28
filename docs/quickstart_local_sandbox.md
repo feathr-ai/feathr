@@ -97,12 +97,20 @@ dialect+driver://username:password@host:port/database
 ```
 
 ## For Feathr Developers
-The Feathr package is copied to the user folder, and is installed with `pip install -e` option, which means you can do interactive development in the python package. For example you want to validate changes, instead of setting up the environment, you can simply go to the 
 
+Feathr Sandbox is ideal for local development purpose as well, as it provides a simplified environment which you can use. There are a few use cases where the Feathr developers can benefit from the Feathr Sandbox:
 
-note that if you are using Jupyter notebook to run the code, make sure you restart jupyter notebook so the kernel can reload Feathr package.
-You should be able to see the 
+### Python Client Development
+
+For folks who are changing the code on the Feathr Python client side (i.e. files under the [`feathr_project` folder](../feathr_project/)), Feathr Sandbox has this python client pre-installed with `pip install -e` option, which means you can do interactive development in the python package. For example you want to validate changes, instead of setting up the environment, you can simply go to the folder and edit those files. In those cases, the Feathr client installation in the python environment will reload automatically. 
+
+Pleas also note that if you are using Jupyter Notebooks to validate the Python package development, you need to restart your Jupyter Notebook in order to force Jupyter Notebook to reload the python package.
 
 ![Feathr Dev Experience](./images/feathr-sandbox-dev-experience.png)
 
 In the future, an VSCode Server might be installed so that you can do interactive development in the docker container.
+
+
+### Feathr UI and Feathr Registry API Server development
+
+When packaging the Feathr Sandbox docker image, Feathr automatically builds the latest UI and Registry server code, and put them into the right folder of the Feathr Sandbox images.
