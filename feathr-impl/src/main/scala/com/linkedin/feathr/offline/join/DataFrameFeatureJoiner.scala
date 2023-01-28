@@ -190,6 +190,8 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         .map(featureGroups.allAnchoredFeatures),
       failOnMissingPartition)
 
+    val updatedAnchorSourceAccessorMap = anchorSourceAccessorMap.filter(x => x._2.isDefined).map(x => x._1 -> x._2.get)
+
     implicit val joinExecutionContext: JoinExecutionContext =
       JoinExecutionContext(ss, logicalPlan, featureGroups, bloomFilters, Some(saltedJoinFrequentItemDFs))
     // 3. Join sliding window aggregation features
@@ -210,7 +212,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
           SparkJoinWithJoinCondition(EqualityJoinConditionBuilder), mvelContext)
       }
     val FeatureDataFrameOutput(FeatureDataFrame(withAllBasicAnchoredFeatureDF, inferredBasicAnchoredFeatureTypes)) =
-      anchoredFeatureJoinStep.joinFeatures(requiredRegularFeatureAnchors, AnchorJoinStepInput(withWindowAggFeatureDF, anchorSourceAccessorMap))
+      anchoredFeatureJoinStep.joinFeatures(requiredRegularFeatureAnchors, AnchorJoinStepInput(withWindowAggFeatureDF, updatedAnchorSourceAccessorMap))
     // 5. If useSlickJoin, restore(join back) all observation fields before we evaluate post derived features, sequential join and passthrough
     // anchored features, as they might require other columns in the original observation data, while the current observation
     // dataset does not have these fields (were removed in the preProcessObservation)

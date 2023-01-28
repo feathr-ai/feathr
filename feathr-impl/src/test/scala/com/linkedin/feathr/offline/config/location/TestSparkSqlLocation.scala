@@ -32,7 +32,7 @@ class TestSparkSqlLocation extends TestFeathr{
     val loc = SparkSqlLocation(sql = Some("select * from test_spark_sql_table order by users asc"))
     val dataSource = DataSource(loc, SourceFormatType.FIXED_PATH)
     val accessor = DataSourceAccessor(ss, dataSource, None, None, failOnMissingPartition = false, dataPathHandlers=List())
-    val df = accessor.get()
+    val df = accessor.get.get()
     val expectedRows = Array(
       Row("Scala", 3000),
       Row("Java", 20000),

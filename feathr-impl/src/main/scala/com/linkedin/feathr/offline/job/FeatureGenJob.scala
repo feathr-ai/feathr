@@ -238,7 +238,7 @@ object FeatureGenJob {
     // For example, f1, f2 belongs to anchor. Then Map("f1,f2"-> anchor)
     val dataFrameMapForPreprocessing = anchorsWithSource
       .filter(x => featureNamesInAnchorSet.contains(x._1.featureAnchor.features.toSeq.sorted.mkString(",")))
-      .map(x => (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get()))
+      .map(x => (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get.get()))
 
     // Pyspark only understand Java map so we need to convert Scala map back to Java map.
     dataFrameMapForPreprocessing.asJava

@@ -219,7 +219,7 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
     val anchorDFMap1 = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(ss, Seq(featureAnchor), failOnMissingPartition)
     val featureInfo = FeatureTransformation.directCalculate(
       anchorGroup: AnchorFeatureGroups,
-      anchorDFMap1(featureAnchor),
+      anchorDFMap1(featureAnchor).get,
       featureAnchor.featureAnchor.sourceKeyExtractor,
       None,
       None,

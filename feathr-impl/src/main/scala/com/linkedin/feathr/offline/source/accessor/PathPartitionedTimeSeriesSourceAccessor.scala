@@ -7,7 +7,7 @@ import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, PathInfo, TimeBasedHdfsPathGenerator}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
-import com.linkedin.feathr.offline.util.PartitionLimiter
+import com.linkedin.feathr.offline.util.{FeathrUtils, PartitionLimiter}
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.DataFrame
@@ -122,6 +122,7 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
    * @param timeInterval timespan of dataset
    * @param failOnMissingPartition whether to fail the file loading if some of the date partitions are missing.
    * @param addTimestampColumn whether to create a timestamp column from the time partition of the source.
+   * @param skipFeature if feature data is not present, boolean var to see if this feature should be skipped.
    * @return a TimeSeriesSource
    */
   def apply(
@@ -132,23 +133,25 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
       source: DataSource,
       timeInterval: DateTimeInterval,
       failOnMissingPartition: Boolean,
-      addTimestampColumn: Boolean): DataSourceAccessor = {
+      addTimestampColumn: Boolean,
+      skipFeature: Boolean): DataSourceAccessor = {
     val pathGenerator = new TimeBasedHdfsPathGenerator(pathChecker)
     val dateTimeResolution = pathInfo.dateTimeResolution
     val postPath = source.postPath
     val postfixPath = if(postPath.isEmpty || postPath.startsWith("/")) postPath else "/" + postPath
     val pathList = pathGenerator.generate(pathInfo, timeInterval, !failOnMissingPartition, postfixPath)
     val timeFormatString = pathInfo.datePathPattern
-
     val dataframes = pathList.map(path => {
       val timeStr = path.substring(path.length - (timeFormatString.length + postfixPath.length), path.length - postfixPath.length)
       val time = OfflineDateTimeUtils.createTimeFromString(timeStr, timeFormatString)
       val interval = DateTimeInterval.createFromInclusive(time, time, dateTimeResolution)
+
       val df = fileLoaderFactory.create(path).loadDataFrame()
       (df, interval)
     })
 
-    if (dataframes.isEmpty) {
+
+    if (dataframes.isEmpty && !skipFeature) {
       val errMsg = s"Input data is empty for creating TimeSeriesSource. No available " +
         s"date partition exist in HDFS for path ${pathInfo.basePath} between ${timeInterval.getStart} and ${timeInterval.getEnd} "
       val errMsgPf = errMsg + s"with postfix path ${postfixPath}"
@@ -160,6 +163,7 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
           ErrorLabel.FEATHR_USER_ERROR, errMsgPf)
       }
     }
+
     val datePartitions = dataframes.map {
       case (df, interval) =>
         DatePartition(df, interval)
