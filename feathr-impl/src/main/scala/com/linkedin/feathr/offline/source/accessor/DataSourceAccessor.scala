@@ -4,7 +4,7 @@ import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer}
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
-import com.linkedin.feathr.offline.util.PartitionLimiter
+import com.linkedin.feathr.offline.util.{FeathrUtils, PartitionLimiter}
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -48,21 +48,22 @@ private[offline] object DataSourceAccessor {
       failOnMissingPartition: Boolean,
       addTimestampColumn: Boolean = false,
       isStreaming: Boolean = false,
-      dataPathHandlers: List[DataPathHandler]): DataSourceAccessor = { //TODO: Add tests
+      dataPathHandlers: List[DataPathHandler]): Option[DataSourceAccessor] = { //TODO: Add tests
 
     val dataAccessorHandlers: List[DataAccessorHandler] = dataPathHandlers.map(_.dataAccessorHandler)
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
 
     val sourceType = source.sourceType
     val dataLoaderFactory = DataLoaderFactory(ss, isStreaming, dataLoaderHandlers)
+    val skipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
     if (isStreaming) {
-      new StreamDataSourceAccessor(ss, dataLoaderFactory, source)
+      Some(new StreamDataSourceAccessor(ss, dataLoaderFactory, source))
     } else if (dateIntervalOpt.isEmpty || sourceType == SourceFormatType.FIXED_PATH || sourceType == SourceFormatType.LIST_PATH) {
       // if no input interval, or the path is fixed or list, load whole dataset
-      new NonTimeBasedDataSourceAccessor(ss, dataLoaderFactory, source, expectDatumType)
+      Some(new NonTimeBasedDataSourceAccessor(ss, dataLoaderFactory, source, expectDatumType))
     } else {
       import scala.util.control.Breaks._
-      
+
       val timeInterval = dateIntervalOpt.get
       var dataAccessorOpt: Option[DataSourceAccessor] = None
       breakable {
@@ -74,8 +75,12 @@ private[offline] object DataSourceAccessor {
         }
       }
       val dataAccessor = dataAccessorOpt match {
-        case Some(dataAccessor) => dataAccessor
-        case _ => createFromHdfsPath(ss, source, timeInterval, expectDatumType, failOnMissingPartition, addTimestampColumn, dataLoaderHandlers)
+        case Some(dataAccessor) => dataAccessorOpt
+        case _ => try {
+          Some(createFromHdfsPath(ss, source, timeInterval, expectDatumType, failOnMissingPartition, addTimestampColumn, dataLoaderHandlers))
+        } catch {
+          case e: Exception => if (!skipFeature) throw e else None
+        }
       }
       dataAccessor
     }
@@ -106,6 +111,7 @@ private[offline] object DataSourceAccessor {
     val partitionLimiter = new PartitionLimiter(ss)
     val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
     val fileName = new File(source.path).getName
+    val skipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ENABLE_SALTED_JOIN).toBoolean
     if (source.timePartitionPattern.isDefined) {
       // case 1: the timePartitionPattern exists
       val pathInfo = pathAnalyzer.analyze(source.path, source.timePartitionPattern.get)
@@ -117,7 +123,8 @@ private[offline] object DataSourceAccessor {
         source,
         timeInterval,
         failOnMissingPartition,
-        addTimestampColumn)
+        addTimestampColumn,
+        skipFeature)
     } else {
       // legacy configurations without timePartitionPattern
       if (fileName.endsWith("daily") || fileName.endsWith("hourly") || source.sourceType == SourceFormatType.TIME_PATH) {
@@ -131,7 +138,8 @@ private[offline] object DataSourceAccessor {
           source,
           timeInterval,
           failOnMissingPartition,
-          addTimestampColumn)
+          addTimestampColumn,
+          skipFeature)
       } else {
         // case 3: load as whole dataset
         new NonTimeBasedDataSourceAccessor(ss, fileLoaderFactory, source, expectDatumType)
@@ -147,7 +155,7 @@ private[offline] object DataSourceAccessor {
  */
 private[offline] case class DataAccessorHandler(
   validatePath: String => Boolean,
-  getAccessor: 
+  getAccessor:
   (
     SparkSession,
     DataSource,

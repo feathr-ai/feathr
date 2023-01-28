@@ -79,6 +79,6 @@ class TestDataSourceAccessor extends TestFeathr {
     val accessor = DataSourceAccessor(ss=ss, source=source, dateIntervalOpt=sourceInterval,
       expectDatumType=None, failOnMissingPartition = false, dataPathHandlers=List())
     assertTrue(accessor.isInstanceOf[NonTimeBasedDataSourceAccessor])
-    assertEquals(accessor.get().count(), 10L)
+    assertEquals(accessor.get.get().count(), 10L)
   }
 }

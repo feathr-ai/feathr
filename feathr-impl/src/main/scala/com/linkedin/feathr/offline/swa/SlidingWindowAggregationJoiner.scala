@@ -115,6 +115,8 @@ private[offline] class SlidingWindowAggregationJoiner(
         case (source, grouped) => (source, grouped.map(_._2))
       })
 
+    val notJoinedFeatures = new mutable.HashSet[String]()
+
     // For each source, we calculate the maximum window duration that needs to be loaded across all
     // required SWA features defined on this source.
     // Then we load the source only once.
@@ -140,10 +142,13 @@ private[offline] class SlidingWindowAggregationJoiner(
               maxDurationPerSource,
               featuresToDelayImmutableMap.values.toArray,
               failOnMissingPartition)
-
+        if (originalSourceDf.isEmpty) {
+          res.map(notJoinedFeatures.add)
+          anchors.map(anchor => (anchor, originalSourceDf))
+        } else {
         val sourceDF: DataFrame = preprocessedDf match {
           case Some(existDf) => existDf
-          case None => originalSourceDf
+          case None => originalSourceDf.get
         }
 
         // all the anchors here have same key sourcekey extractor, so we just use the first one to generate key column and share
@@ -155,13 +160,17 @@ private[offline] class SlidingWindowAggregationJoiner(
           case keyExtractor => keyExtractor.appendKeyColumns(sourceDF)
         }
 
-        anchors.map(anchor => (anchor, withKeyDF))
-    })
+        anchors.map(anchor => (anchor, Some(withKeyDF)))
+    }}
+    )
+
+    val updatedWindowAggAnchorDFMap = windowAggAnchorDFMap.filter(x => x._2.isDefined).map(x => x._1 ->x._2.get)
 
     val allInferredFeatureTypes = mutable.Map.empty[String, FeatureTypeConfig]
 
     windowAggFeatureStages.foreach({
       case (keyTags: Seq[Int], featureNames: Seq[String]) =>
+        if (!featureNames.diff(notJoinedFeatures.toSeq).isEmpty) {
         val stringKeyTags = keyTags.map(keyTagList).map(k => s"CAST (${k} AS string)") // restore keyTag to column names in join config
 
         // get the bloom filter for the key combinations in this stage
@@ -188,10 +197,10 @@ private[offline] class SlidingWindowAggregationJoiner(
               s"${labelDataDef.dataSource.collect().take(3).map(_.toString()).mkString("\n ")}")
         }
         val windowAggAnchorsThisStage = featureNames.map(allWindowAggFeatures)
-        val windowAggAnchorDFThisStage = windowAggAnchorDFMap.filterKeys(windowAggAnchorsThisStage.toSet)
+        val windowAggAnchorDFThisStage = updatedWindowAggAnchorDFMap.filterKeys(windowAggAnchorsThisStage.toSet)
 
         val factDataDefs =
-          SlidingWindowFeatureUtils.getSWAAnchorGroups(windowAggAnchorDFThisStage).map {
+          SlidingWindowFeatureUtils.getSWAAnchorGroups(updatedWindowAggAnchorDFMap).map {
             anchorWithSourceToDFMap =>
               val selectedFeatures = anchorWithSourceToDFMap.keySet.flatMap(_.selectedFeatures).filter(featureNames.contains(_))
               val factData = anchorWithSourceToDFMap.head._2
@@ -244,7 +253,7 @@ private[offline] class SlidingWindowAggregationJoiner(
                   s"${factDataDef.dataSource.collect().take(3).map(_.toString()).mkString("\n ")}")
           }
         }
-    })
+    }})
     offline.FeatureDataFrame(contextDF, allInferredFeatureTypes.toMap)
   }
 

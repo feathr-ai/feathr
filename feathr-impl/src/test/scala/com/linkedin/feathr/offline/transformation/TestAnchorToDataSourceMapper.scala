@@ -139,7 +139,7 @@ class TestAnchorToDataSourceMapper extends TestFeathr with MockitoSugar {
       false)
 
     // for systematic comparison, sort both original and loaded data by (timestamp, mId, value)
-    val anchorData = anchorDF.rdd.collect().toSeq.sortBy(row => (row.getLong(1), row.getLong(0), row.getFloat(2))) // sort by timestamp then by mId
+    val anchorData = anchorDF.get.rdd.collect().toSeq.sortBy(row => (row.getLong(1), row.getLong(0), row.getFloat(2))) // sort by timestamp then by mId
     val sortedRecords =
       records2018011002.sortBy(r => (r.get("timestamp").asInstanceOf[Long], r.get("mId").asInstanceOf[Long], r.get("value").asInstanceOf[Float]))
     assertEquals(anchorData.size, 2)
@@ -158,7 +158,7 @@ class TestAnchorToDataSourceMapper extends TestFeathr with MockitoSugar {
       simulateTimeDelays,
       false)
 
-    val anchorData2 = anchorDF2.rdd.collect().toSeq.sortBy(row => (row.getLong(1), row.getLong(0), row.getFloat(2)))
+    val anchorData2 = anchorDF2.get.rdd.collect().toSeq.sortBy(row => (row.getLong(1), row.getLong(0), row.getFloat(2)))
     val sortedRecords2 = (records2018011002 ++ records2018011003).sortBy(r =>
       (r.get("timestamp").asInstanceOf[Long], r.get("mId").asInstanceOf[Long], r.get("value").asInstanceOf[Float]))
     assertEquals(anchorData2.size, 4)
@@ -207,7 +207,7 @@ class TestAnchorToDataSourceMapper extends TestFeathr with MockitoSugar {
       simulateTimeDelays,
       failOnMissingPartition = false)
 
-    val anchorData = anchorDF.rdd.collect().toSeq.sortBy(row => (row.getLong(1), row.getLong(0), row.getFloat(2))) // sort by timestamp then by mId
+    val anchorData = anchorDF.get.rdd.collect().toSeq.sortBy(row => (row.getLong(1), row.getLong(0), row.getFloat(2))) // sort by timestamp then by mId
     val sortedRecords = (records20180110 ++ records20180111).sortBy(r =>
       (r.get("timestamp").asInstanceOf[Long], r.get("mId").asInstanceOf[Long], r.get("value").asInstanceOf[Float]))
     assertEquals(anchorData.size, 4)
@@ -228,7 +228,7 @@ class TestAnchorToDataSourceMapper extends TestFeathr with MockitoSugar {
       simulateTimeDelays,
       failOnMissingPartition = false)
 
-    val anchorData2 = anchorDF2.rdd.collect().toSeq.sortBy(row => (row.getLong(1), row.getLong(0), row.getFloat(2)))
+    val anchorData2 = anchorDF2.get.rdd.collect().toSeq.sortBy(row => (row.getLong(1), row.getLong(0), row.getFloat(2)))
     val sortedRecords2 = (records20180110 ++ records20180111).sortBy(r =>
       (r.get("timestamp").asInstanceOf[Long], r.get("mId").asInstanceOf[Long], r.get("value").asInstanceOf[Float]))
     assertEquals(anchorData2.size, 4)

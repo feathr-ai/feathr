@@ -34,7 +34,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
   def getBasicAnchorDFMapForJoin(
       ss: SparkSession,
       requiredFeatureAnchors: Seq[FeatureAnchorWithSource],
-      failOnMissingPartition: Boolean): Map[FeatureAnchorWithSource, DataSourceAccessor] = {
+      failOnMissingPartition: Boolean): Map[FeatureAnchorWithSource, Option[DataSourceAccessor]] = {
     // get a Map from each source to a list of all anchors based on this source
     val sourceToAnchor = requiredFeatureAnchors
       .map(anchor => (anchor.source, anchor))
@@ -63,12 +63,12 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             }
         }
         val timeSeriesSource = DataSourceAccessor(ss = ss,
-                                                  source = source, 
-                                                  dateIntervalOpt = dateInterval, 
-                                                  expectDatumType = Some(expectDatumType), 
+                                                  source = source,
+                                                  dateIntervalOpt = dateInterval,
+                                                  expectDatumType = Some(expectDatumType),
                                                   failOnMissingPartition = failOnMissingPartition,
                                                   dataPathHandlers = dataPathHandlers)
-        
+
         anchorsWithDate.map(anchor => (anchor, timeSeriesSource))
     })
   }
@@ -91,7 +91,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       obsTimeRange: DateTimeInterval,
       window: Duration,
       timeDelays: Array[Duration],
-      failOnMissingPartition: Boolean): DataFrame = {
+      failOnMissingPartition: Boolean): Option[DataFrame] = {
 
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
 
@@ -119,7 +119,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
         failOnMissingPartition = failOnMissingPartition,
         addTimestampColumn = needCreateTimestampColumn,
         dataPathHandlers = dataPathHandlers)
-    timeSeriesSource.get()
+    if (timeSeriesSource.isDefined) Some(timeSeriesSource.get.get()) else None
   }
 
   /**
@@ -171,8 +171,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
           addTimestampColumn = needCreateTimestampColumn,
           isStreaming = isStreaming,
           dataPathHandlers = dataPathHandlers)
-          
-        anchors.map(anchor => (anchor, timeSeriesSource))
+
+        anchors.map(anchor => (anchor, timeSeriesSource.get))
     })
   }
 

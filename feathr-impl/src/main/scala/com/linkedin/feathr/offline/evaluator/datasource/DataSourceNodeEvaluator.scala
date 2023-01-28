@@ -70,7 +70,7 @@ object DataSourceNodeEvaluator extends NodeEvaluator{
     val timeStampExpr = constructTimeStampExpr(timeWindowParam.timestampColumn, timeWindowParam.timestampColumnFormat)
     val needTimestampColumn = if (dataSourceNode.hasTimestampColumnInfo) false else true
     val dataSourceAccessor = DataSourceAccessor(ss, source, timeRange, None, failOnMissingPartition = false, needTimestampColumn, dataPathHandlers = dataPathHandlers)
-    val sourceDF = dataSourceAccessor.get()
+    val sourceDF = dataSourceAccessor.get.get()
     val (df, keyExtractor, timestampExpr) = if (dataSourceNode.getKeyExpressionType == KeyExpressionType.UDF) {
       val className = Class.forName(dataSourceNode.getKeyExpression())
       val keyExtractorClass = className.newInstance match {
@@ -110,7 +110,7 @@ object DataSourceNodeEvaluator extends NodeEvaluator{
     // Augment time information also here. Table node should not have time info?
     val dataSource = com.linkedin.feathr.offline.source.DataSource(path, SourceFormatType.FIXED_PATH)
     val dataSourceAccessor = DataSourceAccessor(ss, dataSource, None, None, failOnMissingPartition = false, dataPathHandlers = dataPathHandlers)
-    val sourceDF = dataSourceAccessor.get()
+    val sourceDF = dataSourceAccessor.get.get()
     val (df, keyExtractor) = if (dataSourceNode.getKeyExpressionType == KeyExpressionType.UDF) {
       val className = Class.forName(dataSourceNode.getKeyExpression())
        className.newInstance match {
