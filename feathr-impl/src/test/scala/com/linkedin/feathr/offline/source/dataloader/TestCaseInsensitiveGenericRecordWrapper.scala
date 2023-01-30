@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.source.dataloader
 import com.linkedin.avroutil1.compatibility.AvroCompatibilityHelper
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.{AvroRuntimeException, Schema}
-import org.scalatest.Assertions.assertThrows
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert.{assertEquals, assertFalse, assertTrue}
 import org.testng.annotations.Test
 
@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 /**
  * unit test for CaseInsensitiveGenericRecordWrapper
  */
-class TestCaseInsensitiveGenericRecordWrapper{
+class TestCaseInsensitiveGenericRecordWrapper extends TestNGSuite{
 
   val record = createRecord()
   val childRecord = record.get("child").asInstanceOf[GenericRecord]

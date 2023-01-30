@@ -81,7 +81,6 @@ dependencies {
   testImplementation spec.product.scala.scalatest
   testImplementation spec.product.testing
   testImplementation spec.product.jdiagnostics
-  testImplementation spec.product.scalaTestPlus
 }
 
 // Since there are cross-calls from Scala to Java, we use joint compiler

@@ -1,14 +1,14 @@
 package com.linkedin.feathr.offline.job.featureGen
 
 import com.linkedin.feathr.offline.job.FeatureGenJobContext
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
 /**
  * Test the [[FeatureGenJobContext]] class' parser
  */
-class TestFeatureGenJobParser{
+class TestFeatureGenJobParser extends TestNGSuite{
 
   @Test(description = "test params-override parameter parsing for feature-gen job")
   def featureGenJobParamsTest(): Unit = {

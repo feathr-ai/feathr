@@ -18,7 +18,7 @@ import org.apache.spark.sql.functions.{when => _, _}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{AnalysisException, DataFrame, Row, SparkSession}
 import org.mockito.Mockito._
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert._
 import org.testng.annotations.{DataProvider, Test}
 import org.apache.spark.sql.internal.SQLConf
