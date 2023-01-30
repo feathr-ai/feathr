@@ -349,6 +349,14 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
       """
         |sources: {
         |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |  missingSource: {
         |    location: { path: "slidingWindowAgg/missingFeatureData/daily" }
         |    timePartitionPattern: "yyyy/MM/dd"
         |    timeWindowParameters: {
@@ -369,12 +377,18 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |        window: 3d
         |        default: 10
         |      }
-        |      simpleFeature: {
+        |    }
+        |  }
+        |  missingAnchor: {
+        |  source: "missingSource"
+        |  key: "x"
+        |  features: {
+        |   simpleFeature: {
         |        def: "aggregationWindow"
         |        aggregation: COUNT
         |        window: 3d
         |        default: 20
-        |      }
+        |     }
         |    }
         |  }
         |}
@@ -383,7 +397,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     res.show()
     val df = res.collect()(0)
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
-    assertEquals(df.getAs[Float]("simpleFeature"), 20f)
+    assert(!res.columns.contains("simpleFeature"))
   }
 
   /**

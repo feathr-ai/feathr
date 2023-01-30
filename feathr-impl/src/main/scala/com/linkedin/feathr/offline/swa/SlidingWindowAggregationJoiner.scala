@@ -166,14 +166,15 @@ private[offline] class SlidingWindowAggregationJoiner(
 
     val updatedWindowAggAnchorDFMap = windowAggAnchorDFMap.filter(x => {
       val df = x._2
-      df.head(1).isEmpty
+      !df.head(1).isEmpty
     })
 
     val allInferredFeatureTypes = mutable.Map.empty[String, FeatureTypeConfig]
 
     windowAggFeatureStages.foreach({
       case (keyTags: Seq[Int], featureNames: Seq[String]) =>
-        if (featureNames.diff(notJoinedFeatures.toSeq).nonEmpty) {
+        val joinedFeatures = featureNames.diff(notJoinedFeatures.toSeq)
+        if (joinedFeatures.nonEmpty) {
         val stringKeyTags = keyTags.map(keyTagList).map(k => s"CAST (${k} AS string)") // restore keyTag to column names in join config
 
         // get the bloom filter for the key combinations in this stage
@@ -237,13 +238,13 @@ private[offline] class SlidingWindowAggregationJoiner(
           .asInstanceOf[TimeWindowConfigurableAnchorExtractor].features(nameToFeatureAnchor._1).columnFormat)
 
         val FeatureDataFrame(withFDSFeatureDF, inferredTypes) =
-          SlidingWindowFeatureUtils.convertSWADFToFDS(contextDF, featureNames.toSet, featureNameToColumnFormat, userSpecifiedTypesConfig)
+          SlidingWindowFeatureUtils.convertSWADFToFDS(contextDF, joinedFeatures.toSet, featureNameToColumnFormat, userSpecifiedTypesConfig)
         // apply default on FDS dataset
         val withFeatureContextDF =
-          substituteDefaults(withFDSFeatureDF, defaults.keys.filter(featureNames.contains).toSeq, defaults, userSpecifiedTypesConfig, ss)
+          substituteDefaults(withFDSFeatureDF, defaults.keys.filter(joinedFeatures.contains).toSeq, defaults, userSpecifiedTypesConfig, ss)
 
         allInferredFeatureTypes ++= inferredTypes
-        contextDF = standardizeFeatureColumnNames(origContextObsColumns, withFeatureContextDF, featureNames, keyTags.map(keyTagList))
+        contextDF = standardizeFeatureColumnNames(origContextObsColumns, withFeatureContextDF, joinedFeatures, keyTags.map(keyTagList))
         if (enableCheckPoint) {
           // checkpoint complicated dataframe for each stage to avoid Spark failure
           contextDF = contextDF.checkpoint(true)

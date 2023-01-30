@@ -46,7 +46,7 @@ private[offline] object FeathrUtils {
     CHECKPOINT_OUTPUT_PATH -> "/tmp/feathr/checkpoints",
     ENABLE_CHECKPOINT -> "false",
     DEBUG_OUTPUT_PART_NUM -> "200",
-    FAIL_ON_MISSING_PARTITION -> "true",
+    FAIL_ON_MISSING_PARTITION -> "false",
     SEQ_JOIN_ARRAY_EXPLODE_ENABLED -> "true",
     ENABLE_SALTED_JOIN -> "false",
     SKIP_MISSING_FEATURE -> "true",
