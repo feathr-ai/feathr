@@ -294,7 +294,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
                              | anchors: {
                              |  anchor1: {
                              |    source: "anchorAndDerivations/nullValueSource.avro.json"
-                             |    key: "mId"
+                             |    key: "toUpperCaseExt(mId)"
                              |    features: {
                              |      featureWithNull: "isPresent(value) ? toNumeric(value) : 0"
                              |    }

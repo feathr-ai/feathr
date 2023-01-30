@@ -8,6 +8,7 @@ import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
@@ -31,10 +32,13 @@ public class MvelContext {
 
   private static final ParserConfiguration PARSER_CONFIG = new ParserConfiguration();
 
-
+  // External UDF register class
+  public static Optional<Broadcast<Class<?>>> mvelAlienUDFRegisterClazz = Optional.empty();
+  // Flag to avoid init external UDF everytime
+  public static Boolean alienUDFInitialized = false;
   static {
 
-    MvelContextUDFs.registerUDFs(PARSER_CONFIG);
+    MvelContextUDFs.registerUDFs(MvelContextUDFs.class, PARSER_CONFIG);
 
     loadJavaClasses();
 
@@ -98,7 +102,10 @@ public class MvelContext {
 
   // ensure the class is loaded in memory.
   public static void ensureInitialized() {
-
+    if (!alienUDFInitialized && mvelAlienUDFRegisterClazz.isPresent()) {
+      MvelContextUDFs.registerUDFs(mvelAlienUDFRegisterClazz.get().getValue(), PARSER_CONFIG);
+      alienUDFInitialized = true;
+    }
   }
 
   /**

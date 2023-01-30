@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.mvel.plugins
 
 import com.linkedin.feathr.common.FeatureValue
+import com.linkedin.feathr.offline.mvel.MvelContext
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.mvel2.ConversionHandler
@@ -8,6 +9,7 @@ import org.mvel2.conversion.ArrayHandler
 import org.mvel2.util.ReflectionUtil.{isAssignableFrom, toNonPrimitiveType}
 
 import java.io.Serializable
+import java.util.Optional
 import scala.collection.mutable
 
 /**
@@ -43,13 +45,21 @@ class FeathrExpressionExecutionContext extends Serializable {
    * @param typeAdaptor the type adaptor that can convert between the "other" representation and {@link FeatureValue}
    * @param <           T> type parameter for the "other" feature value class
    */
-  def setupExecutorMvelContext[T](clazz: Class[T], typeAdaptor: FeatureValueTypeAdaptor[T], sc: SparkContext): Unit = {
+  def setupExecutorMvelContext[T](clazz: Class[T],
+                                  typeAdaptor: FeatureValueTypeAdaptor[T],
+                                  sc: SparkContext,
+                                  mvelExtContext: Option[Class[Any]] = None): Unit = {
     localFeatureValueTypeAdaptors.put(clazz.getCanonicalName, typeAdaptor.asInstanceOf[FeatureValueTypeAdaptor[AnyRef]])
     featureValueTypeAdaptors = sc.broadcast(localFeatureValueTypeAdaptors)
     // Add a converter that can convert external data to feature value
     addConversionHandler(classOf[FeatureValue], new ExternalDataToFeatureValueHandler(featureValueTypeAdaptors), sc)
     // Add a converter that can convert a feature value to external data
     addConversionHandler(clazz, new FeatureValueToExternalDataHandler(typeAdaptor), sc)
+    MvelContext.mvelAlienUDFRegisterClazz = if (mvelExtContext.isDefined) {
+      Optional.of(sc.broadcast(mvelExtContext.get))
+    } else {
+      Optional.empty()
+    }
   }
 
   /**
