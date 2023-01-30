@@ -3,12 +3,13 @@ package com.linkedin.feathr.common.types;
 import java.util.Collections;
 
 import com.linkedin.feathr.common.tensor.TensorType;
+import org.scalatest.testng.TestNGSuite;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
 
-public class TestFeatureTypes {
+public class TestFeatureTypes extends TestNGSuite {
   @Test
   public void checkBasicTypes() {
     assertEquals(BooleanFeatureType.INSTANCE.getBasicType(), FeatureType.BasicType.BOOLEAN);

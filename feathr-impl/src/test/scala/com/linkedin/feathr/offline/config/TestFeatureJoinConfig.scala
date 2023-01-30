@@ -2,14 +2,14 @@ package com.linkedin.feathr.offline.config
 
 import com.linkedin.feathr.common.{DateParam, JoiningFeatureParams}
 import com.linkedin.feathr.offline.anchored.WindowTimeUnit
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert
 import org.testng.annotations.Test
 
 /**
  * Test suite to test parsing of join configs
  */
-class TestFeatureJoinConfig{
+class TestFeatureJoinConfig extends TestNGSuite{
 
   /**
    * Settings config with observationDataTimeSettings and joinTimeSettings.

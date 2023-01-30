@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.util.datetime
 import com.linkedin.feathr.common.exception.FeathrConfigException
 import com.linkedin.feathr.common.{DateParam, DateTimeResolution}
 import com.linkedin.feathr.offline.TestUtils.{createDailyInterval, createHourlyInterval}
-import org.scalatest.Assertions.assertThrows
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{Duration, LocalDate, ZoneId, ZonedDateTime}
 
-class TestOfflineDateTimeUtils {
+class TestOfflineDateTimeUtils extends TestNGSuite {
 
   @Test(description = "test dateRange for creating datepartition filter expression")
   def testDateRange(): Unit = {

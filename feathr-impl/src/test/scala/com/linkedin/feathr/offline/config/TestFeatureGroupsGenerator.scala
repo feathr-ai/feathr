@@ -1,13 +1,13 @@
 package com.linkedin.feathr.offline.config
 
 import com.linkedin.feathr.common.exception.FeathrConfigException
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert
 import org.testng.annotations.Test
 
 import scala.io.Source
 
-class TestFeatureGroupsGenerator{
+class TestFeatureGroupsGenerator extends TestNGSuite{
 
   private val _feathrConfigLoader = FeathrConfigLoader()
 

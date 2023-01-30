@@ -12,6 +12,7 @@ import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.scalatest.testng.TestNGSuite;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -21,7 +22,7 @@ import static org.testng.Assert.*;
 /**
  * Test MVEL expression evaluator
  */
-public class TestMvelExpression {
+public class TestMvelExpression extends TestNGSuite {
   @Test(description = "test mvel expression foo.bar on a map field of GenericRecord, where foo is the map field "
       + "and bar is the target key in the map")
   public void testMVELExpressionOnMap() {

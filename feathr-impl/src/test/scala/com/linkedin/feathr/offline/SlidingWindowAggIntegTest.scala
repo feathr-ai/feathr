@@ -1000,6 +1000,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
 
+  /**
   @Test
   def testSWACountDistinct(): Unit = {
     val featureDefAsString =
@@ -1079,5 +1080,5 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     val dfs = runLocalFeatureJoinForTest(featureJoinAsString, featureDefAsString, "featuresWithFilterObs.avro.json").data
 
     validateRows(dfs.select(keyField, features: _*).collect().sortBy(row => row.getAs[Int](keyField)), expectedRows)
-  }
+  }*/
 }

@@ -21,7 +21,7 @@ abstract class FeathrIntegTest extends TestFeathr {
 
   val generatedDataFolder = "src/integTest/generated"
   val mockDataFolder = generatedDataFolder + "/mockData"
-  val trainingData = "src/test/resources/obs/obs.csv"
+  val trainingData = "src/test/resources/obs/"
   val featureData = mockDataFolder + "/a_feature_data"
 
   /**

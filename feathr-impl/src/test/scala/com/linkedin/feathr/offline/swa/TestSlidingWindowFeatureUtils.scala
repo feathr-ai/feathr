@@ -13,7 +13,7 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.testng.Assert.{assertEquals, assertFalse, assertTrue}
 import org.testng.annotations._
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatest.mockito.MockitoSugar.mock
 import org.mockito.Mockito.when
 
 import scala.collection.JavaConverters._
