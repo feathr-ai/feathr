@@ -200,18 +200,18 @@ private[offline] class SlidingWindowAggregationJoiner(
         if (ss.sparkContext.isLocal && log.isDebugEnabled) {
           log.debug(
             s"*********Sliding window aggregation feature join stage with key: ${stringKeyTags} for feature " +
-              s"${featureNames.mkString(",")}*********")
+              s"${joinedFeatures.mkString(",")}*********")
           log.debug(
             s"First 3 rows in observation dataset :\n " +
               s"${labelDataDef.dataSource.collect().take(3).map(_.toString()).mkString("\n ")}")
         }
-        val windowAggAnchorsThisStage = featureNames.map(allWindowAggFeatures)
+        val windowAggAnchorsThisStage = joinedFeatures.map(allWindowAggFeatures)
         val windowAggAnchorDFThisStage = updatedWindowAggAnchorDFMap.filterKeys(windowAggAnchorsThisStage.toSet)
 
         val factDataDefs =
-          SlidingWindowFeatureUtils.getSWAAnchorGroups(updatedWindowAggAnchorDFMap).map {
+          SlidingWindowFeatureUtils.getSWAAnchorGroups(windowAggAnchorDFThisStage).map {
             anchorWithSourceToDFMap =>
-              val selectedFeatures = anchorWithSourceToDFMap.keySet.flatMap(_.selectedFeatures).filter(featureNames.contains(_))
+              val selectedFeatures = anchorWithSourceToDFMap.keySet.flatMap(_.selectedFeatures).filter(joinedFeatures.contains(_))
               val factData = anchorWithSourceToDFMap.head._2
               val anchor = anchorWithSourceToDFMap.head._1
               val filteredFactData = bloomFilter match {
