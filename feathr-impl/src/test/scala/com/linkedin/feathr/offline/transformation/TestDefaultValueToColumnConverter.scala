@@ -5,7 +5,7 @@ import com.linkedin.feathr.common.FeatureValue
 import com.linkedin.feathr.common.exception.{FeathrException, FeathrFeatureTransformationException}
 import com.linkedin.feathr.offline.TestFeathr
 import org.mockito.Mockito.{verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.annotations.{DataProvider, Test}
 
 import java.{lang => jl, util => ju}

@@ -1,6 +1,7 @@
 package com.linkedin.feathr.common;
 
 import com.linkedin.feathr.common.tensor.TensorType;
+import org.scalatest.testng.TestNGSuite;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -10,7 +11,7 @@ import org.testng.annotations.Test;
  * Unit tests for {@link FeatureTypeConfig}
  *
  */
-public class FeatureTypeConfigTest {
+public class FeatureTypeConfigTest extends TestNGSuite {
 
   @DataProvider
   public Object[][] FeatureTypeConstructorWithAutoTZTestCases() {

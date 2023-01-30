@@ -8,7 +8,7 @@ import com.linkedin.feathr.offline.derived.DerivedFeature
 import com.linkedin.feathr.offline.job.FeatureGenSpec
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan}
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 

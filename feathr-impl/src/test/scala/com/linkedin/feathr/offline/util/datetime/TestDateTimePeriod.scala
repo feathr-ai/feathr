@@ -2,14 +2,14 @@ package com.linkedin.feathr.offline.util.datetime
 
 import com.linkedin.feathr.common.DateTimeResolution
 import com.linkedin.feathr.common.exception.FeathrConfigException
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
 /**
  * A unit test class for DateTimePeriod.
  */
-class TestDateTimePeriod {
+class TestDateTimePeriod extends TestNGSuite {
 
   /**
    * Unit test for parsing days.

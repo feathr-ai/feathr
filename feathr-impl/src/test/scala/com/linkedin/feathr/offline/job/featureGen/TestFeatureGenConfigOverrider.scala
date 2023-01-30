@@ -2,14 +2,14 @@ package com.linkedin.feathr.offline.job.featureGen
 
 import com.linkedin.feathr.offline.config.FeathrConfigLoader
 import com.linkedin.feathr.offline.job.{FeatureGenConfigOverrider, FeatureGenJobContext}
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.Test
 
 /**
  * Test suite to test the [[FeatureGenConfigOverrider]] class
  */
-class TestFeatureGenConfigOverrider{
+class TestFeatureGenConfigOverrider extends TestNGSuite{
 
   private val feathrConfigLoader = FeathrConfigLoader()
   @Test(description = "test feature definition override parsing for feature-gen job")

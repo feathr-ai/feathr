@@ -8,6 +8,7 @@ import com.linkedin.feathr.common.AlienMvelContextUDFs;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
+import org.scalatest.testng.TestNGSuite;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -17,7 +18,7 @@ import org.testng.annotations.Test;
 /**
  * Unit tests for {@link MvelContextUDFs} using expressions
  */
-public class MvelUDFExpressionTests {
+public class MvelUDFExpressionTests extends TestNGSuite {
 
   private static final ParserConfiguration PARSER_CONFIG = new ParserConfiguration();
   private ParserContext parserContext;

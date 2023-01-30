@@ -15,6 +15,7 @@ import com.linkedin.feathr.common.types.*;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.scalatest.testng.TestNGSuite;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -22,7 +23,7 @@ import static java.util.Collections.*;
 import static org.testng.Assert.*;
 
 
-public class TestFeatureValues {
+public class TestFeatureValues extends TestNGSuite {
   private static final Representable[] TENSOR_STRING_FLOAT_TYPE = new Representable[]{Primitive.STRING, Primitive.FLOAT};
   private static final Representable[] TENSOR_INT_FLOAT_TYPE = new Representable[]{Primitive.INT, Primitive.FLOAT};
 

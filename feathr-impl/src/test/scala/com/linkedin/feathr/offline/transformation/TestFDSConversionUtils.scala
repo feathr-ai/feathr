@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.transformation
 
 import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.TestFeathr
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert.assertEquals
 import org.testng.annotations.{DataProvider, Test}
 

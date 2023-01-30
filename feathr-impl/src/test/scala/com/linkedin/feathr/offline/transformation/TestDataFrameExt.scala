@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.transformation
 
 import com.linkedin.feathr.offline.TestFeathr
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.annotations.Test
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
 import com.linkedin.feathr.offline.AssertFeatureUtils._
