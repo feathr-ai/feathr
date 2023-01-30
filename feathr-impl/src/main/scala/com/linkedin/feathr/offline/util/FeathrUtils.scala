@@ -49,7 +49,7 @@ private[offline] object FeathrUtils {
     FAIL_ON_MISSING_PARTITION -> "false",
     SEQ_JOIN_ARRAY_EXPLODE_ENABLED -> "true",
     ENABLE_SALTED_JOIN -> "false",
-    SKIP_MISSING_FEATURE -> "true",
+    SKIP_MISSING_FEATURE -> "false",
     // If one key appears more than 0.02% in the dataset, we will salt this join key and split them into multiple partitions
     // This is an empirical value
     SALTED_JOIN_FREQ_ITEM_THRESHOLD -> "0.0002",

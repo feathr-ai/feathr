@@ -123,7 +123,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
           dataPathHandlers = dataPathHandlers)
       timeSeriesSource.get()
     }
-    catch {
+    catch {// todo - Add this functionality to only specific exception types and not for all error types.
       case e: Exception => if (shouldSkipFeature) ss.emptyDataFrame else throw e
     }
   }

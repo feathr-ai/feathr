@@ -316,9 +316,10 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   /**
-   * SWA test with default values
+   * SWA test with missing features. To enable this test, set the value of FeatureUtils.SKIP_MISSING_FEATURE to True. From
+   * Spark 3.1, SparkContext.updateConf() is not supported.
    */
-  @Test
+  @Test(enabled = false)
   def testSWAWithMissingFeatureData(): Unit = {
     val joinConfigAsString =
       """

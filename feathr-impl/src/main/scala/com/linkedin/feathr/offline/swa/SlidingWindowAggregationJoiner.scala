@@ -115,6 +115,7 @@ private[offline] class SlidingWindowAggregationJoiner(
         case (source, grouped) => (source, grouped.map(_._2))
       })
 
+    // If the skip_missing_features flag is set, we will skip joining the features whose is not mature, and maintain this list.
     val notJoinedFeatures = new mutable.HashSet[String]()
 
     // For each source, we calculate the maximum window duration that needs to be loaded across all
@@ -142,6 +143,8 @@ private[offline] class SlidingWindowAggregationJoiner(
               maxDurationPerSource,
               featuresToDelayImmutableMap.values.toArray,
               failOnMissingPartition)
+
+        // If skip missing features flag is set and there is a data related error, an empty dataframe will be returned.
         if (originalSourceDf.isEmpty) {
           res.map(notJoinedFeatures.add)
           anchors.map(anchor => (anchor, originalSourceDf))
@@ -164,6 +167,7 @@ private[offline] class SlidingWindowAggregationJoiner(
     }}
     )
 
+    // Filter out features dataframe if they are empty.
     val updatedWindowAggAnchorDFMap = windowAggAnchorDFMap.filter(x => {
       val df = x._2
       !df.head(1).isEmpty
@@ -173,6 +177,7 @@ private[offline] class SlidingWindowAggregationJoiner(
 
     windowAggFeatureStages.foreach({
       case (keyTags: Seq[Int], featureNames: Seq[String]) =>
+        // Remove the features that are going to be skipped.
         val joinedFeatures = featureNames.diff(notJoinedFeatures.toSeq)
         if (joinedFeatures.nonEmpty) {
         val stringKeyTags = keyTags.map(keyTagList).map(k => s"CAST (${k} AS string)") // restore keyTag to column names in join config
