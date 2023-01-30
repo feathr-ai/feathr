@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.common
-import com.linkedin.feathr.common.JoiningFeatureParams
+import com.linkedin.feathr.common.{AlienMvelContextUDFs, JoiningFeatureParams}
 import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
@@ -31,7 +31,11 @@ abstract class TestFeathr {
   @BeforeClass
   def setup(): Unit = {
     setupSpark()
-    mvelContext.setupExecutorMvelContext(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor(), ss.sparkContext)
+    mvelContext.setupExecutorMvelContext(classOf[AlienFeatureValue],
+      new AlienFeatureValueTypeAdaptor(),
+      ss.sparkContext,
+      Some(classOf[AlienMvelContextUDFs].asInstanceOf[Class[Any]])
+    )
   }
 
   /**
