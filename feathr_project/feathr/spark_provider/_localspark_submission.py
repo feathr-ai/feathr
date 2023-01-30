@@ -210,6 +210,13 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 logger.error(contents)
             return False
         elif proc.returncode == 143:
+            # Handle the return code 143 separately.
+            # Normally, the Popen method will return a handle that we can poll, and the poll result will be "None" if it's still running, and will be other values if the subprocess is finished.
+            # However when calling `Popen` with `spark-submit`, for some reason, the poll result will always return "None", and the process will hang there forever
+            # due to this issue, additional handling is needed where we detect the output logs and see if the job is finished.
+            # If the logs gives out hint that the job is finished, even the poll result is None (indicating the process is still running) we will still terminate it.
+            # by calling `proc.terminate()`
+            # if the process is terminated with this way, the return code will be 143. We assume this will still be a successful run.
             logger.info(
                 f"Spark job with pid {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds."
             )
