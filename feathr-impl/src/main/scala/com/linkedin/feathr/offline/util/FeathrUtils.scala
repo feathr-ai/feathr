@@ -27,6 +27,7 @@ private[offline] object FeathrUtils {
    */
   val SEQ_JOIN_ARRAY_EXPLODE_ENABLED = "seq.join.array.explode.enabled"
   val ENABLE_SALTED_JOIN = "enable.salted.join"
+  val SKIP_MISSING_FEATURE = "skip.missing.feature"
   val SALTED_JOIN_FREQ_ITEM_THRESHOLD = "salted.join.freq.item.threshold"
   val SALTED_JOIN_FREQ_ITEM_ESTIMATOR = "salted.join.freq.item.estimator"
   val SALTED_JOIN_PERSIST = "salted.join.persist"
@@ -45,9 +46,10 @@ private[offline] object FeathrUtils {
     CHECKPOINT_OUTPUT_PATH -> "/tmp/feathr/checkpoints",
     ENABLE_CHECKPOINT -> "false",
     DEBUG_OUTPUT_PART_NUM -> "200",
-    FAIL_ON_MISSING_PARTITION -> "false",
+    FAIL_ON_MISSING_PARTITION -> "true",
     SEQ_JOIN_ARRAY_EXPLODE_ENABLED -> "true",
     ENABLE_SALTED_JOIN -> "false",
+    SKIP_MISSING_FEATURE -> "true",
     // If one key appears more than 0.02% in the dataset, we will salt this join key and split them into multiple partitions
     // This is an empirical value
     SALTED_JOIN_FREQ_ITEM_THRESHOLD -> "0.0002",

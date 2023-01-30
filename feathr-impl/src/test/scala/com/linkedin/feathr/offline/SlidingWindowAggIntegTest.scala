@@ -316,6 +316,77 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   /**
+   * SWA test with default values
+   */
+  @Test
+  def testSWAWithMissingFeatureData(): Unit = {
+    val joinConfigAsString =
+      """
+        | settings: {
+        |  observationDataTimeSettings: {
+        |   absoluteTimeRange: {
+        |     timeFormat: yyyy-MM-dd
+        |     startTime: "2018-05-01"
+        |     endTime: "2018-05-03"
+        |   }
+        |  }
+        |  joinTimeSettings: {
+        |   timestampColumn: {
+        |     def: timestamp
+        |     format: yyyy-MM-dd
+        |   }
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [x],
+        |    featureList: ["simplePageViewCount", "simpleFeature"]
+        |  }
+        |]
+      """.stripMargin
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/missingFeatureData/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      simplePageViewCount: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 10
+        |      }
+        |      simpleFeature: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 20
+        |      }
+        |    }
+        |  }
+        |}
+      """.stripMargin
+    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    res.show()
+    val df = res.collect()(0)
+    assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
+    assertEquals(df.getAs[Float]("simpleFeature"), 20f)
+  }
+
+  /**
    * test SWA with simulate time expressed as days and hours
    */
   @Test
