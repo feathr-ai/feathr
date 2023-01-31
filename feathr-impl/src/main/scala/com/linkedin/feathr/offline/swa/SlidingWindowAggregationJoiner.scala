@@ -180,6 +180,7 @@ private[offline] class SlidingWindowAggregationJoiner(
         // Remove the features that are going to be skipped.
         val joinedFeatures = featureNames.diff(notJoinedFeatures.toSeq)
         if (joinedFeatures.nonEmpty) {
+          log.warn(s"----SKIPPED ADDING FEATURES : ${notJoinedFeatures} ------")
         val stringKeyTags = keyTags.map(keyTagList).map(k => s"CAST (${k} AS string)") // restore keyTag to column names in join config
 
         // get the bloom filter for the key combinations in this stage
