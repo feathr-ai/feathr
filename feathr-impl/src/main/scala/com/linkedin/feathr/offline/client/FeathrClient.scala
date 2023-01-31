@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.client
 import com.linkedin.feathr.common.exception._
 import com.linkedin.feathr.common.{FeatureInfo, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
-import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig}
+import com.linkedin.feathr.offline.config.{ConflictsAutoCorrectionSetting, FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig, JoinConfigSettings}
 import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, FeatureGenKeyTagAnalyzer, StreamingFeatureGenerator}
 import com.linkedin.feathr.offline.job._
 import com.linkedin.feathr.offline.join.DataFrameFeatureJoiner
@@ -17,6 +17,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.internal.SQLConf
 
 import scala.util.{Failure, Success}
+import java.util.UUID
 
 /**
  * FeathrClient is the entry point into Feathr for joining observation data with features. To achieve this, instantiate this class
@@ -207,6 +208,43 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
   }
 
   /**
+   * Rename feature names conflicting with data set column names
+   * by applying provided suffix
+   * Eg. If have the feature name 'example' and the suffix '1',
+   * it will become 'example_1" after renaming
+   *
+   * @param df                original dataframe
+   * @param header            original header
+   * @param conflictFeatureNames conflicted feature names
+   * @param suffix            suffix to apply to feature names
+   *
+   * @return pair of renamed (dataframe, header)
+   */
+  private[offline] def renameFeatureNames(
+                                           df: DataFrame,
+                                           header: Header,
+                                           conflictFeatureNames: Seq[String],
+                                           suffix: String): (DataFrame, Header) = {
+    val uuid = UUID.randomUUID()
+    var renamedDF = df
+    conflictFeatureNames.foreach(name => {
+      renamedDF = renamedDF.withColumnRenamed(name, name + '_' + uuid)
+      renamedDF = renamedDF.withColumnRenamed(name + '_' + suffix, name)
+      renamedDF = renamedDF.withColumnRenamed(name + '_' + uuid, name + '_' + suffix)
+    })
+
+    val featuresInfoMap = header.featureInfoMap.map {
+      case (featureName, featureInfo) =>
+        val name = featureInfo.columnName
+        val conflict = conflictFeatureNames.contains(name)
+        val fi = if (conflict) new FeatureInfo(name + '_' + suffix, featureInfo.featureType) else featureInfo
+        val fn = if (conflict) new TaggedFeatureName(featureName.getKeyTag, name + '_' + suffix) else featureName
+        fn -> fi
+    }
+    (renamedDF, new Header(featuresInfoMap))
+  }
+
+  /**
    * Join all requested feature to the observation dataset
    *
    * @param joinConfig         Feature Join Config
@@ -256,16 +294,46 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
         "Feature names must conform to " +
           s"regular expression: ${AnchorUtils.featureNamePattern}, but found feature names: $invalidFeatureNames")
     }
-    val conflictFeatureNames: Seq[String] = findConflictFeatureNames(keyTaggedFeatures, left.schema.fieldNames)
-    if (conflictFeatureNames.nonEmpty) {
-      throw new FeathrConfigException(
-        ErrorLabel.FEATHR_USER_ERROR,
-        "Feature names must be different from field names in the observation data. " +
-          s"Please rename feature ${conflictFeatureNames} or rename the same field names in the observation data.")
-    }
 
     val joiner = new DataFrameFeatureJoiner(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers, mvelContext)
-    joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, left, rowBloomFilterThreshold)
+    // Check conflicts between feature names and data set column names
+    val conflictFeatureNames: Seq[String] = findConflictFeatureNames(keyTaggedFeatures, left.schema.fieldNames)
+    val joinConfigSettings = joinConfig.settings
+    val conflictsAutoCorrectionSetting = if(joinConfigSettings.isDefined) joinConfigSettings.get.conflictsAutoCorrectionSetting else None
+    if (conflictFeatureNames.nonEmpty) {
+      if(!conflictsAutoCorrectionSetting.isDefined) {
+        throw new FeathrConfigException(
+          ErrorLabel.FEATHR_USER_ERROR,
+          "Feature names must be different from field names in the observation data. " +
+            s"Please rename feature ${conflictFeatureNames} or rename the same field names in the observation data.")
+      }
+
+      // If auto correction is required, will solve conflicts automatically
+      val renameFeatures = conflictsAutoCorrectionSetting.get.renameFeatureList
+      val suffix = conflictsAutoCorrectionSetting.get.suffix
+      log.warn(s"Found conflicted field names: ${conflictFeatureNames}. Will auto correct them by applying suffix: ${suffix}")
+      var leftRenamed = left
+      conflictFeatureNames.foreach(name => {
+        leftRenamed = leftRenamed.withColumnRenamed(name, name+'_'+suffix)
+      })
+      val conflictFeatureNames2: Seq[String] = findConflictFeatureNames(keyTaggedFeatures, leftRenamed.schema.fieldNames)
+      if (conflictFeatureNames2.nonEmpty) {
+          throw new FeathrConfigException(
+            ErrorLabel.FEATHR_USER_ERROR,
+            s"Failed to apply auto correction to solve conflicts. Still got conflicts after applying provided suffix ${suffix} for fields: " +
+              s"${conflictFeatureNames}. Please provide another suffix or solve conflicts manually.")
+      }
+      val (df, header) = joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, leftRenamed, rowBloomFilterThreshold)
+      if(renameFeatures) {
+        log.warn(s"Suffix :${suffix} is applied into feature names: ${conflictFeatureNames} to avoid conflicts in outputs")
+        renameFeatureNames(df, header, conflictFeatureNames, suffix)
+      } else {
+        log.warn(s"Suffix :${suffix} is applied into dataset Column names: ${conflictFeatureNames} to avoid conflicts in outputs")
+        (df, header)
+      }
+    }
+    else
+      joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, left, rowBloomFilterThreshold)
   }
 
   private[offline] def getFeatureGroups(): FeatureGroups = {
