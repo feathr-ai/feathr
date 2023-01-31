@@ -8,7 +8,7 @@ import com.linkedin.feathr.offline.{TestFeathr, TestUtils}
 import org.apache.avro.Schema
 import org.apache.avro.generic.{GenericRecord, GenericRecordBuilder}
 import org.apache.spark.sql.Row
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert.assertEquals
 import org.testng.annotations.{AfterClass, Test}
 

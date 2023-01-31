@@ -86,8 +86,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         spark_args = self._init_args(job_name=job_name, confs=cfg)
         # Add additional repositories
         spark_args.extend(["--repositories", "https://repository.mulesoft.org/nexus/content/repositories/public/,https://linkedin.jfrog.io/artifactory/open-source/"])
-        # spark_args.extend(["--repositories", "https://linkedin.jfrog.io/artifactory/open-source/"])
-        
+
         if not main_jar_path:
             # We don't have the main jar, use Maven
             if not python_files:
@@ -118,7 +117,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 if python_files.__len__() > 1:
                     spark_args.extend(["--py-files", ",".join(python_files[1:])])
                 spark_args.append(python_files[0])
-            
+
 
         if arguments:
             spark_args.extend(arguments)

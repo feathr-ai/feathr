@@ -4,7 +4,7 @@ import com.linkedin.feathr.common.exception.FeathrFeatureJoinException
 import com.linkedin.feathr.offline.TestFeathr
 import org.apache.spark.sql.DataFrame
 import org.mockito.Mockito.{verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.annotations.Test
 
 class TestJoinKeyColumnsAppender extends TestFeathr with MockitoSugar {

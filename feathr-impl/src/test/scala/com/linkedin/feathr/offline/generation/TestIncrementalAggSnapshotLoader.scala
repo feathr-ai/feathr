@@ -8,7 +8,7 @@ import com.typesafe.config.Config
 import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.sql.DataFrame
 import org.mockito.Mockito.{verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.Test
 

@@ -7,13 +7,13 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{Row, SparkSession}
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert._
 import org.testng.annotations.{AfterClass, BeforeClass, Test}
 
 import scala.collection.mutable
 
-class TestFeatureJoinJob{
+class TestFeatureJoinJob extends TestNGSuite{
   private val generatedDataFolder = "src/test/generated"
 
   var ss: SparkSession = _

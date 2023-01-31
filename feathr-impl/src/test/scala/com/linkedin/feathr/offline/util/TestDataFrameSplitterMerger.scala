@@ -8,9 +8,9 @@ import com.linkedin.feathr.offline.util.DataFrameSplitterMerger._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import com.linkedin.feathr.offline.util.TestSplitMergeDataProvider._
+import org.scalatest.testng.TestNGSuite
 
-
-class TestDataFrameSplitterMerger {
+class TestDataFrameSplitterMerger extends TestNGSuite {
 
   /**
    * Test partitioning when NO nulls exist in column.

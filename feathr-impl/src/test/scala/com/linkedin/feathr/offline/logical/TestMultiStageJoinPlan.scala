@@ -6,7 +6,7 @@ import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.config.{FeatureGroupsGenerator, FeatureJoinConfig}
 import com.linkedin.feathr.offline.derived.DerivedFeature
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, TestFeathr}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.Test
 

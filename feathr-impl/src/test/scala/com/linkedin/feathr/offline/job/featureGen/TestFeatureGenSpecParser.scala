@@ -1,11 +1,11 @@
 package com.linkedin.feathr.offline.job.featureGen
 
 import com.linkedin.feathr.offline.job.{FeatureGenJobContext, FeatureGenSpec}
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
-class TestFeatureGenSpecParser{
+class TestFeatureGenSpecParser extends TestNGSuite{
 
   @Test(description = "test feature gen spec parser")
   def featureGenSpecParserTest(): Unit = {

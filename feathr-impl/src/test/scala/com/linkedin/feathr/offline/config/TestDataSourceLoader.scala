@@ -7,12 +7,12 @@ import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
 import com.linkedin.feathr.common.FeathrJacksonScalaModule
 import com.linkedin.feathr.offline.config.location.{Jdbc, LocationUtils, Snowflake}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
-import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.FunSuite
 
 import scala.collection.mutable
 
 
-class TestDataSourceLoader extends AnyFunSuite {
+class TestDataSourceLoader extends FunSuite {
   /// Base line test to ensure backward compatibility
   test("DataSourceLoader.deserialize BaseLine") {
     val configDoc =

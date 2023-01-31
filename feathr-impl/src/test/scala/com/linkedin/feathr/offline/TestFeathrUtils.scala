@@ -1,11 +1,11 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.offline.util.FeathrUtils
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert._
 import org.testng.annotations.Test
 
-class TestFeathrUtils {
+class TestFeathrUtils extends TestNGSuite {
   private val TEST_FEATHR_VERSION = "1.2.3"
 
   /**

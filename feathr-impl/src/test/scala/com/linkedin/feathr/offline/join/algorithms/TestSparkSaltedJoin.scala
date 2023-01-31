@@ -9,7 +9,7 @@ import org.apache.commons.math3.distribution.ZipfDistribution
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations._
 

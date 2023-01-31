@@ -1,10 +1,10 @@
 package com.linkedin.feathr.offline.job
 
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.annotations.Test
 
-class TestJoinJobUtils{
+class TestJoinJobUtils extends TestNGSuite{
 
   @Test(
     expectedExceptions = Array(classOf[RuntimeException]),
