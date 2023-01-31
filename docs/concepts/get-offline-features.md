@@ -71,11 +71,21 @@ The path of a dataset as the 'spine' for the to-be-created training dataset. We 
 2. **Timestamp Column:** A column representing the event time of the row. By default, Feathr will make sure the feature values queried have a timestamp earlier than the timestamp in observation data, ensuring no data leakage in the resulting training dataset. Refer to [Point in time Joins](./point-in-time-join.md) for more details.
 
 3. **Other columns** will be simply pass through to the output training dataset, which can be treated as immutable columns.
-
 ## More on `Feature Query`
 
 After you have defined all the features, you probably don't want to use all of them in this particular program. In this case, instead of putting every features in this `FeatureQuery` part, you can just put a selected list of features. Note that they have to be of the same key.
 
+## Feature names conflicts check 
+
+If any of feature names provided by `Feature Query` conflict with column names of the 'observation' dataset, thie 'get_offline_features' job will fail. It can cause several minutes to get this failure from spark. To avoid this slowness,feathr support to check if any of these conflicts exist before submitting the job to cloud.
+
+The checking steps are:
+1. Try to load dataset without credential and compare column names with feature names. This is to support the case when the dataset is saved in a public storage.
+2. If cannot load the dataset in the first step, will try to load it with credential anc compare column names with feature names. It can only support loading files from storages requiring credential your environment defined. For example, if your `spark_cluster` is `databricks`, it can only load dataset under the 'dbfs' path belonging to this databricks.
+3. If cannot load the dataset from step1 and step2, will try to compare column names provided by the parameter `dataset_column_names` if it's not empty.
+4. If cannot get column names from above 3 steps, will show a warning message and submit the job to cloud. The spark will also check this kind of conflicts.
+5. If any conflicts found in step 1 to 3, will throw an exception and the process will be stoped. (Plan to provide the auto correction function soon). To solve these conflicts, you may either change related dataset column names or change feature names. If you decide to change feature names and you have registered these features, you may need to register them again with updated names and a new project name. 
+   
 ## Difference between `materialize_features` and `get_offline_features` API
 
 It is sometimes confusing between "getting offline features" in this document and the "[getting materialized features](./materializing-features.md)" part, given they both seem to "get features and put it somewhere". However there are some differences and you should know when to use which:

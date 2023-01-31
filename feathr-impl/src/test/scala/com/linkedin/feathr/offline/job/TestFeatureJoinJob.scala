@@ -270,7 +270,7 @@ def testConflictsAutoCorrectionFeatures(): Unit = {
     |  }
     |  conflictsAutoCorrectionSettings: {
     |    renameFeatures: "True"
-    |    suffix: "suffixTest"
+    |    suffix: "10"
     |  }
     |}
     |
@@ -316,16 +316,15 @@ def testConflictsAutoCorrectionFeatures(): Unit = {
   observationDataPath = "simple-obs2.csv",
   dataPathHandlers = List () )
 
-  val tempRes = res.data.collect ()
   val featureList = res.data.collect ().sortBy (x => (x.getAs[String] ("mId") ) )
 
   assertEquals (featureList.size, 2)
-  assertEquals (featureList (0).getAs[Row] ("aEmbedding_suffixTest"), mutable.WrappedArray.make (Array (1.5f, 1.8f) ) )
-  assertEquals (featureList (1).getAs[Row] ("aEmbedding_suffixTest"), mutable.WrappedArray.make (Array (7.5f, 7.7f) ) )
+  assertEquals (featureList (0).getAs[Row] ("aEmbedding_10"), mutable.WrappedArray.make (Array (1.5f, 1.8f) ) )
+  assertEquals (featureList (1).getAs[Row] ("aEmbedding_10"), mutable.WrappedArray.make (Array (7.5f, 7.7f) ) )
 
   assertEquals(res.data.columns(2), "aEmbedding")
   assertEquals(res.data.columns(3), "bEmbedding")
-  assertTrue(Seq("aEmbedding_suffixTest", "bEmbedding_suffixTest").contains(res.data.columns(4)))
-  assertTrue(Seq("aEmbedding_suffixTest", "bEmbedding_suffixTest").contains(res.data.columns(5)))
+  assertTrue(Seq("aEmbedding_10", "bEmbedding_10").contains(res.data.columns(4)))
+  assertTrue(Seq("aEmbedding_10", "bEmbedding_10").contains(res.data.columns(5)))
   }
 }
