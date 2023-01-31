@@ -12,7 +12,7 @@ import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
-import com.linkedin.feathr.offline.util.SourceUtils
+import com.linkedin.feathr.offline.util.{FeathrUtils, SourceUtils}
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -63,12 +63,12 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             }
         }
         val timeSeriesSource = DataSourceAccessor(ss = ss,
-                                                  source = source, 
-                                                  dateIntervalOpt = dateInterval, 
-                                                  expectDatumType = Some(expectDatumType), 
+                                                  source = source,
+                                                  dateIntervalOpt = dateInterval,
+                                                  expectDatumType = Some(expectDatumType),
                                                   failOnMissingPartition = failOnMissingPartition,
                                                   dataPathHandlers = dataPathHandlers)
-        
+
         anchorsWithDate.map(anchor => (anchor, timeSeriesSource))
     })
   }
@@ -100,8 +100,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       val pathChecker = PathChecker(ss, dataLoaderHandlers)
       val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
       val pathInfo = pathAnalyzer.analyze(factDataSource.path)
-      if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY)
-      {
+      if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY) {
         obsTimeRange.adjustWithDateTimeResolution(DateTimeResolution.DAILY)
       } else obsTimeRange
     } else {
@@ -110,16 +109,23 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
 
     val timeInterval = OfflineDateTimeUtils.getFactDataTimeRange(adjustedObsTimeRange, window, timeDelays)
     val needCreateTimestampColumn = SlidingWindowFeatureUtils.needCreateTimestampColumnFromPartition(factDataSource)
-    val timeSeriesSource =
-      DataSourceAccessor(
-        ss = ss,
-        source = factDataSource,
-        dateIntervalOpt = Some(timeInterval),
-        expectDatumType = None,
-        failOnMissingPartition = failOnMissingPartition,
-        addTimestampColumn = needCreateTimestampColumn,
-        dataPathHandlers = dataPathHandlers)
-    timeSeriesSource.get()
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+
+    try {
+      val timeSeriesSource =
+        DataSourceAccessor(
+          ss = ss,
+          source = factDataSource,
+          dateIntervalOpt = Some(timeInterval),
+          expectDatumType = None,
+          failOnMissingPartition = failOnMissingPartition,
+          addTimestampColumn = needCreateTimestampColumn,
+          dataPathHandlers = dataPathHandlers)
+      timeSeriesSource.get()
+    }
+    catch {// todo - Add this functionality to only specific exception types and not for all error types.
+      case e: Exception => if (shouldSkipFeature) ss.emptyDataFrame else throw e
+    }
   }
 
   /**
@@ -171,7 +177,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
           addTimestampColumn = needCreateTimestampColumn,
           isStreaming = isStreaming,
           dataPathHandlers = dataPathHandlers)
-          
+
         anchors.map(anchor => (anchor, timeSeriesSource))
     })
   }

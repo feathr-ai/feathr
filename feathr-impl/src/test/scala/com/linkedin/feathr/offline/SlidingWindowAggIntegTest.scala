@@ -316,6 +316,92 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   /**
+   * SWA test with missing features. To enable this test, set the value of FeatureUtils.SKIP_MISSING_FEATURE to True. From
+   * Spark 3.1, SparkContext.updateConf() is not supported.
+   */
+  @Test(enabled = false)
+  def testSWAWithMissingFeatureData(): Unit = {
+    val joinConfigAsString =
+      """
+        | settings: {
+        |  observationDataTimeSettings: {
+        |   absoluteTimeRange: {
+        |     timeFormat: yyyy-MM-dd
+        |     startTime: "2018-05-01"
+        |     endTime: "2018-05-03"
+        |   }
+        |  }
+        |  joinTimeSettings: {
+        |   timestampColumn: {
+        |     def: timestamp
+        |     format: yyyy-MM-dd
+        |   }
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [x],
+        |    featureList: ["simplePageViewCount", "simpleFeature"]
+        |  }
+        |]
+      """.stripMargin
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |  missingSource: {
+        |    location: { path: "slidingWindowAgg/missingFeatureData/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      simplePageViewCount: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 10
+        |      }
+        |    }
+        |  }
+        |  missingAnchor: {
+        |  source: "missingSource"
+        |  key: "x"
+        |  features: {
+        |   simpleFeature: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 20
+        |     }
+        |    }
+        |  }
+        |}
+      """.stripMargin
+    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    res.show()
+    val df = res.collect()(0)
+    assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
+    assert(!res.columns.contains("simpleFeature"))
+  }
+
+  /**
    * test SWA with simulate time expressed as days and hours
    */
   @Test
@@ -1000,7 +1086,6 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
 
-  /**
   @Test
   def testSWACountDistinct(): Unit = {
     val featureDefAsString =
@@ -1080,5 +1165,5 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     val dfs = runLocalFeatureJoinForTest(featureJoinAsString, featureDefAsString, "featuresWithFilterObs.avro.json").data
 
     validateRows(dfs.select(keyField, features: _*).collect().sortBy(row => row.getAs[Int](keyField)), expectedRows)
-  }*/
+  }
 }
