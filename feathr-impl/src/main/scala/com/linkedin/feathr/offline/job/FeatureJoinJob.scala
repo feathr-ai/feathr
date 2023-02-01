@@ -111,9 +111,13 @@ object FeatureJoinJob {
       targetDate=None,
       failOnMissing=failOnMissing,
       dataLoaderHandlers=dataLoaderHandlers)
-      AclCheckUtils.checkReadAuthorization(hadoopConf, pathList) match {
-        case Failure(e) => throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"No read permission on observation data $pathList.", e)
-        case Success(_) => log.debug("Checked read authorization on observation data of the following paths:\n" + pathList.mkString("\n"))
+      val testValidPaths = AclCheckUtils.checkReadAuthorization(hadoopConf, pathList)
+      if (testValidPaths.isEmpty) {
+        log.debug("Checked read authorization on observation data of the following paths:\n" + pathList.mkString("\n"))
+      } else {
+        val invalidPaths = testValidPaths.map(_._2)
+        val errorMsgs = testValidPaths.map(_._1)
+        throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"No read permission on observation data $invalidPaths with  $errorMsgs")
       }
     })
   }

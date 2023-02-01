@@ -233,19 +233,33 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
      *     2. If dateParams are specified for any feature, update the "FeatureAnchorWithSource" object to decorate it with the specified
      * dateParams.
      */
-    val updatedFeatureGroups = featureGroupsUpdater.updateFeatureGroups(featureGroups, keyTaggedFeatures)
+    var updatedFeatureGroups = featureGroupsUpdater.updateFeatureGroups(featureGroups, keyTaggedFeatures)
 
-    val logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
-
-    if (!sparkSession.sparkContext.isLocal) {
+    var logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val featureToPathsMap = (for {
+      requiredFeature <- logicalPlan.allRequiredFeatures
+      featureAnchorWithSource <- allAnchoredFeatures.get(requiredFeature.getFeatureName)
+    } yield (requiredFeature.getFeatureName -> featureAnchorWithSource.source.path)).toMap
+    if (sparkSession.sparkContext.isLocal) {
+      val featurePathsTest = AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures)
       // Check read authorization for all required features
-      AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures) match {
+      featurePathsTest._1 match {
         case Failure(exception) =>
-          throw new FeathrInputDataException(
-            ErrorLabel.FEATHR_USER_ERROR,
-            "Unable to verify " +
-              "read authorization on feature data, it can be due to the following reasons: 1) input not exist, 2) no permission.",
-            exception)
+          if (shouldSkipFeature) {
+            val updatedAnchoredFeatures = allAnchoredFeatures.filter(y => {
+              !featurePathsTest._2.contains(featureToPathsMap(y._1))
+            })
+            updatedFeatureGroups = FeatureGroups(updatedAnchoredFeatures, updatedFeatureGroups.allDerivedFeatures,
+              updatedFeatureGroups.allWindowAggFeatures, updatedFeatureGroups.allPassthroughFeatures, updatedFeatureGroups.allSeqJoinFeatures)
+            logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
+          } else {
+            throw new FeathrInputDataException(
+              ErrorLabel.FEATHR_USER_ERROR,
+              "Unable to verify " +
+                "read authorization on feature data, it can be due to the following reasons: 1) input not exist, 2) no permission.",
+              exception)
+          }
         case Success(_) => log.debug("Checked read authorization on all feature data")
       }
     }
