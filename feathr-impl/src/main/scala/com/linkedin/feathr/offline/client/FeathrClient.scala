@@ -242,7 +242,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
       requiredFeature <- logicalPlan.allRequiredFeatures
       featureAnchorWithSource <- allAnchoredFeatures.get(requiredFeature.getFeatureName)
     } yield (requiredFeature.getFeatureName -> featureAnchorWithSource.source.path)).toMap
-    if (sparkSession.sparkContext.isLocal) {
+    if (!sparkSession.sparkContext.isLocal) {
       // Check read authorization for all required features
       val featurePathsTest = AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures)
       featurePathsTest._1 match {

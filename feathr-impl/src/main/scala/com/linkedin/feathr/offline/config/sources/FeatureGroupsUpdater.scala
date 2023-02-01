@@ -72,17 +72,27 @@ private[offline] class FeatureGroupsUpdater {
   }
 
   /**
-   *
-   * @param featureToPathsMap
-   * @param featureGroups
-   * @param paths
+   * Exclude anchored and derived features features from the join stage if they do not have a valid path.
+   * @param featureToPathsMap Map of anchored feature names to their paths
+   * @param featureGroups All feature groups
+   * @param invalidPaths List of all invalid paths
    * @return
    */
   def getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap: Map[String, String], featureGroups: FeatureGroups, invalidPaths: Seq[String]): FeatureGroups = {
     val updatedAnchoredFeatures = featureGroups.allAnchoredFeatures.filter(featureNameToAnchoredObject => {
       !invalidPaths.contains(featureToPathsMap(featureNameToAnchoredObject._1))
     })
-    FeatureGroups(updatedAnchoredFeatures, featureGroups.allDerivedFeatures,
+
+    // Iterate over the derived features and remove the derived features which contains these anchored features.
+    val updatedDerivedFeatures = featureGroups.allDerivedFeatures.filter(derivedFeature => {
+      // Find the constituent anchored features for every derived feature
+      val allAnchoredFeaturesInDerived = derivedFeature._2.consumedFeatureNames.map(_.getFeatureName)
+      // Check if any of the features does not have a valid path
+      val containsFeature: Seq[Boolean] = allAnchoredFeaturesInDerived
+      .map(featureName => !invalidPaths.contains(featureToPathsMap(featureName)))
+      !containsFeature.contains(false)
+    })
+    FeatureGroups(updatedAnchoredFeatures, updatedDerivedFeatures,
       featureGroups.allWindowAggFeatures, featureGroups.allPassthroughFeatures, featureGroups.allSeqJoinFeatures)
   }
 
