@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.config
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.core.{JsonParser, TreeNode}
-import com.fasterxml.jackson.databind.node.{ObjectNode, TextNode, TreeTraversingParser, ValueNode}
+import com.fasterxml.jackson.databind.node.{NumericNode, ObjectNode, TextNode, TreeTraversingParser, ValueNode}
 import com.fasterxml.jackson.databind.{DeserializationContext, JsonDeserializer, JsonNode}
 import com.linkedin.feathr.common.DateParam
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
@@ -282,7 +282,8 @@ private class ConflictsAutoCorrectionSettingDeserializer extends JsonDeserialize
           case _ => RENAME_FEATURES_DEFAULT_VALUE
         }
         val suffix = innerNode.get(AUTO_CORRECTION_SUFFIX) match {
-          case suffix: ValueNode => suffix.textValue()
+          case suffix: TextNode => suffix.textValue()
+          case suffix: NumericNode => suffix.asInt().toString
           case _ => AUTO_CORRECTION_SUFFIX_VALUE
         }
         ConflictsAutoCorrectionSetting(renameFeatures, suffix)
