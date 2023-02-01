@@ -21,7 +21,7 @@ from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.materialization_settings import MaterializationSettings
 from feathr.definition.monitoring_settings import MonitoringSettings
 from feathr.definition.query_feature_list import FeatureQuery
-from feathr.definition.settings import ObservationSettings
+from feathr.definition.settings import ObservationSettings, ConflictsAutoCorrection
 from feathr.definition.sink import HdfsSink, Sink
 from feathr.definition.source import InputContext
 from feathr.definition.transformation import WindowAggTransformation
@@ -519,7 +519,7 @@ class FeathrClient(object):
             for feature_name in feature_query.feature_list:
                 feature_names.append(feature_name)
         
-        if len(feature_names) > 0:
+        if len(feature_names) > 0 and observation_settings.conflicts_auto_correction is None:
             import feathr.utils.job_utils as job_utils
             dataset_column_names_from_path = job_utils.get_cloud_file_column_names(self, observation_settings.observation_path, observation_settings.file_format,observation_settings.is_file_path)
             if (dataset_column_names_from_path is None or len(dataset_column_names_from_path) == 0) and dataset_column_names is None:

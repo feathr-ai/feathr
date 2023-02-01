@@ -77,14 +77,18 @@ After you have defined all the features, you probably don't want to use all of t
 
 ## Feature names conflicts check 
 
-If any of feature names provided by `Feature Query` conflict with column names of the 'observation' dataset, thie 'get_offline_features' job will fail. It can cause several minutes to get this failure from spark. To avoid this slowness,feathr support to check if any of these conflicts exist before submitting the job to cloud.
+If any of feature names provided by `Feature Query` conflict with column names of the 'observation' dataset, this 'get_offline_features' job will fail. It can cost several minutes to get this failure from spark. To avoid this slowness,feathr support to check if any of these conflicts exist before submitting the job to cloud.
 
 The checking steps are:
-1. Try to load dataset without credential and compare column names with feature names. This is to support the case when the dataset is saved in a public storage.
-2. If cannot load the dataset in the first step, will try to load it with credential anc compare column names with feature names. It can only support loading files from storages requiring credential your environment defined. For example, if your `spark_cluster` is `databricks`, it can only load dataset under the 'dbfs' path belonging to this databricks.
-3. If cannot load the dataset from step1 and step2, will try to compare column names provided by the parameter `dataset_column_names` if it's not empty.
-4. If cannot get column names from above 3 steps, will show a warning message and submit the job to cloud. The spark will also check this kind of conflicts.
-5. If any conflicts found in step 1 to 3, will throw an exception and the process will be stoped. (Plan to provide the auto correction function soon). To solve these conflicts, you may either change related dataset column names or change feature names. If you decide to change feature names and you have registered these features, you may need to register them again with updated names and a new project name. 
+1. Check if the `conflicts_auto_correction` in the `observation_settings`is set (default by None). If it's not None, it means spark will handle checking and solving these conflicts. In this case, python client side will submit this job to spark directly. Otherwise, it will go to the below steps. In terms of `conflicts_auto_correction`, it also contains two parameters, `rename_features` and `suffix`. By default, spark will rename dataset columns with a suffix "_1". You may rename feature names by set `rename_features` to True and provide a customized suffix.
+2. Try to load dataset without credential and compare column names with feature names. This is to support the case when the dataset is saved in a public storage.
+3. If cannot load the dataset in the first step, will try to load it with credential anc compare column names with feature names. It can only support loading files from storages requiring credential your environment defined. For example, if your `spark_cluster` is `databricks`, it can only load dataset under the 'dbfs' path belonging to this databricks.
+4. If cannot load the dataset from step1 and step2, will try to compare column names provided by the parameter `dataset_column_names` if it's not empty.
+5. If cannot get column names from above 3 steps, will show a warning message and submit the job to cloud. The spark will also check this kind of conflicts.
+6. If any conflicts found in step 1 to 3, will throw an exception and the process will be stoped. (Plan to provide the auto correction function soon). To solve these conflicts, you may either change related dataset column names or change feature names. If you decide to change feature names and you have registered these features, you may need to register them again with updated names and a new project name. 
+
+Workflow graph for the conflicts checking and handling:
+![conflicts-check-and-handle](../images/conflicts-check-and-handle.png)
    
 ## Difference between `materialize_features` and `get_offline_features` API
 
