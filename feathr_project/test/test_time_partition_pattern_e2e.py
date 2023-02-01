@@ -9,7 +9,6 @@ from feathr import HdfsSink
 from feathr.utils.job_utils import get_result_df, copy_cloud_dir, cloud_dir_exists
 from test_fixture import (basic_test_setup, time_partition_pattern_feature_gen_test_setup, time_partition_pattern_feature_join_test_setup)
 from test_utils.constants import Constants
-
 '''
 def setup_module():
     """
@@ -192,3 +191,4 @@ def test_feathr_get_offline_with_time_partition_pattern_postfix_path():
 
     res_df = get_result_df(client, data_format="avro", res_url = output_path)
     assert res_df.shape[0] > 0
+    
