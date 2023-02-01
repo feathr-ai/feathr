@@ -4,7 +4,7 @@ import java.time.Duration
 import com.linkedin.feathr.common.{DateParam, DateTimeResolution}
 import com.linkedin.feathr.offline.source.SourceFormatType._
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
-import com.linkedin.feathr.offline.config.location.{PathList, SimplePath}
+import com.linkedin.feathr.offline.config.location.{DataLocation, PathList, SimplePath}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
@@ -96,16 +96,19 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
 
     // Only file-based source has real "path", others are just single dataset
-    val adjustedObsTimeRange = if (factDataSource.location.isFileBasedLocation()) {
+    val (adjustedObsTimeRange, dataSourcePath) = if (factDataSource.location.isFileBasedLocation()) {
       val pathChecker = PathChecker(ss, dataLoaderHandlers)
       val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
       val pathInfo = pathAnalyzer.analyze(factDataSource.path)
       if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY) {
-        obsTimeRange.adjustWithDateTimeResolution(DateTimeResolution.DAILY)
-      } else obsTimeRange
+        (obsTimeRange.adjustWithDateTimeResolution(DateTimeResolution.DAILY), pathInfo.basePath)
+      } else (obsTimeRange, pathInfo.basePath)
     } else {
-      obsTimeRange
+      (obsTimeRange, factDataSource.path)
     }
+    // Copy the pathInfo's path into the datasource path as it adds the daily/hourly keyword if it is missing from the path
+    val updatedFactDataSource = DataSource(dataSourcePath, factDataSource.sourceType, factDataSource.timeWindowParams,
+      factDataSource.timePartitionPattern, factDataSource.postfixPath)
 
     val timeInterval = OfflineDateTimeUtils.getFactDataTimeRange(adjustedObsTimeRange, window, timeDelays)
     val needCreateTimestampColumn = SlidingWindowFeatureUtils.needCreateTimestampColumnFromPartition(factDataSource)
@@ -115,7 +118,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       val timeSeriesSource =
         DataSourceAccessor(
           ss = ss,
-          source = factDataSource,
+          source = updatedFactDataSource,
           dateIntervalOpt = Some(timeInterval),
           expectDatumType = None,
           failOnMissingPartition = failOnMissingPartition,
