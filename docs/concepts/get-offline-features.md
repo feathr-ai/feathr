@@ -85,7 +85,7 @@ The checking steps are:
 3. If cannot load the dataset in the first step, will try to load it with credential anc compare column names with feature names. It can only support loading files from storages requiring credential your environment defined. For example, if your `spark_cluster` is `databricks`, it can only load dataset under the 'dbfs' path belonging to this databricks.
 4. If cannot load the dataset from step1 and step2, will try to compare column names provided by the parameter `dataset_column_names` if it's not empty.
 5. If cannot get column names from above 3 steps, will show a warning message and submit the job to cloud. The spark will also check this kind of conflicts.
-6. If any conflicts found in step 1 to 3, will throw an exception and the process will be stoped. (Plan to provide the auto correction function soon). To solve these conflicts, you may either change related dataset column names or change feature names. If you decide to change feature names and you have registered these features, you may need to register them again with updated names and a new project name. 
+6. If any conflicts found in step 1 to 3, will throw an exception and the process will be stoped. To solve these conflicts, you may either change related dataset column names or change feature names. If you decide to change feature names and you have registered these features, you may need to register them again with updated names and a new project name. 
 
 Workflow graph for the conflicts checking and handling:
 ![conflicts-check-and-handle](../images/conflicts-check-and-handle.png)

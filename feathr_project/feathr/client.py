@@ -533,7 +533,6 @@ class FeathrClient(object):
                         conflict_names.append(feature_name)
                 if len(conflict_names) != 0:
                     conflict_names = ",".join(conflict_names)
-                # TODO: add auto-correction option
                     raise RuntimeError(f"Feature names exist conflicts with dataset column names: {conflict_names}")
            
         udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(feature_names, self.local_workspace_dir)
