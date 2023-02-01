@@ -2,12 +2,13 @@ package com.linkedin.feathr.offline.client
 
 import com.linkedin.feathr.common.exception._
 import com.linkedin.feathr.common.{FeatureInfo, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
+import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig}
 import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, FeatureGenKeyTagAnalyzer, StreamingFeatureGenerator}
 import com.linkedin.feathr.offline.job._
 import com.linkedin.feathr.offline.join.DataFrameFeatureJoiner
-import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlanner}
+import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
@@ -233,7 +234,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
      *     2. If dateParams are specified for any feature, update the "FeatureAnchorWithSource" object to decorate it with the specified
      * dateParams.
      */
-    var updatedFeatureGroups = featureGroupsUpdater.updateFeatureGroups(featureGroups, keyTaggedFeatures)
+    val updatedFeatureGroups = featureGroupsUpdater.updateFeatureGroups(featureGroups, keyTaggedFeatures)
 
     var logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
@@ -242,17 +243,14 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
       featureAnchorWithSource <- allAnchoredFeatures.get(requiredFeature.getFeatureName)
     } yield (requiredFeature.getFeatureName -> featureAnchorWithSource.source.path)).toMap
     if (sparkSession.sparkContext.isLocal) {
-      val featurePathsTest = AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures)
       // Check read authorization for all required features
+      val featurePathsTest = AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures)
       featurePathsTest._1 match {
         case Failure(exception) =>
-          if (shouldSkipFeature) {
-            val updatedAnchoredFeatures = allAnchoredFeatures.filter(y => {
-              !featurePathsTest._2.contains(featureToPathsMap(y._1))
-            })
-            updatedFeatureGroups = FeatureGroups(updatedAnchoredFeatures, updatedFeatureGroups.allDerivedFeatures,
-              updatedFeatureGroups.allWindowAggFeatures, updatedFeatureGroups.allPassthroughFeatures, updatedFeatureGroups.allSeqJoinFeatures)
-            logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
+          if (shouldSkipFeature) { // If skip feature, remove the corresponding anchored feature from the feature group and produce a new logical plan
+            val featureGroupsWithoutInvalidFeatures = FeatureGroupsUpdater()
+              .getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap, updatedFeatureGroups, featurePathsTest._2)
+            logicalPlanner.getLogicalPlan(featureGroupsWithoutInvalidFeatures, keyTaggedFeatures)
           } else {
             throw new FeathrInputDataException(
               ErrorLabel.FEATHR_USER_ERROR,

@@ -2,7 +2,8 @@ package com.linkedin.feathr.offline.config.sources
 
 import com.linkedin.feathr.common.JoiningFeatureParams
 import com.linkedin.feathr.offline.anchored.anchorExtractor.TimeWindowConfigurableAnchorExtractor
-import com.linkedin.feathr.offline.logical.FeatureGroups
+import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
+import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan}
 
 /**
  * Feature groups will be generated using only the feature def config using the [[com.linkedin.feathr.offline.config.FeatureGroupsGenerator]]
@@ -68,6 +69,21 @@ private[offline] class FeatureGroupsUpdater {
 
     FeatureGroups(updatedAnchoredFeaturesMap, featureGroups.allDerivedFeatures, updatedWindowAggFeaturesMap, featureGroups.allPassthroughFeatures,
       featureGroups.allSeqJoinFeatures)
+  }
+
+  /**
+   *
+   * @param featureToPathsMap
+   * @param featureGroups
+   * @param paths
+   * @return
+   */
+  def getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap: Map[String, String], featureGroups: FeatureGroups, invalidPaths: Seq[String]): FeatureGroups = {
+    val updatedAnchoredFeatures = featureGroups.allAnchoredFeatures.filter(featureNameToAnchoredObject => {
+      !invalidPaths.contains(featureToPathsMap(featureNameToAnchoredObject._1))
+    })
+    FeatureGroups(updatedAnchoredFeatures, featureGroups.allDerivedFeatures,
+      featureGroups.allWindowAggFeatures, featureGroups.allPassthroughFeatures, featureGroups.allSeqJoinFeatures)
   }
 
 }
