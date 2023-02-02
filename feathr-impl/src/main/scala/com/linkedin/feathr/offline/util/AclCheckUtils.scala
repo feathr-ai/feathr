@@ -72,7 +72,7 @@ private[offline] object AclCheckUtils {
     if (invalidPaths.isEmpty) {
       (Success(()), invalidPaths.map(_._2))
     } else {
-      if (shouldSkipFeature) {
+      if (!shouldSkipFeature) {
         (Failure(
           new RuntimeException(
             "Can not verify read authorization on the following paths. This can be due to" +

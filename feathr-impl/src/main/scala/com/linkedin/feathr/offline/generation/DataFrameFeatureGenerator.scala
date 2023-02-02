@@ -34,33 +34,6 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
   @transient val postGenPruner = PostGenPruner()
 
   /**
-   * Update the feature groups based on feature missing features. Few features can be missing if the feature data is not present.
-   *
-   * @param featureGroups
-   * @param allStageFeatures
-   * @param keyTaggedFeatures
-   * @return
-   */
-  def getUpdatedFeatureGroups(featureGroups: FeatureGroups, allStageFeatures: Map[FeatureName, (FeatureDataFrame, JoinKeys)],
-    keyTaggedFeatures: Seq[JoiningFeatureParams]): (FeatureGroups, Seq[JoiningFeatureParams]) = {
-    val updatedAnchoredFeatures = featureGroups.allAnchoredFeatures.filter(featureRow => allStageFeatures.contains(featureRow._1))
-    // Iterate over the derived features and remove the derived features which contains these anchored features.
-    val updatedDerivedFeatures = featureGroups.allDerivedFeatures.filter(derivedFeature => {
-      // Find the constituent anchored features for every derived feature
-      val allAnchoredFeaturesInDerived = derivedFeature._2.consumedFeatureNames.map(_.getFeatureName)
-      val containsFeature: Seq[Boolean] = allAnchoredFeaturesInDerived.map(feature => updatedAnchoredFeatures.contains(feature))
-      !containsFeature.contains(false)
-    })
-    val updatedWindowAggFeatures = featureGroups.allWindowAggFeatures.filter(windowAggFeature => updatedAnchoredFeatures.contains(windowAggFeature._1))
-    val updatedFeatureGroups = FeatureGroups(updatedAnchoredFeatures, updatedDerivedFeatures, updatedWindowAggFeatures,
-      featureGroups.allPassthroughFeatures, featureGroups.allSeqJoinFeatures)
-    val updatedKeyTaggedFeatures = keyTaggedFeatures.filter(feature => updatedAnchoredFeatures.contains(feature.featureName)
-      || updatedDerivedFeatures.contains(feature.featureName) || updatedWindowAggFeatures.contains(feature.featureName)
-      || featureGroups.allPassthroughFeatures.contains(feature.featureName) || featureGroups.allSeqJoinFeatures.contains(feature.featureName))
-    (updatedFeatureGroups, updatedKeyTaggedFeatures)
-  }
-
-  /**
    * Generate anchored and derived features and return the feature DataFrame and feature metadata.
    *
    * @param ss                 input spark session.
@@ -115,7 +88,8 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
 
     // 5. Group features based on grouping specified in output processors
     val updatedAllStageFeatures = allStageFeatures.filter(keyValue => !keyValue._2._1.df.isEmpty)
-    val (updatedFeatureGroups, updatedKeyTaggedFeatures) = getUpdatedFeatureGroups(featureGroups, updatedAllStageFeatures, keyTaggedFeatures)
+    val (updatedFeatureGroups, updatedKeyTaggedFeatures) = FeatureGroupsUpdater().getUpdatedFeatureGroups(featureGroups,
+      updatedAllStageFeatures, keyTaggedFeatures)
 
     val updatedLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(updatedFeatureGroups, updatedKeyTaggedFeatures)
     val groupedAnchoredFeatures = featureGenFeatureGrouper.group(updatedAllStageFeatures, featureGenSpec.getOutputProcessorConfigs,

@@ -56,6 +56,8 @@ class StreamingFeatureGenerator(dataPathHandlers: List[DataPathHandler]) {
     }
     // Load the raw streaming source data
     val anchorDfRDDMap = anchorToDataFrameMapper.getAnchorDFMapForGen(ss, anchors, None, false, true)
+
+    // Remove entries for which feature dataframe cannot be loaded.
     val updatedAnchorDFRDDMap = anchorDfRDDMap.filter(anchorEntry => anchorEntry._2.isDefined).map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
     updatedAnchorDFRDDMap.par.map { case (anchor, dfAccessor) => {

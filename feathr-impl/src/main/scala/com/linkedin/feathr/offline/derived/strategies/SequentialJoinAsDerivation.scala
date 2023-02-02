@@ -219,6 +219,8 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
     val anchorDFMap1 = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(ss, Seq(featureAnchor), failOnMissingPartition)
     val updatedAnchorDFMap = anchorDFMap1.filter(anchorEntry => anchorEntry._2.isDefined)
       .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
+    // We dont need to check if the anchored feature's dataframes are missing (due to skip missing feature) as such
+    // seq join features have already been removed in the FeatureGroupsUpdater#getUpdatedFeatureGroupsWithoutInvalidPaths.
     val featureInfo = FeatureTransformation.directCalculate(
       anchorGroup: AnchorFeatureGroups,
       updatedAnchorDFMap(featureAnchor),

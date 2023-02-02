@@ -897,11 +897,10 @@ class FeatureGenIntegTest extends FeathrIntegTest {
       s"""
          |sources: {
          |  ${defaultSwaSource}
-         |  ${malformedSource}
          |}
          |anchors: {
          |  swaAnchor1: {
-         |    source: "swaSource11"
+         |    source: "swaSource"
          |    key: x
          |    features: {
          |      f3: {
@@ -1839,8 +1838,10 @@ class FeatureGenIntegTest extends FeathrIntegTest {
   /**
    * This test validates that derived features with multiple keys are supported
    * if and only if all dependent features have the same keys.
+   * To enable this test, set the value of FeatureUtils.SKIP_MISSING_FEATURE to True. From
+   * Spark 3.1, SparkContext.updateConf() is not supported.
    */
-  @Test
+  @Test(enabled=false)
   def testDerivedFeatureGenWithSkipFeatureFlagOn(): Unit = {
     val featureDefConf =
       """
