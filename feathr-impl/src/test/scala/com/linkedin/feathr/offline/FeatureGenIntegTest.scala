@@ -33,7 +33,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
   private val malformedDefaultSwaSource =
     """
       |  swaSource: {
-      |    location: { path: "generation/daily" }
+      |    location: { path: "generation/" }
       |    timePartitionPattern: "yyyy/MM/dd"
       |    timeWindowParameters: {
       |      timestampColumn: "timestamp"
@@ -902,6 +902,65 @@ class FeatureGenIntegTest extends FeathrIntegTest {
   }
 
   /**
+   * test sliding window aggregation feature with malformed source.
+   */
+  @Test
+  def testSWAFeatureGenWithMalformedSource(): Unit = {
+    val groupBy = """CASE WHEN Id2 IS NOT NULL THEN Id2 ELSE \"null\" END"""
+    val swaFeatureDefConfig =
+      s"""
+         |sources: {
+         |  ${malformedDefaultSwaSource}
+         |}
+         |anchors: {
+         |  swaAnchorWithKeyExtractor: {
+         |    source: "swaSource"
+         |    key: x
+         |    features: {
+         |      f3: {
+         |        def: "count"
+         |        aggregation: SUM
+         |        window: 3d
+         |        groupBy: "Id"
+         |      }
+         |
+         |      f4: {
+         |        def: "1"
+         |        aggregation: COUNT
+         |        window: 3d
+         |        filter: "Id2 is not null"
+         |        groupBy: "${groupBy}"
+         |      }
+         |    }
+         |  }
+         |}
+    """.stripMargin
+    val swaApplicationConfig = generateSimpleApplicationConfig(features = "f3, f4", endTime = "2019-05-21")
+
+    val dfs = localFeatureGenerate(swaApplicationConfig, swaFeatureDefConfig)
+    // group by dataframe
+    val dfCount = dfs.groupBy(_._2.data).size
+    assertEquals(dfCount, 2) // Expect 2 dataframes because one feature has filter while the other does not.
+
+    val firstFeatureList = dfs
+      .filter(_._1.getFeatureName == "f3")
+      .map(_._2.data)
+      .head
+      .collect()
+      .sortBy(row => row.getAs[Int]("key0"))
+    assertRowTensorEquals(firstFeatureList(0).getAs[Row]("f3"), List("10", "11"), List(2.0, 4.0))
+    assertRowTensorEquals(firstFeatureList(1).getAs[Row]("f3"), List("10", "11"), List(6.0, 4.0))
+    val secondFeatureList = dfs
+      .filter(_._1.getFeatureName == "f4")
+      .map(_._2.data)
+      .head
+      .collect()
+      .sortBy(row => row.getAs[Int]("key0"))
+    assertRowTensorEquals(secondFeatureList(0).getAs[Row]("f4"), List("10", "11", "null"), List(2.0, 1.0, 0.0))
+    assertRowTensorEquals(secondFeatureList(1).getAs[Row]("f4"), List("10", "11"), List(2.0, 1.0))
+  }
+
+  /**
    * test sliding window aggregation feature with group by
    */
   @Test
@@ -910,7 +969,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     val swaFeatureDefConfig =
       s"""
          |sources: {
-         |  ${malformedDefaultSwaSource}
+         |  ${defaultSwaSource}
          |}
          |anchors: {
          |  swaAnchorWithKeyExtractor: {
