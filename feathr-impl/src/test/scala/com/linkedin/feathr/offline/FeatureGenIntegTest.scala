@@ -21,7 +21,19 @@ class FeatureGenIntegTest extends FeathrIntegTest {
   private val defaultSwaSource =
     """
       |  swaSource: {
-      |    location: { path: "generation/daily/" }
+      |    location: { path: "generation/daily" }
+      |    timePartitionPattern: "yyyy/MM/dd"
+      |    timeWindowParameters: {
+      |      timestampColumn: "timestamp"
+      |      timestampColumnFormat: "yyyy-MM-dd"
+      |    }
+      |  }
+    """.stripMargin
+
+  private val malformedDefaultSwaSource =
+    """
+      |  swaSource: {
+      |    location: { path: "generation/daily" }
       |    timePartitionPattern: "yyyy/MM/dd"
       |    timeWindowParameters: {
       |      timestampColumn: "timestamp"
@@ -898,7 +910,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     val swaFeatureDefConfig =
       s"""
          |sources: {
-         |  ${defaultSwaSource}
+         |  ${malformedDefaultSwaSource}
          |}
          |anchors: {
          |  swaAnchorWithKeyExtractor: {
