@@ -56,7 +56,9 @@ class StreamingFeatureGenerator(dataPathHandlers: List[DataPathHandler]) {
     }
     // Load the raw streaming source data
     val anchorDfRDDMap = anchorToDataFrameMapper.getAnchorDFMapForGen(ss, anchors, None, false, true)
-    anchorDfRDDMap.par.map { case (anchor, dfAccessor) => {
+    val updatedAnchorDFRDDMap = anchorDfRDDMap.filter(anchorEntry => anchorEntry._2.isDefined).map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
+
+    updatedAnchorDFRDDMap.par.map { case (anchor, dfAccessor) => {
       val schemaStr = anchor.source.location.asInstanceOf[KafkaEndpoint].schema.avroJson
       val schemaStruct = SchemaConverters.toSqlType(Schema.parse(schemaStr)).dataType.asInstanceOf[StructType]
       val rowForRecord = (input: Any) => {

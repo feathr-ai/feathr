@@ -381,12 +381,14 @@ object FeatureJoinJob {
       sparkSession,
       allAnchoredFeatures.values.toSeq,
       failOnMissing)
+    val updatedAnchorsWithSource = anchorsWithSource.filter(anchorEntry => anchorEntry._2.isDefined)
+      .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
     // Only load DataFrames for anchors that have preprocessing UDF
     // So we filter out anchors that doesn't have preprocessing UDFs
     // We use feature names sorted and merged as the key to find the anchor
     // For example, f1, f2 belongs to anchor. Then Map("f1,f2"-> anchor)
-    val dataFrameMapForPreprocessing = anchorsWithSource
+    val dataFrameMapForPreprocessing = updatedAnchorsWithSource
       .filter(x => featureNamesInAnchorSet.contains(x._1.featureAnchor.features.toSeq.sorted.mkString(",")))
       .map(x => (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get()))
 

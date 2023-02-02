@@ -217,9 +217,11 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
     val ss = SparkSession.builder().getOrCreate()
     val failOnMissingPartition = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
     val anchorDFMap1 = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(ss, Seq(featureAnchor), failOnMissingPartition)
+    val updatedAnchorDFMap = anchorDFMap1.filter(anchorEntry => anchorEntry._2.isDefined)
+      .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
     val featureInfo = FeatureTransformation.directCalculate(
       anchorGroup: AnchorFeatureGroups,
-      anchorDFMap1(featureAnchor),
+      updatedAnchorDFMap(featureAnchor),
       featureAnchor.featureAnchor.sourceKeyExtractor,
       None,
       None,
