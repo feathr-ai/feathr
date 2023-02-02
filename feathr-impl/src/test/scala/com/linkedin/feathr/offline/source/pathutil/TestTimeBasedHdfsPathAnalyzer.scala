@@ -85,7 +85,7 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
       pathAnalyzer.analyze("resources/generation/", "yyyy/MM/dd/HH"),
       PathInfo("resources/generation/hourly/", DateTimeResolution.HOURLY, "yyyy/MM/dd/HH"))
     assertEquals(
-      pathAnalyzer.analyze("test/resources/generation/datepartition=", "yyyy-MM-dd-00"),
+      pathAnalyzer.analyze("test/resources/generation/", "yyyy-MM-dd-00"),
       PathInfo("test/resources/generation/datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00"))
   }
 }

@@ -79,7 +79,8 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataL
     } else if (pathChecker.exists(basePath + hourlyFolder)) {
       PathInfo(basePath + hourlyFolder, dateTimeResolution, timePartitionPattern)
     } else {
-      PathInfo(basePath, dateTimeResolution, timePartitionPattern)
+      // Daily data can be Orc/Hive data following in HomeDir/datepartition=yyyy-MM-dd-00
+      PathInfo(basePath + "datepartition=", dateTimeResolution, timePartitionPattern)
     }
   }
 }

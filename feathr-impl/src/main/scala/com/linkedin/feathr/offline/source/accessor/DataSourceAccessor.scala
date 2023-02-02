@@ -62,7 +62,7 @@ private[offline] object DataSourceAccessor {
       new NonTimeBasedDataSourceAccessor(ss, dataLoaderFactory, source, expectDatumType)
     } else {
       import scala.util.control.Breaks._
-      
+
       val timeInterval = dateIntervalOpt.get
       var dataAccessorOpt: Option[DataSourceAccessor] = None
       breakable {
@@ -106,7 +106,8 @@ private[offline] object DataSourceAccessor {
     val partitionLimiter = new PartitionLimiter(ss)
     val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
     val fileName = new File(source.path).getName
-    if (source.timePartitionPattern.isDefined) {
+    if ((source.sourceType == SourceFormatType.TIME_PATH || source.sourceType == SourceFormatType.TIME_SERIES_PATH)
+      && source.timePartitionPattern.isDefined) {
       // case 1: the timePartitionPattern exists
       val pathInfo = pathAnalyzer.analyze(source.path, source.timePartitionPattern.get)
       PathPartitionedTimeSeriesSourceAccessor(
@@ -147,7 +148,7 @@ private[offline] object DataSourceAccessor {
  */
 private[offline] case class DataAccessorHandler(
   validatePath: String => Boolean,
-  getAccessor: 
+  getAccessor:
   (
     SparkSession,
     DataSource,
