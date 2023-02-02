@@ -3,12 +3,14 @@ package com.linkedin.feathr.offline.generation
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import com.linkedin.feathr.common.{Header, JoiningFeatureParams, TaggedFeatureName}
 import com.linkedin.feathr.offline
+import com.linkedin.feathr.offline.{FeatureDataFrame, JoinKeys}
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource.{getDefaultValues, getFeatureTypes}
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
 import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinDerivationStrategy, SparkUdfDerivation, SqlDerivationSpark}
 import com.linkedin.feathr.offline.derived.{DerivedFeature, DerivedFeatureEvaluator}
 import com.linkedin.feathr.offline.evaluator.DerivedFeatureGenStage
+import com.linkedin.feathr.offline.job.FeatureJoinJob.FeatureName
 import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
@@ -32,7 +34,35 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
   @transient val postGenPruner = PostGenPruner()
 
   /**
+   * Update the feature groups based on feature missing features. Few features can be missing if the feature data is not present.
+   *
+   * @param featureGroups
+   * @param allStageFeatures
+   * @param keyTaggedFeatures
+   * @return
+   */
+  def getUpdatedFeatureGroups(featureGroups: FeatureGroups, allStageFeatures: Map[FeatureName, (FeatureDataFrame, JoinKeys)],
+    keyTaggedFeatures: Seq[JoiningFeatureParams]): (FeatureGroups, Seq[JoiningFeatureParams]) = {
+    val updatedAnchoredFeatures = featureGroups.allAnchoredFeatures.filter(featureRow => allStageFeatures.contains(featureRow._1))
+    // Iterate over the derived features and remove the derived features which contains these anchored features.
+    val updatedDerivedFeatures = featureGroups.allDerivedFeatures.filter(derivedFeature => {
+      // Find the constituent anchored features for every derived feature
+      val allAnchoredFeaturesInDerived = derivedFeature._2.consumedFeatureNames.map(_.getFeatureName)
+      val containsFeature: Seq[Boolean] = allAnchoredFeaturesInDerived.map(feature => updatedAnchoredFeatures.contains(feature))
+      !containsFeature.contains(false)
+    })
+    val updatedWindowAggFeatures = featureGroups.allWindowAggFeatures.filter(windowAggFeature => updatedAnchoredFeatures.contains(windowAggFeature._1))
+    val updatedFeatureGroups = FeatureGroups(updatedAnchoredFeatures, updatedDerivedFeatures, updatedWindowAggFeatures,
+      featureGroups.allPassthroughFeatures, featureGroups.allSeqJoinFeatures)
+    val updatedKeyTaggedFeatures = keyTaggedFeatures.filter(feature => updatedAnchoredFeatures.contains(feature.featureName)
+      || updatedDerivedFeatures.contains(feature.featureName) || updatedWindowAggFeatures.contains(feature.featureName)
+      || featureGroups.allPassthroughFeatures.contains(feature.featureName) || featureGroups.allSeqJoinFeatures.contains(feature.featureName))
+    (updatedFeatureGroups, updatedKeyTaggedFeatures)
+  }
+
+  /**
    * Generate anchored and derived features and return the feature DataFrame and feature metadata.
+   *
    * @param ss                 input spark session.
    * @param featureGenSpec     specification for a feature generation job.
    * @param featureGroups      all features in scope grouped under different types.
@@ -85,22 +115,11 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
 
     // 5. Group features based on grouping specified in output processors
     val updatedAllStageFeatures = allStageFeatures.filter(keyValue => !keyValue._2._1.df.isEmpty)
-    val updatedAnchoredFeatures = featureGroups.allAnchoredFeatures.filter(featureRow => updatedAllStageFeatures.contains(featureRow._1))
-    // Iterate over the derived features and remove the derived features which contains these anchored features.
-    val updatedDerivedFeatures = featureGroups.allDerivedFeatures.filter(derivedFeature => {
-      // Find the constituent anchored features for every derived feature
-      val allAnchoredFeaturesInDerived = derivedFeature._2.consumedFeatureNames.map(_.getFeatureName)
-      val containsFeature: Seq[Boolean] = allAnchoredFeaturesInDerived.map(feature => updatedAnchoredFeatures.contains(feature))
-      !containsFeature.contains(false)
-    })
-    val updatedWindowAggFeatures = featureGroups.allWindowAggFeatures.filter(windowAggFeature => updatedAnchoredFeatures.contains(windowAggFeature._1))
-    val updatedFeatureGroups = FeatureGroups(updatedAnchoredFeatures, updatedDerivedFeatures, featureGroups.allWindowAggFeatures,
-      featureGroups.allPassthroughFeatures, featureGroups.allSeqJoinFeatures)
-    val updatedKeyTaggedFeatures = keyTaggedFeatures.filter(feature => updatedAnchoredFeatures.contains(feature.featureName)
-      || updatedDerivedFeatures.contains(feature.featureName) || updatedDerivedFeatures.contains(feature.featureName)
-      || featureGroups.allPassthroughFeatures.contains(feature.featureName) || featureGroups.allSeqJoinFeatures.contains(feature.featureName))
+    val (updatedFeatureGroups, updatedKeyTaggedFeatures) = getUpdatedFeatureGroups(featureGroups, updatedAllStageFeatures, keyTaggedFeatures)
+
     val updatedLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(updatedFeatureGroups, updatedKeyTaggedFeatures)
-    val groupedAnchoredFeatures = featureGenFeatureGrouper.group(updatedAllStageFeatures, featureGenSpec.getOutputProcessorConfigs, updatedDerivedFeatures)
+    val groupedAnchoredFeatures = featureGenFeatureGrouper.group(updatedAllStageFeatures, featureGenSpec.getOutputProcessorConfigs,
+      updatedFeatureGroups.allDerivedFeatures)
 
     // 6. Substitute defaults at this stage since all anchored features are generated and grouped together.
     // Substitute before generating derived features.

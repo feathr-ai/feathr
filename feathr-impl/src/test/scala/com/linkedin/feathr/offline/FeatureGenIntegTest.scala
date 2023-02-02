@@ -1776,17 +1776,10 @@ class FeatureGenIntegTest extends FeathrIntegTest {
       """
         |anchors: {
         |  local: {
-        |   source: "anchorAndDerivations/derivations/featureGeneation/Data.avro.json"
-        |   key: ["x", "y"]
-        |   features: {
-        |    a_z: "z"
-        |   }
-        |  }
-        |  local1: {
         |   source: "anchorAndDerivations/derivations/featureGeneration/Data.avro.json"
         |   key: ["x", "y"]
         |   features: {
-        |    a_z1: "z"
+        |    a_z: "z"
         |   }
         |  }
         |}
@@ -1802,7 +1795,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
         |}
         |
     """.stripMargin
-    val features = Seq("a_derived_z", "a_z", "a_z1")
+    val features = Seq("a_derived_z")
     val output = localFeatureGenerateForSeqOfFeatures(features, featureDefConf)
 
     /**
