@@ -49,8 +49,6 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataL
         PathInfo(fileFolder, DateTimeResolution.DAILY, dailyPattern)
       } else if (fileFolder.endsWith(hourlyFolder)) {
         PathInfo(fileFolder, DateTimeResolution.HOURLY, hourlyPattern)
-      } else if (fileFolder.startsWith(daliFilePattern)) {
-        PathInfo(fileFolder + "datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00")
       } else if (pathChecker.exists(fileFolder + dailyFolder)) {
         PathInfo(fileFolder + dailyFolder, DateTimeResolution.DAILY, dailyPattern)
       } else if (pathChecker.exists(fileFolder + hourlyFolder)) {
@@ -76,8 +74,6 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataL
       PathInfo(basePath, dateTimeResolution, timePartitionPattern)
     } else if (basePath.endsWith(hourlyFolder)) {
       PathInfo(basePath, dateTimeResolution, timePartitionPattern)
-    } else if (filePath.startsWith(daliFilePattern)) {
-      PathInfo(filePath + "datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00")
     } else if (pathChecker.exists(basePath + dailyFolder)) {
       PathInfo(basePath + dailyFolder, dateTimeResolution, timePartitionPattern)
     } else if (pathChecker.exists(basePath + hourlyFolder)) {

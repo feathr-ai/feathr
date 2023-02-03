@@ -18,9 +18,9 @@ class TestTimeBasedJoin extends TestFeathr {
 
   @Test
   def testStartEndDatePath(): Unit = {
-    val inputData1 = InputData("dalids:///test/path/", SourceFormatType.TIME_PATH, startDate = Some("20170908"), endDate = Some("20170910"))
+    val inputData1 = InputData("/test/path/", SourceFormatType.TIME_PATH, startDate = Some("20170908"), endDate = Some("20170910"))
     val pathList11 = getPathList(inputData1.sourceType, inputData1.inputPath, ss, inputData1.dateParam, dataLoaderHandlers=List())
-    val actualPathList = List("dalids:///test/path/datepartition=2017-09-08-00", "dalids:///test/path/datepartition=2017-09-09-00", "dalids:///test/path/datepartition=2017-09-10-00")
+    val actualPathList = List("/test/path/2017/09/08", "/test/path/2017/09/09", "/test/path/2017/09/10")
     assert(pathList11 == actualPathList)
   }
 

@@ -63,7 +63,7 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
     val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker, List())
     assertEquals(
       pathAnalyzer.analyze("dalids://src/test/resources/datePartitionSource"),
-      PathInfo("dalids://src/test/resources/datePartitionSource/datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00"))
+      PathInfo("dalids://src/test/resources/datePartitionSource/", DateTimeResolution.DAILY, "yyyy/MM/dd"))
   }
 
   @Test(description = "test analyze with time partition pattern")
