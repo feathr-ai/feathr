@@ -24,19 +24,9 @@ private[offline] object AclCheckUtils {
   private val log = Logger.getLogger(getClass)
 
   // Check read authorization on all paths in a given list
-  def checkReadAuthorization(conf: Configuration, pathList: Seq[String]): Try[Unit] = {
-    val failureMessages = (for (path <- pathList) yield (path, checkReadAuthorization(conf, path))) collect {
-      case (path, Failure(e)) => path + " , " + e.getMessage
-    }
-
-    if (failureMessages.isEmpty) {
-      Success(())
-    } else {
-      Failure(
-        new RuntimeException(
-          "Can not verify read authorization on the following paths. This can be due to" +
-            " 1) the user does not have correct ACL, 2) path does not exist, 3) IO exception when reading the data :\n" +
-            failureMessages.mkString("\n")))
+  def checkReadAuthorization(conf: Configuration, pathList: Seq[String]): Seq[(String, String)] = {
+    (for (path <- pathList) yield (path, checkReadAuthorization(conf, path))) collect {
+      case (path, Failure(e)) => (path + " , " + e.getMessage, path)
     }
   }
 
@@ -69,7 +59,7 @@ private[offline] object AclCheckUtils {
   def checkReadAuthorization(
       ss: SparkSession,
       allRequiredFeatures: Seq[common.ErasedEntityTaggedFeature],
-      allAnchoredFeatures: Map[String, FeatureAnchorWithSource]): Try[Unit] = {
+      allAnchoredFeatures: Map[String, FeatureAnchorWithSource]): (Try[Unit], Seq[String]) = {
 
     val conf = ss.sparkContext.hadoopConfiguration
     val allRequiredPaths = for {
@@ -77,7 +67,21 @@ private[offline] object AclCheckUtils {
       featureAnchorWithSource <- allAnchoredFeatures.get(requiredFeature.getFeatureName)
     } yield featureAnchorWithSource.source.path
 
-    AclCheckUtils.checkReadAuthorization(conf, allRequiredPaths.distinct)
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val invalidPaths = AclCheckUtils.checkReadAuthorization(conf, allRequiredPaths.distinct)
+    if (invalidPaths.isEmpty) {
+      (Success(()), invalidPaths.map(_._2))
+    } else {
+      if (!shouldSkipFeature) {
+        (Failure(
+          new RuntimeException(
+            "Can not verify read authorization on the following paths. This can be due to" +
+              " 1) the user does not have correct ACL, 2) path does not exist, 3) IO exception when reading the data :\n" +
+              invalidPaths.map(_._1).mkString("\n"))), invalidPaths.map(_._2))
+      } else {
+        (Success(()), invalidPaths.map(_._2))
+      }
+    }
   }
 
   // Check write authorization on a path string, i.e., check write and execute authorization on its parent path

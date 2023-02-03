@@ -111,9 +111,13 @@ object FeatureJoinJob {
       targetDate=None,
       failOnMissing=failOnMissing,
       dataLoaderHandlers=dataLoaderHandlers)
-      AclCheckUtils.checkReadAuthorization(hadoopConf, pathList) match {
-        case Failure(e) => throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"No read permission on observation data $pathList.", e)
-        case Success(_) => log.debug("Checked read authorization on observation data of the following paths:\n" + pathList.mkString("\n"))
+      val invalidPathsAndErrors = AclCheckUtils.checkReadAuthorization(hadoopConf, pathList)
+      if (invalidPathsAndErrors.isEmpty) {
+        log.debug("Checked read authorization on observation data of the following paths:\n" + pathList.mkString("\n"))
+      } else {
+        val invalidPaths = invalidPathsAndErrors.map(_._2)
+        val errorMsgs = invalidPathsAndErrors.map(_._1)
+        throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"No read permission on observation data $invalidPaths with  $errorMsgs")
       }
     })
   }
@@ -377,12 +381,14 @@ object FeatureJoinJob {
       sparkSession,
       allAnchoredFeatures.values.toSeq,
       failOnMissing)
+    val updatedAnchorsWithSource = anchorsWithSource.filter(anchorEntry => anchorEntry._2.isDefined)
+      .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
     // Only load DataFrames for anchors that have preprocessing UDF
     // So we filter out anchors that doesn't have preprocessing UDFs
     // We use feature names sorted and merged as the key to find the anchor
     // For example, f1, f2 belongs to anchor. Then Map("f1,f2"-> anchor)
-    val dataFrameMapForPreprocessing = anchorsWithSource
+    val dataFrameMapForPreprocessing = updatedAnchorsWithSource
       .filter(x => featureNamesInAnchorSet.contains(x._1.featureAnchor.features.toSeq.sorted.mkString(",")))
       .map(x => (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get()))
 

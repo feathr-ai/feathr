@@ -6,6 +6,7 @@ import com.linkedin.feathr.offline.source.SourceFormatType._
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.config.location.{DataLocation, PathList, SimplePath}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
+import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
@@ -14,6 +15,7 @@ import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPa
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.util.{FeathrUtils, SourceUtils}
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -34,7 +36,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
   def getBasicAnchorDFMapForJoin(
       ss: SparkSession,
       requiredFeatureAnchors: Seq[FeatureAnchorWithSource],
-      failOnMissingPartition: Boolean): Map[FeatureAnchorWithSource, DataSourceAccessor] = {
+      failOnMissingPartition: Boolean): Map[FeatureAnchorWithSource, Option[DataSourceAccessor]] = {
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
     // get a Map from each source to a list of all anchors based on this source
     val sourceToAnchor = requiredFeatureAnchors
       .map(anchor => (anchor.source, anchor))
@@ -62,12 +65,17 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
               }
             }
         }
-        val timeSeriesSource = DataSourceAccessor(ss = ss,
-                                                  source = source,
-                                                  dateIntervalOpt = dateInterval,
-                                                  expectDatumType = Some(expectDatumType),
-                                                  failOnMissingPartition = failOnMissingPartition,
-                                                  dataPathHandlers = dataPathHandlers)
+        val timeSeriesSource = try {
+          Some(DataSourceAccessor(ss = ss,
+            source = source,
+            dateIntervalOpt = dateInterval,
+            expectDatumType = Some(expectDatumType),
+            failOnMissingPartition = failOnMissingPartition,
+            dataPathHandlers = dataPathHandlers))
+        } catch {
+          case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
+            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) None else throw e
+        }
 
         anchorsWithDate.map(anchor => (anchor, timeSeriesSource))
     })
@@ -127,7 +135,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       timeSeriesSource.get()
     }
     catch {// todo - Add this functionality to only specific exception types and not for all error types.
-      case e: Exception => if (shouldSkipFeature) ss.emptyDataFrame else throw e
+      case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
+        SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) ss.emptyDataFrame else throw e
     }
   }
 
@@ -147,7 +156,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       requiredFeatureAnchors: Seq[FeatureAnchorWithSource],
       incrementalAggContext: Option[IncrementalAggContext],
       failOnMissingPartition: Boolean,
-      isStreaming: Boolean = false): Map[FeatureAnchorWithSource, DataSourceAccessor] = {
+      isStreaming: Boolean = false): Map[FeatureAnchorWithSource, Option[DataSourceAccessor]] = {
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
     // get a Map from each source to a list of all anchors based on this source
     val sourceToAnchor = requiredFeatureAnchors
       .map(anchor => (anchor.source, anchor))
@@ -171,15 +181,20 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
           }
         }
         val needCreateTimestampColumn = source.timePartitionPattern.nonEmpty && source.timeWindowParams.isEmpty
-        val timeSeriesSource = DataSourceAccessor(
-          ss = ss,
-          source = source,
-          dateIntervalOpt = dateIntervalOpt,
-          expectDatumType = Some(expectDatumType),
-          failOnMissingPartition = failOnMissingPartition,
-          addTimestampColumn = needCreateTimestampColumn,
-          isStreaming = isStreaming,
-          dataPathHandlers = dataPathHandlers)
+        val timeSeriesSource = try {
+          Some(DataSourceAccessor(
+            ss = ss,
+            source = source,
+            dateIntervalOpt = dateIntervalOpt,
+            expectDatumType = Some(expectDatumType),
+            failOnMissingPartition = failOnMissingPartition,
+            addTimestampColumn = needCreateTimestampColumn,
+            isStreaming = isStreaming,
+            dataPathHandlers = dataPathHandlers))
+        } catch {
+          case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
+            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) None else throw e
+        }
 
         anchors.map(anchor => (anchor, timeSeriesSource))
     })
