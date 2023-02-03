@@ -46,7 +46,8 @@ private[offline] class NonTimeBasedDataSourceAccessor(
           case _ => fileLoaderFactory.createFromLocation(source.location).loadDataFrame()
         }
       } catch {
-        case e: Exception => if (shouldSkipFeature || SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)) ss.emptyDataFrame else throw e
+        case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
+          SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) ss.emptyDataFrame else throw e
       }
 
     if (TestFwkUtils.IS_DEBUGGER_ENABLED) {

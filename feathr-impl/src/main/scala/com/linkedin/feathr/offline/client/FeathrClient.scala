@@ -246,8 +246,9 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
       // Check read authorization for all required features
       val featurePathsTest = AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures)
       featurePathsTest._1 match {
-        case Failure(exception) =>
-          if (shouldSkipFeature || SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)) { // If skip feature, remove the corresponding anchored feature from the feature group and produce a new logical plan
+        case Failure(exception) => // If skip feature, remove the corresponding anchored feature from the feature group and produce a new logical plan
+          if (shouldSkipFeature || (sparkSession.sparkContext.isLocal &&
+            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) {
             val featureGroupsWithoutInvalidFeatures = FeatureGroupsUpdater()
               .getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap, updatedFeatureGroups, featurePathsTest._2)
             logicalPlanner.getLogicalPlan(featureGroupsWithoutInvalidFeatures, keyTaggedFeatures)

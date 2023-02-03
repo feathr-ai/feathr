@@ -73,7 +73,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             failOnMissingPartition = failOnMissingPartition,
             dataPathHandlers = dataPathHandlers))
         } catch {
-          case e: Exception => if (shouldSkipFeature || SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)) None else throw e
+          case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
+            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) None else throw e
         }
 
         anchorsWithDate.map(anchor => (anchor, timeSeriesSource))
@@ -134,7 +135,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       timeSeriesSource.get()
     }
     catch {// todo - Add this functionality to only specific exception types and not for all error types.
-      case e: Exception => if (shouldSkipFeature || SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)) ss.emptyDataFrame else throw e
+      case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
+        SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) ss.emptyDataFrame else throw e
     }
   }
 
@@ -190,7 +192,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             isStreaming = isStreaming,
             dataPathHandlers = dataPathHandlers))
         } catch {
-          case e: Exception => if (shouldSkipFeature|| SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)) None else throw e
+          case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
+            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) None else throw e
         }
 
         anchors.map(anchor => (anchor, timeSeriesSource))
