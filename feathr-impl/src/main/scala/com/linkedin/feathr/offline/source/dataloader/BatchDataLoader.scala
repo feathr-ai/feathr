@@ -4,11 +4,15 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrInputDataExceptio
 import com.linkedin.feathr.offline.config.location.DataLocation
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.DataSourceUtils.getSchemaFromAvroDataFile
+import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
+import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.util.FeathrUtils.DATA_LOAD_WAIT_IN_MS
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -17,7 +21,10 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
  * @param path input data path
  */
 private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation, dataLoaderHandlers: List[DataLoaderHandler]) extends DataLoader {
+  val retryWaitTime = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.DATA_LOAD_WAIT_IN_MS).toInt
 
+  val initialNumOfRetries = if (!ss.sparkContext.isLocal) FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf,
+    FeathrUtils.MAX_DATA_LOAD_RETRY).toInt else SQLConf.get.getConf(LocalFeatureJoinJob.MAX_DATA_LOAD_RETRY)
   /**
    * get the schema of the source. It's only used in the deprecated DataSource.getDataSetAndSchema
    * @return an Avro Schema
@@ -48,7 +55,9 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
    * @return an dataframe
    */
   override def loadDataFrame(): DataFrame = {
-    loadDataFrame(Map(), new JobConf(ss.sparkContext.hadoopConfiguration))
+    val retry = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.MAX_DATA_LOAD_RETRY).toInt
+    val retryCount = if (ss.sparkContext.isLocal) SQLConf.get.getConf(LocalFeatureJoinJob.MAX_DATA_LOAD_RETRY) else retry
+    loadDataFrameWithRetry(Map(), new JobConf(ss.sparkContext.hadoopConfiguration), retryCount)
   }
 
   /**
@@ -57,7 +66,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
    * @param jobConf Hadoop JobConf to be passed
    * @return an dataframe
    */
-  def loadDataFrame(dataIOParameters: Map[String, String], jobConf: JobConf): DataFrame = {
+  def loadDataFrameWithRetry(dataIOParameters: Map[String, String], jobConf: JobConf, retry: Int): DataFrame = {
     val sparkConf = ss.sparkContext.getConf
     val inputSplitSize = sparkConf.get("spark.feathr.input.split.size", "")
     val dataIOParametersWithSplitSize = Map(SparkIOUtils.SPLIT_SIZE -> inputSplitSize) ++ dataIOParameters
@@ -87,12 +96,17 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
       }
       df
     } catch {
-      case feathrException: FeathrInputDataException =>
-        println(feathrException.toString)
-        throw feathrException // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
-      case e: Throwable => //TODO: Analyze all thrown exceptions, instead of swalling them all, and reading as a csv
-        println(e.toString)
-        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(dataPath)
+      case _: Throwable =>
+        // If data loading from source failed, retry it automatically, as it might due to data source still being written into.
+        log.info(s"Loading ${location} failed, retrying for ${retry}-th time..")
+        if (retry > 0) {
+          Thread.sleep(retryWaitTime)
+          loadDataFrameWithRetry(dataIOParameters, jobConf, retry - 1)
+        } else {
+          // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
+          throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} after ${initialNumOfRetries} retries" +
+          s" and retry time of ${retryWaitTime}ms.")
+        }
     }
   }
 }
