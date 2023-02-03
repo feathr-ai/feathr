@@ -6,6 +6,7 @@ import com.linkedin.feathr.offline.source.SourceFormatType._
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.config.location.{DataLocation, PathList, SimplePath}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
+import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
@@ -14,6 +15,7 @@ import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPa
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.util.{FeathrUtils, SourceUtils}
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -71,7 +73,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             failOnMissingPartition = failOnMissingPartition,
             dataPathHandlers = dataPathHandlers))
         } catch {
-          case e: Exception => if (shouldSkipFeature) None else throw e
+          case e: Exception => if (shouldSkipFeature || SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)) None else throw e
         }
 
         anchorsWithDate.map(anchor => (anchor, timeSeriesSource))
@@ -132,7 +134,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       timeSeriesSource.get()
     }
     catch {// todo - Add this functionality to only specific exception types and not for all error types.
-      case e: Exception => if (shouldSkipFeature) ss.emptyDataFrame else throw e
+      case e: Exception => if (shouldSkipFeature || SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)) ss.emptyDataFrame else throw e
     }
   }
 
@@ -188,7 +190,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             isStreaming = isStreaming,
             dataPathHandlers = dataPathHandlers))
         } catch {
-          case e: Exception => if (shouldSkipFeature) None else throw e
+          case e: Exception => if (shouldSkipFeature|| SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)) None else throw e
         }
 
         anchors.map(anchor => (anchor, timeSeriesSource))

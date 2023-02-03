@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.source.accessor
 
 import com.linkedin.feathr.offline.config.location.{GenericLocation, Jdbc, PathList, SimplePath, Snowflake, SparkSqlLocation}
+import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.dataloader.{CaseInsensitiveGenericRecordWrapper, DataLoaderFactory}
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
@@ -9,6 +10,7 @@ import com.linkedin.feathr.offline.util.FeathrUtils
 import org.apache.avro.generic.{GenericRecord, IndexedRecord}
 import org.apache.avro.specific.SpecificRecordBase
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 /**
  * load a dataset from a non-partitioned source.
@@ -44,7 +46,7 @@ private[offline] class NonTimeBasedDataSourceAccessor(
           case _ => fileLoaderFactory.createFromLocation(source.location).loadDataFrame()
         }
       } catch {
-        case e: Exception => if (shouldSkipFeature) ss.emptyDataFrame else throw e
+        case e: Exception => if (shouldSkipFeature || SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)) ss.emptyDataFrame else throw e
       }
 
     if (TestFwkUtils.IS_DEBUGGER_ENABLED) {

@@ -2,12 +2,13 @@ package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.AssertFeatureUtils._
-import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
+import com.linkedin.feathr.offline.job.{LocalFeatureJoinJob, PreprocessedDataFrameManager}
 import com.linkedin.feathr.offline.source.dataloader.CsvDataLoader
 import com.linkedin.feathr.offline.util.{FeathrTestUtils, FeatureGenConstants}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
 import org.testng.Assert.{assertEquals, assertNotNull, assertTrue}
 import org.testng.annotations.Test
@@ -833,8 +834,9 @@ class FeatureGenIntegTest extends FeathrIntegTest {
    * test sliding window aggregation feature with malformed source and the skip missing feature flag turned on.
    * The feature with the malformed source should be skipped.
    */
-  @Test(enabled=false)
+  @Test
   def testSWAFeatureWithMalformedSource(): Unit = {
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
     val swaApplicationConfig = generateSimpleApplicationConfig(features = "f3, f4, f5, f6", endTime = "2019-05-21")
     val swaFeatureDefConfig =
       s"""
@@ -885,6 +887,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     assertEquals(dfCount, 2)
     // Assert that the feature is skipped.
     assertTrue(!dfs.keySet.map(x => x.getFeatureName).contains("f3"))
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
   }
 
   /**
@@ -1841,8 +1844,9 @@ class FeatureGenIntegTest extends FeathrIntegTest {
    * To enable this test, set the value of FeatureUtils.SKIP_MISSING_FEATURE to True. From
    * Spark 3.1, SparkContext.updateConf() is not supported.
    */
-  @Test(enabled=false)
+  @Test
   def testDerivedFeatureGenWithSkipFeatureFlagOn(): Unit = {
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
     val featureDefConf =
       """
         |anchors: {
@@ -1893,6 +1897,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     assertEquals(groupedOutput.size, 1) // features should be generated on a single DF
     assertEquals(groupedOutput.head._2.size, 1) // Only 1 feature was generated
     assertEquals(groupedOutput.head._2.keySet.head.getFeatureName, "a_z1") // Only 1 feature was generated
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, false)
   }
 
   /**
