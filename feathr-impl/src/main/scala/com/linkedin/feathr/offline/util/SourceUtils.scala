@@ -32,7 +32,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.NullWritable
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapreduce.Job
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.avro.SchemaConverters
@@ -60,7 +60,7 @@ private[offline] object SourceUtils {
   val HDFS_PREFIX = "/" // HDFS path always starts with "/"
   private final val conf: Configuration = new Configuration()
 
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
   // this path is defined by the feathr plugin
   val FEATURE_MP_DEF_CONFIG_BASE_PATH = "feathr-feature-configs/config/offline"
   val FEATURE_MP_DEF_CONFIG_SUFFIX = ".conf"

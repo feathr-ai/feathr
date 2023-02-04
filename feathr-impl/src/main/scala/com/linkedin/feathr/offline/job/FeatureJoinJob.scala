@@ -20,7 +20,8 @@ import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import org.apache.avro.generic.GenericRecord
 import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.hadoop.conf.Configuration
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.core.config.Configurator
+import org.apache.logging.log4j.{Level, LogManager, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -50,7 +51,7 @@ import scala.collection.mutable
  */
 object FeatureJoinJob {
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
   val SKIP_OUTPUT = "skip_output"
 
   // We found that if we have too many parallelism, then during the join shuffling, memoryOverhead could be too high,
@@ -63,7 +64,7 @@ object FeatureJoinJob {
   // Internal parameter (We don't expect user to change it) as an empirical factor 'threshold' to control whether limit the partition or not
   val SPARK_JOIN_LIMIT_PARTITION_FACTOR = 2
 
-  val log: Logger = Logger.getLogger(getClass)
+  val log: Logger = LogManager.getLogger(getClass)
 
   def run(ss: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext, dataPathHandlers: List[DataPathHandler]): Unit = {
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
@@ -429,7 +430,7 @@ object FeatureJoinJob {
 
     val enableDebugLog = FeathrUtils.getFeathrJobParam(sparkConf, FeathrUtils.ENABLE_DEBUG_OUTPUT).toBoolean
     if (enableDebugLog) {
-      Logger.getRootLogger.setLevel(Level.DEBUG)
+      Configurator.setAllLevels(LogManager.getRootLogger.getName, Level.DEBUG)
     }
 
     FeathrJoinPreparationInfo(sparkSession, conf, jobContext)

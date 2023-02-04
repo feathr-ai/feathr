@@ -9,10 +9,11 @@ import org.apache.avro.mapred.FsInput
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.mapred.JobConf
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
+
 
 object DataSourceUtils {
-  val log = Logger.getLogger(getClass)
+  val log = LogManager.getLogger(getClass)
 
   private val AVRO_EXTENSION = "avro"
 

@@ -22,7 +22,7 @@ import com.linkedin.feathr.offline.util.FeatureValueTypeValidator
 import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark, SourceKeyExtractor}
 import com.linkedin.feathr.swj.LateralViewParams
 import com.typesafe.config.ConfigFactory
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 
 import java.io.File
 import java.net.URL
@@ -181,7 +181,7 @@ case class FeathrConfig(
  * Loads an Anchor from a json-like config
  */
 private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
-  val log: Logger = Logger.getLogger(getClass)
+  val log: Logger = LogManager.getLogger(getClass)
 
   val LATERAL_VIEW_PARAMETERS = "lateralViewParameters"
   val LATERAL_VIEW_DEF = "lateralViewDef"
@@ -541,7 +541,7 @@ private[offline] class DerivedFeatureConfigLoader extends JsonDeserializer[Deriv
  * (must be a subtype of FeatureDerivation).
  */
 private[offline] class DerivationLoader extends JsonDeserializer[DerivedFeature] {
-  val log: Logger = Logger.getLogger(getClass)
+  val log: Logger = LogManager.getLogger(getClass)
 
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): DerivedFeature = {
     val codec = p.getCodec

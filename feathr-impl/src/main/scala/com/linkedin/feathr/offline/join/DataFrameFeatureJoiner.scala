@@ -21,7 +21,7 @@ import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureCol
 import com.linkedin.feathr.offline.util.FeathrUtils
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
 
@@ -32,7 +32,7 @@ import scala.collection.JavaConverters._
  * @param logicalPlan analyzed feature info
  */
 private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext]) extends Serializable {
-  @transient lazy val log = Logger.getLogger(getClass.getName)
+  @transient lazy val log = LogManager.getLogger(getClass.getName)
   @transient lazy val anchorToDataSourceMapper = new AnchorToDataSourceMapper(dataPathHandlers)
   private val windowAggFeatureStages = logicalPlan.windowAggFeatureStages
   private val joinStages = logicalPlan.joinStages

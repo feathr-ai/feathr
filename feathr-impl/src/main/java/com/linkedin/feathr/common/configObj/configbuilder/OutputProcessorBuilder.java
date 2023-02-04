@@ -3,13 +3,14 @@ package com.linkedin.feathr.common.configObj.configbuilder;
 
 import com.linkedin.feathr.common.configObj.generation.OutputProcessorConfig;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Output processor config object builder, e.g., HDFS, Redis processor
  */
 public class OutputProcessorBuilder {
-    private final static Logger logger = Logger.getLogger(OutputProcessorBuilder.class);
+    private final static Logger logger = LogManager.getLogger(OutputProcessorBuilder.class);
     private static final String PARAMS = "params";
     private static final String NAME = "name";
 

@@ -20,7 +20,7 @@ import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstitut
 import com.linkedin.feathr.offline.transformation.{AnchorToDataSourceMapper, MvelDefinition}
 import com.linkedin.feathr.offline.util.{CoercionUtilsScala, DataFrameSplitterMerger, FeathrUtils, FeaturizedDatasetUtils}
 import com.linkedin.feathr.sparkcommon.{ComplexAggregation, SeqJoinCustomAggregation}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, Row, SparkSession}
@@ -37,7 +37,7 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
                                                   dataPathHandlers: List[DataPathHandler])
     extends SequentialJoinDerivationStrategy
     with Serializable {
-  @transient private val log = Logger.getLogger(getClass)
+  @transient private val log = LogManager.getLogger(getClass)
   private val colPrefix = "_feathr_seq_join_coerced_left_join_key_"
 
   override def apply(

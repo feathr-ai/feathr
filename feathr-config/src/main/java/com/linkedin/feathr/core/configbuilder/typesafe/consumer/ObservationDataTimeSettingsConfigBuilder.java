@@ -5,7 +5,8 @@ import com.linkedin.feathr.core.config.consumer.ObservationDataTimeSettingsConfi
 import com.linkedin.feathr.core.config.consumer.RelativeTimeRangeConfig;
 import com.linkedin.feathr.core.configbuilder.ConfigBuilderException;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.consumer.ObservationDataTimeSettingsConfig.*;
 
@@ -28,7 +29,7 @@ import static com.linkedin.feathr.core.config.consumer.ObservationDataTimeSettin
  * @author rkashyap
  */
 public class ObservationDataTimeSettingsConfigBuilder {
-  private final static Logger logger = Logger.getLogger(ObservationDataTimeSettingsConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(ObservationDataTimeSettingsConfigBuilder.class);
 
   private ObservationDataTimeSettingsConfigBuilder() {
   }
