@@ -29,6 +29,7 @@ dependencies {
   provided spec.product.pegasus.data
   implementation spec.product.typesafe_config
   implementation spec.product.log4j
+  implementation spec.product.log4jcompat
   implementation spec.product.jsonSchemaVali
   implementation spec.product.jackson.jackson_databind
   implementation spec.product.mvel
