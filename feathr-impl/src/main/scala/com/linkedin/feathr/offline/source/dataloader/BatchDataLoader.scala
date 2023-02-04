@@ -25,8 +25,10 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
 
   val initialNumOfRetries = if (!ss.sparkContext.isLocal) FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf,
     FeathrUtils.MAX_DATA_LOAD_RETRY).toInt else SQLConf.get.getConf(LocalFeatureJoinJob.MAX_DATA_LOAD_RETRY)
+
   /**
    * get the schema of the source. It's only used in the deprecated DataSource.getDataSetAndSchema
+   *
    * @return an Avro Schema
    */
   override def loadSchema(): Schema = {
@@ -52,6 +54,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
 
   /**
    * load the source data as dataframe.
+   *
    * @return an dataframe
    */
   override def loadDataFrame(): DataFrame = {
@@ -62,8 +65,9 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
 
   /**
    * load the source data as dataframe.
+   *
    * @param dataIOParameters extra parameters
-   * @param jobConf Hadoop JobConf to be passed
+   * @param jobConf          Hadoop JobConf to be passed
    * @return an dataframe
    */
   def loadDataFrameWithRetry(dataIOParameters: Map[String, String], jobConf: JobConf, retry: Int): DataFrame = {
@@ -82,7 +86,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
 
       var dfOpt: Option[DataFrame] = None
       breakable {
-        for(dataLoaderHandler <- dataLoaderHandlers) {
+        for (dataLoaderHandler <- dataLoaderHandlers) {
           println(s"Applying dataLoaderHandler ${dataLoaderHandler}")
           if (dataLoaderHandler.validatePath(dataPath)) {
             dfOpt = Some(dataLoaderHandler.createDataFrame(dataPath, dataIOParametersWithSplitSize, jobConf))
@@ -97,15 +101,20 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
       df
     } catch {
       case _: Throwable =>
-        // If data loading from source failed, retry it automatically, as it might due to data source still being written into.
-        log.info(s"Loading ${location} failed, retrying for ${retry}-th time..")
-        if (retry > 0) {
-          Thread.sleep(retryWaitTime)
-          loadDataFrameWithRetry(dataIOParameters, jobConf, retry - 1)
-        } else {
-          // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
-          throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} after ${initialNumOfRetries} retries" +
-          s" and retry time of ${retryWaitTime}ms.")
+        try {
+         ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(dataPath)
+        } catch {
+          case e: Exception =>
+            // If data loading from source failed, retry it automatically, as it might due to data source still being written into.
+            log.info(s"Loading ${location} failed, retrying for ${retry}-th time..")
+            if (retry > 0) {
+              Thread.sleep(retryWaitTime)
+              loadDataFrameWithRetry(dataIOParameters, jobConf, retry - 1)
+            } else {
+              // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
+              throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} after ${initialNumOfRetries} retries" +
+                s" and retry time of ${retryWaitTime}ms.")
+            }
         }
     }
   }
