@@ -4,7 +4,8 @@ import com.linkedin.feathr.core.config.producer.anchors.AnchorConfigWithOnlyMvel
 import com.linkedin.feathr.core.config.producer.anchors.FeatureConfig;
 import com.typesafe.config.Config;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.anchors.AnchorConfig.*;
 
@@ -14,7 +15,7 @@ import static com.linkedin.feathr.core.config.producer.anchors.AnchorConfig.*;
  * key or extractor
  */
 class AnchorConfigWithOnlyMvelBuilder extends BaseAnchorConfigBuilder {
-  private final static Logger logger = Logger.getLogger(AnchorConfigWithOnlyMvelBuilder.class);
+  private final static Logger logger = LogManager.getLogger(AnchorConfigWithOnlyMvelBuilder.class);
 
   private AnchorConfigWithOnlyMvelBuilder() {
   }

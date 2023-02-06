@@ -6,7 +6,8 @@ import com.typesafe.config.Config;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.TimeZone;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -14,7 +15,7 @@ import org.apache.log4j.Logger;
  */
 public class DateTimeConfigBuilder {
 
-  private final static Logger logger = Logger.getLogger(DateTimeConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(DateTimeConfigBuilder.class);
   private static final String DEFAULT_TIME_ZONE = "America/Los_Angeles";
   private static final String END_TIME = "endTime";
   private static final String END_TIME_FORMAT = "endTimeFormat";

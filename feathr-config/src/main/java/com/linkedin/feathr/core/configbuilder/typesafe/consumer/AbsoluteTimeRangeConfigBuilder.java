@@ -4,7 +4,8 @@ import com.linkedin.feathr.core.config.consumer.AbsoluteTimeRangeConfig;
 import com.linkedin.feathr.core.configbuilder.ConfigBuilderException;
 import com.linkedin.feathr.core.utils.ConfigUtils;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.consumer.AbsoluteTimeRangeConfig.*;
 
@@ -19,7 +20,7 @@ import static com.linkedin.feathr.core.config.consumer.AbsoluteTimeRangeConfig.*
  * @author rkashyap
  */
 public class AbsoluteTimeRangeConfigBuilder {
-  private final static Logger logger = Logger.getLogger(AbsoluteTimeRangeConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(AbsoluteTimeRangeConfigBuilder.class);
 
   private AbsoluteTimeRangeConfigBuilder() {
   }

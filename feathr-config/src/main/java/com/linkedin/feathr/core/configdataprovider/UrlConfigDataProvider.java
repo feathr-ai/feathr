@@ -9,7 +9,8 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.utils.Utils.*;
 
@@ -19,7 +20,7 @@ import static com.linkedin.feathr.core.utils.Utils.*;
  * {@link Reader} object.
  */
 public class UrlConfigDataProvider extends BaseConfigDataProvider {
-  private static final Logger logger = Logger.getLogger(UrlConfigDataProvider.class);
+  private static final Logger logger = LogManager.getLogger(UrlConfigDataProvider.class);
 
   private final List<URL> _urls;
 

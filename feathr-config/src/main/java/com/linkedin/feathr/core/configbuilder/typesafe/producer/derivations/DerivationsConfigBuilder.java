@@ -8,7 +8,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -16,7 +17,7 @@ import org.apache.log4j.Logger;
  * to its child
  */
 public class DerivationsConfigBuilder {
-  private final static Logger logger = Logger.getLogger(DerivationsConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(DerivationsConfigBuilder.class);
 
   private DerivationsConfigBuilder() {
   }
