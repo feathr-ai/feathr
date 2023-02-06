@@ -179,6 +179,13 @@ client.get_online_features("nycTaxiDemoFeature", "265", ['f_location_avg_fare', 
 client.multi_get_online_features("nycTaxiDemoFeature", ["239", "265"], ['f_location_avg_fare', 'f_location_max_fare'])
 ```
 
+## Known Issues
+We are aware of org.everit.json.schema;1.9.1: not found error on Azure Synapse Spark pool and there is a fix for it through gradle.repositories config. If you continue to get this error, provide the following spark configuration to your Synapse Spark pool cluster. 
+Property - spark.jars.repositories
+Value - https://jitpack.io
+Please follow the [official documentation](https://learn.microsoft.com/en-us/azure/synapse-analytics/spark/apache-spark-azure-create-spark-configuration) to create a spark config for your azure synapse spark pool.
+Here is the [pull request](https://github.com/feathr-ai/feathr/pull/1036) with more details about this issue.
+
 ## Next steps
 
 - Run the [demo notebook](https://github.com/feathr-ai/feathr/blob/main/docs/samples/azure_synapse/product_recommendation_demo.ipynb) to understand the workflow of Feathr.
