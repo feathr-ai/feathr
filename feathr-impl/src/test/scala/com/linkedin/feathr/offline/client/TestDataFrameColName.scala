@@ -6,7 +6,7 @@ import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAncho
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatest.mockito.MockitoSugar.mock
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 

@@ -14,8 +14,8 @@ The provided Azure Resource Manager (ARM) template deploys the following resourc
 4. Azure Synapse workspace and Spark Pool
 5. Azure App Service and corresponding App Service plan
 6. Azure Key Vault
-7. Azure Event Hub
-8. Azure Redis
+7. Azure Event Hub (if you selected yes for streaming source)
+8. Azure Redis or Azure CosmosDB (based on what you choose for Online Store)
 
 ** Please Note: you need to have the *Owner Role* in the resource group you are deploying this in. Owner access is required to assign role to managed identity within the ARM template so it can access key vault and store secrets. It is also required by the permission section in our sample notebooks. If you don't have such permission, you might want to contact your IT admin to see if they can do that. **
 
@@ -79,11 +79,11 @@ Click the button below to deploy a minimal set of Feathr resources. This is not 
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ffeathr-ai%2Ffeathr%2Fmain%2Fdocs%2Fhow-to-guides%2Fazure_resource_provision.json)
 
-### 3. Grant Key Vault and Synapse access to selected users (Optional)
+### 3. Grant Key Vault and Synapse access to selected users
 
 You will need to assign the right permission to users in order for them to access Azure key vault, permission to access the Storage Blob as a Contributor, and permission to submit jobs to Synapse cluster. This is useful if you want to allow multiple users access the same environment.
 
-Skip this step if you have already given yourself the access. Otherwise, run the following lines of command in the [Cloud Shell](https://shell.azure.com/bash).
+Run the following lines of command in the [Cloud Shell](https://shell.azure.com/bash) to give yourself access.
 
 ```bash
 userId=<email_id_of_account_requesting_access>
@@ -97,7 +97,9 @@ az role assignment create --assignee $userId --role "Storage Blob Data Contribut
 az synapse role assignment create --workspace-name $synapse_workspace_name --role "Synapse Contributor" --assignee $userId
 ```
 
-### 4. Assign the right permission for Azure Purview (Optional)
+### 4. Assign the right permission for Azure Purview
+
+__<u><i>You can skip this step if you selected Azure SQL as registry backend__</i></u>
 
 If you are using Purview registry there is an additional step required for the deployment to work. Registry Server authenticates with Azure Purview using Managed Identity that was created by ARM template. The Managed Identity needs to be added to Azure Purview Collections as a **Data Curator**. For more details, please refer to [Access control in the Microsoft Purview governance portal](https://docs.microsoft.com/en-us/azure/purview/catalog-permissions).
 
@@ -115,7 +117,9 @@ https://{resource_prefix}webapp.azurewebsites.net
 
 ![feathr ui landing page](../images/feathr-ui-landingpage.png)
 
-### 5. Initialize RBAC access table (Optional)
+### 5. Initialize RBAC access table
+
+__<u><i>You can skip this step if you selected No for RBAC__</i></u>
 
 If you want to use RBAC access for your deployment, you also need to manually initialize the user access table. Replace `[your-email-account]` with the email account that you are currently using, and this email will be the global admin for Feathr feature registry.
 
@@ -132,6 +136,20 @@ For more details on RBAC, refer to [Feathr Registry Access Control](../how-to-gu
 ## Next Steps
 
 Follow the quick start guide [here](https://feathr-ai.github.io/feathr/quickstart_synapse.html) to try out a notebook example.
+
+# Deleting the deployment
+
+If you are done exploring feathr and want to delete the resources, run the following command in the [Cloud Shell](https://shell.azure.com/bash) and it will delete the Resource group that was created as part of the deployment.
+
+```bash
+az group delete --name <YOUR_RESOURCE_GROUP>
+
+```
+
+Alternatively, you can just go to the Azure Portal and delete the resource group there.
+
+![delete deployment resource group](../images/arm-deploy-delete-rg.png)
+
 
 ## Known Issues/Workaround
 

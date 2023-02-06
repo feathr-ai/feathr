@@ -15,7 +15,7 @@ import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark, SourceKeyExt
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.mockito.Mockito._
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert.assertEquals
 import org.testng.annotations.{DataProvider, Test}
 

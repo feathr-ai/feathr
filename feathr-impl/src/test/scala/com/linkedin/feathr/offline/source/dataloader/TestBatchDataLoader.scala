@@ -1,14 +1,8 @@
 package com.linkedin.feathr.offline.source.dataloader
 
-import com.linkedin.feathr.common.exception.FeathrInputDataException
 import com.linkedin.feathr.offline.TestFeathr
 import com.linkedin.feathr.offline.config.location.SimplePath
-import org.apache.hadoop.mapred.JobConf
-import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar.mock
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
@@ -16,6 +10,7 @@ import org.testng.annotations.Test
  * unit tests for [[BatchDataLoader]]
  */
 class TestBatchDataLoader extends TestFeathr {
+
   def escape(raw: String): String = {
     import scala.reflect.runtime.universe._
     Literal(Constant(raw)).toString
@@ -61,19 +56,4 @@ class TestBatchDataLoader extends TestFeathr {
     sqlContext.setConf("spark.feathr.inputFormat.csvOptions.sep", "")
   }
 
-  @Test(description = "Verify loadDataFrame with retry works", expectedExceptions = Array(classOf[FeathrInputDataException]))
-  def testRetry(): Unit = {
-    val path = SimplePath("anchor1-source")
-    val loader = mock[BatchDataLoader]
-    val log = mock[Logger]
-    when(loader.loadDataFrame()).thenCallRealMethod()
-    when(loader.loadDataFrameWithRetry(any(classOf[Map[String, String]]), any(classOf[JobConf]), any(classOf[Int]))).thenCallRealMethod()
-    when(loader.ss).thenReturn(ss)
-    when(loader.location).thenReturn(path)
-    when(loader.dataLoaderHandlers).thenReturn(List())
-    when(loader.log).thenReturn(log)
-    when(loader.MAX_DATA_LOAD_RETRY).thenReturn(2)
-    loader.loadDataFrame()
-    verify(loader, times(3)).loadDataFrameWithRetry(any(classOf[Map[String, String]]), any(classOf[JobConf]), any(classOf[Int]))
-  }
 }

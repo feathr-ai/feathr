@@ -4,7 +4,7 @@ import com.linkedin.feathr.offline.TestFeathr
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert.assertEquals
 import org.testng.annotations.{BeforeClass, DataProvider, Test}
 

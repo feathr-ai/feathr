@@ -8,7 +8,7 @@ import com.linkedin.feathr.offline.transformation.FDSConversionUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
 import org.apache.spark.sql.types._
-
+import org.scalatest.testng.TestNGSuite
 import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.{DataProvider, Test}
 
@@ -16,7 +16,7 @@ import java.util
 import java.util.Collections
 import scala.collection.mutable
 
-class TestFDSConversionUtil {
+class TestFDSConversionUtil extends TestNGSuite {
 
   val EMPTY_STRING = ""
   val EXPECTED_DENSE_VECTOR_FDS_DATA_TYPE = ArrayType(FloatType, false)

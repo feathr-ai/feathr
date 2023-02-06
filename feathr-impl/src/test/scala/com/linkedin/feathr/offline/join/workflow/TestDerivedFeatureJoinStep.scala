@@ -10,7 +10,7 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.Assert._
 import org.testng.annotations.Test
 

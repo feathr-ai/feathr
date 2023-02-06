@@ -2,14 +2,15 @@ package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.AssertFeatureUtils._
-import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
+import com.linkedin.feathr.offline.job.{LocalFeatureJoinJob, PreprocessedDataFrameManager}
 import com.linkedin.feathr.offline.source.dataloader.CsvDataLoader
 import com.linkedin.feathr.offline.util.{FeathrTestUtils, FeatureGenConstants}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
-import org.testng.Assert.{assertEquals, assertNotNull}
+import org.testng.Assert.{assertEquals, assertNotNull, assertTrue}
 import org.testng.annotations.Test
 
 import scala.collection.mutable
@@ -22,6 +23,18 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     """
       |  swaSource: {
       |    location: { path: "generation/daily/" }
+      |    timePartitionPattern: "yyyy/MM/dd"
+      |    timeWindowParameters: {
+      |      timestampColumn: "timestamp"
+      |      timestampColumnFormat: "yyyy-MM-dd"
+      |    }
+      |  }
+    """.stripMargin
+
+  private val malformedSource =
+    """
+      |  swaSource11: {
+      |    location: { path: "generation/daiy/" }
       |    timePartitionPattern: "yyyy/MM/dd"
       |    timeWindowParameters: {
       |      timestampColumn: "timestamp"
@@ -815,6 +828,66 @@ class FeatureGenIntegTest extends FeathrIntegTest {
         assertEquals(featureList(1).getAs[Float]("f5"), 10f, 1e-5)
       }
     })
+  }
+
+  /**
+   * test sliding window aggregation feature with malformed source and the skip missing feature flag turned on.
+   * The feature with the malformed source should be skipped.
+   */
+  @Test
+  def testSWAFeatureWithMalformedSource(): Unit = {
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
+    val swaApplicationConfig = generateSimpleApplicationConfig(features = "f3, f4, f5, f6", endTime = "2019-05-21")
+    val swaFeatureDefConfig =
+      s"""
+         |sources: {
+         |  ${defaultSwaSource}
+         |  ${malformedSource}
+         |}
+         |anchors: {
+         |  swaAnchor1: {
+         |    source: "swaSource11"
+         |    key: x
+         |    features: {
+         |      f3: {
+         |        def: "count"
+         |        aggregation: SUM
+         |        window: 1d
+         |      }
+         |    }
+         |  }
+         |
+         |  swaAnchor2: {
+         |    source: "swaSource"
+         |    key: x
+         |    features: {
+         |      f4: {
+         |        def: "count"
+         |        aggregation: SUM
+         |        window: 1d
+         |      }
+         |      f5: {
+         |        def: "count"
+         |        aggregation: SUM
+         |        window: 3d
+         |      }
+         |
+         |      f6: {
+         |        def: "count"
+         |        aggregation: LATEST
+         |        window: 3d
+         |      }
+         |    }
+         |  }
+         |}
+    """.stripMargin
+    val dfs = localFeatureGenerate(swaApplicationConfig, swaFeatureDefConfig)
+    // group by dataframe
+    val dfCount = dfs.groupBy(_._2.data).size
+    assertEquals(dfCount, 2)
+    // Assert that the feature is skipped.
+    assertTrue(!dfs.keySet.map(x => x.getFeatureName).contains("f3"))
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
   }
 
   /**
@@ -1704,7 +1777,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     val featureDefConf =
       """
         |anchors: {
-        |  -local: {
+        |  local: {
         |   source: "anchorAndDerivations/derivations/featureGeneration/Data.avro.json"
         |   key: ["x", "y"]
         |   features: {
@@ -1763,6 +1836,68 @@ class FeatureGenIntegTest extends FeathrIntegTest {
             nullable = true))))
     def cmpFunc(row: Row): String = row.get(1).toString
     FeathrTestUtils.assertDataFrameApproximatelyEquals(groupedOutput.head._1, expectedDf, cmpFunc)
+  }
+
+  /**
+   * This test validates that derived features with multiple keys are supported
+   * if and only if all dependent features have the same keys.
+   * To enable this test, set the value of FeatureUtils.SKIP_MISSING_FEATURE to True. From
+   * Spark 3.1, SparkContext.updateConf() is not supported.
+   */
+  @Test
+  def testDerivedFeatureGenWithSkipFeatureFlagOn(): Unit = {
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
+    val featureDefConf =
+      """
+        |anchors: {
+        |  local: {
+        |   source: "anchorAndDerivations/derivations/featureGeneation/Data.avro.json"
+        |   key: ["x", "y"]
+        |   features: {
+        |    a_z: "z"
+        |   }
+        |  }
+        |  local1: {
+        |   source: "anchorAndDerivations/derivations/featureGeneration/Data.avro.json"
+        |   key: ["x", "y"]
+        |   features: {
+        |    a_z1: "z"
+        |   }
+        |  }
+        |}
+        |
+        |derivations: {
+        |  a_derived_z: {
+        |    key: ["x", "Id"]
+        |    inputs: {
+        |     arg1:  { key: ["x", "Id"], feature: a_z }
+        |    }
+        |    definition: arg1
+        |  }
+        |}
+        |
+    """.stripMargin
+    val features = Seq("a_derived_z", "a_z", "a_z1")
+    val output = localFeatureGenerateForSeqOfFeatures(features, featureDefConf)
+
+    /**
+     * Expected Output:
+     * +----------+--------+---------------------------+
+     * |x|x|a_derived_z|
+     * +----------+--------+---------------------------+
+     * |         2|       1|         [b -> 1.0]|
+     * |         5|       2|       [e -> 1.0]|
+     * |         1|       1|       [a ->...|
+     * |         4|       2|        [d -> 1.0]|
+     * |         6|       3|             [f -> 1.0]|
+     * |         3|       2|           [c -> 1.0]|
+     * +----------+--------+---------------------------+
+     */
+    val groupedOutput = output.groupBy(_._2.data)
+    assertEquals(groupedOutput.size, 1) // features should be generated on a single DF
+    assertEquals(groupedOutput.head._2.size, 1) // Only 1 feature was generated
+    assertEquals(groupedOutput.head._2.keySet.head.getFeatureName, "a_z1") // Only 1 feature was generated
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, false)
   }
 
   /**

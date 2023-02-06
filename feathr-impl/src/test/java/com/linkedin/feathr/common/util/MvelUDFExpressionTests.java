@@ -1,12 +1,14 @@
 package com.linkedin.feathr.common.util;
 
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.linkedin.feathr.common.AlienMvelContextUDFs;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
+import org.scalatest.testng.TestNGSuite;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -16,17 +18,25 @@ import org.testng.annotations.Test;
 /**
  * Unit tests for {@link MvelContextUDFs} using expressions
  */
-public class MvelUDFExpressionTests {
+public class MvelUDFExpressionTests extends TestNGSuite {
 
   private static final ParserConfiguration PARSER_CONFIG = new ParserConfiguration();
   private ParserContext parserContext;
 
   @BeforeClass
   public void setup() {
-    MvelContextUDFs.registerUDFs(PARSER_CONFIG);
+    MvelContextUDFs.registerUDFs(MvelContextUDFs.class, PARSER_CONFIG);
+    MvelContextUDFs.registerUDFs(AlienMvelContextUDFs.class, PARSER_CONFIG);
     parserContext = new ParserContext(PARSER_CONFIG);
   }
 
+  @Test
+  public void testToUpperCaseExt() {
+    String getTopTerm = "toUpperCaseExt('hello')";
+    Serializable compiledExpression = MVEL.compileExpression(getTopTerm, parserContext);
+    String res = (String) (MVEL.executeExpression(compiledExpression, ""));
+    Assert.assertEquals(res, "HELLO");
+  }
 
   @Test
   public void testGetTopTerm() {

@@ -3,13 +3,16 @@ package com.linkedin.feathr.offline.generation
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import com.linkedin.feathr.common.{Header, JoiningFeatureParams, TaggedFeatureName}
 import com.linkedin.feathr.offline
+import com.linkedin.feathr.offline.{FeatureDataFrame, JoinKeys}
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource.{getDefaultValues, getFeatureTypes}
+import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
 import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinDerivationStrategy, SparkUdfDerivation, SqlDerivationSpark}
 import com.linkedin.feathr.offline.derived.{DerivedFeature, DerivedFeatureEvaluator}
 import com.linkedin.feathr.offline.evaluator.DerivedFeatureGenStage
+import com.linkedin.feathr.offline.job.FeatureJoinJob.FeatureName
 import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
-import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan}
+import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
@@ -32,6 +35,7 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
 
   /**
    * Generate anchored and derived features and return the feature DataFrame and feature metadata.
+   *
    * @param ss                 input spark session.
    * @param featureGenSpec     specification for a feature generation job.
    * @param featureGroups      all features in scope grouped under different types.
@@ -63,6 +67,9 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
     val requiredRegularFeatureAnchorsWithTime = allRequiredFeatureAnchorWithSourceAndTime.values.toSeq
     val anchorDFRDDMap = anchorToDataFrameMapper.getAnchorDFMapForGen(ss, requiredRegularFeatureAnchorsWithTime, Some(incrementalAggContext), failOnMissingPartition)
 
+    val updatedAnchorDFRDDMap = anchorDFRDDMap.filter(anchorEntry => anchorEntry._2.isDefined).map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
+    if(updatedAnchorDFRDDMap.isEmpty) return Map()
+
     // 3. Load user specified default values and feature types, if any.
     val featureToDefaultValueMap = getDefaultValues(allRequiredFeatureAnchorWithSourceAndTime.values.toSeq)
     val featureToTypeConfigMap = getFeatureTypes(allRequiredFeatureAnchorWithSourceAndTime.values.toSeq)
@@ -72,7 +79,7 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
       case (_: Seq[Int], featureNames: Seq[String]) =>
         val (anchoredFeatureNamesThisStage, _) = featureNames.partition(featureGroups.allAnchoredFeatures.contains)
         val anchoredFeaturesThisStage = featureNames.filter(featureGroups.allAnchoredFeatures.contains).map(allRequiredFeatureAnchorWithSourceAndTime).distinct
-        val anchoredDFThisStage = anchorDFRDDMap.filterKeys(anchoredFeaturesThisStage.toSet)
+        val anchoredDFThisStage = updatedAnchorDFRDDMap.filterKeys(anchoredFeaturesThisStage.toSet)
 
         FeatureTransformation
           .transformFeatures(anchoredDFThisStage, anchoredFeatureNamesThisStage, None, Some(incrementalAggContext), mvelContext)
@@ -80,7 +87,13 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
     }.toMap
 
     // 5. Group features based on grouping specified in output processors
-    val groupedAnchoredFeatures = featureGenFeatureGrouper.group(allStageFeatures, featureGenSpec.getOutputProcessorConfigs, featureGroups.allDerivedFeatures)
+    val updatedAllStageFeatures = allStageFeatures.filter(keyValue => !keyValue._2._1.df.isEmpty)
+    val (updatedFeatureGroups, updatedKeyTaggedFeatures) = FeatureGroupsUpdater().getUpdatedFeatureGroups(featureGroups,
+      updatedAllStageFeatures, keyTaggedFeatures)
+
+    val updatedLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(updatedFeatureGroups, updatedKeyTaggedFeatures)
+    val groupedAnchoredFeatures = featureGenFeatureGrouper.group(updatedAllStageFeatures, featureGenSpec.getOutputProcessorConfigs,
+      updatedFeatureGroups.allDerivedFeatures)
 
     // 6. Substitute defaults at this stage since all anchored features are generated and grouped together.
     // Substitute before generating derived features.
@@ -89,9 +102,9 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
 
     // 7. Calculate derived features.
     val derivedFeatureEvaluator = getDerivedFeatureEvaluatorInstance(ss, featureGroups)
-    val derivedFeatureGenerator = DerivedFeatureGenStage(featureGroups, logicalPlan, derivedFeatureEvaluator)
+    val derivedFeatureGenerator = DerivedFeatureGenStage(updatedFeatureGroups, updatedLogicalPlan, derivedFeatureEvaluator)
 
-    val derivationsEvaluatedFeatures = (logicalPlan.joinStages ++ logicalPlan.convertErasedEntityTaggedToJoinStage(logicalPlan.postJoinDerivedFeatures))
+    val derivationsEvaluatedFeatures = (updatedLogicalPlan.joinStages ++ updatedLogicalPlan.convertErasedEntityTaggedToJoinStage(logicalPlan.postJoinDerivedFeatures))
       .foldLeft(defaultSubstitutedFeatures)((accFeatureData, currentStage) => {
         val (keyTags, featureNames) = currentStage
         val derivedFeatureNamesThisStage = featureNames.filter(featureGroups.allDerivedFeatures.contains)

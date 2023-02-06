@@ -7,7 +7,7 @@ import com.linkedin.feathr.offline.{AssertFeatureUtils, TestFeathr}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types.{ArrayType, BooleanType, FloatType, IntegerType, StringType, StructField, StructType}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.testng.annotations.Test
 
 import java.util.Base64
