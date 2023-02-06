@@ -11,13 +11,14 @@ import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, Row
 import com.linkedin.feathr.offline.derived.{DerivedFeature, DerivedFeatureEvaluator}
 import com.linkedin.feathr.offline.evaluator.DerivedFeatureGenStage
 import com.linkedin.feathr.offline.job.FeatureJoinJob.FeatureName
-import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
+import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation, LocalFeatureJoinJob}
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.util.{AnchorUtils, FeathrUtils}
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -76,6 +77,8 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
     val featureToDefaultValueMap = getDefaultValues(allRequiredFeatureAnchorWithSourceAndTime.values.toSeq)
     val featureToTypeConfigMap = getFeatureTypes(allRequiredFeatureAnchorWithSourceAndTime.values.toSeq)
 
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+
     // 4. Calculate anchored features
     val allStageFeatures = joinStages.flatMap {
       case (_: Seq[Int], featureNames: Seq[String]) =>
@@ -88,12 +91,18 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
           .map(f => (f._1, (offline.FeatureDataFrame(f._2.transformedResult.df, f._2.transformedResult.inferredFeatureTypes), f._2.joinKey)))
     }.toMap
 
-    // 5. Group features based on grouping specified in output processors
-    val updatedAllStageFeatures = allStageFeatures.filter(keyValue => !keyValue._2._1.df.isEmpty)
+    // Update features based on skip missing feature flag and empty dataframe
+    val updatedAllStageFeatures = if (shouldSkipFeature || (ss.sparkContext.isLocal &&
+      SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) {
+      allStageFeatures.filter(keyValue => !keyValue._2._1.df.isEmpty)
+    } else allStageFeatures
+
     val (updatedFeatureGroups, updatedKeyTaggedFeatures) = FeatureGroupsUpdater().getUpdatedFeatureGroups(featureGroups,
       updatedAllStageFeatures, keyTaggedFeatures)
 
     val updatedLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(updatedFeatureGroups, updatedKeyTaggedFeatures)
+
+    // 5. Group features based on grouping specified in output processors
     val groupedAnchoredFeatures = featureGenFeatureGrouper.group(updatedAllStageFeatures, featureGenSpec.getOutputProcessorConfigs,
       updatedFeatureGroups.allDerivedFeatures)
 

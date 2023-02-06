@@ -208,7 +208,6 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
               None
             } else throw e
         }
-
         anchors.map(anchor => (anchor, timeSeriesSource))
     })
   }
