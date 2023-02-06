@@ -68,6 +68,8 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
     val anchorDFRDDMap = anchorToDataFrameMapper.getAnchorDFMapForGen(ss, requiredRegularFeatureAnchorsWithTime, Some(incrementalAggContext), failOnMissingPartition)
 
     val updatedAnchorDFRDDMap = anchorDFRDDMap.filter(anchorEntry => anchorEntry._2.isDefined).map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
+
+    // It could happen that all features are skipped, then return empty result
     if(updatedAnchorDFRDDMap.isEmpty) return Map()
 
     // 3. Load user specified default values and feature types, if any.
