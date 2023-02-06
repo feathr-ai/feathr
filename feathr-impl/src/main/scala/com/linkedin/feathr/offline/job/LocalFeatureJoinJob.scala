@@ -23,9 +23,15 @@ object LocalFeatureJoinJob {
   val ss: SparkSession = createSparkSession(enableHiveSupport = true)
   val SKIP_MISSING_FEATURE = SQLConf
     .buildConf("spark.feathr.skip.missing.feature")
-    .doc("Whether to use the V2 implementation, which should have better performance.")
+    .doc("Whether to skip features if data is missing.")
     .booleanConf
     .createWithDefault(false)
+
+  val MAX_DATA_LOAD_RETRY = SQLConf
+    .buildConf("spark.feathr.max.data.load.retry")
+    .doc("Number of retries if data is missing.")
+    .intConf
+    .createWithDefault(0)
 
   /**
    * local debug API, used in unit test and local debug

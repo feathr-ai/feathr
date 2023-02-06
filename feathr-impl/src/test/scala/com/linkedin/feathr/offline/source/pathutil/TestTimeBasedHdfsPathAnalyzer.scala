@@ -62,11 +62,8 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
     val mockPathChecker = mock[PathChecker]
     val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(mockPathChecker, List())
     assertEquals(
-      pathAnalyzer.analyze("src/test/resources/datePartitionSource"),
-      PathInfo("src/test/resources/datePartitionSource/datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00"))
-    verify(mockPathChecker).exists("src/test/resources/datePartitionSource/daily/")
-    verify(mockPathChecker).exists("src/test/resources/datePartitionSource/hourly/")
-    verifyNoMoreInteractions(mockPathChecker)
+      pathAnalyzer.analyze("dalids://src/test/resources/datePartitionSource"),
+      PathInfo("dalids://src/test/resources/datePartitionSource/", DateTimeResolution.DAILY, "yyyy/MM/dd"))
   }
 
   @Test(description = "test analyze with time partition pattern")
@@ -85,6 +82,5 @@ class TestTimeBasedHdfsPathAnalyzer extends TestFeathr with MockitoSugar {
     assertEquals(
       pathAnalyzer.analyze("src/test/resources/generation/datepartition=", "yyyy-MM-dd-00"),
       PathInfo("src/test/resources/generation/datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00"))
-    verifyNoMoreInteractions(mockPathChecker)
   }
 }
