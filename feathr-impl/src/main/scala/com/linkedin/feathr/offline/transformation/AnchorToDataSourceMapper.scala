@@ -141,8 +141,6 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
     catch {// todo - Add this functionality to only specific exception types and not for all error types.
       case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
         SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) {
-        logger.warn(s"shouldSkipFeature is " + shouldSkipFeature + "spark is session " + ss.sparkContext.isLocal + "local skip feature is "
-          + SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))
         ss.emptyDataFrame
       } else throw e
     }
@@ -201,10 +199,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             dataPathHandlers = dataPathHandlers))
         } catch {
           case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
-            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)))
-            {
-              logger.warn(s"shouldSkipFeature is " + shouldSkipFeature + "spark is session " + ss.sparkContext.isLocal + "local skip feature is "
-                + SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))
+            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) {
               None
             } else throw e
         }
