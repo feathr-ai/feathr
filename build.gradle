@@ -131,7 +131,7 @@ project.ext.spec = [
         "avroUtil": "com.linkedin.avroutil1:helper-all:0.2.100",
         "azure": "com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21",
         'fastutil' : "it.unimi.dsi:fastutil:8.1.1",
-        'mvel' : "org.mvel:mvel2:2.2.8.Final",
+        'mvel' : "org.mvel:mvel2:2.4.7.Final",
         'protobuf' : "com.google.protobuf:protobuf-java:2.6.1",
         'guava' : "com.google.guava:guava:25.0-jre",
         'xbean' : "org.apache.xbean:xbean-asm6-shaded:4.10",
