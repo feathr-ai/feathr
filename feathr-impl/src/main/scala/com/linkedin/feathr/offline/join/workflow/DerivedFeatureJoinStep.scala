@@ -6,13 +6,13 @@ import com.linkedin.feathr.offline.FeatureDataFrame
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.derived.DerivedFeatureEvaluator
 import com.linkedin.feathr.offline.join.JoinExecutionContext
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  * A step in Feature Join Workflow that joins the derived features.
  */
 class DerivedFeatureJoinStep(derivedFeatureEvaluator: DerivedFeatureEvaluator) extends FeatureJoinStep[DataFrameJoinStepInput, FeatureDataFrameOutput] {
-  @transient lazy val log = Logger.getLogger(getClass.getName)
+  @transient lazy val log = LogManager.getLogger(getClass.getName)
 
   override def joinFeatures(features: Seq[common.ErasedEntityTaggedFeature], input: DataFrameJoinStepInput)(
       implicit ctx: JoinExecutionContext): FeatureDataFrameOutput = {

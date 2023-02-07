@@ -9,7 +9,7 @@ import com.linkedin.feathr.offline.config.MVELFeatureDefinition
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.mvel.{MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.util.FeatureValueTypeValidator
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.types._
 import org.mvel2.MVEL
 
@@ -29,7 +29,7 @@ private[offline] class SimpleConfigurableAnchorExtractor( @JsonProperty("key") k
   extends AnchorExtractor[Any] with SparkRowExtractor {
 
   var mvelContext: Option[FeathrExpressionExecutionContext] = None
-  @transient private lazy val log = Logger.getLogger(getClass)
+  @transient private lazy val log = LogManager.getLogger(getClass)
 
   def getKeyExpression(): Seq[String] = key
 

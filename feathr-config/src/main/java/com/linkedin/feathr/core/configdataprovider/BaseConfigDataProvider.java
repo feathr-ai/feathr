@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -13,7 +14,7 @@ import org.apache.log4j.Logger;
  * shouldn't have to worry about.
  */
 public abstract class BaseConfigDataProvider implements ConfigDataProvider {
-  private static final Logger logger = Logger.getLogger(BaseConfigDataProvider.class);
+  private static final Logger logger = LogManager.getLogger(BaseConfigDataProvider.class);
 
   protected List<Reader> _readers;
 

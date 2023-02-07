@@ -135,7 +135,7 @@ project.ext.spec = [
         'protobuf' : "com.google.protobuf:protobuf-java:2.6.1",
         'guava' : "com.google.guava:guava:25.0-jre",
         'xbean' : "org.apache.xbean:xbean-asm6-shaded:4.10",
-        'log4j' : "log4j:log4j:1.2.17",
+        'log4j' : "org.apache.logging.log4j:log4j-core:2.17.2",
         'jetty': "org.eclipse.jetty:jetty-util:9.3.24.v20180605",
         'kafka': "org.apache.kafka:kafka-clients:3.1.0",
 

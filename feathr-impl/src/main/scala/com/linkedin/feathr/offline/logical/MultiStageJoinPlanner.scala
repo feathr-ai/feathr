@@ -6,7 +6,7 @@ import com.linkedin.feathr.common.{FeatureDependencyGraph, JoiningFeatureParams}
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureName, JoinStage, KeyTagIdTuple}
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.derived.DerivedFeature
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable
 import scala.collection.JavaConverters._
@@ -18,7 +18,7 @@ import scala.collection.convert.wrapAll._
  * Checkout MultiStageJoinPlan for details.
  */
 private[offline] class MultiStageJoinPlanner extends LogicalPlanner[MultiStageJoinPlan] {
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   /**
    * Analyzes the key tagged features requested by feature join job or feature generation job

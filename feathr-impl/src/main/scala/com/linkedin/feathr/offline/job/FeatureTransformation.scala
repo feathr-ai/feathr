@@ -25,7 +25,7 @@ import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark, SourceKeyExt
 import com.linkedin.feathr.swj.aggregate.AggregationType
 import com.linkedin.feathr.{common, offline}
 import org.apache.avro.generic.IndexedRecord
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -77,7 +77,7 @@ private[offline] case class TransformedResult(
 private[offline] case class KeyedTransformedResult(joinKey: JoinKeys, transformedResult: TransformedResult)
 
 private[offline] object FeatureTransformation {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   val FEATURE_DATA_JOIN_KEY_COL_PREFIX = "FeathrFeatureJoinKeyCol_"
   val FEATURE_NAME_PREFIX = "__feathr_feature_"

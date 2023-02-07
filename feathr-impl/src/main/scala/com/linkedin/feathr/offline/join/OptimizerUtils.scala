@@ -8,7 +8,7 @@ import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.util.SourceUtils
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureName, JoinStage, KeyTagIdTuple}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.functions.monotonically_increasing_id
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
@@ -47,7 +47,7 @@ private[offline] object OptimizerUtils {
   // The false-positive rate of BloomFilters.
   val bloomFilterFPP = 0.05
 
-  @transient private lazy val log = Logger.getLogger(getClass.getName)
+  @transient private lazy val log = LogManager.getLogger(getClass.getName)
 
   /**
    * preprocess observation data. i.g. generate bloomfilters and frequent items, trim observation for slick join algorithm

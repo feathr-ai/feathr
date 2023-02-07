@@ -4,7 +4,8 @@ import com.linkedin.feathr.core.config.consumer.RelativeTimeRangeConfig;
 import com.linkedin.feathr.core.configbuilder.ConfigBuilderException;
 import com.typesafe.config.Config;
 import java.time.Duration;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.consumer.RelativeTimeRangeConfig.*;
 
@@ -17,7 +18,7 @@ import static com.linkedin.feathr.core.config.consumer.RelativeTimeRangeConfig.*
  *   }
  */
 public class RelativeTimeRangeConfigBuilder {
-  private final static Logger logger = Logger.getLogger(RelativeTimeRangeConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(RelativeTimeRangeConfigBuilder.class);
 
   private RelativeTimeRangeConfigBuilder() {
   }

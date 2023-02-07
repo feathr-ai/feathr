@@ -3,14 +3,15 @@ package com.linkedin.feathr.core.configbuilder.typesafe.generation;
 import com.linkedin.feathr.core.config.common.OutputFormat;
 import com.linkedin.feathr.core.config.generation.OutputProcessorConfig;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
  * Output processor config object builder, e.g., HDFS, VENICE processor
  */
 public class OutputProcessorBuilder {
-  private final static Logger logger = Logger.getLogger(OutputProcessorBuilder.class);
+  private final static Logger logger = LogManager.getLogger(OutputProcessorBuilder.class);
   private static final String OUTPUT_FORMAT = "outputFormat";
   private static final String PARAMS = "params";
   private static final String NAME = "name";
