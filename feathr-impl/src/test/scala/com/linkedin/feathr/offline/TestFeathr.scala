@@ -25,9 +25,6 @@ abstract class TestFeathr extends TestNGSuite {
   protected var feathrConfigLoader: FeathrConfig = FeathrConfigLoader()
 
   private val mvelContext = new FeathrExpressionExecutionContext()
-  import org.apache.log4j.{Level, Logger}
-  Logger.getLogger("org").setLevel(Level.OFF)
-  Logger.getLogger("akka").setLevel(Level.OFF)
 
   @BeforeClass
   def setup(): Unit = {

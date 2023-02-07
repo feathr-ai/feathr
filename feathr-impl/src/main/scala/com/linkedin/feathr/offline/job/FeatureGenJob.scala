@@ -15,7 +15,7 @@ import com.linkedin.feathr.offline.util.{CmdLineParser, FeathrUtils, OptionParam
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import org.apache.avro.generic.GenericRecord
 import org.apache.commons.cli.{Option => CmdOption}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -25,7 +25,7 @@ import scala.collection.mutable
 object FeatureGenJob {
 
   type ApplicationConfigPath = String
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
   /**
    * Parse command line arguments, which includes application config,
    * Feathr feature definition configs and other settings

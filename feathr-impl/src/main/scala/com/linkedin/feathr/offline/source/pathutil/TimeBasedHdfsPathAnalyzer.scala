@@ -10,6 +10,10 @@ import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
  * @param pathChecker the path checker is used to check whether a file path exists.
  */
 private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataLoaderHandlers: List[DataLoaderHandler]) {
+  val dailyFolder = "daily/"
+  val hourlyFolder = "hourly/"
+  val dailyPattern = "yyyy/MM/dd"
+  val hourlyPattern = "yyyy/MM/dd/HH"
 
   /**
    * check whether the given path is daily or hourly partitioned.
@@ -22,10 +26,6 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataL
    * @return a PathInfo object to show how the data source is partitioned.
    */
   def analyze(filePath: String): PathInfo = {
-    val dailyFolder = "daily/"
-    val hourlyFolder = "hourly/"
-    val dailyPattern = "yyyy/MM/dd"
-    val hourlyPattern = "yyyy/MM/dd/HH"
     val fileFolder = if (filePath.endsWith("/")) filePath else filePath + "/"
 
     var pathInfoOpt: Option[PathInfo] = None // Used to store the pathInfo of any file caught by data loader handlers.
@@ -36,7 +36,7 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataL
         for(dataLoaderHandler <- dataLoaderHandlers) {
           if (dataLoaderHandler.validatePath(fileFolder)) {
             pathInfoOpt = Some(PathInfo(fileFolder, DateTimeResolution.DAILY, dailyPattern))
-          } 
+          }
         }
       }
     }
@@ -54,7 +54,7 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataL
         PathInfo(fileFolder + hourlyFolder, DateTimeResolution.HOURLY, hourlyPattern)
       } else {
         // Daily data can be Orc/Hive data following in HomeDir/datepartition=yyyy-MM-dd-00
-        PathInfo(fileFolder + "datepartition=", DateTimeResolution.DAILY, "yyyy-MM-dd-00")
+        PathInfo(fileFolder, DateTimeResolution.DAILY, dailyPattern)
       }
     }
 
@@ -70,7 +70,17 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataL
   def analyze(filePath: String, timePartitionPattern: String): PathInfo = {
     val basePath = if (filePath.endsWith("/") || filePath.endsWith("=")) filePath else filePath + "/"
     val dateTimeResolution = OfflineDateTimeUtils.getDateTimeResolutionFromPattern(timePartitionPattern)
-    PathInfo(basePath, dateTimeResolution, timePartitionPattern)
+    if (basePath.endsWith(dailyFolder)) {
+      PathInfo(basePath, dateTimeResolution, timePartitionPattern)
+    } else if (basePath.endsWith(hourlyFolder)) {
+      PathInfo(basePath, dateTimeResolution, timePartitionPattern)
+    } else if (pathChecker.exists(basePath + dailyFolder)) {
+      PathInfo(basePath + dailyFolder, dateTimeResolution, timePartitionPattern)
+    } else if (pathChecker.exists(basePath + hourlyFolder)) {
+      PathInfo(basePath + hourlyFolder, dateTimeResolution, timePartitionPattern)
+    } else {
+      PathInfo(filePath, dateTimeResolution, timePartitionPattern)
+    }
   }
 }
 

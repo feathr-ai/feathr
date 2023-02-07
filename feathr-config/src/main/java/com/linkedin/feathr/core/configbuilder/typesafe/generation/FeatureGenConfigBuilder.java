@@ -4,14 +4,15 @@ import com.linkedin.feathr.core.config.generation.FeatureGenConfig;
 import com.linkedin.feathr.core.config.generation.OperationalConfig;
 import com.typesafe.config.Config;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
  * Feature generation config builder
  */
 public class FeatureGenConfigBuilder {
-  private final static Logger logger = Logger.getLogger(FeatureGenConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(FeatureGenConfigBuilder.class);
   private final static String OPERATIONAL = "operational";
   private final static String FEATURES = "features";
 

@@ -281,7 +281,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
       """
         |sources: {
         |  swaSource: {
-        |    location: { path: "slidingWindowAgg/localSWDefaultTest/daily" }
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/daily" }
         |    timePartitionPattern: "yyyy/MM/dd"
         |    timeWindowParameters: {
         |      timestampColumn: "timestamp"

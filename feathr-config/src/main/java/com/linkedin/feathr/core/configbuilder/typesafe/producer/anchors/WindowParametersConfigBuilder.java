@@ -6,7 +6,8 @@ import com.linkedin.feathr.core.configbuilder.ConfigBuilderException;
 import com.typesafe.config.Config;
 import java.time.Duration;
 import java.util.Arrays;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.anchors.FeatureConfig.*;
 
@@ -14,7 +15,7 @@ import static com.linkedin.feathr.core.config.producer.anchors.FeatureConfig.*;
  * Build {@link WindowParametersConfig} object
  */
 public class WindowParametersConfigBuilder {
-  private final static Logger logger = Logger.getLogger(FeatureConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(FeatureConfigBuilder.class);
 
   /*
    * Prevent instantiation of class from outside

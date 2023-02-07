@@ -18,7 +18,7 @@ import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
 import com.linkedin.feathr.swj.{LabelData, SlidingWindowJoin}
 import com.linkedin.feathr.{common, offline}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
@@ -32,7 +32,7 @@ import scala.collection.mutable
 private[offline] class SlidingWindowAggregationJoiner(
     allWindowAggFeatures: Map[String, FeatureAnchorWithSource],
     anchorToDataSourceMapper: AnchorToDataSourceMapper) {
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   /**
    * Join observation data with time-based window aggregation features.

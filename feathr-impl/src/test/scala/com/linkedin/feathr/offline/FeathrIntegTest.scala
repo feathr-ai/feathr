@@ -10,11 +10,6 @@ import org.apache.spark.sql.SparkSession
 // This class is mainly used to create a spark session for all the feathr integ tests.
 abstract class FeathrIntegTest extends TestFeathr {
 
-  import org.apache.log4j.{Level, Logger}
-
-  Logger.getLogger("org").setLevel(Level.OFF)
-  Logger.getLogger("akka").setLevel(Level.OFF)
-
   final val SPARK_DEFAULT_PARALLELISM: String = "4"
   final val SPARK_SQL_SHUFFLE_PARTITIONS: String = SPARK_DEFAULT_PARALLELISM
   protected var hadoopConf: Configuration = _

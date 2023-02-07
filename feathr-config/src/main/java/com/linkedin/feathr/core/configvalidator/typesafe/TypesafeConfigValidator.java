@@ -22,7 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
@@ -46,7 +47,7 @@ import static com.linkedin.feathr.core.configvalidator.ValidationType.*;
  */
 @Deprecated
 public class TypesafeConfigValidator implements ConfigValidator {
-  private static final Logger logger = Logger.getLogger(TypesafeConfigValidator.class);
+  private static final Logger logger = LogManager.getLogger(TypesafeConfigValidator.class);
 
   // Used when rendering the parsed config to JSON string (which is then used in validation)
   private ConfigRenderOptions _renderOptions;

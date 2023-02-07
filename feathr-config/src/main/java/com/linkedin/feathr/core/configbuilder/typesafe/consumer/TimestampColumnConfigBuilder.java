@@ -3,7 +3,8 @@ package com.linkedin.feathr.core.configbuilder.typesafe.consumer;
 import com.linkedin.feathr.core.config.consumer.TimestampColumnConfig;
 import com.linkedin.feathr.core.configbuilder.ConfigBuilderException;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.consumer.TimestampColumnConfig.*;
 
@@ -16,7 +17,7 @@ import static com.linkedin.feathr.core.config.consumer.TimestampColumnConfig.*;
  * @author rkashyap
  */
 public class TimestampColumnConfigBuilder {
-  private final static Logger logger = Logger.getLogger(TimestampColumnConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(TimestampColumnConfigBuilder.class);
 
   private TimestampColumnConfigBuilder() {
   }

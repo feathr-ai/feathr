@@ -10,7 +10,7 @@ import com.linkedin.feathr.offline.util.IncrementalAggUtils
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.JavaConverters._
@@ -62,7 +62,7 @@ private[offline] trait IncrementalAggSnapshotLoader {
 }
 
 private[offline] object IncrementalAggSnapshotLoader extends IncrementalAggSnapshotLoader {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
   private[generation] override def load(featureGenSpec: FeatureGenSpec, fs: FileSystem, dataLoaderHandlers: List[DataLoaderHandler]): IncrementalAggContext = {
     val isIncrementalAggEnabled = featureGenSpec.isEnableIncrementalAgg()
     if (!isIncrementalAggEnabled) {

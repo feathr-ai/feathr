@@ -3,7 +3,8 @@ package com.linkedin.feathr.core.configbuilder.typesafe.producer.sources;
 import com.linkedin.feathr.core.config.producer.sources.SlidingWindowAggrConfig;
 import com.linkedin.feathr.core.config.producer.sources.TimeWindowParams;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.sources.SlidingWindowAggrConfig.*;
 import static com.linkedin.feathr.core.config.producer.sources.TimeWindowParams.*;
@@ -13,7 +14,7 @@ import static com.linkedin.feathr.core.config.producer.sources.TimeWindowParams.
  * Build {@link SlidingWindowAggrConfig} object
  */
 class SlidingWindowAggrConfigBuilder {
-  private final static Logger logger = Logger.getLogger(SlidingWindowAggrConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(SlidingWindowAggrConfigBuilder.class);
 
   private final static String LEGACY_TIMESTAMP_FIELD = "timestamp";
   private final static String LEGACY_TIMESTAMP_FORMAT = "timestamp_format";

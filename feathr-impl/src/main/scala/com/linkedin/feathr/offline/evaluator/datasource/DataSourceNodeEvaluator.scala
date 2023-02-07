@@ -15,7 +15,7 @@ import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPa
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.{TIMESTAMP_PARTITION_COLUMN, constructTimeStampExpr}
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
 import com.linkedin.feathr.sparkcommon.SourceKeyExtractor
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.time.Duration
@@ -27,7 +27,7 @@ import scala.collection.mutable
  * for handling the 3 different data source types we support: CONTEXT, EVENT, and TABLE.
  */
 object DataSourceNodeEvaluator extends NodeEvaluator{
-  val log = Logger.getLogger(getClass)
+  val log = LogManager.getLogger(getClass)
   /**
    * Process datasource node of type CONTEXT but with no concrete key (non-passthrough feature context nodes).
    * @param contextDataFrame

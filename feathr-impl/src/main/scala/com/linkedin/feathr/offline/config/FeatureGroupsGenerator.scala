@@ -6,7 +6,7 @@ import com.linkedin.feathr.offline.derived.DerivedFeature
 import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
 import com.linkedin.feathr.offline.logical.FeatureGroups
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  * This is a utility class which helps in parsing the Feathr config files, featureDefConfigs and localOverrideDefConfigs, and produces
@@ -17,7 +17,7 @@ import org.apache.log4j.Logger
  * The getFeatureGroups method will return the FeatureGroups object.
  */
 private[offline] class FeatureGroupsGenerator(featureDefConfigs: Seq[FeathrConfig], localOverrideDefConfigs: Option[Seq[FeathrConfig]] = None) {
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
   // Many users use the feature def config interchangibly with the localDef Config. We want to support those use cases
   // where users write the featureDefConfig as a localDdefConfig
   private val configs = if (featureDefConfigs.isEmpty) localOverrideDefConfigs.get else featureDefConfigs
