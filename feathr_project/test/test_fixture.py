@@ -529,7 +529,7 @@ def time_partition_pattern_feature_join_test_setup(config_path: str, data_source
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
     os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
     os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
-    client = FeathrClient(config_path=config_path)
+    client = FeathrClient(config_path=config_path, local_workspace_dir=local_workspace_dir)
     
     if postfix_path == "":
         if resolution == 'DAILY':
