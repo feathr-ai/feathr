@@ -39,5 +39,5 @@ PRODUCT_RECOMMENDATION_PRODUCT_DETAIL_URL = (
 # Hotel review sample datasets.
 # Ref: https://www.kaggle.com/datasets/datafiniti/hotel-reviews
 HOTEL_REVIEWS_URL = (
-    "https://raw.github.com/Azure-Samples/azure-search-python-samples/main/AzureML-Custom-Skill/datasets/hotel_reviews_1000.csv"
+    "https://raw.githubusercontent.com/Azure-Samples/azure-search-sample-data/main/hotelreviews/HotelReviews_data.csv"
 )
