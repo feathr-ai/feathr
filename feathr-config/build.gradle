@@ -32,8 +32,8 @@ dependencies {
   implementation spec.product.jackson.jackson_databind
   implementation spec.product.mvel
   implementation spec.product.json
-  implementation 'com.google.guava:guava:31.1-jre'
-  implementation 'commons-collections:commons-collections:3.2.2'
+  implementation spec.product.guava
+  implementation spec.product.common_collections
 
   testImplementation spec.product.testing
   testImplementation spec.product.mockito
