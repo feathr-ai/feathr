@@ -290,13 +290,16 @@ def test_feathr_materialize_to_cosmosdb():
         __file__).parent.resolve() / "test_user_workspace"
     # os.chdir(test_workspace_dir)
 
-    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    client: FeathrClient = basic_test_setup(os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
 
     backfill_time = BackfillTime(start=datetime(
         2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
 
     now = datetime.now()
-    container = ''.join(['feathrazure_cijob_materialize_','_', str(now.minute), '_', str(now.second), ""])
+    #container = ''.join(['feathrazure_cijob_materialize_','_', str(now.minute), '_', str(now.second), ""])
+    container = 'ci_test_data_sample'
+    name='cosmos1'
+    os.environ[f"{name.upper()}_KEY"] = "UUojroOS3kb9LotTF7sGhuS4OemXtyA7jecrwSnUvA1psYGnaA3m6YESvjZUtRPEtMRqIsYC2oOJGvRI3lNgQw=="
     sink = CosmosDbSink(name='cosmos1', endpoint='https://feathrazuretest3-cosmosdb.documents.azure.com:443/', database='feathr', container=container)
     settings = MaterializationSettings("nycTaxiTable",
                                        sinks=[sink],

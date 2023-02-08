@@ -3,7 +3,9 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from feathr import (FeatureQuery, ObservationSettings, SparkExecutionConfiguration, TypedKey, ValueType)
+from feathr import (FeatureQuery, ObservationSettings, SparkExecutionConfiguration, TypedKey, 
+                    ValueType, Feature, FeatureAnchor, BackfillTime, timedelta, MaterializationSettings, 
+                    CosmosDbSource, WindowAggTransformation, RedisSink, FLOAT)
 from feathr.client import FeathrClient
 from feathr.constants import OUTPUT_FORMAT
 from feathr.utils.job_utils import get_result_df
@@ -101,3 +103,58 @@ def test_feathr_get_offline_features_with_delta_lake():
     if not (client.spark_runtime == 'azure_synapse' and result_format == 'delta'):
         res_df = get_result_df(client)
         assert res_df.shape[0] > 0
+        
+def test_feathr_materialize_features_with_cosmosDb():
+    """
+    Test if the program can read from cosmos DB
+    """
+    test_workspace_dir = Path(
+        __file__).parent.resolve() / "test_user_workspace"
+    client: FeathrClient = FeathrClient(config_path=os.path.join(test_workspace_dir, "feathr_config_bak.yaml"))
+
+    container = "test_cosmosDbSource_output"
+    batch_source = CosmosDbSource(name='cosmos1', endpoint='https://feathrazuretest3-cosmosdb.documents.azure.com:443/', database='feathr', container=table_name)
+    key = TypedKey(key_column="key0",
+               key_column_type=ValueType.INT32)
+    agg_features = [
+        Feature(name="f_loc_avg_output",
+            key=[key],
+            feature_type=FLOAT,
+            transform=WindowAggTransformation(agg_expr="f_location_avg_fare",
+                                              agg_func="AVG",
+                                              window="3d")),
+        Feature(name="f_loc_max_output",
+            feature_type=FLOAT,
+            key=[key],
+            transform=WindowAggTransformation(agg_expr="f_location_max_fare",
+                                              agg_func="MAX",
+                                              window="3d")),
+        ]
+
+    agg_anchor = FeatureAnchor(name="testTimePartitionFeatures",
+                           source=batch_source,
+                           features=agg_features)
+    client.build_features(anchor_list=[agg_anchor])
+
+    now = datetime.now()
+    if client.spark_runtime == 'databricks':
+        output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".avro"])
+    else:
+        output_path = ''.join(['abfss://eyxfs@eyxdls.dfs.core.windows.net/cosmosdb'])
+          
+
+    backfill_time = BackfillTime(start=datetime(
+            2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+
+    offline_redis_sink = RedisSink('feathr_test_table')
+    settings = MaterializationSettings("nycTaxiTable",
+                sinks=[offline_redis_sink],
+                feature_names=[
+                    "f_loc_avg_output"],
+                backfill_time=backfill_time)
+   
+    client.materialize_features(settings)
+    client.wait_job_to_finish(timeout_sec=500)
+
+    res_df = get_result_df(client, data_format="avro", res_url = output_path)
+    res_df.to_csv('cosmosdb.csv')

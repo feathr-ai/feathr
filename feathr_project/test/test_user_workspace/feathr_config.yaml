@@ -69,7 +69,7 @@ offline_store:
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks
   # The `databricks` configs will be ignored if `azure_synapse` is set and vice versa.
-  spark_cluster: 'databricks'
+  spark_cluster: 'azure_synapse'
   # configure number of parts for the spark output for feature generation job
   spark_result_output_parts: '1'
 
@@ -83,10 +83,11 @@ spark_config:
     # Feathr Job configuration. Support local paths, path start with http(s)://, and paths start with abfs(s)://
     # this is the default location so end users don't have to compile the runtime again.
     # feathr_runtime_location: wasbs://public@azurefeathrstorage.blob.core.windows.net/feathr-assembly-LATEST.jar
-    feathr_runtime_location: "../../build/libs/feathr_2.12-0.11.1-rc1.jar"
+    feathr_runtime_location: "/Users/enya/github/private_repo/feathr/build/libs/feathr_2.12-0.10.4-rc2.jar"
   databricks:
     # workspace instance
-    workspace_instance_url: 'https://adb-4121774437039026.6.azuredatabricks.net'
+    workspace_instance_url: 'https://adb-1683551962712102.2.azuredatabricks.net'
+    #workspace_instance_url: 'https://adb-5638037984879289.9.azuredatabricks.net'
     workspace_token_value: ''
     # config string including run time information, spark version, machine size, etc.
     # the config follows the format in the databricks documentation: https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/2.0/jobs
@@ -94,7 +95,7 @@ spark_config:
     # Feathr Job location. Support local paths, path start with http(s)://, and paths start with dbfs:/
     work_dir: 'dbfs:/feathr_getting_started'
     # this is the default location so end users don't have to compile the runtime again.
-    feathr_runtime_location: "../../build/libs/feathr_2.12-0.11.1-rc1.jar"
+    feathr_runtime_location: "/Users/enya/github/private_repo/feathr/build/libs/feathr_2.12-0.10.4-rc2.jar"
 
 online_store:
   redis:
