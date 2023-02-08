@@ -524,7 +524,7 @@ def time_partition_pattern_feature_gen_test_setup(config_path: str, data_source_
     client.build_features(anchor_list=[agg_anchor])
     return client
 
-def time_partition_pattern_feature_join_test_setup(config_path: str, data_source_path: str, resolution: str = 'DAILY', postfix_path: str = ""):
+def time_partition_pattern_feature_join_test_setup(config_path: str, data_source_path: str, local_workspace_dir: str = None, resolution: str = 'DAILY', postfix_path: str = ""):
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
     os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
