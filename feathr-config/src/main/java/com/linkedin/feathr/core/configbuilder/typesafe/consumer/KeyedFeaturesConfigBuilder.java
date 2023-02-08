@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.consumer.KeyedFeatures.*;
 
@@ -21,7 +22,7 @@ import static com.linkedin.feathr.core.config.consumer.KeyedFeatures.*;
  * Builds the KeyedFeatures config object
  */
 class KeyedFeaturesConfigBuilder {
-  private final static Logger logger = Logger.getLogger(KeyedFeaturesConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(KeyedFeaturesConfigBuilder.class);
 
   private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT);
 

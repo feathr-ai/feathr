@@ -5,14 +5,15 @@ import com.linkedin.feathr.core.config.consumer.KeyedFeatures;
 import com.typesafe.config.Config;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
  * Builds FeatureBagConfig objects. These objects specify the features to be fetched.
  */
 class FeatureBagConfigBuilder {
-  private final static Logger logger = Logger.getLogger(FeatureBagConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(FeatureBagConfigBuilder.class);
 
   private FeatureBagConfigBuilder() {
   }

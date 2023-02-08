@@ -1,6 +1,6 @@
 package com.linkedin.feathr.offline.config.datasource
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -22,7 +22,7 @@ private[feathr] abstract class ResourceInfoSetter() {
   val EMPTY_STRING = ""
   val params: List[String]
 
-  @transient lazy val logger = Logger.getLogger(getClass.getName)
+  @transient lazy val logger = LogManager.getLogger(getClass.getName)
 
   def setup(ss: SparkSession, context: DataSourceConfig, resource: Resource): Unit = {
     setupHadoopConfig(ss, Some(context), Some(resource))

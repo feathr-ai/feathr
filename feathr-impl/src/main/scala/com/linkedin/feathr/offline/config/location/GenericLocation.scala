@@ -7,13 +7,13 @@ import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.generation.FeatureGenUtils
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import net.minidev.json.annotate.JsonIgnore
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.sql.functions.monotonically_increasing_id
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 
 @CaseClassDeserialize()
 case class GenericLocation(format: String, mode: Option[String] = None) extends DataLocation {
-  val log: Logger = Logger.getLogger(getClass)
+  val log: Logger = LogManager.getLogger(getClass)
   val options: collection.mutable.Map[String, String] = collection.mutable.Map[String, String]()
   val conf: collection.mutable.Map[String, String] = collection.mutable.Map[String, String]()
 

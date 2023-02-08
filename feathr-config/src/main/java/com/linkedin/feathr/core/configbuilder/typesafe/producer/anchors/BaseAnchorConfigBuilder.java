@@ -8,13 +8,14 @@ import com.typesafe.config.ConfigValue;
 import com.typesafe.config.ConfigValueType;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.anchors.AnchorConfig.*;
 
 
 abstract class BaseAnchorConfigBuilder {
-  private final static Logger logger = Logger.getLogger(BaseAnchorConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(BaseAnchorConfigBuilder.class);
 
   // Gets feature config objects by invoking the FeatureConfigBuilder appropriately
   public static Map<String, FeatureConfig> getFeatures(Config anchorConfig) {

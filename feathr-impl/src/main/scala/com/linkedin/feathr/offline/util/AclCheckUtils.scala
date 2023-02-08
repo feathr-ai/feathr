@@ -7,7 +7,7 @@ import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.permission.{AclEntry, AclEntryScope, AclEntryType, FsAction}
 import org.apache.hadoop.fs.{FileSystem, Path, PathFilter}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.SparkSession
 
 import java.time.LocalDateTime
@@ -21,7 +21,7 @@ import scala.util.{Failure, Success, Try}
 private[offline] object AclCheckUtils {
   // Designation to specify the latest subdirectory
   val LATEST_PATTERN = "#LATEST"
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   // Check read authorization on all paths in a given list
   def checkReadAuthorization(conf: Configuration, pathList: Seq[String]): Seq[(String, String)] = {

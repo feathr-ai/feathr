@@ -9,7 +9,7 @@ import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
 import com.linkedin.feathr.offline.util.PartitionLimiter
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.lit
 /**
@@ -109,7 +109,7 @@ private[offline] class PathPartitionedTimeSeriesSourceAccessor(
 
 private[offline] object PathPartitionedTimeSeriesSourceAccessor {
 
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   /**
    * create time series/composite source that contains multiple day/hour data from a file URI.
