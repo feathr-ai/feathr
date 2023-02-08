@@ -23,14 +23,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    mavenLocal()
-    maven {
-      url "https://repository.mulesoft.org/nexus/content/repositories/public/"
-    }
-    maven {
-      url "https://linkedin.jfrog.io/artifactory/open-source/" // GMA, pegasus
-    }
-
 }
 
 configurations {
