@@ -9,6 +9,10 @@ COPY ./ui .
 RUN echo 'REACT_APP_API_ENDPOINT=http://localhost:8000' >> .env.production
 RUN npm install && npm run build
 
+FROM gradle:7.6.0-jdk8 as gradle-build
+WORKDIR /usr/src/feathr
+COPY . .
+RUN ./gradlew build
 
 FROM jupyter/pyspark-notebook
 
@@ -28,6 +32,7 @@ COPY ./deploy/nginx.conf /etc/nginx/nginx.conf
 # always install feathr from main
 WORKDIR /home/jovyan/work
 COPY --chown=1000:100 ./feathr_project ./feathr_project
+COPY --chown=1000:100 --from=gradle-build /usr/src/feathr/build/libs .
 RUN python -m pip install  -e ./feathr_project
 
 
