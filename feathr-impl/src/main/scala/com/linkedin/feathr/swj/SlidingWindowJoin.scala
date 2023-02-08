@@ -4,7 +4,7 @@ import com.linkedin.feathr.offline.evaluator.datasource.DataSourceNodeEvaluator.
 import com.linkedin.feathr.swj.join.{FeatureColumnMetaData, SlidingWindowJoinIterator}
 import com.linkedin.feathr.swj.transformer.FeatureTransformer
 import com.linkedin.feathr.swj.transformer.FeatureTransformer._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -12,7 +12,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 object SlidingWindowJoin {
 
-  val log = Logger.getLogger(getClass)
+  val log = LogManager.getLogger(getClass)
   lazy val spark: SparkSession = SparkSession.builder().getOrCreate()
 
   private val LABEL_VIEW_NAME = "label_data"

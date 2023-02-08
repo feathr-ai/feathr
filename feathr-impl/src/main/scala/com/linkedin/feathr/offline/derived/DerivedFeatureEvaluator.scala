@@ -14,7 +14,7 @@ import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
 import com.linkedin.feathr.sparkcommon.FeatureDerivationFunctionSpark
 import com.linkedin.feathr.{common, offline}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -110,7 +110,7 @@ private[offline] class DerivedFeatureEvaluator(derivationStrategies: DerivationS
  * Companion object with instantiation responsibilities and static utility methods.
  */
 private[offline] object DerivedFeatureEvaluator {
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   def apply(derivationStrategies: DerivationStrategies, mvelContext: Option[FeathrExpressionExecutionContext]): DerivedFeatureEvaluator = new DerivedFeatureEvaluator(derivationStrategies, mvelContext)
 

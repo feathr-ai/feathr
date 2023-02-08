@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.consumer.JoinConfig.*;
 import static com.linkedin.feathr.core.utils.Utils.*;
@@ -20,7 +21,7 @@ import static com.linkedin.feathr.core.utils.Utils.*;
  * Builds a JoinConfig object. It does so by delegating to child builders.
  */
 public class JoinConfigBuilder {
-  private final static Logger logger = Logger.getLogger(JoinConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(JoinConfigBuilder.class);
 
   private JoinConfigBuilder() {
   }

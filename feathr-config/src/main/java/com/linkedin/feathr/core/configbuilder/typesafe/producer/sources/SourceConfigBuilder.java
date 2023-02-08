@@ -5,7 +5,8 @@ import com.linkedin.feathr.core.config.producer.sources.SourceConfig;
 import com.linkedin.feathr.core.config.producer.sources.SourceType;
 import com.linkedin.feathr.core.configbuilder.ConfigBuilderException;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.sources.SourceConfig.*;
 
@@ -14,7 +15,7 @@ import static com.linkedin.feathr.core.config.producer.sources.SourceConfig.*;
  * Build {@link SourceConfig} object
  */
 class SourceConfigBuilder {
-  private final static Logger logger = Logger.getLogger(SourceConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(SourceConfigBuilder.class);
 
   private SourceConfigBuilder() {
   }

@@ -204,6 +204,28 @@ class DbRegistry(Registry):
             downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
         return [e for e in downstream_entities if str(e.id) != str(entity_id)]
     
+    def delete_empty_entities(self, entities: List[Entity]):
+        """
+        Given entity list, deleting all anchors that have no features and all sources that have no anchors.
+        """
+        if len(entities) == 0:
+            return
+        
+        # clean up empty anchors
+        for e in entities:
+            if e.entity_type == EntityType.Anchor:
+                downstream_entities, _ = self._bfs(e.id, RelationshipType.Contains) 
+                if len(downstream_entities) == 1: # only anchor itself
+                    self.delete_entity(e.id)
+        # clean up empty sources
+        for e in entities:
+            if e.entity_type == EntityType.Source:
+                downstream_entities, _ = self._bfs(e.id, RelationshipType.Produces) 
+                if len(downstream_entities) == 1: # only source itself
+                    self.delete_entity(e.id)
+
+        return
+        
     def delete_entity(self, entity_id: Union[str, UUID]):
         """
         Deletes given entity

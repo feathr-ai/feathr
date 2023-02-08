@@ -6,7 +6,8 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueType;
 import java.util.Collections;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.sources.HdfsConfig.*;
 
@@ -15,7 +16,7 @@ import static com.linkedin.feathr.core.config.producer.sources.HdfsConfig.*;
  * Builds HdfsConfigWithRegularData objects.
  */
 class HdfsConfigWithRegularDataBuilder {
-  private final static Logger logger = Logger.getLogger(HdfsConfigWithRegularDataBuilder.class);
+  private final static Logger logger = LogManager.getLogger(HdfsConfigWithRegularDataBuilder.class);
 
   private HdfsConfigWithRegularDataBuilder() {
   }

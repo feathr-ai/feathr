@@ -4,7 +4,7 @@ import com.linkedin.feathr.common.{DateParam, JoiningFeatureParams}
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable
 
@@ -14,7 +14,7 @@ private[offline] object AnchorUtils {
   // feature context, e.g, if '-' is allowed in feature name, a-b could be a valid feature name or feature a minus feature b
   // feature name cannot start with '_', as this might be reserved for Feathr's internal use
   val featureNamePattern = "^[a-zA-Z][a-zA-Z0-9_]*$".r.pattern
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   /**
    * remove all non alphaNumeric characters in the input string
