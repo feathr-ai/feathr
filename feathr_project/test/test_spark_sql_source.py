@@ -18,8 +18,6 @@ from test_utils.constants import Constants
 from feathr.definition.source import SparkSqlSource
 
 
-@pytest.mark.skipif(os.environ.get('SPARK_CONFIG__SPARK_CLUSTER') != "databricks",
-                    reason="this test uses predefined Databricks table.")
 def test_feathr_spark_sql_query_source():
     test_workspace_dir = Path(
         __file__).parent.resolve() / "test_user_workspace"
@@ -45,9 +43,10 @@ def _get_offline_features(config_path: str, sql_source: SparkSqlSource):
         timestamp_format="yyyy-MM-dd HH:mm:ss")
 
     now = datetime.now()
-    output_path = ''.join(['dbfs:/feathrazure_cijob_sparksql',
-                          '_', str(now.minute), '_', str(now.second), ".avro"])
-
+    if client.spark_runtime == 'databricks':
+        output_path = ''.join(['dbfs:/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
+    else:
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/feathrazure_cijob_materialize_offline_','_', str(now.minute), '_', str(now.second), ""])
     client.get_offline_features(observation_settings=settings,
                                 feature_query=feature_query,
                                 output_path=output_path)
