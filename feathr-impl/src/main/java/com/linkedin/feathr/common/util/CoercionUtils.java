@@ -314,7 +314,7 @@ public class CoercionUtils {
 
   private static <T> void checkNotNull(T item) {
     if (null == item) {
-      throw new RuntimeException("Unexpected null");
+      throw new NullPointerException("Unexpected null");
     }
   }
 
