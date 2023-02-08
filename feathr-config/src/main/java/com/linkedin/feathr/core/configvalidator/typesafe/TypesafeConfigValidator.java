@@ -24,9 +24,6 @@ import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.ValidationException;
-import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -51,14 +48,6 @@ public class TypesafeConfigValidator implements ConfigValidator {
 
   // Used when rendering the parsed config to JSON string (which is then used in validation)
   private ConfigRenderOptions _renderOptions;
-
-  // Schema for FeatureDef config
-  private Schema _featureDefSchema;
-
-  // Schema for Join config
-  private Schema _joinConfigSchema;
-
-  private Schema _presentationConfigSchema;
 
   private final static String FEATUREDEF_CONFIG_SCHEMA = "/FeatureDefConfigSchema.json";
 
@@ -201,31 +190,15 @@ public class TypesafeConfigValidator implements ConfigValidator {
 
       switch (configType) {
         case FeatureDef:
-          if (_featureDefSchema == null) {
-            _featureDefSchema = loadFeatureDefSchema();
-            logger.info("FeatureDef config schema loaded");
-          }
-          _featureDefSchema.validate(root);
-
           // validate naming convention
           result = validateFeatureDefNames(config);
           break;
 
         case Join:
-          if (_joinConfigSchema == null) {
-            _joinConfigSchema = loadJoinConfigSchema();
-            logger.info("Join config schema loaded");
-          }
-          _joinConfigSchema.validate(root);
           result = new ValidationResult(SYNTACTIC, VALID);
           break;
 
         case Presentation:
-          if (_presentationConfigSchema == null) {
-            _presentationConfigSchema = loadPresentationConfigSchema();
-            logger.info("Presentation config schema loaded");
-          }
-          _presentationConfigSchema.validate(root);
           result = new ValidationResult(SYNTACTIC, VALID);
           break;
         default:
@@ -233,10 +206,6 @@ public class TypesafeConfigValidator implements ConfigValidator {
       }
     } catch (ConfigValidationException e) {
       throw e;
-    } catch (ValidationException e) {
-      String header = configType + " config syntax is invalid. Details:";
-      String details = String.join("\n", header, String.join("\n", e.getAllMessages()));
-      result = new ValidationResult(SYNTACTIC, INVALID, details, e);
     } catch (Exception e) {
       throw new ConfigValidationException("Config validation error", e);
     }
@@ -407,44 +376,5 @@ public class TypesafeConfigValidator implements ConfigValidator {
   private Config buildTypesafeConfig(ConfigType configType, ConfigDataProvider configDataProvider) {
     TypesafeConfigBuilder builder = new TypesafeConfigBuilder();
     return builder.buildTypesafeConfig(configType, configDataProvider);
-  }
-
-  /*
-   * Loads schema for FeatureDef config using Everit JSON Schema Validator
-   * (https://github.com/everit-org/json-schema)
-   */
-  private Schema loadFeatureDefSchema() {
-    try (InputStream inputStream = getClass().getResourceAsStream(FEATUREDEF_CONFIG_SCHEMA)) {
-      JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
-      return SchemaLoader.load(rawSchema);
-    } catch (Exception e) {
-      throw new ConfigValidationException("Error in loading FeatureDef schema", e);
-    }
-  }
-
-  /*
-   * Loads schema for Join config using Everit JSON Schema Validator
-   * (https://github.com/everit-org/json-schema)
-   */
-  private Schema loadJoinConfigSchema() {
-    try (InputStream inputStream = getClass().getResourceAsStream(JOIN_CONFIG_SCHEMA)) {
-      JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
-      return SchemaLoader.load(rawSchema);
-    } catch (Exception e) {
-      throw new ConfigValidationException("Error in loading FeatureDef schema", e);
-    }
-  }
-
-  /*
-   * Loads schema for Presentation config using Everit JSON Schema Validator
-   * (https://github.com/everit-org/json-schema)
-   */
-  private Schema loadPresentationConfigSchema() {
-    try (InputStream inputStream = getClass().getResourceAsStream(PRESENTATION_CONFIG_SCHEMA)) {
-      JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
-      return SchemaLoader.load(rawSchema);
-    } catch (Exception e) {
-      throw new ConfigValidationException("Error in loading PresentationConfig schema", e);
-    }
   }
 }

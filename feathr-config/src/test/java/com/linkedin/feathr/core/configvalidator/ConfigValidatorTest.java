@@ -1,32 +1,22 @@
 package com.linkedin.feathr.core.configvalidator;
 
 import com.linkedin.feathr.core.config.ConfigType;
-import com.linkedin.feathr.core.config.consumer.JoinConfig;
 import com.linkedin.feathr.core.configdataprovider.ConfigDataProvider;
-import com.linkedin.feathr.core.configdataprovider.ResourceConfigDataProvider;
 import com.linkedin.feathr.core.configdataprovider.StringConfigDataProvider;
-import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigParseOptions;
-import com.typesafe.config.ConfigRenderOptions;
-import com.typesafe.config.ConfigSyntax;
-import java.io.InputStream;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.ValidationException;
-import org.everit.json.schema.loader.SchemaLoader;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
-import static com.linkedin.feathr.core.config.ConfigType.*;
-import static com.linkedin.feathr.core.configvalidator.ValidationStatus.*;
-import static com.linkedin.feathr.core.configvalidator.ValidationType.*;
+import static com.linkedin.feathr.core.config.ConfigType.FeatureDef;
+import static com.linkedin.feathr.core.config.ConfigType.Join;
+import static com.linkedin.feathr.core.configvalidator.ValidationStatus.INVALID;
+import static com.linkedin.feathr.core.configvalidator.ValidationStatus.VALID;
+import static com.linkedin.feathr.core.configvalidator.ValidationType.SYNTACTIC;
 import static org.testng.Assert.*;
 
 
@@ -77,23 +67,6 @@ public class ConfigValidatorTest {
     }
   }
 
-  @Test(description = "Tests syntax validation of an invalid FeatureDef config")
-  public void testFeatureDefConfigWithInvalidSyntax() {
-    try (ConfigDataProvider cdp = new StringConfigDataProvider(ConfigValidatorFixture.invalidFeatureDefConfig)) {
-      ValidationResult obsResult = _validator.validate(FeatureDef, SYNTACTIC, cdp);
-
-      assertEquals(obsResult.getValidationStatus(), INVALID);
-      assertTrue(obsResult.getDetails().isPresent());
-      assertTrue(obsResult.getCause().isPresent());
-
-      // Get details and verify that there are no error messages related to (syntactially valid) anchor A3
-      String details = obsResult.getDetails().get();
-      assertFalse(details.contains("#/anchors/A3"));
-    } catch (Exception e) {
-      fail("Caught exception: " + e.getMessage(), e);
-    }
-  }
-
   @Test(description = "Tests syntax validation of a valid Join config")
   public void testJoinConfigWithValidSyntax() {
     List<String> configStrings = Arrays.asList(ConfigValidatorFixture.validJoinConfigWithSingleFeatureBag, ConfigValidatorFixture.validJoinConfigWithMultFeatureBags);
@@ -108,19 +81,6 @@ public class ConfigValidatorTest {
       } catch (Exception e) {
         fail("Caught exception: " + e.getMessage(), e);
       }
-    }
-  }
-
-  @Test(description = "Tests syntax validation of an invalid Join config")
-  public void testJoinConfigWithInvalidSyntax() {
-    try (ConfigDataProvider cdp = new StringConfigDataProvider(ConfigValidatorFixture.invalidJoinConfig)) {
-      ValidationResult obsResult = _validator.validate(Join, SYNTACTIC, cdp);
-
-      assertEquals(obsResult.getValidationStatus(), INVALID);
-      assertTrue(obsResult.getDetails().isPresent());
-      assertTrue(obsResult.getCause().isPresent());
-    } catch (Exception e) {
-      fail("Caught exception: " + e.getMessage(), e);
     }
   }
 
