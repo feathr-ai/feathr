@@ -101,6 +101,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
       df
     } catch {
       case _: Throwable =>
+        log.error(s"Loading ${location} failed with error ${_.toString}, will try load as csv.")
         try {
          ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(dataPath)
         } catch {
@@ -110,11 +111,15 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
             if (retry > 0) {
               Thread.sleep(retryWaitTime)
               loadDataFrameWithRetry(dataIOParameters, jobConf, retry - 1)
-            } else {
+            } 
+            else if(initialNumOfRetries > 0 ){
               // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
               throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} after ${initialNumOfRetries} retries" +
-                s" and retry time of ${retryWaitTime}ms.")
+                s" and retry time of ${retryWaitTime}ms. Error: ${_.toString} and ${e.toString}")
             }
+            else {
+              throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} with Error: ${_.toString} and ${e.toString}")
+            } 
         }
     }
   }
