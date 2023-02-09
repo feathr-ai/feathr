@@ -477,12 +477,12 @@ def get_online_test_table_name(table_name: str):
     print("The online Redis table is", res_table)
     return res_table
 
-def time_partition_pattern_feature_gen_test_setup(config_path: str, data_source_path: str, resolution: str = 'DAILY', postfix_path: str = ""):
+def time_partition_pattern_feature_gen_test_setup(config_path: str, data_source_path: str, local_workspace_dir: str = None, resolution: str = 'DAILY', postfix_path: str = ""):
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
     os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
     os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
-    client = FeathrClient(config_path=config_path)
+    client = FeathrClient(config_path=config_path, local_workspace_dir=local_workspace_dir)
 
     if resolution == 'DAILY':
         if postfix_path != "":
@@ -524,12 +524,12 @@ def time_partition_pattern_feature_gen_test_setup(config_path: str, data_source_
     client.build_features(anchor_list=[agg_anchor])
     return client
 
-def time_partition_pattern_feature_join_test_setup(config_path: str, data_source_path: str, resolution: str = 'DAILY', postfix_path: str = ""):
+def time_partition_pattern_feature_join_test_setup(config_path: str, data_source_path: str, local_workspace_dir: str = None, resolution: str = 'DAILY', postfix_path: str = ""):
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
     os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
     os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
-    client = FeathrClient(config_path=config_path)
+    client = FeathrClient(config_path=config_path, local_workspace_dir=local_workspace_dir)
     
     if postfix_path == "":
         if resolution == 'DAILY':
