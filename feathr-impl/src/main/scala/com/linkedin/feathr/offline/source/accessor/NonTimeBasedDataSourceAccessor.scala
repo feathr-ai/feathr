@@ -34,15 +34,21 @@ private[offline] class NonTimeBasedDataSourceAccessor(
   override def get(): DataFrame = {
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
     println(s"NonTimeBasedDataSourceAccessor loading source ${source.location}")
-    val df = source.location match {
-      case SimplePath(_) => List(source.path).map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
-      case PathList(paths) => paths.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
-      case Jdbc(_, _, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
-      case GenericLocation(_, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
-      case SparkSqlLocation(_, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
-      case Snowflake(_, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
-      case _ => fileLoaderFactory.createFromLocation(source.location).loadDataFrame()
-    }
+    val df =
+      try {
+        source.location match {
+          case SimplePath(_) => List(source.path).map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
+          case PathList(paths) => paths.map(fileLoaderFactory.create(_).loadDataFrame()).reduce((x, y) => x.fuzzyUnion(y))
+          case Jdbc(_, _, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
+          case GenericLocation(_, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
+          case SparkSqlLocation(_, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
+          case Snowflake(_, _, _, _) => source.location.loadDf(SparkSession.builder().getOrCreate())
+          case _ => fileLoaderFactory.createFromLocation(source.location).loadDataFrame()
+        }
+      } catch {
+        case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
+          SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) ss.emptyDataFrame else throw e
+      }
 
     if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
       println()
