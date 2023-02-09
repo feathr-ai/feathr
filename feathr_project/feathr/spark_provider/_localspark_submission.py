@@ -31,7 +31,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         debug_folder: str = "debug",
         clean_up: bool = True,
         retry: int = 3,
-        retry_sec: int = 5,
+        retry_sec: int = 30,
     ):
         """Initialize the Local Spark job launcher"""
         self.workspace_path = (workspace_path,)
