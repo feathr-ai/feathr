@@ -49,10 +49,10 @@ Most of the incompatibilities are due to the fact that the online service is des
 The online service does support exploding and (limited) left joining, then some limited aggregation functions are supported. But they have different syntax and semantics from the Spark ones so cannot be translated from the feature definitions directly.
 
 
-    [^1]: The online service has its own aggregation functions, but it's different from the Spark symantec.
+[^1]: The online service has its own aggregation functions, but it's different from the Spark symantec.
     
-    [^2]: The online service has its own limited joining implementation, but with different syntax.
+[^2]: The online service has its own limited joining implementation, but with different syntax.
     
-    [^3]: UDFs are not supported in the online service because Feathr UDFs are the mappings between DataFrames, which is Spark/Pandas specific. The online transformation has its own UDF support, details can be found at the [Online Transformation Python Package Doc](https://github.com/feathr-ai/feathr-online/tree/main/python). 
+[^3]: UDFs are not supported in the online service because Feathr UDFs are the mappings between DataFrames, which is Spark/Pandas specific. The online transformation has its own UDF support, details can be found at the [Online Transformation Python Package Doc](https://github.com/feathr-ai/feathr-online/tree/main/python). 
 
-    [^4]: The `time` and `timestamp` types are not supported, use `datetime` instead, the `binary` type is not supported, use `string` instead. The `struct` type is not supported, use `map` instead when possible. There is no `decimal` type in the online service, use `double` instead.
+[^4]: The `time` and `timestamp` types are not supported, use `datetime` instead, the `binary` type is not supported, use `string` instead. The `struct` type is not supported, use `map` instead when possible. There is no `decimal` type in the online service, use `double` instead.
