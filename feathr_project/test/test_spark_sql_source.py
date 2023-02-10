@@ -25,9 +25,10 @@ def test_feathr_spark_sql_query_source():
         __file__).parent.resolve() / "test_user_workspace"
     config_path = os.path.join(test_workspace_dir, "feathr_config.yaml")
 
+    _materialize_to_offline(config_path, _sql_query_source())
     _get_offline_features(config_path, _sql_query_source())
     _get_offline_features(config_path, _sql_table_source())
-    _materialize_to_offline(config_path, _sql_query_source())
+    
 
 
 @pytest.mark.skipif(os.environ.get('SPARK_CONFIG__SPARK_CLUSTER') != "local", reason="this test uses local spark")
@@ -41,9 +42,10 @@ def test_feathr_spark_sql_in_local():
     # use values to avoid a table dependency
     sql_query = "select VendorID,lpep_pickup_datetime,lpep_dropoff_datetime,store_and_fwd_flag,RatecodeID,PULocationID,DOLocationID,passenger_count,trip_distance,fare_amount,extra,mta_tax,tip_amount,tolls_amount,ehail_fee,improvement_surcharge,total_amount,payment_type,trip_type,congestion_surcharge from Values(2,'2020-04-01 00:44:02','2020-04-01 00:52:23','N',1,42,41,1,1.68,8,0.5,0.5,0,0,'',0.3,9.3,1,1,0),(2,'2020-04-01 00:24:39','2020-04-01 00:33:06','N',1,244,247,2,1.94,9,0.5,0.5,0,0,'',0.3,10.3,2,1,0) as data(VendorID,lpep_pickup_datetime,lpep_dropoff_datetime,store_and_fwd_flag,RatecodeID,PULocationID,DOLocationID,passenger_count,trip_distance,fare_amount,extra,mta_tax,tip_amount,tolls_amount,ehail_fee,improvement_surcharge,total_amount,payment_type,trip_type,congestion_surcharge)"
     sql_query_source = SparkSqlSource(name="sparkSqlQuerySource", sql=sql_query, event_timestamp_column="lpep_dropoff_datetime", timestamp_format="yyyy-MM-dd HH:mm:ss")
-
-    _get_offline_features(config_path, sql_query_source)
+    
     _materialize_to_offline(config_path, sql_query_source)
+    _get_offline_features(config_path, sql_query_source)
+    
     
 
 def _get_offline_features(config_path: str, sql_source: SparkSqlSource):
