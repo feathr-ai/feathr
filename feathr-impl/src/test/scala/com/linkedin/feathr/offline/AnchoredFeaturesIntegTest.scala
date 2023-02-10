@@ -280,7 +280,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
   }
 
   /*
-   * Test skip anchored features.
+   * Test skipping combination of anchored, derived and swa features.
    */
   @Test
   def testSkipAnchoredFeatures: Unit = {
@@ -288,13 +288,43 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     val df = runLocalFeatureJoinForTest(
       joinConfigAsString =
         """
+          |settings: {
+          |  joinTimeSettings: {
+          |    timestampColumn: {
+          |       def: "timestamp"
+          |       format: "yyyy-MM-dd"
+          |    }
+          |    simulateTimeDelay: 1d
+          |  }
+          |}
+          |
           | features: {
           |   key: a_id
-          |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "derived_featureWithNull2"]
+          |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "derived_featureWithNull2",
+          |    "aEmbedding", "memberEmbeddingAutoTZ"]
           | }
       """.stripMargin,
       featureDefAsString =
         """
+          | sources: {
+          |  swaSource: {
+          |    location: { path: "generaion/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |  swaSource1: {
+          |    location: { path: "generation/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |}
+          |
           | anchors: {
           |  anchor1: {
           |    source: "anchorAndDerivations/nullVaueSource.avro.json"
@@ -310,6 +340,34 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |      featureWithNull2: "isPresent(value) ? toNumeric(value) : 0"
           |    }
           |  }
+          |  swaAnchor: {
+          |    source: "swaSource"
+          |    key: "x"
+          |    features: {
+          |      aEmbedding: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |  swaAnchor1: {
+          |    source: "swaSource1"
+          |    key: "x"
+          |    features: {
+          |      memberEmbeddingAutoTZ: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |        type: {
+          |          type: TENSOR
+          |          tensorCategory: SPARSE
+          |          dimensionType: [INT]
+          |          valType: FLOAT
+          |        }
+          |      }
+          |    }
+          |  }
           |}
           |derivations: {
           |
@@ -323,6 +381,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     assertTrue(!df.data.columns.contains("derived_featureWithNull"))
     assertTrue(df.data.columns.contains("derived_featureWithNull2"))
     assertTrue(df.data.columns.contains("featureWithNull2"))
+    assertTrue(!df.data.columns.contains("aEmbedding"))
+    assertTrue(df.data.columns.contains("memberEmbeddingAutoTZ"))
     SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, false)
   }
 

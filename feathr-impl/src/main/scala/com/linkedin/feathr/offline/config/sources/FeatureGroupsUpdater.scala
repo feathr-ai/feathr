@@ -111,7 +111,7 @@ private[offline] class FeatureGroupsUpdater {
   }
 
   /**
-   * Update the feature groups (for Feature gen) based on feature missing features. Few anchored features can be missing if the feature data
+   * Update the feature groups (for Feature join) based on feature missing features. Few anchored features can be missing if the feature data
    * is not present. Remove those anchored features, and also the corresponding derived feature which are dependent on it.
    *
    * @param featureGroups
@@ -119,10 +119,12 @@ private[offline] class FeatureGroupsUpdater {
    * @param keyTaggedFeatures
    * @return
    */
-  def getUpdatedFeatureGroupsForJoin(featureGroups: FeatureGroups, allStageFeatures: Seq[String],
+  def getUpdatedFeatureGroupsForJoin(featureGroups: FeatureGroups, allAnchoredFeaturesWithData: Seq[String],
     keyTaggedFeatures: Seq[JoiningFeatureParams]): (FeatureGroups, Seq[JoiningFeatureParams]) = {
+
+    // We need to add the window agg features to it as they are also considered anchored features.
     val updatedAnchoredFeatures = featureGroups.allAnchoredFeatures.filter(featureRow =>
-      allStageFeatures.contains(featureRow._1)) ++ featureGroups.allWindowAggFeatures ++ featureGroups.allPassthroughFeatures
+      allAnchoredFeaturesWithData.contains(featureRow._1)) ++ featureGroups.allWindowAggFeatures ++ featureGroups.allPassthroughFeatures
 
     val updatedSeqJoinFeature = featureGroups.allSeqJoinFeatures.filter(seqJoinFeature => {
       // Find the constituent anchored features for every derived feature
