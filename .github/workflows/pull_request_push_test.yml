@@ -257,6 +257,7 @@ jobs:
         run: |
           # skip cloud related tests
           pytest --cov-report term-missing --cov=feathr_project/feathr/spark_provider feathr_project/test/test_local_spark_e2e.py --cov-config=.github/workflows/.coveragerc_local
+          pytest --cov-report term-missing --cov=feathr_project/feathr/spark_provider feathr_project/test/test_spark_sql_source.py --cov-config=.github/workflows/.coveragerc_local
   
   registry_test:
     runs-on: ubuntu-latest
