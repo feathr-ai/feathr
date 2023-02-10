@@ -75,6 +75,9 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             expectDatumType = Some(expectDatumType),
             failOnMissingPartition = failOnMissingPartition,
             dataPathHandlers = dataPathHandlers)
+
+          // If it is a nonTime based source, we will load the dataframe at runtime, however this is too late to decide if the
+          // feature should be skipped. So, we will try to take the first row here, and see if it succeeds.
           if (dataSource.isInstanceOf[NonTimeBasedDataSourceAccessor] && (shouldSkipFeature || (ss.sparkContext.isLocal &&
             SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)))) {
             if (dataSource.get().take(1).isEmpty) None else {

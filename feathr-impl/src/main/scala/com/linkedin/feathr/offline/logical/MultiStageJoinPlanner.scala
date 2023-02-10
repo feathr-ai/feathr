@@ -38,7 +38,7 @@ private[offline] class MultiStageJoinPlanner extends LogicalPlanner[MultiStageJo
     log.info(s"allRequestedFeatures: $allRequestedFeatures, keyTagIntsToStrings: $keyTagIntsToStrings")
 
     // Resolve feature dependencies
-    val  allRequiredFeatures = getDependencyOrdering(featureGroups.allAnchoredFeatures, featureGroups.allDerivedFeatures, allRequestedFeatures)
+    val allRequiredFeatures = getDependencyOrdering(featureGroups.allAnchoredFeatures, featureGroups.allDerivedFeatures, allRequestedFeatures)
     log.info(s"allRequiredFeatures: $allRequiredFeatures")
 
     // Plan the join stages required to resolve all these features
