@@ -71,9 +71,12 @@ object BaseDerivedFeatureOperator {
         // Sort by input feature name to be consistent with how the derivation function is created.
         val featureValues = contextFeatureValues.toSeq.sortBy(_._1).map(fv => Option(fv._2))
         val derivedFunc = derivationFunction match {
-          case derivedFunc: MvelFeatureDerivationFunction =>
-            derivedFunc.mvelContext = mvelContext
-            derivedFunc
+          case a: MvelFeatureDerivationFunction =>
+            a.mvelContext = mvelContext
+            a
+          case b: SimpleMvelDerivationFunction =>
+            b.mvelContext = mvelContext
+            b
           case func => func
         }
         val unlinkedOutput = derivedFunc.getFeatures(featureValues)
