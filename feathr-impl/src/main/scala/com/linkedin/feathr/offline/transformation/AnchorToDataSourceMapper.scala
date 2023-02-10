@@ -10,8 +10,7 @@ import com.linkedin.feathr.offline.config.location.{DataLocation, PathList, Simp
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
 import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.source.DataSource
-import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
-import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.accessor.{DataPathHandler, DataSourceAccessor, NonTimeBasedDataSourceAccessor}
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
@@ -70,12 +69,20 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             }
         }
         val timeSeriesSource = try {
-          Some(DataSourceAccessor(ss = ss,
+          val dataSource = DataSourceAccessor(ss = ss,
             source = source,
             dateIntervalOpt = dateInterval,
             expectDatumType = Some(expectDatumType),
             failOnMissingPartition = failOnMissingPartition,
-            dataPathHandlers = dataPathHandlers))
+            dataPathHandlers = dataPathHandlers)
+          if (dataSource.isInstanceOf[NonTimeBasedDataSourceAccessor] && (shouldSkipFeature || (ss.sparkContext.isLocal &&
+            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)))) {
+            if (dataSource.get().take(1).isEmpty) None else {
+              Some(dataSource)
+            }
+          } else {
+            Some(dataSource)
+          }
         } catch {
           case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
             SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) None else throw e
