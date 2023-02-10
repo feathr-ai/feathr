@@ -191,12 +191,12 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         .toIndexedSeq
         .map(featureGroups.allAnchoredFeatures),
       failOnMissingPartition)
-    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val shouldSkipFeature = (FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean) ||
+      (ss.sparkContext.isLocal && SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))
     val updatedSourceAccessorMap = anchorSourceAccessorMap.filter(anchorEntry => anchorEntry._2.isDefined)
       .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
-    val (updatedFeatureGroups, updatedKeyTaggedFeatures, updatedLogicalPlan) = if (shouldSkipFeature || (ss.sparkContext.isLocal &&
-      SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) {
+    val (updatedFeatureGroups, updatedKeyTaggedFeatures, updatedLogicalPlan) = if (shouldSkipFeature) {
       val (newFeatureGroups, newKeyTaggedFeatures) = FeatureGroupsUpdater().getUpdatedFeatureGroupsForJoin(featureGroups,
         updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, keyTaggedFeatures)
 
