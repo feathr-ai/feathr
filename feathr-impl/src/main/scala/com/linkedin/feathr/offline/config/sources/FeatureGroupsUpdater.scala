@@ -119,7 +119,7 @@ private[offline] class FeatureGroupsUpdater {
    * @param keyTaggedFeatures
    * @return
    */
-  def getUpdatedFeatureGroupsForJoin(featureGroups: FeatureGroups, allAnchoredFeaturesWithData: Seq[String],
+  def removeMissingFeatures(featureGroups: FeatureGroups, allAnchoredFeaturesWithData: Seq[String],
     keyTaggedFeatures: Seq[JoiningFeatureParams]): (FeatureGroups, Seq[JoiningFeatureParams]) = {
 
     // We need to add the window agg features to it as they are also considered anchored features.

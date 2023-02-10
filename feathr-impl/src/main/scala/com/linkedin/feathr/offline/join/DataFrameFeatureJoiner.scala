@@ -196,13 +196,13 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
     val updatedSourceAccessorMap = anchorSourceAccessorMap.filter(anchorEntry => anchorEntry._2.isDefined)
       .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
-    val (updatedFeatureGroups, updatedKeyTaggedFeatures, updatedLogicalPlan) = if (shouldSkipFeature) {
-      val (newFeatureGroups, newKeyTaggedFeatures) = FeatureGroupsUpdater().getUpdatedFeatureGroupsForJoin(featureGroups,
+    val (updatedFeatureGroups, updatedLogicalPlan) = if (shouldSkipFeature) {
+      val (newFeatureGroups, newKeyTaggedFeatures) = FeatureGroupsUpdater().removeMissingFeatures(featureGroups,
         updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, keyTaggedFeatures)
 
       val newLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(newFeatureGroups, newKeyTaggedFeatures)
-      (newFeatureGroups, newKeyTaggedFeatures, newLogicalPlan)
-    } else (featureGroups, keyTaggedFeatures, logicalPlan)
+      (newFeatureGroups, newLogicalPlan)
+    } else (featureGroups, logicalPlan)
 
     implicit val joinExecutionContext: JoinExecutionContext =
       JoinExecutionContext(ss, updatedLogicalPlan, updatedFeatureGroups, bloomFilters, Some(saltedJoinFrequentItemDFs))
