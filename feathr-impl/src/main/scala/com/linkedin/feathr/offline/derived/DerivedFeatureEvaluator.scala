@@ -149,12 +149,12 @@ private[offline] object DerivedFeatureEvaluator {
       val keyedContextFeatureValues = contextFeatureValues.map(kv => (kv._1.getErasedTagFeatureName, kv._2))
       val resolvedInputArgs = linkedInputParams.map(taggedFeature => keyedContextFeatureValues.get(taggedFeature.getErasedTagFeatureName).flatMap(Option(_)))
       val derivedFunc = derivedFeature.getAsFeatureDerivationFunction match {
-        case a: MvelFeatureDerivationFunction =>
-          a.mvelContext = mvelContext
-          a
-        case b: SimpleMvelDerivationFunction =>
-          b.mvelContext = mvelContext
-          b
+        case mvelDerivedFunc: MvelFeatureDerivationFunction =>
+          mvelDerivedFunc.mvelContext = mvelContext
+          mvelDerivedFunc
+        case simpleMvelDerivedFunc: SimpleMvelDerivationFunction =>
+          simpleMvelDerivedFunc.mvelContext = mvelContext
+          simpleMvelDerivedFunc
         case func => func
       }
       val unlinkedOutput = derivedFunc.getFeatures(resolvedInputArgs)
