@@ -387,6 +387,65 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
   }
 
   /*
+   * Test features with fdsExtract.
+   */
+  @Test
+  def testFeaturesWithFdsExtract: Unit = {
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString =
+        """
+          | features: {
+          |   key: a_id
+          |   featureList: ["featureWithNull"]
+          | }
+      """.stripMargin,
+      featureDefAsString =
+        """
+          | anchors: {
+          |  anchor1: {
+          |    source: "anchorAndDerivations/nullValueSource.avro.json"
+          |    key.sqlExpr: mId
+          |    features: {
+          |      featureWithNull.def.sqlExpr: FDSExtract(value)
+          |    }
+          |  }
+          |}
+        """.stripMargin,
+      observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
+
+    val selectedColumns = Seq("a_id", "featureWithNull")
+    val filteredDf = df.data.select(selectedColumns.head, selectedColumns.tail: _*)
+
+    val expectedDf = ss.createDataFrame(
+      ss.sparkContext.parallelize(
+        Seq(
+          Row(
+            // a_id
+            "1",
+            // featureWithNull
+            1),
+          Row(
+            // a_id
+            "2",
+            // featureWithNull
+            null),
+          Row(
+            // a_id
+            "3",
+            // featureWithNull
+            3))),
+      StructType(
+        List(
+          StructField("a_id", StringType, true),
+          StructField("featureWithNull", IntegerType, true))))
+
+    def cmpFunc(row: Row): String = row.get(0).toString
+
+    FeathrTestUtils.assertDataFrameApproximatelyEquals(filteredDf, expectedDf, cmpFunc)
+  }
+
+
+  /*
    * Test features with null values.
    */
   @Test

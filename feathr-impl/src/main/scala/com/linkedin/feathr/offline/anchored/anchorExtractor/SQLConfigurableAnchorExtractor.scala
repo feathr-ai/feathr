@@ -3,10 +3,11 @@ package com.linkedin.feathr.offline.anchored.anchorExtractor
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.offline.config.SQLFeatureDefinition
-import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.{FeatureColumnFormat, RAW}
+import com.linkedin.feathr.offline.job.FeatureTransformation
+import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.{FDS_TENSOR, FeatureColumnFormat, RAW}
 import com.linkedin.feathr.sparkcommon.SimpleAnchorExtractorSpark
 import org.apache.logging.log4j.LogManager
-import org.apache.spark.sql.functions.expr
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame}
 
@@ -68,7 +69,15 @@ private[offline] class SQLConfigurableAnchorExtractor(
     import org.apache.spark.sql.functions._
     columnNameToFeatureDefs.collect {
       case (featureName, featureDef) if (expectedColSchemas.keySet.contains(featureName)) =>
-        val (rewrittenDef, featureColumnFormat) = (featureDef, RAW)
+        val schema = expectedColSchemas(featureName)
+        val (rewrittenDef, featureColumnFormat) = if (featureDef.contains(FeatureTransformation.USER_FACING_MULTI_DIM_FDS_TENSOR_UDF_NAME)) {
+          // If the feature definition contains USER_FACING_MULTI_DIM_FDS_TENSOR_UDF_NAME then the feature column is already in FDS format.
+          // So we strip the udf name and return only the feature name.
+          (FeatureTransformation.parseMultiDimTensorExpr(featureDef), FDS_TENSOR)
+        } else {
+          // Else, the spark sql transformation is expected to work on RAW format.
+          (featureDef, RAW)
+        }
         ((featureName, expr(rewrittenDef)), featureColumnFormat)
     }
   }
