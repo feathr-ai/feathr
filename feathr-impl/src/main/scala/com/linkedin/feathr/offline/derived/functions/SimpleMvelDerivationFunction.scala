@@ -6,7 +6,7 @@ import com.linkedin.feathr.offline.FeatureValue
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.mvel.{FeatureVariableResolverFactory, MvelContext, MvelUtils}
 import com.linkedin.feathr.offline.testfwk.TestFwkUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.mvel2.MVEL
 
 import scala.collection.convert.wrapAll._
@@ -18,7 +18,7 @@ import scala.collection.convert.wrapAll._
  */
 private[offline] class SimpleMvelDerivationFunction(expression: String, featureName: String, featureTypeConfigOpt: Option[FeatureTypeConfig] = None)
     extends FeatureDerivationFunction {
-  @transient private lazy val log = Logger.getLogger(getClass)
+  @transient private lazy val log = LogManager.getLogger(getClass)
 
   var mvelContext: Option[FeathrExpressionExecutionContext] = None
   // strictMode should only be modified by FeathrConfigLoader when loading config, default value to be false

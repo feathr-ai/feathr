@@ -2,8 +2,9 @@ package com.linkedin.feathr.offline.config.sources
 
 import com.linkedin.feathr.common.{DateParam, JoiningFeatureParams}
 import com.linkedin.feathr.offline.TestFeathr
-import com.linkedin.feathr.offline.config.{FeatureGroupsGenerator, FeathrConfigLoader}
-import org.testng.Assert.assertEquals
+import com.linkedin.feathr.offline.config.{FeathrConfigLoader, FeatureGroupsGenerator}
+import com.linkedin.feathr.offline.logical.FeatureGroups
+import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.Test
 
 class TestFeatureGroupsUpdater extends TestFeathr {
@@ -109,6 +110,120 @@ class TestFeatureGroupsUpdater extends TestFeathr {
 
     // Ensure that the date params are populated for the anchor feature objects.
     assertEquals(updatedFeatureGroups.allAnchoredFeatures("sampleTimeBasedFeature").dateParam, Some(DateParam(Some("20200707"), Some("20200708"))))
+  }
+
+  /**
+   * This tests the updation of feature groups when an invalid path is found with the skip feature flag turned on.
+   */
+  @Test
+  def testUpdateFeaturesWithInvalidPaths(): Unit = {
+    val featureConfig =
+      """
+        |anchors: {
+        |  sample1: {
+        |      source: source1
+        |      key: "x"
+        |      features: {
+        |        sampleTimeBasedFeature1: {
+        |          def: count
+        |          type: NUMERIC
+        |        }
+        |      }
+        |    }
+        |    sample2: {
+        |      source: source2
+        |      key: "x"
+        |      features: {
+        |        sampleTimeBasedFeature2: {
+        |          def: count
+        |          type: NUMERIC
+        |        }
+        |      }
+        |    }
+        |  }
+        |sources: {
+        |  source1:{
+        |      type: "HDFS"
+        |      location: {
+        |        path: "/feathr/part_a/daily"
+        |      }
+        |  }
+        |  source2:{
+        |      type: "HDFS"
+        |      location: {
+        |        path: "/invalid/path"
+        |      }
+        |  }
+        |}
+      """.stripMargin
+
+    val featureDefConfig = _feathrConfigLoader.load(featureConfig)
+    val featureGroups = FeatureGroupsGenerator(Seq(featureDefConfig)).getFeatureGroups()
+    val featureToPathsMap = Map("sampleTimeBasedFeature1" -> "/feathr/part_a/daily", "sampleTimeBasedFeature2" -> "/invalid/path")
+    val invalidPaths = Seq("/invalid/path")
+    val updatedFeatureGroups = FeatureGroupsUpdater().getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap, featureGroups, invalidPaths)
+    assertTrue(updatedFeatureGroups.allAnchoredFeatures.size == 1)
+    assertTrue(updatedFeatureGroups.allAnchoredFeatures.contains("sampleTimeBasedFeature1"))
+  }
+
+  /**
+   * This tests the updation of feature groups when an invalid path is found with the skip feature flag turned on.
+   */
+  @Test
+  def testUpdateFeaturesWithInvalidPathsWithDerived(): Unit = {
+    val featureConfig =
+      """
+        |anchors: {
+        |  sample1: {
+        |      source: source1
+        |      key: "x"
+        |      features: {
+        |        sampleTimeBasedFeature1: {
+        |          def: count
+        |          type: NUMERIC
+        |        }
+        |      }
+        |    }
+        |    sample2: {
+        |      source: source2
+        |      key: "x"
+        |      features: {
+        |        sampleTimeBasedFeature2: {
+        |          def: count
+        |          type: NUMERIC
+        |        }
+        |      }
+        |    }
+        |  }
+        |
+        |derivations: {
+        |   d1: "sampleTimeBasedFeature1 + sampleTimeBasedFeature2"
+        |}
+        |
+        |sources: {
+        |  source1:{
+        |      type: "HDFS"
+        |      location: {
+        |        path: "/feathr/part_a/daily"
+        |      }
+        |  }
+        |  source2:{
+        |      type: "HDFS"
+        |      location: {
+        |        path: "/invalid/path"
+        |      }
+        |  }
+        |}
+      """.stripMargin
+
+    val featureDefConfig = _feathrConfigLoader.load(featureConfig)
+    val featureGroups = FeatureGroupsGenerator(Seq(featureDefConfig)).getFeatureGroups()
+    val featureToPathsMap = Map("sampleTimeBasedFeature1" -> "/feathr/part_a/daily", "sampleTimeBasedFeature2" -> "/invalid/path")
+    val invalidPaths = Seq("/invalid/path")
+    val updatedFeatureGroups = FeatureGroupsUpdater().getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap, featureGroups, invalidPaths)
+    assertTrue(updatedFeatureGroups.allAnchoredFeatures.size == 1)
+    assertTrue(updatedFeatureGroups.allAnchoredFeatures.contains("sampleTimeBasedFeature1"))
+    assertTrue(updatedFeatureGroups.allDerivedFeatures.isEmpty)
   }
 
   /**

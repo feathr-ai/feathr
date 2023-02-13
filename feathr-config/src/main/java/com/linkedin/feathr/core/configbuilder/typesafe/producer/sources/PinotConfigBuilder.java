@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.sources.PinotConfig.*;
 
@@ -17,7 +18,7 @@ import static com.linkedin.feathr.core.config.producer.sources.PinotConfig.*;
  * Builds {@link PinotConfig} objects
  */
 public class PinotConfigBuilder {
-  private final static Logger logger = Logger.getLogger(PinotConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(PinotConfigBuilder.class);
   private final static String QUERY_ARGUMENT_PLACEHOLDER = "?";
 
   private PinotConfigBuilder() {

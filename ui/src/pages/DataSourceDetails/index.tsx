@@ -8,26 +8,24 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 
 import { fetchDataSource } from '@/api'
 import CardDescriptions from '@/components/CardDescriptions'
+import { observer, useStore } from '@/hooks'
 import { DataSource } from '@/models/model'
 import { SourceAttributesMap } from '@/utils/attributesMapping'
 
 const DataSourceDetails = () => {
   const navigate = useNavigate()
-
-  const { project = '', dataSourceId = '' } = useParams()
+  const { globalStore } = useStore()
+  const { project } = globalStore
+  const { id = '' } = useParams()
 
   const {
     isLoading,
     error,
     data = { attributes: {} } as DataSource
-  } = useQuery<DataSource, AxiosError>(
-    ['dataSourceId', dataSourceId],
-    () => fetchDataSource(project, dataSourceId),
-    {
-      retry: false,
-      refetchOnWindowFocus: false
-    }
-  )
+  } = useQuery<DataSource, AxiosError>(['dataSourceId', id], () => fetchDataSource(project, id), {
+    retry: false,
+    refetchOnWindowFocus: false
+  })
 
   const { attributes } = data
 
@@ -37,7 +35,7 @@ const DataSourceDetails = () => {
         breadcrumb={
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Link to={`/dataSources?project=${project}`}>Data Sources</Link>
+              <Link to={`/${project}/datasources`}>Data Sources</Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item>Data Source Attributes</Breadcrumb.Item>
           </Breadcrumb>
@@ -48,7 +46,7 @@ const DataSourceDetails = () => {
             ghost
             type="primary"
             onClick={() => {
-              navigate(`/features?project=${project}`)
+              navigate(`/${project}/features`)
             }}
           >
             View Features
@@ -57,7 +55,7 @@ const DataSourceDetails = () => {
             key="2"
             type="primary"
             onClick={() => {
-              navigate(`/projects/${project}/lineage`)
+              navigate(`/${project}/lineage`)
             }}
           >
             View Lineage
@@ -77,4 +75,4 @@ const DataSourceDetails = () => {
   )
 }
 
-export default DataSourceDetails
+export default observer(DataSourceDetails)

@@ -15,7 +15,7 @@ import com.linkedin.feathr.offline.util.{CmdLineParser, FeathrUtils, OptionParam
 import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import org.apache.avro.generic.GenericRecord
 import org.apache.commons.cli.{Option => CmdOption}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -25,7 +25,7 @@ import scala.collection.mutable
 object FeatureGenJob {
 
   type ApplicationConfigPath = String
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
   /**
    * Parse command line arguments, which includes application config,
    * Feathr feature definition configs and other settings
@@ -231,17 +231,16 @@ object FeatureGenJob {
       sparkSession,
       allAnchoredFeatures.values.toSeq,
       failOnMissing)
+    val updatedAnchorsWithSource = anchorsWithSource.filter(anchorEntry => anchorEntry._2.isDefined).map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
+    if (updatedAnchorsWithSource.isEmpty) return featureNamesInAnchorSet.asScala.map(featureName => featureName -> sparkSession.emptyDataFrame).toMap.asJava
 
     // Only load DataFrames for anchors that have preprocessing UDF
     // So we filter out anchors that doesn't have preprocessing UDFs
     // We use feature names sorted and merged as the key to find the anchor
     // For example, f1, f2 belongs to anchor. Then Map("f1,f2"-> anchor)
-    val dataFrameMapForPreprocessing = anchorsWithSource
+    updatedAnchorsWithSource
       .filter(x => featureNamesInAnchorSet.contains(x._1.featureAnchor.features.toSeq.sorted.mkString(",")))
-      .map(x => (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get()))
-
-    // Pyspark only understand Java map so we need to convert Scala map back to Java map.
-    dataFrameMapForPreprocessing.asJava
+      .map(x => (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get())).asJava
   }
 
   def prepareSparkSession(args: Array[String]): FeathrGenPreparationInfo = {

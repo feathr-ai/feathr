@@ -235,11 +235,6 @@ class _FeathrDatabricksJobLauncher(SparkJobLauncher):
             # else you will get List Index Out of Bound exception
             # Example from feathr_config.yaml -
             # config_template: {"run_name":"FEATHR_FILL_IN",.....,"libraries":[{}, {}],".......}
-
-            submission_params["libraries"][1]["maven"]= {
-                "coordinates": "com.github.everit-org.json-schema:org.everit.json.schema:1.9.1",
-                "repo":"https://repository.mulesoft.org/nexus/content/repositories/public/"
-                }
         else:
             submission_params["libraries"][0]["jar"] = self.upload_or_get_cloud_path(
                 main_jar_path)

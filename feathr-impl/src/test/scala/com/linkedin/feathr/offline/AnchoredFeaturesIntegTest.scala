@@ -4,11 +4,12 @@ import com.linkedin.feathr.common.configObj.configbuilder.ConfigBuilderException
 import com.linkedin.feathr.common.exception.FeathrConfigException
 import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.generation.SparkIOUtils
-import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
+import com.linkedin.feathr.offline.job.{LocalFeatureJoinJob, PreprocessedDataFrameManager}
 import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
 import org.testng.Assert.assertTrue
 import org.testng.annotations.{BeforeClass, Test}
@@ -276,6 +277,113 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     def cmpFunc(row: Row): String = row.get(0).toString
     filteredDf.show(10)
     // FeathrTestUtils.assertDataFrameApproximatelyEquals(filteredDf, expectedDf, cmpFunc)
+  }
+
+  /*
+   * Test skipping combination of anchored, derived and swa features.
+   */
+  @Test
+  def testSkipAnchoredFeatures: Unit = {
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString =
+        """
+          |settings: {
+          |  joinTimeSettings: {
+          |    timestampColumn: {
+          |       def: "timestamp"
+          |       format: "yyyy-MM-dd"
+          |    }
+          |    simulateTimeDelay: 1d
+          |  }
+          |}
+          |
+          | features: {
+          |   key: a_id
+          |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "derived_featureWithNull2",
+          |    "aEmbedding", "memberEmbeddingAutoTZ"]
+          | }
+      """.stripMargin,
+      featureDefAsString =
+        """
+          | sources: {
+          |  swaSource: {
+          |    location: { path: "generaion/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |  swaSource1: {
+          |    location: { path: "generation/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |}
+          |
+          | anchors: {
+          |  anchor1: {
+          |    source: "anchorAndDerivations/nullVaueSource.avro.json"
+          |    key: "toUpperCaseExt(mId)"
+          |    features: {
+          |      featureWithNull: "isPresent(value) ? toNumeric(value) : 0"
+          |    }
+          |  }
+          |  anchor2: {
+          |    source: "anchorAndDerivations/nullValueSource.avro.json"
+          |    key: "toUpperCaseExt(mId)"
+          |    features: {
+          |      featureWithNull2: "isPresent(value) ? toNumeric(value) : 0"
+          |    }
+          |  }
+          |  swaAnchor: {
+          |    source: "swaSource"
+          |    key: "x"
+          |    features: {
+          |      aEmbedding: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |  swaAnchor1: {
+          |    source: "swaSource1"
+          |    key: "x"
+          |    features: {
+          |      memberEmbeddingAutoTZ: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |        type: {
+          |          type: TENSOR
+          |          tensorCategory: SPARSE
+          |          dimensionType: [INT]
+          |          valType: FLOAT
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+          |derivations: {
+          |
+          | derived_featureWithNull: "featureWithNull * 2"
+          | derived_featureWithNull2: "featureWithNull2 * 2"
+          |}
+        """.stripMargin,
+      observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
+
+    assertTrue(!df.data.columns.contains("featureWithNull"))
+    assertTrue(!df.data.columns.contains("derived_featureWithNull"))
+    assertTrue(df.data.columns.contains("derived_featureWithNull2"))
+    assertTrue(df.data.columns.contains("featureWithNull2"))
+    assertTrue(!df.data.columns.contains("aEmbedding"))
+    assertTrue(df.data.columns.contains("memberEmbeddingAutoTZ"))
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, false)
   }
 
   /*

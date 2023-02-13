@@ -136,7 +136,7 @@ export const useForm = (form: FormInstance<any>, projectStr?: string) => {
         guid = data.guid
       }
       message.success('New feature created')
-      navigate(`/projects/${project}/features/${guid}`)
+      navigate(`/${project}/features/${guid}`)
     } catch (err: any) {
       message.error(err.detail || err.message)
     } finally {

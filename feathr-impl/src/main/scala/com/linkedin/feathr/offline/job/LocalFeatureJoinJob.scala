@@ -10,6 +10,7 @@ import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import com.linkedin.feathr.offline.util.FeathrTestUtils.createSparkSession
 import com.linkedin.feathr.offline.util.{FeaturizedDatasetMetadata, SparkFeaturizedDataset}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.internal.SQLConf
 
 /**
  * This object is used to help user to test/debug their workflow locally with sample data. This class serves as a
@@ -20,6 +21,17 @@ object LocalFeatureJoinJob {
   // for user convenience, create spark session within this function, so user does not need to create one
   // this also ensure it has same setting as the real feathr join job
   val ss: SparkSession = createSparkSession(enableHiveSupport = true)
+  val SKIP_MISSING_FEATURE = SQLConf
+    .buildConf("spark.feathr.skip.missing.feature")
+    .doc("Whether to skip features if data is missing.")
+    .booleanConf
+    .createWithDefault(false)
+
+  val MAX_DATA_LOAD_RETRY = SQLConf
+    .buildConf("spark.feathr.max.data.load.retry")
+    .doc("Number of retries if data is missing.")
+    .intConf
+    .createWithDefault(0)
 
   /**
    * local debug API, used in unit test and local debug

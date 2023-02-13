@@ -2,17 +2,18 @@ package com.linkedin.feathr.offline.client
 
 import com.linkedin.feathr.common.exception._
 import com.linkedin.feathr.common.{FeatureInfo, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
+import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig}
 import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, FeatureGenKeyTagAnalyzer, StreamingFeatureGenerator}
 import com.linkedin.feathr.offline.job._
 import com.linkedin.feathr.offline.join.DataFrameFeatureJoiner
-import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlanner}
+import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.util._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.internal.SQLConf
 
@@ -29,7 +30,7 @@ import scala.util.{Failure, Success}
  */
 class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: FeatureGroups, logicalPlanner: MultiStageJoinPlanner,
   featureGroupsUpdater: FeatureGroupsUpdater, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext]) {
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   type KeyTagStringTuple = Seq[String]
   private[offline] val allAnchoredFeatures = featureGroups.allAnchoredFeatures
@@ -235,17 +236,29 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
      */
     val updatedFeatureGroups = featureGroupsUpdater.updateFeatureGroups(featureGroups, keyTaggedFeatures)
 
-    val logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
-
+    var logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val featureToPathsMap = (for {
+      requiredFeature <- logicalPlan.allRequiredFeatures
+      featureAnchorWithSource <- allAnchoredFeatures.get(requiredFeature.getFeatureName)
+    } yield (requiredFeature.getFeatureName -> featureAnchorWithSource.source.path)).toMap
     if (!sparkSession.sparkContext.isLocal) {
       // Check read authorization for all required features
-      AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures) match {
-        case Failure(exception) =>
-          throw new FeathrInputDataException(
-            ErrorLabel.FEATHR_USER_ERROR,
-            "Unable to verify " +
-              "read authorization on feature data, it can be due to the following reasons: 1) input not exist, 2) no permission.",
-            exception)
+      val featurePathsTest = AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures)
+      featurePathsTest._1 match {
+        case Failure(exception) => // If skip feature, remove the corresponding anchored feature from the feature group and produce a new logical plan
+          if (shouldSkipFeature || (sparkSession.sparkContext.isLocal &&
+            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) {
+            val featureGroupsWithoutInvalidFeatures = FeatureGroupsUpdater()
+              .getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap, updatedFeatureGroups, featurePathsTest._2)
+            logicalPlanner.getLogicalPlan(featureGroupsWithoutInvalidFeatures, keyTaggedFeatures)
+          } else {
+            throw new FeathrInputDataException(
+              ErrorLabel.FEATHR_USER_ERROR,
+              "Unable to verify " +
+                "read authorization on feature data, it can be due to the following reasons: 1) input not exist, 2) no permission.",
+              exception)
+          }
         case Success(_) => log.debug("Checked read authorization on all feature data")
       }
     }

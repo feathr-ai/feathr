@@ -5,7 +5,7 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrFeatureJoinExcept
 import com.linkedin.feathr.offline.join.algorithms.JoinType.JoinType
 import com.linkedin.feathr.offline.join.util.{FrequentItemEstimator, PreComputedFrequentItemEstimator}
 import com.linkedin.feathr.offline.util.FeathrUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.StringType
@@ -131,7 +131,7 @@ private[offline] class SaltedSparkJoin(ss: SparkSession, frequentItemEstimator: 
 }
 
 object SaltedSparkJoin {
-  @transient private lazy val log = Logger.getLogger(getClass.getName)
+  @transient private lazy val log = LogManager.getLogger(getClass.getName)
 
   /**
    * get the frequentItems. If it's cached, just return the cached dataframe. Otherwise calculate using the estimator.

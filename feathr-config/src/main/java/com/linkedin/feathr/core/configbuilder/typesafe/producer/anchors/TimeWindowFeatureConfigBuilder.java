@@ -12,7 +12,8 @@ import com.linkedin.feathr.core.configbuilder.typesafe.producer.common.FeatureTy
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueType;
 import java.time.Duration;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.anchors.FeatureConfig.*;
 
@@ -21,7 +22,7 @@ import static com.linkedin.feathr.core.config.producer.anchors.FeatureConfig.*;
  * Build {@link TimeWindowFeatureConfig} object
  */
 class TimeWindowFeatureConfigBuilder {
-  private final static Logger logger = Logger.getLogger(FeatureConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(FeatureConfigBuilder.class);
 
   private TimeWindowFeatureConfigBuilder() {
   }

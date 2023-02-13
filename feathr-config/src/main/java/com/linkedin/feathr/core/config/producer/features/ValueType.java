@@ -1,7 +1,8 @@
 package com.linkedin.feathr.core.config.producer.features;
 
 import java.util.Optional;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -16,7 +17,7 @@ public enum ValueType {
   BOOLEAN,
   BYTE;
 
-  private static final Logger logger = Logger.getLogger(ValueType.class);
+  private static final Logger logger = LogManager.getLogger(ValueType.class);
 
   public static Optional<ValueType> fromName(String name) {
     ValueType res = null;

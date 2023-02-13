@@ -3,7 +3,8 @@ package com.linkedin.feathr.core.configbuilder.typesafe.producer.sources;
 import com.linkedin.feathr.core.config.producer.sources.HdfsConfig;
 import com.linkedin.feathr.core.configbuilder.ConfigBuilderException;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.sources.HdfsConfig.*;
 import static com.linkedin.feathr.core.config.producer.sources.SlidingWindowAggrConfig.*;
@@ -13,7 +14,7 @@ import static com.linkedin.feathr.core.config.producer.sources.SlidingWindowAggr
  * Builds HdfsConfig objects by delegating to child builders
  */
 class HdfsConfigBuilder {
-  private final static Logger logger = Logger.getLogger(HdfsConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(HdfsConfigBuilder.class);
 
   private HdfsConfigBuilder() {
   }

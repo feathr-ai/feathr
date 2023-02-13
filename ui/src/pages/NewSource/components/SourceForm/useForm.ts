@@ -92,7 +92,7 @@ export const useForm = (form: FormInstance<any>, projectStr?: string) => {
 
       const { data } = await createSource(project, newDatasource)
       message.success('New datasource created')
-      navigate(`/projects/${project}/dataSources/${data.guid}`)
+      navigate(`/${project}/datasources/${data.guid}`)
     } catch (err: any) {
       message.error(err.detail || err.message)
     } finally {

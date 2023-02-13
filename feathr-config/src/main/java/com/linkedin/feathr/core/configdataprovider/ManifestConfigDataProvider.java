@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -44,7 +45,7 @@ import org.apache.log4j.Logger;
  *  necessitate changes in ConfigDataProvider interface.
  */
 public class ManifestConfigDataProvider extends BaseConfigDataProvider {
-  private static final Logger logger = Logger.getLogger(ManifestConfigDataProvider.class);
+  private static final Logger logger = LogManager.getLogger(ManifestConfigDataProvider.class);
 
   /*
    * The various config keys and value in the manifest file

@@ -4,7 +4,6 @@ import com.linkedin.feathr.offline.TestFeathr.SPARK_DEFAULT_PARALLELISM
 import com.linkedin.feathr.offline._
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.conf.Configuration
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{Row, SparkSession}
 import org.scalatest.testng.TestNGSuite
@@ -18,9 +17,6 @@ class TestFeatureJoinJob extends TestNGSuite{
 
   var ss: SparkSession = _
   var conf: Configuration = _
-
-  Logger.getLogger("org").setLevel(Level.OFF)
-  Logger.getLogger("akka").setLevel(Level.OFF)
 
   // generate mock data
   val mockDataFolder = generatedDataFolder + "/mockData"

@@ -23,14 +23,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    mavenLocal()
-    maven {
-      url "https://repository.mulesoft.org/nexus/content/repositories/public/"
-    }
-    maven {
-      url "https://linkedin.jfrog.io/artifactory/open-source/" // GMA, pegasus
-    }
-
 }
 
 configurations {
@@ -131,11 +123,11 @@ project.ext.spec = [
         "avroUtil": "com.linkedin.avroutil1:helper-all:0.2.100",
         "azure": "com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.21",
         'fastutil' : "it.unimi.dsi:fastutil:8.1.1",
-        'mvel' : "org.mvel:mvel2:2.2.8.Final",
+        'mvel' : "org.mvel:mvel2:2.4.7.Final",
         'protobuf' : "com.google.protobuf:protobuf-java:2.6.1",
         'guava' : "com.google.guava:guava:25.0-jre",
         'xbean' : "org.apache.xbean:xbean-asm6-shaded:4.10",
-        'log4j' : "log4j:log4j:1.2.17",
+        'log4j' : "org.apache.logging.log4j:log4j-core:2.17.2",
         'jetty': "org.eclipse.jetty:jetty-util:9.3.24.v20180605",
         'kafka': "org.apache.kafka:kafka-clients:3.1.0",
 
@@ -149,11 +141,10 @@ project.ext.spec = [
         "mockito_inline": "org.mockito:mockito-inline:2.28.2",
         'testing' : "org.testng:testng:6.14.3",
         'jdiagnostics' : "org.anarres.jdiagnostics:jdiagnostics:1.0.7",
-        'jsonSchemaVali': "com.github.everit-org.json-schema:org.everit.json.schema:1.9.1",
         "antlr": "org.antlr:antlr4:4.8",
         "antlrRuntime": "org.antlr:antlr4-runtime:4.8",
         "jsqlparser": "com.github.jsqlparser:jsqlparser:3.1",
-
+        'common_collections': 'commons-collections:commons-collections:3.2.2',
     ]
 ]
 
