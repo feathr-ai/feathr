@@ -13,7 +13,7 @@ const SearchBar = (props: SearchBarProps) => {
   const { project } = props
 
   const onNavigateNewSource = () => {
-    navigate(`/${project}/dataSources/new`)
+    navigate(`/${project}/datasources/new`)
   }
 
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   ControlOutlined,
@@ -11,7 +11,6 @@ import {
   RocketOutlined
 } from '@ant-design/icons'
 import { Layout, Menu, MenuProps, Typography } from 'antd'
-import { Link } from 'react-router-dom'
 
 import { observer, useStore } from '@/hooks'
 
@@ -36,98 +35,75 @@ const defaultProps = {
   siderWidth: 200
 }
 
-const defaultMeunItems = () => {
-  const items: MenuItems = [
-    {
-      key: 'home',
-      icon: <HomeOutlined style={{ fontSize: '20px', color: '#e28743' }} />,
-      label: <Link to="/">Home</Link>
-    },
-    {
-      key: 'projects',
-      icon: <ProjectOutlined style={{ fontSize: '20px', color: '#177ddc' }} />,
-      label: <Link to={'/projects'}>Projects</Link>
-    }
-  ]
-
-  if (showManagement === 'true') {
-    items.push({
-      key: 'management',
-      icon: <ControlOutlined style={{ fontSize: '20px', color: '#6495ed' }} />,
-      label: <Link to="/management">Management</Link>
-    })
+const menuItems: MenuItems = [
+  {
+    key: 'home',
+    icon: <HomeOutlined style={{ fontSize: '20px', color: '#e28743' }} />,
+    label: 'Home'
+  },
+  {
+    key: 'projects',
+    icon: <ProjectOutlined style={{ fontSize: '20px', color: '#177ddc' }} />,
+    label: 'Projects'
+  },
+  {
+    key: 'lineage',
+    icon: <PartitionOutlined style={{ fontSize: '20px', color: '#b9038b' }} />,
+    label: 'Lineage'
+  },
+  {
+    key: 'datasources',
+    icon: <DatabaseOutlined style={{ fontSize: '20px', color: '#13a8a8' }} />,
+    label: 'Data Sources'
+  },
+  {
+    key: 'features',
+    icon: <CopyOutlined style={{ fontSize: '20px', color: '#d89614' }} />,
+    label: 'Features'
+  },
+  {
+    key: 'jobs',
+    icon: <RocketOutlined style={{ fontSize: '20px', color: '#642ab5' }} />,
+    label: 'Jobs'
+  },
+  {
+    key: 'monitoring',
+    icon: <EyeOutlined style={{ fontSize: '20px', color: '#e84749' }} />,
+    label: 'Monitoring'
   }
+]
 
-  return items
+if (showManagement === 'true') {
+  menuItems.push({
+    key: 'management',
+    icon: <ControlOutlined style={{ fontSize: '20px', color: '#6495ed' }} />,
+    label: 'Management'
+  })
 }
 
-const getMeunItems = (project: string) => {
-  const items: MenuItems = [
-    {
-      key: 'home',
-      icon: <HomeOutlined style={{ fontSize: '20px', color: '#e28743' }} />,
-      label: <Link to={`/${project}`}>Home</Link>
-    },
-    {
-      key: 'projects',
-      icon: <ProjectOutlined style={{ fontSize: '20px', color: '#177ddc' }} />,
-      label: <Link to={'/projects'}>Projects</Link>
-    },
-    {
-      key: 'lineage',
-      icon: <PartitionOutlined style={{ fontSize: '20px', color: '#b9038b' }} />,
-      label: <Link to={`${project}/lineage`}>Lineage</Link>
-    },
-    {
-      key: 'datasources',
-      icon: <DatabaseOutlined style={{ fontSize: '20px', color: '#13a8a8' }} />,
-      label: <Link to={`${project}/dataSources`}>Data Sources</Link>
-    },
-    {
-      key: 'features',
-      icon: <CopyOutlined style={{ fontSize: '20px', color: '#d89614' }} />,
-      label: <Link to={`${project}/features`}>Features</Link>
-    },
-    {
-      key: 'jobs',
-      icon: <RocketOutlined style={{ fontSize: '20px', color: '#642ab5' }} />,
-      label: <Link to={`${project}/jobs`}>Jobs</Link>
-    },
-    {
-      key: 'monitoring',
-      icon: <EyeOutlined style={{ fontSize: '20px', color: '#e84749' }} />,
-      label: <Link to={`${project}/monitoring`}>Monitoring</Link>
-    }
-  ]
-
-  if (showManagement === 'true') {
-    items.push({
-      key: 'management',
-      icon: <ControlOutlined style={{ fontSize: '20px', color: '#6495ed' }} />,
-      label: <Link to="/management">Management</Link>
-    })
-  }
-
-  return items
-}
+const paths = ['lineage', 'datasources', 'features', 'jobs', 'monitoring']
 
 const SideMenu = (props: SiderMenuProps) => {
   const { globalStore } = useStore()
-  const { project, menuKeys } = globalStore
-
-  const [menuItems, setMenuItems] = useState<MenuItems>([])
+  const { project, menuKeys, navigate, setSwitchProjecModalOpen } = globalStore
 
   const { siderWidth, collapsedWidth } = { ...defaultProps, ...props }
 
   const [collapsed] = useState<boolean>(false)
 
-  useEffect(() => {
-    if (project) {
-      setMenuItems(getMeunItems(project))
+  const onClickMenu: MenuProps['onClick'] = (e) => {
+    const { key } = e
+
+    if (paths.includes(key)) {
+      if (project) {
+        navigate?.(`/${project}/${key}`)
+      } else {
+        setSwitchProjecModalOpen?.(true)
+      }
     } else {
-      setMenuItems(defaultMeunItems())
+      navigate?.(`/${key}`)
     }
-  }, [project])
+  }
 
   return (
     <>
@@ -153,7 +129,13 @@ const SideMenu = (props: SiderMenuProps) => {
         >
           Feathr
         </Title>
-        <Menu theme="dark" mode="inline" selectedKeys={menuKeys} items={menuItems} />
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={menuKeys}
+          items={menuItems}
+          onClick={onClickMenu}
+        />
 
         <VersionBar className={styles.versionBar} />
       </Sider>

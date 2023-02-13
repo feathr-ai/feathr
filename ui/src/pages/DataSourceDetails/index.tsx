@@ -35,7 +35,7 @@ const DataSourceDetails = () => {
         breadcrumb={
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Link to={`/${project}/dataSources`}>Data Sources</Link>
+              <Link to={`/${project}/datasources`}>Data Sources</Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item>Data Source Attributes</Breadcrumb.Item>
           </Breadcrumb>

@@ -22,7 +22,7 @@ const features = [
   {
     icon: <DatabaseOutlined style={{ color: '#219ebc' }} />,
     title: 'Sources',
-    link: '/dataSources',
+    link: '/datasources',
     linkText: 'See all'
   },
   {

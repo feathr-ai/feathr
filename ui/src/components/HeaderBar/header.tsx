@@ -29,9 +29,11 @@ const Header = () => {
       <Layout.Header className={styles.header}>
         <span className={styles.title}>
           <span>{project.toLocaleUpperCase()} </span>
-          <Button size="small" shape="round" onClick={onOpen}>
-            Switch Project
-          </Button>
+          {project && (
+            <Button size="small" shape="round" onClick={onOpen}>
+              Switch Project
+            </Button>
+          )}
         </span>
         <span className={styles.right}>
           <Link

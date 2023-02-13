@@ -18,7 +18,7 @@ const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
   const { project } = props
 
   const getDetialUrl = (guid: string) => {
-    return `/${project}/dataSources/${guid}`
+    return `/${project}/datasources/${guid}`
   }
 
   const columns: ResizeColumnType<DataSource>[] = [
