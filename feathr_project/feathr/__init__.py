@@ -72,6 +72,8 @@ __all__ = [
     'Int64VectorFeatureType',
     'DoubleVectorFeatureType',
     'FeatureNameValidationError',
+    'AbsoluteTimeRange',
+    'RelativeTimeRange',
     'ObservationSettings',
     'FeaturePrinter',
     'SparkExecutionConfiguration',
