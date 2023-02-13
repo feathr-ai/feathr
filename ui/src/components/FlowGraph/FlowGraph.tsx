@@ -178,7 +178,7 @@ const FlowGraph = (props: FlowGraphProps, ref: any) => {
       hasReadRef.current = true
       setTimeout(() => {
         flowRef.current?.fitView()
-      }, 0)
+      }, 100)
     }
   }, [elements])
 

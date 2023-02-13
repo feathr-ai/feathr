@@ -1,30 +1,22 @@
-import { useState } from 'react'
-
 import { PageHeader } from 'antd'
-import { useSearchParams } from 'react-router-dom'
+
+import { observer, useStore } from '@/hooks'
 
 import DataSourceTable from './components/DataSourceTable'
 import SearchBar from './components/SearchBar'
 
 const DataSources = () => {
-  const [searchParams] = useSearchParams()
-
-  const [project, setProject] = useState<string | undefined>(
-    searchParams.get('project') || undefined
-  )
-
-  const onSearch = ({ project }: { project: string }) => {
-    setProject(project)
-  }
+  const { globalStore } = useStore()
+  const { project } = globalStore
 
   return (
     <div className="page">
       <PageHeader ghost={false} title="Data Sources">
-        <SearchBar defaultProject={project} onSearch={onSearch} />
+        <SearchBar project={project} />
         <DataSourceTable project={project} />
       </PageHeader>
     </div>
   )
 }
 
-export default DataSources
+export default observer(DataSources)

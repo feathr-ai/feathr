@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef } from 'react'
+import React, { forwardRef } from 'react'
 
 import { DeleteOutlined } from '@ant-design/icons'
 import { Button, notification, message, Popconfirm, Space } from 'antd'
@@ -10,7 +10,7 @@ import ResizeTable, { ResizeColumnType } from '@/components/ResizeTable'
 import { Feature } from '@/models/model'
 
 export interface FeatureTableProps {
-  project?: string
+  project: string
   keyword?: string
 }
 const FeatureTable = (props: FeatureTableProps, ref: any) => {
@@ -18,10 +18,8 @@ const FeatureTable = (props: FeatureTableProps, ref: any) => {
 
   const { project, keyword } = props
 
-  const projectRef = useRef(project)
-
   const getDetialUrl = (guid: string) => {
-    return `/projects/${projectRef.current}/features/${guid}`
+    return `/${project}/features/${guid}`
   }
 
   const columns: ResizeColumnType<Feature>[] = [
@@ -94,7 +92,7 @@ const FeatureTable = (props: FeatureTableProps, ref: any) => {
     {
       title: 'Action',
       fixed: 'right',
-      width: 200,
+      width: 240,
       resize: false,
       render: (record: Feature) => {
         const { guid } = record
@@ -136,7 +134,6 @@ const FeatureTable = (props: FeatureTableProps, ref: any) => {
     ['dataSources', project, keyword],
     async () => {
       if (project) {
-        projectRef.current = project
         return await fetchFeatures(project, 1, 10, keyword || '')
       } else {
         return []

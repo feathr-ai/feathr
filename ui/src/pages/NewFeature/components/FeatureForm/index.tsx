@@ -4,7 +4,6 @@ import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { Button, Col, Divider, Form, Input, Radio, Row, Select, Space } from 'antd'
 
 import AddTags from '@/components/AddTags'
-import ProjectsSelect from '@/components/ProjectsSelect'
 
 import { useForm, FeatureEnum, TransformationTypeEnum } from './useForm'
 
@@ -53,20 +52,11 @@ const FeatureForm = (props: FeatureFormProps, ref: any) => {
         form={form}
         onFinish={onFinish}
       >
+        <Item label="Project" name="project">
+          <Input disabled />
+        </Item>
         <Item name="name" label="Name" rules={[{ required: true }]}>
           <Input maxLength={200} />
-        </Item>
-        <Item
-          rules={[
-            {
-              required: true,
-              message: 'Please select a project to start.'
-            }
-          ]}
-          label="Select Project"
-          name="project"
-        >
-          <ProjectsSelect width={'100%'} />
         </Item>
         <Item label="Select Feature Type" name="featureType">
           <Radio.Group>
