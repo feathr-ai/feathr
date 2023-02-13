@@ -1,6 +1,6 @@
 {
   "name": "feathr-ui",
-  "version": "0.10.4-rc5",
+  "version": "1.0.0-rc1",
   "private": true,
   "scripts": {
     "start": "craco start",
