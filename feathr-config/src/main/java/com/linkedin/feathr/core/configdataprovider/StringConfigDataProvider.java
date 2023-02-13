@@ -7,7 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -15,7 +16,7 @@ import org.apache.log4j.Logger;
  * via a {@link Reader} object.
  */
 public class StringConfigDataProvider extends BaseConfigDataProvider {
-  private static final Logger logger = Logger.getLogger(StringConfigDataProvider.class);
+  private static final Logger logger = LogManager.getLogger(StringConfigDataProvider.class);
 
   private final List<String> _configStringList;
 

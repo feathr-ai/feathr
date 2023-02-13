@@ -1,8 +1,11 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.offline.AssertFeatureUtils.{rowApproxEquals, validateRows}
+import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
+import com.linkedin.feathr.offline.util.FeathrUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
 import org.testng.Assert._
 import org.testng.annotations._
@@ -313,6 +316,165 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     val df = res.collect()(0)
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
     assertEquals(df.getAs[Float]("simpleFeature"), 20f)
+  }
+
+  /**
+   * SWA test when path does not have daily attached to it. It should work as expected.
+   */
+  @Test
+  def testSwaWithMalformedPath(): Unit = {
+    val joinConfigAsString =
+      """
+        | settings: {
+        |  observationDataTimeSettings: {
+        |   absoluteTimeRange: {
+        |     timeFormat: yyyy-MM-dd
+        |     startTime: "2018-05-01"
+        |     endTime: "2018-05-03"
+        |   }
+        |  }
+        |  joinTimeSettings: {
+        |   timestampColumn: {
+        |     def: timestamp
+        |     format: yyyy-MM-dd
+        |   }
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [x],
+        |    featureList: ["simplePageViewCount", "simpleFeature"]
+        |  }
+        |]
+      """.stripMargin
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      simplePageViewCount: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 10
+        |      }
+        |      simpleFeature: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 20
+        |      }
+        |    }
+        |  }
+        |}
+      """.stripMargin
+    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    res.show()
+    val df = res.collect()(0)
+    assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
+    assertEquals(df.getAs[Float]("simpleFeature"), 20f)
+  }
+
+  /**
+   * SWA test with missing features. To enable this test, set the value of FeatureUtils.SKIP_MISSING_FEATURE to True. From
+   * Spark 3.1, SparkContext.updateConf() is not supported.
+   */
+  @Test
+  def testSWAWithMissingFeatureData(): Unit = {
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
+    val joinConfigAsString =
+      """
+        | settings: {
+        |  observationDataTimeSettings: {
+        |   absoluteTimeRange: {
+        |     timeFormat: yyyy-MM-dd
+        |     startTime: "2018-05-01"
+        |     endTime: "2018-05-03"
+        |   }
+        |  }
+        |  joinTimeSettings: {
+        |   timestampColumn: {
+        |     def: timestamp
+        |     format: yyyy-MM-dd
+        |   }
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [x],
+        |    featureList: ["simplePageViewCount", "simpleFeature"]
+        |  }
+        |]
+      """.stripMargin
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |  missingSource: {
+        |    location: { path: "slidingWindowAgg/missingFeatureData/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      simplePageViewCount: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 10
+        |      }
+        |    }
+        |  }
+        |  missingAnchor: {
+        |  source: "missingSource"
+        |  key: "x"
+        |  features: {
+        |   simpleFeature: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 20
+        |     }
+        |    }
+        |  }
+        |}
+      """.stripMargin
+    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    res.show()
+    val df = res.collect()(0)
+    assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
+    assert(!res.columns.contains("simpleFeature"))
+    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, false)
   }
 
   /**
@@ -1000,7 +1162,6 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
 
-  /**
   @Test
   def testSWACountDistinct(): Unit = {
     val featureDefAsString =
@@ -1080,5 +1241,5 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     val dfs = runLocalFeatureJoinForTest(featureJoinAsString, featureDefAsString, "featuresWithFilterObs.avro.json").data
 
     validateRows(dfs.select(keyField, features: _*).collect().sortBy(row => row.getAs[Int](keyField)), expectedRows)
-  }*/
+  }
 }

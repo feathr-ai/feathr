@@ -9,7 +9,8 @@ import com.linkedin.feathr.core.utils.ConfigUtils;
 import com.typesafe.config.Config;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.anchors.AnchorConfig.*;
 
@@ -18,7 +19,7 @@ import static com.linkedin.feathr.core.config.producer.anchors.AnchorConfig.*;
  * Builds AnchorConfig objects that have features with keys
  */
 class AnchorConfigWithKeyBuilder extends BaseAnchorConfigBuilder {
-  private final static Logger logger = Logger.getLogger(BaseAnchorConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(BaseAnchorConfigBuilder.class);
 
   private AnchorConfigWithKeyBuilder() {
   }

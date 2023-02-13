@@ -4,7 +4,8 @@ import com.linkedin.feathr.core.config.producer.sources.RocksDbConfig;
 import com.linkedin.feathr.core.configbuilder.ConfigBuilderException;
 import com.typesafe.config.Config;
 import javax.lang.model.SourceVersion;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.sources.RocksDbConfig.*;
 
@@ -12,7 +13,7 @@ import static com.linkedin.feathr.core.config.producer.sources.RocksDbConfig.*;
  * Builds {@link RocksDbConfig} objects
  */
 class RocksDbConfigBuilder {
-  private final static Logger logger = Logger.getLogger(RocksDbConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(RocksDbConfigBuilder.class);
 
   private RocksDbConfigBuilder() {
   }

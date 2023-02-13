@@ -20,7 +20,8 @@ import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import org.apache.avro.generic.GenericRecord
 import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.hadoop.conf.Configuration
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.core.config.Configurator
+import org.apache.logging.log4j.{Level, LogManager, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -50,7 +51,7 @@ import scala.collection.mutable
  */
 object FeatureJoinJob {
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
   val SKIP_OUTPUT = "skip_output"
 
   // We found that if we have too many parallelism, then during the join shuffling, memoryOverhead could be too high,
@@ -63,7 +64,7 @@ object FeatureJoinJob {
   // Internal parameter (We don't expect user to change it) as an empirical factor 'threshold' to control whether limit the partition or not
   val SPARK_JOIN_LIMIT_PARTITION_FACTOR = 2
 
-  val log: Logger = Logger.getLogger(getClass)
+  val log: Logger = LogManager.getLogger(getClass)
 
   def run(ss: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext, dataPathHandlers: List[DataPathHandler]): Unit = {
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
@@ -111,9 +112,13 @@ object FeatureJoinJob {
       targetDate=None,
       failOnMissing=failOnMissing,
       dataLoaderHandlers=dataLoaderHandlers)
-      AclCheckUtils.checkReadAuthorization(hadoopConf, pathList) match {
-        case Failure(e) => throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"No read permission on observation data $pathList.", e)
-        case Success(_) => log.debug("Checked read authorization on observation data of the following paths:\n" + pathList.mkString("\n"))
+      val invalidPathsAndErrors = AclCheckUtils.checkReadAuthorization(hadoopConf, pathList)
+      if (invalidPathsAndErrors.isEmpty) {
+        log.debug("Checked read authorization on observation data of the following paths:\n" + pathList.mkString("\n"))
+      } else {
+        val invalidPaths = invalidPathsAndErrors.map(_._2)
+        val errorMsgs = invalidPathsAndErrors.map(_._1)
+        throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"No read permission on observation data $invalidPaths with  $errorMsgs")
       }
     })
   }
@@ -377,12 +382,14 @@ object FeatureJoinJob {
       sparkSession,
       allAnchoredFeatures.values.toSeq,
       failOnMissing)
+    val updatedAnchorsWithSource = anchorsWithSource.filter(anchorEntry => anchorEntry._2.isDefined)
+      .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
     // Only load DataFrames for anchors that have preprocessing UDF
     // So we filter out anchors that doesn't have preprocessing UDFs
     // We use feature names sorted and merged as the key to find the anchor
     // For example, f1, f2 belongs to anchor. Then Map("f1,f2"-> anchor)
-    val dataFrameMapForPreprocessing = anchorsWithSource
+    val dataFrameMapForPreprocessing = updatedAnchorsWithSource
       .filter(x => featureNamesInAnchorSet.contains(x._1.featureAnchor.features.toSeq.sorted.mkString(",")))
       .map(x => (x._1.featureAnchor.features.toSeq.sorted.mkString(","), x._2.get()))
 
@@ -429,7 +436,7 @@ object FeatureJoinJob {
 
     val enableDebugLog = FeathrUtils.getFeathrJobParam(sparkConf, FeathrUtils.ENABLE_DEBUG_OUTPUT).toBoolean
     if (enableDebugLog) {
-      Logger.getRootLogger.setLevel(Level.DEBUG)
+      Configurator.setAllLevels(LogManager.getRootLogger.getName, Level.DEBUG)
     }
 
     FeathrJoinPreparationInfo(sparkSession, conf, jobContext)

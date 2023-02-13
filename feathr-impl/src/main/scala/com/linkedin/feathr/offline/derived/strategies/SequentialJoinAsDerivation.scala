@@ -20,7 +20,7 @@ import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstitut
 import com.linkedin.feathr.offline.transformation.{AnchorToDataSourceMapper, MvelDefinition}
 import com.linkedin.feathr.offline.util.{CoercionUtilsScala, DataFrameSplitterMerger, FeathrUtils, FeaturizedDatasetUtils}
 import com.linkedin.feathr.sparkcommon.{ComplexAggregation, SeqJoinCustomAggregation}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, Row, SparkSession}
@@ -37,7 +37,7 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
                                                   dataPathHandlers: List[DataPathHandler])
     extends SequentialJoinDerivationStrategy
     with Serializable {
-  @transient private val log = Logger.getLogger(getClass)
+  @transient private val log = LogManager.getLogger(getClass)
   private val colPrefix = "_feathr_seq_join_coerced_left_join_key_"
 
   override def apply(
@@ -217,9 +217,13 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
     val ss = SparkSession.builder().getOrCreate()
     val failOnMissingPartition = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
     val anchorDFMap1 = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(ss, Seq(featureAnchor), failOnMissingPartition)
+    val updatedAnchorDFMap = anchorDFMap1.filter(anchorEntry => anchorEntry._2.isDefined)
+      .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
+    // We dont need to check if the anchored feature's dataframes are missing (due to skip missing feature) as such
+    // seq join features have already been removed in the FeatureGroupsUpdater#getUpdatedFeatureGroupsWithoutInvalidPaths.
     val featureInfo = FeatureTransformation.directCalculate(
       anchorGroup: AnchorFeatureGroups,
-      anchorDFMap1(featureAnchor),
+      updatedAnchorDFMap(featureAnchor),
       featureAnchor.featureAnchor.sourceKeyExtractor,
       None,
       None,

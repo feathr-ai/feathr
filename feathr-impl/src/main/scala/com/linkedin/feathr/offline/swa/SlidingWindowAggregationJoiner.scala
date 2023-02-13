@@ -18,7 +18,7 @@ import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
 import com.linkedin.feathr.swj.{LabelData, SlidingWindowJoin}
 import com.linkedin.feathr.{common, offline}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
@@ -32,7 +32,7 @@ import scala.collection.mutable
 private[offline] class SlidingWindowAggregationJoiner(
     allWindowAggFeatures: Map[String, FeatureAnchorWithSource],
     anchorToDataSourceMapper: AnchorToDataSourceMapper) {
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   /**
    * Join observation data with time-based window aggregation features.
@@ -115,6 +115,9 @@ private[offline] class SlidingWindowAggregationJoiner(
         case (source, grouped) => (source, grouped.map(_._2))
       })
 
+    // If the skip_missing_features flag is set, we will skip joining the features whose is not mature, and maintain this list.
+    val notJoinedFeatures = new mutable.HashSet[String]()
+
     // For each source, we calculate the maximum window duration that needs to be loaded across all
     // required SWA features defined on this source.
     // Then we load the source only once.
@@ -141,6 +144,11 @@ private[offline] class SlidingWindowAggregationJoiner(
               featuresToDelayImmutableMap.values.toArray,
               failOnMissingPartition)
 
+        // If skip missing features flag is set and there is a data related error, an empty dataframe will be returned.
+        if (originalSourceDf.isEmpty) {
+          res.map(notJoinedFeatures.add)
+          anchors.map(anchor => (anchor, originalSourceDf))
+        } else {
         val sourceDF: DataFrame = preprocessedDf match {
           case Some(existDf) => existDf
           case None => originalSourceDf
@@ -156,12 +164,23 @@ private[offline] class SlidingWindowAggregationJoiner(
         }
 
         anchors.map(anchor => (anchor, withKeyDF))
+    }}
+    )
+
+    // Filter out features dataframe if they are empty.
+    val updatedWindowAggAnchorDFMap = windowAggAnchorDFMap.filter(x => {
+      val df = x._2
+      !df.head(1).isEmpty
     })
 
     val allInferredFeatureTypes = mutable.Map.empty[String, FeatureTypeConfig]
 
     windowAggFeatureStages.foreach({
       case (keyTags: Seq[Int], featureNames: Seq[String]) =>
+        // Remove the features that are going to be skipped.
+        val joinedFeatures = featureNames.diff(notJoinedFeatures.toSeq)
+        if (joinedFeatures.nonEmpty) {
+          log.warn(s"----SKIPPED ADDING FEATURES : ${notJoinedFeatures} ------")
         val stringKeyTags = keyTags.map(keyTagList).map(k => s"CAST (${k} AS string)") // restore keyTag to column names in join config
 
         // get the bloom filter for the key combinations in this stage
@@ -182,18 +201,18 @@ private[offline] class SlidingWindowAggregationJoiner(
         if (ss.sparkContext.isLocal && log.isDebugEnabled) {
           log.debug(
             s"*********Sliding window aggregation feature join stage with key: ${stringKeyTags} for feature " +
-              s"${featureNames.mkString(",")}*********")
+              s"${joinedFeatures.mkString(",")}*********")
           log.debug(
             s"First 3 rows in observation dataset :\n " +
               s"${labelDataDef.dataSource.collect().take(3).map(_.toString()).mkString("\n ")}")
         }
-        val windowAggAnchorsThisStage = featureNames.map(allWindowAggFeatures)
-        val windowAggAnchorDFThisStage = windowAggAnchorDFMap.filterKeys(windowAggAnchorsThisStage.toSet)
+        val windowAggAnchorsThisStage = joinedFeatures.map(allWindowAggFeatures)
+        val windowAggAnchorDFThisStage = updatedWindowAggAnchorDFMap.filterKeys(windowAggAnchorsThisStage.toSet)
 
         val factDataDefs =
           SlidingWindowFeatureUtils.getSWAAnchorGroups(windowAggAnchorDFThisStage).map {
             anchorWithSourceToDFMap =>
-              val selectedFeatures = anchorWithSourceToDFMap.keySet.flatMap(_.selectedFeatures).filter(featureNames.contains(_))
+              val selectedFeatures = anchorWithSourceToDFMap.keySet.flatMap(_.selectedFeatures).filter(joinedFeatures.contains(_))
               val factData = anchorWithSourceToDFMap.head._2
               val anchor = anchorWithSourceToDFMap.head._1
               val filteredFactData = bloomFilter match {
@@ -225,13 +244,13 @@ private[offline] class SlidingWindowAggregationJoiner(
           .asInstanceOf[TimeWindowConfigurableAnchorExtractor].features(nameToFeatureAnchor._1).columnFormat)
 
         val FeatureDataFrame(withFDSFeatureDF, inferredTypes) =
-          SlidingWindowFeatureUtils.convertSWADFToFDS(contextDF, featureNames.toSet, featureNameToColumnFormat, userSpecifiedTypesConfig)
+          SlidingWindowFeatureUtils.convertSWADFToFDS(contextDF, joinedFeatures.toSet, featureNameToColumnFormat, userSpecifiedTypesConfig)
         // apply default on FDS dataset
         val withFeatureContextDF =
-          substituteDefaults(withFDSFeatureDF, defaults.keys.filter(featureNames.contains).toSeq, defaults, userSpecifiedTypesConfig, ss)
+          substituteDefaults(withFDSFeatureDF, defaults.keys.filter(joinedFeatures.contains).toSeq, defaults, userSpecifiedTypesConfig, ss)
 
         allInferredFeatureTypes ++= inferredTypes
-        contextDF = standardizeFeatureColumnNames(origContextObsColumns, withFeatureContextDF, featureNames, keyTags.map(keyTagList))
+        contextDF = standardizeFeatureColumnNames(origContextObsColumns, withFeatureContextDF, joinedFeatures, keyTags.map(keyTagList))
         if (enableCheckPoint) {
           // checkpoint complicated dataframe for each stage to avoid Spark failure
           contextDF = contextDF.checkpoint(true)
@@ -244,7 +263,7 @@ private[offline] class SlidingWindowAggregationJoiner(
                   s"${factDataDef.dataSource.collect().take(3).map(_.toString()).mkString("\n ")}")
           }
         }
-    })
+    }})
     offline.FeatureDataFrame(contextDF, allInferredFeatureTypes.toMap)
   }
 

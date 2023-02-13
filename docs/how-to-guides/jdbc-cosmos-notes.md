@@ -129,4 +129,6 @@ doc = container_client.read_item(some_key)
 feature_value = doc['feature_name']
 ```
 
-**Note: There is currently a known issue with using azure.cosmos.spark package on databricks. Somehow this dependency is not resolving correctly on databricks when packaged through gradle and results in ClassNotFound error. To mitigate this issue, please install the azure.cosmos.spark package directly from [maven central](https://mvnrepository.com/artifact/com.azure.cosmos.spark/azure-cosmos-spark_3-1_2-12) following the steps [here](./manage-library-spark-platform.md)**
+## Note on `ClassNotFound` errors when using CosmosDB
+
+There is currently a known issue with using azure.cosmos.spark package on Databricks cluster. Somehow this dependency is not resolving correctly on Databricks when packaged through gradle and results in ClassNotFound error. To mitigate this issue, please install the azure.cosmos.spark package directly from [maven central](https://central.sonatype.com/artifact/com.azure.cosmos.spark/azure-cosmos-spark_3-1_2-12/4.16.0) following the steps [here](./manage-library-spark-platform.md)

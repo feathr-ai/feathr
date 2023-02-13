@@ -5,7 +5,7 @@ import com.linkedin.feathr.common.tensor._
 import com.linkedin.feathr.common.types.PrimitiveType
 import com.linkedin.feathr.common.{AutoTensorizableTypes, FeatureTypeConfig, FeatureTypes}
 import com.linkedin.feathr.offline.transformation.FDSConversionUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
@@ -20,7 +20,7 @@ private[offline] object FeaturizedDatasetUtils {
   val FDS_1D_TENSOR_VALUE = "values"
   val UNKNOWN_SIZE: Int = -1
 
-  val log: Logger = Logger.getLogger(getClass)
+  val log: Logger = LogManager.getLogger(getClass)
   // Constant for the Quince-FDS DataType for a literally-converted term-vector (NTV) feature.
   val DENSE_VECTOR_FDS_TENSOR_TYPE: TensorType =
     new TensorType(TensorCategory.DENSE, PrimitiveType.FLOAT, List(PrimitiveDimensionType.INT.withShape(UNKNOWN_SIZE).asInstanceOf[DimensionType]).asJava, null)

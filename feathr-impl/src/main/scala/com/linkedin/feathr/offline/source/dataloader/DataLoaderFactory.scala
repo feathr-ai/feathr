@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.source.dataloader
 
 import com.linkedin.feathr.offline.config.location.DataLocation
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.customized.CustomGenericRowWithSchema
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.hadoop.mapred.JobConf
@@ -12,7 +12,7 @@ import org.apache.hadoop.mapred.JobConf
  * DataLoaderFactory trait that will create a data loader based on the type of the input.
  */
 private[offline] trait DataLoaderFactory {
-  @transient lazy val log = Logger.getLogger(getClass.getName)
+  @transient lazy val log = LogManager.getLogger(getClass.getName)
   /**
    * create a data loader based on the file type.
    *

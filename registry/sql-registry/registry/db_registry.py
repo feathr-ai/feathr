@@ -52,8 +52,10 @@ class DbRegistry(Registry):
     def __init__(self):
         self.conn = connect()
         if os.environ.get("FEATHR_SANDBOX"):
-            if os.environ.get("FEATHR_SANDBOX_REGISTRY_URL"):
-                engine = db.create_engine(f'sqlite:///{os.environ.get("FEATHR_SANDBOX_REGISTRY_URL")}?check_same_thread=False')
+            sandbox_registry_url = os.environ.get("FEATHR_SANDBOX_REGISTRY_URL")
+            if sandbox_registry_url:
+                print(f"FEATHR_SANDBOX_REGISTRY_URL is set to {sandbox_registry_url}. Please refer to https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls for how to construct the URLs.")
+                engine = db.create_engine(sandbox_registry_url)
             else:
                 engine = db.create_engine('sqlite:////tmp/feathr_registry.sqlite?check_same_thread=False') #Create test.sqlite automatically
             self.sql_session = Session(engine)
@@ -204,6 +206,28 @@ class DbRegistry(Registry):
             downstream_entities, _ = self._bfs(entity_id, RelationshipType.Produces)
         return [e for e in downstream_entities if str(e.id) != str(entity_id)]
     
+    def delete_empty_entities(self, entities: List[Entity]):
+        """
+        Given entity list, deleting all anchors that have no features and all sources that have no anchors.
+        """
+        if len(entities) == 0:
+            return
+        
+        # clean up empty anchors
+        for e in entities:
+            if e.entity_type == EntityType.Anchor:
+                downstream_entities, _ = self._bfs(e.id, RelationshipType.Contains) 
+                if len(downstream_entities) == 1: # only anchor itself
+                    self.delete_entity(e.id)
+        # clean up empty sources
+        for e in entities:
+            if e.entity_type == EntityType.Source:
+                downstream_entities, _ = self._bfs(e.id, RelationshipType.Produces) 
+                if len(downstream_entities) == 1: # only source itself
+                    self.delete_entity(e.id)
+
+        return
+        
     def delete_entity(self, entity_id: Union[str, UUID]):
         """
         Deletes given entity

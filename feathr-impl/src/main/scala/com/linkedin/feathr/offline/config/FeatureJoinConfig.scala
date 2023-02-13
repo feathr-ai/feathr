@@ -10,7 +10,7 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.common.{DateParam, FeatureRef, FeathrJacksonScalaModule, JoiningFeatureParams}
 import com.linkedin.feathr.offline.anchored.WindowTimeUnit
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, DateTimeParseException}
 import java.time.temporal.ChronoField
@@ -162,7 +162,7 @@ class TimeWindowJoinConfigSettingDefinitionDeserializer extends JsonDeserializer
   val FEATURES_OVERRIDE = "featuresOverride"
   val FEATURES = "features"
 
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   private def parseFeaturesOverride(arrayNode: ArrayNode, featuresToTimeDelayMap: mutable.Map[String, Duration]): Map[String, Duration] = {
     val x = arrayNode.elements.asScala.foreach(node => {

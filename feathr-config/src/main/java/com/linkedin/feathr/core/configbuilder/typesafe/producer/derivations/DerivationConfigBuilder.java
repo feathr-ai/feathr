@@ -25,7 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.derivations.DerivationConfig.*;
 import static com.linkedin.feathr.core.utils.Utils.*;
@@ -36,7 +37,7 @@ import static com.linkedin.feathr.core.utils.Utils.*;
  * depending on the type of the feature derivation.
  */
 class DerivationConfigBuilder {
-  private final static Logger logger = Logger.getLogger(DerivationConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(DerivationConfigBuilder.class);
 
   private DerivationConfigBuilder() {
   }

@@ -2,7 +2,8 @@ package com.linkedin.feathr.core.configbuilder.typesafe.producer.anchors;
 
 import com.linkedin.feathr.core.config.producer.anchors.AnchorConfig;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.anchors.AnchorConfig.*;
 
@@ -11,7 +12,7 @@ import static com.linkedin.feathr.core.config.producer.anchors.AnchorConfig.*;
  * Build a {@link AnchorConfig} object
  */
 class AnchorConfigBuilder {
-  private final static Logger logger = Logger.getLogger(AnchorConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(AnchorConfigBuilder.class);
 
   private AnchorConfigBuilder() {
   }

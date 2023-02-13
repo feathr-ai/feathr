@@ -4,7 +4,7 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import com.linkedin.feathr.common.{FeatureDerivationFunction, FeatureTypeConfig}
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.client.plugins.{FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor}
-import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction}
+import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
 import com.linkedin.feathr.offline.derived.strategies._
 import com.linkedin.feathr.offline.join.algorithms.{SequentialJoinConditionBuilder, SparkJoinWithJoinCondition}
 import com.linkedin.feathr.offline.logical.FeatureGroups
@@ -14,7 +14,7 @@ import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
 import com.linkedin.feathr.sparkcommon.FeatureDerivationFunctionSpark
 import com.linkedin.feathr.{common, offline}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -110,7 +110,7 @@ private[offline] class DerivedFeatureEvaluator(derivationStrategies: DerivationS
  * Companion object with instantiation responsibilities and static utility methods.
  */
 private[offline] object DerivedFeatureEvaluator {
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   def apply(derivationStrategies: DerivationStrategies, mvelContext: Option[FeathrExpressionExecutionContext]): DerivedFeatureEvaluator = new DerivedFeatureEvaluator(derivationStrategies, mvelContext)
 
@@ -149,9 +149,12 @@ private[offline] object DerivedFeatureEvaluator {
       val keyedContextFeatureValues = contextFeatureValues.map(kv => (kv._1.getErasedTagFeatureName, kv._2))
       val resolvedInputArgs = linkedInputParams.map(taggedFeature => keyedContextFeatureValues.get(taggedFeature.getErasedTagFeatureName).flatMap(Option(_)))
       val derivedFunc = derivedFeature.getAsFeatureDerivationFunction match {
-        case derivedFunc: MvelFeatureDerivationFunction =>
-          derivedFunc.mvelContext = mvelContext
-          derivedFunc
+        case mvelDerivedFunc: MvelFeatureDerivationFunction =>
+          mvelDerivedFunc.mvelContext = mvelContext
+          mvelDerivedFunc
+        case simpleMvelDerivedFunc: SimpleMvelDerivationFunction =>
+          simpleMvelDerivedFunc.mvelContext = mvelContext
+          simpleMvelDerivedFunc
         case func => func
       }
       val unlinkedOutput = derivedFunc.getFeatures(resolvedInputArgs)

@@ -2,12 +2,12 @@ package com.linkedin.feathr.offline.mvel
 
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import org.apache.commons.lang.exception.ExceptionUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.mvel2.PropertyAccessException
 import org.mvel2.integration.VariableResolverFactory
 
 private[offline] object MvelUtils {
-  @transient private lazy val log = Logger.getLogger(getClass)
+  @transient private lazy val log = LogManager.getLogger(getClass)
 
   val warningCountThreshold = 50000
   var warningCount = 0

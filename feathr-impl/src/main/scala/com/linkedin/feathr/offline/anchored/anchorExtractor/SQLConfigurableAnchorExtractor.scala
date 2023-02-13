@@ -5,7 +5,7 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.offline.config.SQLFeatureDefinition
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.{FeatureColumnFormat, RAW}
 import com.linkedin.feathr.sparkcommon.SimpleAnchorExtractorSpark
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.functions.expr
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame}
@@ -20,7 +20,7 @@ private[offline] case class SQLKeys(@JsonProperty("sqlExpr") val sqlExpr: Seq[St
 private[offline] class SQLConfigurableAnchorExtractor(
    @JsonProperty("key") val key: SQLKeys,
    @JsonProperty("features") val features: Map[String, SQLFeatureDefinition]) extends SimpleAnchorExtractorSpark {
-  @transient private lazy val log = Logger.getLogger(getClass)
+  @transient private lazy val log = LogManager.getLogger(getClass)
   private val featureToDefs = features
   private val columnNameToFeatureDefs = featureToDefs.map(f => (f._1, f._2.featureExpr))
 
