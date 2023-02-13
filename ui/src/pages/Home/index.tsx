@@ -49,8 +49,10 @@ const Home = () => {
   const onSeeAll = (item: any) => {
     if (item.title === 'Projects') {
       navigate('/projects')
-    } else {
+    } else if (project) {
       navigate(`/${project}${item.link}`)
+    } else {
+      setSwitchProjecModalOpen(true)
     }
   }
 
