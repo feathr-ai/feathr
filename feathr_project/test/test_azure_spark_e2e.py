@@ -22,7 +22,7 @@ from feathr.utils.job_utils import get_result_df
 from feathrcli.cli import init
 from test_fixture import (basic_test_setup, get_online_test_table_name, composite_keys_test_setup)
 from test_utils.constants import Constants
-  
+
 # make sure you have run the upload feature script before running these tests
 # the feature configs are from feathr_project/data/feathr_user_workspace
 def test_feathr_materialize_to_offline():
@@ -264,7 +264,7 @@ def test_feathr_get_offline_features_to_sql_with_token():
         timestamp_format="yyyy-MM-dd HH:mm:ss")
 
     now = datetime.now()
-    
+
     # Set DB token before submitting job
     # os.environ[f"SQL1_TOKEN"] = "some_token"
     os.environ["SQL1_TOKEN"] = client.credential.get_token("https://management.azure.com/.default").token
@@ -280,6 +280,8 @@ def test_feathr_get_offline_features_to_sql_with_token():
     # assuming the job can successfully run; otherwise it will throw exception
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
+@pytest.mark.skipif(os.environ.get('SPARK_CONFIG__SPARK_CLUSTER') == "databricks",
+                    reason="Due to package conflicts, the CosmosDB test doesn't work on databricks clusters, refer to https://github.com/feathr-ai/feathr/blob/main/docs/how-to-guides/jdbc-cosmos-notes.md#using-cosmosdb-as-the-online-store for more details")
 def test_feathr_materialize_to_cosmosdb():
     """
     Test FeathrClient() CosmosDbSink.

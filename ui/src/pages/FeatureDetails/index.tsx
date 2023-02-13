@@ -9,6 +9,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { fetchFeature, fetchFeatureLineages } from '@/api'
 import CardDescriptions from '@/components/CardDescriptions'
 import FlowGraph from '@/components/FlowGraph'
+import { observer, useStore } from '@/hooks'
 import { Feature, InputFeature, FeatureLineage } from '@/models/model'
 import { FeatureKeyMap, TransformationMap, TypeMap } from '@/utils/attributesMapping'
 import { getJSONMap } from '@/utils/utils'
@@ -27,7 +28,7 @@ const InputAnchorFeatures = (props: InputAnchorFeaturesProps) => {
       <Descriptions contentStyle={contentStyle}>
         {inputAnchorFeatures.map((input_feature) => (
           <Descriptions.Item key={input_feature.guid}>
-            <Link to={`/projects/${project}/features/${input_feature.guid}`}>
+            <Link to={`/${project}/features/${input_feature.guid}`}>
               {input_feature.uniqueAttributes.qualifiedName}
             </Link>
           </Descriptions.Item>
@@ -49,7 +50,7 @@ const InputDerivedFeatures = (props: InputDerivedFeaturesProps) => {
       <Descriptions contentStyle={contentStyle}>
         {inputDerivedFeatures.map((input_feature: InputFeature) => (
           <Descriptions.Item key={input_feature.guid}>
-            <Link to={`/projects/${project}/features/${input_feature.guid}`}>
+            <Link to={`/${project}/features/${input_feature.guid}`}>
               {input_feature.uniqueAttributes.qualifiedName}
             </Link>
           </Descriptions.Item>
@@ -59,8 +60,9 @@ const InputDerivedFeatures = (props: InputDerivedFeaturesProps) => {
   ) : null
 }
 
-const FeatureLineageGraph = () => {
-  const { project, featureId } = useParams() as Params
+const FeatureLineageGraph = (props: { project: string }) => {
+  const { project } = props
+  const { id } = useParams() as Params
   const [lineageData, setLineageData] = useState<FeatureLineage>({
     guidEntityMap: {},
     relations: []
@@ -73,7 +75,7 @@ const FeatureLineageGraph = () => {
   useEffect(() => {
     const fetchLineageData = async () => {
       setLoading(true)
-      const data = await fetchFeatureLineages(featureId)
+      const data = await fetchFeatureLineages(id)
       if (mountedRef.current) {
         setLineageData(data)
         setLoading(false)
@@ -81,7 +83,7 @@ const FeatureLineageGraph = () => {
     }
 
     fetchLineageData()
-  }, [featureId])
+  }, [id])
 
   useEffect(() => {
     mountedRef.current = true
@@ -92,37 +94,28 @@ const FeatureLineageGraph = () => {
 
   return !loading ? (
     <Card className="card" title="Lineage">
-      <FlowGraph
-        height={500}
-        loading={loading}
-        data={lineageData}
-        nodeId={featureId}
-        project={project}
-      />
+      <FlowGraph height={500} loading={loading} data={lineageData} nodeId={id} project={project} />
     </Card>
   ) : null
 }
 
 type Params = {
-  project: string
-  featureId: string
+  id: string
 }
 const FeatureDetails = () => {
-  const { project, featureId } = useParams() as Params
+  const { globalStore } = useStore()
+  const { project } = globalStore
+  const { id } = useParams() as Params
   const navigate = useNavigate()
 
   const {
     isLoading,
     error,
     data = { attributes: {} } as Feature
-  } = useQuery<Feature, AxiosError>(
-    ['featureId', featureId],
-    () => fetchFeature(project, featureId),
-    {
-      retry: false,
-      refetchOnWindowFocus: false
-    }
-  )
+  } = useQuery<Feature, AxiosError>(['featureId', id], () => fetchFeature(project, id), {
+    retry: false,
+    refetchOnWindowFocus: false
+  })
   const { attributes } = data
   const { transformation, key, type, name, tags } = attributes
 
@@ -134,7 +127,7 @@ const FeatureDetails = () => {
         breadcrumb={
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Link to={`/features?project=${project}`}>Features</Link>
+              <Link to={`/${project}/features`}>Features</Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item>Feature Details</Breadcrumb.Item>
           </Breadcrumb>
@@ -144,7 +137,7 @@ const FeatureDetails = () => {
             key="1"
             type="primary"
             onClick={() => {
-              navigate(`/projects/${project}/lineage`)
+              navigate(`/${project}/lineage`)
             }}
           >
             View Lineage
@@ -176,7 +169,7 @@ const FeatureDetails = () => {
 
             <CardDescriptions title="Type" mapping={TypeMap} descriptions={type} />
             <CardDescriptions title="Tags" mapping={tagsMap} descriptions={tags} />
-            <FeatureLineageGraph />
+            <FeatureLineageGraph project={project} />
           </Space>
         </Spin>
       </PageHeader>
@@ -184,4 +177,4 @@ const FeatureDetails = () => {
   )
 }
 
-export default FeatureDetails
+export default observer(FeatureDetails)

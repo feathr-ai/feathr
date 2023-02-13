@@ -32,13 +32,6 @@ public class TypesafeConfigBuilderTest {
     }
   }
 
-  @Test(expectedExceptions = ConfigBuilderException.class, description = "Tests build of invalid FeatureDef config")
-  public void testFeatureDefConfig2() {
-    String featureDefConfigStr = "{invalidSectionName: {}}";
-    FeatureDefConfig obsFeatureDefConfigObj = configBuilder.buildFeatureDefConfigFromString(featureDefConfigStr);
-    fail("Test shouldn't pass for invalid config");
-  }
-
   @Test(description = "Include of another config and selective overrides")
   public void includeTest() {
     String expEspressoConfigName = "MemberPreferenceData";

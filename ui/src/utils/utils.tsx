@@ -39,10 +39,10 @@ export const isFeature = (featureType: string) => {
 export const getFeatureDetailUrl = (project: string, feature: Feature) => {
   switch (feature.typeName) {
     case FeatureType.Source:
-      return `/projects/${project}/dataSources/${feature.guid}`
+      return `/${project}/datasources/${feature.guid}`
     case FeatureType.AnchorFeature:
     case FeatureType.DerivedFeature:
-      return `/projects/${project}/features/${feature.guid}`
+      return `/${project}/features/${feature.guid}`
     default:
       return
   }

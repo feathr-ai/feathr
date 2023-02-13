@@ -70,12 +70,16 @@ def get_spark_df(
     if dst_path.suffix != src_filepath.suffix:
         local_cache_path = str(dst_path.joinpath(src_filepath.name))
 
+    # Databricks uses "dbfs:/" prefix for spark paths and "/dbfs/" prefix for python paths
     if is_databricks():
-        # Databricks uses "dbfs:/" prefix for spark paths
-        if not local_cache_path.startswith("dbfs:"):
+        # If local_cache_path is a python path, convert it to a spark path.
+        if local_cache_path.startswith("/dbfs/"):
+            local_cache_path = local_cache_path.replace("/dbfs", "dbfs:", 1)
+        # If local_cache_path is not a spark path, add the spark path prefix.
+        elif not local_cache_path.startswith("dbfs:"):
             local_cache_path = f"dbfs:/{local_cache_path.lstrip('/')}"
-        # Databricks uses "/dbfs/" prefix for python paths
-        python_local_cache_path = local_cache_path.replace("dbfs:", "/dbfs")
+
+        python_local_cache_path = local_cache_path.replace("dbfs:", "/dbfs", 1)
     # TODO add "if is_synapse()"
     else:
         python_local_cache_path = local_cache_path

@@ -24,7 +24,6 @@ const LineageNode = (props: LineageNodeProps, ref: any) => {
     if (detialUrl) {
       navigate(detialUrl)
     }
-    //  `/projects/${project}/features/${featureId}`);
   }
 
   return (

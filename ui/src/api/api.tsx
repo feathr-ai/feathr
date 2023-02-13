@@ -10,6 +10,7 @@ import {
   NewFeature,
   NewDatasource
 } from '@/models/model'
+import { globalStore } from '@/store'
 import { getMsalConfig } from '@/utils/utils'
 
 const msalInstance = getMsalConfig()
@@ -223,10 +224,14 @@ export const authAxios = async (msalInstance: PublicClientApplication) => {
     (error) => {
       if (error.response?.status === 403) {
         const detail = error.response.data.detail
-        window.location.href = '/responseErrors/403/' + detail
-      } else {
-        return Promise.reject(error.response.data)
+        globalStore.navigate?.('/403', { replace: true, state: detail })
+      } else if (error.response?.status === 404) {
+        globalStore.navigate?.('/404', {
+          replace: true,
+          state: `the '${globalStore.project}' project is not found.`
+        })
       }
+      return Promise.reject(error.response.data)
       //TODO: handle other response errors
     }
   )

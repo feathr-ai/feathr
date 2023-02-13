@@ -18,7 +18,7 @@ import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.util.FCMUtils.makeFeatureNameForDuplicates
 import com.linkedin.feathr.offline.util.{AnchorUtils, FeaturizedDatasetUtils, SparkFeaturizedDataset}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.JavaConverters._
@@ -38,7 +38,7 @@ case object VISITED extends VisitedState
  * class.
  */
 class FeathrClient2(ss: SparkSession, computeGraph: ComputeGraph, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext]) {
-  private val log = Logger.getLogger(getClass.getName)
+  private val log = LogManager.getLogger(getClass.getName)
 
   def joinFeatures(frameJoinConfig: FrameFeatureJoinConfig, obsData: SparkFeaturizedDataset, jobContext: JoinJobContext):
   (FeatureDataFrame, Map[String, FeatureTypeConfig], Seq[String]) = {

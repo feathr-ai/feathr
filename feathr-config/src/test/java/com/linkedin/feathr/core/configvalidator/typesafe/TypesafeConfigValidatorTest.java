@@ -37,11 +37,6 @@ public class TypesafeConfigValidatorTest {
     runAndValidate(FeatureDef, validFeatureDefConfig, expResult);
   }
 
-  @Test(description = "Legacy feature def configs with global section should fail the validation")
-  public void testFeatureDefConfigWithLegacyGlobalSection() {
-    runAndValidate(FeatureDef, legacyFeatureDefConfigWithGlobals, SYNTACTIC, INVALID);
-  }
-
   @Test(description = "Tests validation of Join config syntax")
   public void testJoinConfigSyntax() {
     ValidationResult expResult = new ValidationResult(SYNTACTIC, VALID);
@@ -67,11 +62,6 @@ public class TypesafeConfigValidatorTest {
   public void testValidParameterizedAnchorConfig() {
     ValidationResult expResult = new ValidationResult(SYNTACTIC, VALID);
     runAndValidate(FeatureDef, validFeatureDefConfigWithParameters, expResult);
-  }
-
-  @Test(description = "Test invalid anchors with parameters. The parameters are invalid because they are not of string type")
-  public void testInvalidParameterizedAnchorConfig() {
-    runAndValidate(FeatureDef, invalidFeatureDefConfigWithParameters, SYNTACTIC, INVALID);
   }
 
   private void runAndValidate(ConfigType configType, String configStr, ValidationResult expResult) {

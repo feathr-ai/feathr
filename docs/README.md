@@ -47,34 +47,7 @@ Feathr automatically computes your feature values and joins them to your trainin
 - **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
 - **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
 
-## ☁️ Running Feathr on Cloud with a few simple steps
-
-Feathr has native integrations with Databricks and Azure Synapse:
-
-Follow the [Feathr ARM deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
-
-If you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
-
-- Please read the [Quick Start Guide for Feathr on Databricks](./quickstart_databricks.md) to run Feathr with Databricks.
-- Please read the [Quick Start Guide for Feathr on Azure Synapse](./quickstart_synapse.md) to run Feathr with Azure Synapse.
-
-## 📓 Documentation
-
-- For more details on Feathr, read our [documentation](https://feathr-ai.github.io/feathr/).
-- For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
-- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf) and [here](./talks/Feathr%20Community%20Talk%20%E2%80%93%20An%20Enterprise-Grade%20High%20Performance%20Feature%20Store.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
-
-## 🧪 Samples
-
-| Name                                                                                | Description                                                                                                                           | Platform                               |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| [NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)                                      | Quickstart notebook that showcases how to define, materialize, and register features with NYC taxi-fare prediction sample data.       | Azure Synapse, Databricks, Local Spark |
-| [Databricks Quickstart NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)                | Quickstart Databricks notebook with NYC taxi-fare prediction sample data.                                                             | Databricks                             |
-| [Feature Embedding](./samples/feature_embedding.ipynb)                              | Feathr UDF example showing how to define and use feature embedding with a pre-trained Transformer model and hotel review sample data. | Databricks                             |
-| [Fraud Detection Demo](./samples/fraud_detection_demo.ipynb)                        | An example to demonstrate Feature Store using multiple data sources such as user account and transaction data.                        | Azure Synapse, Databricks, Local Spark |
-| [Product Recommendation Demo](./samples/product_recommendation_demo_advanced.ipynb) | Feathr Feature Store example notebook with a product recommendation scenario                                                          | Azure Synapse, Databricks, Local Spark |
-
-## 🏃 Getting Started with Feathr
+## 🏃 Getting Started with Feathr - Feathr Sandbox
 
 The easiest way to try out Feathr is to use the [Feathr Sandbox](https://feathr-ai.github.io/feathr/quickstart_local_sandbox.html) which is a self-contained container with most of Feathr's capabilities and you should be productive in 5 minutes. To use it, simply run this command:
 
@@ -107,6 +80,34 @@ Or use the latest code from GitHub:
 ```bash
 pip install git+https://github.com/feathr-ai/feathr.git#subdirectory=feathr_project
 ```
+
+## ☁️ Running Feathr on Cloud for Production
+
+Feathr has native integrations with Databricks and Azure Synapse:
+
+Follow the [Feathr ARM deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-arm.html) to run Feathr on Azure. This allows you to quickly get started with automated deployment using Azure Resource Manager template.
+
+If you want to set up everything manually, you can checkout the [Feathr CLI deployment guide](https://feathr-ai.github.io/feathr/how-to-guides/azure-deployment-cli.html) to run Feathr on Azure. This allows you to understand what is going on and set up one resource at a time.
+
+- Please read the [Quick Start Guide for Feathr on Databricks](./quickstart_databricks.md) to run Feathr with Databricks.
+- Please read the [Quick Start Guide for Feathr on Azure Synapse](./quickstart_synapse.md) to run Feathr with Azure Synapse.
+
+## 📓 Documentation
+
+- For more details on Feathr, read our [documentation](https://feathr-ai.github.io/feathr/).
+- For Python API references, read the [Python API Reference](https://feathr.readthedocs.io/).
+- For technical talks on Feathr, see the [slides here](./talks/Feathr%20Feature%20Store%20Talk.pdf) and [here](./talks/Feathr%20Community%20Talk%20%E2%80%93%20An%20Enterprise-Grade%20High%20Performance%20Feature%20Store.pdf). The recording is [here](https://www.youtube.com/watch?v=gZg01UKQMTY).
+
+## 🧪 Samples
+
+| Name                                                                                | Description                                                                                                                           | Platform                               |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| [NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)                                      | Quickstart notebook that showcases how to define, materialize, and register features with NYC taxi-fare prediction sample data.       | Azure Synapse, Databricks, Local Spark |
+| [Databricks Quickstart NYC Taxi Demo](./samples/nyc_taxi_demo.ipynb)                | Quickstart Databricks notebook with NYC taxi-fare prediction sample data.                                                             | Databricks                             |
+| [Feature Embedding](./samples/feature_embedding.ipynb)                              | Feathr UDF example showing how to define and use feature embedding with a pre-trained Transformer model and hotel review sample data. | Databricks                             |
+| [Fraud Detection Demo](./samples/fraud_detection_demo.ipynb)                        | An example to demonstrate Feature Store using multiple data sources such as user account and transaction data.                        | Azure Synapse, Databricks, Local Spark |
+| [Product Recommendation Demo](./samples/product_recommendation_demo_advanced.ipynb) | Feathr Feature Store example notebook with a product recommendation scenario                                                          | Azure Synapse, Databricks, Local Spark |
+
 
 ## 🔡 Feathr Highlighted Capabilities
 
@@ -220,12 +221,12 @@ Follow the [quick start Jupyter Notebook](https://github.com/feathr-ai/feathr/bl
 - [x] Support streaming features with transformation
 - [x] Support common data sources and sinks. Read more in the [Cloud Integrations and Architecture](#️-cloud-integrations-and-architecture) part.
 - [x] Support feature store UI, including Lineage and Search functionalities
-- [ ] Support a sandbox Feathr environment for better getting started experience
-- [ ] Support online transformation
+- [x] Support a sandbox Feathr environment for better getting started experience
+- [x] Support online transformation
+- [x] Support feature data deletion and retention
 - [ ] More Feathr online client libraries such as Java
 - [ ] Support feature versioning
 - [ ] Support feature monitoring
-- [ ] Support feature data deletion and retention
 
 ## 👨‍👨‍👦‍👦 Community Guidelines
 

@@ -3,24 +3,26 @@ import React from 'react'
 import { CopyOutlined, DatabaseOutlined, EyeOutlined, ProjectOutlined } from '@ant-design/icons'
 import { Card, Col, Row, Typography } from 'antd'
 import cs from 'classnames'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+
+import { observer, useStore } from '@/hooks'
 
 import styles from './index.module.less'
 
-const { Title } = Typography
+const { Title, Link } = Typography
 const { Meta } = Card
 
 const features = [
   {
     icon: <ProjectOutlined style={{ color: '#177ddc' }} />,
     title: 'Projects',
-    link: '/projects',
+    link: 'projects',
     linkText: 'See all'
   },
   {
     icon: <DatabaseOutlined style={{ color: '#219ebc' }} />,
     title: 'Sources',
-    link: '/dataSources',
+    link: '/datasources',
     linkText: 'See all'
   },
   {
@@ -38,6 +40,22 @@ const features = [
 ]
 
 const Home = () => {
+  const navigate = useNavigate()
+
+  const { globalStore } = useStore()
+
+  const { project, setSwitchProjecModalOpen } = globalStore
+
+  const onSeeAll = (item: any) => {
+    if (item.title === 'Projects') {
+      navigate('/projects')
+    } else if (project) {
+      navigate(`/${project}${item.link}`)
+    } else {
+      setSwitchProjecModalOpen(true, item.title.toLocaleLowerCase())
+    }
+  }
+
   return (
     <div className={cs('page', styles.home)}>
       <Card>
@@ -50,7 +68,6 @@ const Home = () => {
             href="https://feathr-ai.github.io/feathr/concepts/feature-registry.html#accessing-feathr-ui"
             rel="noreferrer"
           >
-            {' '}
             Learn More
           </a>
         </span>
@@ -66,9 +83,17 @@ const Home = () => {
                       {item.title}
                     </Title>
                   }
+                  description={
+                    <Link
+                      onClick={() => {
+                        onSeeAll(item)
+                      }}
+                    >
+                      {item.linkText}
+                    </Link>
+                  }
                   className={styles.cardMeta}
                   avatar={item.icon}
-                  description={<Link to={item.link}>{item.linkText}</Link>}
                 />
               </Card>
             </Col>
@@ -139,7 +164,6 @@ const Home = () => {
                 rel="noreferrer"
                 href="https://feathr-ai.github.io/feathr/concepts/feathr-concepts-for-beginners.html"
               >
-                {' '}
                 Feathr Github Homepage
               </a>{' '}
               to learn more.
@@ -157,4 +181,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default observer(Home)

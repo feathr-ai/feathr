@@ -18,7 +18,7 @@ import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.JavaConverters._
@@ -60,7 +60,7 @@ class FCMGraphTraverser(inputSparkSession: SparkSession,
   observationDf: DataFrame,
   dataPathHandlers: List[DataPathHandler],
   mvelContext: Option[FeathrExpressionExecutionContext]) {
-  private val log = Logger.getLogger(getClass.getName)
+  private val log = LogManager.getLogger(getClass.getName)
   // nodeIdToDataframeAndColumnMetadataMap will be a map of node id -> DataframeAndColumnMetadata which will be updated as each node is processed.
   val nodeIdToDataframeAndColumnMetadataMap: mutable.HashMap[Int, DataframeAndColumnMetadata] = mutable.HashMap[Int, DataframeAndColumnMetadata]()
 

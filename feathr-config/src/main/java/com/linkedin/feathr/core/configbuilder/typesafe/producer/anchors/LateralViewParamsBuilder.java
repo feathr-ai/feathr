@@ -3,7 +3,8 @@ package com.linkedin.feathr.core.configbuilder.typesafe.producer.anchors;
 import com.linkedin.feathr.core.config.producer.anchors.TimeWindowFeatureConfig;
 import com.linkedin.feathr.core.config.producer.anchors.LateralViewParams;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.anchors.LateralViewParams.LATERAL_VIEW_DEF;
 import static com.linkedin.feathr.core.config.producer.anchors.LateralViewParams.LATERAL_VIEW_ITEM_ALIAS;
@@ -15,7 +16,7 @@ import static com.linkedin.feathr.core.config.producer.anchors.LateralViewParams
  * {@link TimeWindowFeatureConfig} (aka sliding-window features)
  */
 class LateralViewParamsBuilder {
-  private final static Logger logger = Logger.getLogger(LateralViewParamsBuilder.class);
+  private final static Logger logger = LogManager.getLogger(LateralViewParamsBuilder.class);
 
   private LateralViewParamsBuilder() {
   }

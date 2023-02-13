@@ -16,7 +16,7 @@ import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.util.FeathrUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.lit
 
@@ -35,7 +35,7 @@ private[offline] class AnchoredFeatureJoinStep(
     joiner: SparkJoinWithJoinCondition,
     mvelContext: Option[FeathrExpressionExecutionContext])
     extends FeatureJoinStep[AnchorJoinStepInput, DataFrameJoinStepOutput] {
-  @transient lazy val log = Logger.getLogger(getClass.getName)
+  @transient lazy val log = LogManager.getLogger(getClass.getName)
 
   /**
    * Join anchored features to the observation passed as part of the input context.

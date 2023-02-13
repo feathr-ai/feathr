@@ -82,14 +82,35 @@ If you want to build the Feathr sandbox, run the below command in the Feathr roo
 docker build -f FeathrSandbox.Dockerfile -t feathrfeaturestore/feathr-sandbox .
 ```
 
+## Configuring Feathr Registry backend in Feathr Sandbox
+
+By default, Feathr Sandbox uses a SQLite backend in Feathr registry, and the content will be deleted if you restart the container. If you want to use a persistent registry, say a remote MySQL database or SQL Server, you can configure an environment variable when starting the Feathr Sandbox container like below, by specifying `FEATHR_SANDBOX_REGISTRY_URL` environment variable:
+
+```bash
+docker run -it --rm -p 8888:8888  -p 8000:8000 -p 8081:80 -p 8080:8080 -p 7080:7080 --env API_BASE="api/v1" --env FEATHR_SANDBOX=True --env FEATHR_SANDBOX_REGISTRY_URL="mysql://scott:tiger@localhost/foo" -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
+```
+
+Take a look at the [Database URLs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) section for more details on how this URL is formatted. Basically it will be like this:
+
+```
+dialect+driver://username:password@host:port/database
+```
 
 ## For Feathr Developers
-The Feathr package is copied to the user folder, and is installed with `pip install -e` option, which means you can do interactive development in the python package. For example you want to validate changes, instead of setting up the environment, you can simply go to the 
 
+Feathr Sandbox is ideal for local development purpose as well, as it provides a simplified environment which you can use. There are a few use cases where the Feathr developers can benefit from the Feathr Sandbox:
 
-note that if you are using Jupyter notebook to run the code, make sure you restart jupyter notebook so the kernel can reload Feathr package.
-You should be able to see the 
+### Python Client Development
+
+For folks who are changing the code on the Feathr Python client side (i.e. files under the [`feathr_project` folder](../feathr_project/)), Feathr Sandbox has this python client pre-installed with `pip install -e` option, which means you can do interactive development in the python package. For example you want to validate changes, instead of setting up the environment, you can simply go to the folder and edit those files. In those cases, the Feathr client installation in the python environment will reload automatically. 
+
+Pleas also note that if you are using Jupyter Notebooks to validate the Python package development, you need to restart your Jupyter Notebook in order to force Jupyter Notebook to reload the python package.
 
 ![Feathr Dev Experience](./images/feathr-sandbox-dev-experience.png)
 
 In the future, an VSCode Server might be installed so that you can do interactive development in the docker container.
+
+
+### Feathr UI and Feathr Registry API Server development
+
+When packaging the Feathr Sandbox docker image, Feathr automatically builds the latest UI and Registry server code, and put them into the right folder of the Feathr Sandbox images.
