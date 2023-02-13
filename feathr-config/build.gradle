@@ -29,10 +29,11 @@ dependencies {
   provided spec.product.pegasus.data
   implementation spec.product.typesafe_config
   implementation spec.product.log4j
-  implementation spec.product.jsonSchemaVali
   implementation spec.product.jackson.jackson_databind
   implementation spec.product.mvel
   implementation spec.product.json
+  implementation spec.product.guava
+  implementation spec.product.common_collections
 
   testImplementation spec.product.testing
   testImplementation spec.product.mockito

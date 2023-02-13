@@ -8,12 +8,12 @@ on:
       - "ui/**"
       - "**/README.md"
 
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - "docs/**"
-      - "ui/**"
-      - "**/README.md"
+  # pull_request:
+  #   branches: [main]
+  #   paths-ignore:
+  #     - "docs/**"
+  #     - "ui/**"
+  #     - "**/README.md"
 
   pull_request_target:
     branches: [main]
@@ -26,6 +26,12 @@ on:
   schedule:
     # Runs daily at 1 PM UTC (9 PM CST), will send notification to TEAMS_WEBHOOK
     - cron: '00 13 * * *'
+
+# Cancel any in progress workflow from the same PR, branch or tag when a new workflow is triggered
+# Ref: https://stackoverflow.com/questions/66335225/how-to-cancel-previous-runs-in-the-pr-when-you-push-new-commitsupdate-the-curre
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   gradle_test:

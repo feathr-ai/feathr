@@ -10,8 +10,7 @@ import com.linkedin.feathr.offline.config.location.{DataLocation, PathList, Simp
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
 import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.source.DataSource
-import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
-import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.source.accessor.{DataPathHandler, DataSourceAccessor, NonTimeBasedDataSourceAccessor}
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
@@ -70,12 +69,23 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             }
         }
         val timeSeriesSource = try {
-          Some(DataSourceAccessor(ss = ss,
+          val dataSource = DataSourceAccessor(ss = ss,
             source = source,
             dateIntervalOpt = dateInterval,
             expectDatumType = Some(expectDatumType),
             failOnMissingPartition = failOnMissingPartition,
-            dataPathHandlers = dataPathHandlers))
+            dataPathHandlers = dataPathHandlers)
+
+          // If it is a nonTime based source, we will load the dataframe at runtime, however this is too late to decide if the
+          // feature should be skipped. So, we will try to take the first row here, and see if it succeeds.
+          if (dataSource.isInstanceOf[NonTimeBasedDataSourceAccessor] && (shouldSkipFeature || (ss.sparkContext.isLocal &&
+            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)))) {
+            if (dataSource.get().take(1).isEmpty) None else {
+              Some(dataSource)
+            }
+          } else {
+            Some(dataSource)
+          }
         } catch {
           case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
             SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) None else throw e
@@ -107,22 +117,23 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
 
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
 
-    // Only file-based source has real "path", others are just single dataset
-    val (adjustedObsTimeRange, dataSourcePath) = if (factDataSource.location.isFileBasedLocation()) {
+    val (timeInterval, updatedFactDataSource) = if (factDataSource.location.isFileBasedLocation()) {
       val pathChecker = PathChecker(ss, dataLoaderHandlers)
       val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
       val pathInfo = pathAnalyzer.analyze(factDataSource.path)
-      if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY) {
-        (obsTimeRange.adjustWithDateTimeResolution(DateTimeResolution.DAILY), pathInfo.basePath)
-      } else (obsTimeRange, pathInfo.basePath)
+      val adjustedObsTimeRange = if (pathInfo.dateTimeResolution == DateTimeResolution.DAILY) {
+        obsTimeRange.adjustWithDateTimeResolution(DateTimeResolution.DAILY)
+      } else {
+        obsTimeRange
+      }
+      (OfflineDateTimeUtils.getFactDataTimeRange(adjustedObsTimeRange, window, timeDelays),
+        DataSource(pathInfo.basePath, factDataSource.sourceType, factDataSource.timeWindowParams,
+          factDataSource.timePartitionPattern, factDataSource.postfixPath))
     } else {
-      (obsTimeRange, factDataSource.path)
+      // Path and time range adjustments cannot be applied to non-file-based sources, keep them as-is
+      (obsTimeRange, factDataSource)
     }
-    // Copy the pathInfo's path into the datasource path as it adds the daily/hourly keyword if it is missing from the path
-    val updatedFactDataSource = DataSource(dataSourcePath, factDataSource.sourceType, factDataSource.timeWindowParams,
-      factDataSource.timePartitionPattern, factDataSource.postfixPath)
 
-    val timeInterval = OfflineDateTimeUtils.getFactDataTimeRange(adjustedObsTimeRange, window, timeDelays)
     val needCreateTimestampColumn = SlidingWindowFeatureUtils.needCreateTimestampColumnFromPartition(factDataSource)
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
 
