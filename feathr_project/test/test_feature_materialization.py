@@ -12,7 +12,7 @@ from feathr import (BackfillTime, MaterializationSettings, FeatureQuery,
 from feathr import Feature
 from feathr import FeatureAnchor
 from feathr import INPUT_CONTEXT, HdfsSource
-from feathr import RedisSink, HdfsSink
+from feathr import RedisSink, HdfsSink, AerospikeSink
 from feathr import TypedKey
 from feathr.definition._materialization_utils import _to_materialization_config
 from test_fixture import basic_test_setup
@@ -81,13 +81,54 @@ def test_feature_materialization_offline_config():
         """
     assert ''.join(config.split()) == ''.join(expected_config.split())
 
+def test_feature_materialization_aerospike_sink_config():
+    as_sink = AerospikeSink(name="aerospike",seedhost="20.57.186.153", port=3000, namespace="test", setname="test")
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[as_sink],
+                                       feature_names=[
+                                           "avgfare", "maxfare"],
+                                       backfill_time=backfill_time)
+    os.environ[f"aerospike_USER"] = "feathruser"
+    os.environ[f"aerospike_PASSWORD"] = "feathrpwd"
+    expected_config = """
+    operational: {
+            name: nycTaxiTable
+            endTime: "2020-05-20 00:00:00"
+            endTimeFormat: "yyyy-MM-dd HH:mm:ss"
+            resolution: DAILY
+            output:[
+                {
+                    "name": "HDFS",                 
+                    "params": {
+                        "aerospike__seedhost": "20.57.186.153",
+                        "aerospike__port": "3000",
+                        "aerospike__namespace": "test",
+                        "aerospike__user": "${AEROSPIKE_USER}",
+                        "aerospike__password": "${AEROSPIKE_PASSWORD}",
+                        "aerospike__set": "test",
+                        "type": "generic",
+                        "format": "aerospike",
+                        "mode": "APPEND"
+                    }
+
+                }
+            ]
+        }
+        features: [avgfare, maxfare]
+    """
+    config = _to_materialization_config(settings)
+    assert ''.join(config.split()) == ''.join(expected_config.split())
+    
 def test_feature_materialization_daily_schedule():
     """Test back fill cutoff time for a daily range"""
     backfill_time = BackfillTime(start=datetime(2022, 3, 1), end=datetime(2022, 3, 5), step=timedelta(days=1))
     settings = MaterializationSettings("", [], [], backfill_time)
     expected = [datetime(2022, 3, day) for day in range(1, 6)]
     assert settings.get_backfill_cutoff_time() == expected
-
+    
+    
 
 def test_feature_materialization_hourly_schedule():
     """Test back fill cutoff time for a hourly range"""
