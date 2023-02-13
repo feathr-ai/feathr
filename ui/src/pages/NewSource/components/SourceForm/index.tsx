@@ -3,7 +3,6 @@ import React, { forwardRef } from 'react'
 import { Button, Col, Divider, Form, Input, Row, Select } from 'antd'
 
 import AddTags from '@/components/AddTags'
-import ProjectsSelect from '@/components/ProjectsSelect'
 
 import { useForm, SourceTypeEnum } from './useForm'
 
@@ -41,20 +40,11 @@ const SourceForm = (props: SourceFormProps, ref: any) => {
         form={form}
         onFinish={onFinish}
       >
+        <Item label="Project" name="project">
+          <Input disabled />
+        </Item>
         <Item name="name" label="Name" rules={[{ required: true }]}>
           <Input maxLength={200} />
-        </Item>
-        <Item
-          rules={[
-            {
-              required: true,
-              message: 'Please select a project to start.'
-            }
-          ]}
-          label="Select Project"
-          name="project"
-        >
-          <ProjectsSelect width={'100%'} />
         </Item>
         <Item label="Type" name="type" rules={[{ required: true }]}>
           <Select options={sourceTypeOptions} />

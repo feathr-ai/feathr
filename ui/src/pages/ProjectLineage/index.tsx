@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 import { PageHeader, Row, Col, Radio, Tabs } from 'antd'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
 import { fetchProjectLineages } from '@/api'
 import FlowGraph from '@/components/FlowGraph'
+import { observer, useStore } from '@/hooks'
 import { FeatureLineage } from '@/models/model'
 import { FeatureType } from '@/utils/utils'
 
@@ -16,11 +17,9 @@ const items = [
   { label: 'Jobs', key: '3', children: <p>Under construction</p> }
 ]
 
-type Params = {
-  project: string
-}
 const ProjectLineage = () => {
-  const { project } = useParams() as Params
+  const { globalStore } = useStore()
+  const { project } = globalStore
   const [searchParams] = useSearchParams()
   const nodeId = searchParams.get('nodeId') as string
 
@@ -39,10 +38,14 @@ const ProjectLineage = () => {
   useEffect(() => {
     const fetchLineageData = async () => {
       setLoading(true)
-      const data = await fetchProjectLineages(project)
-      if (mountedRef.current) {
-        setLineageData(data)
-        setLoading(false)
+      try {
+        const data = await fetchProjectLineages(project)
+        if (mountedRef.current) {
+          setLineageData(data)
+          setLoading(false)
+        }
+      } catch {
+        //
       }
     }
 
@@ -62,7 +65,7 @@ const ProjectLineage = () => {
 
   return (
     <div className="page">
-      <PageHeader title={`Lineage ${project}`} ghost={false}>
+      <PageHeader ghost={false}>
         <Radio.Group value={featureType} onChange={(e) => toggleFeatureType(e.target.value)}>
           <Radio.Button value={FeatureType.AllNodes}>All Nodes</Radio.Button>
           <Radio.Button value={FeatureType.Source}> Source </Radio.Button>
@@ -72,7 +75,7 @@ const ProjectLineage = () => {
         <Row>
           <Col flex="2">
             <FlowGraph
-              minHeight="calc(100vh - 215px)"
+              minHeight="calc(100vh - 160px)"
               loading={loading}
               data={lineageData}
               nodeId={nodeId}
@@ -89,4 +92,4 @@ const ProjectLineage = () => {
   )
 }
 
-export default ProjectLineage
+export default observer(ProjectLineage)
