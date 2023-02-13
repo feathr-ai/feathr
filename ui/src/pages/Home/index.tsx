@@ -52,7 +52,7 @@ const Home = () => {
     } else if (project) {
       navigate(`/${project}${item.link}`)
     } else {
-      setSwitchProjecModalOpen(true)
+      setSwitchProjecModalOpen(true, item.title.toLocaleLowerCase())
     }
   }
 

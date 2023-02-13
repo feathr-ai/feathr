@@ -98,7 +98,7 @@ const SideMenu = (props: SiderMenuProps) => {
       if (project) {
         navigate?.(`/${project}/${key}`)
       } else {
-        setSwitchProjecModalOpen?.(true)
+        setSwitchProjecModalOpen?.(true, key)
       }
     } else {
       navigate?.(`/${key}`)

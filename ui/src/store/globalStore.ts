@@ -7,6 +7,8 @@ import { Project } from '@/models/model'
 class GlobalStore {
   project = ''
 
+  routeName = ''
+
   menuKeys: string[] = []
 
   projectList: Project[] = []
@@ -21,6 +23,7 @@ class GlobalStore {
       project: observable,
       projectList: observable,
       openSwitchProjectModal: observable,
+      routeName: observable,
       changeProject: action.bound,
       setMenuKeys: action.bound,
       fetchProjects: action.bound,
@@ -45,8 +48,9 @@ class GlobalStore {
     this.menuKeys = [key]
   }
 
-  setSwitchProjecModalOpen(open: boolean) {
+  setSwitchProjecModalOpen(open: boolean, routeName = 'lineage') {
     this.openSwitchProjectModal = open
+    this.routeName = routeName
   }
 
   setProjectList(list: string[]) {

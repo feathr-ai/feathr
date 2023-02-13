@@ -23,7 +23,9 @@ const AppLayout = (props: AppLayoutProps) => {
   const { project } = useParams()
 
   useEffect(() => {
-    changeProject(project)
+    if (!defualtRouter.includes(project || '')) {
+      changeProject(project)
+    }
   }, [project])
 
   useEffect(() => {

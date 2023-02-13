@@ -17,7 +17,7 @@ const SwitchProjectModal = () => {
   const navigate = useNavigate()
 
   const { globalStore } = useStore()
-  const { projectList, openSwitchProjectModal, setSwitchProjecModalOpen } = globalStore
+  const { projectList, routeName, openSwitchProjectModal, setSwitchProjecModalOpen } = globalStore
 
   const searchRef = useRef('')
 
@@ -30,7 +30,7 @@ const SwitchProjectModal = () => {
   }
 
   const onSelected = (name: string) => {
-    navigate(`/${name}/lineage`)
+    navigate(`/${name}/${routeName}`)
     setSwitchProjecModalOpen(false)
   }
 
