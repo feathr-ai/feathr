@@ -1,24 +1,20 @@
 package com.linkedin.feathr.offline.transformation
 
-import com.linkedin.feathr.common.configObj.configbuilder.FeatureGenConfigBuilder
-
-import java.time.Duration
 import com.linkedin.feathr.common.{DateParam, DateTimeResolution}
-import com.linkedin.feathr.offline.source.SourceFormatType._
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
-import com.linkedin.feathr.offline.config.location.{DataLocation, PathList, SimplePath}
 import com.linkedin.feathr.offline.generation.IncrementalAggContext
-import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.source.DataSource
+import com.linkedin.feathr.offline.source.SourceFormatType._
 import com.linkedin.feathr.offline.source.accessor.{DataPathHandler, DataSourceAccessor, NonTimeBasedDataSourceAccessor}
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
-import com.linkedin.feathr.offline.util.{FeathrUtils, SourceUtils}
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
+import com.linkedin.feathr.offline.util.{FeathrUtils, SourceUtils}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
+import java.time.Duration
 
 /**
  * The primary responsibility of this class is to Map the anchored features to its DataFrame.
@@ -78,8 +74,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
 
           // If it is a nonTime based source, we will load the dataframe at runtime, however this is too late to decide if the
           // feature should be skipped. So, we will try to take the first row here, and see if it succeeds.
-          if (dataSource.isInstanceOf[NonTimeBasedDataSourceAccessor] && (shouldSkipFeature || (ss.sparkContext.isLocal &&
-            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)))) {
+          if (dataSource.isInstanceOf[NonTimeBasedDataSourceAccessor] && shouldSkipFeature) {
             if (dataSource.get().take(1).isEmpty) None else {
               Some(dataSource)
             }
@@ -87,8 +82,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             Some(dataSource)
           }
         } catch {
-          case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
-            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) None else throw e
+          case e: Exception => if (shouldSkipFeature) None else throw e
         }
 
         anchorsWithDate.map(anchor => (anchor, timeSeriesSource))
@@ -150,10 +144,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       timeSeriesSource.get()
     }
     catch {// todo - Add this functionality to only specific exception types and not for all error types.
-      case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
-        SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) {
-        logger.warn(s"shouldSkipFeature is " + shouldSkipFeature + "spark is session " + ss.sparkContext.isLocal + "local skip feature is "
-          + SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))
+      case e: Exception => if (shouldSkipFeature) {
+        logger.warn(s"shouldSkipFeature is " + shouldSkipFeature)
         ss.emptyDataFrame
       } else throw e
     }
@@ -211,11 +203,9 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             isStreaming = isStreaming,
             dataPathHandlers = dataPathHandlers))
         } catch {
-          case e: Exception => if (shouldSkipFeature || (ss.sparkContext.isLocal &&
-            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE)))
+          case e: Exception => if (shouldSkipFeature)
             {
-              logger.warn(s"shouldSkipFeature is " + shouldSkipFeature + "spark is session " + ss.sparkContext.isLocal + "local skip feature is "
-                + SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))
+              logger.warn(s"shouldSkipFeature is " + shouldSkipFeature)
               None
             } else throw e
         }

@@ -1,11 +1,10 @@
 package com.linkedin.feathr.offline.source.dataloader
 
-import com.linkedin.feathr.common.exception.{FeathrConfigException, FeathrInputDataException}
+import com.linkedin.feathr.common.exception.FeathrInputDataException
 import com.linkedin.feathr.offline.TestFeathr
 import com.linkedin.feathr.offline.config.location.SimplePath
-import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
+import com.linkedin.feathr.offline.util.FeathrUtils.{MAX_DATA_LOAD_RETRY, setFeathrJobParam}
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.internal.SQLConf
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
@@ -43,12 +42,12 @@ class TestBatchDataLoader extends TestFeathr {
   @Test(expectedExceptions = Array(classOf[FeathrInputDataException]),
     expectedExceptionsMessageRegExp = ".* after 3 retries and retry time of 1ms.*")
   def testRetry(): Unit = {
-    SQLConf.get.setConf(LocalFeatureJoinJob.MAX_DATA_LOAD_RETRY, 3)
+    setFeathrJobParam(MAX_DATA_LOAD_RETRY, "3")
     val path = "anchor11-source.csv"
     val batchDataLoader = new BatchDataLoader(ss, location = SimplePath(path), List())
     val df = batchDataLoader.loadDataFrame()
     df.show()
-    SQLConf.get.setConf(LocalFeatureJoinJob.MAX_DATA_LOAD_RETRY, 0)
+    setFeathrJobParam(MAX_DATA_LOAD_RETRY, "0")
   }
 
   @Test(description = "test loading dataframe with BatchDataLoader by specifying delimiter")

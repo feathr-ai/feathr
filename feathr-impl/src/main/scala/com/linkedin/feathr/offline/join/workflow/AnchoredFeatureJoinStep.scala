@@ -7,8 +7,6 @@ import com.linkedin.feathr.offline.FeatureDataFrame
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource.{getDefaultValues, getFeatureTypes}
 import com.linkedin.feathr.offline.client.DataFrameColName
-import com.linkedin.feathr.offline.config.location.SimplePath
-import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.FeatureTransformation.{FEATURE_NAME_PREFIX, pruneAndRenameColumnWithTags, transformFeatures}
 import com.linkedin.feathr.offline.job.KeyedTransformedResult
 import com.linkedin.feathr.offline.join._
@@ -19,10 +17,10 @@ import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
 import com.linkedin.feathr.offline.util.FeathrUtils
-import com.linkedin.feathr.offline.util.FeathrUtils.{isDebugMode, shouldCheckPoint}
+import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import org.apache.logging.log4j.LogManager
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.lit
-import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
  * An abstract class provides default implementation of anchored feature join step
@@ -177,7 +175,6 @@ private[offline] class AnchoredFeatureJoinStep(
       if (isSanityCheckMode) {
         log.info("Running in sanity check mode.")
       }
-      dumpDebugInfo(leftJoinColumns, contextDF, featureToDFAndJoinKey._1, ctx.sparkSession, featureDF)
       val featureNames = featureToDFAndJoinKey._1.toSet
       FeathrUtils.dumpDebugInfo(ctx.sparkSession, contextDF, featureNames, "observation for anchored feature",
         featureNames.mkString("_") + "_observation_for_anchored")
@@ -207,34 +204,6 @@ private[offline] class AnchoredFeatureJoinStep(
       FeathrUtils.dumpDebugInfo(ctx.sparkSession, joinedDf, featureNames, "anchored feature after join",
         featureNames.mkString("_") + "_anchored_feature_after_join")
       joinedDf
-    }
-  }
-
-
-  /**
-   * Dump observation data and feature data before join for debugging
-   * @param leftJoinColumns observation join key columns
-   * @param contextDF observation data
-   * @param featureNames feature names in the feature dataframe
-   * @param ss SparkSession
-   * @param featureDF feature dataframe
-   */
-  private def dumpDebugInfo(leftJoinColumns: Seq[String], contextDF: DataFrame,
-                            featureNames: Seq[String],
-                            ss: SparkSession, featureDF: DataFrame) = {
-    if (isDebugMode(ss)) {
-      // dump left keys and right df
-      val basePath = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.DEBUG_OUTPUT_PATH)
-      val features = "features_" + featureNames.mkString("_")
-
-      val leftKeyDf = contextDF.select(leftJoinColumns.head, leftJoinColumns.tail: _*)
-      FeathrUtils.dumpDebugInfo(ss, leftKeyDf, featureNames.toSet, "observation data before join",
-        featureNames.mkString("_") + "_observation")
-
-      val rightDfPath = SimplePath(basePath + "/" + features + "_feature_left_")
-      SparkIOUtils.writeDataFrame(featureDF, rightDfPath, Map(), List())
-      FeathrUtils.dumpDebugInfo(ss, featureDF, featureNames.toSet, "anchored feature before join",
-        featureNames.mkString("_") + "_anchored_feature_before_join")
     }
   }
 

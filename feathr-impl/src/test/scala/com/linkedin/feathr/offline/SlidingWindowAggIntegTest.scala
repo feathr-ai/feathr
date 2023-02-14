@@ -1,11 +1,10 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.offline.AssertFeatureUtils.{rowApproxEquals, validateRows}
-import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.util.FeathrUtils.{SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
 import org.testng.Assert._
 import org.testng.annotations._
@@ -395,7 +394,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
    */
   @Test
   def testSWAWithMissingFeatureData(): Unit = {
-    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
+    setFeathrJobParam(FeathrUtils.SKIP_MISSING_FEATURE, "true")
     val joinConfigAsString =
       """
         | settings: {
@@ -474,7 +473,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     val df = res.collect()(0)
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
     assert(!res.columns.contains("simpleFeature"))
-    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, false)
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
   }
 
   /**

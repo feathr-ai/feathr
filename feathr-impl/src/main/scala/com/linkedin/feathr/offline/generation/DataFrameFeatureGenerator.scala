@@ -3,22 +3,19 @@ package com.linkedin.feathr.offline.generation
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import com.linkedin.feathr.common.{Header, JoiningFeatureParams, TaggedFeatureName}
 import com.linkedin.feathr.offline
-import com.linkedin.feathr.offline.{FeatureDataFrame, JoinKeys}
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource.{getDefaultValues, getFeatureTypes}
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
-import com.linkedin.feathr.offline.derived.strategies.{DerivationStrategies, RowBasedDerivation, SequentialJoinDerivationStrategy, SparkUdfDerivation, SqlDerivationSpark}
+import com.linkedin.feathr.offline.derived.strategies._
 import com.linkedin.feathr.offline.derived.{DerivedFeature, DerivedFeatureEvaluator}
 import com.linkedin.feathr.offline.evaluator.DerivedFeatureGenStage
-import com.linkedin.feathr.offline.job.FeatureJoinJob.FeatureName
-import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation, LocalFeatureJoinJob}
+import com.linkedin.feathr.offline.job.{FeatureGenSpec, FeatureTransformation}
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.util.{AnchorUtils, FeathrUtils}
-import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -92,8 +89,7 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
     }.toMap
 
     // Update features based on skip missing feature flag and empty dataframe
-    val updatedAllStageFeatures = if (shouldSkipFeature || (ss.sparkContext.isLocal &&
-      SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) {
+    val updatedAllStageFeatures = if (shouldSkipFeature) {
       allStageFeatures.filter(keyValue => !keyValue._2._1.df.isEmpty)
     } else allStageFeatures
 

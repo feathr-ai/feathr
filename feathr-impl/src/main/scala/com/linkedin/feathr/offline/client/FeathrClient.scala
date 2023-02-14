@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.client
 import com.linkedin.feathr.common.exception._
 import com.linkedin.feathr.common.{FeatureInfo, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
-import com.linkedin.feathr.offline.config.{ConflictsAutoCorrectionSetting, FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig, JoinConfigSettings}
+import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig}
 import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, FeatureGenKeyTagAnalyzer, StreamingFeatureGenerator}
 import com.linkedin.feathr.offline.job._
 import com.linkedin.feathr.offline.join.DataFrameFeatureJoiner
@@ -16,8 +16,8 @@ import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import scala.util.{Failure, Success}
 import java.util.UUID
+import scala.util.{Failure, Success}
 
 /**
  * FeathrClient is the entry point into Feathr for joining observation data with features. To achieve this, instantiate this class
@@ -284,8 +284,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
       val featurePathsTest = AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures)
       featurePathsTest._1 match {
         case Failure(exception) => // If skip feature, remove the corresponding anchored feature from the feature group and produce a new logical plan
-          if (shouldSkipFeature || (sparkSession.sparkContext.isLocal &&
-            SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))) {
+          if (shouldSkipFeature || sparkSession.sparkContext.isLocal) {
             val featureGroupsWithoutInvalidFeatures = FeatureGroupsUpdater()
               .getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap, updatedFeatureGroups, featurePathsTest._2)
             logicalPlanner.getLogicalPlan(featureGroupsWithoutInvalidFeatures, keyTaggedFeatures)
