@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import tempfile
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union, Set
 
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
@@ -21,7 +21,7 @@ from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.materialization_settings import MaterializationSettings
 from feathr.definition.monitoring_settings import MonitoringSettings
 from feathr.definition.query_feature_list import FeatureQuery
-from feathr.definition.settings import ObservationSettings
+from feathr.definition.settings import ObservationSettings, ConflictsAutoCorrection
 from feathr.definition.sink import HdfsSink, Sink
 from feathr.definition.source import InputContext
 from feathr.definition.transformation import WindowAggTransformation
@@ -494,13 +494,13 @@ class FeathrClient(object):
             ssl=self._str_to_bool(ssl_enabled, "ssl_enabled"))
         self.logger.info('Redis connection is successful and completed.')
 
-
     def get_offline_features(self,
                              observation_settings: ObservationSettings,
                              feature_query: Union[FeatureQuery, List[FeatureQuery]],
                              output_path: Union[str, Sink],
                              execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
                              config_file_name:str = "feature_join_conf/feature_join.conf",
+                             dataset_column_names: Set[str] = None,
                              verbose: bool = False
                              ):
         """
@@ -511,13 +511,30 @@ class FeathrClient(object):
             output_path: output path of job, i.e. the observation data with features attached.
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
             config_file_name: the name of the config file that will be passed to the spark job. The config file is used to configure the spark job. The default value is "feature_join_conf/feature_join.conf".
+            dataset_column_names: column names of observation data set. Will be used to check conflicts with feature names if cannot get real column names from observation data set.
         """
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
         feature_names = []
         for feature_query in feature_queries:
             for feature_name in feature_query.feature_list:
                 feature_names.append(feature_name)
-
+        
+        if len(feature_names) > 0 and observation_settings.conflicts_auto_correction is None:
+            import feathr.utils.job_utils as job_utils
+            dataset_column_names_from_path = job_utils.get_cloud_file_column_names(self, observation_settings.observation_path, observation_settings.file_format,observation_settings.is_file_path)
+            if (dataset_column_names_from_path is None or len(dataset_column_names_from_path) == 0) and dataset_column_names is None:
+                self.logger.warning(f"Feathr is unable to read the Observation data from {observation_settings.observation_path} due to permission issue or invalid path. Please either grant the permission or supply the observation column names in the filed: observation_column_names.")
+            else:
+                if dataset_column_names_from_path is not None and len(dataset_column_names_from_path) > 0:
+                    dataset_column_names = dataset_column_names_from_path
+                conflict_names = []
+                for feature_name in feature_names:
+                    if feature_name in dataset_column_names:
+                        conflict_names.append(feature_name)
+                if len(conflict_names) != 0:
+                    conflict_names = ",".join(conflict_names)
+                    raise RuntimeError(f"Feature names exist conflicts with dataset column names: {conflict_names}")
+           
         udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(feature_names, self.local_workspace_dir)
 
         # produce join config
@@ -1016,3 +1033,4 @@ class FeathrClient(object):
             return "'{" + config_str + "}'"
         else:
             return config_str
+ 

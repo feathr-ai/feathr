@@ -89,6 +89,48 @@ def basic_test_setup(config_path: str):
 
     return client
 
+def conflicts_auto_correction_setup(config_path: str):
+    now = datetime.now()
+    # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
+    os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
+    os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
+    
+    client = FeathrClient(config_path=config_path, local_workspace_dir="conflicts_test")
+    batch_source = HdfsSource(name="nycTaxiBatchSource",
+                          path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
+                          event_timestamp_column="lpep_dropoff_datetime",
+                          timestamp_format="yyyy-MM-dd HH:mm:ss")
+    location_id = TypedKey(key_column="DOLocationID",
+                       key_column_type=ValueType.INT32,
+                       description="location id in NYC",
+                       full_name="nyc_taxi.location_id")
+    pu_location_id = TypedKey(key_column="PULocationID",
+                          key_column_type=ValueType.INT32,
+                          description="location id in NYC",
+                          full_name="nyc_taxi.location_id")
+
+    agg_features = [Feature(name="tip_amount",
+                        key=[location_id, pu_location_id],
+                        feature_type=FLOAT,
+                        transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                                                          agg_func="AVG",
+                                                          window="3d")),
+                Feature(name="total_amount",
+                        key=[location_id, pu_location_id],
+                        feature_type=FLOAT,
+                        transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
+                                                          agg_func="MAX",
+                                                          window="3d")),
+                ]
+
+    agg_anchor = FeatureAnchor(name="aggregationFeatures",
+                           source=batch_source,
+                           features=agg_features)
+    
+    client.build_features(anchor_list=[agg_anchor])
+
+    return client
+
 def composite_keys_test_setup(config_path: str):
 
     now = datetime.now()
