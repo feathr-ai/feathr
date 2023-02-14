@@ -326,5 +326,4 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         packages.append("commons-io:commons-io:2.6")
         packages.append("org.apache.hadoop:hadoop-azure:2.7.4")
         packages.append("com.microsoft.azure:azure-storage:8.6.4")
-        packages.append("com.github.everit-org.json-schema:org.everit.json.schema:1.9.1")
         return ",".join(packages)
