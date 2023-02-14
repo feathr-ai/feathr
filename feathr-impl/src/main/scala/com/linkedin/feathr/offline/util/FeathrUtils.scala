@@ -56,7 +56,7 @@ private[feathr] object FeathrUtils {
   val checkPointSequenceNumber = new AtomicLong(0)
 
   val sqlConfsWithDefaultParam = Map(
-    ENABLE_DEBUG_OUTPUT  -> (SQLConf.buildConf(getFullConfigKeyName(ENABLE_DEBUG_OUTPUT )).stringConf.createOptional, "true"),
+    ENABLE_DEBUG_OUTPUT  -> (SQLConf.buildConf(getFullConfigKeyName(ENABLE_DEBUG_OUTPUT )).stringConf.createOptional, "false"),
     DEBUG_FEATURE_NAMES  -> (SQLConf.buildConf(getFullConfigKeyName(DEBUG_FEATURE_NAMES )).stringConf.createOptional, ""),
     DEBUG_OUTPUT_PATH  -> (SQLConf.buildConf(getFullConfigKeyName(DEBUG_OUTPUT_PATH )).stringConf.createOptional, "/tmp/debug/feathr/output"),
     CHECKPOINT_OUTPUT_PATH  -> (SQLConf.buildConf(getFullConfigKeyName(CHECKPOINT_OUTPUT_PATH )).stringConf.createOptional, "/tmp/feathr/checkpoints"),
