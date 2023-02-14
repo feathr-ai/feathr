@@ -300,7 +300,8 @@ jobs:
       
   test_status:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
+    needs: [gradle_test, databricks_test, azure_synapse_test, local_spark_test]
+    if: (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && failure()
     steps:
       - name: Check gradle test status
         run: |
