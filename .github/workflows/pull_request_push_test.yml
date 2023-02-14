@@ -300,11 +300,13 @@ jobs:
       
   test_status:
     runs-on: ubuntu-latest
+    needs: [gradle_test, databricks_test, azure_synapse_test, local_spark_test]
     if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
     steps:
       - name: Check gradle test status
+        if: failure()
         run: |
-          echo "test status failed"
+          echo "Merging is blocked because one or more test jobs failed."
           exit 1
        
   failure_notification:
