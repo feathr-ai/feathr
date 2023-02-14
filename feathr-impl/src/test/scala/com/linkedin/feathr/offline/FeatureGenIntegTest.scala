@@ -887,7 +887,8 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     assertEquals(dfCount, 2)
     // Assert that the feature is skipped.
     assertTrue(!dfs.keySet.map(x => x.getFeatureName).contains("f3"))
-    setFeathrJobParam(SKIP_MISSING_FEATURE, "true")}
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
+  }
 
   /**
    * test sliding window aggregation feature with different anchors
