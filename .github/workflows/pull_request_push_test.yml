@@ -303,7 +303,6 @@ jobs:
     if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
     steps:
       - name: Check gradle test status
-        if: failure()
         run: |
           echo "Merging is blocked because one or more test jobs failed."
           exit 1
