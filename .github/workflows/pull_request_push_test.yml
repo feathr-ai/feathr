@@ -304,7 +304,8 @@ jobs:
     steps:
       - name: Check gradle test status
         run: |
-          echo "test"
+          echo "test status failed"
+          exit 1
        
   failure_notification:
     # If any failure, warning message will be sent
