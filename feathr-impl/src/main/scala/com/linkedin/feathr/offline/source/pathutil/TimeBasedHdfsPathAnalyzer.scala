@@ -79,7 +79,7 @@ private[offline] class TimeBasedHdfsPathAnalyzer(pathChecker: PathChecker, dataL
     } else if (pathChecker.exists(basePath + hourlyFolder)) {
       PathInfo(basePath + hourlyFolder, dateTimeResolution, timePartitionPattern)
     } else {
-      PathInfo(filePath, dateTimeResolution, timePartitionPattern)
+      PathInfo(basePath, dateTimeResolution, timePartitionPattern)
     }
   }
 }
