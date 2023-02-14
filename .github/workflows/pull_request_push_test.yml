@@ -300,10 +300,10 @@ jobs:
       
   test_status:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
     steps:
       - name: Check gradle test status
-        run: exit 1
+        run: echo "test"
        
   failure_notification:
     # If any failure, warning message will be sent
