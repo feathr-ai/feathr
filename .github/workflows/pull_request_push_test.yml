@@ -8,12 +8,12 @@ on:
       - "ui/**"
       - "**/README.md"
 
-  # pull_request:
-  #   branches: [main]
-  #   paths-ignore:
-  #     - "docs/**"
-  #     - "ui/**"
-  #     - "**/README.md"
+  pull_request:
+   branches: [main]
+   paths-ignore:
+     - "docs/**"
+     - "ui/**"
+     - "**/README.md"
 
   pull_request_target:
     branches: [main]
@@ -298,15 +298,13 @@ jobs:
           pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
           pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py
       
-  failure_notification2:
-    # If any failure, warning message will be sent
-    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
+  test_status:
     runs-on: ubuntu-latest
-    if: failure() && github.event_name == 'schedule'
+    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
     steps:
-     - name: Warning
-       run: |
-        curl -H 'Content-Type: application/json' -d '{"text": "[WARNING] Daily CI has failure, please check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' ${{ secrets.TEAMS_WEBHOOK }}
+      - name: Check gradle test status
+        run: |
+          echo "test"
        
   failure_notification:
     # If any failure, warning message will be sent
