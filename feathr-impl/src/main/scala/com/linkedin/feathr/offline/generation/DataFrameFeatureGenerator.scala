@@ -87,6 +87,10 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
           .transformFeatures(anchoredDFThisStage, anchoredFeatureNamesThisStage, None, Some(incrementalAggContext), mvelContext)
           .map(f => (f._1, (offline.FeatureDataFrame(f._2.transformedResult.df, f._2.transformedResult.inferredFeatureTypes), f._2.joinKey)))
     }.toMap
+    allStageFeatures map { featureDfWithKey =>
+      FeathrUtils.dumpDebugInfo(ss, featureDfWithKey._2._1.df, Set(featureDfWithKey._1),
+      "transformed df in feature generation", "transformed_df_in_generation")
+    }
 
     // Update features based on skip missing feature flag and empty dataframe
     val updatedAllStageFeatures = if (shouldSkipFeature) {
@@ -107,6 +111,10 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
     val defaultSubstitutedFeatures =
       featureGenDefaultsSubstituter.substitute(ss, groupedAnchoredFeatures, featureToDefaultValueMap, featureToTypeConfigMap)
 
+    defaultSubstitutedFeatures map { featureDfWithKey =>
+      FeathrUtils.dumpDebugInfo(ss, featureDfWithKey._2._1.df, Set(featureDfWithKey._1),
+        "df after default applied in feature generation", "with_default_df_in_generation")
+    }
     // 7. Calculate derived features.
     val derivedFeatureEvaluator = getDerivedFeatureEvaluatorInstance(ss, featureGroups)
     val derivedFeatureGenerator = DerivedFeatureGenStage(updatedFeatureGroups, updatedLogicalPlan, derivedFeatureEvaluator)
@@ -118,11 +126,19 @@ private[offline] class DataFrameFeatureGenerator(logicalPlan: MultiStageJoinPlan
         derivedFeatureGenerator.evaluate(derivedFeatureNamesThisStage, keyTags, accFeatureData)
       })
 
+    derivationsEvaluatedFeatures map { featureDfWithKey =>
+      FeathrUtils.dumpDebugInfo(ss, featureDfWithKey._2._1.df, Set(featureDfWithKey._1),
+        "df after derivation in feature generation", "with_derivation_df_in_generation")
+    }
     // 8. Prune feature columns before handing it off to output processors.
     // As part of the pruning columns are renamed to a standard and unwanted columns, features are dropped.
     val decoratedFeatures: Map[TaggedFeatureName, (DataFrame, Header)] =
       postGenPruner.prune(derivationsEvaluatedFeatures, featureGenSpec.getFeatures(), logicalPlan, featureGroups)
 
+    decoratedFeatures map { featureDfWithKey =>
+      FeathrUtils.dumpDebugInfo(ss, featureDfWithKey._2._1, Set(featureDfWithKey._1.getFeatureName),
+        "df after prune in feature generation", "after_prune_df_in_generation")
+    }
     // 9. apply outputProcessors
     val outputProcessors = featureGenSpec.getProcessorList()
     if (outputProcessors.isEmpty) {
