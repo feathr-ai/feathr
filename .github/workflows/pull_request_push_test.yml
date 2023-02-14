@@ -303,7 +303,8 @@ jobs:
     if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
     steps:
       - name: Check gradle test status
-        run: echo "test"
+        run: |
+          echo "test"
        
   failure_notification:
     # If any failure, warning message will be sent
