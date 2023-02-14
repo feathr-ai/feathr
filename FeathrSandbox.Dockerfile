@@ -73,7 +73,7 @@ RUN sed -i "s/\r//g" /usr/src/registry/start_local.sh
 
 # install a Kafka single node instance
 # Reference: https://www.looklinux.com/how-to-install-apache-kafka-single-node-on-ubuntu/
-RUN wget https://downloads.apache.org/kafka/3.3.1/kafka_2.12-3.3.1.tgz && tar xzf kafka_2.12-3.3.1.tgz && mv kafka_2.12-3.3.1 /usr/local/kafka && rm kafka_2.12-3.3.1.tgz
+# RUN wget https://archive.apache.org/dist/kafka/3.3.1/kafka_2.12-3.3.1.tgz && tar xzf kafka_2.12-3.3.1.tgz && mv kafka_2.12-3.3.1 /usr/local/kafka && rm kafka_2.12-3.3.1.tgz
 
 # /usr/local/kafka/bin/zookeeper-server-start.sh /usr/local/kafka/config/zookeeper.properties
 # /usr/local/kafka/bin/kafka-server-start.sh  /usr/local/kafka/config/server.properties
