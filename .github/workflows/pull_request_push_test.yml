@@ -300,10 +300,10 @@ jobs:
       
   test_status:
     runs-on: ubuntu-latest
-    if: always() 
-    needs: [python_lint]
+    if: always() && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')
+    needs: [gradle_test, databricks_test, azure_synapse_test, local_spark_test, registry_test]
     steps:
-      - name: Check gradle test status
+      - name: Check CI test status
         if: failure()
         run: |
           echo "Merging is blocked because one or more test jobs failed."
@@ -311,7 +311,7 @@ jobs:
        
   failure_notification:
     # If any failure, warning message will be sent
-    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
+    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, registry_test]
     runs-on: ubuntu-latest
     if: failure() && github.event_name == 'schedule'
     steps:
@@ -321,7 +321,7 @@ jobs:
 
   notification:
     # Final Daily Report with all job status
-    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test]
+    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, registry_test]
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'schedule'
     steps:
