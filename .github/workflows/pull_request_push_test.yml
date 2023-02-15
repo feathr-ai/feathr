@@ -301,10 +301,10 @@ jobs:
   test_status:
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'pull_request'
-    needs: [gradle_test, local_spark_test, registry_test]
+    needs: [python_lint, registry_test]
     steps:
       - name: Check CI test status
-        if: needs.registry_test.result == 'failure'
+        if: needs.registry_test.result == 'failure' || needs.python_lint.result == 'failure'
         run: |
           echo "Merging is blocked because one or more test jobs failed."
           exit 1
