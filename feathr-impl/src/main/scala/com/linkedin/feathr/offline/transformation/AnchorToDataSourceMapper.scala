@@ -111,7 +111,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
 
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
 
-    val (timeInterval, updatedFactDataSource) = if (factDataSource.location.isFileBasedLocation()) {
+    val timeInterval = if (factDataSource.location.isFileBasedLocation()) {
       val pathChecker = PathChecker(ss, dataLoaderHandlers)
       val pathAnalyzer = new TimeBasedHdfsPathAnalyzer(pathChecker, dataLoaderHandlers)
       val pathInfo = pathAnalyzer.analyze(factDataSource.path)
@@ -120,12 +120,10 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       } else {
         obsTimeRange
       }
-      (OfflineDateTimeUtils.getFactDataTimeRange(adjustedObsTimeRange, window, timeDelays),
-        DataSource(pathInfo.basePath, factDataSource.sourceType, factDataSource.timeWindowParams,
-          factDataSource.timePartitionPattern, factDataSource.postfixPath))
+      OfflineDateTimeUtils.getFactDataTimeRange(adjustedObsTimeRange, window, timeDelays)
     } else {
       // Path and time range adjustments cannot be applied to non-file-based sources, keep them as-is
-      (obsTimeRange, factDataSource)
+      obsTimeRange
     }
 
     val needCreateTimestampColumn = SlidingWindowFeatureUtils.needCreateTimestampColumnFromPartition(factDataSource)
@@ -135,7 +133,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       val timeSeriesSource =
         DataSourceAccessor(
           ss = ss,
-          source = updatedFactDataSource,
+          source = factDataSource,
           dateIntervalOpt = Some(timeInterval),
           expectDatumType = None,
           failOnMissingPartition = failOnMissingPartition,
