@@ -13,7 +13,7 @@ import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
-import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
 import com.linkedin.feathr.swj.{LabelData, SlidingWindowJoin}
@@ -76,7 +76,6 @@ private[offline] class SlidingWindowAggregationJoiner(
         "joinTimeSettings section is not defined in join config," +
           " cannot perform window aggregation operation")
     }
-    val enableCheckPoint = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.ENABLE_CHECKPOINT).toBoolean
 
     val timeWindowJoinSettings = joinConfigSettings.get.joinTimeSetting.get
     val simulatedDelay = timeWindowJoinSettings.simulateTimeDelay
@@ -234,6 +233,7 @@ private[offline] class SlidingWindowAggregationJoiner(
               SlidingWindowFeatureUtils.getFactDataDef(filteredFactData, anchorWithSourceToDFMap.keySet.toSeq, featuresToDelayImmutableMap, selectedFeatures)
           }
         val origContextObsColumns = labelDataDef.dataSource.columns
+
         contextDF = SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
         val defaults = windowAggAnchorDFThisStage.flatMap(s => s._1.featureAnchor.defaults)
         val userSpecifiedTypesConfig = windowAggAnchorDFThisStage.flatMap(_._1.featureAnchor.featureTypeConfigs)
@@ -251,7 +251,7 @@ private[offline] class SlidingWindowAggregationJoiner(
 
         allInferredFeatureTypes ++= inferredTypes
         contextDF = standardizeFeatureColumnNames(origContextObsColumns, withFeatureContextDF, joinedFeatures, keyTags.map(keyTagList))
-        if (enableCheckPoint) {
+        if (shouldCheckPoint(ss)) {
           // checkpoint complicated dataframe for each stage to avoid Spark failure
           contextDF = contextDF.checkpoint(true)
         }

@@ -8,10 +8,11 @@ import com.linkedin.feathr.offline.source.pathutil.{PathChecker, PathInfo, TimeB
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
 import com.linkedin.feathr.offline.util.PartitionLimiter
+import com.linkedin.feathr.offline.util.SourceUtils.processSanityCheckMode
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
 import org.apache.logging.log4j.LogManager
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.{DataFrame, SparkSession}
 /**
  * representation of a source that is comprised of a time series of datasets
  * the idea is that we can call getSourceData with different time window parameter to get a slice of a time series dataset,
@@ -31,6 +32,7 @@ import org.apache.spark.sql.functions.lit
  * @param partitionLimiter the partition limiter
  */
 private[offline] class PathPartitionedTimeSeriesSourceAccessor(
+    ss: SparkSession,
     datePartitions: Seq[DatePartition],
     source: DataSource,
     sourceTimeInterval: DateTimeInterval,
@@ -59,7 +61,7 @@ private[offline] class PathPartitionedTimeSeriesSourceAccessor(
     }
     val df = dataFrames.reduce((x, y) => x.fuzzyUnion(y))
 
-    partitionLimiter.limitPartition(df)
+    processSanityCheckMode(ss, partitionLimiter.limitPartition(df))
   }
 
   /**
@@ -125,6 +127,7 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
    * @return a TimeSeriesSource
    */
   def apply(
+      ss: SparkSession,
       pathChecker: PathChecker,
       fileLoaderFactory: DataLoaderFactory,
       partitionLimiter: PartitionLimiter,
@@ -165,6 +168,7 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
         DatePartition(df, interval)
     }
     new PathPartitionedTimeSeriesSourceAccessor(
+      ss,
       datePartitions,
       source,
       timeInterval,

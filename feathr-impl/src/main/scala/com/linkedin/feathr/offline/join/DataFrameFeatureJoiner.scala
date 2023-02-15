@@ -8,7 +8,7 @@ import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.derived.DerivedFeatureEvaluator
 import com.linkedin.feathr.offline.job.FeatureTransformation.transformSingleAnchorDF
-import com.linkedin.feathr.offline.job.{FeatureTransformation, LocalFeatureJoinJob, TransformedResult}
+import com.linkedin.feathr.offline.job.{FeatureTransformation, TransformedResult}
 import com.linkedin.feathr.offline.join.algorithms._
 import com.linkedin.feathr.offline.join.util.{FrequentItemEstimatorFactory, FrequentItemEstimatorType}
 import com.linkedin.feathr.offline.join.workflow._
@@ -23,7 +23,6 @@ import com.linkedin.feathr.offline.util.FeathrUtils
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
 import org.apache.logging.log4j.LogManager
-import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
 
@@ -58,7 +57,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
   def joinAnchoredPassthroughFeatures(ss: SparkSession, contextDF: DataFrame, featureGroups: FeatureGroups): FeatureDataFrame = {
     val allAnchoredPassthroughFeatures =
       featureGroups.allPassthroughFeatures.filter(feature => allRequiredFeatures.map(_.getFeatureName).contains(feature._1))
-    if (allAnchoredPassthroughFeatures.nonEmpty) {
+    val withFeatureDf = if (allAnchoredPassthroughFeatures.nonEmpty) {
       // collect anchored passthrough feature information
       val passthroughFeatureMapping = allAnchoredPassthroughFeatures
         .groupBy(_._2)
@@ -100,6 +99,10 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
     } else {
       offline.FeatureDataFrame(contextDF, Map())
     }
+    val featureNames = allAnchoredPassthroughFeatures.map(_._1).toSet
+    FeathrUtils.dumpDebugInfo(ss, withFeatureDf.df, featureNames, "context DF after joining passthrough feature",
+      featureNames.mkString("_") + "_after_join_with_passthrough_features")
+    withFeatureDf
   }
 
   /**
@@ -191,8 +194,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         .toIndexedSeq
         .map(featureGroups.allAnchoredFeatures),
       failOnMissingPartition)
-    val shouldSkipFeature = (FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean) ||
-      (ss.sparkContext.isLocal && SQLConf.get.getConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE))
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
     val updatedSourceAccessorMap = anchorSourceAccessorMap.filter(anchorEntry => anchorEntry._2.isDefined)
       .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
@@ -271,10 +273,8 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         } // preserve all non-feature columns, they are from observation
       !requested
     }): _*)
-    if (log.isDebugEnabled) {
-      log.debug(s"After removing unwanted columns, cleanedDF:")
-      cleanedDF.show(false)
-    }
+    FeathrUtils.dumpDebugInfo(ss, cleanedDF, Set(), "context DF after join and " +
+        "remove unwanted columns", "context_after_join_and_clean")
 
     val allInferredFeatureTypes = anchoredPassthroughFeatureTypes ++
       inferredBasicAnchoredFeatureTypes ++ inferredSWAFeatureTypes ++ inferredDerivedFeatureTypes
@@ -297,10 +297,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         featureGroups.allDerivedFeatures,
         allInferredFeatureTypes)
 
-    if (log.isDebugEnabled) {
-      log.debug(s"joinFeaturesAsDF returned:")
-      finalDF.show(false)
-    }
+    FeathrUtils.dumpDebugInfo(ss, finalDF, Set(), "final df", "final_df_returned")
     (finalDF, header)
   }
 

@@ -124,6 +124,7 @@ class TestAnchoredFeatureJoinStep extends TestFeathr with MockitoSugar {
   def testJoinOnSingleDFWhenSaltedJoin(): Unit = {
     val mockExecutionContext = mock[JoinExecutionContext] // mock execution context
     when(mockExecutionContext.frequentItemEstimatedDFMap).thenReturn(None)
+    when(mockExecutionContext.sparkSession).thenReturn(ss)
 
     // mock feature DF
     val mockTransformedResult = mock[TransformedResult]

@@ -4,12 +4,12 @@ import com.linkedin.feathr.common.configObj.configbuilder.ConfigBuilderException
 import com.linkedin.feathr.common.exception.FeathrConfigException
 import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.generation.SparkIOUtils
-import com.linkedin.feathr.offline.job.{LocalFeatureJoinJob, PreprocessedDataFrameManager}
+import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
+import com.linkedin.feathr.offline.util.FeathrUtils.{SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
 import org.testng.Assert.assertTrue
 import org.testng.annotations.{BeforeClass, Test}
@@ -284,7 +284,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
    */
   @Test
   def testSkipAnchoredFeatures: Unit = {
-    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, true)
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "true")
     val df = runLocalFeatureJoinForTest(
       joinConfigAsString =
         """
@@ -383,7 +383,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     assertTrue(df.data.columns.contains("featureWithNull2"))
     assertTrue(!df.data.columns.contains("aEmbedding"))
     assertTrue(df.data.columns.contains("memberEmbeddingAutoTZ"))
-    SQLConf.get.setConf(LocalFeatureJoinJob.SKIP_MISSING_FEATURE, false)
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
   }
 
   /*

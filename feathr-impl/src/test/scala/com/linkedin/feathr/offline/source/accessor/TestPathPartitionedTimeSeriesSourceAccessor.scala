@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.source.accessor
 import com.linkedin.feathr.common.DateTimeResolution
 import com.linkedin.feathr.common.exception.FeathrInputDataException
 import com.linkedin.feathr.offline.TestFeathr
-import com.linkedin.feathr.offline.TestUtils.{assertThrows, createDailyInterval, createHourlyInterval}
+import com.linkedin.feathr.offline.TestUtils.{createDailyInterval, createHourlyInterval}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import com.linkedin.feathr.offline.util.PartitionLimiter
 import org.apache.spark.sql.DataFrame
@@ -24,6 +24,7 @@ class TestPathPartitionedTimeSeriesSourceAccessor extends TestFeathr {
     val sqlContext = ss.sqlContext
     import sqlContext.implicits._
     dailySourceAccessorWithFailOnMissingPartition = new PathPartitionedTimeSeriesSourceAccessor(
+      ss,
       Seq(
         DatePartition(Seq("2019-05-19").toDF(), createDailyInterval("2019-05-19", "2019-05-20")),
         DatePartition(Seq("2019-05-20").toDF(), createDailyInterval("2019-05-20", "2019-05-21"))),
@@ -35,6 +36,7 @@ class TestPathPartitionedTimeSeriesSourceAccessor extends TestFeathr {
       new PartitionLimiter(ss))
 
     hourlySourceAccessorWithFailOnMissingPartition = new PathPartitionedTimeSeriesSourceAccessor(
+      ss,
       Seq(
         DatePartition(Seq("2019-05-19-01").toDF(), createHourlyInterval("2019-05-19-01", "2019-05-19-02")),
         DatePartition(Seq("2019-05-19-02").toDF(), createHourlyInterval("2019-05-19-02", "2019-05-19-03"))),
@@ -48,6 +50,7 @@ class TestPathPartitionedTimeSeriesSourceAccessor extends TestFeathr {
     // Build similar source accessors but with failOnMissingPartitions set to false.
     // These source accessors will ignore the missing partitions.
     dailySourceAccessorWithoutFailOnMissingPartition = new PathPartitionedTimeSeriesSourceAccessor(
+      ss,
       Seq(
         DatePartition(Seq("2019-05-19").toDF(), createDailyInterval("2019-05-19", "2019-05-20")),
         DatePartition(Seq("2019-05-20").toDF(), createDailyInterval("2019-05-20", "2019-05-21"))),
@@ -59,6 +62,7 @@ class TestPathPartitionedTimeSeriesSourceAccessor extends TestFeathr {
       new PartitionLimiter(ss))
 
     hourlySourceAccessorWithoutFailOnMissingPartition = new PathPartitionedTimeSeriesSourceAccessor(
+      ss,
       Seq(
         DatePartition(Seq("2019-05-19-01").toDF(), createHourlyInterval("2019-05-19-01", "2019-05-19-02")),
         DatePartition(Seq("2019-05-19-02").toDF(), createHourlyInterval("2019-05-19-02", "2019-05-19-03"))),
