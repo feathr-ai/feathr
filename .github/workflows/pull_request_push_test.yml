@@ -300,10 +300,11 @@ jobs:
       
   test_status:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target' 
+    if: always() 
+    needs: [python_lint]
     steps:
       - name: Check gradle test status
-        if: jobs.python_lint.result == 'failure'
+        if: failure()
         run: |
           echo "Merging is blocked because one or more test jobs failed."
           exit 1
