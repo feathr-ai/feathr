@@ -303,12 +303,12 @@ jobs:
     if: always() && github.event_name == 'pull_request'
     needs: [python_lint]
     steps:
-      - name: Check CI test status
+      - name: Test status failure
         if: contains(needs.*.result, 'failure')
         run: |
           echo "Merging is blocked because one or more test jobs failed."
           exit 1
-      - name: Check CI test status
+      - name: Test status success
         if: ${{ !contains(needs.*.result, 'failure') }}
         run: |
           echo "All required CI test jobs passed."
