@@ -24,7 +24,7 @@ const SearchBar = (props: SearchBarProps, ref: any) => {
   const { onSearch } = props
 
   const onClickRoleAssign = () => {
-    navigate('/role-management')
+    navigate('/management/role')
   }
 
   return (
