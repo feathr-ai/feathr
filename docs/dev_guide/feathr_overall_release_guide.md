@@ -10,7 +10,8 @@ This document describes all the release process for the development team.
 
 ## Prerequisites
 
-- Make sure the CI tests are passing prior to bug bash.
+- Make sure nightly CI tests are passed.
+- Make sure notebook nightly tests are passed.
 - Make sure all the active PRs related to the release are merged.
 
 ## When to Release
@@ -41,11 +42,12 @@ Read through the [commit log](https://github.com/feathr-ai/feathr/commits/main) 
 
 Before the release candidate or release is made, the version needs to be updated in following places
 
-- [build.gradle](https://github.com/feathr-ai/feathr/blob/main/gradle.properties#L3) - For Maven release version
+- [build.gradle](https://github.com/feathr-ai/feathr/blob/main/gradle.properties#L1) - For Maven release version
 - [version.py](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathr/version.py#L1) - For Feathr version
 - [conf.py](https://github.com/feathr-ai/feathr/blob/main/feathr_project/docs/conf.py#L27) - For documentation version
-- [feathr_config.yaml](https://github.com/feathr-ai/feathr/blob/main/feathr_project/test/test_user_workspace/feathr_config.yaml#L84) - To set the spark runtime location for Azure Synapse and Azure Databricks used by test suite. Please update all .yaml files under this path.
+- [feathr_config.yaml](https://github.com/feathr-ai/feathr/blob/main/feathr_project/test/test_user_workspace/feathr_config.yaml#L86) - To set the spark runtime location for Azure Synapse and Azure Databricks used by test suite. Please update all .yaml files under this path.
 - [package.json](https://github.com/feathr-ai/feathr/blob/main/ui/package.json#L3) - For Feathr UI version
+- [package-lock.json](https://github.com/feathr-ai/feathr/blob/main/ui/package-lock.json) - For Feathr UI version
 
 Following file should only be updated for release, which means should be skipped for release candidate.
 
@@ -61,33 +63,29 @@ Once the release branch is created, a release tag should be created from the rel
 
 ## Triggering automated release pipelines
 
-Once the release branch and release tag are created, the release pipelines will be triggered automatically. The release pipelines will build the release artifacts and publish them to Maven and PyPI.
+Once the release branch and release tag are created, the release pipelines will be triggered automatically. The release pipelines will build the release artifacts and publish them to DockerHub, Maven and PyPI.
 
 1. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/docker-publish.yml) to build and publish for Feathr Registry docker images to [DockerHub](https://hub.docker.com/r/feathrfeaturestore/feathr-registry/tags).
-
     **Triggers** - Nightly or branch with name pattern "releases/*"
 
-2. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-pypi.yml) for publishing Python package to [PyPi](https://pypi.org/project/feathr/).
-
+2. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-pypi.yml) for publishing Python package to [PyPI](https://pypi.org/project/feathr/).
     **Triggers** - branch with name pattern "releases/*"
 
-3. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-maven.yml) for publishing the jar to [maven/sonatype repository](https://oss.sonatype.org/).
+3. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-maven.yml) for publishing runtime jar to [maven/sonatype repository](https://oss.sonatype.org/).
 
-## Upload Feathr Jar
+4. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-fat-jar.yml) for uploading runtime jar to [Azure storage](https://ms.portal.azure.com/#view/Microsoft_Azure_Storage/ContainerMenuBlade/~/overview/storageAccountId/%2Fsubscriptions%2Fa6c2a7cc-d67e-4a1a-b765-983f08c0423a%2FresourceGroups%2Fazurefeathrintegration%2Fproviders%2FMicrosoft.Storage%2FstorageAccounts%2Fazurefeathrstorage/path/public/etag/%220x8D9E6F64D62D599%22/defaultEncryptionScope/%24account-encryption-key/denyEncryptionScopeOverride//defaultId//publicAccessVal/Container).
 
-Run the command to generate the Java jar. After the jar is generated, please upload to [Azure storage](https://ms.portal.azure.com/#view/Microsoft_Azure_Storage/ContainerMenuBlade/~/overview/storageAccountId/%2Fsubscriptions%2Fa6c2a7cc-d67e-4a1a-b765-983f08c0423a%2FresourceGroups%2Fazurefeathrintegration%2Fproviders%2FMicrosoft.Storage%2FstorageAccounts%2Fazurefeathrstorage/path/public/etag/%220x8D9E6F64D62D599%22/defaultEncryptionScope/%24account-encryption-key/denyEncryptionScopeOverride//defaultId//publicAccessVal/Container) for faster access.
-
-## Release PyPi
+## Release PyPI
 
 The automated workflow should take care of this, you can check under [actions](https://github.com/feathr-ai/feathr/actions/workflows/publish-to-pypi.yml) to see the triggered run and results. For manual steps, see [Python Package Release Guide](https://feathr-ai.github.io/feathr/dev_guide/python_package_release.html)
 
-## Updating docker image for API and Registry
+## Push to Docker Hub
 
-The automated workflow should take care of this as well, you can check under [actions](https://github.com/feathr-ai/feathr/actions/workflows/docker-publish.yml) to see the triggered run and results. For manual steps, see [Feathr Registry docker image](https://feathr-ai.github.io/feathr/dev_guide/build-and-push-feathr-registry-docker-image.html)
+The automated workflow should take care of this, you can check under [actions](https://github.com/feathr-ai/feathr/actions/workflows/docker-publish.yml) to see the triggered run and results. For manual steps, see [How to build and push feathr registry docker image](https://feathr-ai.github.io/feathr/dev_guide/build-and-push-feathr-registry-docker-image.html)
 
 ## Release Maven
 
-The automated workflow should take of this too, you can check under [actions](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-maven.yml) to see the triggered run and results. For manual steps, see [Feathr Developer Guide for publishing to maven](https://feathr-ai.github.io/feathr/dev_guide/publish_to_maven.html)
+The automated workflow should take care of this, you can check under [actions](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-maven.yml) to see the triggered run and results. For manual steps, see [Feathr Developer Guide for publishing to maven](https://feathr-ai.github.io/feathr/dev_guide/publish_to_maven.html)
 
 ## Testing
 
