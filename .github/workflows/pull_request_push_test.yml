@@ -308,6 +308,10 @@ jobs:
         run: |
           echo "Merging is blocked because one or more test jobs failed."
           exit 1
+      - name: Show success results
+        if: ${{ !failure()}}
+        run: |
+          echo "All required CI test jobs passed."
        
   failure_notification:
     # If any failure, warning message will be sent
