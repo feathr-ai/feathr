@@ -304,7 +304,7 @@ jobs:
     needs: [python_lint, registry_test]
     steps:
       - name: Check CI test status
-        if: needs.python_lint.result == 'failure'
+        if: needs.python_lint.result == 'failure' || needs.python_lint.result == 'failure'
         run: |
           echo "Merging is blocked because one or more test jobs failed."
           exit 1
