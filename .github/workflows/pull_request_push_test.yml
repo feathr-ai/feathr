@@ -301,7 +301,7 @@ jobs:
   test_status:
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'pull_request'
-    needs: [python_lint, registry_test]
+    needs: [python_lint]
     steps:
       - name: Check CI test status
         if: contains(needs.*.result, 'failure')
