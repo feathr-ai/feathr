@@ -68,4 +68,11 @@ class TestFeathrDefaultValue extends TestFeathr {
     assertEquals(joined(1).getAs[Row]("featuresWithEmptyMap"), TestUtils.build1dSparseTensorFDSRow(Array("term_default"), Array(0.0f)))
     assertEquals(joined(2).getAs[Row]("featuresWithEmptyMap"), TestUtils.build1dSparseTensorFDSRow(Array("term_default"), Array(0.0f)))
   }
+
+  // Allow empty feature definition configs
+  @Test
+  def testEmptyConfigFile(): Unit = {
+    val feathrConfigs = List(feathrConfigLoader.load(""))
+    feathr = FeathrClient.builder(ss).addFeatureDefConfs(Some(feathrConfigs)).build()
+  }
 }

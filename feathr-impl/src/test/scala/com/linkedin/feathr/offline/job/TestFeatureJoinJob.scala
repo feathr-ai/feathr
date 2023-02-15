@@ -132,6 +132,10 @@ class TestFeatureJoinJob extends TestNGSuite{
         |       format: "yyyy-MM-dd"
         |      }
         |  }
+        |  conflictsAutoCorrectionSettings: {
+        |    renameFeatures: "False"
+        |    suffix: "suffixTest"
+        |  }
         |}
         |
         |features: [
@@ -176,5 +180,147 @@ class TestFeatureJoinJob extends TestNGSuite{
     assertEquals(featureList.size, 2)
     assertEquals(featureList(0).getAs[Row]("aEmbedding"), mutable.WrappedArray.make(Array(1.5f, 1.8f)))
     assertEquals(featureList(1).getAs[Row]("aEmbedding"), mutable.WrappedArray.make(Array(7.5f, 7.7f)))
+  }
+
+@Test(description = "test conflicts auto correction on dataset")
+def testConflictsAutoCorrectionDataset(): Unit = {
+  val res = LocalFeatureJoinJob.joinWithHoconJoinConfig (
+  """
+    | settings: {
+    |  joinTimeSettings: {
+    |    timestampColumn: {
+    |       def: "timestamp"
+    |       format: "yyyy-MM-dd"
+    |      }
+    |  }
+    |  conflictsAutoCorrectionSettings: {
+    |    renameFeatures: "False"
+    |    suffix: "suffixTest"
+    |  }
+    |}
+    |
+    |features: [
+    |
+    |  {
+    |    key: [mId],
+    |    featureList: ["aEmbedding", "bEmbedding"]
+    |  }
+    |]
+  """.stripMargin,
+  """
+    |sources: {
+    |  swaSource: {
+    |    location: { path: "generation/daily" }
+    |    timePartitionPattern: "yyyy/MM/dd"
+    |    timeWindowParameters: {
+    |      timestampColumn: "timestamp"
+    |      timestampColumnFormat: "yyyy-MM-dd"
+    |    }
+    |  }
+    |}
+    |
+    |anchors: {
+    |  swaAnchor: {
+    |    source: "swaSource"
+    |    key: "x"
+    |    features: {
+    |      aEmbedding: {
+    |        def: "embedding"
+    |        aggregation: LATEST
+    |        window: 3d
+    |      }
+    |      bEmbedding: {
+    |        def: "embedding"
+    |        aggregation: LATEST
+    |        window: 2d
+    |      }
+    |    }
+    |  }
+    |}
+    """.stripMargin,
+  observationDataPath = "simple-obs2.csv",
+  dataPathHandlers = List () )
+
+  val featureList = res.data.collect ().sortBy (x => (x.getAs[String] ("mId") ) )
+
+  assertEquals (featureList.size, 2)
+  assertEquals (featureList (0).getAs[Row] ("aEmbedding"), mutable.WrappedArray.make (Array (1.5f, 1.8f) ) )
+  assertEquals (featureList (1).getAs[Row] ("aEmbedding"), mutable.WrappedArray.make (Array (7.5f, 7.7f) ) )
+
+  assertEquals(res.data.columns(2), "aEmbedding_suffixTest")
+  assertEquals(res.data.columns(3), "bEmbedding_suffixTest")
+  assertTrue(Seq("aEmbedding", "bEmbedding").contains(res.data.columns(4)) )
+  assertTrue(Seq("aEmbedding", "bEmbedding").contains(res.data.columns(5)))
+  }
+
+@Test(description = "test conflicts auto correction on features")
+def testConflictsAutoCorrectionFeatures(): Unit = {
+  val res = LocalFeatureJoinJob.joinWithHoconJoinConfig (
+  """
+    | settings: {
+    |  joinTimeSettings: {
+    |    timestampColumn: {
+    |       def: "timestamp"
+    |       format: "yyyy-MM-dd"
+    |      }
+    |  }
+    |  conflictsAutoCorrectionSettings: {
+    |    renameFeatures: "True"
+    |    suffix: "10"
+    |  }
+    |}
+    |
+    |features: [
+    |
+    |  {
+    |    key: [mId],
+    |    featureList: ["aEmbedding", "bEmbedding"]
+    |  }
+    |]
+  """.stripMargin,
+  """
+    |sources: {
+    |  swaSource: {
+    |    location: { path: "generation/daily" }
+    |    timePartitionPattern: "yyyy/MM/dd"
+    |    timeWindowParameters: {
+    |      timestampColumn: "timestamp"
+    |      timestampColumnFormat: "yyyy-MM-dd"
+    |    }
+    |  }
+    |}
+    |
+    |anchors: {
+    |  swaAnchor: {
+    |    source: "swaSource"
+    |    key: "x"
+    |    features: {
+    |      aEmbedding: {
+    |        def: "embedding"
+    |        aggregation: LATEST
+    |        window: 3d
+    |      }
+    |      bEmbedding: {
+    |        def: "embedding"
+    |        aggregation: LATEST
+    |        window: 2d
+    |      }
+    |    }
+    |  }
+    |}
+    """.stripMargin,
+  observationDataPath = "simple-obs2.csv",
+  dataPathHandlers = List () )
+
+  val featureList = res.data.collect ().sortBy (x => (x.getAs[String] ("mId") ) )
+
+  assertEquals (featureList.size, 2)
+  assertEquals (featureList (0).getAs[Row] ("aEmbedding_10"), mutable.WrappedArray.make (Array (1.5f, 1.8f) ) )
+  assertEquals (featureList (1).getAs[Row] ("aEmbedding_10"), mutable.WrappedArray.make (Array (7.5f, 7.7f) ) )
+
+  assertEquals(res.data.columns(2), "aEmbedding")
+  assertEquals(res.data.columns(3), "bEmbedding")
+  assertTrue(Seq("aEmbedding_10", "bEmbedding_10").contains(res.data.columns(4)))
+  assertTrue(Seq("aEmbedding_10", "bEmbedding_10").contains(res.data.columns(5)))
   }
 }

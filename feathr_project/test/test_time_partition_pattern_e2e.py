@@ -191,3 +191,4 @@ def test_feathr_get_offline_with_time_partition_pattern_postfix_path():
 
     res_df = get_result_df(client, data_format="avro", res_url = output_path)
     assert res_df.shape[0] > 0
+    
