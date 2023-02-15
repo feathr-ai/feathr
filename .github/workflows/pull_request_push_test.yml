@@ -300,7 +300,7 @@ jobs:
       
   test_status:
     runs-on: ubuntu-latest
-    if: always() && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')
+    if: always() && github.event_name == 'pull_request_target'
     needs: [gradle_test, databricks_test, azure_synapse_test, local_spark_test, registry_test]
     steps:
       - name: Check CI test status
