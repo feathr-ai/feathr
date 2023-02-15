@@ -458,8 +458,8 @@ class GenericSource(Source):
                     {% if source.mode is defined %}
                     mode: "{{source.mode}}"
                     {% endif %}
-                    {% for option in source.options %}
-                    {{option.key}}: "{{option.value}}"
+                    {% for key,value in source.options.items() %}
+                    "{{key}}":"{{value}}"
                     {% endfor %}
                 }
                 {% if source.event_timestamp_column %}

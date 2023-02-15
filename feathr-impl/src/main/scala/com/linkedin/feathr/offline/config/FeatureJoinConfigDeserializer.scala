@@ -2,7 +2,7 @@ package com.linkedin.feathr.offline.config
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.core.{JsonParser, TreeNode}
-import com.fasterxml.jackson.databind.node.{ObjectNode, TextNode, TreeTraversingParser}
+import com.fasterxml.jackson.databind.node.{NumericNode, ObjectNode, TextNode, TreeTraversingParser, ValueNode}
 import com.fasterxml.jackson.databind.{DeserializationContext, JsonDeserializer, JsonNode}
 import com.linkedin.feathr.common.DateParam
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
@@ -18,6 +18,7 @@ private class FeatureJoinConfigDeserializer extends JsonDeserializer[FeatureJoin
   type Arg = Map[String, Seq[KeyedFeatureList]]
   private val OBSERVATION_DATA_TIME_SETTINGS = "observationDataTimeSettings"
   private val JOIN_TIME_SETTINGS = "joinTimeSettings"
+  private val CONFLICTS_AUTO_CORRECTION_SETTINGS = "conflictsAutoCorrectionSettings"
 
   override def deserialize(jp: JsonParser, ctxt: DeserializationContext): FeatureJoinConfig = {
 
@@ -48,7 +49,7 @@ private class FeatureJoinConfigDeserializer extends JsonDeserializer[FeatureJoin
    */
   private def parseFeatureJoinConfigSettings(settingsNode: JsonNode, jp: JsonParser): JoinConfigSettings = {
 
-    val supportedSettingFields = Set(OBSERVATION_DATA_TIME_SETTINGS, JOIN_TIME_SETTINGS)
+    val supportedSettingFields = Set(OBSERVATION_DATA_TIME_SETTINGS, JOIN_TIME_SETTINGS, CONFLICTS_AUTO_CORRECTION_SETTINGS)
     val unrecognizedFields = settingsNode.fieldNames().asScala.toSet -- supportedSettingFields
     if (unrecognizedFields.nonEmpty) {
       throw new FeathrConfigException(
@@ -70,7 +71,14 @@ private class FeatureJoinConfigDeserializer extends JsonDeserializer[FeatureJoin
       case _ => None
     }
 
-    JoinConfigSettings(observationDataTimeSettingsDefinition, joinTimeSettingsDefinition)
+    val conflictsAutoCorrectionSetting = settingsNode.get(CONFLICTS_AUTO_CORRECTION_SETTINGS) match {
+      case autoCorrectionNode: ObjectNode =>
+        val autoCorrectionTreeParser = new TreeTraversingParser(autoCorrectionNode, jp.getCodec)
+        Some(autoCorrectionTreeParser.getCodec.readValue(autoCorrectionTreeParser, classOf[ConflictsAutoCorrectionSetting]))
+      case _ => None
+    }
+
+    JoinConfigSettings(observationDataTimeSettingsDefinition, joinTimeSettingsDefinition, conflictsAutoCorrectionSetting)
   }
 }
 
@@ -254,6 +262,35 @@ private class JoinTimeConfigSettingDefinitionDeserializer extends JsonDeserializ
   }
 }
 
+/**
+ * ConflictsAutoCorrectionSetting config deserializer.
+ */
+private class ConflictsAutoCorrectionSettingDeserializer extends JsonDeserializer[ConflictsAutoCorrectionSetting] {
+  val RENAME_FEATURES = "renameFeatures"
+  val RENAME_FEATURES_DEFAULT_VALUE = false
+  val AUTO_CORRECTION_SUFFIX = "suffix"
+  val AUTO_CORRECTION_SUFFIX_VALUE = "1"
+
+  override def deserialize(p: JsonParser, ctxt: DeserializationContext): ConflictsAutoCorrectionSetting = {
+    val codec = p.getCodec
+    val node = codec.readTree[TreeNode](p)
+
+    node match {
+      case innerNode: ObjectNode =>
+        val renameFeatures = innerNode.get(RENAME_FEATURES) match {
+          case value: TextNode => (value.textValue() == "True")
+          case _ => RENAME_FEATURES_DEFAULT_VALUE
+        }
+        val suffix = innerNode.get(AUTO_CORRECTION_SUFFIX) match {
+          case suffix: TextNode => suffix.textValue()
+          case suffix: NumericNode => suffix.asInt().toString
+          case _ => AUTO_CORRECTION_SUFFIX_VALUE
+        }
+        ConflictsAutoCorrectionSetting(renameFeatures, suffix)
+      case _ => ConflictsAutoCorrectionSetting(RENAME_FEATURES_DEFAULT_VALUE, AUTO_CORRECTION_SUFFIX_VALUE)
+    }
+  }
+}
 /**
  * Parameters which relate on how to load the time range relative to current timestamp (reference time).
  * For example, as reference time is LATEST, then we take the job execution timestamp as the reference time and the other fields are relative to this

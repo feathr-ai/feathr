@@ -30,7 +30,7 @@ private[converters] object PegasusRecordSettingsConverter extends PegasusRecordS
   override def convert(settings: Settings): JoinConfigSettings = {
     val inputDataTimeSettings = Option(settings.getInputDataTimeSettings(GetMode.DEFAULT)).map(convertInputDataTimeSettings)
     val joinTimeSetting = Option(settings.getJoinTimeSettings(GetMode.DEFAULT)).map(convertJoinTimeSettings)
-    JoinConfigSettings(inputDataTimeSettings, joinTimeSetting)
+    JoinConfigSettings(inputDataTimeSettings, joinTimeSetting, None)
   }
 
   /**

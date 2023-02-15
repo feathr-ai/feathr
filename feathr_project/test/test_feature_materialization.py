@@ -2,20 +2,21 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from feathr.client import FeathrClient
+from feathr.utils.job_utils import get_result_df
 
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 
 from feathr import BOOLEAN, FLOAT, INT32, ValueType
 from feathr import (BackfillTime, MaterializationSettings, FeatureQuery,
-                    ObservationSettings, SparkExecutionConfiguration)
+                    ObservationSettings, SparkExecutionConfiguration, ConflictsAutoCorrection)
 from feathr import Feature
 from feathr import FeatureAnchor
 from feathr import INPUT_CONTEXT, HdfsSource
-from feathr import RedisSink, HdfsSink
+from feathr import RedisSink, HdfsSink, AerospikeSink
 from feathr import TypedKey
 from feathr.definition._materialization_utils import _to_materialization_config
-from test_fixture import basic_test_setup
+from test_fixture import basic_test_setup, conflicts_auto_correction_setup
 from test_fixture import get_online_test_table_name
 from test_utils.constants import Constants
 from logging import raiseExceptions
@@ -81,13 +82,54 @@ def test_feature_materialization_offline_config():
         """
     assert ''.join(config.split()) == ''.join(expected_config.split())
 
+def test_feature_materialization_aerospike_sink_config():
+    as_sink = AerospikeSink(name="aerospike",seedhost="20.57.186.153", port=3000, namespace="test", setname="test")
+    backfill_time = BackfillTime(start=datetime(
+        2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
+    settings = MaterializationSettings("nycTaxiTable",
+                                       sinks=[as_sink],
+                                       feature_names=[
+                                           "avgfare", "maxfare"],
+                                       backfill_time=backfill_time)
+    os.environ[f"aerospike_USER"] = "feathruser"
+    os.environ[f"aerospike_PASSWORD"] = "feathrpwd"
+    expected_config = """
+    operational: {
+            name: nycTaxiTable
+            endTime: "2020-05-20 00:00:00"
+            endTimeFormat: "yyyy-MM-dd HH:mm:ss"
+            resolution: DAILY
+            output:[
+                {
+                    "name": "HDFS",                 
+                    "params": {
+                        "aerospike__seedhost": "20.57.186.153",
+                        "aerospike__port": "3000",
+                        "aerospike__namespace": "test",
+                        "aerospike__user": "${AEROSPIKE_USER}",
+                        "aerospike__password": "${AEROSPIKE_PASSWORD}",
+                        "aerospike__set": "test",
+                        "type": "generic",
+                        "format": "aerospike",
+                        "mode": "APPEND"
+                    }
+
+                }
+            ]
+        }
+        features: [avgfare, maxfare]
+    """
+    config = _to_materialization_config(settings)
+    assert ''.join(config.split()) == ''.join(expected_config.split())
+    
 def test_feature_materialization_daily_schedule():
     """Test back fill cutoff time for a daily range"""
     backfill_time = BackfillTime(start=datetime(2022, 3, 1), end=datetime(2022, 3, 5), step=timedelta(days=1))
     settings = MaterializationSettings("", [], [], backfill_time)
     expected = [datetime(2022, 3, day) for day in range(1, 6)]
     assert settings.get_backfill_cutoff_time() == expected
-
+    
+    
 
 def test_feature_materialization_hourly_schedule():
     """Test back fill cutoff time for a hourly range"""
@@ -168,6 +210,69 @@ def test_get_offline_features_verbose():
                                 execution_configurations=SparkExecutionConfiguration({"spark.feathr.inputFormat": "parquet", "spark.feathr.outputFormat": "parquet"}),
                                 verbose=True
                         )
+    
+def test_get_offline_features_auto_correct_dataset():
+    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
+
+    client = conflicts_auto_correction_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    
+    now = datetime.now()
+    location_id = TypedKey(key_column="DOLocationID",
+                       key_column_type=ValueType.INT32,
+                       description="location id in NYC",
+                       full_name="nyc_taxi.location_id")
+    feature_query = FeatureQuery(
+    feature_list=["tip_amount", "total_amount"], key=location_id)
+    settings = ObservationSettings(
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss",
+        conflicts_auto_correction=ConflictsAutoCorrection(rename_features=False, suffix="test"))
+     # set output folder based on different runtime
+    if client.spark_runtime == 'databricks':
+        output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".avro"])
+    else:
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
+    client.get_offline_features(observation_settings=settings,
+                            feature_query=feature_query,
+                            output_path=output_path
+                           )
+    client.wait_job_to_finish(timeout_sec=500)
+
+    res_df = get_result_df(client, data_format="avro", res_url = output_path)
+    assert res_df.shape[0] > 0
+    
+def test_get_offline_features_auto_correct_features():
+    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
+
+    client = conflicts_auto_correction_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+    
+    now = datetime.now()
+    location_id = TypedKey(key_column="DOLocationID",
+                       key_column_type=ValueType.INT32,
+                       description="location id in NYC",
+                       full_name="nyc_taxi.location_id")
+    feature_query = FeatureQuery(
+    feature_list=["tip_amount", "total_amount"], key=location_id)
+    settings = ObservationSettings(
+        observation_path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv",
+        event_timestamp_column="lpep_dropoff_datetime",
+        timestamp_format="yyyy-MM-dd HH:mm:ss",
+        conflicts_auto_correction=ConflictsAutoCorrection(rename_features=True, suffix="test"))
+    # set output folder based on different runtime
+    if client.spark_runtime == 'databricks':
+        output_path = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), ".avro"])
+    else:
+        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/output','_', str(now.minute), '_', str(now.second), ".avro"])
+   
+    client.get_offline_features(observation_settings=settings,
+                            feature_query=feature_query,
+                            output_path=output_path
+                           )
+    client.wait_job_to_finish(timeout_sec=500)
+
+    res_df = get_result_df(client, data_format="avro", res_url = output_path)
+    assert res_df.shape[0] > 0
 
 def test_materialize_features_verbose():
     online_test_table = get_online_test_table_name("nycTaxiCITableMaterializeVerbose")

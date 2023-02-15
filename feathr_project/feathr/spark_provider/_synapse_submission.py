@@ -94,12 +94,16 @@ class _FeathrSynapseJobLauncher(SparkJobLauncher):
                     local_path_or_cloud_src_path, res_path)
         return res_path
 
-    def download_result(self, result_path: str, local_folder: str):
+    def download_result(self, result_path: str, local_folder: str, is_file_path: bool = False):
         """
         Supports downloading files from the result folder
         """
-
-        return self._datalake.download_file(result_path, local_folder)
+        if is_file_path:
+            paths = result_path.rsplit('/',1)
+            if len(paths) != 2:
+                raise RuntimeError(f"Invalid single file path: {result_path}")
+            return self._datalake.download_file(paths[0]+'/', local_folder, paths[1])
+        return self._datalake.download_file(result_path, local_folder, None)
     
     
     def cloud_dir_exists(self, dir_path: str) -> bool:
@@ -457,7 +461,7 @@ class _DataLakeFiler(object):
         return returned_path
         
 
-    def download_file(self, target_adls_directory: str, local_dir_cache: str):
+    def download_file(self, target_adls_directory: str, local_dir_cache: str, file_name: str = None):
         """
         Download file to a local cache. Supporting download a folder and the content in its subfolder.
         Note that the code will just download the content in the root folder, and the folder in the next level (rather than recursively for all layers of folders)
@@ -465,13 +469,23 @@ class _DataLakeFiler(object):
         Args:
             target_adls_directory (str): target ADLS directory
             local_dir_cache (str): local cache to store local results
+            file_name (str): only download the file with name 'file_name' under the target directory if it's provided (default as None)
         """
         logger.info('Beginning reading of results from {}',
                     target_adls_directory)
         parse_result = urlparse(target_adls_directory)
+        if parse_result.path == '':
+            parse_result.path = '/'
         directory_client = self.file_system_client.get_directory_client(
             parse_result.path)
-
+        
+        if file_name is not None:
+            local_paths = [os.path.join(local_dir_cache, file_name)]
+            self._download_file_list(local_paths, [file_name], directory_client)
+            logger.info('Finish downloading file {} from {} to {}.',
+                    file_name, target_adls_directory, local_dir_cache)
+            return
+        
         # returns the paths to all the files in the target director in ADLS
         # get all the paths that are not under a directory
         result_paths = [basename(file_path.name) for file_path in self.file_system_client.get_paths(
@@ -497,7 +511,7 @@ class _DataLakeFiler(object):
 
         logger.info('Finish downloading files from {} to {}.',
                     target_adls_directory, local_dir_cache)
-
+        
     def _download_file_list(self, local_paths: List[str], result_paths, directory_client):
         '''
         Download filelist to local
@@ -510,7 +524,7 @@ class _DataLakeFiler(object):
                 download = file_client.download_file()
                 downloaded_bytes = download.readall()
                 local_file.write(downloaded_bytes)
-                local_file.close()
+                local_file.close()               
             except Exception as e:
                 logger.error(e)       
                 
