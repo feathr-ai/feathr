@@ -21,6 +21,12 @@ print(feathr.__version__)
 os.environ['SPARK_LOCAL_IP'] = "127.0.0.1"
 os.environ['REDIS_PASSWORD'] = "foobared"  # default password for Redis
 
+# Make sure we get the Feathr jar name, assuming we just have one jar file.
+
+import glob
+jar_name = glob.glob("./*.jar")[0]
+print(f"Found jar file at {jar_name}")
+
 yaml_config = f"""
 api_version: 1
 project_config:
@@ -32,7 +38,7 @@ spark_config:
   spark_result_output_parts: '1'
   local:
     master: 'local[*]'
-    feathr_runtime_location: "./feathr_2.12-{feathr.__version__}.jar"
+    feathr_runtime_location: "{jar_name}"
 
 online_store:
   redis:
