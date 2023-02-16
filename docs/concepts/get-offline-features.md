@@ -81,6 +81,17 @@ If any of feature names provided by `Feature Query` conflict with column names o
 
 The checking steps are:
 1. Check if the `conflicts_auto_correction` in the `observation_settings`is set (default by None). If it's not None, it means spark will handle checking and solving these conflicts. In this case, python client side will submit this job to spark directly. Otherwise, it will go to the below steps. In terms of `conflicts_auto_correction`, it also contains two parameters, `rename_features` and `suffix`. By default, spark will rename dataset columns with a suffix "_1". You may rename feature names by set `rename_features` to True and provide a customized suffix.
+   
+An example of `ObservationSettings` with auto correction enabled:
+```
+settings = ObservationSettings(
+    observation_path="wasbs://...",
+    event_timestamp_column="...",
+    timestamp_format="yyyy-MM-dd HH:mm:ss",
+    conflicts_auto_correction=ConflictsAutoCorrection(rename_features=True, suffix="test"))
+ 
+```
+   
 2. Try to load dataset without credential and compare column names with feature names. This is to support the case when the dataset is saved in a public storage.
 3. If cannot load the dataset in the first step, will try to load it with credential anc compare column names with feature names. It can only support loading files from storages requiring credential your environment defined. For example, if your `spark_cluster` is `databricks`, it can only load dataset under the 'dbfs' path belonging to this databricks.
 4. If cannot load the dataset from step1 and step2, will try to compare column names provided by the parameter `dataset_column_names` if it's not empty.
@@ -89,7 +100,10 @@ The checking steps are:
 
 Workflow graph for the conflicts checking and handling:
 ![conflicts-check-and-handle](../images/conflicts-check-and-handle.png)
-   
+
+For more details, please check the code example as a reference:
+[conflicts check and handle samples](../samples/feature_naming_conflicts_samples.py)
+
 ## Difference between `materialize_features` and `get_offline_features` API
 
 It is sometimes confusing between "getting offline features" in this document and the "[getting materialized features](./materializing-features.md)" part, given they both seem to "get features and put it somewhere". However there are some differences and you should know when to use which:

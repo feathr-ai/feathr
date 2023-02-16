@@ -26,6 +26,14 @@ This pattern of path will be treated as 'timestamp' of the related data for both
 
 This pattern can only be worked with aggregation features for now. It cannot be recognized for other cases.
 
+An example of data source:
+```
+batch_source = HdfsSource(name="testTimePartitionSource",
+                    path="data_source_path",
+                    time_partition_pattern="yyyy/MM/dd",
+                    postfix_path="postfix_path"
+                )
+```
 ## How to control paths to visit
 Normally, it's not necessary to visit all data sources that match the path pattern. We may only need parts of them to be used in our jobs. Feathr have different ways to support that for 'get_offline_features' and 'materialize_features'. 
 ### For 'get_offline_features':
@@ -34,7 +42,7 @@ Paths would be visited is decided by your dataset and feature's definition. Eg. 
 We can decide a time range by `BackfillTime` and `window`(in `WindowAggTransformation`) in the definition of feature. Eg. If we have a backfill_time = datetime(2020, 5, 21) and 'window=3d', then feathr will try to visit data under paths: ['{base_path}/2020/05/18', '{base_path}/2020/05/19', '{base_path}/2020/05/20'].
 
 For more details, please check the code example as a reference:
-[timePartitionPattern test cases](../../feathr_project/test/test_time_partition_pattern_e2e.py)
+[timePartitionPattern code samples](../samples/time_partition_pattern_samples.py)
 ### Interval of time pattern
 In terms of the interval or step between each time pattern, we only support 'DAILY' and 'HOURLY' for now.
 
