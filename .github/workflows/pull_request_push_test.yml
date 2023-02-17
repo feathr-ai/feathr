@@ -18,10 +18,12 @@ on:
   pull_request_target:
     branches: [main]
     types: [labeled, edited, opened, synchronize]
-    paths-ignore:
-      - "docs/**"
-      - "ui/**"
-      - "**/README.md"
+    # disable below 'paths-ignore' to guarantee 'test_status' job can be triggered
+    # please do not set labels for changes in below paths
+    # paths-ignore:
+    #   - "docs/**"
+    #  - "ui/**"
+    #  - "**/README.md"
 
   schedule:
     # Runs daily at 1 PM UTC (9 PM CST), will send notification to TEAMS_WEBHOOK
