@@ -5,7 +5,7 @@ title: Quick Start Guide with Databricks
 
 Announce Feathr 1.0.0
 
-Feast 1.0.0-rc1 is released on February 16, 2023 with following new features
+Feathr 1.0.0-rc1 is released on February 16, 2023 with following new features
 
 New Features:
 
