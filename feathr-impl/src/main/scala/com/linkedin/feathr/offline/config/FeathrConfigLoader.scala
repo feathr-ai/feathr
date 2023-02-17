@@ -564,9 +564,13 @@ private[offline] class DerivationLoader extends JsonDeserializer[DerivedFeature]
     val derivedFeature = node match {
       case x: TextNode => // deprecate this one? Probably not, since it will be easier for single key feature renaming
         val derivationFunction = new SimpleMvelDerivationFunction(x.textValue, featureName, featureTypeConfigMap.get(featureName))
+        val maybeAdaptedDerivationFunction = FeathrUdfPluginContext.getRegisteredUdfAdaptor(DerivedFeatureConfig.getClass) match {
+          case Some(adaptor: FeatureDerivationFunctionAdaptor) => adaptor.adaptUdf(derivationFunction)
+          case _ => derivationFunction
+        }
         val keyTag = Seq(0) // <=== should work assuming that we only use single-key features in these simplest expression-based derivations
         val consumedFeatures = derivationFunction.dependencyFeatureNames.map(ErasedEntityTaggedFeature(keyTag, _))
-        DerivedFeature(consumedFeatures, producedFeatures, derivationFunction, None, featureTypeConfigMap)
+        DerivedFeature(consumedFeatures, producedFeatures, maybeAdaptedDerivationFunction, None, featureTypeConfigMap)
       case x: ObjectNode =>
         if (x.has("features")) {
           // advanced derived feature
@@ -617,8 +621,13 @@ private[offline] class DerivationLoader extends JsonDeserializer[DerivedFeature]
           val definition = x.get("definition").textValue()
           val keyTag = Seq(0) // <=== should work assuming that we only use single-key features in these simplest expression-based derivations
           val derivationFunction = new SimpleMvelDerivationFunction(definition, featureName, featureTypeConfigMap.get(featureName))
+          val maybeAdaptedDerivationFunction = FeathrUdfPluginContext.getRegisteredUdfAdaptor(derivationFunction.getClass) match {
+            case Some(adaptor: FeatureDerivationFunctionAdaptor) => adaptor.adaptUdf(derivationFunction)
+            case _ => derivationFunction
+          }
+
           val consumedFeatures = derivationFunction.dependencyFeatureNames.map(ErasedEntityTaggedFeature(keyTag, _))
-          DerivedFeature(consumedFeatures, producedFeatures, derivationFunction, None, featureTypeConfigMap)
+          DerivedFeature(consumedFeatures, producedFeatures, maybeAdaptedDerivationFunction, None, featureTypeConfigMap)
         } else {
           val config = codec.treeToValue(x, classOf[DerivedFeatureConfig])
           val consumedFeatures = config.inputs.values.map(x => ErasedEntityTaggedFeature(x.key.map(config.key.zipWithIndex.toMap), x.feature)).toIndexedSeq
@@ -627,6 +636,7 @@ private[offline] class DerivationLoader extends JsonDeserializer[DerivedFeature]
           } else {
             new MvelFeatureDerivationFunction(config.inputs, config.definition.get, featureName, featureTypeConfigMap.get(featureName))
           }
+
           val parameterNames = Some(config.inputs.keys.toIndexedSeq)
           // consumedFeatures and parameterNames have same order, since they are all from config.inputs
           DerivedFeature(consumedFeatures, producedFeatures, derivationFunction, parameterNames, featureTypeConfigMap)

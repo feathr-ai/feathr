@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.client.plugins
 
 import com.linkedin.feathr.common.{AnchorExtractor, FeatureDerivationFunction}
+import com.linkedin.feathr.offline.derived.functions.SimpleMvelDerivationFunction
 import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark, SourceKeyExtractor}
 
 /**
@@ -46,6 +47,11 @@ trait SimpleAnchorExtractorSparkAdaptor extends UdfAdaptor[SimpleAnchorExtractor
  * An adaptor that can "tell Feathr how to use" a UDF type that can act in place of [[FeatureDerivationFunction]]
  */
 trait FeatureDerivationFunctionAdaptor extends UdfAdaptor[FeatureDerivationFunction]
+
+/**
+ * An adaptor that can "tell Feathr how to use" a UDF type that can act in place of [[SimpleMvelDerivationFunction]]
+ */
+trait SimpleMvelDerivationFunctionAdaptor extends UdfAdaptor[SimpleMvelDerivationFunction]
 
 /**
  * An adaptor that can "tell Feathr how to use" a UDF type that can act in place of [[SourceKeyExtractor]]
