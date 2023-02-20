@@ -1,6 +1,25 @@
 #!/bin/bash
 
+while getopts ":m:p:" opt; do
+  case $opt in
+    m) mode="$OPTARG"
+    ;;
+    p) p_out="$OPTARG"
+    ;;
+    \?) echo "Invalid option -$OPTARG" >&2
+    exit 1
+    ;;
+  esac
 
+  case $OPTARG in
+    -*) echo "Option $opt needs a valid argument"
+    exit 1
+    ;;
+  esac
+done
+
+
+printf "Argument mode is %s\n" "$mode"
 
 # Generate static env.config.js for UI app
 envfile=/usr/share/nginx/html/env-config.js
@@ -76,5 +95,10 @@ else
     fi
 fi
 
-# start the notebooks
-start-notebook.sh --ip='*' --NotebookApp.password='' --NotebookApp.token='' --no-browser 
+
+if [ "$mode" == "build_docker" ]; then
+    echo "Jupyter Notebook Server is not started when building docker images"
+else
+    # start the notebooks
+    start-notebook.sh --ip='*' --NotebookApp.password='' --NotebookApp.token='' --no-browser 
+fi
