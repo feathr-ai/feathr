@@ -60,7 +60,6 @@ COPY --chown=1000:100 ./docs/samples/local_quickstart_notebook.ipynb .
 COPY --chown=1000:100 ./feathr-sandbox/feathr_init_script.py .
 
 # Run the script so that maven cache can be added for better experience. Otherwise users might have to wait for some time for the maven cache to be ready.
-RUN python feathr_init_script.py
 RUN python -m pip install interpret
 
 USER root
@@ -80,6 +79,14 @@ RUN sed -i "s/\r//g" /usr/src/registry/start_local.sh
 
 WORKDIR /home/jovyan/work
 
+USER jovyan
+
+ENV API_BASE="api/v1" 
+ENV FEATHR_SANDBOX=True
+# Run the script so that maven cache can be added for better experience. Otherwise users might have to wait for some time for the maven cache to be ready.
+RUN /usr/src/registry/start_local.sh -m build_docker && python feathr_init_script.py
+
+USER root
 
 # 80: Feathr UI 
 # 8000: Feathr REST API 
