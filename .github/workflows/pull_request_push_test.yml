@@ -333,23 +333,28 @@ jobs:
           pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
           pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py
       
-  test_status:
+  client_test_status:
     # The status used to mark if any test jobs failed
     # If it's failure, PR will be blocked
     # Please set label 'safe to test'/'registry test' to trigger related test jobs
     runs-on: ubuntu-latest
-    if: always() && github.event_name == 'pull_request_target'
-    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, registry_test]
+    if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') }}
+    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, paths-filter]
     steps:
       - name: Test status failure
         if: contains(needs.*.result, 'failure')
         run: |
           echo "Merging is blocked because one or more test jobs failed."
           exit 1
-      - name: Test status success
-        if: ${{ !contains(needs.*.result, 'failure') }}
+      - name: Required test cases skipped
+        if: ${{ contains(needs.*.result, 'skipped') && needs.paths-filter.outputs.output1 != 'true' && needs.paths-filter.outputs.output2 != 'true' }}
         run: |
-          echo "All required CI test jobs passed."
+          echo "Merging is blocked because some required test jobs didn't run. Please set the label 'safe to test'"
+          exit 1
+      - name: Test status success
+        if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'skipped') || (contains(needs.*.result, 'skipped') && (needs.paths-filter.outputs.output1 == 'true' || needs.paths-filter.outputs.output2 == 'true'))}}
+        run: |
+          echo "All required CI test cases for python client passed."
        
   failure_notification:
     # If any failure, warning message will be sent
