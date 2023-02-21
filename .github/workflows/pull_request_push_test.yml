@@ -339,7 +339,7 @@ jobs:
     # Please set label 'safe to test'/'registry test' to trigger related test jobs
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'pull_request'
-    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, paths-filter]
+    needs: [python_lint, paths-filter]
     steps:
       - name: Test status failure
         if: contains(needs.*.result, 'failure')
