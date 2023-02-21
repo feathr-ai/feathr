@@ -2,7 +2,7 @@ import sys
 import os
 from setuptools import setup, find_packages
 from pathlib import Path
-
+from feathr.constants import FEATHR_CLIENT_VERSION
 
 # Use the README.md from /docs
 root_path = Path(__file__).resolve().parent.parent
@@ -19,8 +19,8 @@ try:
 except IOError:
     print("Failed to load Feathr version file for packaging.",
           file=sys.stderr)
-    # Temp workaround for conda build. For long term fix, Jay will need to update manifest.in file.
-    VERSION = "1.0.0-rc1"
+    # Workaround for conda build. In LI internal environment, conda build might not have access to the version.py
+    VERSION = FEATHR_CLIENT_VERSION
 
 VERSION = __version__  # noqa
 os.environ["FEATHR_VERSION"] = VERSION
