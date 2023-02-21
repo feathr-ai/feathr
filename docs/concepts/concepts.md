@@ -6,6 +6,4 @@ permalink: docs/concepts
 ---
 # Feathr Concepts
 
-This folder includes important Feathr concepts.
-
-# Temp change to test. will be removed
+This folder includes important Feathr concepts
