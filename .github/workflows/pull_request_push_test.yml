@@ -11,17 +11,20 @@ on:
   # pull_request:
   #   branches: [main]
   #   paths-ignore:
-  #     - "docs/**"
-  #     - "ui/**"
-  #     - "**/README.md"
+  #      - "docs/**"
+  #      - "ui/**"
+  #      - "**/README.md"
 
   pull_request_target:
     branches: [main]
     types: [labeled, edited, opened, synchronize]
-    paths-ignore:
-      - "docs/**"
-      - "ui/**"
-      - "**/README.md"
+    # disable below 'paths-ignore' to guarantee 'test_status' job can be triggered
+    # with this 'paths-ignore', test jobs needed by 'test_status' will be ignored
+    # please do not set 'safe to test' label for changes in below paths
+    # paths-ignore:
+    #   - "docs/**"
+    #  - "ui/**"
+    #  - "**/README.md"
 
   schedule:
     # Runs daily at 1 PM UTC (9 PM CST), will send notification to TEAMS_WEBHOOK
@@ -34,6 +37,40 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  paths_filter:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    outputs:
+      # output1 - if changes for a PR only in ignore paths
+      output1: ${{ steps.filter.outputs.ignore }}
+      # output2 - if changes for a PR only in registry paths
+      output2: ${{ steps.filter.outputs.registry }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: dorny/paths-filter@v2
+      id: ignore
+      with:
+        filters: |
+          ignore:
+            - "docs/**"
+            - "ui/**"
+            - "**/README.md"
+    - uses: dorny/paths-filter@v2
+      id: registry
+      with:
+        filters: |
+          registry:
+            - "registry/**"
+    - name: ignore tests
+      if: steps.filter.outputs.ignore == 'true'
+      run: echo "Changes of this PR only contain ignore files"
+    - name: registry tests
+      if: steps.filter.outputs.registry == 'true'
+      run: echo "Changes of this PR only contain registry files"
+    - name: python client Tests
+      if: steps.filter.outputs.ignore != 'true' && steps.filter.outputs.registry != 'true'
+      run: echo "Changes of this PR contain python client files"
+
   gradle_test:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
@@ -267,7 +304,7 @@ jobs:
 
   registry_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'registry test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && (contains(github.event.pull_request.labels.*.name, 'registry test') || contains(github.event.pull_request.labels.*.name, 'safe to test')))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -298,20 +335,49 @@ jobs:
           pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
           pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py
       
-  test_status:
+  client_test_status:
+    # The status used to mark if any required test jobs failed for a PR
+    # If it's failure, PR will be blocked
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'pull_request_target'
-    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, registry_test]
+    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, registry_test, paths_filter]
     steps:
       - name: Test status failure
         if: contains(needs.*.result, 'failure')
         run: |
           echo "Merging is blocked because one or more test jobs failed."
           exit 1
-      - name: Test status success
-        if: ${{ !contains(needs.*.result, 'failure') }}
+      - name: Required test cases skipped
+        if: contains(needs.*.result, 'skipped') && needs.paths_filter.outputs.output1 != 'true' && needs.paths_filter.outputs.output2 != 'true'
         run: |
-          echo "All required CI test jobs passed."
+          echo "Merging is blocked because some required test jobs didn't run. Please set the label 'safe to test'"
+          exit 1
+      - name: Test status success
+        if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'skipped') || (contains(needs.*.result, 'skipped') && (needs.paths_filter.outputs.output1 == 'true' || needs.paths_filter.outputs.output2 == 'true'))}}
+        run: |
+          echo "All required CI test jobs for python client passed."
+
+  registry_test_status:
+    # The status used to mark if any required registry test cases failed for a PR
+    # If it's failure, PR will be blocked
+    runs-on: ubuntu-latest
+    if: always() && github.event_name == 'pull_request_target'
+    needs: [registry_test, paths_filter]
+    steps:
+      - name: Test status failure
+        if: contains(needs.*.result, 'failure')
+        run: |
+          echo "Merging is blocked because the registry test job failed."
+          exit 1
+      - name: Required test cases skipped
+        if: needs.registry_test.result == 'skipped' && needs.paths-filter.outputs.output2 == 'true'
+        run: |
+          echo "Merging is blocked because the required 'registry_test' jobs didn't run. Please set the label 'safe to test'"
+          exit 1
+      - name: Test status success
+        if: needs.registry_test.result == 'success' || needs.registry_test.result == 'skipped' && needs.paths-filter.outputs.output2 != 'true'
+        run: |
+          echo "All required CI test cases for registry passed."
        
   failure_notification:
     # If any failure, warning message will be sent
