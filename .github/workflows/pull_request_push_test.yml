@@ -19,7 +19,8 @@ on:
     branches: [main]
     types: [labeled, edited, opened, synchronize]
     # disable below 'paths-ignore' to guarantee 'test_status' job can be triggered
-    # please do not set labels for changes in below paths
+    # with this 'paths-ignore', test jobs needed by 'test_status' will be ignored
+    # please do not set 'safe to test' label for changes in below paths
     # paths-ignore:
     #   - "docs/**"
     #  - "ui/**"
@@ -301,8 +302,10 @@ jobs:
           pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py
       
   test_status:
+    # The status used to mark if any test jobs failed
+    # If it's failure, PR will be blocked
     runs-on: ubuntu-latest
-    if: always() && github.event_name == 'pull_request_target'
+    if: always() && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test')
     needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, registry_test]
     steps:
       - name: Test status failure
