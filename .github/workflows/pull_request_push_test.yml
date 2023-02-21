@@ -8,12 +8,12 @@ on:
       - "ui/**"
       - "**/README.md"
 
-  # pull_request:
-  #   branches: [main]
-  #   paths-ignore:
-  #     - "docs/**"
-  #     - "ui/**"
-  #     - "**/README.md"
+  pull_request:
+    branches: [main]
+    paths-ignore:
+       - "docs/**"
+       - "ui/**"
+       - "**/README.md"
 
   pull_request_target:
     branches: [main]
@@ -37,6 +37,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    outputs:
+      output1: ${{ steps.filter.outputs.ignore }}
+      output2: ${{ steps.filter.outputs.registry }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: dorny/paths-filter@v2
+      id: ignore
+      with:
+        filters: |
+          ignore:
+            - "docs/**"
+            - "ui/**"
+            - "**/README.md"
+    - uses: dorny/paths-filter@v2
+      id: registry
+      with:
+        filters: |
+          registry:
+            - "registry/**"
+    - name: ignore tests
+      if: steps.filter.outputs.ignore == 'true'
+      run: echo "Ignore file"
+    - name: registry tests
+      if: steps.filter.outputs.registry == 'true'
+      run: echo "Registry file"
+    - name: python client Tests
+      if: steps.filter.outputs.ignore != 'true' && steps.filter.outputs.registry != 'true'
+      run: echo "Python client file"
+
   gradle_test:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
@@ -304,8 +336,9 @@ jobs:
   test_status:
     # The status used to mark if any test jobs failed
     # If it's failure, PR will be blocked
+    # Please set label 'safe to test'/'registry test' to trigger related test jobs
     runs-on: ubuntu-latest
-    if: always() && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test')
+    if: always() && github.event_name == 'pull_request_target'
     needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, registry_test]
     steps:
       - name: Test status failure
