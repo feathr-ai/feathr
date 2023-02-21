@@ -6,4 +6,4 @@ permalink: docs/concepts
 ---
 # Feathr Concepts
 
-This folder includes important Feathr concepts
+This folder includes important Feathr concepts.
