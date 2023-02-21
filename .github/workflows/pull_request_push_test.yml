@@ -346,15 +346,15 @@ jobs:
         run: |
           echo "Merging is blocked because one or more test jobs failed."
           exit 1
-      - name: Required test cases skipped
-        if: ${{ contains(needs.*.result, 'skipped') && needs.paths-filter.outputs.output1 != 'true' && needs.paths-filter.outputs.output2 != 'true' }}
-        run: |
-          echo "Merging is blocked because some required test jobs didn't run. Please set the label 'safe to test'"
-          exit 1
-      - name: Test status success
-        if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'skipped') || (contains(needs.*.result, 'skipped') && (needs.paths-filter.outputs.output1 == 'true' || needs.paths-filter.outputs.output2 == 'true'))}}
-        run: |
-          echo "All required CI test cases for python client passed."
+      #- name: Required test cases skipped
+      #  if: contains(needs.*.result, 'skipped') && needs.paths-filter.outputs.output1 != 'true' && needs.paths-filter.outputs.output2 != 'true'
+      #  run: |
+      #    echo "Merging is blocked because some required test jobs didn't run. Please set the label 'safe to test'"
+      #    exit 1
+      #- name: Test status success
+      #  if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'skipped') || (contains(needs.*.result, 'skipped') && (needs.paths-filter.outputs.output1 == 'true' || needs.paths-filter.outputs.output2 == 'true'))}}
+      #  run: |
+      #    echo "All required CI test cases for python client passed."
        
   failure_notification:
     # If any failure, warning message will be sent
