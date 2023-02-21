@@ -338,7 +338,7 @@ jobs:
     # If it's failure, PR will be blocked
     # Please set label 'safe to test'/'registry test' to trigger related test jobs
     runs-on: ubuntu-latest
-    if: always() && ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') }}
+    if: always() && github.event_name == 'pull_request'
     needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, paths-filter]
     steps:
       - name: Test status failure
