@@ -13,7 +13,7 @@ import com.linkedin.feathr.offline.ErasedEntityTaggedFeature
 import com.linkedin.feathr.offline.anchored.anchorExtractor.{SQLConfigurableAnchorExtractor, SimpleConfigurableAnchorExtractor, TimeWindowConfigurableAnchorExtractor}
 import com.linkedin.feathr.offline.anchored.feature.{FeatureAnchor, FeatureAnchorWithSource}
 import com.linkedin.feathr.offline.anchored.keyExtractor.{MVELSourceKeyExtractor, SQLSourceKeyExtractor}
-import com.linkedin.feathr.offline.client.plugins.{AnchorExtractorAdaptor, FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor, SimpleAnchorExtractorSparkAdaptor, SourceKeyExtractorAdaptor}
+import com.linkedin.feathr.offline.client.plugins.{AnchorExtractorAdaptor, FeathrUdfPluginContext, FeatureDerivationFunctionAdaptor, SimpleAnchorExtractorSparkAdaptor, SimpleMvelDerivationFunctionAdaptor, SourceKeyExtractorAdaptor}
 import com.linkedin.feathr.offline.config.location.{DataLocation, KafkaEndpoint, LocationUtils, SimplePath, Snowflake}
 import com.linkedin.feathr.offline.derived._
 import com.linkedin.feathr.offline.derived.functions.{MvelFeatureDerivationFunction, SQLFeatureDerivationFunction, SeqJoinDerivationFunction, SimpleMvelDerivationFunction}
@@ -564,8 +564,9 @@ private[offline] class DerivationLoader extends JsonDeserializer[DerivedFeature]
     val derivedFeature = node match {
       case x: TextNode => // deprecate this one? Probably not, since it will be easier for single key feature renaming
         val derivationFunction = new SimpleMvelDerivationFunction(x.textValue, featureName, featureTypeConfigMap.get(featureName))
-        val maybeAdaptedDerivationFunction = FeathrUdfPluginContext.getRegisteredUdfAdaptor(DerivedFeatureConfig.getClass) match {
-          case Some(adaptor: FeatureDerivationFunctionAdaptor) => adaptor.adaptUdf(derivationFunction)
+        val maybeAdaptedDerivationFunction = FeathrUdfPluginContext.getRegisteredUdfAdaptor(derivationFunction.getClass) match {
+          case Some(adaptor: SimpleMvelDerivationFunctionAdaptor) => adaptor.adaptUdf(x.textValue(), derivationFunction,
+            featureTypeConfigMap.get(featureName))
           case _ => derivationFunction
         }
         val keyTag = Seq(0) // <=== should work assuming that we only use single-key features in these simplest expression-based derivations

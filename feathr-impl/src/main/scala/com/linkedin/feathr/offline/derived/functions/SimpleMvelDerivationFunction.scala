@@ -38,6 +38,10 @@ private[offline] class SimpleMvelDerivationFunction(expression: String, featureN
     MVEL.compileExpression(expression, parserContext)
   }
 
+  def getExpression(): String = expression
+
+  def getFeatureTypeConfigOpt(): Option[FeatureTypeConfig] = featureTypeConfigOpt
+
   override def getFeatures(inputFeatureValues: Seq[Option[common.FeatureValue]]): Seq[Option[common.FeatureValue]] = {
     val args = (dependencyFeatureNames zip inputFeatureValues).toMap
 
