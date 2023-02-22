@@ -48,19 +48,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: dorny/paths-filter@v2
-      id: ignore
+      id: filter
       with:
         filters: |
           ignore:
             - "docs/**"
             - "ui/**"
             - "**/README.md"
-    - uses: dorny/paths-filter@v2
-      id: registry
-      with:
-        filters: |
+            - "./github"
           registry:
-            - "registry/**"
+            - "registry/**"          
     - name: ignore tests
       if: steps.filter.outputs.ignore == 'true'
       run: echo "Changes of this PR only contain ignore files"
