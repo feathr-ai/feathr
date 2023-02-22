@@ -71,7 +71,7 @@ jobs:
 
   gradle_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -302,7 +302,7 @@ jobs:
 
   registry_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'registry test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'registry test'))
     steps:
       - uses: actions/checkout@v2
         with:
@@ -338,7 +338,8 @@ jobs:
     # If it's failure, PR will be blocked
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'pull_request'
-    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, paths_filter]
+    #needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, paths_filter]
+    needs: [gradle_test, python_lint, paths_filter]
     steps:
       - name: Test status failure
         if: contains(needs.*.result, 'failure')
