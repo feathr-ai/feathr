@@ -50,9 +50,9 @@ jobs:
     - uses: dorny/paths-filter@v2
       id: exclude
       with:
-        exclude: |
+        filters: |
           ignore:
-            - "docs/**, ui/**, registry/**"
+            - "!docs/**, !ui/**, !registry/**"
     - uses: dorny/paths-filter@v2
       id: filter
       with:
