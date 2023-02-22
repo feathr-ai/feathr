@@ -41,32 +41,32 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     outputs:
-      # output1 - if changes for a PR contains client source files
-      output1: ${{ steps.exclude.outputs.ignore }}
-      # output2 - if changes for a PR contains registry paths
-      output2: ${{ steps.filter.outputs.registry }}
+      # output1 - if changes for a PR contain source files
+      output1: ${{ steps.filter_src.outputs.src }}
+      # output2 - if changes for a PR contain registry files
+      output2: ${{ steps.filter_registry.outputs.registry }}
     steps:
     - uses: actions/checkout@v2
     - uses: dorny/paths-filter@v2
-      id: exclude
+      id: filter_src
       with:
         filters: |
-          ignore:
-            - "!(.github|registry|docs|ui)/**"
+          src:
+            - "!(registry|docs|ui)/**"
     - uses: dorny/paths-filter@v2
-      id: filter
+      id: filter_registry
       with:
         filters: |
           registry:
             - "registry/**"                
     - name: client tests
-      if: steps.exclude.outputs.ignore == 'true'
+      if: steps.filter_src.outputs.ignore == 'true'
       run: echo "Changes of this PR contain client source files. Need to set label 'safe to test'."
     - name: registry tests
-      if: steps.filter.outputs.registry == 'true' 
+      if: steps.filter_registry.outputs.registry == 'true' 
       run: echo "Changes of this PR contain registry files. Need to set label 'registry test'."
     - name: no tests
-      if: steps.filter.outputs.registry != 'true' && steps.exclude.outputs.ignore != 'true'
+      if: steps.filter_registry.outputs.registry != 'true' && steps.filter_src.outputs.src != 'true'
       run: echo "Changes of this PR do not contain registry files or client source files. Do not set labels 'safe to test' or 'registry test'"
 
   gradle_test:
