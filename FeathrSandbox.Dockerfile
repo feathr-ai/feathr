@@ -6,14 +6,16 @@ WORKDIR /usr/src/ui
 COPY ./ui .
 
 ## Use api endpoint from same host and build production static bundle
-RUN echo 'REACT_APP_API_ENDPOINT=http://localhost:8000' >> .env.production
+RUN echo 'REACT_APP_API_ENDPOINT=' >> .env.production
 RUN npm install && npm run build
 
+# Stage 2: build feathr runtime jar
 FROM gradle:7.6.0-jdk8 as gradle-build
 WORKDIR /usr/src/feathr
 COPY . .
 RUN ./gradlew build
 
+# Stage 3: build the docker image for feathr sandbox
 FROM jupyter/pyspark-notebook
 
 USER root
@@ -27,14 +29,12 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=ui-build /usr/src/ui/build /usr/share/nginx/html
 COPY ./deploy/nginx.conf /etc/nginx/nginx.conf
 
-
 # Feathr Package Installation Section
 # always install feathr from main
 WORKDIR /home/jovyan/work
 COPY --chown=1000:100 ./feathr_project ./feathr_project
 COPY --chown=1000:100 --from=gradle-build /usr/src/feathr/build/libs .
-RUN python -m pip install  -e ./feathr_project
-
+RUN python -m pip install -e ./feathr_project
 
 # Registry Section
 # install registry
@@ -42,14 +42,9 @@ COPY ./registry /usr/src/registry
 WORKDIR /usr/src/registry/sql-registry
 RUN pip install -r requirements.txt
 
-
-
 ## Start service and then start nginx
 WORKDIR /usr/src/registry
 COPY ./feathr-sandbox/start_local.sh /usr/src/registry/
-
-# install code server
-# RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 # default dir by the jupyter image
 WORKDIR /home/jovyan/work
@@ -88,12 +83,9 @@ RUN /usr/src/registry/start_local.sh -m build_docker && python feathr_init_scrip
 
 USER root
 
-# 80: Feathr UI 
-# 8000: Feathr REST API 
-# 8888: Jupyter 
-# 8080: VsCode 
+# 80: Feathr UI
+# 8888: Jupyter
 # 7080: Interpret
-EXPOSE 80 8000 8080 8888 7080 2181
+EXPOSE 80 8888 7080 2181
 # run the service so we can initialize
-# RUN  ["/bin/bash", "/usr/src/registry/start.sh"]
 CMD ["/bin/bash", "/usr/src/registry/start_local.sh"]

@@ -7,7 +7,7 @@ title: Quick Start Guide with Local Sandbox
 
 We provide a local sandbox so users can use Feathr easily. The goal of the Feathr Sandbox is to:
 
-- make it easier for users to get started, 
+- make it easier for users to get started,
 - make it easy to validate feature definitions and new ideas
 - make it easier for Feathr developers to setup environment and develop new things
 - Interactive experience, usually try to run a job takes less than 1 min.
@@ -17,7 +17,7 @@ As an end user, you can become productive in less than 5 mins and try out Feathr
 The Sandbox is ideal for:
 
 - Feathr users who want to get started quickly
-- Feathr developers to test new features since this docker should everything they need. It comes with the python package as editable model so developers can iterate easily. 
+- Feathr developers to test new features since this docker should everything they need. It comes with the python package as editable model so developers can iterate easily.
 
 ## Getting Started
 
@@ -30,8 +30,8 @@ docker run hello-world
 To get started using Feathr, simply run the command below. Note that the image is around 5GB so it might take a while to pull it from DockerHub.
 
 ```bash
-# 80: Feathr UI 8000: Feathr API 8888: Jupyter 8080: VsCode 7080: Interpret
-docker run -it --rm -p 8888:8888  -p 8000:8000 -p 8081:80 -p 8080:8080 -p 7080:7080 --env API_BASE="api/v1" --env FEATHR_SANDBOX=True -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
+# 80: Feathr UI, 8888: Jupyter, 7080: Interpret
+docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
 ```
 
 It should pop up a Jupyter link in `http://127.0.0.1:8888/`. Double click on the notebook file to start the Jupyter Notebook, and you should be able to see the Feathr sample notebook. Click the triangle button on the Jupyter notebook and the whole notebook will run locally.
@@ -47,13 +47,11 @@ http://localhost:8888/lab/workspaces/auto-w/tree/local_quickstart_notebook.ipynb
 
 ![Feathr Notebook](./images/feathr-sandbox.png)
 
-
 After running the Notebooks, all the features will be registered in the UI, and you can visit the Feathr UI at:
 
 ```bash
 http://localhost:8081
 ```
-
 
 After executing those scripts, you should be able to see a project called `local_spark` in the Feathr UI. You can also view lineage in the Feathr UI and explore all the details.
 ![Feathr UI](./images/feathr-sandbox-ui.png)
@@ -72,7 +70,6 @@ The Feathr sandbox comes with:
 - Feathr UI
 - Feathr Registry API
 - Local Redis server
-
 
 ## Build Docker Container
 
@@ -109,7 +106,6 @@ Pleas also note that if you are using Jupyter Notebooks to validate the Python p
 ![Feathr Dev Experience](./images/feathr-sandbox-dev-experience.png)
 
 In the future, an VSCode Server might be installed so that you can do interactive development in the docker container.
-
 
 ### Feathr UI and Feathr Registry API Server development
 
