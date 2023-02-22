@@ -338,8 +338,7 @@ jobs:
     # If it's failure, PR will be blocked
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'pull_request'
-    #needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, paths_filter]
-    needs: [gradle_test, python_lint, paths_filter]
+    needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, paths_filter]
     steps:
       - name: Test status failure
         if: contains(needs.*.result, 'failure')
