@@ -55,7 +55,6 @@ jobs:
             - "docs/**"
             - "ui/**"
             - "**/README.md"
-            - ".github/**"
           registry:
             - "registry/**"                  
     - name: ignore tests
