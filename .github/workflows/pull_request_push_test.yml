@@ -52,7 +52,7 @@ jobs:
       with:
         filters: |
           src:
-            - "./!(registry|docs|ui)/**"
+            - "./!(registry|docs|ui|.github)/**"
     - uses: dorny/paths-filter@v2
       id: filter_registry
       with:
