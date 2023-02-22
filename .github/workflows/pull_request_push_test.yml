@@ -8,12 +8,12 @@ on:
       - "ui/**"
       - "**/README.md"
 
-  pull_request:
-     branches: [main]
-     #paths-ignore:
-     #   - "docs/**"
-     #   - "ui/**"
-     #   - "**/README.md"
+ # pull_request:
+ #    branches: [main]
+ #    paths-ignore:
+ #       - "docs/**"
+ #       - "ui/**"
+ #       - "**/README.md"
 
   pull_request_target:
     branches: [main]
@@ -39,7 +39,7 @@ concurrency:
 jobs:
   paths_filter:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request_target'
     outputs:
       # output1 - if changes for a PR contain source files
       output1: ${{ steps.filter_src.outputs.src }}
@@ -337,7 +337,7 @@ jobs:
     # The status used to mark if any required test jobs failed for a PR
     # If it's failure, PR will be blocked
     runs-on: ubuntu-latest
-    if: always() && github.event_name == 'pull_request'
+    if: always() && github.event_name == 'pull_request_target'
     needs: [gradle_test, python_lint, databricks_test, azure_synapse_test, local_spark_test, paths_filter]
     steps:
       - name: Test status failure
@@ -359,7 +359,7 @@ jobs:
     # The status used to mark if any required registry test cases failed for a PR
     # If it's failure, PR will be blocked
     runs-on: ubuntu-latest
-    if: always() && github.event_name == 'pull_request'
+    if: always() && github.event_name == 'pull_request_target'
     needs: [registry_test, paths_filter]
     steps:
       - name: Test status failure
