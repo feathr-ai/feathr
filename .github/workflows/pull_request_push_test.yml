@@ -52,13 +52,14 @@ jobs:
       with:
         filters: |
           src:
-            - "!((registry|docs|ui|.github)/**)**"
+            - "!((registry|docs|ui)/**)**"
     - uses: dorny/paths-filter@v2
       id: filter_registry
       with:
         filters: |
           registry:
-            - "registry/**"                
+            - "registry/**"
+            - ".github/**"                
     - name: client tests
       if: steps.filter_src.outputs.src == 'true'
       run: echo "Changes of this PR contain client source files. Need to set label 'safe to test'."
