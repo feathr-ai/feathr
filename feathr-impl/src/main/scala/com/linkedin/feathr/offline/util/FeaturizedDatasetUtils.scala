@@ -33,6 +33,121 @@ private[offline] object FeaturizedDatasetUtils {
       StructField(FDS_1D_TENSOR_VALUE, ArrayType(FloatType, containsNull = false), nullable = false)))
 
   /**
+   * For a given DataFrame Row that conforms exactly to the com.linkedin.events.common.proml.Tensor Avro schema,
+   * parse this Row into a TensorData object.
+   *
+   * For now, it only supports sparse tensors.
+   *
+   * @param row DataFrame Row that conforms to com.linkedin.events.common.proml.Tensor Avro schema
+   * @return the TensorData object
+   */
+  def parseAvroTensorToTensorData(row: Row): TensorData = {
+    row match {
+      case Row(sparse: Row, _@_*) =>
+        sparse match {
+          case Row(indices: Seq[Row], values: Row) =>
+            val (dimensionLists, dimensionTypes) = indices.map {
+              // The `_@_*` trick should make these patterns resilient to a situation where more fields have been added
+              // to the end of this schema.
+              case Row(ints: Seq[Int], _@_*) => (ints.map(int2Integer), PrimitiveType.INT)
+              case Row(null, longs: Seq[Long], _@_*) => (longs.map(long2Long), PrimitiveType.LONG)
+              case Row(null, null, strings: Seq[String], _@_*) => (strings, PrimitiveType.STRING)
+            }.unzip
+            // Now really we should always know the TensorType anyway, so shouldn't need to parse out the types for each
+            // row. But TensorType's not serializable, so would be tough to pass into this function. So I'll just use
+            // this approach for now, inferring what the column type should have been based on which field was set in
+            // the sparse tensor Avro record.
+            val (valueList, valueType) = values match {
+              case Row(null, null, doubles: Seq[Double], _@_*) => (doubles.map(double2Double), PrimitiveType.DOUBLE)
+              case Row(null, null, null, floats: Seq[Float], _@_*) => (floats.map(float2Float), PrimitiveType.FLOAT)
+              case Row(null, null, null, null, ints: Seq[Int], _@_*) => (ints.map(int2Integer), PrimitiveType.INT)
+              case Row(null, null, null, null, null, longs: Seq[Long], _@_*) => (longs.map(long2Long), PrimitiveType.LONG)
+              case Row(null, null, null, null, null, null, strings: Seq[String], _@_*) => (strings, PrimitiveType.STRING)
+            }
+            new LOLTensorData((dimensionTypes :+ valueType).toArray, dimensionLists.asInstanceOf[Seq[Seq[_]]].map(_.asJava).asJava, valueList.asJava, false)
+        }
+      case Row(null, _: Row, _@_*) =>
+        throw new UnsupportedOperationException()
+    }
+  }
+
+  /**
+   * For a given Quince TensorData, converts the tensor into its Quince-FDS representation, which will be either a
+   * primitive value or Spark Row (struct) indices and values arrays.
+   *
+   * @param tensor the Quince TensorData
+   * @return the Quince-FDS struct or primitive
+   *
+   */
+  def tensorToDataFrameRow(tensor: TensorData, targetDataType: Option[DataType] = None): Any = {
+    tensor match {
+      case null => null
+      case _ =>
+        // FDSDenseTensorWrapper can be dense tensor but is not of DenseTensor type
+        // TODO(PROML-19908): FDSDenseTensorWrapper should be a subclass of DenseTensor
+        val isDenseTensor = tensor.isInstanceOf[DenseTensor] ||
+          (targetDataType.isDefined && targetDataType.get.isInstanceOf[ArrayType])
+        if (isDenseTensor) {
+          val iter = tensor.iterator
+          val arity = tensor.getArity
+          val dimensionSize = arity - 1
+          if (dimensionSize > 1) {
+            throw new FeathrException(ErrorLabel.FEATHR_ERROR,
+              "DenseTensor only support 1D but not higher now. The dimension size is: " + dimensionSize)
+          }
+          val valueColumnIndex = arity - 1
+          val valueType = tensor.getTypes()(valueColumnIndex)
+          val array = new ArrayBuffer[Any](tensor.cardinality())
+
+          iter.start()
+          while (iter.isValid) {
+            valueType.getRepresentation match {
+              case Primitive.INT => array += iter.getInt(valueColumnIndex)
+              case Primitive.LONG => array += iter.getLong(valueColumnIndex)
+              case Primitive.FLOAT => array += iter.getFloat(valueColumnIndex)
+              case Primitive.DOUBLE => array += iter.getDouble(valueColumnIndex)
+              case Primitive.STRING => array += iter.getString(valueColumnIndex)
+              case Primitive.BOOLEAN => array += iter.getBoolean(valueColumnIndex)
+            }
+            iter.next()
+          }
+          array
+        } else {
+          val iter = tensor.iterator
+          val arity = tensor.getArity
+          val colTypes = tensor.getTypes
+          val arrays = colTypes.map { _ =>
+            new ArrayBuffer[Any](tensor.cardinality())
+          }
+
+          iter.start()
+          while (iter.isValid) {
+            for (i <- 0 until arity) {
+              colTypes(i).getRepresentation match {
+                case Primitive.INT => arrays(i) += iter.getInt(i)
+                case Primitive.LONG => arrays(i) += iter.getLong(i)
+                case Primitive.FLOAT => arrays(i) += iter.getFloat(i)
+                case Primitive.DOUBLE => arrays(i) += iter.getDouble(i)
+                case Primitive.STRING => arrays(i) += iter.getString(i)
+                case Primitive.BOOLEAN => arrays(i) += iter.getBoolean(i)
+              }
+            }
+            iter.next()
+          }
+
+          if (colTypes.length == 1) {
+            // primitive (rank-0 tensor)
+            arrays(0)(0)
+          } else {
+            Row.fromSeq(arrays)
+          }
+        }
+    }
+  }
+
+
+
+  /**
    * Converts a DataFrame containing feature columns that is in 'raw' format (see
 
    * into a similar DataFrame with the same column names, but whose feature columns have been converted into the

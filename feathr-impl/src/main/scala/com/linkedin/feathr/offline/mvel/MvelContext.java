@@ -135,7 +135,8 @@ public class MvelContext {
                                                                      Object ctx,
                                                                      VariableResolverFactory variableResolverFactory,
                                                                      FeathrExpressionExecutionContext mvelContext) {
-    Object output = MVEL.executeExpression(compiledExpression, ctx, variableResolverFactory);
+    Object newCtx = coerceToFeatureValueViaMvelDataConversionPlugins(ctx, mvelContext);
+    Object output = MVEL.executeExpression(compiledExpression, newCtx, variableResolverFactory);
     return coerceToFeatureValueViaMvelDataConversionPlugins(output, mvelContext);
   }
 
