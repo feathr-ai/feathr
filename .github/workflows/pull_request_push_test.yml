@@ -8,12 +8,12 @@ on:
       - "ui/**"
       - "**/README.md"
 
-  # pull_request:
-  #   branches: [main]
-  #   paths-ignore:
-  #      - "docs/**"
-  #      - "ui/**"
-  #      - "**/README.md"
+  pull_request:
+     branches: [main]
+     #paths-ignore:
+     #   - "docs/**"
+     #   - "ui/**"
+     #   - "**/README.md"
 
   pull_request_target:
     branches: [main]
@@ -39,7 +39,7 @@ concurrency:
 jobs:
   paths_filter:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request' 
     outputs:
       # output1 - if changes for a PR only in ignore paths
       output1: ${{ steps.filter.outputs.ignore }}
