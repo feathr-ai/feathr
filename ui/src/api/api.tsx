@@ -1,6 +1,6 @@
 import { InteractionRequiredAuthError, PublicClientApplication } from '@azure/msal-browser'
 import Axios from 'axios'
-
+import AddTags from '@/components/AddTags'  //temp test
 import {
   DataSource,
   Feature,
