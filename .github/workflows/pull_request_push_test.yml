@@ -42,13 +42,13 @@ jobs:
     if: github.event_name == 'pull_request_target' || github.event_name == 'pull_request'
     outputs:
       # output1 - if changes for a PR only in ignore paths
-      output1: ${{ steps.filter-ignore.outputs.ignore }}
+      output1: ${{ steps.filter.outputs.ignore }}
       # output2 - if changes for a PR only in registry paths
-      output2: ${{ steps.filter-registry.outputs.registry }}
+      output2: ${{ steps.filter.outputs.registry }}
     steps:
     - uses: actions/checkout@v2
     - uses: dorny/paths-filter@v2
-      id: filter-ignore
+      id: filter
       with:
         filters: |
           ignore:
@@ -56,20 +56,16 @@ jobs:
             - "ui/**"
             - "**/README.md"
             - ".github/**"
-    - uses: dorny/paths-filter@v2
-      id: filter-registry
-      with:
-        filters: |    
           registry:
-            - "registry/**"      
+            - "registry/**"                  
     - name: ignore tests
-      if: steps.filter-ignore.outputs.ignore == 'true'
+      if: steps.filter.outputs.ignore == 'true'
       run: echo "Changes of this PR only contain ignore files"
     - name: registry tests
-      if: steps.filter-registry.outputs.registry == 'true'
+      if: steps.filter.outputs.registry == 'true'
       run: echo "Changes of this PR only contain registry files"
     - name: python client Tests
-      if: steps.filter-ignore.outputs.ignore != 'true' && steps.filter-registry.outputs.registry != 'true'
+      if: steps.filter.outputs.ignore != 'true' && steps.filter.outputs.registry != 'true'
       run: echo "Changes of this PR contain python client files"
 
   gradle_test:
