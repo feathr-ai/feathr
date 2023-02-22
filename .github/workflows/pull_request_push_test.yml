@@ -303,7 +303,7 @@ jobs:
 
   registry_test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'registry test'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'registry test'))
     steps:
       - uses: actions/checkout@v2
         with:
