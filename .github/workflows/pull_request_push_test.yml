@@ -52,7 +52,7 @@ jobs:
       with:
         filters: |
           ignore:
-            - "!docs/**, !ui/**, !registry/**, !**/README.md, !.github/**"
+            - "!.github/**"
     - uses: dorny/paths-filter@v2
       id: filter
       with:
