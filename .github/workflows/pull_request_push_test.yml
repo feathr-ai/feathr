@@ -39,7 +39,7 @@ concurrency:
 jobs:
   paths_filter:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' 
+    if: github.event_name == 'pull_request_target' || github.event_name == 'pull_request'
     outputs:
       # output1 - if changes for a PR only in ignore paths
       output1: ${{ steps.filter-ignore.outputs.ignore }}
@@ -55,7 +55,7 @@ jobs:
             - "docs/**"
             - "ui/**"
             - "**/README.md"
-            - "./github"
+            - ".github/**"
     - uses: dorny/paths-filter@v2
       id: filter-registry
       with:
