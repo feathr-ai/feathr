@@ -60,7 +60,7 @@ jobs:
           registry:
             - "registry/**"                
     - name: client tests
-      if: steps.filter_src.outputs.ignore == 'true'
+      if: steps.filter_src.outputs.src == 'true'
       run: echo "Changes of this PR contain client source files. Need to set label 'safe to test'."
     - name: registry tests
       if: steps.filter_registry.outputs.registry == 'true' 
