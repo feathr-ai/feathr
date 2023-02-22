@@ -84,7 +84,7 @@ docker build -f FeathrSandbox.Dockerfile -t feathrfeaturestore/feathr-sandbox .
 By default, Feathr Sandbox uses a SQLite backend in Feathr registry, and the content will be deleted if you restart the container. If you want to use a persistent registry, say a remote MySQL database or SQL Server, you can configure an environment variable when starting the Feathr Sandbox container like below, by specifying `FEATHR_SANDBOX_REGISTRY_URL` environment variable:
 
 ```bash
-docker run -it --rm -p 8888:8888  -p 8000:8000 -p 8081:80 -p 8080:8080 -p 7080:7080 --env API_BASE="api/v1" --env FEATHR_SANDBOX=True --env FEATHR_SANDBOX_REGISTRY_URL="mysql://scott:tiger@localhost/foo" -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
+docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 --env FEATHR_SANDBOX_REGISTRY_URL="mysql://scott:tiger@localhost/foo" -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox
 ```
 
 Take a look at the [Database URLs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) section for more details on how this URL is formatted. Basically it will be like this:
