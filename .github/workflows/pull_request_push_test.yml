@@ -8,12 +8,12 @@ on:
       - "ui/**"
       - "**/README.md"
 
- # pull_request:
- #    branches: [main]
- #    paths-ignore:
- #       - "docs/**"
- #       - "ui/**"
- #       - "**/README.md"
+  #pull_request:
+  #   branches: [main]
+  #   paths-ignore:
+  #      - "docs/**"
+  #      - "ui/**"
+  #      - "**/README.md"
 
   pull_request_target:
     branches: [main]
@@ -169,7 +169,7 @@ jobs:
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
         run: |
           # run only test with databricks. run in 6 parallel jobs
-          pytest -n 6 --cov-report term-missing --cov=feathr_project/feathr feathr_project/test --cov-config=.github/workflows/.coveragerc_db
+          pytest -n 6 --cov-report term-missing --cov=feathr_project/feathr feathr_project/test --cov-config=.github/workflows/.coveragerc_db --cov-fail-under=75
      
   azure_synapse_test:
     # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
@@ -239,7 +239,7 @@ jobs:
         run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 6 parallel jobs to make the time shorter
-          pytest -n 6 -m "not databricks" --cov-report term-missing --cov=feathr_project/feathr feathr_project/test --cov-config=.github/workflows/.coveragerc_sy
+          pytest -n 6 -m "not databricks" --cov-report term-missing --cov=feathr_project/feathr feathr_project/test --cov-config=.github/workflows/.coveragerc_sy --cov-fail-under=75
 
   local_spark_test:
     runs-on: ubuntu-latest
@@ -298,7 +298,7 @@ jobs:
           SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
         run: |
           # skip cloud related tests
-          pytest --cov-report term-missing --cov=feathr_project/feathr/spark_provider feathr_project/test/test_local_spark_e2e.py --cov-config=.github/workflows/.coveragerc_local
+          pytest --cov-report term-missing --cov=feathr_project/feathr/spark_provider feathr_project/test/test_local_spark_e2e.py --cov-config=.github/workflows/.coveragerc_local 
 
   registry_test:
     runs-on: ubuntu-latest
@@ -330,8 +330,8 @@ jobs:
           PURVIEW_NAME: "feathrazuretest3-purview1"
           CONNECTION_STR: ${{secrets.CONNECTION_STR}}
         run: |
-          pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py
-          pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py
+          pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py --cov-fail-under=80
+          pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py --cov-fail-under=80
       
   client_test_status:
     # The status used to mark if any required test jobs failed for a PR
