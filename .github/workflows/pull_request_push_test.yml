@@ -330,8 +330,8 @@ jobs:
           PURVIEW_NAME: "feathrazuretest3-purview1"
           CONNECTION_STR: ${{secrets.CONNECTION_STR}}
         run: |
-          pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py --fail-under=95
-          pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py --fail-under=75
+          pytest --cov-report term-missing --cov=registry/sql-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_sql_registry.py --cov-fail-under=95
+          pytest --cov-report term-missing --cov=registry/purview-registry/registry --cov-config=registry/test/.coveragerc registry/test/test_purview_registry.py --cov-fail-under=95
       
   client_test_status:
     # The status used to mark if any required test jobs failed for a PR
