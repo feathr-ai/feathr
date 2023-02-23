@@ -6,9 +6,6 @@ from feathr import MonitoringSqlSink
 from test_fixture import (basic_test_setup, get_online_test_table_name)
 from test_utils.constants import Constants
 
-def temp_test():
-    assert 0 > 0
-
 def test_feature_monitoring():
     monitor_sink_table = get_online_test_table_name("nycTaxiCITableMonitoring")
     test_workspace_dir = Path(
