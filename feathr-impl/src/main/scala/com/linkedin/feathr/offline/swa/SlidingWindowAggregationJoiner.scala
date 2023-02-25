@@ -13,6 +13,7 @@ import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
+import com.linkedin.feathr.offline.util.DataFrameUtils
 import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
@@ -195,6 +196,7 @@ private[offline] class SlidingWindowAggregationJoiner(
           "unix_timestamp()" // if useLatestFeatureData=true, return the current unix timestamp (w.r.t UTC time zone)
         }
 
+
         val labelDataDef = LabelData(contextDF, stringKeyTags, timeStampExpr)
 
         if (ss.sparkContext.isLocal && log.isDebugEnabled) {
@@ -214,6 +216,7 @@ private[offline] class SlidingWindowAggregationJoiner(
               val selectedFeatures = anchorWithSourceToDFMap.keySet.flatMap(_.selectedFeatures).filter(joinedFeatures.contains(_))
               val factData = anchorWithSourceToDFMap.head._2
               val anchor = anchorWithSourceToDFMap.head._1
+              val keyColumnsList = anchor.featureAnchor.sourceKeyExtractor.getKeyColumnNames(None)
               val filteredFactData = bloomFilter match {
                 case None => factData // no bloom filter: use data as it
                 case Some(filter) =>
@@ -221,7 +224,6 @@ private[offline] class SlidingWindowAggregationJoiner(
                   if (anchor.featureAnchor.sourceKeyExtractor.isInstanceOf[MVELSourceKeyExtractor]) {
                     throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "MVELSourceKeyExtractor is not supported in sliding window aggregation")
                   }
-                  val keyColumnsList = anchor.featureAnchor.sourceKeyExtractor.getKeyColumnNames(None)
                   // generate the same concatenated-key column for bloom filtering
                   val (bfFactKeyColName, factDataWithKeys) =
                     DataFrameKeyCombiner().combine(factData, keyColumnsList)
@@ -230,7 +232,8 @@ private[offline] class SlidingWindowAggregationJoiner(
                   // remove the concat-key column
                   filtered.drop(col(bfFactKeyColName))
               }
-              SlidingWindowFeatureUtils.getFactDataDef(filteredFactData, anchorWithSourceToDFMap.keySet.toSeq, featuresToDelayImmutableMap, selectedFeatures)
+              val filteredFactDataWithoutNulls = DataFrameUtils.filterNulls(filteredFactData, keyColumnsList)
+              SlidingWindowFeatureUtils.getFactDataDef(filteredFactDataWithoutNulls, anchorWithSourceToDFMap.keySet.toSeq, featuresToDelayImmutableMap, selectedFeatures)
           }
         val origContextObsColumns = labelDataDef.dataSource.columns
 
