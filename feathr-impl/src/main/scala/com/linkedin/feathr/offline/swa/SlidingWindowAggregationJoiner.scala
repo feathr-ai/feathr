@@ -13,7 +13,7 @@ import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
-import com.linkedin.feathr.offline.util.DataFrameUtils
+import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
@@ -232,7 +232,8 @@ private[offline] class SlidingWindowAggregationJoiner(
                   // remove the concat-key column
                   filtered.drop(col(bfFactKeyColName))
               }
-              val filteredFactDataWithoutNulls = DataFrameUtils.filterNulls(filteredFactData, keyColumnsList)
+              val shouldFilterNulls = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.FILTER_NULLS).toBoolean
+              val filteredFactDataWithoutNulls = if (shouldFilterNulls) DataFrameUtils.filterNulls(filteredFactData, keyColumnsList) else filteredFactData
               SlidingWindowFeatureUtils.getFactDataDef(filteredFactDataWithoutNulls, anchorWithSourceToDFMap.keySet.toSeq, featuresToDelayImmutableMap, selectedFeatures)
           }
         val origContextObsColumns = labelDataDef.dataSource.columns
