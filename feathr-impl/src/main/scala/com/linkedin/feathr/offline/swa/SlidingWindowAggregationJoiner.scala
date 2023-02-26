@@ -20,7 +20,7 @@ import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
 import com.linkedin.feathr.swj.{LabelData, SlidingWindowJoin}
 import com.linkedin.feathr.{common, offline}
 import org.apache.logging.log4j.LogManager
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{col, lit}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
 
@@ -80,6 +80,7 @@ private[offline] class SlidingWindowAggregationJoiner(
 
     val timeWindowJoinSettings = joinConfigSettings.get.joinTimeSetting.get
     val simulatedDelay = timeWindowJoinSettings.simulateTimeDelay
+    val shouldFilterNulls = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.FILTER_NULLS).toBoolean
 
     if (simulatedDelay.isEmpty && !joinConfig.featuresToTimeDelayMap.isEmpty) {
       throw new FeathrConfigException(
@@ -197,7 +198,9 @@ private[offline] class SlidingWindowAggregationJoiner(
         }
 
 
-        val labelDataDef = LabelData(contextDF, stringKeyTags, timeStampExpr)
+        val (nullFilteredLabelData, factDataRowsWithNulls) = if (shouldFilterNulls) (DataFrameUtils.filterNulls(contextDF, keyTags.map(keyTagList)),
+          DataFrameUtils.filterNonNulls(contextDF, keyTags.map(keyTagList))) else (contextDF, ss.emptyDataFrame)
+        val labelDataDef = LabelData(nullFilteredLabelData, stringKeyTags, timeStampExpr)
 
         if (ss.sparkContext.isLocal && log.isDebugEnabled) {
           log.debug(
@@ -232,13 +235,17 @@ private[offline] class SlidingWindowAggregationJoiner(
                   // remove the concat-key column
                   filtered.drop(col(bfFactKeyColName))
               }
-              val shouldFilterNulls = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.FILTER_NULLS).toBoolean
               val filteredFactDataWithoutNulls = if (shouldFilterNulls) DataFrameUtils.filterNulls(filteredFactData, keyColumnsList) else filteredFactData
               SlidingWindowFeatureUtils.getFactDataDef(filteredFactDataWithoutNulls, anchorWithSourceToDFMap.keySet.toSeq, featuresToDelayImmutableMap, selectedFeatures)
           }
         val origContextObsColumns = labelDataDef.dataSource.columns
 
         contextDF = SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
+
+        contextDF = if (shouldFilterNulls && !factDataRowsWithNulls.isEmpty) {
+          val nullDfWithFeatureCols = joinedFeatures.foldLeft(factDataRowsWithNulls)((s, x) => s.withColumn(x, lit(null)))
+          contextDF.union(nullDfWithFeatureCols)
+        } else contextDF
         val defaults = windowAggAnchorDFThisStage.flatMap(s => s._1.featureAnchor.defaults)
         val userSpecifiedTypesConfig = windowAggAnchorDFThisStage.flatMap(_._1.featureAnchor.featureTypeConfigs)
 

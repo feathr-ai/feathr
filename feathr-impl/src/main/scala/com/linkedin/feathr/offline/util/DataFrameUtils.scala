@@ -9,4 +9,9 @@ private[offline] object DataFrameUtils {
     dataframe.filter(!filterCondition)
   }
 
+  def filterNonNulls(dataframe: DataFrame, keyColumnNames: Seq[String]): DataFrame = {
+    val filterCondition = keyColumnNames.map(col(_).isNull).reduce(_ && _)
+    dataframe.filter(filterCondition)
+  }
+
 }

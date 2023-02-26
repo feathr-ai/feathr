@@ -86,7 +86,7 @@ private[feathr] object FeathrUtils {
     SPARK_JOIN_MIN_PARALLELISM  -> (SQLConf.buildConf(getFullConfigKeyName(SPARK_JOIN_MIN_PARALLELISM )).stringConf.createOptional, "10"),
     ENABLE_SANITY_CHECK_MODE  -> (SQLConf.buildConf(getFullConfigKeyName(ENABLE_SANITY_CHECK_MODE )).stringConf.createOptional, "false"),
     SANITY_CHECK_MODE_ROW_COUNT  -> (SQLConf.buildConf(getFullConfigKeyName(SANITY_CHECK_MODE_ROW_COUNT )).stringConf.createOptional, "10"),
-    FILTER_NULLS  -> (SQLConf.buildConf(getFullConfigKeyName(FILTER_NULLS )).stringConf.createOptional, false)
+    FILTER_NULLS  -> (SQLConf.buildConf(getFullConfigKeyName(FILTER_NULLS )).stringConf.createOptional, "false")
   )
 
   /**

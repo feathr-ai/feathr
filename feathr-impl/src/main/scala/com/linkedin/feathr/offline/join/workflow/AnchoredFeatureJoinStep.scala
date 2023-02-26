@@ -181,6 +181,7 @@ private[offline] class AnchoredFeatureJoinStep(
       FeathrUtils.dumpDebugInfo(ctx.sparkSession, featureDF, featureNames, "anchored feature before join",
         featureNames.mkString("_") + "_anchored_feature_before_join")
       val shouldFilterNulls = FeathrUtils.getFeathrJobParam(ctx.sparkSession.sparkContext.getConf, FeathrUtils.FILTER_NULLS).toBoolean
+      var nullDf = ctx.sparkSession.emptyDataFrame
       val joinedDf = if (isSaltedJoinRequiredForKeys(keyTags)) {
         val (rightJoinColumns, rightDF) = SaltedJoinKeyColumnAppender.appendJoinKeyColunmns(rawRightJoinKeys, featureDF)
         val filteredDf = if (shouldFilterNulls) DataFrameUtils.filterNulls(rightDF, rightJoinColumns) else rightDF
@@ -202,11 +203,19 @@ private[offline] class AnchoredFeatureJoinStep(
         } else {
           contextDF
         }
-        joiner.join(leftJoinColumns, refinedContextDF, rightJoinColumns, filteredDf, JoinType.left_outer)
+        val filteredLeftDf = if (shouldFilterNulls) DataFrameUtils.filterNulls(refinedContextDF, leftJoinColumns) else refinedContextDF
+        nullDf = if (shouldFilterNulls) DataFrameUtils.filterNonNulls(refinedContextDF, leftJoinColumns) else nullDf
+        joiner.join(leftJoinColumns, filteredLeftDf, rightJoinColumns, filteredDf, JoinType.left_outer)
       }
-      FeathrUtils.dumpDebugInfo(ctx.sparkSession, joinedDf, featureNames, "anchored feature after join",
+
+      val dfWithNullRowsAdded = if (shouldFilterNulls && !nullDf.isEmpty) {
+        val nullDfWithFeatureCols = featureNames.foldLeft(joinedDf)((s, x) => s.withColumn(x, lit(null)))
+        contextDF.union(nullDfWithFeatureCols)
+      } else joinedDf
+
+      FeathrUtils.dumpDebugInfo(ctx.sparkSession, dfWithNullRowsAdded, featureNames, "anchored feature after join",
         featureNames.mkString("_") + "_anchored_feature_after_join")
-      joinedDf
+      dfWithNullRowsAdded
     }
   }
 
