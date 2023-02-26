@@ -62,7 +62,7 @@ private[offline] object DataSourceAccessor {
       new NonTimeBasedDataSourceAccessor(ss, dataLoaderFactory, source, expectDatumType)
     } else {
       import scala.util.control.Breaks._
-      
+
       val timeInterval = dateIntervalOpt.get
       var dataAccessorOpt: Option[DataSourceAccessor] = None
       breakable {
@@ -149,7 +149,7 @@ private[offline] object DataSourceAccessor {
  */
 private[offline] case class DataAccessorHandler(
   validatePath: String => Boolean,
-  getAccessor: 
+  getAccessor:
   (
     SparkSession,
     DataSource,
@@ -169,3 +169,4 @@ private[offline] case class DataPathHandler(
   dataAccessorHandler: DataAccessorHandler,
   dataLoaderHandler: DataLoaderHandler
 )
+
