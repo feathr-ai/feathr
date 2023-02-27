@@ -42,12 +42,13 @@ Read through the [commit log](https://github.com/feathr-ai/feathr/commits/main) 
 
 Before the release candidate or release is made, the version needs to be updated in following places
 
-- [build.gradle](https://github.com/feathr-ai/feathr/blob/main/gradle.properties#L1) - For Maven release version
+- [gradle.properties](https://github.com/feathr-ai/feathr/blob/main/gradle.properties#L1) - For Maven release version
 - [version.py](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathr/version.py#L1) - For Feathr version
 - [conf.py](https://github.com/feathr-ai/feathr/blob/main/feathr_project/docs/conf.py#L27) - For documentation version
 - [feathr_config.yaml](https://github.com/feathr-ai/feathr/blob/main/feathr_project/test/test_user_workspace/feathr_config.yaml#L86) - To set the spark runtime location for Azure Synapse and Azure Databricks used by test suite. Please update all .yaml files under this path.
 - [package.json](https://github.com/feathr-ai/feathr/blob/main/ui/package.json#L3) - For Feathr UI version
 - [package-lock.json](https://github.com/feathr-ai/feathr/blob/main/ui/package-lock.json) - For Feathr UI version
+- [quickstart_local_sandbox.md](https://github.com/feathr-ai/feathr/blob/main/docs/quickstart_local_sandbox.md) - Update docker image version in the sandbox quickstart guide.
 
 Following file should only be updated for release, which means should be skipped for release candidate.
 
