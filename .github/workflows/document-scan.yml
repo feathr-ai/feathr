@@ -1,4 +1,4 @@
-name: Feathr Documents' Broken Link Check
+name: Broken Link Checker
 
 on:
   push:
