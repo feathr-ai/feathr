@@ -584,6 +584,11 @@ object FeathrClient {
       this
     }
 
+    /**
+     * Add an optional SWA handler method to allow support for external SWA library handling.
+     * @param _swaHandler
+     * @return
+     */
     def addSWAHandler(_swaHandler: Option[SWAHandler]): Builder = {
       this.swaHandler = _swaHandler
       this
