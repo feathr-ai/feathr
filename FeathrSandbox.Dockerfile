@@ -16,7 +16,10 @@ COPY . .
 RUN ./gradlew build
 
 # Stage 3: build the docker image for feathr sandbox
-FROM jupyter/pyspark-notebook
+
+# Reference: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#versioning-via-image-tags
+# For a short term we pin the spark runtime to 3.3.0 which is used in databricks LTS: https://docs.databricks.com/release-notes/runtime/11.3.html
+FROM jupyter/pyspark-notebook:spark-3.3.0
 
 USER root
 
