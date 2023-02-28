@@ -1,4 +1,4 @@
-name: Feathr UI Lint and Format Checks
+name: UI Code Lint and Format Checks
 
 on:
   push:

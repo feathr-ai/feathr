@@ -1,7 +1,7 @@
-name: Publish JAR to Azure Storage
+name: Publish to Azure Storage
 on:
   push:
-    # This pipeline will get triggered ev个erytime there is a new tag created.
+    # This pipeline will get triggered everytime there is a new tag created.
     # It is required
     tags: ["*"]
 
