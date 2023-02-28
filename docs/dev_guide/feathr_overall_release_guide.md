@@ -67,7 +67,7 @@ Once the release branch is created, a release tag should be created from the rel
 
 Once the release branch and release tag are created, the release pipelines will be triggered automatically. The release pipelines will build the release artifacts and publish them to DockerHub, Maven and PyPI.
 
-1. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/docker-publish.yml) to build and publish for Feathr Registry docker images to [DockerHub](https://hub.docker.com/r/feathrfeaturestore/feathr-registry/tags).
+1. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-dockerhub.yml) to build and publish for Feathr Registry docker images to [DockerHub](https://hub.docker.com/r/feathrfeaturestore/feathr-registry/tags).
     **Triggers** - Nightly or branch with name pattern "releases/*"
 
 2. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-pypi.yml) for publishing Python package to [PyPI](https://pypi.org/project/feathr/).
