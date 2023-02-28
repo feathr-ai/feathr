@@ -287,6 +287,7 @@ def test_materialize_features_verbose():
                                            "f_location_avg_fare", "f_location_max_fare"],
                                        backfill_time=backfill_time)
     client.materialize_features(settings, verbose=True)
+    client._clean_test_data(online_test_table)
 
 def add_new_fare_amount(df: DataFrame) -> DataFrame:
     df = df.withColumn("fare_amount_new", col("fare_amount") + 8000000)
@@ -363,6 +364,8 @@ def test_delete_feature_from_redis():
 
     assert len(res) == 1
     assert res[0] == None
+    
+    client._clean_test_data(online_test_table)
 
 def test_feature_list_on_input_context():
     with pytest.raises(RuntimeError) as e_info:
