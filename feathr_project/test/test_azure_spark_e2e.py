@@ -96,6 +96,8 @@ def test_feathr_online_store_agg_features():
                                            ['f_location_avg_fare', 'f_location_max_fare'])
     assert res['81#254'] != None
     assert res['25#42'] != None
+    
+    client._clean_test_data(online_test_table)
 
 @pytest.mark.skip(reason="Add back when complex types are supported in python API")
 def test_feathr_online_store_non_agg_features():
@@ -142,6 +144,8 @@ def test_feathr_online_store_non_agg_features():
     _validate_constant_feature(res['265'])
     assert res['265'][0] != None
     assert res['265'][1] != None
+    
+    client._clean_test_data(online_test_table)
 
 
 def _validate_constant_feature(feature):
