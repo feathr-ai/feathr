@@ -49,6 +49,7 @@ def test_feathr_online_store_agg_features():
     assert res['2'][0] != None
     assert res['2'][1] != None
 
+    client._clean_test_data(online_test_table)
 
 def test_feathr_get_offline_features():
     """
