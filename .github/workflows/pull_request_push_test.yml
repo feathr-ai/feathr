@@ -1,4 +1,4 @@
-name: Feathr Scala Tests And Azure E2E Integration
+name: Feathr E2E Tests
 
 on:
   push:
