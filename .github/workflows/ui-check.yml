@@ -11,10 +11,6 @@ on:
     paths:
       - "ui/**/*"
 
-  pull_request_target:
-    branches: [main]
-    paths:
-      - "ui/**/*"
 
 jobs:
   eslint:
