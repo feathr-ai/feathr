@@ -53,7 +53,7 @@ The easiest way to try out Feathr is to use the [Feathr Sandbox](https://feathr-
 
 ```bash
 # 80: Feathr UI, 8888: Jupyter, 7080: Interpret
-docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox:releases-v1.0.0-rc4
+docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox:releases-v1.0.0
 ```
 
 And you can view default jupyter notebook:

@@ -31,7 +31,7 @@ To get started using Feathr, simply run the command below. Note that the image i
 
 ```bash
 # 80: Feathr UI, 8888: Jupyter, 7080: Interpret
-docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox:releases-v1.0.0-rc4
+docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox:releases-v1.0.0
 ```
 
 It should pop up a Jupyter link in `http://127.0.0.1:8888/`. Double click on the notebook file to start the Jupyter Notebook, and you should be able to see the Feathr sample notebook. Click the triangle button on the Jupyter notebook and the whole notebook will run locally.
@@ -84,7 +84,7 @@ docker build -f FeathrSandbox.Dockerfile -t feathrfeaturestore/feathr-sandbox .
 By default, Feathr Sandbox uses a SQLite backend in Feathr registry, and the content will be deleted if you restart the container. If you want to use a persistent registry, say a remote MySQL database or SQL Server, you can configure an environment variable when starting the Feathr Sandbox container like below, by specifying `FEATHR_SANDBOX_REGISTRY_URL` environment variable:
 
 ```bash
-docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 --env FEATHR_SANDBOX_REGISTRY_URL="mysql://scott:tiger@localhost/foo" -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox:releases-v1.0.0-rc4
+docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 --env FEATHR_SANDBOX_REGISTRY_URL="mysql://scott:tiger@localhost/foo" -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox:releases-v1.0.0
 ```
 
 Take a look at the [Database URLs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) section for more details on how this URL is formatted. Basically it will be like this:
