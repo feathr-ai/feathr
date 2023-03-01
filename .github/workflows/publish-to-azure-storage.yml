@@ -1,4 +1,4 @@
-name: Publish Fat JAR package to the Blob Storage Folder
+name: Publish to Azure Storage
 on:
   push:
     # This pipeline will get triggered everytime there is a new tag created.

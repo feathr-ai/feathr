@@ -3,7 +3,7 @@
 #   1. daily i.e. runs everyday at specific time.
 #   2. Anytime a new branch is created under releases
 
-name: Publish Feathr Docker image to DockerHub
+name: Publish to Docker Hub
 
 on:
   schedule:

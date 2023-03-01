@@ -1,4 +1,4 @@
-name: Feathr UI Lint and Format Checks
+name: UI Code Lint and Format Checks
 
 on:
   push:
@@ -11,10 +11,6 @@ on:
     paths:
       - "ui/**/*"
 
-  pull_request_target:
-    branches: [main]
-    paths:
-      - "ui/**/*"
 
 jobs:
   eslint:
