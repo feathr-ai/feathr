@@ -13,8 +13,6 @@
     </h3>
 </html>
 
-
-
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/feathr-ai/feathr/blob/main/LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/feathr-ai/feathr.svg?style=flat&sort=semver&color=blue)](https://github.com/feathr-ai/feathr/releases)
 [![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://feathr-ai.github.io/feathr/)
@@ -56,12 +54,12 @@ The easiest way to try out Feathr is to use the [Feathr Sandbox](https://feathr-
 docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox:releases-v1.0.0
 ```
 
-And you can view default jupyter notebook:
+And you can view Feathr quickstart jupyter notebook:
 ```bash
 http://localhost:8888/lab/workspaces/auto-w/tree/local_quickstart_notebook.ipynb
 ```
 
-After running the Notebooks, all the features will be registered in the UI, and you can visit the Feathr UI at:
+After running the notebook, all the features will be registered in the UI, and you can visit the Feathr UI at:
 
 ```bash
 http://localhost:8081

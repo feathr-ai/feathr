@@ -75,7 +75,7 @@ Once the release branch and release tag are created, the release pipelines will 
 
 3. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-maven.yml) for publishing runtime jar to [maven/sonatype repository](https://oss.sonatype.org/).
 
-4. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-fat-jar.yml) for uploading runtime jar to [Azure storage](https://ms.portal.azure.com/#view/Microsoft_Azure_Storage/ContainerMenuBlade/~/overview/storageAccountId/%2Fsubscriptions%2Fa6c2a7cc-d67e-4a1a-b765-983f08c0423a%2FresourceGroups%2Fazurefeathrintegration%2Fproviders%2FMicrosoft.Storage%2FstorageAccounts%2Fazurefeathrstorage/path/public/etag/%220x8D9E6F64D62D599%22/defaultEncryptionScope/%24account-encryption-key/denyEncryptionScopeOverride//defaultId//publicAccessVal/Container).
+4. Automated [workflow](https://github.com/feathr-ai/feathr/blob/main/.github/workflows/publish-to-azure-storage.yml) for uploading runtime jar to [Azure storage](https://ms.portal.azure.com/#view/Microsoft_Azure_Storage/ContainerMenuBlade/~/overview/storageAccountId/%2Fsubscriptions%2Fa6c2a7cc-d67e-4a1a-b765-983f08c0423a%2FresourceGroups%2Fazurefeathrintegration%2Fproviders%2FMicrosoft.Storage%2FstorageAccounts%2Fazurefeathrstorage/path/public/etag/%220x8D9E6F64D62D599%22/defaultEncryptionScope/%24account-encryption-key/denyEncryptionScopeOverride//defaultId//publicAccessVal/Container).
 
 ## Release PyPI
 
