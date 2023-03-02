@@ -28,8 +28,14 @@ import org.apache.spark.util.sketch.BloomFilter
 
 import scala.collection.mutable
 
-
+/**
+ * Case class containing other SWA handler methods
+ * @param join
+ */
 private[offline] case class SWAHandler(
+  /**
+   * The SWA join method
+   */
   join:
   (
     LabelData,
