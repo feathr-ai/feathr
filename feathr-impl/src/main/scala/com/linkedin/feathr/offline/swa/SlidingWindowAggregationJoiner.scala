@@ -13,13 +13,14 @@ import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
+import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
 import com.linkedin.feathr.swj.{LabelData, SlidingWindowJoin}
 import com.linkedin.feathr.{common, offline}
 import org.apache.logging.log4j.LogManager
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{col, lit}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
 
@@ -79,6 +80,7 @@ private[offline] class SlidingWindowAggregationJoiner(
 
     val timeWindowJoinSettings = joinConfigSettings.get.joinTimeSetting.get
     val simulatedDelay = timeWindowJoinSettings.simulateTimeDelay
+    val shouldFilterNulls = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.FILTER_NULLS).toBoolean
 
     if (simulatedDelay.isEmpty && !joinConfig.featuresToTimeDelayMap.isEmpty) {
       throw new FeathrConfigException(
@@ -195,7 +197,10 @@ private[offline] class SlidingWindowAggregationJoiner(
           "unix_timestamp()" // if useLatestFeatureData=true, return the current unix timestamp (w.r.t UTC time zone)
         }
 
-        val labelDataDef = LabelData(contextDF, stringKeyTags, timeStampExpr)
+
+        val (nullFilteredLabelData, factDataRowsWithNulls) = if (shouldFilterNulls) (DataFrameUtils.filterNulls(contextDF, keyTags.map(keyTagList)),
+          DataFrameUtils.filterNonNulls(contextDF, keyTags.map(keyTagList))) else (contextDF, ss.emptyDataFrame)
+        val labelDataDef = LabelData(nullFilteredLabelData, stringKeyTags, timeStampExpr)
 
         if (ss.sparkContext.isLocal && log.isDebugEnabled) {
           log.debug(
@@ -214,6 +219,7 @@ private[offline] class SlidingWindowAggregationJoiner(
               val selectedFeatures = anchorWithSourceToDFMap.keySet.flatMap(_.selectedFeatures).filter(joinedFeatures.contains(_))
               val factData = anchorWithSourceToDFMap.head._2
               val anchor = anchorWithSourceToDFMap.head._1
+              val keyColumnsList = anchor.featureAnchor.sourceKeyExtractor.getKeyColumnNames(None)
               val filteredFactData = bloomFilter match {
                 case None => factData // no bloom filter: use data as it
                 case Some(filter) =>
@@ -221,7 +227,6 @@ private[offline] class SlidingWindowAggregationJoiner(
                   if (anchor.featureAnchor.sourceKeyExtractor.isInstanceOf[MVELSourceKeyExtractor]) {
                     throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "MVELSourceKeyExtractor is not supported in sliding window aggregation")
                   }
-                  val keyColumnsList = anchor.featureAnchor.sourceKeyExtractor.getKeyColumnNames(None)
                   // generate the same concatenated-key column for bloom filtering
                   val (bfFactKeyColName, factDataWithKeys) =
                     DataFrameKeyCombiner().combine(factData, keyColumnsList)
@@ -235,6 +240,11 @@ private[offline] class SlidingWindowAggregationJoiner(
         val origContextObsColumns = labelDataDef.dataSource.columns
 
         contextDF = SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
+
+        contextDF = if (shouldFilterNulls && !factDataRowsWithNulls.isEmpty) {
+          val nullDfWithFeatureCols = joinedFeatures.foldLeft(factDataRowsWithNulls)((s, x) => s.withColumn(x, lit(null)))
+          contextDF.union(nullDfWithFeatureCols)
+        } else contextDF
         val defaults = windowAggAnchorDFThisStage.flatMap(s => s._1.featureAnchor.defaults)
         val userSpecifiedTypesConfig = windowAggAnchorDFThisStage.flatMap(_._1.featureAnchor.featureTypeConfigs)
 
