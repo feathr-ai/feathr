@@ -111,7 +111,7 @@
     "destinationBacpacBlobUrl": "[concat('https://',variables('dlsName'),'.blob.core.windows.net/',variables('dlsFsName'),'/',variables('bacpacBlobName'))]",
     "bacpacDeploymentScriptName": "CopyBacpacFile",
     "bacpacDbExtensionName": "registryRbacDbImport",
-    "preBuiltdockerImage": "feathrfeaturestore/feathr-registry:releases-v0.9.0",
+    "preBuiltdockerImage": "feathrfeaturestore/feathr-registry:releases-v1.0.0",
     "cosmosDBAccountName": "[concat(parameters('resourcePrefix'),'cosmosacct' )]",
     "cosmosDBDatabaseName": "[concat(parameters('resourcePrefix'),'cosmosdb' )]",
     "cosmosDBContainerName": "[concat(parameters('resourcePrefix'),'cosmoscontainer' )]"
