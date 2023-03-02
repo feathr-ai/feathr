@@ -184,7 +184,6 @@ private[offline] class AnchoredFeatureJoinStep(
       var nullDf = ctx.sparkSession.emptyDataFrame
       val joinedDf = if (isSaltedJoinRequiredForKeys(keyTags)) {
         val (rightJoinColumns, rightDF) = SaltedJoinKeyColumnAppender.appendJoinKeyColunmns(rawRightJoinKeys, featureDF)
-        val filteredDf = if (shouldFilterNulls) DataFrameUtils.filterNulls(rightDF, rightJoinColumns) else rightDF
         log.trace(s"Salted join: rightJoinColumns= [${rightJoinColumns.mkString(", ")}] features= [${featureToDFAndJoinKey._1.mkString(", ")}]")
         val saltedJoinFrequentItemDF = ctx.frequentItemEstimatedDFMap.get(keyTags)
         val saltedJoiner = new SaltedSparkJoin(ctx.sparkSession, FrequentItemEstimatorFactory.createFromCache(saltedJoinFrequentItemDF))
@@ -193,10 +192,9 @@ private[offline] class AnchoredFeatureJoinStep(
         } else {
           contextDF
         }
-        saltedJoiner.join(leftJoinColumns, refinedContextDF, rightJoinColumns, filteredDf, JoinType.left_outer)
+        saltedJoiner.join(leftJoinColumns, refinedContextDF, rightJoinColumns, rightDF, JoinType.left_outer)
       } else {
         val (rightJoinColumns, rightDF) = rightJoinColumnExtractor.appendJoinKeyColunmns(rawRightJoinKeys, featureDF)
-        val filteredDf = if (shouldFilterNulls) DataFrameUtils.filterNulls(rightDF, rightJoinColumns) else rightDF
         log.trace(s"Spark default join: rightJoinColumns= [${rightJoinColumns.mkString(", ")}] features= [${featureToDFAndJoinKey._1.mkString(", ")}]")
         val refinedContextDF = if (isSanityCheckMode) {
           contextDF.appendRows(leftJoinColumns, rightJoinColumns, rightDF)
@@ -205,7 +203,7 @@ private[offline] class AnchoredFeatureJoinStep(
         }
         val filteredLeftDf = if (shouldFilterNulls) DataFrameUtils.filterNulls(refinedContextDF, leftJoinColumns) else refinedContextDF
         nullDf = if (shouldFilterNulls) DataFrameUtils.filterNonNulls(refinedContextDF, leftJoinColumns) else nullDf
-        joiner.join(leftJoinColumns, filteredLeftDf, rightJoinColumns, filteredDf, JoinType.left_outer)
+        joiner.join(leftJoinColumns, filteredLeftDf, rightJoinColumns, rightDF, JoinType.left_outer)
       }
 
       val dfWithNullRowsAdded = if (shouldFilterNulls && !nullDf.isEmpty) {

@@ -235,8 +235,7 @@ private[offline] class SlidingWindowAggregationJoiner(
                   // remove the concat-key column
                   filtered.drop(col(bfFactKeyColName))
               }
-              val filteredFactDataWithoutNulls = if (shouldFilterNulls) DataFrameUtils.filterNulls(filteredFactData, keyColumnsList) else filteredFactData
-              SlidingWindowFeatureUtils.getFactDataDef(filteredFactDataWithoutNulls, anchorWithSourceToDFMap.keySet.toSeq, featuresToDelayImmutableMap, selectedFeatures)
+              SlidingWindowFeatureUtils.getFactDataDef(filteredFactData, anchorWithSourceToDFMap.keySet.toSeq, featuresToDelayImmutableMap, selectedFeatures)
           }
         val origContextObsColumns = labelDataDef.dataSource.columns
 
