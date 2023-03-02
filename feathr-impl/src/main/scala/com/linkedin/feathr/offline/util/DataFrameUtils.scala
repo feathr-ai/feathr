@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.util
 
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{col, expr}
 
 /**
  * Utility methods to perform specific operations on Dataframes.
@@ -15,7 +15,7 @@ private[offline] object DataFrameUtils {
    * @return
    */
   def filterNulls(dataframe: DataFrame, keyColumnNames: Seq[String]): DataFrame = {
-    val filterCondition = keyColumnNames.map(col(_).isNull).reduce(_ && _)
+    val filterCondition = keyColumnNames.map(expr(_).isNull).reduce(_ && _)
     dataframe.filter(!filterCondition)
   }
 
@@ -27,7 +27,7 @@ private[offline] object DataFrameUtils {
    * @return
    */
   def filterNonNulls(dataframe: DataFrame, keyColumnNames: Seq[String]): DataFrame = {
-    val filterCondition = keyColumnNames.map(col(_).isNull).reduce(_ && _)
+    val filterCondition = keyColumnNames.map(expr(_).isNull).reduce(_ && _)
     dataframe.filter(filterCondition)
   }
 

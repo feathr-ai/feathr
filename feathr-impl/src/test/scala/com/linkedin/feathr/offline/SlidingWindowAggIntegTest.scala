@@ -205,7 +205,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
           |       featureList: ["f1", "f1Sum", "f2", "f1f1"]
           |   },
           |   {
-          |        key: [x, y]
+          |        key: [x, "substring(y, 0)"]
           |        featureList: ["f3", "f4"]
           |   }
           |]
