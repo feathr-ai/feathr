@@ -11,13 +11,15 @@ import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.exception.FeathrIllegalStateException
 import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
+import com.linkedin.feathr.offline.source.DataSource
+import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
-import com.linkedin.feathr.swj.{LabelData, SlidingWindowJoin}
+import com.linkedin.feathr.swj.{FactData, LabelData, SlidingWindowJoin}
 import com.linkedin.feathr.{common, offline}
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.functions.{col, lit}
@@ -26,6 +28,20 @@ import org.apache.spark.util.sketch.BloomFilter
 
 import scala.collection.mutable
 
+/**
+ * Case class containing other SWA handler methods
+ * @param join
+ */
+private[offline] case class SWAHandler(
+  /**
+   * The SWA join method
+   */
+  join:
+  (
+    LabelData,
+      List[FactData]
+    ) => DataFrame
+)
 /**
  * Sliding window aggregation joiner
  * @param allWindowAggFeatures all window aggregation features
@@ -64,7 +80,8 @@ private[offline] class SlidingWindowAggregationJoiner(
       requiredWindowAggFeatures: Seq[common.ErasedEntityTaggedFeature],
       bloomFilters: Option[Map[Seq[Int], BloomFilter]],
       swaObsTimeOpt: Option[DateTimeInterval],
-      failOnMissingPartition: Boolean): FeatureDataFrame = {
+      failOnMissingPartition: Boolean,
+      swaHandler: Option[SWAHandler]): FeatureDataFrame = {
     val joinConfigSettings = joinConfig.settings
     // extract time window settings
     if (joinConfigSettings.isEmpty) {
@@ -239,12 +256,13 @@ private[offline] class SlidingWindowAggregationJoiner(
           }
         val origContextObsColumns = labelDataDef.dataSource.columns
 
-        contextDF = SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
+        contextDF = if (swaHandler.isDefined) swaHandler.get.join(labelDataDef, factDataDefs.toList) else SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
 
         contextDF = if (shouldFilterNulls && !factDataRowsWithNulls.isEmpty) {
           val nullDfWithFeatureCols = joinedFeatures.foldLeft(factDataRowsWithNulls)((s, x) => s.withColumn(x, lit(null)))
           contextDF.union(nullDfWithFeatureCols)
         } else contextDF
+
         val defaults = windowAggAnchorDFThisStage.flatMap(s => s._1.featureAnchor.defaults)
         val userSpecifiedTypesConfig = windowAggAnchorDFThisStage.flatMap(_._1.featureAnchor.featureTypeConfigs)
 
