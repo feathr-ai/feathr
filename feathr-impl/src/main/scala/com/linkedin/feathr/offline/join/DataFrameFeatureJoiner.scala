@@ -15,7 +15,7 @@ import com.linkedin.feathr.offline.join.workflow._
 import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
-import com.linkedin.feathr.offline.swa.SlidingWindowAggregationJoiner
+import com.linkedin.feathr.offline.swa.{SWAHandler, SlidingWindowAggregationJoiner}
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
@@ -32,7 +32,8 @@ import scala.collection.JavaConverters._
  * Joiner to join observation with feature data using Spark DataFrame API
  * @param logicalPlan analyzed feature info
  */
-private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext]) extends Serializable {
+private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler],
+  mvelContext: Option[FeathrExpressionExecutionContext], swaHandler: Option[SWAHandler]) extends Serializable {
   @transient lazy val log = LogManager.getLogger(getClass.getName)
   @transient lazy val anchorToDataSourceMapper = new AnchorToDataSourceMapper(dataPathHandlers)
   private val windowAggFeatureStages = logicalPlan.windowAggFeatureStages
@@ -210,7 +211,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
       JoinExecutionContext(ss, updatedLogicalPlan, updatedFeatureGroups, bloomFilters, Some(saltedJoinFrequentItemDFs))
     // 3. Join sliding window aggregation features
     val FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes) =
-      joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime)
+      joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime, swaHandler)
 
     // 4. Join basic anchored features
     val anchoredFeatureJoinStep =
@@ -320,7 +321,8 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
       featureGroups: FeatureGroups,
       failOnMissingPartition: Boolean,
       bloomFilters: Option[Map[Seq[Int], BloomFilter]],
-      swaObsTime: Option[DateTimeInterval]): FeatureDataFrame = {
+      swaObsTime: Option[DateTimeInterval],
+      swaHandler: Option[SWAHandler]): FeatureDataFrame = {
     if (windowAggFeatureStages.isEmpty) {
       offline.FeatureDataFrame(obsToJoinWithFeatures, Map())
     } else {
@@ -334,7 +336,8 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         requiredWindowAggFeatures,
         bloomFilters,
         swaObsTime,
-        failOnMissingPartition)
+        failOnMissingPartition,
+        swaHandler)
     }
   }
 }

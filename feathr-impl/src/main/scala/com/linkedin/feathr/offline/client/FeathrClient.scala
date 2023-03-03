@@ -11,6 +11,7 @@ import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlanner
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.swa.SWAHandler
 import com.linkedin.feathr.offline.util._
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.internal.SQLConf
@@ -29,7 +30,8 @@ import scala.util.{Failure, Success}
  *
  */
 class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: FeatureGroups, logicalPlanner: MultiStageJoinPlanner,
-  featureGroupsUpdater: FeatureGroupsUpdater, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext]) {
+  featureGroupsUpdater: FeatureGroupsUpdater, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext],
+  swaHandler: Option[SWAHandler]) {
   private val log = LogManager.getLogger(getClass)
 
   type KeyTagStringTuple = Seq[String]
@@ -306,7 +308,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
           s"regular expression: ${AnchorUtils.featureNamePattern}, but found feature names: $invalidFeatureNames")
     }
 
-    val joiner = new DataFrameFeatureJoiner(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers, mvelContext)
+    val joiner = new DataFrameFeatureJoiner(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers, mvelContext, swaHandler)
     // Check conflicts between feature names and data set column names
     val conflictFeatureNames: Seq[String] = findConflictFeatureNames(keyTaggedFeatures, left.schema.fieldNames)
     val joinConfigSettings = joinConfig.settings
@@ -418,6 +420,7 @@ object FeathrClient {
     private var featureDefConfs: List[FeathrConfig] = List()
     private var dataPathHandlers: List[DataPathHandler] = List()
     private var mvelContext: Option[FeathrExpressionExecutionContext] = None;
+    private var swaHandler: Option[SWAHandler] = None;
 
 
     /**
@@ -582,6 +585,16 @@ object FeathrClient {
     }
 
     /**
+     * Add an optional SWA handler method to allow support for external SWA library handling.
+     * @param _swaHandler
+     * @return
+     */
+    def addSWAHandler(_swaHandler: Option[SWAHandler]): Builder = {
+      this.swaHandler = _swaHandler
+      this
+    }
+
+    /**
      * Build a new instance of the FeathrClient from the added feathr definition configs and any local overrides.
      *
      * @throws [[IllegalArgumentException]] an error when no feature definitions nor local overrides are configured.
@@ -614,7 +627,8 @@ object FeathrClient {
       featureDefConfigs = featureDefConfigs ++ featureDefConfs
 
       val featureGroups = FeatureGroupsGenerator(featureDefConfigs, Some(localDefConfigs)).getFeatureGroups()
-      val feathrClient = new FeathrClient(sparkSession, featureGroups, MultiStageJoinPlanner(), FeatureGroupsUpdater(), dataPathHandlers, mvelContext)
+      val feathrClient = new FeathrClient(sparkSession, featureGroups, MultiStageJoinPlanner(), FeatureGroupsUpdater(),
+        dataPathHandlers, mvelContext, swaHandler)
 
       feathrClient
     }
