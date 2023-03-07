@@ -35,6 +35,7 @@ class ObservationSettings(HoconConvertible):
     Attributes:
         observation_path: path to the observation dataset, i.e. input dataset to get with features
         event_timestamp_column (Optional[str]): The timestamp field of your record. As sliding window aggregation feature assume each record in the source data should have a timestamp column.
+        simulate_time_delay (Optional[str]): Duration field to specify time delay
         timestamp_format (Optional[str], optional): The format of the timestamp field. Defaults to "epoch". Possible values are:
             - `epoch` (seconds since epoch), for example `1647737463`
             - `epoch_millis` (milliseconds since epoch), for example `1647737517761`
@@ -47,11 +48,13 @@ class ObservationSettings(HoconConvertible):
     def __init__(self,
                  observation_path: str,
                  event_timestamp_column: Optional[str] = None,
+                 simulate_time_delay: Optional[str] = None,
                  timestamp_format: str = "epoch",
                  conflicts_auto_correction: ConflictsAutoCorrection = None,
                  file_format: str = "csv",
                  is_file_path: bool = True) -> None:
         self.event_timestamp_column = event_timestamp_column
+        self.simulate_time_delay = simulate_time_delay
         self.timestamp_format = timestamp_format
         self.observation_path = observation_path
         if observation_path.startswith("http"):
@@ -69,6 +72,9 @@ class ObservationSettings(HoconConvertible):
                             def: "{{setting.event_timestamp_column}}"
                             format: "{{setting.timestamp_format}}"
                         }
+                        {% if setting.simulate_time_delay is not none %}
+                        simulateTimeDelay: "{{setting.simulate_time_delay}}"
+                        {% endif %}
                     }
                     {% if setting.conflicts_auto_correction is not none %}
                     conflictsAutoCorrectionSettings: {
