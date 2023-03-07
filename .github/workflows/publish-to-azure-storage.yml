@@ -10,17 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    # Setting up JDK 8, this is required to build Feathr
+      # Setting up JDK 8, this is required to build Feathr
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
           java-version: "8"
           distribution: "temurin"
 
-    # Publish Released Fat Jar to Blob Storage 
+      # Publish Released Fat Jar to Blob Storage 
       - name: Gradle build
         run: |  
           ./gradlew build

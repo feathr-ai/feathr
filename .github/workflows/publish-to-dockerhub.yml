@@ -74,7 +74,7 @@ jobs:
   # Trigger Azure Web App webhooks to pull the latest nightly image
   deploy:
     runs-on: ubuntu-latest
-    needs: build_and_push_image_to_registry
+    needs: build_and_push_feathr_registry_image
 
     steps:
       - name: Deploy to Azure Web App feathr-registry-purview

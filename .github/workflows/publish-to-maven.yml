@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    # Setting up JDK 8, this is required to build Feathr
+      # Setting up JDK 8, this is required to build Feathr
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
@@ -25,9 +25,9 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: ORG_GRADLE_PROJECT_signingInMemoryKeyPassword
 
-    # CI release command defaults to publishSigned
-    # Sonatype release command defaults to sonaTypeBundleRelease
-    # Changing env names as documented here - https://vanniktech.github.io/gradle-maven-publish-plugin/central/#secrets
+      # CI release command defaults to publishSigned
+      # Sonatype release command defaults to sonaTypeBundleRelease
+      # Changing env names as documented here - https://vanniktech.github.io/gradle-maven-publish-plugin/central/#secrets
       - name: Gradle Build and Publish to Maven central
         run: |
           ./gradlew publish
