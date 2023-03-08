@@ -9,16 +9,81 @@
       "name": "value",
       "type": ["null", "int"],
       "default": null
-    }]
+    },
+      {
+        "name" : "denseValue",
+        "type" : [ {
+          "type" : "array",
+          "items" : [ {
+            "type" : "array",
+            "items" : [ "string", "null" ]
+          }, "null" ]
+        }, "null" ]
+      } ]
   },
   "data": [{
     "mId": 1,
-    "value": { "int": 1 }
+    "value": { "int": 1 },
+    "denseValue" : {
+      "array" : [ {
+        "array" : [ {
+          "string" : "aa"
+        }, {
+          "string" : "bb"
+        }, {
+          "string" : "cc"
+        }, {
+          "string" : "dd"
+        }, {
+          "string" : "ee"
+        } ]
+      }, {
+        "array" : [ {
+          "string" : "a"
+        }, {
+          "string" : "a"
+        }, {
+          "string" : "a"
+        }, {
+          "string" : "a"
+        }, {
+          "string" : "a"
+        } ]
+      } ]
+    }
   }, {
     "mId": 2,
-    "value": null
+    "value": null,
+    "denseValue" : null
   }, {
     "mId": 3,
-    "value": { "int": 3 }
-  }]
-}
+    "value": { "int": 3 },
+    "denseValue" : {
+      "array" : [ {
+          "array" : [ {
+            "string" : "aa"
+          }, {
+            "string" : "bb"
+          }, {
+            "string" : "cc"
+          }, {
+            "string" : "dd"
+          }, {
+            "string" : "ee"
+          } ]
+        }, {
+          "array" : [ {
+          "string" : "a"
+        }, {
+          "string" : "a"
+        }, {
+          "string" : "a"
+        }, {
+          "string" : "a"
+        }, {
+          "string" : "a"
+        } ]
+     }]
+    }
+    }]
+  }
