@@ -1359,7 +1359,7 @@ private[offline] object FeatureTransformation {
   def parseMultiDimTensorExpr(featureDef: String): String = {
     // String char should be one more than the len of the keyword to account for '('. The end should be 1 less than length of feature string
     // to account for ')'.
-    featureDef.substring(featureDef.indexOf("(") + 1, featureDef.indexOf(")"))
+    featureDef.substring(featureDef.indexOf("(") + 1, featureDef.lastIndexOf(")"))
   }
 
 

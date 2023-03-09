@@ -406,8 +406,17 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |    source: "anchorAndDerivations/nullValueSource.avro.json"
           |    key.sqlExpr: mId
           |    features: {
-          |      featureWithNull.def.sqlExpr: FDSExtract(value)
-          |    }
+          |      featureWithNull {
+            |      def.sqlExpr: "FDSExtract(coalesce(denseValue, ARRAY(ARRAY(\"aa\", \"bb\", \"cc\", \"dd\", \"ee\"), ARRAY(\"UNK\", \"UNK\", \"UNK\", \"UNK\", \"UNK\")) ))"
+            |      type:{
+            |          type: TENSOR
+            |           tensorCategory: DENSE
+            |           shape: [2,5]
+            |           dimensionType: [INT, INT]
+            |           valType: STRING
+            |          }
+          |         }
+          |       }
           |  }
           |}
         """.stripMargin,
@@ -423,21 +432,25 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
             // a_id
             "1",
             // featureWithNull
-            1),
+            mutable.WrappedArray.make(Array(Array("aa", "bb", "cc", "dd", "ee"), Array("a", "a", "a", "a", "a"))),
+          ),
           Row(
             // a_id
             "2",
-            // featureWithNull
-            null),
+            // f3eatureWithNull
+            mutable.WrappedArray.make(Array(Array("aa", "bb", "cc", "dd", "ee"), Array("UNK", "UNK", "UNK", "UNK", "UNK")))
+          ),
           Row(
             // a_id
             "3",
             // featureWithNull
-            3))),
+            mutable.WrappedArray.make(Array(Array("aa", "bb", "cc", "dd", "ee"), Array("a", "a", "a", "a", "a")),
+              )))),
       StructType(
         List(
           StructField("a_id", StringType, true),
-          StructField("featureWithNull", IntegerType, true))))
+          StructField("featureWithNull", ArrayType(ArrayType(StringType, true), true), true)
+        )))
 
     def cmpFunc(row: Row): String = row.get(0).toString
 
