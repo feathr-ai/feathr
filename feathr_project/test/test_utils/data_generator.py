@@ -145,6 +145,7 @@ observation_df = pd.DataFrame(observations)
 print(products_df)
 print(customers_df)
 print(purchase_df)
+print(observation_df)
 
 # Save the products DataFrame to a CSV file
 products_df.to_csv('product_detail_mock_data.csv', index=False)
