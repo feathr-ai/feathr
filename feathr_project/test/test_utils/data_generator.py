@@ -10,9 +10,9 @@ import pandas as pd
 from faker import Faker
 
 # Define the number of products to generate
-NUM_PRODUCTS = 100
+NUM_PRODUCTS = 500
 # Define the number of purchases to generate
-NUM_PURCHASES = 2000
+NUM_PURCHASES = 200000
 # Define the number of rows in the DataFrame
 NUM_CUSTOMERS = 1000
 # Define the number of observation data in the DataFrame
@@ -104,12 +104,32 @@ for i in range(NUM_PURCHASES):
     purchase_date = fake.date_between(start_date='-1y', end_date='today')
     purchase_amount = round(random.uniform(10, 500), 2)
     product_id = random.choice(products)['product_id']
+    transaction_id = fake.uuid4()
+    price = round(random.uniform(1, 100), 2)
+    discounts = round(random.uniform(0, 20), 2)
+    taxes_and_fees = round(random.uniform(0, 10), 2)
+    total_cost = (price * quantity) - discounts + taxes_and_fees
+    payment_method = random.choice(['Credit Card', 'PayPal', 'Apple Pay', 'Google Wallet'])
+    shipping_address = fake.address()
+    status = random.choice(['Pending', 'Complete', 'Refunded'])
+    notes = fake.sentence()
+    purchase_quantity = random.randint(1, 100)
 
     purchase = {
         'user_id': user_id,
         'purchase_date': purchase_date,
         'purchase_amount': purchase_amount,
-        'product_id': product_id
+        'product_id': product_id,
+        'purchase_quantity': purchase_quantity,
+        'transaction_id': transaction_id,
+        'price': price,
+        'discounts': discounts,
+        'taxes_and_fees': taxes_and_fees,
+        'total_cost': total_cost,
+        'payment_method': payment_method,
+        'shipping_address': shipping_address,
+        'status': status,
+        'notes': notes,
     }
 
     purchases.append(purchase)
