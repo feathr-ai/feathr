@@ -3,7 +3,7 @@
       <img src="./images/feathr_logo.png" width="256"/>
     </h1>
     <h3 align="center">
-      An enterprise-grade, high-performance feature store
+      A scalable, unified data and AI engineering platform for enterprise
     </h3>
     <h3 align="center">
       Important Links:
@@ -21,29 +21,24 @@
 
 ## What is Feathr?
 
-Feathr is the feature store that is used in production in LinkedIn for many years and was open sourced in April 2022. It is currently a project under [LF AI & Data Foundation](https://lfaidata.foundation/blog/2022/09/12/feathr-joins-lf-ai-data-as-new-sandbox-project/).
-
-Read our announcement on [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/), as well as the [announcement from LF AI & Data Foundation](https://lfaidata.foundation/blog/2022/09/12/feathr-joins-lf-ai-data-as-new-sandbox-project/).
-
+Feathr is a data and AI engineering platform that is widely used in production at LinkedIn for many years and was open sourced in 2022. It is currently a project under [LF AI & Data Foundation](https://lfaidata.foundation/blog/2022/09/12/feathr-joins-lf-ai-data-as-new-sandbox-project/).
+ 
 Feathr lets you:
+- **Define**  data and feature transformations based on raw data sources (batch and streaming) using pythonic APIs.
+- **Register**  transformations by names and get transformed data(features) for various use cases including AI modeling, compliance, go-to-market and more.
+- **Share**  transformations and data(features) across team and company.
 
-- **Define features** based on raw data sources (batch and streaming) using pythonic APIs.
-- **Register and get features by names** during model training and model inference.
-- **Share features** across your team and company.
-
-Feathr automatically computes your feature values and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
+Feathr is particularly useful in AI modeling where it automatically computes your feature transformations and joins them to your training data, using point-in-time-correct semantics to avoid data leakage, and supports materializing and deploying your features for use online in production.
 
 ## 🌟 Feathr Highlights
 
-- **Battle tested in production for more than 6 years:** LinkedIn has been using Feathr in production for over 6 years and have a dedicated team improving it.
-- **Scalable with built-in optimizations:** For example, based on some internal use case, Feathr can process billions of rows and PB scale data with built-in optimizations such as bloom filters and salted joins.
-- **Rich support for point-in-time joins and aggregations:** Feathr has high performant built-in operators designed for Feature Store, including time-based aggregation, sliding window joins, look-up features, all with point-in-time correctness.
-- **Highly customizable user-defined functions (UDFs)** with native PySpark and Spark SQL support to lower the learning curve for data scientists.
-- **Pythonic APIs** to access everything with low learning curve; Integrated with model building so data scientists can be productive from day one.
-- **Derived Features** which is a unique capability across all the feature store solutions. This encourage feature consumers to build features on existing features and encouraging feature reuse.
-- **Rich type system** including support for embeddings for advanced machine learning/deep learning scenarios. One of the common use cases is to build embeddings for customer profiles, and those embeddings can be reused across an organization in all the machine learning applications.
-- **Native cloud integration** with simplified and scalable architecture, which is illustrated in the next section.
-- **Feature sharing and reuse made easy:** Feathr has built-in feature registry so that features can be easily shared across different teams and boost team productivity.
+- Native cloud integration with simplified and scalable architecture.
+- Battle tested in production for more than 6 years: LinkedIn has been using Feathr in production for over 6 years and backed by a dedicated team.
+- Scalable with built-in optimizations: Feathr can process billions of rows and PB scale data with built-in optimizations such as bloom filters and salted joins.
+- Rich transformation APIs including time-based aggregations, sliding window joins, look-up features, all with point-in-time correctness for AI.
+- Pythonic APIs and highly customizable user-defined functions (UDFs) with native PySpark and Spark SQL support to lower the learning curve for all data scientists.
+- Unified data transformation API works in offline batch, streaming, and online environments.
+- Feathr’s built-in registry makes named transformations and data/feature reuse a breeze.
 
 ## 🏃 Getting Started with Feathr - Feathr Sandbox
 
