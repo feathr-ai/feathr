@@ -23,6 +23,8 @@
 
 Feathr is a data and AI engineering platform that is widely used in production at LinkedIn for many years and was open sourced in 2022. It is currently a project under [LF AI & Data Foundation](https://lfaidata.foundation/blog/2022/09/12/feathr-joins-lf-ai-data-as-new-sandbox-project/).
  
+Read our announcement on [Open Sourcing Feathr](https://engineering.linkedin.com/blog/2022/open-sourcing-feathr---linkedin-s-feature-store-for-productive-m) and [Feathr on Azure](https://azure.microsoft.com/en-us/blog/feathr-linkedin-s-feature-store-is-now-available-on-azure/), as well as the [announcement from LF AI & Data Foundation](https://lfaidata.foundation/blog/2022/09/12/feathr-joins-lf-ai-data-as-new-sandbox-project/).
+ 
 Feathr lets you:
 - **Define**  data and feature transformations based on raw data sources (batch and streaming) using pythonic APIs.
 - **Register**  transformations by names and get transformed data(features) for various use cases including AI modeling, compliance, go-to-market and more.
