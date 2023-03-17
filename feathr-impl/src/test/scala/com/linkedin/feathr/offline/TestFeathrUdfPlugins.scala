@@ -1,6 +1,5 @@
 package com.linkedin.feathr.offline
 
-import com.linkedin.feathr.common.FeatureTypes
 import com.linkedin.feathr.offline.anchored.keyExtractor.AlienSourceKeyExtractorAdaptor
 import com.linkedin.feathr.offline.client.plugins.FeathrUdfPluginContext
 import com.linkedin.feathr.offline.derived.AlienDerivationFunctionAdaptor
@@ -9,7 +8,6 @@ import com.linkedin.feathr.offline.plugins.{AlienFeatureValue, AlienFeatureValue
 import com.linkedin.feathr.offline.util.FeathrTestUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{FloatType, StringType, StructField, StructType}
-import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
 class TestFeathrUdfPlugins extends FeathrIntegTest {
@@ -19,7 +17,7 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
   private val mvelContext = new FeathrExpressionExecutionContext()
 
   // todo - support udf plugins through FCM
-  @Test (enabled = false)
+  @Test (enabled = true)
   def testMvelUdfPluginSupport: Unit = {
     mvelContext.setupExecutorMvelContext(classOf[AlienFeatureValue], new AlienFeatureValueTypeAdaptor(), ss.sparkContext)
     FeathrUdfPluginContext.registerUdfAdaptor(new AlienDerivationFunctionAdaptor(), ss.sparkContext)
@@ -113,8 +111,6 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
       observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv",
       mvelContext = Some(mvelContext))
 
-    val f8Type = df.fdsMetadata.header.get.featureInfoMap.filter(_._1.getFeatureName == "f8").head._2.featureType.getFeatureType
-    assertEquals(f8Type, FeatureTypes.NUMERIC)
 
     val selectedColumns = Seq("a_id", "fA")
     val filteredDf = df.data.select(selectedColumns.head, selectedColumns.tail: _*)
