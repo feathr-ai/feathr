@@ -145,6 +145,7 @@ project.ext.spec = [
         "antlrRuntime": "org.antlr:antlr4-runtime:4.8",
         "jsqlparser": "com.github.jsqlparser:jsqlparser:3.1",
         'common_collections': 'commons-collections:commons-collections:3.2.2',
+        'commons_httpclient': 'commons-httpclient:commons-httpclient:3.1'
     ]
 ]
 
