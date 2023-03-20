@@ -4,7 +4,11 @@ import com.linkedin.feathr.common.tensor.Primitive;
 import com.linkedin.feathr.common.tensor.TensorIterator;
 import com.linkedin.feathr.common.types.ValueType;
 import com.linkedin.feathr.common.util.CoercionUtils;
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext;
+import org.mvel2.DataConversion;
 import org.mvel2.integration.impl.SimpleValueResolver;
+
+import java.util.Optional;
 
 
 /**
@@ -13,10 +17,11 @@ import org.mvel2.integration.impl.SimpleValueResolver;
  */
 public class FeatureVariableResolver extends SimpleValueResolver {
   private FeatureValue _featureValue;
-
-  public FeatureVariableResolver(FeatureValue featureValue) {
+  private Optional<FeathrExpressionExecutionContext> _mvelContext = Optional.empty();
+  public FeatureVariableResolver(FeatureValue featureValue, Optional<FeathrExpressionExecutionContext> mvelContext) {
     super(featureValue);
     _featureValue = featureValue;
+    _mvelContext = mvelContext;
   }
 
   @Override
@@ -25,21 +30,27 @@ public class FeatureVariableResolver extends SimpleValueResolver {
       return null;
     }
 
+    Object fv = null;
     switch (_featureValue.getFeatureType().getBasicType()) {
       case NUMERIC:
-        return _featureValue.getAsNumeric();
+        fv = _featureValue.getAsNumeric(); break;
       case TERM_VECTOR:
-        return getValueFromTermVector();
+        fv = getValueFromTermVector(); break;
       case BOOLEAN:
       case CATEGORICAL:
       case CATEGORICAL_SET:
       case DENSE_VECTOR:
 
       case TENSOR:
-        return getValueFromTensor();
-
+        fv = getValueFromTensor(); break;
       default:
-        throw new IllegalArgumentException("Unexpected feature type: " + _featureValue.getFeatureType().getBasicType());
+       throw new IllegalArgumentException("Unexpected feature type: " + _featureValue.getFeatureType().getBasicType());
+    }
+    // If there is any registered FeatureValue handler that can handle this feature value, return the converted value per request.
+    if (_mvelContext.isPresent() && _mvelContext.get().canConvertFromAny(fv)) {
+      return _mvelContext.get().convertFromAny(fv).head();
+    } else {
+      return fv;
     }
   }
 
