@@ -32,6 +32,6 @@ services:
       - "8000:8000"
 
   feathr-online-ui:
-    image: blrchen/feathr-online-ui-demo:latest
+    image: blrchen/feathr-online-ui-demo:main
     ports:
       - "8082:80"
