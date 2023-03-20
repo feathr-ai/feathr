@@ -1,0 +1,32 @@
+version: '3'
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  jupyter:
+    image: jupyter/pyspark-notebook
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work/notebooks
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - SPARK_OPTS=--master=local[*]
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    command: start-notebook.sh --ip='*' --NotebookApp.password='' --NotebookApp.token='' --no-browser 
+
+  feathr-registry:
+    image: feathrfeaturestore/feathr-registry:releases-v1.0.0
+    ports:
+      - "8081:80"
+    environment:
+      - FEATHR_SANDBOX=True
+      - API_BASE=api/v1
+
+  feathr-online:
+    image: feathrfeaturestore/feathrpiper:latest
+    ports:
+      - "8000:8000"
