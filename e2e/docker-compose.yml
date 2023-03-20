@@ -30,3 +30,8 @@ services:
     image: feathrfeaturestore/feathrpiper:latest
     ports:
       - "8000:8000"
+
+  feathr-online-ui:
+    image: blrchen/feathr-online-ui-demo:latest
+    ports:
+      - "8082:80"
