@@ -1,119 +1,65 @@
 {
   "schema": {
-    "type": "record",
-    "name": "NTVObs",
-    "doc": "Daily or multi-day aggregated a activity features generated from similar data sources.",
-    "namespace": "com.linkedin.feathr.offline.data",
-    "fields": [
-      {
-        "name": "x",
-        "type": [
-          "null",
-          "string"
-        ],
-        "doc": ""
-      },
-      {
-        "name": "y",
-        "type": "string",
-        "doc": ""
-      },
-      {
-        "name": "timestamp",
-        "type": "string"
-      },
-      {
-        "name": "passthroughFeatures",
-        "type": {
-          "type": "array",
-          "items": {
-            "type": "record",
-            "name": "features",
-            "fields": [
-              {
-                "name": "name",
-                "type": "string"
-              },
-              {
-                "name": "term",
-                "type": "string"
-              },
-              {
-                "name": "value",
-                "type": "float"
-              }
-            ]
-          }
-        }
+    "type" : "record",
+    "name" : "NTVObs2",
+    "fields" : [ {
+      "name" : "header",
+      "type" : {
+        "type" : "record",
+        "name" : "EventHeader",
+        "fields" : [ {
+          "name" : "memberId",
+          "type" : "long",
+          "doc" : "The LinkedIn member ID of the user initiating the action.  LinkedIn member IDs are integers greater than zero.  Guests are represented either as zero or a negative number."
+        }, {
+          "name" : "time",
+          "type" : "long",
+          "doc" : "The time of the event"
+        }, {
+          "name" : "bucket_time",
+          "type" : "long",
+          "doc" : "The time of the event"
+        }]
       }
-    ]
+    }]
   },
   "data": [
     {
-      "x": {
-        "string": "a1"
-      },
-      "y": "a2",
-      "timestamp": "2018-05-03",
-      "passthroughFeatures": [
-        {
-          "name": "f1f1",
-          "term": "f1t1",
-          "value": 12
-        }
-      ]
+      "header" : {
+        "memberId" : 1561,
+        "time" : 1613361620,
+        "bucket_time": 1613361600
+      }
     },
     {
-      "x": {
-        "string": "a2"
-      },
-      "y": "a1",
-      "timestamp": "2018-05-03",
-      "passthroughFeatures": [
-        {
-          "name": "f1f1",
-          "term": "f1t1",
-          "value": 12
-        }
-      ]
+      "header" : {
+        "memberId" : 1561,
+        "time" : 1613361679,
+        "bucket_time": 1613361660
+      }
     },
     {
-      "x": null,
-      "y": "a5",
-      "timestamp": "2018-05-03",
-      "passthroughFeatures": [
-        {
-          "name": "f1f1",
-          "term": "f1t1",
-          "value": 12
-        }
-      ]
+      "header": {
+        "memberId": 1561,
+        "time": 1613361610,
+        "bucket_time": 1613361600
+      }
     },
     {
-      "x": null,
-      "y": "a8",
-      "timestamp": "2018-05-03",
-      "passthroughFeatures": [
-        {
-          "name": "f1f1",
-          "term": "f1t1",
-          "value": 12
-        }
-      ]
+      "header" : {
+        "memberId" : 1561,
+        "time" : 1613361639,
+        "bucket_time": 1613361630
+      }
     },
     {
-      "x": {
-        "string": "xyz"
-      },
-      "y": "abc",
-      "timestamp": "2018-04-30",
-      "passthroughFeatures": [
-        {
-          "name": "f2f2",
-          "term": "f2t2",
-          "value": 12
-        }
-      ]
+      "header" : {
+        "memberId" : 1561,
+        "time" : 1613361643,
+        "bucket_time": 1613361630
+
+      }
     }
   ]
+
 }

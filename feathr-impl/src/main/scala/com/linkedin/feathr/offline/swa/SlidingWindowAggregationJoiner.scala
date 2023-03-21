@@ -258,8 +258,11 @@ private[offline] class SlidingWindowAggregationJoiner(
 
         contextDF = if (swaHandler.isDefined) swaHandler.get.join(labelDataDef, factDataDefs.toList) else SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
 
+        val missingFeatures = factDataDefs.flatMap (factData => factData.aggFeatures.map(feature => feature.name)) diff (contextDF.columns diff origContextObsColumns)
+        log.warn("The following features are missing because of an IO Exception" + missingFeatures)
+          val finalJoinedFeatures = joinedFeatures diff missingFeatures
         contextDF = if (shouldFilterNulls && !factDataRowsWithNulls.isEmpty) {
-          val nullDfWithFeatureCols = joinedFeatures.foldLeft(factDataRowsWithNulls)((s, x) => s.withColumn(x, lit(null)))
+          val nullDfWithFeatureCols = finalJoinedFeatures.foldLeft(factDataRowsWithNulls)((s, x) => s.withColumn(x, lit(null)))
           contextDF.union(nullDfWithFeatureCols)
         } else contextDF
 
@@ -272,13 +275,13 @@ private[offline] class SlidingWindowAggregationJoiner(
           .asInstanceOf[TimeWindowConfigurableAnchorExtractor].features(nameToFeatureAnchor._1).columnFormat)
 
         val FeatureDataFrame(withFDSFeatureDF, inferredTypes) =
-          SlidingWindowFeatureUtils.convertSWADFToFDS(contextDF, joinedFeatures.toSet, featureNameToColumnFormat, userSpecifiedTypesConfig)
+          SlidingWindowFeatureUtils.convertSWADFToFDS(contextDF, finalJoinedFeatures.toSet, featureNameToColumnFormat, userSpecifiedTypesConfig)
         // apply default on FDS dataset
         val withFeatureContextDF =
-          substituteDefaults(withFDSFeatureDF, defaults.keys.filter(joinedFeatures.contains).toSeq, defaults, userSpecifiedTypesConfig, ss)
+          substituteDefaults(withFDSFeatureDF, defaults.keys.filter(finalJoinedFeatures.contains).toSeq, defaults, userSpecifiedTypesConfig, ss)
 
         allInferredFeatureTypes ++= inferredTypes
-        contextDF = standardizeFeatureColumnNames(origContextObsColumns, withFeatureContextDF, joinedFeatures, keyTags.map(keyTagList))
+        contextDF = standardizeFeatureColumnNames(origContextObsColumns, withFeatureContextDF, finalJoinedFeatures, keyTags.map(keyTagList))
         if (shouldCheckPoint(ss)) {
           // checkpoint complicated dataframe for each stage to avoid Spark failure
           contextDF = contextDF.checkpoint(true)
