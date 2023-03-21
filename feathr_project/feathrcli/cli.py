@@ -7,6 +7,7 @@ import distutils.dir_util
 import subprocess
 import urllib.request
 from feathr.client import FeathrClient
+from feathr.definition.config_helper import FeathrConfigHelper
 from feathr.registry._feathr_registry_client import _FeatureRegistry
 
 @click.group()
@@ -80,7 +81,7 @@ def hocon(save_to):
     """
     scan_dir = Path.cwd()
     save_to = Path(os.path.join(scan_dir, save_to))
-    _FeatureRegistry.save_to_feature_config(scan_dir, save_to)
+    FeathrConfigHelper().save_to_feature_config(scan_dir, save_to)
 
 
 @cli.command()
