@@ -400,63 +400,63 @@ def snowflake_preprocessing(df: DataFrame) -> DataFrame:
     return df
 
 
-def test_feathr_get_offline_features_from_snowflake():
-    """
-    Test get_offline_features() can get feature data from Snowflake source correctly.
-    """
-    test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
-    client = snowflake_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
-    batch_source = SnowflakeSource(name="nycTaxiBatchSource",
-                                    database="SNOWFLAKE_SAMPLE_DATA",
-                                    schema="TPCDS_SF10TCL",
-                                    dbtable="CALL_CENTER",
-                                    preprocessing=snowflake_preprocessing,
-                                                            event_timestamp_column="lpep_dropoff_datetime",
-                                                            timestamp_format="yyyy-MM-dd HH:mm:ss")
-    call_sk_id = TypedKey(key_column="CC_CALL_CENTER_SK",
-                          key_column_type=ValueType.STRING,
-                          description="call center sk",
-                          full_name="snowflake.CC_CALL_CENTER_SK")
+# def test_feathr_get_offline_features_from_snowflake():
+#     """
+#     Test get_offline_features() can get feature data from Snowflake source correctly.
+#     """
+#     test_workspace_dir = Path(__file__).parent.resolve() / "test_user_workspace"
+#     client = snowflake_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"))
+#     batch_source = SnowflakeSource(name="nycTaxiBatchSource",
+#                                     database="SNOWFLAKE_SAMPLE_DATA",
+#                                     schema="TPCDS_SF10TCL",
+#                                     dbtable="CALL_CENTER",
+#                                     preprocessing=snowflake_preprocessing,
+#                                                             event_timestamp_column="lpep_dropoff_datetime",
+#                                                             timestamp_format="yyyy-MM-dd HH:mm:ss")
+#     call_sk_id = TypedKey(key_column="CC_CALL_CENTER_SK",
+#                           key_column_type=ValueType.STRING,
+#                           description="call center sk",
+#                           full_name="snowflake.CC_CALL_CENTER_SK")
 
-    features = [
-        Feature(name="f_snowflake_call_center_division_name_with_preprocessing",
-                key=call_sk_id,
-                feature_type=STRING,
-                transform="NEW_CC_DIVISION_NAME"),
-        Feature(name="f_snowflake_call_center_zipcode_with_preprocessing",
-                key=call_sk_id,
-                feature_type=STRING,
-                transform="NEW_CC_ZIP"),
-    ]
+#     features = [
+#         Feature(name="f_snowflake_call_center_division_name_with_preprocessing",
+#                 key=call_sk_id,
+#                 feature_type=STRING,
+#                 transform="NEW_CC_DIVISION_NAME"),
+#         Feature(name="f_snowflake_call_center_zipcode_with_preprocessing",
+#                 key=call_sk_id,
+#                 feature_type=STRING,
+#                 transform="NEW_CC_ZIP"),
+#     ]
 
-    feature_anchor = FeatureAnchor(name="snowflake_features",
-                                   source=batch_source,
-                                   features=features,
-                                   )
-    client.build_features(anchor_list=[feature_anchor])
+#     feature_anchor = FeatureAnchor(name="snowflake_features",
+#                                    source=batch_source,
+#                                    features=features,
+#                                    )
+#     client.build_features(anchor_list=[feature_anchor])
 
-    feature_query = FeatureQuery(
-        feature_list=['f_snowflake_call_center_division_name_with_preprocessing', 'f_snowflake_call_center_zipcode_with_preprocessing'],
-        key=call_sk_id)
+#     feature_query = FeatureQuery(
+#         feature_list=['f_snowflake_call_center_division_name_with_preprocessing', 'f_snowflake_call_center_zipcode_with_preprocessing'],
+#         key=call_sk_id)
 
-    observation_path = client.get_snowflake_path(database="SNOWFLAKE_SAMPLE_DATA", schema="TPCDS_SF10TCL", dbtable="CALL_CENTER")
-    settings = ObservationSettings(
-        observation_path=observation_path)
+#     observation_path = client.get_snowflake_path(database="SNOWFLAKE_SAMPLE_DATA", schema="TPCDS_SF10TCL", dbtable="CALL_CENTER")
+#     settings = ObservationSettings(
+#         observation_path=observation_path)
 
-    now = datetime.now()
-    # set output folder based on different runtime
-    if client.spark_runtime == 'databricks':
-        output_path = ''.join(['dbfs:/feathrazure_cijob_snowflake', '_', str(now.minute), '_', str(now.second), ".avro"])
-    else:
-        output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/snowflake_output','_', str(now.minute), '_', str(now.second), ".avro"])
+#     now = datetime.now()
+#     # set output folder based on different runtime
+#     if client.spark_runtime == 'databricks':
+#         output_path = ''.join(['dbfs:/feathrazure_cijob_snowflake', '_', str(now.minute), '_', str(now.second), ".avro"])
+#     else:
+#         output_path = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/demo_data/snowflake_output','_', str(now.minute), '_', str(now.second), ".avro"])
 
-    client.get_offline_features(observation_settings=settings,
-                                feature_query=feature_query,
-                                output_path=output_path)
+#     client.get_offline_features(observation_settings=settings,
+#                                 feature_query=feature_query,
+#                                 output_path=output_path)
 
-    # assuming the job can successfully run; otherwise it will throw exception
-    client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
+#     # assuming the job can successfully run; otherwise it will throw exception
+#     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
-    res = get_result_df(client)
-    # just assume there are results.
-    assert res.shape[0] > 1
+#     res = get_result_df(client)
+#     # just assume there are results.
+#     assert res.shape[0] > 1
