@@ -120,10 +120,10 @@ object HdfsUtils {
     var resultPath = pathParts(0)
     for (partIdx <- 1 until pathParts.length) {
       val latestPath = getSortedSubfolderPaths(basePath = resultPath, conf = conf).headOption
-      if (!latestPath.isDefined) {
-        throw new RuntimeException(s"${resultPath} does not contain any valid subdirectories")
+      latestPath match {
+        case None => throw new RuntimeException(s"${resultPath} does not contain any valid subdirectories")
+        case Some(p) => resultPath = HdfsUtils.createStringPath(p, pathParts(partIdx))
       }
-      resultPath = HdfsUtils.createStringPath(latestPath.get, pathParts(partIdx))
     }
 
     HdfsUtils.createStringPath(resultPath)
