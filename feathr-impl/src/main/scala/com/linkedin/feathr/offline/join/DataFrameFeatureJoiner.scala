@@ -339,7 +339,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         failOnMissingPartition,
         swaHandler)
 
-      // We will retry the SWA features which could not added because of
+      // We will retry the SWA features which could not added because of changing data.
       val retryableErasedEntityTaggedFeatures = requiredWindowAggFeatures.filter(x => retryableFeatureNames.contains(x.getFeatureName))
 
       // Keep only the features which are to be retried.
