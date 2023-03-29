@@ -51,6 +51,9 @@ private[feathr] object FeathrUtils {
   val ENABLE_SANITY_CHECK_MODE = "enable.sanity.check.mode"
   val SANITY_CHECK_MODE_ROW_COUNT = "sanity.check.row.count"
   val FILTER_NULLS = "filter.nulls"
+  val RETRY_ADDING_MISSING_SWA_FEATURES = "retry.adding.missing.swa.features"
+  // Retryer to be configured only for local tests
+  val LOCAL_RETRY_ADDING_MISSING_SWA_FEATURES = "local.retry.adding.missing.swa.features"
   val STRING_PARAMETER_DELIMITER = ","
 
   // Used to check if the current dataframe has satisfied the checkpoint frequency
@@ -86,7 +89,9 @@ private[feathr] object FeathrUtils {
     SPARK_JOIN_MIN_PARALLELISM  -> (SQLConf.buildConf(getFullConfigKeyName(SPARK_JOIN_MIN_PARALLELISM )).stringConf.createOptional, "10"),
     ENABLE_SANITY_CHECK_MODE  -> (SQLConf.buildConf(getFullConfigKeyName(ENABLE_SANITY_CHECK_MODE )).stringConf.createOptional, "false"),
     SANITY_CHECK_MODE_ROW_COUNT  -> (SQLConf.buildConf(getFullConfigKeyName(SANITY_CHECK_MODE_ROW_COUNT )).stringConf.createOptional, "10"),
-    FILTER_NULLS  -> (SQLConf.buildConf(getFullConfigKeyName(FILTER_NULLS )).stringConf.createOptional, "false")
+    FILTER_NULLS  -> (SQLConf.buildConf(getFullConfigKeyName(FILTER_NULLS)).stringConf.createOptional, "false"),
+    LOCAL_RETRY_ADDING_MISSING_SWA_FEATURES -> (SQLConf.buildConf(getFullConfigKeyName(LOCAL_RETRY_ADDING_MISSING_SWA_FEATURES)).stringConf.createOptional, "false"),
+    RETRY_ADDING_MISSING_SWA_FEATURES -> (SQLConf.buildConf(getFullConfigKeyName(RETRY_ADDING_MISSING_SWA_FEATURES)).stringConf.createOptional, "true")
   )
 
   /**
