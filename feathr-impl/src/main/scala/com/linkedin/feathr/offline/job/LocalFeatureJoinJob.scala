@@ -17,6 +17,9 @@ import org.apache.spark.sql.SparkSession
  */
 object LocalFeatureJoinJob {
 
+  // This is a config for local test only to induce a FileNotFoundException.
+  var shouldRetryAddingSWAFeatures = false
+
   // for user convenience, create spark session within this function, so user does not need to create one
   // this also ensure it has same setting as the real feathr join job
   val ss: SparkSession = createSparkSession(enableHiveSupport = true)

@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.offline.AssertFeatureUtils.{rowApproxEquals, validateRows}
+import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.util.FeathrUtils
 import com.linkedin.feathr.offline.util.FeathrUtils.{FILTER_NULLS, SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.Row
@@ -329,12 +330,12 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   /**
-   * test SWA with dense vector feature
-   * The feature dataset generation/daily has different but compatible schema for different partitions,
-   * this is supported by fuzzyUnion
+   * test SWA with dense vector feature with retry.
+   * This should get handled by the SWA retry method.
    */
   @Test
-  def testLocalAnchorSWAWithDenseVector(): Unit = {
+  def testLocalAnchorSWAWithDenseVectorWithRetry(): Unit = {
+    LocalFeatureJoinJob.shouldRetryAddingSWAFeatures = true
     val res = runLocalFeatureJoinForTest(
       """
         | settings: {
@@ -399,6 +400,82 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     assertEquals(featureList(0).getAs[Row]("aEmbedding"), mutable.WrappedArray.make(Array(5.5f, 5.8f)))
     assertEquals(featureList(0).getAs[Row]("memberEmbeddingAutoTZ"),
       TestUtils.build1dSparseTensorFDSRow(Array(0, 1), Array(5.5f, 5.8f)))
+    LocalFeatureJoinJob.shouldRetryAddingSWAFeatures = false
+  }
+
+  /**
+   * test SWA with dense vector feature
+   * The feature dataset generation/daily has different but compatible schema for different partitions,
+   * this is supported by fuzzyUnion
+   */
+  @Test
+  def testLocalAnchorSWAWithDenseVector(): Unit = {
+    LocalFeatureJoinJob.shouldRetry = true
+    val res = runLocalFeatureJoinForTest(
+      """
+        | settings: {
+        |  joinTimeSettings: {
+        |    timestampColumn: {
+        |       def: "timestamp"
+        |       format: "yyyy-MM-dd"
+        |    }
+        |    simulateTimeDelay: 1d
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [mId],
+        |    featureList: ["aEmbedding", "memberEmbeddingAutoTZ"]
+        |  }
+        |]
+      """.stripMargin,
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "generation/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      aEmbedding: {
+        |        def: "embedding"
+        |        aggregation: LATEST
+        |        window: 3d
+        |      }
+        |      memberEmbeddingAutoTZ: {
+        |        def: "embedding"
+        |        aggregation: LATEST
+        |        window: 3d
+        |        type: {
+        |          type: TENSOR
+        |          tensorCategory: SPARSE
+        |          dimensionType: [INT]
+        |          valType: FLOAT
+        |        }
+        |      }
+        |    }
+        |  }
+        |}
+        """.stripMargin,
+      observationDataPath = "slidingWindowAgg/csvTypeTimeFile1.csv").data
+
+    val featureList = res.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("mId") else "null")
+
+    assertEquals(featureList.size, 2)
+    assertEquals(featureList(0).getAs[Row]("aEmbedding"), mutable.WrappedArray.make(Array(5.5f, 5.8f)))
+    assertEquals(featureList(0).getAs[Row]("memberEmbeddingAutoTZ"),
+      TestUtils.build1dSparseTensorFDSRow(Array(0, 1), Array(5.5f, 5.8f)))
+    LocalFeatureJoinJob.shouldRetry = false
   }
 
   /**

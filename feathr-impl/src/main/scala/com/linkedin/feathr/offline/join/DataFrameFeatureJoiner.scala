@@ -327,7 +327,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
       offline.FeatureDataFrame(obsToJoinWithFeatures, Map())
     } else {
       val swaJoiner = new SlidingWindowAggregationJoiner(featureGroups.allWindowAggFeatures, anchorToDataSourceMapper)
-      swaJoiner.joinWindowAggFeaturesAsDF(
+      val (featureDataFrame, retryableFeatureNames) = swaJoiner.joinWindowAggFeaturesAsDF(
         ss,
         obsToJoinWithFeatures,
         joinConfig,
@@ -338,6 +338,25 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         swaObsTime,
         failOnMissingPartition,
         swaHandler)
+
+      // We will retry the SWA features which could not added because of
+      val retryableErasedEntityTaggedFeatures = requiredWindowAggFeatures.filter(x => retryableFeatureNames.contains(x.getFeatureName))
+      if (retryableFeatureNames.nonEmpty) {
+        swaJoiner.joinWindowAggFeaturesAsDF(
+          ss,
+          featureDataFrame.df,
+          joinConfig,
+          keyTagIntsToStrings,
+          windowAggFeatureStages,
+          retryableErasedEntityTaggedFeatures,
+          bloomFilters,
+          swaObsTime,
+          failOnMissingPartition,
+          swaHandler,
+          false)._1
+      } else {
+        featureDataFrame
+      }
     }
   }
 }
