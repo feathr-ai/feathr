@@ -69,7 +69,7 @@ private[offline] class SlidingWindowAggregationJoiner(
    * @param swaObsTimeOpt start and end time of observation data
    * @param failOnMissingPartition whether to fail the data loading if some of the date partitions are missing.
    * @param swaHandler                External SWA libraries if any should handle the SWA join
-   * @param isRetry                   If this is a retry attempt to retry adding features which were missed because of IOExceptions.
+   * @param shouldRetry                   If this is a retry attempt to retry adding features which were missed because of IOExceptions.
    *                                  Default is set to true.
    * @return pair of :
    *         1) dataframe with feature column appended to the obsData,
@@ -88,7 +88,7 @@ private[offline] class SlidingWindowAggregationJoiner(
       swaObsTimeOpt: Option[DateTimeInterval],
       failOnMissingPartition: Boolean,
       swaHandler: Option[SWAHandler],
-      isRetry: Boolean = true): (FeatureDataFrame, Seq[String]) = {
+      shouldRetry: Boolean = true): (FeatureDataFrame, Seq[String]) = {
     val retryableSwaFeatures = ArrayBuffer.empty[String]
     val joinConfigSettings = joinConfig.settings
     // extract time window settings
@@ -266,12 +266,12 @@ private[offline] class SlidingWindowAggregationJoiner(
         val shouldRetryForMissingData = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.RETRY_ADDING_MISSING_SWA_FEATURES).toBoolean
         try {
           // THIS IS FOR LOCAL TEST ONLY. It is to induce a spark exception with the root cause of FileNotFoundException.
-          if (isRetry && FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.LOCAL_RETRY_ADDING_MISSING_SWA_FEATURES).toBoolean)
+          if (shouldRetry && FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.LOCAL_RETRY_ADDING_MISSING_SWA_FEATURES).toBoolean)
             throw new SparkException("file not found", new FileNotFoundException())
           contextDF = if (swaHandler.isDefined) swaHandler.get.join(labelDataDef, factDataDefs.toList) else SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
         } catch {
           // Many times the files which are to be loaded gets deleted midway. We will retry all the features at this stage again by reloading the datasets.
-          case exception: SparkException => if (isRetry && shouldRetryForMissingData && exception.getCause != null && exception.getCause.isInstanceOf[FileNotFoundException]) {
+          case exception: SparkException => if (shouldRetry && shouldRetryForMissingData && exception.getCause != null && exception.getCause.isInstanceOf[FileNotFoundException]) {
             val unjoinedFeatures = factDataDefs.flatMap(factData => factData.aggFeatures.map(_.name))
             retryableSwaFeatures ++= unjoinedFeatures
           }
