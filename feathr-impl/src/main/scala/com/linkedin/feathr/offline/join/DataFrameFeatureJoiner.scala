@@ -341,13 +341,16 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
 
       // We will retry the SWA features which could not added because of
       val retryableErasedEntityTaggedFeatures = requiredWindowAggFeatures.filter(x => retryableFeatureNames.contains(x.getFeatureName))
+
+      // Keep only the features which are to be retried.
+      val updatedWindowAggFeatureStages = windowAggFeatureStages.map(x => (x._1, x._2.intersect(retryableFeatureNames)))
       if (retryableFeatureNames.nonEmpty) {
         swaJoiner.joinWindowAggFeaturesAsDF(
           ss,
           featureDataFrame.df,
           joinConfig,
           keyTagIntsToStrings,
-          windowAggFeatureStages,
+          updatedWindowAggFeatureStages,
           retryableErasedEntityTaggedFeatures,
           bloomFilters,
           swaObsTime,

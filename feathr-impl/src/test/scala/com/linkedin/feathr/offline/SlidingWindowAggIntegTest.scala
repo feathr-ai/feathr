@@ -1,9 +1,8 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.offline.AssertFeatureUtils.{rowApproxEquals, validateRows}
-import com.linkedin.feathr.offline.job.LocalFeatureJoinJob
 import com.linkedin.feathr.offline.util.FeathrUtils
-import com.linkedin.feathr.offline.util.FeathrUtils.{FILTER_NULLS, SKIP_MISSING_FEATURE, setFeathrJobParam}
+import com.linkedin.feathr.offline.util.FeathrUtils.{FILTER_NULLS, LOCAL_RETRY_ADDING_MISSING_SWA_FEATURES, SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
@@ -335,7 +334,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
    */
   @Test
   def testLocalAnchorSWAWithDenseVectorWithRetry(): Unit = {
-    LocalFeatureJoinJob.shouldRetryAddingSWAFeatures = true
+    setFeathrJobParam(LOCAL_RETRY_ADDING_MISSING_SWA_FEATURES, "true")
     val res = runLocalFeatureJoinForTest(
       """
         | settings: {
@@ -400,7 +399,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     assertEquals(featureList(0).getAs[Row]("aEmbedding"), mutable.WrappedArray.make(Array(5.5f, 5.8f)))
     assertEquals(featureList(0).getAs[Row]("memberEmbeddingAutoTZ"),
       TestUtils.build1dSparseTensorFDSRow(Array(0, 1), Array(5.5f, 5.8f)))
-    LocalFeatureJoinJob.shouldRetryAddingSWAFeatures = false
+    setFeathrJobParam(LOCAL_RETRY_ADDING_MISSING_SWA_FEATURES, "true")
   }
 
   /**
@@ -410,7 +409,6 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
    */
   @Test
   def testLocalAnchorSWAWithDenseVector(): Unit = {
-    LocalFeatureJoinJob.shouldRetry = true
     val res = runLocalFeatureJoinForTest(
       """
         | settings: {
@@ -475,7 +473,6 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     assertEquals(featureList(0).getAs[Row]("aEmbedding"), mutable.WrappedArray.make(Array(5.5f, 5.8f)))
     assertEquals(featureList(0).getAs[Row]("memberEmbeddingAutoTZ"),
       TestUtils.build1dSparseTensorFDSRow(Array(0, 1), Array(5.5f, 5.8f)))
-    LocalFeatureJoinJob.shouldRetry = false
   }
 
   /**

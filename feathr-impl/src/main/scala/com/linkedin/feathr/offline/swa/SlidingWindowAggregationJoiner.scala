@@ -263,14 +263,15 @@ private[offline] class SlidingWindowAggregationJoiner(
               SlidingWindowFeatureUtils.getFactDataDef(filteredFactData, anchorWithSourceToDFMap.keySet.toSeq, featuresToDelayImmutableMap, selectedFeatures)
           }
         val origContextObsColumns = labelDataDef.dataSource.columns
-
+        val shouldRetryForMissingData = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.RETRY_ADDING_MISSING_SWA_FEATURES).toBoolean
         try {
           // THIS IS FOR LOCAL TEST ONLY. It is to induce a spark exception with the root cause of FileNotFoundException.
-          if (isRetry && LocalFeatureJoinJob.shouldRetryAddingSWAFeatures) throw new SparkException("file not found", new FileNotFoundException())
+          if (isRetry && FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.LOCAL_RETRY_ADDING_MISSING_SWA_FEATURES).toBoolean)
+            throw new SparkException("file not found", new FileNotFoundException())
           contextDF = if (swaHandler.isDefined) swaHandler.get.join(labelDataDef, factDataDefs.toList) else SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
         } catch {
           // Many times the files which are to be loaded gets deleted midway. We will retry all the features at this stage again by reloading the datasets.
-          case exception: SparkException => if (isRetry && exception.getCause != null && exception.getCause.isInstanceOf[FileNotFoundException]) {
+          case exception: SparkException => if (isRetry && shouldRetryForMissingData && exception.getCause != null && exception.getCause.isInstanceOf[FileNotFoundException]) {
             val unjoinedFeatures = factDataDefs.flatMap(factData => factData.aggFeatures.map(_.name))
             retryableSwaFeatures ++= unjoinedFeatures
           }
@@ -278,7 +279,7 @@ private[offline] class SlidingWindowAggregationJoiner(
 
           val finalJoinedFeatures = joinedFeatures diff retryableSwaFeatures
         contextDF = if (shouldFilterNulls && !factDataRowsWithNulls.isEmpty) {
-          val nullDfWithFeatureCols = joinedFeatures.foldLeft(factDataRowsWithNulls)((s, x) => s.withColumn(x, lit(null)))
+          val nullDfWithFeatureCols = finalJoinedFeatures.foldLeft(factDataRowsWithNulls)((s, x) => s.withColumn(x, lit(null)))
           contextDF.union(nullDfWithFeatureCols)
         } else contextDF
 
