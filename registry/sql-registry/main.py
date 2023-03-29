@@ -118,7 +118,7 @@ def get_datasource(project: str, datasource: str) -> Dict:
     p = registry.get_entity(project)
     for s in p.attributes.sources:
         if str(s.id) == datasource:
-            return s
+            return s.to_dict()
     # If datasource is not found, raise 404 error
     raise HTTPException(
         status_code=404, detail=f"Data Source {datasource} not found")
