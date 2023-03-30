@@ -199,9 +199,13 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
     val updatedSourceAccessorMap = anchorSourceAccessorMap.filter(anchorEntry => anchorEntry._2.isDefined)
       .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
+    // 3. Join sliding window aggregation features
+    val (FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes), skippedFeatures) =
+      joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime, swaHandler)
+
     val (updatedFeatureGroups, updatedLogicalPlan) = if (shouldSkipFeature) {
       val (newFeatureGroups, newKeyTaggedFeatures) = FeatureGroupsUpdater().removeMissingFeatures(featureGroups,
-        updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, keyTaggedFeatures)
+        updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, skippedFeatures, keyTaggedFeatures)
 
       val newLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(newFeatureGroups, newKeyTaggedFeatures)
       (newFeatureGroups, newLogicalPlan)
@@ -209,9 +213,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
 
     implicit val joinExecutionContext: JoinExecutionContext =
       JoinExecutionContext(ss, updatedLogicalPlan, updatedFeatureGroups, bloomFilters, Some(saltedJoinFrequentItemDFs))
-    // 3. Join sliding window aggregation features
-    val FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes) =
-      joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime, swaHandler)
+
 
     // 4. Join basic anchored features
     val anchoredFeatureJoinStep =
@@ -322,9 +324,9 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
       failOnMissingPartition: Boolean,
       bloomFilters: Option[Map[Seq[Int], BloomFilter]],
       swaObsTime: Option[DateTimeInterval],
-      swaHandler: Option[SWAHandler]): FeatureDataFrame = {
+      swaHandler: Option[SWAHandler]): (FeatureDataFrame, Seq[String]) = {
     if (windowAggFeatureStages.isEmpty) {
-      offline.FeatureDataFrame(obsToJoinWithFeatures, Map())
+      (offline.FeatureDataFrame(obsToJoinWithFeatures, Map()), Seq())
     } else {
       val swaJoiner = new SlidingWindowAggregationJoiner(featureGroups.allWindowAggFeatures, anchorToDataSourceMapper)
       swaJoiner.joinWindowAggFeaturesAsDF(

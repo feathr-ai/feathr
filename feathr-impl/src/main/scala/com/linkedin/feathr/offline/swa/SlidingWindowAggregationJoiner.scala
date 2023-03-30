@@ -81,7 +81,7 @@ private[offline] class SlidingWindowAggregationJoiner(
       bloomFilters: Option[Map[Seq[Int], BloomFilter]],
       swaObsTimeOpt: Option[DateTimeInterval],
       failOnMissingPartition: Boolean,
-      swaHandler: Option[SWAHandler]): FeatureDataFrame = {
+      swaHandler: Option[SWAHandler]): (FeatureDataFrame, Seq[String]) = {
     val joinConfigSettings = joinConfig.settings
     // extract time window settings
     if (joinConfigSettings.isEmpty) {
@@ -292,7 +292,7 @@ private[offline] class SlidingWindowAggregationJoiner(
           }
         }
     }})
-    offline.FeatureDataFrame(contextDF, allInferredFeatureTypes.toMap)
+    (offline.FeatureDataFrame(contextDF, allInferredFeatureTypes.toMap), notJoinedFeatures.toSeq)
   }
 
   /**

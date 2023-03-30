@@ -571,7 +571,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |features: [
         |  {
         |    key: [x],
-        |    featureList: ["simplePageViewCount", "simpleFeature"]
+        |    featureList: ["simplePageViewCount", "simpleFeature", "derived_simpleFeature"]
         |  }
         |]
       """.stripMargin
@@ -621,6 +621,9 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |     }
         |    }
         |  }
+        |}
+        |derivations: {
+        | derived_simpleFeature: simpleFeature
         |}
       """.stripMargin
     val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
