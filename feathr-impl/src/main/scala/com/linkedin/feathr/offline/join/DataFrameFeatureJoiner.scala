@@ -203,7 +203,8 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
     val (FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes), skippedFeatures) =
       joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime, swaHandler)
 
-    // Update the feature groups based on the missing features
+    // Update the feature groups based on the missing features. Certain SWA features can be skipped because of missing data issue, we need to skip
+    // the corresponding derived, seq join features which could depend on this SWA feature.
     val (updatedFeatureGroups, updatedLogicalPlan) = if (shouldSkipFeature) {
       val (newFeatureGroups, newKeyTaggedFeatures) = FeatureGroupsUpdater().removeMissingFeatures(featureGroups,
         updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, skippedFeatures, keyTaggedFeatures)
