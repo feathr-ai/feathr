@@ -203,6 +203,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
     val (FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes), skippedFeatures) =
       joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime, swaHandler)
 
+    // Update the feature groups based on the missing features
     val (updatedFeatureGroups, updatedLogicalPlan) = if (shouldSkipFeature) {
       val (newFeatureGroups, newKeyTaggedFeatures) = FeatureGroupsUpdater().removeMissingFeatures(featureGroups,
         updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, skippedFeatures, keyTaggedFeatures)
@@ -314,7 +315,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
    * @param failOnMissingPartition flag to indicate if the join job should fail if a missing date partition is found.
    * @param bloomFilters bloomfilters, map string key tag ids to bloomfilter
    * @param swaObsTime observation start and end time for sliding window aggregation, if not None, will try to infer
-   * @return observation data joined with sliding window aggregation features
+   * @return observation data joined with sliding window aggregation features and the list of skipped features
    */
   def joinSWAFeatures(
       ss: SparkSession,
