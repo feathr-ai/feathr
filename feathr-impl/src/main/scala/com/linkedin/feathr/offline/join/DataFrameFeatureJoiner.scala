@@ -199,9 +199,15 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
     val updatedSourceAccessorMap = anchorSourceAccessorMap.filter(anchorEntry => anchorEntry._2.isDefined)
       .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
+    // 3. Join sliding window aggregation features
+    val (FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes), skippedFeatures) =
+      joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime, swaHandler)
+
+    // Update the feature groups based on the missing features. Certain SWA features can be skipped because of missing data issue, we need to skip
+    // the corresponding derived, seq join features which could depend on this SWA feature.
     val (updatedFeatureGroups, updatedLogicalPlan) = if (shouldSkipFeature) {
       val (newFeatureGroups, newKeyTaggedFeatures) = FeatureGroupsUpdater().removeMissingFeatures(featureGroups,
-        updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, keyTaggedFeatures)
+        updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, skippedFeatures, keyTaggedFeatures)
 
       val newLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(newFeatureGroups, newKeyTaggedFeatures)
       (newFeatureGroups, newLogicalPlan)
@@ -209,9 +215,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
 
     implicit val joinExecutionContext: JoinExecutionContext =
       JoinExecutionContext(ss, updatedLogicalPlan, updatedFeatureGroups, bloomFilters, Some(saltedJoinFrequentItemDFs))
-    // 3. Join sliding window aggregation features
-    val FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes) =
-      joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime, swaHandler)
+
 
     // 4. Join basic anchored features
     val anchoredFeatureJoinStep =
@@ -312,7 +316,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
    * @param failOnMissingPartition flag to indicate if the join job should fail if a missing date partition is found.
    * @param bloomFilters bloomfilters, map string key tag ids to bloomfilter
    * @param swaObsTime observation start and end time for sliding window aggregation, if not None, will try to infer
-   * @return observation data joined with sliding window aggregation features
+   * @return observation data joined with sliding window aggregation features and the list of skipped features
    */
   def joinSWAFeatures(
       ss: SparkSession,
@@ -322,9 +326,9 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
       failOnMissingPartition: Boolean,
       bloomFilters: Option[Map[Seq[Int], BloomFilter]],
       swaObsTime: Option[DateTimeInterval],
-      swaHandler: Option[SWAHandler]): FeatureDataFrame = {
+      swaHandler: Option[SWAHandler]): (FeatureDataFrame, Seq[String]) = {
     if (windowAggFeatureStages.isEmpty) {
-      offline.FeatureDataFrame(obsToJoinWithFeatures, Map())
+      (offline.FeatureDataFrame(obsToJoinWithFeatures, Map()), Seq())
     } else {
       val swaJoiner = new SlidingWindowAggregationJoiner(featureGroups.allWindowAggFeatures, anchorToDataSourceMapper)
       swaJoiner.joinWindowAggFeaturesAsDF(
