@@ -111,20 +111,22 @@ private[offline] class FeatureGroupsUpdater {
   }
 
   /**
-   * Update the feature groups (for Feature join) based on feature missing features. Few anchored features can be missing if the feature data
+   * Update the feature groups (for Feature join) based on feature missing features. Few anchored/SWA features can be missing if the feature data
    * is not present. Remove those anchored features, and also the corresponding derived feature which are dependent on it.
    *
-   * @param featureGroups
-   * @param allStageFeatures
-   * @param keyTaggedFeatures
-   * @return
+   * @param featureGroups Original feature groups
+   * @param allAnchoredFeaturesWithData all anchored features which were not skipped because of missing data
+   * @param skippedSwaFeatures skipped SWA features due to missing data issue.
+   * @param keyTaggedFeatures List of all key tagged features
+   * @return  Updated feature groups and updated list of joining features
    */
-  def removeMissingFeatures(featureGroups: FeatureGroups, allAnchoredFeaturesWithData: Seq[String],
+  def removeMissingFeatures(featureGroups: FeatureGroups, allAnchoredFeaturesWithData: Seq[String], skippedSwaFeatures: Seq[String],
     keyTaggedFeatures: Seq[JoiningFeatureParams]): (FeatureGroups, Seq[JoiningFeatureParams]) = {
-
+    // Filter out all the window agg features that were skipped.
+    val updatedWindowAggFeatures = featureGroups.allWindowAggFeatures.filter(windowAggFeature => !skippedSwaFeatures.contains(windowAggFeature._1))
     // We need to add the window agg features to it as they are also considered anchored features.
     val updatedAnchoredFeatures = featureGroups.allAnchoredFeatures.filter(featureRow =>
-      allAnchoredFeaturesWithData.contains(featureRow._1)) ++ featureGroups.allWindowAggFeatures ++ featureGroups.allPassthroughFeatures
+      allAnchoredFeaturesWithData.contains(featureRow._1)) ++ updatedWindowAggFeatures ++ featureGroups.allPassthroughFeatures
 
     val updatedSeqJoinFeature = featureGroups.allSeqJoinFeatures.filter(seqJoinFeature => {
       // Find the constituent anchored features for every derived feature
@@ -145,10 +147,10 @@ private[offline] class FeatureGroupsUpdater {
     log.warn(s"Removed the following features:- ${featureGroups.allAnchoredFeatures.keySet.diff(updatedAnchoredFeatures.keySet)}," +
       s"${featureGroups.allDerivedFeatures.keySet.diff(updatedDerivedFeatures.keySet)}," +
       s" ${featureGroups.allSeqJoinFeatures.keySet.diff(updatedSeqJoinFeature.keySet)}")
-    val updatedFeatureGroups = FeatureGroups(updatedAnchoredFeatures, updatedDerivedFeatures, featureGroups.allWindowAggFeatures,
+    val updatedFeatureGroups = FeatureGroups(updatedAnchoredFeatures, updatedDerivedFeatures, updatedWindowAggFeatures,
       featureGroups.allPassthroughFeatures, updatedSeqJoinFeature)
     val updatedKeyTaggedFeatures = keyTaggedFeatures.filter(feature => updatedAnchoredFeatures.contains(feature.featureName)
-      || updatedDerivedFeatures.contains(feature.featureName) || featureGroups.allWindowAggFeatures.contains(feature.featureName)
+      || updatedDerivedFeatures.contains(feature.featureName) || updatedWindowAggFeatures.contains(feature.featureName)
       || featureGroups.allPassthroughFeatures.contains(feature.featureName) || updatedSeqJoinFeature.contains(feature.featureName))
     (updatedFeatureGroups, updatedKeyTaggedFeatures)
   }
