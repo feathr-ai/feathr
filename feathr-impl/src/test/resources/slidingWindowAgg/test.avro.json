@@ -49,7 +49,7 @@
     {
       "memberId": 1561,
       "time": 1613361699,
-      "bucket_time": 1613361690,
+      "bucket_time": 1613361600,
       "passthroughFeatures": [
         {
           "name": "f1f1",
@@ -61,7 +61,7 @@
     {
       "memberId": 2,
       "time": 1613361670,
-      "bucket_time": 1613361660,
+      "bucket_time": 1613361600,
       "passthroughFeatures": [
         {
           "name": "f1f1",
@@ -73,7 +73,7 @@
     {
       "memberId": 1561,
       "time": 1613361650,
-      "bucket_time": 1613361630,
+      "bucket_time": 1613361600,
       "passthroughFeatures": [
         {
           "name": "f1f1",
@@ -85,7 +85,7 @@
     {
       "memberId": 1561,
       "time": 1613361649,
-      "bucket_time": 1613361630,
+      "bucket_time": 1613361600,
       "passthroughFeatures": [
         {
           "name": "f1f1",
@@ -97,7 +97,55 @@
     {
       "memberId": 1561,
       "time": 1613361655,
-      "bucket_time": 1613361630,
+      "bucket_time": 1613361600,
+      "passthroughFeatures": [
+        {
+          "name": "f1f1",
+          "term": "f1t1",
+          "value": 12
+        }
+      ]
+    },
+    {
+      "memberId": 1561,
+      "time": 1613361610,
+      "bucket_time": 1613361600,
+      "passthroughFeatures": [
+        {
+          "name": "f1f1",
+          "term": "f1t1",
+          "value": 12
+        }
+      ]
+    },
+    {
+      "memberId": 1561,
+      "time": 1613361249,
+      "bucket_time": 1613361000,
+      "passthroughFeatures": [
+        {
+          "name": "f1f1",
+          "term": "f1t1",
+          "value": 12
+        }
+      ]
+    },
+    {
+      "memberId": 1561,
+      "time": 1613361180,
+      "bucket_time": 1613361000,
+      "passthroughFeatures": [
+        {
+          "name": "f1f1",
+          "term": "f1t1",
+          "value": 12
+        }
+      ]
+    },
+    {
+      "memberId": 1561,
+      "time": 1613362200,
+      "bucket_time": 1613362200,
       "passthroughFeatures": [
         {
           "name": "f1f1",
@@ -106,6 +154,5 @@
         }
       ]
     }
-
   ]
 }

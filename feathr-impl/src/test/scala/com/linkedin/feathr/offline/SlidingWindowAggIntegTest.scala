@@ -27,14 +27,19 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
           |settings: {
           |    joinTimeSettings: {
           |        timestampColumn: {
-          |            def: "time"
+          |            def: time
           |            format: "epoch"
           |        }
           |    }
           |}
           |features: [ {
-          |    key: [memberId, bucket_time]
+          |    key: [memberId]
           |    featureList: ["totalInvitesSentIn1Hour"]
+          |    }
+          |
+          |    {
+          |    key: [memberId, "bucket_time - 3600"]
+          |    featureList: ["totalInvitesSentIn1HourMinus", "finalFeature"]
           |    }
           |]
     """.stripMargin,
@@ -45,7 +50,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
           |  location: {path: "slidingWindowAgg/localAnchorTestObsData.avro.json" }
           |  timeWindowParameters: {
           |    // resumeUploadTime is the field name after any time-based keyExtractor is applied.
-          |    timestamp: header.time
+          |    timestamp: "header.time"
           |    timestamp_format: "epoch"
           |  }
           |}
@@ -58,27 +63,43 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
           |  invitationtimebased: {
           |    source: Metrics-InviteSends
           |    // keyExtractor is really more of a pre-processor that performs feature extraction for Sliding Window Aggregation
-          |    key: [header.memberId, header.bucket_time]
+          |    key: [header.memberId]
           |    features: {
           |      totalInvitesSentIn1Hour: {
           |        def: header.memberId
           |        type: NUMERIC
           |        default: 0.0
           |        aggregation: COUNT
-          |        window: 30s
+          |        window: 3600s
           |      }
           |    }
           |  }
-          |  passthroughAnchor: {
-          |    source: Training-Data
-          |    key: "memberId"
+          |
+          |  invitationtimebased2: {
+          |    source: Metrics-InviteSends
+          |    // keyExtractor is really more of a pre-processor that performs feature extraction for Sliding Window Aggregation
+          |    key: [header.memberId, "header.bucket_time"]
           |    features: {
-          |      cv_invitation_scorer_total_invitations_sent_to_members_24_one_hour: {
-          |        def: "cv_invitation_scorer_total_invitations_sent_to_members_24_one_hour"
-          |        type: DENSE_VECTOR
+          |      totalInvitesSentIn1HourMinus: {
+          |        def: header.memberId
+          |        type: NUMERIC
+          |        default: 0.0
+          |        aggregation: COUNT
+          |        window: 3600s
           |      }
           |    }
           |  }
+          |}
+          |
+          |derivations: {
+          |  finalFeature: {
+          |     key: [header.memberId, "header.bucket_time"]
+          |     inputs: {
+          |       a1: { key: [header.memberId], feature: totalInvitesSentIn1Hour }
+          |       a2: { key: [header.memberId, header.bucket_time], feature: totalInvitesSentIn1HourMinus }
+          |     }
+          |     definition.sqlExpr: "a1 - a2"
+          |   }
           |}
       """.stripMargin,
       "slidingWindowAgg/test.avro.json").data
