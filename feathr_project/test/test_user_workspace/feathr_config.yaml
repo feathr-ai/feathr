@@ -8,6 +8,7 @@
 # For example if you want to override this setting in a shell environment:
 # export ONLINE_STORE__REDIS__HOST=feathrazure.redis.cache.windows.net
 
+
 # version of API settings
 api_version: 1
 project_config:
