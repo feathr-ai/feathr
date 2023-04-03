@@ -399,7 +399,7 @@ def snowflake_preprocessing(df: DataFrame) -> DataFrame:
     df = df.withColumn("NEW_CC_ZIP", concat(col("CC_ZIP"), lit("____"), col("CC_ZIP")))
     return df
 
-
+@pytest.mark.skip(reason="All snowflake tests are skipped for now due to budget restriction.")
 def test_feathr_get_offline_features_from_snowflake():
     """
     Test get_offline_features() can get feature data from Snowflake source correctly.
