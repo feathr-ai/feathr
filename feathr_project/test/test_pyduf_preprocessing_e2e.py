@@ -1,4 +1,5 @@
 import os
+import pytest
 from datetime import datetime, timedelta
 from pathlib import Path
 from feathr.client import FeathrClient
@@ -111,7 +112,7 @@ def test_non_swa_feature_gen_with_offline_preprocessing():
     res = client.get_online_features(online_test_table, '2020-04-01 07:21:51', [
         'f_is_long_trip_distance', 'f_day_of_week'])
     assert res == [8000006.0, 4]
-    
+
     client._clean_test_data(online_test_table)
 
 
@@ -173,7 +174,7 @@ def test_feature_swa_feature_gen_with_preprocessing():
 
     res = client.get_online_features(online_test_table, '265', ['f_location_avg_fare', 'f_location_max_fare'])
     assert res == [1000041.625, 1000100.0]
-    
+
     client._clean_test_data(online_test_table)
 
 
@@ -399,7 +400,7 @@ def snowflake_preprocessing(df: DataFrame) -> DataFrame:
     df = df.withColumn("NEW_CC_ZIP", concat(col("CC_ZIP"), lit("____"), col("CC_ZIP")))
     return df
 
-
+@pytest.mark.skip(reason="All snowflake tests are skipped for now due to budget restriction.")
 def test_feathr_get_offline_features_from_snowflake():
     """
     Test get_offline_features() can get feature data from Snowflake source correctly.
