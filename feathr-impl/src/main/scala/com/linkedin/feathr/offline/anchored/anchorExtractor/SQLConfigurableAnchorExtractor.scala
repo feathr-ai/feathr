@@ -90,7 +90,8 @@ private[offline] class SQLConfigurableAnchorExtractor(
           }
           ((featureName, expr(rewrittenDef)), featureColumnFormat)
         } catch {
-          case e: Exception => throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Cannot get the tensor features for ${featureName} feature.")
+          case e: Exception =>
+            throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Cannot get the tensor features for ${featureName} feature.", e)
         }
     }
   }
