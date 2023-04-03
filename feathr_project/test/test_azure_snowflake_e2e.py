@@ -1,4 +1,5 @@
 import os
+import pytest
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -12,7 +13,7 @@ from feathr.utils.job_utils import get_result_df
 from test_fixture import (snowflake_test_setup, get_online_test_table_name)
 from test_utils.constants import Constants
 
-
+@pytest.mark.skip(reason="All snowflake tests are skipped for now due to budget restriction.")
 def test_feathr_online_store_agg_features():
     """
     Test FeathrClient() get_online_features and batch_get can get feature data correctly.
@@ -51,6 +52,7 @@ def test_feathr_online_store_agg_features():
 
     client._clean_test_data(online_test_table)
 
+@pytest.mark.skip(reason="All snowflake tests are skipped for now due to budget restriction.")
 def test_feathr_get_offline_features():
     """
     Test get_offline_features() can get feature data from Snowflake source correctly.
@@ -90,6 +92,7 @@ def test_feathr_get_offline_features():
     # just assume there are results.
     assert res.shape[0] > 1
 
+@pytest.mark.skip(reason="All snowflake tests are skipped for now due to budget restriction.")
 def test_client_get_snowflake_observation_path():
     """
     Test get_snowflake_path() returns correct snowflake observation path
