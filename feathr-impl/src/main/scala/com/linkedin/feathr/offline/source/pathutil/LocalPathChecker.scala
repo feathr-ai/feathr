@@ -10,8 +10,6 @@ import org.apache.hadoop.conf.Configuration
  */
 private[offline] class LocalPathChecker(hadoopConf: Configuration, dataLoaderHandlers: List[DataLoaderHandler]) extends PathChecker {
 
-  private val TEST_AVRO_JSON_FILE = "/data.avro.json"
-
   /**
    * check whether the path is a local mock folder
    * @param path input path
@@ -35,7 +33,7 @@ private[offline] class LocalPathChecker(hadoopConf: Configuration, dataLoaderHan
         if (dataLoaderHandler.validatePath(path)) {
           isExternalDataSourceFlag = true
           break
-        } 
+        }
       }
     }
     isExternalDataSourceFlag
