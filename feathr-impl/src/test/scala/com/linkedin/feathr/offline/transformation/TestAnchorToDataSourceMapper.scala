@@ -184,7 +184,7 @@ class TestAnchorToDataSourceMapper extends TestFeathr with MockitoSugar {
 
     val paths = HdfsUtils
       .getPaths(dailyMockDataPath, LocalDate.of(2018, 1, 10).atStartOfDay(), LocalDate.of(2018, 1, 13).atStartOfDay(), ChronoUnit.DAYS)
-
+      .map(path => path + "/data.avro.json")
     val records20180110 = getTestRecords(2, date20180110.atStartOfDay(), date20180110.atTime(LocalTime.MAX))
     val records20180111 = getTestRecords(2, date20180111.atStartOfDay(), date20180111.atTime(LocalTime.MAX))
     val records20180112 = getTestRecords(2, date20180111.atStartOfDay(), date20180112.atTime(LocalTime.MAX))

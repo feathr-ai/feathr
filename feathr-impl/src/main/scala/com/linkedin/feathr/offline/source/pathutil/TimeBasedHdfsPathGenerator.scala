@@ -36,7 +36,7 @@ private[offline] class TimeBasedHdfsPathGenerator(pathChecker: PathChecker) {
         .map(offset => pathInfo.basePath + formatter.format(factDataStartTime.plus(offset, chronUnit)) + postfixPath).distinct
 
     if (ignoreMissingFiles) {
-      filePaths.filter(filePath => pathChecker.exists(filePath) && pathChecker.exists(filePath + AVRO_JSON_FILE_EXTENSION))
+      filePaths.filter(filePath => pathChecker.exists(filePath))
     } else {
       filePaths
     }

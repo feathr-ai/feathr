@@ -7,7 +7,6 @@ import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
  * Common path utility functions
  */
 private[offline] trait PathChecker {
-  val TEST_AVRO_JSON_FILE = "/data.avro.json"
   /**
    * check whether the path is a local mock folder
    * @param path input path
