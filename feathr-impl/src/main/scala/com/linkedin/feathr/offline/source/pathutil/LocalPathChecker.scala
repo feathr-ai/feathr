@@ -11,7 +11,7 @@ import java.io.File
  * @param hadoopConf hadoop configuration
  */
 private[offline] class LocalPathChecker(hadoopConf: Configuration, dataLoaderHandlers: List[DataLoaderHandler]) extends PathChecker {
-  val TEST_AVRO_JSON_FILE = "/data.avro.json"
+  private val TEST_AVRO_JSON_FILE = "/data.avro.json"
 
   /**
    * check whether the path is a local mock folder
