@@ -48,7 +48,6 @@ class TestPathChecker extends TestFeathr with MockitoSugar {
     assertEquals(localPathChecker.exists("generation/daily/2019/05/19"), true)
     assertEquals(localPathChecker.exists("non-existing_path"), false)
     assertEquals(localPathChecker.nonEmpty("generation/daily/2019/05/19"), true)
-    assertEquals(localPathChecker.nonEmpty("generation/daily/2019/05/19"), true)
     assertEquals(localPathChecker.nonEmpty("generation/daily/2019/05/18"), false)
     assertEquals(localPathChecker.nonEmpty("anchor1-source.csv"), true)
   }
