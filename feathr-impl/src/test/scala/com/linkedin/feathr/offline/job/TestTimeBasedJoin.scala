@@ -14,7 +14,7 @@ import org.testng.annotations.Test
  *
  */
 class TestTimeBasedJoin extends TestFeathr {
-  val timeAwareDailyDirectory = "src/test/resources/localTimeAwareTestFeatureData/"
+  val timeAwareDailyDirectory = "localTimeAwareTestFeatureData/"
 
   @Test
   def testStartEndDatePath(): Unit = {
