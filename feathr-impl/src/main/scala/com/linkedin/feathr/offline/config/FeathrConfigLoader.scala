@@ -777,7 +777,6 @@ private[offline] class DataSourceLoader extends JsonDeserializer[DataSource] {
           s"Illegal setting for location for data source ${node.toPrettyString()}, expected map")
       }
     }
-    println(s"Source location is: $path")
 
     // time window parameters for data aggregation
     val timeWindowParameterNode = Option(node.get("timeWindowParameters")) match {

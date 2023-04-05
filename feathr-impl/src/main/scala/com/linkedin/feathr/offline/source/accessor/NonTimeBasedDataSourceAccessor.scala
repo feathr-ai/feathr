@@ -29,7 +29,6 @@ private[offline] class NonTimeBasedDataSourceAccessor(
    */
   override def get(): DataFrame = {
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
-    println(s"NonTimeBasedDataSourceAccessor loading source ${source.location}")
     val df =
       try {
         source.location match {

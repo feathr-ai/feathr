@@ -75,8 +75,6 @@ object FeatureGenJob {
     val dataSourceConfigs = DataSourceConfigUtils.getConfigs(cmdParser)
     val featureGenJobContext = new FeatureGenJobContext(workDir, paramsOverride, featureConfOverride)
 
-    println("dataSourceConfigs: ")
-    println(dataSourceConfigs)
     (applicationConfigPath, featureDefinitionsInput, featureGenJobContext, dataSourceConfigs)
   }
 

@@ -85,7 +85,6 @@ object FeatureJoinJob {
   def stringifyFeatureNames(nameSet: Set[String]): String = nameSet.toSeq.sorted.toArray.mkString("\n\t")
 
   def hdfsFileReader(ss: SparkSession, path: String): String = {
-    print("ss.sparkContext.textFile(path),", path)
     ss.sparkContext.textFile(path).collect.mkString("\n")
   }
 

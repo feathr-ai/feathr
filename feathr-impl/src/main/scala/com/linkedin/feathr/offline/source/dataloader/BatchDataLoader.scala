@@ -84,7 +84,6 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
       var dfOpt: Option[DataFrame] = None
       breakable {
         for (dataLoaderHandler <- dataLoaderHandlers) {
-          println(s"Applying dataLoaderHandler ${dataLoaderHandler}")
           if (dataLoaderHandler.validatePath(dataPath)) {
             dfOpt = Some(dataLoaderHandler.createDataFrame(dataPath, dataIOParametersWithSplitSize, jobConf))
             break
