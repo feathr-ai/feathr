@@ -34,6 +34,9 @@ class TestPathChecker extends TestFeathr with MockitoSugar {
     assertEquals(hdfsPathChecker.isMock("anyPath"), false)
     assertEquals(hdfsPathChecker.exists("src/test/resources/anchor1-source.csv"), true)
     assertEquals(hdfsPathChecker.exists("non_existing_path"), false)
+    assertEquals(hdfsPathChecker.nonEmpty("src/test/resources/generation/daily/2019/05/19"), true)
+    assertEquals(hdfsPathChecker.nonEmpty("src/test/resources/generation/daily/2019/05/18"), false)
+    assertEquals(hdfsPathChecker.nonEmpty("src/test/resources/anchor1-source.csv"), true)
   }
 
 
@@ -44,6 +47,8 @@ class TestPathChecker extends TestFeathr with MockitoSugar {
     assertEquals(localPathChecker.exists("anchor1-source.csv"), true)
     assertEquals(localPathChecker.exists("generation/daily/2019/05/19"), true)
     assertEquals(localPathChecker.exists("non-existing_path"), false)
+    assertEquals(localPathChecker.nonEmpty("generation/daily/2019/05/19"), true)
+    assertEquals(localPathChecker.nonEmpty("anchor1-source.csv"), true)
   }
 
   @Test(description = "test isExternalDataSource method for LocalPathChecker")
