@@ -57,11 +57,33 @@ class TestTimeBasedHdfsPathGenerator extends TestFeathr with MockitoSugar{
     val pathInfo = PathInfo("src/test/resources/generation/daily/", DateTimeResolution.DAILY, "yyyy/MM/dd")
     when(mockPathChecker.exists("src/test/resources/generation/daily/2019/05/18")).thenReturn(false)
     when(mockPathChecker.exists("src/test/resources/generation/daily/2019/05/19")).thenReturn(true)
+    when(mockPathChecker.nonEmpty("src/test/resources/generation/daily/2019/05/19")).thenReturn(true)
     val interval = TestUtils.createDailyInterval("2019-05-18", "2019-05-20")
     val pathList = pathGenerator.generate(pathInfo, interval, true)
     assertEquals(pathList.toList, List("src/test/resources/generation/daily/2019/05/19"))
     verify(mockPathChecker).exists("src/test/resources/generation/daily/2019/05/18")
     verify(mockPathChecker).exists("src/test/resources/generation/daily/2019/05/19")
+    verify(mockPathChecker).nonEmpty("src/test/resources/generation/daily/2019/05/19")
+    verifyNoMoreInteractions(mockPathChecker)
+  }
+
+  @Test(description = "test ignore missing files and empty folders")
+  def testGenerateDailyFilesWithEmptyFolders(): Unit = {
+    val mockPathChecker = mock[PathChecker]
+    val pathGenerator = new TimeBasedHdfsPathGenerator(mockPathChecker)
+
+    val pathInfo = PathInfo("src/test/resources/generation/daily/", DateTimeResolution.DAILY, "yyyy/MM/dd")
+    when(mockPathChecker.exists("src/test/resources/generation/daily/2019/05/18")).thenReturn(true)
+    when(mockPathChecker.exists("src/test/resources/generation/daily/2019/05/19")).thenReturn(true)
+    when(mockPathChecker.nonEmpty("src/test/resources/generation/daily/2019/05/18")).thenReturn(false)
+    when(mockPathChecker.nonEmpty("src/test/resources/generation/daily/2019/05/19")).thenReturn(true)
+    val interval = TestUtils.createDailyInterval("2019-05-18", "2019-05-20")
+    val pathList = pathGenerator.generate(pathInfo, interval, true)
+    assertEquals(pathList.toList, List("src/test/resources/generation/daily/2019/05/19"))
+    verify(mockPathChecker).exists("src/test/resources/generation/daily/2019/05/18")
+    verify(mockPathChecker).exists("src/test/resources/generation/daily/2019/05/19")
+    verify(mockPathChecker).nonEmpty("src/test/resources/generation/daily/2019/05/19")
+    verify(mockPathChecker).nonEmpty("src/test/resources/generation/daily/2019/05/18")
     verifyNoMoreInteractions(mockPathChecker)
   }
 
