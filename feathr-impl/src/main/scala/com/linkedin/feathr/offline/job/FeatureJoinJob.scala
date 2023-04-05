@@ -69,7 +69,6 @@ object FeatureJoinJob {
   def run(ss: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext, dataPathHandlers: List[DataPathHandler]): Unit = {
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
     val joinConfig = FeatureJoinConfig.parseJoinConfig(hdfsFileReader(ss, jobContext.joinConfig))
-    print("join config is, ",joinConfig)
     // check read authorization for observation data, and write authorization for output path
     checkAuthorization(ss, hadoopConf, jobContext, dataLoaderHandlers)
 
