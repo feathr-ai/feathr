@@ -76,7 +76,6 @@ private[offline] object CoercionUtilsScala {
   }
 
   def coerceFieldToFeatureValue(row: Row, schema: StructType, fieldName: String, featureTypeConfig: FeatureTypeConfig): FeatureValue = {
-    print("ROW IS " + row + " and featureTypeConfig is " + featureTypeConfig + " and feature name is " + fieldName)
     val fieldIndex = schema.fieldIndex(fieldName)
     val fieldType = schema.toList(fieldIndex)
     val valueMap = if (row.get(fieldIndex) == null) {

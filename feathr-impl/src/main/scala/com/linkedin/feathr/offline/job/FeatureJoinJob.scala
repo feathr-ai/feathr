@@ -69,7 +69,6 @@ object FeatureJoinJob {
   def run(ss: SparkSession, hadoopConf: Configuration, jobContext: FeathrJoinJobContext, dataPathHandlers: List[DataPathHandler]): Unit = {
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
     val joinConfig = FeatureJoinConfig.parseJoinConfig(hdfsFileReader(ss, jobContext.joinConfig))
-    print("join config is, ",joinConfig)
     // check read authorization for observation data, and write authorization for output path
     checkAuthorization(ss, hadoopConf, jobContext, dataLoaderHandlers)
 
@@ -86,7 +85,6 @@ object FeatureJoinJob {
   def stringifyFeatureNames(nameSet: Set[String]): String = nameSet.toSeq.sorted.toArray.mkString("\n\t")
 
   def hdfsFileReader(ss: SparkSession, path: String): String = {
-    print("ss.sparkContext.textFile(path),", path)
     ss.sparkContext.textFile(path).collect.mkString("\n")
   }
 
