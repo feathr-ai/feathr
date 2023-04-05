@@ -1,14 +1,14 @@
 package com.linkedin.feathr.offline.util
 
+import com.linkedin.feathr.offline.util.HdfsUtils.conf
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{Path,LocatedFileStatus,FileSystem,PathFilter,RemoteIterator}
+import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
 import org.apache.log4j.{Logger, PatternLayout, WriterAppender}
 
 import java.io.{FileSystem => _, _}
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{LocalDateTime, ZoneId, ZoneOffset}
-
 import scala.annotation.tailrec
 
 
@@ -476,6 +476,25 @@ object HdfsUtils {
         hdfsSubdir(inputPath + '/' + dir, excludePathsPrefixList, conf))
     } else {
       Array(inputPath)
+    }
+  }
+
+  /**
+   * For a given input path, check if it is non-empty. If the path is a directory, check if it has any files within the directory.
+   * Otherwise, check if the file is non-empty.
+   *
+   * @param conf      Hadoop Configuration
+   * @param inputPath input path
+   * @return true if nonEmpty
+   */
+  def nonEmpty(inputPath: String, conf: Configuration = conf): Boolean = {
+    val fs = FileSystem.get(conf)
+    val path = new Path(inputPath)
+    if (!exists(inputPath)) return false
+    if (fs.getFileStatus(path).isDirectory) {
+      fs.listStatus(path).length > 0
+    } else {
+      fs.getFileStatus(path).getLen > 0
     }
   }
 
