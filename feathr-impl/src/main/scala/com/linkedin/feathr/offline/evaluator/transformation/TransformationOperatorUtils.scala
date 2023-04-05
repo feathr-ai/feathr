@@ -42,9 +42,7 @@ object TransformationOperatorUtils {
   def createFeatureDF(inputDf: DataFrame, featureColumnDefs: Seq[(String, Column)]): DataFrame = {
     // first add a prefix to the feature column name in the schema
     val featureColumnNamePrefix = "_frame_sql_feature_prefix_"
-    print(inputDf.columns.mkString("Array(", ", ", ")"))
     val transformedDF = featureColumnDefs.foldLeft(inputDf)((baseDF, columnWithName) => {
-      print("COLUMN NAME = " + columnWithName)
       val columnName = featureColumnNamePrefix + columnWithName._1
       baseDF.withColumn(columnName, expr(columnWithName._2.toString()))
     })
