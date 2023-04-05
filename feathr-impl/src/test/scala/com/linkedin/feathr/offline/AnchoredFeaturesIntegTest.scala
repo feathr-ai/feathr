@@ -121,6 +121,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       |    }
       |  }
       |
+      |
+      |
       |  anchor3: {
       |    source: ptSource
       |    key: "IdInObservation"
@@ -135,11 +137,14 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       |derivations: {
       |  multiply_a_b: "toNumeric(aa) * toNumeric(bb)"
       |
+      |  xyz:fIntAsCategorical
+      |
       |  categorical_b: {
       |    key: [foo]
       |    inputs: { foo_b: { key: foo, feature: bb } }
       |    definition: "toCategorical(foo_b)"
       |  }
+      |
       |}
       """.stripMargin.format(trainingData, featureData)
   @BeforeClass
@@ -166,7 +171,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
    */
   @Test
   def testSingleKeyJoinWithDifferentFeatureTypes(): Unit = {
-    val selectedColumns = Seq("x", "aa", "bb", "cc", "dd", "ee", "ee2", "ff", "multiply_a_b", "categorical_b") // , "z")
+    val selectedColumns = Seq("x", "aa", "bb", "cc", "dd", "ee", "ee2", "ff", "multiply_a_b", "categorical_b", "xyz")
     val featureJoinConf =
       s"""
          |

@@ -18,10 +18,12 @@ import java.util.Optional;
 public class FeatureVariableResolver extends SimpleValueResolver {
   private FeatureValue _featureValue;
   private Optional<FeathrExpressionExecutionContext> _mvelContext = Optional.empty();
-  public FeatureVariableResolver(FeatureValue featureValue, Optional<FeathrExpressionExecutionContext> mvelContext) {
+  private Optional<Boolean> _shouldConvert;
+  public FeatureVariableResolver(FeatureValue featureValue, Optional<FeathrExpressionExecutionContext> mvelContext, Optional<Boolean> shouldConvert) {
     super(featureValue);
     _featureValue = featureValue;
     _mvelContext = mvelContext;
+    _shouldConvert = shouldConvert;
   }
 
   @Override
@@ -47,7 +49,7 @@ public class FeatureVariableResolver extends SimpleValueResolver {
        throw new IllegalArgumentException("Unexpected feature type: " + _featureValue.getFeatureType().getBasicType());
     }
     // If there is any registered FeatureValue handler that can handle this feature value, return the converted value per request.
-    if (_mvelContext.isPresent() && _mvelContext.get().canConvertFromAny(fv)) {
+    if (_mvelContext.isPresent() && _mvelContext.get().canConvertFromAny(fv) && _shouldConvert.isPresent() && _shouldConvert.get()) {
       return _mvelContext.get().convertFromAny(fv).head();
     } else {
       return fv;

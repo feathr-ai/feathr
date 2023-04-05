@@ -11,5 +11,6 @@ public enum FeatureTypes {
   TERM_VECTOR,
   CATEGORICAL_SET,
   UNSPECIFIED,
-  TENSOR
+  TENSOR,
+  VECTOR
 }
