@@ -888,7 +888,6 @@ private[offline] object FeatureTransformation {
     val features = transformers map {
       case extractor: AnchorExtractor[IndexedRecord] =>
         val features = extractor.getFeatures(record)
-        print(features)
         FeatureValueTypeValidator.validate(features, featureTypeConfigs)
         features
       case extractor =>
@@ -1423,7 +1422,6 @@ private[offline] object FeatureTransformation {
     val features = transformers map {
       case extractor: AnchorExtractor[Any] =>
         val features = extractor.getFeatures(row)
-        print(features)
         FeatureValueTypeValidator.validate(features, featureTypeConfigs)
         features
       case extractor =>
