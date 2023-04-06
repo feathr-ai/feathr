@@ -74,20 +74,25 @@ private[offline] class SQLConfigurableAnchorExtractor(
     import org.apache.spark.sql.functions._
     columnNameToFeatureDefs.collect {
       case (featureName, featureDef) if (expectedColSchemas.keySet.contains(featureName)) =>
-        val schema = expectedColSchemas(featureName)
-        val (rewrittenDef, featureColumnFormat) = if (featureDef.contains(userFacingAvroTensorToFDSTensorUDFName)) {
-          // If the feature definition contains avroTensorToFDSTensor UDF then the feature column is already in tensor format.
-          // So we set the column format for this feature as FDS_TENSOR.
-          (handleAvroTensorFDSConversionUDF(schema, featureDef), FDS_TENSOR)
-        } else if (featureDef.contains(FeatureTransformation.USER_FACING_MULTI_DIM_FDS_TENSOR_UDF_NAME)) {
-          // If the feature definition contains USER_FACING_MULTI_DIM_FDS_TENSOR_UDF_NAME then the feature column is already in tensor format.
-          // So we strip the udf name and return only the feature name.
-          (FeatureTransformation.parseMultiDimTensorExpr(featureDef), FDS_TENSOR)
-        } else {
-          // Else, the spark sql transformation is expected to work on RAW format.
-          (featureDef, RAW)
+        try {
+          val schema = expectedColSchemas(featureName)
+          val (rewrittenDef, featureColumnFormat) = if (featureDef.contains(userFacingAvroTensorToFDSTensorUDFName)) {
+            // If the feature definition contains avroTensorToFDSTensor UDF then the feature column is already in tensor format.
+            // So we set the column format for this feature as FDS_TENSOR.
+            (handleAvroTensorFDSConversionUDF(schema, featureDef), FDS_TENSOR)
+          } else if (featureDef.contains(FeatureTransformation.USER_FACING_MULTI_DIM_FDS_TENSOR_UDF_NAME)) {
+            // If the feature definition contains USER_FACING_MULTI_DIM_FDS_TENSOR_UDF_NAME then the feature column is already in tensor format.
+            // So we strip the udf name and return only the feature name.
+            (FeatureTransformation.parseMultiDimTensorExpr(featureDef), FDS_TENSOR)
+          } else {
+            // Else, the spark sql transformation is expected to work on RAW format.
+            (featureDef, RAW)
+          }
+          ((featureName, expr(rewrittenDef)), featureColumnFormat)
+        } catch {
+          case e: Exception =>
+            throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Cannot get the tensor features for ${featureName} feature.", e)
         }
-        ((featureName, expr(rewrittenDef)), featureColumnFormat)
     }
   }
 
