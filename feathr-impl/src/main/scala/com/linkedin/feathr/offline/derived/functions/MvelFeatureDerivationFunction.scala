@@ -42,7 +42,7 @@ private[offline] class MvelFeatureDerivationFunction(
 
   override def getFeatures(inputs: Seq[Option[common.FeatureValue]]): Seq[Option[common.FeatureValue]] = {
     val argMap = (parameterNames zip inputs).toMap
-    val variableResolverFactory = new FeatureVariableResolverFactory(argMap, mvelContext)
+    val variableResolverFactory = new FeatureVariableResolverFactory(argMap)
 
     MvelUtils.executeExpression(compiledExpression, null, variableResolverFactory, featureName, mvelContext) match {
       case Some(value) =>

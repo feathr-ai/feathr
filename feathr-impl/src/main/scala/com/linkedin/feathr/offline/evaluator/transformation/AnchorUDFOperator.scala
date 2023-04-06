@@ -53,7 +53,6 @@ object AnchorUDFOperator extends TransformationOperator {
     val (withFeaturesDf, outputJoinKeyColumnNames) = newExtractor match {
       case sparkExtractor: SimpleAnchorExtractorSpark =>
         // Note that for Spark UDFs we only support SQL keys.
-        print("in simpleanchorextractorspark = " + newExtractor)
         val sqlKeyExtractor = new SQLSourceKeyExtractor(keySeq)
         val withKeyColumnDF = if (appendKeyColumns) sqlKeyExtractor.appendKeyColumns(inputDf) else inputDf
         val outputJoinKeyColumnNames = getFeatureKeyColumnNames(sqlKeyExtractor, withKeyColumnDF)
@@ -61,7 +60,6 @@ object AnchorUDFOperator extends TransformationOperator {
         val tensorizedFeatureColumns = sparkExtractor.getFeatures(inputDf, Map())
         val transformedColsAndFormats: Map[(String, Column), FeatureColumnFormat] = extractor match {
           case extractor2: SQLConfigurableAnchorExtractor =>
-            print("in SQLConfigurableAnchorExtractor = " + newExtractor)
             // If instance of SQLConfigurableAnchorExtractor, get Tensor features
             // Get DataFrame schema for tensor based on FML or inferred tensor type.
             val featureSchemas = featureNamesInBatch.map(featureName => {

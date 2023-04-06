@@ -80,28 +80,6 @@ class FeathrExpressionExecutionContext extends Serializable {
   }
 
   /**
-   * Check if there is registered converters that can handle the conversion.
-   * @param inputValue input value to check
-   * @return whether it can be converted or not
-   */
-  def canConvertFromAny(inputValue: AnyRef): Boolean = {
-    val result = converters.value.filter(converter => converter._2.canConvertFrom(inputValue.getClass))
-    result.nonEmpty
-  }
-
-  /**
-   * Convert the input Check if there is registered converters that can handle the conversion.
-   * @param inputValue input value to convert
-   * @return return all converted values produced by registered converters
-   */
-  def convertFromAny(inputValue: AnyRef): List[AnyRef] = {
-    converters.value.collect {
-      case converter if converter._2.canConvertFrom(inputValue.getClass) =>
-        converter._2.convertFrom(inputValue)
-    }.toList
-  }
-
-  /**
    * Convert the input to output type using the registered converters
    * @param in value to be converted
    * @param toType output type

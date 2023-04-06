@@ -44,7 +44,7 @@ private[offline] class SimpleMvelDerivationFunction(expression: String, featureN
     MvelContext.ensureInitialized()
 
     // In order to prevent MVEL from barfing if a feature is null, we use a custom variable resolver that understands `Option`
-    val variableResolverFactory = new FeatureVariableResolverFactory(args, mvelContext)
+    val variableResolverFactory = new FeatureVariableResolverFactory(args)
 
     if (TestFwkUtils.IS_DEBUGGER_ENABLED) {
       while(TestFwkUtils.DERIVED_FEATURE_COUNTER > 0) {
