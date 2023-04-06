@@ -11,6 +11,7 @@ class FeatureQuery(HoconConvertible):
     Attributes:
         feature_list: a list of feature names
         key: key of `feature_list`, all features must share the same key
+        override_time_delay [Optional]: to simulate time delay of features
         """
     def __init__(self, feature_list: List[str], key: Optional[Union[TypedKey, List[TypedKey]]] = None, override_time_delay: Optional[str] = None) -> None:
         self.key = key
