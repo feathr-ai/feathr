@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_and_push_image_to_registry:
+  build_and_push_feathr_registry_image:
     name: Push Feathr registry image to Docker Hub
     runs-on: ubuntu-latest
     steps:
