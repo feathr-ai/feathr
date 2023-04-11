@@ -81,4 +81,15 @@ class TestDataSourceAccessor extends TestFeathr {
     assertTrue(accessor.isInstanceOf[NonTimeBasedDataSourceAccessor])
     assertEquals(accessor.get().count(), 10L)
   }
+
+  @Test(description = "test loading dataframe with BatchDataLoader having #LATEST in its path, also ensures that empty folders are not picked out.")
+  def testBatchDataLoaderWithLatestPathAndEmptyFolders(): Unit = {
+    // avroLatest folder has an empty folder with 10/01.
+    val path = "src/test/resources/avroLatest/#LATEST/#LATEST/#LATEST"
+    val source = DataSource(path, SourceFormatType.FIXED_PATH)
+    val accessor = DataSourceAccessor(ss = ss, source = source, dateIntervalOpt = sourceInterval,
+      expectDatumType = None, failOnMissingPartition = false, dataPathHandlers = List())
+    assertTrue(accessor.isInstanceOf[NonTimeBasedDataSourceAccessor])
+    assertEquals(accessor.get().count(), 10L)
+  }
 }
