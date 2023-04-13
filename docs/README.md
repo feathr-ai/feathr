@@ -155,7 +155,7 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
                            features=agg_features)
 ```
 
-### Define features on top of other features - Derived Features
+### Define Features on Top of Other Features - Derived Features
 
 ```python
 # Compute a new feature(a.k.a. derived feature) on top of an existing feature
