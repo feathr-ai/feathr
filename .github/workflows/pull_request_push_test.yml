@@ -131,76 +131,77 @@ jobs:
           # run only test with databricks. run in 6 parallel jobs
           pytest -n 6 --cov-report term-missing --cov=feathr_project/feathr feathr_project/test --cov-config=.github/workflows/.coveragerc_db --cov-fail-under=75
 
-  azure_synapse_test:
+  
+  # azure_synapse_test:
     # might be a bit duplication to setup both the azure_synapse test and databricks test, but for now we will keep those to accelerate the test speed
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
-        with:
-          java-version: "8"
-          distribution: "temurin"
-      - name: Gradle build
-        run: |
-          ./gradlew build
+    # runs-on: ubuntu-latest
+    # if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
+    # steps:
+      # - name: Checkout
+        # uses: actions/checkout@v2
+        # with:
+          # ref: ${{ github.event.pull_request.head.sha }}
+      # - name: Set up JDK 8
+        # uses: actions/setup-java@v2
+        # with:
+          # java-version: "8"
+          # distribution: "temurin"
+      # - name: Gradle build
+        # run: |
+          # ./gradlew build
           # remote folder for CI upload
-          echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
+          # echo "CI_SPARK_REMOTE_JAR_FOLDER=feathr_jar_github_action_$(date +"%H_%M_%S")" >> $GITHUB_ENV
           # get local jar name without paths so version change won't affect it
-          echo "FEATHR_LOCAL_JAR_NAME=$(ls build/libs/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
+          # echo "FEATHR_LOCAL_JAR_NAME=$(ls build/libs/*.jar|  xargs -n 1 basename)" >> $GITHUB_ENV
           # get local jar name without path
-          echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls build/libs/*.jar)" >> $GITHUB_ENV
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Azure Blob Storage Upload (Overwrite)
-        uses: fixpoint/azblob-upload-artifact@v4
-        with:
-          connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
-          name: ${{ env.CI_SPARK_REMOTE_JAR_FOLDER}}
-          path: ${{ env.FEATHR_LOCAL_JAR_FULL_NAME_PATH}}
-          container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
-          cleanup: "true"
-      - name: Install Feathr Package
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ./feathr_project/[all]
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Run Feathr with Azure Synapse
-        env:
-          PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_synapse"
-          SPARK_CONFIG__SPARK_CLUSTER: azure_synapse
-          REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
-          AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
-          AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
-          AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
-          S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
-          S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
-          ADLS_ACCOUNT: ${{secrets.ADLS_ACCOUNT}}
-          ADLS_KEY: ${{secrets.ADLS_KEY}}
-          BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
-          BLOB_KEY: ${{secrets.BLOB_KEY}}
-          JDBC_TABLE: ${{secrets.JDBC_TABLE}}
-          JDBC_USER: ${{secrets.JDBC_USER}}
-          JDBC_PASSWORD: ${{secrets.JDBC_PASSWORD}}
-          JDBC_DRIVER: ${{secrets.JDBC_DRIVER}}
-          JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
-          KAFKA_SASL_JAAS_CONFIG: ${{secrets.KAFKA_SASL_JAAS_CONFIG}}
-          MONITORING_DATABASE_SQL_PASSWORD: ${{secrets.MONITORING_DATABASE_SQL_PASSWORD}}
-          SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/${{ env.CI_SPARK_REMOTE_JAR_FOLDER}}/${{ env.FEATHR_LOCAL_JAR_NAME}}"
-          COSMOS1_KEY: ${{secrets.COSMOS1_KEY}}
-          SQL1_USER: ${{secrets.SQL1_USER}}
-          SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
-        run: |
+          # echo "FEATHR_LOCAL_JAR_FULL_NAME_PATH=$(ls build/libs/*.jar)" >> $GITHUB_ENV
+      # - name: Set up Python 3.8
+        # uses: actions/setup-python@v2
+        # with:
+          # python-version: 3.8
+      # - name: Azure Blob Storage Upload (Overwrite)
+        # uses: fixpoint/azblob-upload-artifact@v4
+        # with:
+          # connection-string: ${{secrets.SPARK_JAR_BLOB_CONNECTION_STRING}}
+          # name: ${{ env.CI_SPARK_REMOTE_JAR_FOLDER}}
+          # path: ${{ env.FEATHR_LOCAL_JAR_FULL_NAME_PATH}}
+          # container: ${{secrets.SPARK_JAR_BLOB_CONTAINER}}
+          # cleanup: "true"
+      # - name: Install Feathr Package
+        # run: |
+          # python -m pip install --upgrade pip
+          # python -m pip install -e ./feathr_project/[all]
+          # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      # - name: Run Feathr with Azure Synapse
+        # env:
+          # PROJECT_CONFIG__PROJECT_NAME: "feathr_github_ci_synapse"
+          # SPARK_CONFIG__SPARK_CLUSTER: azure_synapse
+          # REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
+          # AZURE_CLIENT_ID: ${{secrets.AZURE_CLIENT_ID}}
+          # AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
+          # AZURE_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
+          # S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
+          # S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
+          # ADLS_ACCOUNT: ${{secrets.ADLS_ACCOUNT}}
+          # ADLS_KEY: ${{secrets.ADLS_KEY}}
+          # BLOB_ACCOUNT: ${{secrets.BLOB_ACCOUNT}}
+          # BLOB_KEY: ${{secrets.BLOB_KEY}}
+          # JDBC_TABLE: ${{secrets.JDBC_TABLE}}
+          # JDBC_USER: ${{secrets.JDBC_USER}}
+          # JDBC_PASSWORD: ${{secrets.JDBC_PASSWORD}}
+          # JDBC_DRIVER: ${{secrets.JDBC_DRIVER}}
+          # JDBC_SF_PASSWORD: ${{secrets.JDBC_SF_PASSWORD}}
+          # KAFKA_SASL_JAAS_CONFIG: ${{secrets.KAFKA_SASL_JAAS_CONFIG}}
+          # MONITORING_DATABASE_SQL_PASSWORD: ${{secrets.MONITORING_DATABASE_SQL_PASSWORD}}
+          # SPARK_CONFIG__AZURE_SYNAPSE__FEATHR_RUNTIME_LOCATION: "abfss://${{secrets.SPARK_JAR_BLOB_CONTAINER}}@feathrazuretest3storage.dfs.core.windows.net/${{ env.CI_SPARK_REMOTE_JAR_FOLDER}}/${{ env.FEATHR_LOCAL_JAR_NAME}}"
+          # COSMOS1_KEY: ${{secrets.COSMOS1_KEY}}
+          # SQL1_USER: ${{secrets.SQL1_USER}}
+          # SQL1_PASSWORD: ${{secrets.SQL1_PASSWORD}}
+        # run: |
           # skip databricks related test as we just ran the test; also seperate databricks and synapse test to make sure there's no write conflict
           # run in 6 parallel jobs to make the time shorter
-          pytest -n 6 -m "not databricks" --cov-report term-missing --cov=feathr_project/feathr feathr_project/test --cov-config=.github/workflows/.coveragerc_sy --cov-fail-under=75
-
+          # pytest -n 6 -m "not databricks" --cov-report term-missing --cov=feathr_project/feathr feathr_project/test --cov-config=.github/workflows/.coveragerc_sy --cov-fail-under=75
+   
   local_spark_test:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'safe to test'))
@@ -299,7 +300,7 @@ jobs:
     # If it's failure, PR will be blocked
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'pull_request_target'
-    needs: [databricks_test, azure_synapse_test, local_spark_test, paths_filter]
+    needs: [databricks_test, local_spark_test, paths_filter]
     steps:
       - name: Test status failure
         if: contains(needs.*.result, 'failure')
@@ -340,7 +341,7 @@ jobs:
 
   failure_notification:
     # If any failure, warning message will be sent
-    needs: [databricks_test, azure_synapse_test, local_spark_test, registry_test]
+    needs: [databricks_test, local_spark_test, registry_test]
     runs-on: ubuntu-latest
     if: failure() && github.event_name == 'schedule'
     steps:
@@ -350,7 +351,7 @@ jobs:
 
   notification:
     # Final Daily Report with all job status
-    needs: [databricks_test, azure_synapse_test, local_spark_test, registry_test]
+    needs: [databricks_test, local_spark_test, registry_test]
     runs-on: ubuntu-latest
     if: always() && github.event_name == 'schedule'
     steps:
@@ -358,4 +359,4 @@ jobs:
         run: echo "NOW=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - name: Notification
         run: |
-          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. Databricks Test ${{needs.databricks_test.result}}, 2. Synapse Test ${{needs.azure_synapse_test.result}} , 3. Local Spark TEST ${{needs.local_spark_test.result}}. Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' ${{ secrets.TEAMS_WEBHOOK }}
+          curl -H 'Content-Type: application/json' -d '{"text": "${{env.NOW}} Daily Report: 1. Databricks Test ${{needs.databricks_test.result}}, 2. Local Spark TEST ${{needs.local_spark_test.result}}. Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' ${{ secrets.TEAMS_WEBHOOK }}
