@@ -16,7 +16,7 @@ You may come across some errors while creating your feature definition config. T
 
 ## How to Use This Guide
 
-The guide is pretty comprehensive and covers quite diverse errors. To use this guide more efficiently, follow these steps:
+To use this guide more efficiently, follow these steps:
 
 - The error message may appear in either `feathr start` or `feathr test` terminal. Read outputs from both of them.
 - The error message sometimes maybe pretty verbose. Just focus on the line that follows `Caused by: `.
@@ -39,7 +39,7 @@ Caused by: com.linkedin.feathr.common.exception.FeathrConfigException: [FEATHR_U
 
 So actually it should be nycTaxiBatchSource.
 
-In other cases, some keyword may be misspelled, like key, aggregation, then you will got errors like this:
+In other cases, some keywords may be misspelled, like key, aggregation, then you will got error like this:
 
 ```
 : com.fasterxml.jackson.databind.JsonMappingException: Instantiation of [simple type, class com.linkedin.feathr.offline.anchored.anchorExtractor.SimpleConfigurableAnchorExtractor] value failed: null (through reference chain: com.linkedin.feathr.offline.config.FeathrConfig["anchors"]->com.fasterxml.jackson.module.scala.deser.MapBuilderWrapper["nonAggFeatures"])
@@ -51,7 +51,7 @@ Caused by: java.lang.NullPointerException
 	...
 ```
 
-Let's look at one other example. I come up with this feature definition:
+Let's look at another example. I come up with this feature definition:
 
 ```
   aggregationFeatures: {
@@ -206,7 +206,7 @@ derivations: {
 }
 ```
 
-### Checking Inputs
+### Check Inputs
 
 You can check your inputs by inspecting the debug message from `feathr start`.
 
