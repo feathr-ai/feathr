@@ -544,8 +544,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   /**
-   * SWA test with missing features. To enable this test, set the value of FeatureUtils.SKIP_MISSING_FEATURE to True. From
-   * Spark 3.1, SparkContext.updateConf() is not supported.
+   * SWA test with skip missing features.
    */
   @Test
   def testSWAWithMissingFeatureData(): Unit = {
@@ -632,6 +631,98 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
     assert(!res.columns.contains("simpleFeature"))
     setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
+  }
+
+  /**
+   * SWA test with safe mode
+   */
+  @Test
+  def testSWAWithSafeMode(): Unit = {
+    setFeathrJobParam(FeathrUtils.SAFE_MODE, "false")
+    val joinConfigAsString =
+      """
+        | settings: {
+        |  observationDataTimeSettings: {
+        |   absoluteTimeRange: {
+        |     timeFormat: yyyy-MM-dd
+        |     startTime: "2018-05-01"
+        |     endTime: "2018-05-03"
+        |   }
+        |  }
+        |  joinTimeSettings: {
+        |   timestampColumn: {
+        |     def: timestamp
+        |     format: yyyy-MM-dd
+        |   }
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [x],
+        |    featureList: ["simplePageViewCount", "simpleFeature", "derived_simpleFeature"]
+        |  }
+        |]
+      """.stripMargin
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |  missingSource: {
+        |    location: { path: "slidingWindowAgg/missingFeatureData/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      simplePageViewCount: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 10
+        |        type: NUMERIC
+        |      }
+        |    }
+        |  }
+        |  missingAnchor: {
+        |  source: "missingSource"
+        |  key: "x"
+        |  features: {
+        |   simpleFeature: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 20
+        |        type: NUMERIC
+        |     }
+        |    }
+        |  }
+        |}
+        |derivations: {
+        | derived_simpleFeature: simpleFeature
+        |}
+      """.stripMargin
+    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    res.show()
+    val df = res.collect()(0)
+    assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
+    assertEquals(df.getAs[Float]("simpleFeature"), 20f)
+    setFeathrJobParam(FeathrUtils.SAFE_MODE, "true")
   }
 
   /**

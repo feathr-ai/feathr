@@ -99,6 +99,8 @@ private[offline] class SlidingWindowAggregationJoiner(
     val timeWindowJoinSettings = joinConfigSettings.get.joinTimeSetting.get
     val simulatedDelay = timeWindowJoinSettings.simulateTimeDelay
     val shouldFilterNulls = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.FILTER_NULLS).toBoolean
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val isSafeMode = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SAFE_MODE).toBoolean
 
     if (simulatedDelay.isEmpty && !joinConfig.featuresToTimeDelayMap.isEmpty) {
       throw new FeathrConfigException(
@@ -137,6 +139,9 @@ private[offline] class SlidingWindowAggregationJoiner(
     // If the skip_missing_features flag is set, we will skip joining the features whose is not mature, and maintain this list.
     val notJoinedFeatures = new mutable.HashSet[String]()
 
+    // If the safe mode is turned off, we will add a null feature column and substitute it with the defaults if present.
+    val emptyFeatures = new mutable.HashSet[String]()
+
     // For each source, we calculate the maximum window duration that needs to be loaded across all
     // required SWA features defined on this source.
     // Then we load the source only once.
@@ -164,8 +169,11 @@ private[offline] class SlidingWindowAggregationJoiner(
               failOnMissingPartition)
 
         // If skip missing features flag is set and there is a data related error, an empty dataframe will be returned.
-        if (originalSourceDf.isEmpty) {
+        if (originalSourceDf.isEmpty && shouldSkipFeature) {
           res.map(notJoinedFeatures.add)
+          anchors.map(anchor => (anchor, originalSourceDf))
+        } else if (originalSourceDf.isEmpty && !isSafeMode) {
+          res.map(emptyFeatures.add)
           anchors.map(anchor => (anchor, originalSourceDf))
         } else {
         val sourceDF: DataFrame = preprocessedDf match {
@@ -264,7 +272,10 @@ private[offline] class SlidingWindowAggregationJoiner(
           contextDF.union(nullDfWithFeatureCols)
         } else contextDF
 
-        val defaults = windowAggAnchorDFThisStage.flatMap(s => s._1.featureAnchor.defaults)
+        val defaults = windowAggAnchorDFThisStage.flatMap(s => s._1.featureAnchor.defaults) ++ windowAggAnchorDFMap.filter(x => {
+          val features = x._1.selectedFeatures
+          emptyFeatures.contains(features.head)
+        }).flatMap(s => s._1.featureAnchor.defaults)
         val userSpecifiedTypesConfig = windowAggAnchorDFThisStage.flatMap(_._1.featureAnchor.featureTypeConfigs)
 
         // Create a map from the feature name to the column format, ie - RAW or FDS_TENSOR
@@ -272,6 +283,9 @@ private[offline] class SlidingWindowAggregationJoiner(
           nameToFeatureAnchor._2.featureAnchor.extractor
           .asInstanceOf[TimeWindowConfigurableAnchorExtractor].features(nameToFeatureAnchor._1).columnFormat)
 
+        contextDF = emptyFeatures.foldLeft(contextDF) { (contextDF, featureName) =>
+          contextDF.withColumn(featureName, lit(null))
+        }
         val FeatureDataFrame(withFDSFeatureDF, inferredTypes) =
           SlidingWindowFeatureUtils.convertSWADFToFDS(contextDF, joinedFeatures.toSet, featureNameToColumnFormat, userSpecifiedTypesConfig)
         // apply default on FDS dataset
