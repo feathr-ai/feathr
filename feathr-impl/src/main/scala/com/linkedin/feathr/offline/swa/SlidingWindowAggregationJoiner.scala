@@ -176,10 +176,10 @@ private[offline] class SlidingWindowAggregationJoiner(
           anchors.map(anchor => (anchor, originalSourceDf))
         } else if (originalSourceDf.isEmpty && shouldAddDefaultColForMissingData) { // If add default col for missing data flag features
           // flag is set and there is a data related error, an empty dataframe will be returned.
+          res.map(emptyFeatures.add)
           val exceptionMsg = s"Missing data for features ${emptyFeatures}. Default values will be populated for this column."
           log.warn(exceptionMsg)
           SwallowedExceptionHandlerUtils.swallowedExceptionMsgs += exceptionMsg
-          res.map(emptyFeatures.add)
           anchors.map(anchor => (anchor, originalSourceDf))
         } else {
         val sourceDF: DataFrame = preprocessedDf match {
