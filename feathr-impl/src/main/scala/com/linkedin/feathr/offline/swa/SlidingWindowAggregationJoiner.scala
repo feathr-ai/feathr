@@ -15,7 +15,7 @@ import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
-import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils}
+import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils, SwallowedExceptionHandlerUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
@@ -100,7 +100,8 @@ private[offline] class SlidingWindowAggregationJoiner(
     val simulatedDelay = timeWindowJoinSettings.simulateTimeDelay
     val shouldFilterNulls = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.FILTER_NULLS).toBoolean
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
-    val isSafeMode = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SAFE_MODE).toBoolean
+    val shouldAddDefaultColForMissingData = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf,
+      FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
 
     if (simulatedDelay.isEmpty && !joinConfig.featuresToTimeDelayMap.isEmpty) {
       throw new FeathrConfigException(
@@ -139,7 +140,8 @@ private[offline] class SlidingWindowAggregationJoiner(
     // If the skip_missing_features flag is set, we will skip joining the features whose is not mature, and maintain this list.
     val notJoinedFeatures = new mutable.HashSet[String]()
 
-    // If the safe mode is turned off, we will add a null feature column and substitute it with the defaults if present.
+    // If the add default col for missing data flag is turned off,
+    // we will add a null feature column and substitute it with the defaults if present.
     val emptyFeatures = new mutable.HashSet[String]()
 
     // For each source, we calculate the maximum window duration that needs to be loaded across all
@@ -172,7 +174,11 @@ private[offline] class SlidingWindowAggregationJoiner(
         if (originalSourceDf.isEmpty && shouldSkipFeature) {
           res.map(notJoinedFeatures.add)
           anchors.map(anchor => (anchor, originalSourceDf))
-        } else if (originalSourceDf.isEmpty && !isSafeMode) {
+        } else if (originalSourceDf.isEmpty && shouldAddDefaultColForMissingData) { // If add default col for missing data flag features
+          // flag is set and there is a data related error, an empty dataframe will be returned.
+          val exceptionMsg = s"Missing data for features ${emptyFeatures}. Default values will be populated for this column."
+          log.warn(exceptionMsg)
+          SwallowedExceptionHandlerUtils.swallowedExceptionMsgs += exceptionMsg
           res.map(emptyFeatures.add)
           anchors.map(anchor => (anchor, originalSourceDf))
         } else {
@@ -275,7 +281,7 @@ private[offline] class SlidingWindowAggregationJoiner(
         val defaults = windowAggAnchorDFThisStage.flatMap(s => s._1.featureAnchor.defaults) ++ windowAggAnchorDFMap.filter(x => {
           val features = x._1.selectedFeatures
           emptyFeatures.contains(features.head)
-        }).flatMap(s => s._1.featureAnchor.defaults)
+        }).flatMap(s => s._1.featureAnchor.defaults) // populate the defaults for features whose data was missing
         val userSpecifiedTypesConfig = windowAggAnchorDFThisStage.flatMap(_._1.featureAnchor.featureTypeConfigs)
 
         // Create a map from the feature name to the column format, ie - RAW or FDS_TENSOR

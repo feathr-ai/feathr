@@ -69,6 +69,15 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
   }
 
   /**
+   * APU which joins features and also returns any swallowed exception msgs.
+   */
+  @InternalApi
+  def joinFeaturesWithSwallowedExceptions(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset,
+    jobContext: JoinJobContext = JoinJobContext()): (SparkFeaturizedDataset, String) = {
+    (joinFeatures(joinConfig, obsData, jobContext), SwallowedExceptionHandlerUtils.swallowedExceptionMsgs)
+  }
+
+  /**
    * Generates features by extracting feature data from its source. It returns generated features, the DataFrame for feature data
    * and the feature related metadata. The API takes in [[FeatureGenSpec]] as the input, which is expected to contain all the
    * necessary information for generating features.

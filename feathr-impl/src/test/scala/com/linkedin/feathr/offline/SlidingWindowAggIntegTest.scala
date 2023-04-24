@@ -634,11 +634,11 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   /**
-   * SWA test with safe mode
+   * SWA test with add default col for missing data flag turned on.
    */
   @Test
-  def testSWAWithSafeMode(): Unit = {
-    setFeathrJobParam(FeathrUtils.SAFE_MODE, "false")
+  def testSWAWithMissingFeatureDataFlag(): Unit = {
+    setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
     val joinConfigAsString =
       """
         | settings: {
@@ -721,8 +721,8 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     res.show()
     val df = res.collect()(0)
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
-    assertEquals(df.getAs[Float]("simpleFeature"), 20f)
-    setFeathrJobParam(FeathrUtils.SAFE_MODE, "true")
+    assertEquals(df.getAs[Float]("simpleFeature"),  Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(20.0f))))
+    setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
   /**
