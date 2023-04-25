@@ -154,7 +154,7 @@ object SlidingWindowJoin {
       val pathBaseSuffix = "features_" + featureNames.mkString("_")
       val leftJoinColumns = Seq(JOIN_KEY_COL_NAME)
       val leftKeyDf = labelDFPartitioned.select(leftJoinColumns.head, leftJoinColumns.tail: _*)
-      FeathrUtils.dumpDebugInfo(spark, leftKeyDf, featureNames, "observation data", pathBaseSuffix + "for SWA before join" )
+      FeathrUtils.dumpDebugInfo(spark, leftKeyDf, featureNames, "observation data", pathBaseSuffix + "for_SWA_before_join" )
       FeathrUtils.dumpDebugInfo(spark, factTransformedDf, featureNames, "SWA feature data", pathBaseSuffix + "_swa_feature")
     }
   }
