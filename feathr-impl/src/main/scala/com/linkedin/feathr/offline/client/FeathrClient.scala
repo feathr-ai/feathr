@@ -69,6 +69,22 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
   }
 
   /**
+   * API which joins features and also returns any suppressed exception msgs.
+   *
+   * @param joinConfig feathr offline's [[FeatureJoinConfig]]
+   * @param obsData    Observation data taken in as a [[SparkFeaturizedDataset]].
+   * @param jobContext [[JoinJobContext]]
+   * @return Joined observation and feature data as a SparkFeaturizedDataset and a map of suppressed exceptions along with
+   *         type of exception.
+   */
+  @InternalApi
+  def joinFeaturesWithSuppressedExceptions(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset,
+    jobContext: JoinJobContext = JoinJobContext()): (SparkFeaturizedDataset, Map[String, String]) = {
+    (joinFeatures(joinConfig, obsData, jobContext), Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
+      -> SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs))
+  }
+
+  /**
    * Generates features by extracting feature data from its source. It returns generated features, the DataFrame for feature data
    * and the feature related metadata. The API takes in [[FeatureGenSpec]] as the input, which is expected to contain all the
    * necessary information for generating features.

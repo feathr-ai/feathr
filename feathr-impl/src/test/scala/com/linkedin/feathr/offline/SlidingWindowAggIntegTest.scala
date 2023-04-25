@@ -1,7 +1,12 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.offline.AssertFeatureUtils.{rowApproxEquals, validateRows}
-import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.client.FeathrClient
+import com.linkedin.feathr.offline.config.FeatureJoinConfig
+import com.linkedin.feathr.offline.job.FeatureJoinJob
+import com.linkedin.feathr.offline.job.LocalFeatureJoinJob.loadObservationAsFDS
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
+import com.linkedin.feathr.offline.util.{FeathrUtils, SuppressedExceptionHandlerUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.{FILTER_NULLS, SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
@@ -544,8 +549,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   /**
-   * SWA test with missing features. To enable this test, set the value of FeatureUtils.SKIP_MISSING_FEATURE to True. From
-   * Spark 3.1, SparkContext.updateConf() is not supported.
+   * SWA test with skip missing features.
    */
   @Test
   def testSWAWithMissingFeatureData(): Unit = {
@@ -632,6 +636,113 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
     assert(!res.columns.contains("simpleFeature"))
     setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
+  }
+
+  /**
+   * SWA test with add default col for missing data flag turned on.
+   */
+  @Test
+  def testSWAWithMissingFeatureDataFlag(): Unit = {
+    setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
+    val joinConfigAsString =
+      """
+        | settings: {
+        |  observationDataTimeSettings: {
+        |   absoluteTimeRange: {
+        |     timeFormat: yyyy-MM-dd
+        |     startTime: "2018-05-01"
+        |     endTime: "2018-05-03"
+        |   }
+        |  }
+        |  joinTimeSettings: {
+        |   timestampColumn: {
+        |     def: timestamp
+        |     format: yyyy-MM-dd
+        |   }
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [x],
+        |    featureList: ["simplePageViewCount", "simpleFeature", "derived_simpleFeature"]
+        |  }
+        |]
+      """.stripMargin
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |  missingSource: {
+        |    location: { path: "slidingWindowAgg/missingFeatureData/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      simplePageViewCount: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 10
+        |        type: NUMERIC
+        |      }
+        |    }
+        |  }
+        |  missingAnchor: {
+        |  source: "missingSource"
+        |  key: "x"
+        |  features: {
+        |   simpleFeature: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 20
+        |        type: NUMERIC
+        |     }
+        |    }
+        |  }
+        |}
+        |derivations: {
+        | derived_simpleFeature: simpleFeature
+        |}
+      """.stripMargin
+    val joinConfig = FeatureJoinConfig.parseJoinConfig(joinConfigAsString)
+    val feathrClient = FeathrClient.builder(ss).addFeatureDef(featureDefAsString).build()
+    val outputPath: String = FeatureJoinJob.SKIP_OUTPUT
+
+    val defaultParams = Array(
+      "--local-mode",
+      "--feathr-config",
+      "",
+      "--output",
+      outputPath)
+
+    val jobContext = FeatureJoinJob.parseInputArgument(defaultParams).jobJoinContext
+    val observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json"
+    val obsDf = loadObservationAsFDS(ss, observationDataPath, List())
+    val res = feathrClient.joinFeaturesWithSuppressedExceptions(joinConfig, obsDf, jobContext)
+    val df = res._1.data.collect()(0)
+    res._1.data.show()
+    assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
+    assertEquals(df.getAs[Float]("simpleFeature"),  Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(20.0f))))
+    assert(res._2(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION) == "simpleFeature")
+    setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
   /**

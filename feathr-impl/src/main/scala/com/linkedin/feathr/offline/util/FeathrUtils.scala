@@ -34,6 +34,7 @@ private[feathr] object FeathrUtils {
   val SEQ_JOIN_ARRAY_EXPLODE_ENABLED = "seq.join.array.explode.enabled"
   val ENABLE_SALTED_JOIN = "enable.salted.join"
   val SKIP_MISSING_FEATURE = "skip.missing.feature"
+  val ADD_DEFAULT_COL_FOR_MISSING_DATA = "add.default.col.for.missing.data"
   val SALTED_JOIN_FREQ_ITEM_THRESHOLD = "salted.join.freq.item.threshold"
   val SALTED_JOIN_FREQ_ITEM_ESTIMATOR = "salted.join.freq.item.estimator"
   val SALTED_JOIN_PERSIST = "salted.join.persist"
@@ -69,6 +70,7 @@ private[feathr] object FeathrUtils {
     SEQ_JOIN_ARRAY_EXPLODE_ENABLED  -> (SQLConf.buildConf(getFullConfigKeyName(SEQ_JOIN_ARRAY_EXPLODE_ENABLED )).stringConf.createOptional, "true"),
     ENABLE_SALTED_JOIN  -> (SQLConf.buildConf(getFullConfigKeyName(ENABLE_SALTED_JOIN )).stringConf.createOptional, "false"),
     SKIP_MISSING_FEATURE  -> (SQLConf.buildConf(getFullConfigKeyName(SKIP_MISSING_FEATURE )).stringConf.createOptional, "false"),
+    ADD_DEFAULT_COL_FOR_MISSING_DATA  -> (SQLConf.buildConf(getFullConfigKeyName(ADD_DEFAULT_COL_FOR_MISSING_DATA )).stringConf.createOptional, "false"),
     MAX_DATA_LOAD_RETRY -> (SQLConf.buildConf(getFullConfigKeyName(MAX_DATA_LOAD_RETRY)).stringConf.createOptional, "0"),
     DATA_LOAD_WAIT_IN_MS -> (SQLConf.buildConf(getFullConfigKeyName(DATA_LOAD_WAIT_IN_MS)).stringConf.createOptional, "1"),
     // If one key appears more than 0.02% in the dataset, we will salt this join key and split them into multiple partitions

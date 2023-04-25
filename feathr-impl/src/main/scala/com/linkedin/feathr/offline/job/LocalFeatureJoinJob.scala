@@ -52,7 +52,7 @@ object LocalFeatureJoinJob {
       outputPath)
 
     val jobContext = FeatureJoinJob.parseInputArgument(defaultParams ++ extraParams).jobJoinContext
-    SparkFeaturizedDataset(feathrClient.joinFeatures(joinConfig, observationData, jobContext).data, FeaturizedDatasetMetadata())
+    SparkFeaturizedDataset(feathrClient.joinFeaturesWithSuppressedExceptions(joinConfig, observationData, jobContext)._1.data, FeaturizedDatasetMetadata())
   }
 
   /**
