@@ -69,12 +69,19 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
   }
 
   /**
-   * APU which joins features and also returns any swallowed exception msgs.
+   * API which joins features and also returns any suppressed exception msgs.
+   *
+   * @param joinConfig feathr offline's [[FeatureJoinConfig]]
+   * @param obsData    Observation data taken in as a [[SparkFeaturizedDataset]].
+   * @param jobContext [[JoinJobContext]]
+   * @return Joined observation and feature data as a SparkFeaturizedDataset and a map of suppressed exceptions along with
+   *         type of exception.
    */
   @InternalApi
-  def joinFeaturesWithSwallowedExceptions(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset,
-    jobContext: JoinJobContext = JoinJobContext()): (SparkFeaturizedDataset, String) = {
-    (joinFeatures(joinConfig, obsData, jobContext), SwallowedExceptionHandlerUtils.swallowedExceptionMsgs)
+  def joinFeaturesWithSuppressedExceptions(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset,
+    jobContext: JoinJobContext = JoinJobContext()): (SparkFeaturizedDataset, Map[String, String]) = {
+    (joinFeatures(joinConfig, obsData, jobContext), Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
+      -> SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs))
   }
 
   /**

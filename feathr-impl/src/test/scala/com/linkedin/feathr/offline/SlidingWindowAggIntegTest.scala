@@ -1,7 +1,12 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.offline.AssertFeatureUtils.{rowApproxEquals, validateRows}
-import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.client.FeathrClient
+import com.linkedin.feathr.offline.config.FeatureJoinConfig
+import com.linkedin.feathr.offline.job.FeatureJoinJob
+import com.linkedin.feathr.offline.job.LocalFeatureJoinJob.loadObservationAsFDS
+import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
+import com.linkedin.feathr.offline.util.{FeathrUtils, SuppressedExceptionHandlerUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.{FILTER_NULLS, SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
@@ -717,11 +722,26 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         | derived_simpleFeature: simpleFeature
         |}
       """.stripMargin
-    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
-    res.show()
-    val df = res.collect()(0)
+    val joinConfig = FeatureJoinConfig.parseJoinConfig(joinConfigAsString)
+    val feathrClient = FeathrClient.builder(ss).addFeatureDef(featureDefAsString).build()
+    val outputPath: String = FeatureJoinJob.SKIP_OUTPUT
+
+    val defaultParams = Array(
+      "--local-mode",
+      "--feathr-config",
+      "",
+      "--output",
+      outputPath)
+
+    val jobContext = FeatureJoinJob.parseInputArgument(defaultParams).jobJoinContext
+    val observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json"
+    val obsDf = loadObservationAsFDS(ss, observationDataPath, List())
+    val res = feathrClient.joinFeaturesWithSuppressedExceptions(joinConfig, obsDf, jobContext)
+    val df = res._1.data.collect()(0)
+    res._1.data.show()
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
     assertEquals(df.getAs[Float]("simpleFeature"),  Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(20.0f))))
+    assert(res._2(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION) == "simpleFeature")
     setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 

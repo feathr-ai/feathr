@@ -15,7 +15,7 @@ import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
-import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils, SwallowedExceptionHandlerUtils}
+import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils, SuppressedExceptionHandlerUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
@@ -140,7 +140,7 @@ private[offline] class SlidingWindowAggregationJoiner(
     // If the skip_missing_features flag is set, we will skip joining the features whose is not mature, and maintain this list.
     val notJoinedFeatures = new mutable.HashSet[String]()
 
-    // If the add default col for missing data flag is turned off,
+    // If the add_default_col_for_missing_data flag is turned off,
     // we will add a null feature column and substitute it with the defaults if present.
     val emptyFeatures = new mutable.HashSet[String]()
 
@@ -177,9 +177,9 @@ private[offline] class SlidingWindowAggregationJoiner(
         } else if (originalSourceDf.isEmpty && shouldAddDefaultColForMissingData) { // If add default col for missing data flag features
           // flag is set and there is a data related error, an empty dataframe will be returned.
           res.map(emptyFeatures.add)
-          val exceptionMsg = s"Missing data for features ${emptyFeatures}. Default values will be populated for this column."
-          log.warn(exceptionMsg)
-          SwallowedExceptionHandlerUtils.swallowedExceptionMsgs += exceptionMsg
+          val exceptionMsg = emptyFeatures.mkString
+          log.warn(s"Missing data for features ${emptyFeatures}. Default values will be populated for this column.")
+          SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs += exceptionMsg
           anchors.map(anchor => (anchor, originalSourceDf))
         } else {
         val sourceDF: DataFrame = preprocessedDf match {

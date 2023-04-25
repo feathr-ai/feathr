@@ -108,7 +108,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
               Thread.sleep(retryWaitTime)
               loadDataFrameWithRetry(dataIOParameters, jobConf, retry - 1)
             } else {
-              // Throwing exception to avoid dataLoaderHandler hook exception from being swallowed.
+              // Throwing exception to avoid dataLoaderHandler hook exception from being suppressed.
               throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} after ${initialNumOfRetries} retries" +
                 s" and retry time of ${retryWaitTime}ms.")
             }
