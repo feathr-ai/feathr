@@ -150,6 +150,7 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
       val df = fileLoaderFactory.create(path).loadDataFrame()
       (df, interval)
     })
+    log.info(s"Reading datasets for interval ${timeInterval} from paths: ${pathList.mkString(", ")}")
 
     if (dataframes.isEmpty) {
       val errMsg = s"Input data is empty for creating TimeSeriesSource. No available " +

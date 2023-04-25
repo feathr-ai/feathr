@@ -198,19 +198,20 @@ private[feathr] object FeathrUtils {
     if (isDebugMode(ss)) {
       val basePath = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.DEBUG_OUTPUT_PATH)
       val debugFeatureNames = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.DEBUG_FEATURE_NAMES)
-        .split(FeathrUtils.STRING_PARAMETER_DELIMITER).toSet
+        .split(FeathrUtils.STRING_PARAMETER_DELIMITER).filter(_.nonEmpty).toSet
       val outputNumParts = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.DEBUG_OUTPUT_PART_NUM)
-      val featureNames = "features_" + features.mkString("_") + "_"
-      if (debugFeatureNames.isEmpty || features.intersect(debugFeatureNames).nonEmpty) {
-        val savePath = SimplePath(basePath + "/" + featureNames + pathSuffix)
-        log.info(s"${tag}, Start dumping data ${featureNames} to ${savePath}")
+      val featureNames = "_for_features_" + features.mkString("_") + "_"
+      if (features.nonEmpty && (debugFeatureNames.isEmpty || features.intersect(debugFeatureNames).nonEmpty)) {
+        val savePath = SimplePath(basePath + "/" + tag.replaceAll("\\W", "_") +
+          featureNames.slice(0, 20) + pathSuffix)
+        log.info(s"${tag}, Start dumping data ${features.mkString(",")} to ${savePath}")
         if (!df.isEmpty) {
           SparkIOUtils.writeDataFrame(df, savePath, Map(FeathrUtils.DEBUG_OUTPUT_PART_NUM -> outputNumParts), List())
         }
-        log.info(s"{tag}. Finish dumping data ${featureNames} to ${savePath}")
+        log.info(s"{tag}. Finish dumping data ${features.mkString(",")} to ${savePath}")
       } else {
         log.info(s"{tag}. Skipping dumping data as feature names to debug are ${debugFeatureNames}, " +
-          s"and current dataframe has feature ${featureNames}")
+          s"and current dataframe has feature ${features.mkString(",")}")
       }
     }
   }

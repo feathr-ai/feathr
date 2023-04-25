@@ -6,6 +6,7 @@ import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import com.linkedin.feathr.offline.util.PartitionLimiter
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.io.File
@@ -27,6 +28,7 @@ private[offline] abstract class DataSourceAccessor(val source: DataSource) {
 
 private[offline] object DataSourceAccessor {
 
+  private val log = LogManager.getLogger(getClass)
   /**
    * create time series/composite source that contains multiple day/hour data
    *
@@ -49,7 +51,8 @@ private[offline] object DataSourceAccessor {
       addTimestampColumn: Boolean = false,
       isStreaming: Boolean = false,
       dataPathHandlers: List[DataPathHandler]): DataSourceAccessor = { //TODO: Add tests
-
+    val info = s"DataSourceAccessor handling ${source}, with interval ${dateIntervalOpt.getOrElse("None")}"
+    log.info(info)
     val dataAccessorHandlers: List[DataAccessorHandler] = dataPathHandlers.map(_.dataAccessorHandler)
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
 
