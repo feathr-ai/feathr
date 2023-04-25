@@ -128,6 +128,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
 
     val needCreateTimestampColumn = SlidingWindowFeatureUtils.needCreateTimestampColumnFromPartition(factDataSource)
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val shouldAddDefaultColForMissingData = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf,
+      FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
 
     try {
       val timeSeriesSource =
@@ -144,6 +146,8 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
     catch {// todo - Add this functionality to only specific exception types and not for all error types.
       case e: Exception => if (shouldSkipFeature) {
         logger.warn(s"shouldSkipFeature is " + shouldSkipFeature)
+        ss.emptyDataFrame
+      } else if (shouldAddDefaultColForMissingData) {
         ss.emptyDataFrame
       } else throw e
     }
