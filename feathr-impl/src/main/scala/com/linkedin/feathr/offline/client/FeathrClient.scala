@@ -84,23 +84,6 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
       -> SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs))
   }
 
-
-  /**
-   * API which joins features and also returns any suppressed exception msgs.
-   *
-   * @param joinConfig feathr offline's [[FeatureJoinConfig]]
-   * @param obsData    Observation data taken in as a [[SparkFeaturizedDataset]].
-   * @param jobContext [[JoinJobContext]]
-   * @return Joined observation and feature data as a SparkFeaturizedDataset and a map of suppressed exceptions along with
-   *         type of exception.
-   */
-  def doJoinObsAndFeaturesWithSuppressedExceptions(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset,
-    jobContext: JoinJobContext = JoinJobContext()): (DataFrame, Header, Map[String, String]) = {
-    val res = doJoinObsAndFeatures(joinConfig, jobContext, obsData.data)
-    (res._1, res._2, Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
-      -> SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs))
-  }
-
   /**
    * Generates features by extracting feature data from its source. It returns generated features, the DataFrame for feature data
    * and the feature related metadata. The API takes in [[FeatureGenSpec]] as the input, which is expected to contain all the
@@ -230,6 +213,23 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
       log.debug(s"header featureInfoMap: ${header.featureInfoMap}")
     }
     (joinedDF, header)
+  }
+
+  /**
+   * API which joins features and also returns any suppressed exception msgs.
+   *
+   * @param joinConfig feathr offline's [[FeatureJoinConfig]]
+   * @param obsData    Observation data taken in as a [[SparkFeaturizedDataset]].
+   * @param jobContext [[JoinJobContext]]
+   * @return Joined observation and feature data as a SparkFeaturizedDataset and a map of suppressed exceptions along with
+   *         type of exception.
+   */
+  private[offline] def doJoinObsAndFeaturesWithSuppressedExceptions(joinConfig: FeatureJoinConfig, jobContext: JoinJobContext,
+    obsData: DataFrame): (DataFrame, Header, Map[String, String]) = {
+
+    val (joinedDF, header) = doJoinObsAndFeatures(joinConfig, jobContext, obsData)
+    (joinedDF, header, Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
+      -> SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs))
   }
 
   /**
