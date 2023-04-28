@@ -94,10 +94,10 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
    * @return Joined observation and feature data as a SparkFeaturizedDataset and a map of suppressed exceptions along with
    *         type of exception.
    */
-  def doJoinObsAndFeaturesWithSuppressedExceptions(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset,
+  def doJoinObsAndFeaturesWithSuppressedExceptions(joinConfig: FeatureJoinConfig, obsData: DataFrame,
     jobContext: JoinJobContext = JoinJobContext()): (DataFrame, Header, Map[String, String]) = {
-    val res = doJoinObsAndFeatures(joinConfig, jobContext, obsData.data)
-    (res._1, res._2, Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
+    val (joinedDF, header) = doJoinObsAndFeatures(joinConfig, jobContext, obsData)
+    (joinedDF, header, Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
       -> SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs))
   }
 
