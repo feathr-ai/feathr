@@ -14,7 +14,7 @@ import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureCol
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
 import com.linkedin.feathr.swj.{FactData, GroupBySpec, LateralViewParams, SlidingWindowFeature, WindowSpec}
-import com.linkedin.feathr.swj.aggregate.{AggregationType, AvgAggregate, AvgPoolingAggregate, CountAggregate, CountDistinctAggregate, LatestAggregate, MaxAggregate, MaxPoolingAggregate, MinAggregate, MinPoolingAggregate, SumAggregate}
+import com.linkedin.feathr.swj.aggregate.{AggregationType, AvgAggregate, AvgPoolingAggregate, CountAggregate, CountDistinctAggregate, DummyAggregate, LatestAggregate, MaxAggregate, MaxPoolingAggregate, MinAggregate, MinPoolingAggregate, SumAggregate}
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.UserDefinedFunction
@@ -186,6 +186,7 @@ private[offline] object SlidingWindowFeatureUtils {
       case AggregationType.MAX_POOLING => new MaxPoolingAggregate(featureDef)
       case AggregationType.MIN_POOLING => new MinPoolingAggregate(featureDef)
       case AggregationType.AVG_POOLING => new AvgPoolingAggregate(featureDef)
+      case AggregationType.BUCKETED_COUNT_DISTINCT => new DummyAggregate(featureDef)
     }
     swj.SlidingWindowFeature(featureName, aggregationSpec, windowSpec, filter, groupBySpec, lateralViewParams)
   }

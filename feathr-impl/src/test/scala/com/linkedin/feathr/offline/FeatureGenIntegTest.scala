@@ -1488,18 +1488,18 @@ class FeatureGenIntegTest extends FeathrIntegTest {
         |    source: "swaSource"
         |    key: [x]
         |    features: {
-        |      f: {
-        |        def: count   // the column that contains the raw view count
+        |     f: {
+        |       def: count   // the column that contains the raw view count
         |        filter: "Id in (10, 11)"
         |        aggregation: SUM
         |        window: 3d
-        |      }
-        |      g: {
+        |        }
+        |        g: {
         |        def: count   // the column that contains the raw view count
         |        filter: "Id in (9)"
         |        aggregation: SUM
         |        window: 3d
-        |      }
+        |     }
         |    }
         |  }
         |}
@@ -1569,6 +1569,57 @@ class FeatureGenIntegTest extends FeathrIntegTest {
       .sortBy(row => row.getAs[Int](keyField))
 
     validateRows(actualRowsG, expectedRowsG)
+  }
+
+  @Test
+  def testBucketedCountDistinct(): Unit = {
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "generation/daily/" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |anchors: {
+        |  swaAnchorWithKeyExtractor: {
+        |    source: "swaSource"
+        |    key: [x]
+        |    features: {
+        |      g: {
+        |        def: count   // the column that contains the raw view count
+        |        aggregation: BUCKETED_COUNT_DISTINCT
+        |        window: "1d"
+        |      }
+        |    }
+        |  }
+        |}
+      """.stripMargin
+
+    val features = Seq("g")
+    val keyField = "key0"
+    val featureGenConfigStr =
+      s"""
+         |operational: {
+         |  name: generateWithDefaultParams
+         |  endTime: "2019-05-23"
+         |  endTimeFormat: "yyyy-MM-dd"
+         |  resolution: DAILY
+         |  output:[ ]
+         |}
+         |features: [${features.mkString(",")}]
+  """.stripMargin
+
+    val dfs = localFeatureGenerate(featureGenConfigStr, featureDefAsString)
+    dfs.foreach(x => {
+      x._2.data.show()
+    })
+    // Verify that requested features appear in the output
+    assertEquals(dfs.size, features.size)
   }
 
   /**
@@ -2115,6 +2166,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     assertEquals(featureList.size, 4)
     assertEquals(featureList(0).getAs[Float]("f3"), 1f, 1e-5)
   }
+
 
   /**
    * Naive validator method that validates the actual rows returned match the expectation.

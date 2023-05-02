@@ -5,12 +5,13 @@ import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.job.FeatureJoinJob
 import com.linkedin.feathr.offline.job.LocalFeatureJoinJob.loadObservationAsFDS
-import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
-import com.linkedin.feathr.offline.util.{FeathrUtils, SuppressedExceptionHandlerUtils}
+import com.linkedin.feathr.offline.transformation.MultiLevelAggregationTransform
 import com.linkedin.feathr.offline.util.FeathrUtils.{FILTER_NULLS, SKIP_MISSING_FEATURE, setFeathrJobParam}
-import org.apache.spark.sql.Row
+import com.linkedin.feathr.offline.util.{FeathrUtils, SuppressedExceptionHandlerUtils}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.testng.Assert._
 import org.testng.annotations._
 
@@ -19,7 +20,85 @@ import scala.collection.mutable
 /**
  * Integ tests for sliding window aggregation functionality
  */
+
+
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.{StringType, TimestampType}
+
+import scala.concurrent.duration._
 class SlidingWindowAggIntegTest extends FeathrIntegTest {
+
+  def getDf(): DataFrame = {
+    // Create a SparkSession
+    val spark = SparkSession.builder().appName("CreateDataFrame").getOrCreate()
+
+    // Define the schema
+    val schema = StructType(
+      Seq(
+        StructField("id", LongType, true),
+        StructField("time", TimestampType, true),
+        StructField("value", StringType, true)
+      )
+    )
+    // Create some sample data
+    val data = Seq(
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:00:00.123"), "a"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:01:00.123"), "b"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:02:00.123"), "b"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:03:00.123"), "c"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:05:00.123"), "d"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:06:00.123"), "e"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:06:30.123"), "a"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:10:00.123"), "f"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:10:05.123"), "b"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:10:06.123"), "c"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:12:00.123"), "g"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:13:00.123"), "h"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:30:00.123"), "i"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 01:00:00.123"), "j"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 01:15:00.123"), "k"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 03:00:00.123"), "l"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 05:15:00.123"), "m"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 05:20:00.123"), "n"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-02 01:00:00.123"), "o"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-02 22:15:00.123"), "p"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-05 03:00:00.123"), "q"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-06-01 01:15:00.123"), "r"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-06-01 05:15:00.123"), "s"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-09-01 05:15:00.123"), "t"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-10-01 05:15:00.123"), "u"),
+      Row(1L, java.sql.Timestamp.valueOf("2024-10-01 05:15:00.123"), "v"),
+      Row(1L, java.sql.Timestamp.valueOf("2024-10-02 05:15:00.123"), "w"),
+      Row(2L, java.sql.Timestamp.valueOf("2023-05-01 01:15:00.123"), "x"),
+    )
+    // Create a DataFrame from the data and schema
+    spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
+  }
+
+  def bucketedDistinctCount(df: DataFrame, window: String, featureDefAggField: String, aggFunction: String): Unit = {
+    val outputFeatureColumnName = "count_distinct_value_" + window
+    val keyColumnExprAndAlias = Seq(("id", "id"))
+    val timeColumnName = "time"
+    val timeStampFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+    val evaluator = new MultiLevelAggregationTransform(ss)
+    evaluator.applyAggregate(df, featureDefAggField, outputFeatureColumnName, window,
+      keyColumnExprAndAlias, timeColumnName, timeStampFormat, aggFunction)
+      .show(200, false)
+  }
+
+  @Test
+  def testSWABucketedDistinctCount: Unit = {
+    val df = getDf()
+    val aggFunction = "BUCKETED_COUNT_DISTINCT"
+    val featureDefAggField = "value"
+    bucketedDistinctCount(df, "5m", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1h", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1d", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1w", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1M", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1y", featureDefAggField, aggFunction)
+  }
 
   /**
    * test SWA with lateralview parameters
@@ -178,6 +257,109 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     assertEquals(row1f1f1, TestUtils.build1dSparseTensorFDSRow(Array("f1t1"), Array(12.0f)))
   }
 
+  /**
+   * test SWA with lateralview parameters
+   */
+  @Test
+  def testLocalAnchorBucketedSWATest: Unit = {
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString = """
+                             |features: [
+                             |   {
+                             |       key: [x],
+                             |       featureList: ["count_distinct_value_5m", count_distinct_value_1d]
+                             |   },
+                             |]
+    """.stripMargin,
+      featureDefAsString = """
+                             |sources: {
+                             |  ptSource: {
+                             |    type: "PASSTHROUGH"
+                             |    timeWindowParameters: {
+                             |      timestampColumn: "timestamp"
+                             |      timestampColumnFormat: "yyyy-MM-dd HH:mm:ss.SSS"
+                             |    }
+                             |  }
+                             |}
+                             |
+                             |anchors: {
+                             |  swaAnchor: {
+                             |    source: "ptSource"
+                             |    key: "concat(x, '1')"
+                             |    features: {
+                             |      count_distinct_value_5m: {
+                             |        def: y
+                             |        aggregation: BUCKETED_COUNT_DISTINCT
+                             |        window: "5m"
+                             |        type: NUMERIC
+                             |     }
+                             |      count_distinct_value_1d: {
+                             |        def: y
+                             |        type: NUMERIC
+                             |        aggregation: BUCKETED_COUNT_DISTINCT
+                             |        window: "1d"
+                             |      }
+                             |    }
+                             |  }
+                             |
+                             |}
+      """.stripMargin,
+      "slidingWindowAgg/localAnchorTestBucketedObsData.avro.json").data
+    val featureList = df.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("timestamp") else "null")
+    val row0 = featureList.last
+    val row0f1 = row0.getAs[Float]("count_distinct_value_1d")
+    val row0f2 = row0.getAs[Float]("count_distinct_value_5m")
+    assertTrue(Math.abs(row0f1 - 6.0f) <= 1e-6)
+    assertTrue(Math.abs(row0f2 - 1.0f) <= 1e-6)
+  }
+
+  /**
+   * test bucketed SWA with ms timestamp
+   */
+  @Test
+  def testLocalAnchorBucketedSWAInMsTest: Unit = {
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString = """
+                             |features: [
+                             |   {
+                             |       key: [x],
+                             |       featureList: ["count_distinct_value_5m"]
+                             |   },
+                             |]
+    """.stripMargin,
+      featureDefAsString = """
+                             |sources: {
+                             |  ptSource: {
+                             |    type: "PASSTHROUGH"
+                             |    timeWindowParameters: {
+                             |      timestampColumn: "utc_timestamp"
+                             |      timestampColumnFormat: "epoch_millis"
+                             |    }
+                             |  }
+                             |}
+                             |
+                             |anchors: {
+                             |  swaAnchor: {
+                             |    source: "ptSource"
+                             |    key: x
+                             |    features: {
+                             |      count_distinct_value_5m: {
+                             |        type: NUMERIC
+                             |        def: y
+                             |        aggregation: BUCKETED_COUNT_DISTINCT
+                             |        window: "5m"
+                             |      }
+                             |    }
+                             |  }
+                             |
+                             |}
+      """.stripMargin,
+      "slidingWindowAgg/localAnchorTestBucketedObsData.avro.json").data
+      val featureList = df.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("timestamp") else "null")
+      val row0 = featureList.last
+      val row0f1 = row0.getAs[Float]("count_distinct_value_5m")
+      assertTrue(Math.abs(row0f1 - 1.0f) <= 1e-6)
+  }
 
   /**
    * test SWA with lateralview parameters
