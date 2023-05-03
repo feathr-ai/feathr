@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.join.workflow
 
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrFeatureJoinException}
-import com.linkedin.feathr.common.{ErasedEntityTaggedFeature, FeatureTypeConfig}
+import com.linkedin.feathr.common.{ErasedEntityTaggedFeature, FeatureTypeConfig, FeatureTypes}
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.FeatureDataFrame
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
@@ -12,15 +12,16 @@ import com.linkedin.feathr.offline.job.KeyedTransformedResult
 import com.linkedin.feathr.offline.join._
 import com.linkedin.feathr.offline.join.algorithms._
 import com.linkedin.feathr.offline.join.util.FrequentItemEstimatorFactory
+import com.linkedin.feathr.offline.logical.{LogicalPlan, MultiStageJoinPlan}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
-import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils}
+import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils, FeaturizedDatasetUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.functions.{col, lit}
 
 /**
  * An abstract class provides default implementation of anchored feature join step
@@ -40,7 +41,61 @@ private[offline] class AnchoredFeatureJoinStep(
   @transient lazy val log = LogManager.getLogger(getClass.getName)
 
   /**
+   * When the add.default.col.for.missing.data flag is turned, some features could be skipped because of missing data.
+   * For such anchored features, we will add a feature column with a configured default value (if present in the feature anchor) or
+   * a null value column.
+   * @param sparkSession  spark session
+   * @param dataframe     the original observation dataframe
+   * @param logicalPlan   logical plan generated using the join config
+   * @param missingFeatures Map of missing feature names to the corresponding featureAnchorWithSource object.
+   * @return  Dataframe with the missing feature columns added
+   */
+  def substituteDefaultsForDataMissingFeatures(sparkSession: SparkSession, dataframe: DataFrame, logicalPlan: MultiStageJoinPlan,
+    missingFeatures: Map[String, FeatureAnchorWithSource]): DataFrame = {
+    // Create a map of feature name to corresponding defaults
+    val defaults = missingFeatures.flatMap(s => s._2.featureAnchor.defaults)
+
+    // Create a map of feature to their feature type if configured.
+    val featureTypes = missingFeatures
+      .map(x => Some(x._2.featureAnchor.featureTypeConfigs))
+      .foldLeft(Map.empty[String, FeatureTypeConfig])((a, b) => a ++ b.getOrElse(Map.empty[String, FeatureTypeConfig]))
+
+    // We try to guess the column data type from the configured feature type. If feature type is not present, we will default to
+    // default feathr behavior of returning a map column of string to float.
+    val updatedDf = missingFeatures.keys.foldLeft(dataframe) { (observationDF, featureName) =>
+      val featureColumnType = if (featureTypes.contains(featureName)) {
+        featureTypes(featureName).getFeatureType match {
+          case FeatureTypes.NUMERIC => "float"
+          case FeatureTypes.BOOLEAN => "boolean"
+          case FeatureTypes.DENSE_VECTOR => "array<float>"
+          case FeatureTypes.CATEGORICAL => "string"
+          case FeatureTypes.CATEGORICAL_SET => "array<string>"
+          case FeatureTypes.TERM_VECTOR => "map<string,float>"
+          case FeatureTypes.UNSPECIFIED => "map<string,float>"
+          case _ => "map<string,float>"
+        }
+      } else { // feature type is not configured
+        "map<string,float>"
+      }
+      observationDF.withColumn(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName), lit(null).cast(featureColumnType))
+    }
+
+    val dataframeWithDefaults = substituteDefaults(updatedDf, missingFeatures.keys.toSeq, defaults, featureTypes,
+      sparkSession, (s: String) => s"${FEATURE_NAME_PREFIX}$s")
+
+    // We want to duplicate this column with the correct feathr supported feature name which is required for further processing.
+    // For example, if feature name is abc and the corresponding key is x, the column name would be __feathr_feature_abc_x.
+    missingFeatures.keys.foldLeft(dataframeWithDefaults) { (dataframeWithDefaults, featureName) =>
+      val keyTags = logicalPlan.joinStages.filter(kv => kv._2.contains(featureName)).head._1
+      val keyStr = keyTags.map(logicalPlan.keyTagIntsToStrings).toList
+      dataframeWithDefaults.withColumn(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName, Some(keyStr)),
+        col(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName)))
+    }
+  }
+
+  /**
    * Join anchored features to the observation passed as part of the input context.
+   *
    * @param features  Non-window aggregation, basic anchored features.
    * @param input     input context for this step.
    * @param ctx       environment variable that contains join job execution context.
@@ -49,10 +104,20 @@ private[offline] class AnchoredFeatureJoinStep(
   override def joinFeatures(features: Seq[ErasedEntityTaggedFeature], input: AnchorJoinStepInput)(
       implicit ctx: JoinExecutionContext): FeatureDataFrameOutput = {
     val AnchorJoinStepInput(observationDF, anchorDFMap) = input
+    val shouldAddDefault = FeathrUtils.getFeathrJobParam(ctx.sparkSession.sparkContext.getConf,
+      FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+    val missingFeatures = features.map(x => x.getFeatureName).filter(x => {
+      val containsFeature :Seq[Boolean] = anchorDFMap.map(y => y._1.selectedFeatures.contains(x)).toSeq
+      containsFeature.contains(false)
+    })
+    val missingAnchoredFeatures = ctx.featureGroups.allAnchoredFeatures.filter(featureName => missingFeatures.contains(featureName._1))
+    val withMissingFeaturesSubstituted = if (shouldAddDefault) substituteDefaultsForDataMissingFeatures(ctx.sparkSession, observationDF, ctx.logicalPlan,
+      missingAnchoredFeatures) else observationDF
+
     val allAnchoredFeatures: Map[String, FeatureAnchorWithSource] = ctx.featureGroups.allAnchoredFeatures
     val joinStages = ctx.logicalPlan.joinStages
     val joinOutput = joinStages
-      .foldLeft(FeatureDataFrame(observationDF, Map.empty[String, FeatureTypeConfig]))((accFeatureDataFrame, joinStage) => {
+      .foldLeft(FeatureDataFrame(withMissingFeaturesSubstituted, Map.empty[String, FeatureTypeConfig]))((accFeatureDataFrame, joinStage) => {
         val (keyTags: Seq[Int], featureNames: Seq[String]) = joinStage
         val FeatureDataFrame(contextDF, inferredFeatureTypeMap) = accFeatureDataFrame
         // map feature name to its transformed dataframe and the join key of the dataframe
