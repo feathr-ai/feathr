@@ -23,6 +23,7 @@ import com.linkedin.feathr.offline.util.FeathrUtils
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
 import org.apache.logging.log4j.LogManager
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
 
@@ -196,6 +197,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         .map(featureGroups.allAnchoredFeatures),
       failOnMissingPartition)
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val shouldAddDefaultCol = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
     val updatedSourceAccessorMap = anchorSourceAccessorMap.filter(anchorEntry => anchorEntry._2.isDefined)
       .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
 
@@ -203,6 +205,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
     val (FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes), skippedFeatures) =
       joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime, swaHandler)
 
+    var updatedObs = observationDF
     // Update the feature groups based on the missing features. Certain SWA features can be skipped because of missing data issue, we need to skip
     // the corresponding derived, seq join features which could depend on this SWA feature.
     val (updatedFeatureGroups, updatedLogicalPlan) = if (shouldSkipFeature) {
@@ -211,7 +214,24 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
 
       val newLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(newFeatureGroups, newKeyTaggedFeatures)
       (newFeatureGroups, newLogicalPlan)
-    } else (featureGroups, logicalPlan)
+    } /*else if (shouldAddDefaultCol) {
+      val (newFeatureGroups, newKeyTaggedFeatures) = FeatureGroupsUpdater().removeMissingAnchoredFeatures(featureGroups,
+        updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, skippedFeatures, keyTaggedFeatures)
+      val missingAnchoredFeatures = featureGroups.allAnchoredFeatures.filterNot { case (k, _) =>
+        featureGroups.allAnchoredFeatures.contains(k)
+      }
+      val defaults = missingAnchoredFeatures.flatMap(s => s._2.featureAnchor.defaults)
+      val featureTypes = missingAnchoredFeatures
+        .map(x => Some(x._2.featureAnchor.featureTypeConfigs))
+        .foldLeft(Map.empty[String, FeatureTypeConfig])((a, b) => a ++ b.getOrElse(Map.empty[String, FeatureTypeConfig]))
+      val updatedObsDf = missingAnchoredFeatures.keys.foldLeft(observationDF) { (observationDF, featureName) =>
+        observationDF.withColumn(featureName, lit(null))
+      }
+      updatedObs =
+        substituteDefaults(updatedObsDf, missingAnchoredFeatures.keys.toSeq, defaults, featureTypes, ss)
+      val newLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(featureGroups, keyTaggedFeatures)
+      (newFeatureGroups, newLogicalPlan)
+    }*/ else (featureGroups, logicalPlan)
 
     implicit val joinExecutionContext: JoinExecutionContext =
       JoinExecutionContext(ss, updatedLogicalPlan, updatedFeatureGroups, bloomFilters, Some(saltedJoinFrequentItemDFs))

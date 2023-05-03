@@ -114,6 +114,33 @@ private[offline] class FeatureGroupsUpdater {
    * Update the feature groups (for Feature join) based on feature missing features. Few anchored/SWA features can be missing if the feature data
    * is not present. Remove those anchored features, and also the corresponding derived feature which are dependent on it.
    *
+   * @param featureGroups               Original feature groups
+   * @param allAnchoredFeaturesWithData all anchored features which were not skipped because of missing data
+   * @param skippedSwaFeatures          skipped SWA features due to missing data issue.
+   * @param keyTaggedFeatures           List of all key tagged features
+   * @return Updated feature groups and updated list of joining features
+   */
+  def removeMissingAnchoredFeatures(featureGroups: FeatureGroups, allAnchoredFeaturesWithData: Seq[String], skippedSwaFeatures: Seq[String],
+    keyTaggedFeatures: Seq[JoiningFeatureParams]): (FeatureGroups, Seq[JoiningFeatureParams]) = {
+    // Filter out all the window agg features that were skipped.
+    val updatedWindowAggFeatures = featureGroups.allWindowAggFeatures.filter(windowAggFeature => !skippedSwaFeatures.contains(windowAggFeature._1))
+    // We need to add the window agg features to it as they are also considered anchored features.
+    val updatedAnchoredFeatures = featureGroups.allAnchoredFeatures.filter(featureRow =>
+      allAnchoredFeaturesWithData.contains(featureRow._1)) ++ updatedWindowAggFeatures ++ featureGroups.allPassthroughFeatures
+
+    log.warn(s"Removed the following features:- ${featureGroups.allAnchoredFeatures.keySet.diff(updatedAnchoredFeatures.keySet)},")
+    val updatedFeatureGroups = FeatureGroups(updatedAnchoredFeatures, featureGroups.allDerivedFeatures, updatedWindowAggFeatures,
+      featureGroups.allPassthroughFeatures, featureGroups.allSeqJoinFeatures)
+    val updatedKeyTaggedFeatures = keyTaggedFeatures.filter(feature => updatedAnchoredFeatures.contains(feature.featureName)
+      || featureGroups.allDerivedFeatures.contains(feature.featureName) || updatedWindowAggFeatures.contains(feature.featureName)
+      || featureGroups.allPassthroughFeatures.contains(feature.featureName) || featureGroups.allSeqJoinFeatures.contains(feature.featureName))
+    (updatedFeatureGroups, updatedKeyTaggedFeatures)
+  }
+
+  /**
+   * Update the feature groups (for Feature join) based on feature missing features. Few anchored/SWA features can be missing if the feature data
+   * is not present. Remove those anchored features, and also the corresponding derived feature which are dependent on it.
+   *
    * @param featureGroups Original feature groups
    * @param allAnchoredFeaturesWithData all anchored features which were not skipped because of missing data
    * @param skippedSwaFeatures skipped SWA features due to missing data issue.
@@ -192,6 +219,25 @@ private[offline] class FeatureGroupsUpdater {
       s" ${featureGroups.allSeqJoinFeatures.keySet.diff(updatedSeqJoinFeatures.keySet)}")
     FeatureGroups(updatedAnchoredFeatures, updatedDerivedFeatures,
       featureGroups.allWindowAggFeatures, featureGroups.allPassthroughFeatures, updatedSeqJoinFeatures)
+  }
+
+  /**
+   * Exclude anchored missing anchored features from the feature groups. This API does not remove the features which are dependent
+   * on this feature.
+   *
+   * @param featureToPathsMap Map of anchored feature names to their paths
+   * @param featureGroups     All feature groups
+   * @param invalidPaths      List of all invalid paths
+   * @return
+   */
+  def excludeMissingAnchoredFeatures(featureToPathsMap: Map[String, String], featureGroups: FeatureGroups, invalidPaths: Seq[String]): FeatureGroups = {
+    val updatedAnchoredFeatures = featureGroups.allAnchoredFeatures.filter(featureNameToAnchoredObject => {
+      !invalidPaths.contains(featureToPathsMap(featureNameToAnchoredObject._1))
+    })
+
+    log.warn(s"Removed the following features:- ${featureGroups.allAnchoredFeatures.keySet.diff(updatedAnchoredFeatures.keySet)},")
+    FeatureGroups(updatedAnchoredFeatures, featureGroups.allDerivedFeatures,
+      featureGroups.allWindowAggFeatures, featureGroups.allPassthroughFeatures, featureGroups.allSeqJoinFeatures)
   }
 
 }

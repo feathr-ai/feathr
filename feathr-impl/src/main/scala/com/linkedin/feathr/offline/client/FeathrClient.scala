@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.client
 
 import com.linkedin.feathr.common.exception._
-import com.linkedin.feathr.common.{FeatureInfo, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
+import com.linkedin.feathr.common.{FeatureInfo, FeatureTypeConfig, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig}
 import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, FeatureGenKeyTagAnalyzer, StreamingFeatureGenerator}
@@ -12,8 +12,10 @@ import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.swa.SWAHandler
+import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.util._
 import org.apache.logging.log4j.LogManager
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -310,6 +312,8 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
 
     var logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val shouldAddDefault = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+    var leftRenamed = left
     val featureToPathsMap = (for {
       requiredFeature <- logicalPlan.allRequiredFeatures
       featureAnchorWithSource <- allAnchoredFeatures.get(requiredFeature.getFeatureName)
@@ -322,6 +326,21 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
           if (shouldSkipFeature) {
             val featureGroupsWithoutInvalidFeatures = FeatureGroupsUpdater()
               .getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap, updatedFeatureGroups, featurePathsTest._2)
+            logicalPlanner.getLogicalPlan(featureGroupsWithoutInvalidFeatures, keyTaggedFeatures)
+          } else if (shouldAddDefault) {
+            val featureGroupsWithoutInvalidFeatures = FeatureGroupsUpdater()
+              .excludeMissingAnchoredFeatures(featureToPathsMap, updatedFeatureGroups, featurePathsTest._2)
+            val missingAnchoredFeatures = updatedFeatureGroups.allAnchoredFeatures.filterNot { case (k, _) =>
+              featureGroupsWithoutInvalidFeatures.allAnchoredFeatures.contains(k) }
+            val defaults = missingAnchoredFeatures.flatMap(s => s._2.featureAnchor.defaults)
+            val featureTypes = missingAnchoredFeatures
+              .map(x => Some(x._2.featureAnchor.featureTypeConfigs))
+              .foldLeft(Map.empty[String, FeatureTypeConfig])((a, b) => a ++ b.getOrElse(Map.empty[String, FeatureTypeConfig]))
+            val updatedLeft = missingAnchoredFeatures.keys.foldLeft(left) { (left, featureName) =>
+              left.withColumn(featureName, lit(null))
+            }
+            leftRenamed =
+              substituteDefaults(updatedLeft, missingAnchoredFeatures.keys.toSeq, defaults, featureTypes, sparkSession)
             logicalPlanner.getLogicalPlan(featureGroupsWithoutInvalidFeatures, keyTaggedFeatures)
           } else {
             throw new FeathrInputDataException(
@@ -358,7 +377,6 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
       val renameFeatures = conflictsAutoCorrectionSetting.get.renameFeatureList
       val suffix = conflictsAutoCorrectionSetting.get.suffix
       log.warn(s"Found conflicted field names: ${conflictFeatureNames}. Will auto correct them by applying suffix: ${suffix}")
-      var leftRenamed = left
       conflictFeatureNames.foreach(name => {
         leftRenamed = leftRenamed.withColumnRenamed(name, name+'_'+suffix)
       })
@@ -369,7 +387,8 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
             s"Failed to apply auto correction to solve conflicts. Still got conflicts after applying provided suffix ${suffix} for fields: " +
               s"${conflictFeatureNames}. Please provide another suffix or solve conflicts manually.")
       }
-      val (df, header) = joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, leftRenamed, rowBloomFilterThreshold)
+      val (df, header) = joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, leftRenamed,
+        rowBloomFilterThreshold)
       if(renameFeatures) {
         log.warn(s"Suffix :${suffix} is applied into feature names: ${conflictFeatureNames} to avoid conflicts in outputs")
         renameFeatureNames(df, header, conflictFeatureNames, suffix)

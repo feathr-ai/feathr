@@ -7,11 +7,11 @@ import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
 import com.linkedin.feathr.offline.util.FeathrTestUtils
-import com.linkedin.feathr.offline.util.FeathrUtils.{SKIP_MISSING_FEATURE, setFeathrJobParam}
+import com.linkedin.feathr.offline.util.FeathrUtils.{ADD_DEFAULT_COL_FOR_MISSING_DATA, SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
-import org.testng.Assert.assertTrue
+import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.{BeforeClass, Test}
 
 import scala.collection.mutable
@@ -384,6 +384,146 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     assertTrue(!df.data.columns.contains("aEmbedding"))
     assertTrue(df.data.columns.contains("memberEmbeddingAutoTZ"))
     setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
+  }
+
+  /*
+   * Test skipping combination of anchored, derived and swa features. Also, test it with different default value types.
+   */
+  @Test
+  def testAddDefaultForMissingAnchoredFeatures: Unit = {
+    setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString =
+        """
+          |settings: {
+          |  joinTimeSettings: {
+          |    timestampColumn: {
+          |       def: "timestamp"
+          |       format: "yyyy-MM-dd"
+          |    }
+          |    simulateTimeDelay: 1d
+          |  }
+          |}
+          |
+          | features: {
+          |   key: a_id
+          |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "featureWithNull3", "featureWithNull4",
+          |    "featureWithNull5", "derived_featureWithNull2", "featureWithNull6",
+          |    "aEmbedding", "memberEmbeddingAutoTZ"]
+          | }
+      """.stripMargin,
+      featureDefAsString =
+        """
+          | sources: {
+          |  swaSource: {
+          |    location: { path: "generaion/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |  swaSource1: {
+          |    location: { path: "generation/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |}
+          |
+          | anchors: {
+          |  anchor1: {
+          |    source: "anchorAndDerivations/nullVaueSource.avro.json"
+          |    key: "toUpperCaseExt(mId)"
+          |    features: {
+          |      featureWithNull: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         type: NUMERIC
+          |         default: -1
+          |      }
+          |      featureWithNull3: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         type: CATEGORICAL
+          |         default: "null"
+          |      }
+          |      featureWithNull4: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         type: TERM_VECTOR
+          |         default: {}
+          |      }
+          |      featureWithNull6: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         type: DENSE_VECTOR
+          |         default: [1, 2, 3]
+          |      }
+          |      featureWithNull5: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         default: 1
+          |      }
+          |    }
+          |  }
+          |
+          |  anchor2: {
+          |    source: "anchorAndDerivations/nullValueSource.avro.json"
+          |    key: "toUpperCaseExt(mId)"
+          |    features: {
+          |      featureWithNull2: "isPresent(value) ? toNumeric(value) : 0"
+          |    }
+          |  }
+          |  swaAnchor: {
+          |    source: "swaSource"
+          |    key: "x"
+          |    features: {
+          |      aEmbedding: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |        default: 2
+          |      }
+          |    }
+          |  }
+          |  swaAnchor1: {
+          |    source: "swaSource1"
+          |    key: "x"
+          |    features: {
+          |      memberEmbeddingAutoTZ: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |        type: {
+          |          type: TENSOR
+          |          tensorCategory: SPARSE
+          |          dimensionType: [INT]
+          |          valType: FLOAT
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+          |derivations: {
+          |
+          | derived_featureWithNull: "featureWithNull * 2"
+          | derived_featureWithNull2: "featureWithNull2 * 2"
+          |}
+        """.stripMargin,
+      observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
+
+    df.data.show()
+    val featureList = df.data.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("a_id") else "null")
+    assertEquals(featureList(0).getAs[Row]("aEmbedding"),
+      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
+    assertEquals(featureList(0).getAs[Row]("featureWithNull3"), "null")
+    assertEquals(featureList(0).getAs[Row]("featureWithNull5"), mutable.Map("" -> 1.0f))
+    assertEquals(featureList(0).getAs[Row]("featureWithNull"),-1.0f)
+    assertEquals(featureList(0).getAs[Row]("featureWithNull4"),Map())
+    assertEquals(featureList(0).getAs[Row]("featureWithNull2"),1.0f)
+    assertEquals(featureList(0).getAs[Row]("derived_featureWithNull"),
+      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(-2.0f))))
+    assertEquals(featureList(0).getAs[Row]("derived_featureWithNull2"),
+      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
+    setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
   /*
