@@ -106,13 +106,15 @@ private[offline] class AnchoredFeatureJoinStep(
     val AnchorJoinStepInput(observationDF, anchorDFMap) = input
     val shouldAddDefault = FeathrUtils.getFeathrJobParam(ctx.sparkSession.sparkContext.getConf,
       FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
-    val missingFeatures = features.map(x => x.getFeatureName).filter(x => {
-      val containsFeature :Seq[Boolean] = anchorDFMap.map(y => y._1.selectedFeatures.contains(x)).toSeq
-      containsFeature.contains(false)
-    })
-    val missingAnchoredFeatures = ctx.featureGroups.allAnchoredFeatures.filter(featureName => missingFeatures.contains(featureName._1))
-    val withMissingFeaturesSubstituted = if (shouldAddDefault) substituteDefaultsForDataMissingFeatures(ctx.sparkSession, observationDF, ctx.logicalPlan,
-      missingAnchoredFeatures) else observationDF
+    val withMissingFeaturesSubstituted = if (shouldAddDefault) {
+        val missingFeatures = features.map(x => x.getFeatureName).filter(x => {
+        val containsFeature: Seq[Boolean] = anchorDFMap.map(y => y._1.selectedFeatures.contains(x)).toSeq
+        containsFeature.contains(false)
+      })
+      val missingAnchoredFeatures = ctx.featureGroups.allAnchoredFeatures.filter(featureName => missingFeatures.contains(featureName._1))
+      substituteDefaultsForDataMissingFeatures(ctx.sparkSession, observationDF, ctx.logicalPlan,
+        missingAnchoredFeatures)
+    }else observationDF
 
     val allAnchoredFeatures: Map[String, FeatureAnchorWithSource] = ctx.featureGroups.allAnchoredFeatures
     val joinStages = ctx.logicalPlan.joinStages
