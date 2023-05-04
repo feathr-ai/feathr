@@ -28,133 +28,133 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   def testLocalAnchorSWATest: Unit = {
     val df = runLocalFeatureJoinForTest(
       joinConfigAsString = """
-        | settings: {
-        |  observationDataTimeSettings: {
-        |     absoluteTimeRange: {
-        |         startTime: "2018-05-01"
-        |         endTime: "2018-05-03"
-        |         timeFormat: "yyyy-MM-dd"
-        |     }
-        |  }
-        |  joinTimeSettings: {
-        |     timestampColumn: {
-        |       def: timestamp
-        |       format: "yyyy-MM-dd"
-        |     }
-        |  }
-        |}
-        |
-        |features: [
-        |   {
-        |       key: [x],
-        |       featureList: ["f1", "f1Sum", "f2", "f1f1"]
-        |   },
-        |   {
-        |        key: [x, y]
-        |        featureList: ["f3", "f4"]
-        |   }
-        |]
+                             | settings: {
+                             |  observationDataTimeSettings: {
+                             |     absoluteTimeRange: {
+                             |         startTime: "2018-05-01"
+                             |         endTime: "2018-05-03"
+                             |         timeFormat: "yyyy-MM-dd"
+                             |     }
+                             |  }
+                             |  joinTimeSettings: {
+                             |     timestampColumn: {
+                             |       def: timestamp
+                             |       format: "yyyy-MM-dd"
+                             |     }
+                             |  }
+                             |}
+                             |
+                             |features: [
+                             |   {
+                             |       key: [x],
+                             |       featureList: ["f1", "f1Sum", "f2", "f1f1"]
+                             |   },
+                             |   {
+                             |        key: [x, y]
+                             |        featureList: ["f3", "f4"]
+                             |   }
+                             |]
     """.stripMargin,
       featureDefAsString = """
-          |sources: {
-          |  ptSource: {
-          |    type: "PASSTHROUGH"
-          |  }
-          |  swaSource: {
-          |    location: { path: "slidingWindowAgg/localSWAAnchorTestFeatureData/daily" }
-          |    timePartitionPattern: "yyyy/MM/dd"
-          |    timeWindowParameters: {
-          |      timestampColumn: "timestamp"
-          |      timestampColumnFormat: "yyyy-MM-dd"
-          |    }
-          |  }
-          |}
-          |
-          |anchors: {
-          |  ptAnchor: {
-          |     source: "ptSource"
-          |     key: "x"
-          |     features: {
-          |       f1f1: {
-          |         def: "([$.term:$.value] in passthroughFeatures if $.name == 'f1f1')"
-          |       }
-          |     }
-          |  }
-          |  swaAnchor: {
-          |    source: "swaSource"
-          |    key: "substring(x, 0)"
-          |    lateralViewParameters: {
-          |      lateralViewDef: explode(features)
-          |      lateralViewItemAlias: feature
-          |    }
-          |    features: {
-          |      f1: {
-          |        def: "feature.col.value"
-          |        filter: "feature.col.name = 'f1'"
-          |        aggregation: SUM
-          |        groupBy: "feature.col.term"
-          |        window: 3d
-          |      }
-          |    }
-          |  }
-          |
-          |  swaAnchor2: {
-          |    source: "swaSource"
-          |    key: "x"
-          |    lateralViewParameters: {
-          |      lateralViewDef: explode(features)
-          |      lateralViewItemAlias: feature
-          |    }
-          |    features: {
-          |      f1Sum: {
-          |        def: "feature.col.value"
-          |        filter: "feature.col.name = 'f1'"
-          |        aggregation: SUM
-          |        groupBy: "feature.col.term"
-          |        window: 3d
-          |      }
-          |    }
-          |  }
-          |  swaAnchorWithKeyExtractor: {
-          |    source: "swaSource"
-          |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
-          |    features: {
-          |      f3: {
-          |        def: "aggregationWindow"
-          |        aggregation: SUM
-          |        window: 3d
-          |      }
-          |    }
-          |   }
-          |  swaAnchorWithKeyExtractor2: {
-          |      source: "swaSource"
-          |      keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
-          |      features: {
-          |        f4: {
-          |           def: "aggregationWindow"
-          |           aggregation: SUM
-          |           window: 3d
-          |       }
-          |     }
-          |   }
-          |  swaAnchorWithKeyExtractor3: {
-          |    source: "swaSource"
-          |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor2"
-          |    lateralViewParameters: {
-          |      lateralViewDef: explode(features)
-          |      lateralViewItemAlias: feature
-          |    }
-          |    features: {
-          |      f2: {
-          |        def: "feature.col.value"
-          |        filter: "feature.col.name = 'f2'"
-          |        aggregation: SUM
-          |        groupBy: "feature.col.term"
-          |        window: 3d
-          |      }
-          |    }
-          |  }
-          |}
+                             |sources: {
+                             |  ptSource: {
+                             |    type: "PASSTHROUGH"
+                             |  }
+                             |  swaSource: {
+                             |    location: { path: "slidingWindowAgg/localSWAAnchorTestFeatureData/daily" }
+                             |    timePartitionPattern: "yyyy/MM/dd"
+                             |    timeWindowParameters: {
+                             |      timestampColumn: "timestamp"
+                             |      timestampColumnFormat: "yyyy-MM-dd"
+                             |    }
+                             |  }
+                             |}
+                             |
+                             |anchors: {
+                             |  ptAnchor: {
+                             |     source: "ptSource"
+                             |     key: "x"
+                             |     features: {
+                             |       f1f1: {
+                             |         def: "([$.term:$.value] in passthroughFeatures if $.name == 'f1f1')"
+                             |       }
+                             |     }
+                             |  }
+                             |  swaAnchor: {
+                             |    source: "swaSource"
+                             |    key: "substring(x, 0)"
+                             |    lateralViewParameters: {
+                             |      lateralViewDef: explode(features)
+                             |      lateralViewItemAlias: feature
+                             |    }
+                             |    features: {
+                             |      f1: {
+                             |        def: "feature.col.value"
+                             |        filter: "feature.col.name = 'f1'"
+                             |        aggregation: SUM
+                             |        groupBy: "feature.col.term"
+                             |        window: 3d
+                             |      }
+                             |    }
+                             |  }
+                             |
+                             |  swaAnchor2: {
+                             |    source: "swaSource"
+                             |    key: "x"
+                             |    lateralViewParameters: {
+                             |      lateralViewDef: explode(features)
+                             |      lateralViewItemAlias: feature
+                             |    }
+                             |    features: {
+                             |      f1Sum: {
+                             |        def: "feature.col.value"
+                             |        filter: "feature.col.name = 'f1'"
+                             |        aggregation: SUM
+                             |        groupBy: "feature.col.term"
+                             |        window: 3d
+                             |      }
+                             |    }
+                             |  }
+                             |  swaAnchorWithKeyExtractor: {
+                             |    source: "swaSource"
+                             |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
+                             |    features: {
+                             |      f3: {
+                             |        def: "aggregationWindow"
+                             |        aggregation: SUM
+                             |        window: 3d
+                             |      }
+                             |    }
+                             |   }
+                             |  swaAnchorWithKeyExtractor2: {
+                             |      source: "swaSource"
+                             |      keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
+                             |      features: {
+                             |        f4: {
+                             |           def: "aggregationWindow"
+                             |           aggregation: SUM
+                             |           window: 3d
+                             |       }
+                             |     }
+                             |   }
+                             |  swaAnchorWithKeyExtractor3: {
+                             |    source: "swaSource"
+                             |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor2"
+                             |    lateralViewParameters: {
+                             |      lateralViewDef: explode(features)
+                             |      lateralViewItemAlias: feature
+                             |    }
+                             |    features: {
+                             |      f2: {
+                             |        def: "feature.col.value"
+                             |        filter: "feature.col.name = 'f2'"
+                             |        aggregation: SUM
+                             |        groupBy: "feature.col.term"
+                             |        window: 3d
+                             |      }
+                             |    }
+                             |  }
+                             |}
       """.stripMargin,
       "slidingWindowAgg/localAnchorTestObsData.avro.json").data
     df.show()
@@ -759,56 +759,56 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   def testLocalAnchorSWASimulateTimeDelay(delay: String): Unit = {
     val res = runLocalFeatureJoinForTest(
       joinConfigAsString = s"""
-         | settings: {
-         | observationDataTimeSettings: {
-         |   absoluteTimeRange: {
-         |     timeFormat: yyyy-MM-dd
-         |     startTime: "2018-05-01"
-         |     endTime: "2018-05-03"
-         |   }
-         |  }
-         |  joinTimeSettings: {
-         |   timestampColumn: {
-         |     def: timestamp
-         |     format: yyyy-MM-dd
-         |   }
-         |   simulateTimeDelay: ${delay}
-         |  }
-         |}
-         |
-         |features: [
-         |
-         |  {
-         |    key: [x],
-         |    featureList: ["simpleFeature"]
-         |  }
-         |]
+                              | settings: {
+                              | observationDataTimeSettings: {
+                              |   absoluteTimeRange: {
+                              |     timeFormat: yyyy-MM-dd
+                              |     startTime: "2018-05-01"
+                              |     endTime: "2018-05-03"
+                              |   }
+                              |  }
+                              |  joinTimeSettings: {
+                              |   timestampColumn: {
+                              |     def: timestamp
+                              |     format: yyyy-MM-dd
+                              |   }
+                              |   simulateTimeDelay: ${delay}
+                              |  }
+                              |}
+                              |
+                              |features: [
+                              |
+                              |  {
+                              |    key: [x],
+                              |    featureList: ["simpleFeature"]
+                              |  }
+                              |]
       """.stripMargin,
       featureDefAsString = """
-          |sources: {
-          |  swaSource: {
-          |    location: { path: "slidingWindowAgg/localSWASimulateTimeDelay/daily" }
-          |    timePartitionPattern: "yyyy/MM/dd"
-          |    timeWindowParameters: {
-          |      timestampColumn: "timestamp"
-          |      timestampColumnFormat: "yyyy-MM-dd"
-          |    }
-          |  }
-          |}
-          |
-          |anchors: {
-          |  swaAnchor: {
-          |    source: "swaSource"
-          |    key: "x"
-          |    features: {
-          |      simpleFeature: {
-          |        def: "aggregationWindow"
-          |        aggregation: COUNT
-          |        window: 3d
-          |      }
-          |    }
-          |  }
-          |}
+                             |sources: {
+                             |  swaSource: {
+                             |    location: { path: "slidingWindowAgg/localSWASimulateTimeDelay/daily" }
+                             |    timePartitionPattern: "yyyy/MM/dd"
+                             |    timeWindowParameters: {
+                             |      timestampColumn: "timestamp"
+                             |      timestampColumnFormat: "yyyy-MM-dd"
+                             |    }
+                             |  }
+                             |}
+                             |
+                             |anchors: {
+                             |  swaAnchor: {
+                             |    source: "swaSource"
+                             |    key: "x"
+                             |    features: {
+                             |      simpleFeature: {
+                             |        def: "aggregationWindow"
+                             |        aggregation: COUNT
+                             |        window: 3d
+                             |      }
+                             |    }
+                             |  }
+                             |}
         """.stripMargin,
       observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
 
@@ -823,77 +823,77 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   def testLocalAnchorSWAWithMultipleSettingsConfigTest: Unit = {
     val res = runLocalFeatureJoinForTest(
       joinConfigAsString = s"""
-         | settings: {
-         |    observationDataTimeSettings: {
-         |      absoluteTimeRange: {
-         |         timeFormat: yyyy-MM-dd
-         |         startTime: 2018-05-01
-         |         endTime: 2018-05-03
-         |      }
-         |    }
-         |    joinTimeSettings: {
-         |      timestampColumn: {
-         |         def: timestamp
-         |         format: yyyy-MM-dd
-         |      }
-         |      simulateTimeDelay: 7d
-         |    }
-         |}
-         |
-         |features: [
-         |
-         |  {
-         |    key: [x],
-         |    featureList: ["simpleFeature", "likesFeature"]
-         |  },
-         |  {
-         |    key: [x],
-         |    featureList: ["commentsFeature"]
-         |    overrideTimeDelay: 8d
-         |  }
-         |]
+                              | settings: {
+                              |    observationDataTimeSettings: {
+                              |      absoluteTimeRange: {
+                              |         timeFormat: yyyy-MM-dd
+                              |         startTime: 2018-05-01
+                              |         endTime: 2018-05-03
+                              |      }
+                              |    }
+                              |    joinTimeSettings: {
+                              |      timestampColumn: {
+                              |         def: timestamp
+                              |         format: yyyy-MM-dd
+                              |      }
+                              |      simulateTimeDelay: 7d
+                              |    }
+                              |}
+                              |
+                              |features: [
+                              |
+                              |  {
+                              |    key: [x],
+                              |    featureList: ["simpleFeature", "likesFeature"]
+                              |  },
+                              |  {
+                              |    key: [x],
+                              |    featureList: ["commentsFeature"]
+                              |    overrideTimeDelay: 8d
+                              |  }
+                              |]
       """.stripMargin,
       featureDefAsString = """
-          |sources: {
-          |  swaSource: {
-          |    location: { path: "slidingWindowAgg/localSWASimulateTimeDelay/daily" }
-          |    timePartitionPattern: "yyyy/MM/dd"
-          |    timeWindowParameters: {
-          |      timestampColumn: "timestamp"
-          |      timestampColumnFormat: "yyyy-MM-dd"
-          |    }
-          |  }
-          |}
-          |
-          |anchors: {
-          |  swaAnchor: {
-          |    source: "swaSource"
-          |    key: "x"
-          |    features: {
-          |      simpleFeature: {
-          |        def: "aggregationWindow"
-          |        aggregation: COUNT
-          |        window: 3d
-          |      }
-          |      likesFeature: {
-          |        def: "foo"
-          |        aggregation: COUNT
-          |        window: 3d
-          |      }
-          |    }
-          |  }
-          |    swaAnchor2: {
-          |    source: "swaSource"
-          |    key: "x"
-          |    features: {
-          |      commentsFeature: {
-          |        def: "bar"
-          |        aggregation: COUNT
-          |        window: 3d
-          |      }
-          |    }
-          |  }
-          |}
+                             |sources: {
+                             |  swaSource: {
+                             |    location: { path: "slidingWindowAgg/localSWASimulateTimeDelay/daily" }
+                             |    timePartitionPattern: "yyyy/MM/dd"
+                             |    timeWindowParameters: {
+                             |      timestampColumn: "timestamp"
+                             |      timestampColumnFormat: "yyyy-MM-dd"
+                             |    }
+                             |  }
+                             |}
+                             |
+                             |anchors: {
+                             |  swaAnchor: {
+                             |    source: "swaSource"
+                             |    key: "x"
+                             |    features: {
+                             |      simpleFeature: {
+                             |        def: "aggregationWindow"
+                             |        aggregation: COUNT
+                             |        window: 3d
+                             |      }
+                             |      likesFeature: {
+                             |        def: "foo"
+                             |        aggregation: COUNT
+                             |        window: 3d
+                             |      }
+                             |    }
+                             |  }
+                             |    swaAnchor2: {
+                             |    source: "swaSource"
+                             |    key: "x"
+                             |    features: {
+                             |      commentsFeature: {
+                             |        def: "bar"
+                             |        aggregation: COUNT
+                             |        window: 3d
+                             |      }
+                             |    }
+                             |  }
+                             |}
         """.stripMargin,
       observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
 
@@ -906,8 +906,8 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   /**
-  * The test verifies that AFG works with hourly data.
-  */
+   * The test verifies that AFG works with hourly data.
+   */
   @Test
   def testAFGOutputWithHourlyData(): Unit = {
     val res = runLocalFeatureJoinForTest(
@@ -1132,76 +1132,76 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   def testInvalidCaseWithOverrideTimeDelay: Unit = {
     val res = runLocalFeatureJoinForTest(
       joinConfigAsString = s"""
-        | settings: {
-        |    observationDataTimeSettings: {
-        |      absoluteTimeRange: {
-        |         timeFormat: yyyy-MM-dd
-        |         startTime: 2018-05-01
-        |         endTime: 2018-05-03
-        |      }
-        |    }
-        |    joinTimeSettings: {
-        |      timestampColumn: {
-        |         def: timestamp
-        |         format: yyyy-MM-dd
-        |      }
-        |    }
-        |}
-        |
-        |features: [
-        |
-        |  {
-        |    key: [x],
-        |    featureList: ["simpleFeature", "likesFeature"]
-        |  },
-        |  {
-        |    key: [x],
-        |    featureList: ["commentsFeature"]
-        |    overrideTimeDelay: 8d
-        |  }
-        |]
+                              | settings: {
+                              |    observationDataTimeSettings: {
+                              |      absoluteTimeRange: {
+                              |         timeFormat: yyyy-MM-dd
+                              |         startTime: 2018-05-01
+                              |         endTime: 2018-05-03
+                              |      }
+                              |    }
+                              |    joinTimeSettings: {
+                              |      timestampColumn: {
+                              |         def: timestamp
+                              |         format: yyyy-MM-dd
+                              |      }
+                              |    }
+                              |}
+                              |
+                              |features: [
+                              |
+                              |  {
+                              |    key: [x],
+                              |    featureList: ["simpleFeature", "likesFeature"]
+                              |  },
+                              |  {
+                              |    key: [x],
+                              |    featureList: ["commentsFeature"]
+                              |    overrideTimeDelay: 8d
+                              |  }
+                              |]
       """.stripMargin,
       featureDefAsString = """
-       |sources: {
-       |  swaSource: {
-       |    location: { path: "slidingWindowAgg/localSWASimulateTimeDelay/daily" }
-       |    isTimeSeries: true
-       |    timeWindowParameters: {
-       |      timestamp: "timestamp"
-       |      timestamp_format: "yyyy-MM-dd"
-       |    }
-       |  }
-       |}
-       |
-       |anchors: {
-       |  swaAnchor: {
-       |    source: "swaSource"
-       |    key: "x"
-       |    features: {
-       |      simpleFeature: {
-       |        def: "aggregationWindow"
-       |        aggregation: COUNT
-       |        window: 3d
-       |      }
-       |      likesFeature: {
-       |        def: "foo"
-       |        aggregation: COUNT
-       |        window: 3d
-       |      }
-       |    }
-       |  }
-       |    swaAnchor2: {
-       |    source: "swaSource"
-       |    key: "x"
-       |    features: {
-       |      commentsFeature: {
-       |        def: "bar"
-       |        aggregation: COUNT
-       |        window: 3d
-       |      }
-       |    }
-       |  }
-       |}
+                             |sources: {
+                             |  swaSource: {
+                             |    location: { path: "slidingWindowAgg/localSWASimulateTimeDelay/daily" }
+                             |    isTimeSeries: true
+                             |    timeWindowParameters: {
+                             |      timestamp: "timestamp"
+                             |      timestamp_format: "yyyy-MM-dd"
+                             |    }
+                             |  }
+                             |}
+                             |
+                             |anchors: {
+                             |  swaAnchor: {
+                             |    source: "swaSource"
+                             |    key: "x"
+                             |    features: {
+                             |      simpleFeature: {
+                             |        def: "aggregationWindow"
+                             |        aggregation: COUNT
+                             |        window: 3d
+                             |      }
+                             |      likesFeature: {
+                             |        def: "foo"
+                             |        aggregation: COUNT
+                             |        window: 3d
+                             |      }
+                             |    }
+                             |  }
+                             |    swaAnchor2: {
+                             |    source: "swaSource"
+                             |    key: "x"
+                             |    features: {
+                             |      commentsFeature: {
+                             |        def: "bar"
+                             |        aggregation: COUNT
+                             |        window: 3d
+                             |      }
+                             |    }
+                             |  }
+                             |}
         """.stripMargin,
       observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
 
