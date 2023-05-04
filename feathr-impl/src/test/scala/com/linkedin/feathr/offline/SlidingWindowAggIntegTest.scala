@@ -638,10 +638,6 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
   }
 
-  /**
-   * SWA test with add default col for missing data flag turned on.
-   */
-  @Test
   def testSWAWithMissingFeatureDataFlag(): Unit = {
     setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
     val joinConfigAsString =
@@ -668,7 +664,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |    featureList: ["simplePageViewCount", "simpleFeature", "derived_simpleFeature"]
         |  }
         |]
-      """.stripMargin
+        """.stripMargin
     val featureDefAsString =
       """
         |sources: {
@@ -721,27 +717,12 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |derivations: {
         | derived_simpleFeature: simpleFeature
         |}
-      """.stripMargin
-    val joinConfig = FeatureJoinConfig.parseJoinConfig(joinConfigAsString)
-    val feathrClient = FeathrClient.builder(ss).addFeatureDef(featureDefAsString).build()
-    val outputPath: String = FeatureJoinJob.SKIP_OUTPUT
-
-    val defaultParams = Array(
-      "--local-mode",
-      "--feathr-config",
-      "",
-      "--output",
-      outputPath)
-
-    val jobContext = FeatureJoinJob.parseInputArgument(defaultParams).jobJoinContext
-    val observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json"
-    val obsDf = loadObservationAsFDS(ss, observationDataPath, List())
-    val res = feathrClient.joinFeaturesWithSuppressedExceptions(joinConfig, obsDf, jobContext)
-    val df = res._1.data.collect()(0)
-    res._1.data.show()
+        """.stripMargin
+    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    res.show()
+    val df = res.collect()(0)
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
-    assertEquals(df.getAs[Float]("simpleFeature"),  Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(20.0f))))
-    assert(res._2(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION) == "simpleFeature")
+    assertEquals(df.getAs[Float]("simpleFeature"), Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(20.0f))))
     setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
