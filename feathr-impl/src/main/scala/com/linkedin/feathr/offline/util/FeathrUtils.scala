@@ -202,8 +202,8 @@ private[feathr] object FeathrUtils {
       val outputNumParts = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.DEBUG_OUTPUT_PART_NUM)
       val featureNames = "_for_features_" + features.mkString("_") + "_"
       if (features.nonEmpty && (debugFeatureNames.isEmpty || features.intersect(debugFeatureNames).nonEmpty)) {
-        val savePath = SimplePath(basePath + "/" + tag.replaceAll("\\W", "_") +
-          featureNames.slice(0, 20) + pathSuffix)
+        val savePath = SimplePath(basePath + "/" + tag.replaceAll("\\W", "_").slice(0, 20) +
+          featureNames.slice(0, 20) + pathSuffix.slice(0, 20))
         log.info(s"${tag}, Start dumping data ${features.mkString(",")} to ${savePath}")
         if (!df.isEmpty) {
           SparkIOUtils.writeDataFrame(df, savePath, Map(FeathrUtils.DEBUG_OUTPUT_PART_NUM -> outputNumParts), List())
