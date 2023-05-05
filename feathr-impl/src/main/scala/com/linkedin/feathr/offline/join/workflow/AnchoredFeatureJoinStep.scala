@@ -86,6 +86,7 @@ private[offline] class AnchoredFeatureJoinStep(
 
     // We want to duplicate this column with the correct feathr supported feature name which is required for further processing.
     // For example, if feature name is abc and the corresponding key is x, the column name would be __feathr_feature_abc_x.
+    // This column will be dropped after all the joins are done.
     missingFeatures.keys.foldLeft(dataframeWithDefaults) { (dataframeWithDefaults, featureName) =>
       val keyTags = logicalPlan.joinStages.filter(kv => kv._2.contains(featureName)).head._1
       val keyStr = keyTags.map(logicalPlan.keyTagIntsToStrings).toList
