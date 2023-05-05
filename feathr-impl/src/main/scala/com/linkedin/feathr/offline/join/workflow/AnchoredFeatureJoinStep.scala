@@ -52,7 +52,8 @@ private[offline] class AnchoredFeatureJoinStep(
    */
   def substituteDefaultsForDataMissingFeatures(sparkSession: SparkSession, dataframe: DataFrame, logicalPlan: MultiStageJoinPlan,
     missingFeatures: Map[String, FeatureAnchorWithSource]): DataFrame = {
-    // Create a map of feature name to corresponding defaults
+    // Create a map of feature name to corresponding defaults. If a feature does not have default value, it would be missing
+    // from this map and we would add a default column of nulls for those features.
     val defaults = missingFeatures.flatMap(s => s._2.featureAnchor.defaults)
 
     // Create a map of feature to their feature type if configured.
@@ -62,7 +63,7 @@ private[offline] class AnchoredFeatureJoinStep(
 
     // We try to guess the column data type from the configured feature type. If feature type is not present, we will default to
     // default feathr behavior of returning a map column of string to float.
-    val updatedDf = missingFeatures.keys.foldLeft(dataframe) { (observationDF, featureName) =>
+    val obsDfWithDefaultNullColumn = missingFeatures.keys.foldLeft(dataframe) { (observationDF, featureName) =>
       val featureColumnType = if (featureTypes.contains(featureName)) {
         featureTypes(featureName).getFeatureType match {
           case FeatureTypes.NUMERIC => "float"
@@ -80,7 +81,7 @@ private[offline] class AnchoredFeatureJoinStep(
       observationDF.withColumn(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName), lit(null).cast(featureColumnType))
     }
 
-    val dataframeWithDefaults = substituteDefaults(updatedDf, missingFeatures.keys.toSeq, defaults, featureTypes,
+    val dataframeWithDefaults = substituteDefaults(obsDfWithDefaultNullColumn, missingFeatures.keys.toSeq, defaults, featureTypes,
       sparkSession, (s: String) => s"${FEATURE_NAME_PREFIX}$s")
 
     // We want to duplicate this column with the correct feathr supported feature name which is required for further processing.

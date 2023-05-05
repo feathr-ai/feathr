@@ -408,7 +408,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           | features: {
           |   key: a_id
           |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "featureWithNull3", "featureWithNull4",
-          |    "featureWithNull5", "derived_featureWithNull2", "featureWithNull6",
+          |    "featureWithNull5", "derived_featureWithNull2", "featureWithNull6", "featureWithNull7", "derived_featureWithNull7"
           |    "aEmbedding", "memberEmbeddingAutoTZ"]
           | }
       """.stripMargin,
@@ -447,6 +447,9 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |         def: "isPresent(value) ? toNumeric(value) : 0"
           |         type: CATEGORICAL
           |         default: "null"
+          |      }
+          |      featureWithNull7: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
           |      }
           |      featureWithNull4: {
           |         def: "isPresent(value) ? toNumeric(value) : 0"
@@ -506,6 +509,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |
           | derived_featureWithNull: "featureWithNull * 2"
           | derived_featureWithNull2: "featureWithNull2 * 2"
+          | derived_featureWithNull7: "featureWithNull7 * 2"
           |}
         """.stripMargin,
       observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
@@ -516,11 +520,14 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
     assertEquals(featureList(0).getAs[Row]("featureWithNull3"), "null")
     assertEquals(featureList(0).getAs[Row]("featureWithNull5"), mutable.Map("" -> 1.0f))
+    assertEquals(featureList(0).getAs[Row]("featureWithNull7"), null)
     assertEquals(featureList(0).getAs[Row]("featureWithNull"),-1.0f)
     assertEquals(featureList(0).getAs[Row]("featureWithNull4"),Map())
     assertEquals(featureList(0).getAs[Row]("featureWithNull2"),1.0f)
     assertEquals(featureList(0).getAs[Row]("derived_featureWithNull"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(-2.0f))))
+    assertEquals(featureList(0).getAs[Row]("derived_featureWithNull7"),
+      Row(mutable.WrappedArray.make(Array()), mutable.WrappedArray.empty))
     assertEquals(featureList(0).getAs[Row]("derived_featureWithNull2"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
     setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
