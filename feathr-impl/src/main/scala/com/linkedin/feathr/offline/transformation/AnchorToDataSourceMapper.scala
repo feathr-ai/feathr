@@ -147,9 +147,11 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
     }
     catch {// todo - Add this functionality to only specific exception types and not for all error types.
       case e: Exception => if (shouldSkipFeature) {
-        logger.warn(s"shouldSkipFeature is " + shouldSkipFeature)
+        logger.warn(s"shouldSkipFeature is " + shouldSkipFeature + ". The original exception msg is " + e.getMessage)
         ss.emptyDataFrame
       } else if (shouldAddDefaultColForMissingData) {
+        logger.warn(s"shouldAddDefaultColForMissingData is " + shouldAddDefaultColForMissingData + ". The original exception msg is "
+          + e.getMessage)
         ss.emptyDataFrame
       } else throw e
     }
