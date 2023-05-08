@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.join
 
 import com.linkedin.feathr.common._
 import com.linkedin.feathr.offline
+import com.linkedin.feathr.offline.anchored.keyExtractor.SQLSourceKeyExtractor
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.client.DataFrameColName.getFeatureAlias
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
@@ -72,7 +73,14 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
           (dfWithFeatureNames, featureAnchorWithSourcePair) => {
             val featureAnchorWithSource = featureAnchorWithSourcePair._1
             val requestedFeatures = featureAnchorWithSourcePair._2.toSeq
-            val resultWithoutKey = transformSingleAnchorDF(featureAnchorWithSource, dfWithFeatureNames.df, requestedFeatures, None, mvelContext)
+            val keyColumnNames = featureAnchorWithSourcePair._1.featureAnchor.sourceKeyExtractor.getKeyColumnNames()
+            val keyColumnExprAndAlias = if (featureAnchorWithSourcePair._1.featureAnchor.sourceKeyExtractor.isInstanceOf[SQLSourceKeyExtractor]) {
+              val keyExprs = featureAnchorWithSourcePair._1.featureAnchor.sourceKeyExtractor.asInstanceOf[SQLSourceKeyExtractor].keyExprs
+              keyExprs.zip(keyColumnNames)
+            } else {
+              keyColumnNames.zip(keyColumnNames)
+            }
+            val resultWithoutKey = transformSingleAnchorDF(featureAnchorWithSource, dfWithFeatureNames.df, requestedFeatures, None, mvelContext, keyColumnExprAndAlias)
             val namePrefixPairs = dfWithFeatureNames.featureNameAndPrefixPairs ++ resultWithoutKey.featureNameAndPrefixPairs
             val inferredFeatureTypeConfigs = dfWithFeatureNames.inferredFeatureTypes ++ resultWithoutKey.inferredFeatureTypes
             val featureColumnFormats = resultWithoutKey.featureColumnFormats ++ dfWithFeatureNames.featureColumnFormats

@@ -3,14 +3,14 @@ package com.linkedin.feathr.offline.logical
 import com.linkedin.feathr.common
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException, FeathrException}
 import com.linkedin.feathr.common.{FeatureDependencyGraph, JoiningFeatureParams}
-import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureName, JoinStage, KeyTagIdTuple}
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.derived.DerivedFeature
+import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureName, JoinStage, KeyTagIdTuple}
 import org.apache.logging.log4j.LogManager
 
-import scala.collection.mutable
 import scala.collection.JavaConverters._
 import scala.collection.convert.wrapAll._
+import scala.collection.mutable
 
 /**
  * Multi-stage join planner is an implementation of Logical Planner in Feathr which analyzes the requested features,
@@ -84,7 +84,10 @@ private[offline] class MultiStageJoinPlanner extends LogicalPlanner[MultiStageJo
     val allPassthroughFeatures = featureGroups.allPassthroughFeatures
     val allDerivedFeatures = featureGroups.allDerivedFeatures
 
-    val windowAggFeaturesOrdered = requiredFeatures.filter(taggedFeature => allWindowAggFeatures.contains(taggedFeature.getFeatureName))
+    val windowAggFeaturesOrdered = requiredFeatures.filter(taggedFeature =>
+      allWindowAggFeatures.contains(taggedFeature.getFeatureName) &&
+        !("PASSTHROUGH".equals(allWindowAggFeatures(taggedFeature.getFeatureName).source.path))
+    )
 
     // All required basic anchored features, basic anchored features are non-SWA features and non-passthrough features
     val requiredBasicAnchoredFeatures = requiredFeatures

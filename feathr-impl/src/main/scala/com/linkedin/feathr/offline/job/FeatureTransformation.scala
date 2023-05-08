@@ -198,7 +198,8 @@ private[offline] object FeatureTransformation {
       df: DataFrame,
       requestedFeatureRefString: Seq[String],
       inputDateInterval: Option[DateTimeInterval],
-      mvelContext: Option[FeathrExpressionExecutionContext]): TransformedResult = {
+      mvelContext: Option[FeathrExpressionExecutionContext],
+      keyColumnExprAndAlias: Seq[(String, String)] = Seq.empty[(String, String)]): TransformedResult = {
     val featureNamePrefix = getFeatureNamePrefix(featureAnchorWithSource.featureAnchor.extractor)
     val featureNamePrefixPairs = requestedFeatureRefString.map((_, featureNamePrefix))
 
@@ -206,7 +207,17 @@ private[offline] object FeatureTransformation {
     val featureTypeConfigs = featureAnchorWithSource.featureAnchor.featureTypeConfigs
     val transformedFeatureData: TransformedResult = featureAnchorWithSource.featureAnchor.extractor match {
       case transformer: TimeWindowConfigurableAnchorExtractor =>
-        WindowAggregationEvaluator.transform(transformer, df, featureNamePrefixPairs, featureAnchorWithSource, inputDateInterval)
+        val nonBucketedFeatures = transformer.features.map(_._2.aggregationType).filter(agg => agg == AggregationType.BUCKETED_COUNT_DISTINCT)
+        if (!(nonBucketedFeatures.size != transformer.features || transformer.features.isEmpty)) {
+          throw new FeathrFeatureTransformationException(
+            ErrorLabel.FEATHR_USER_ERROR,
+            s"All features ${transformer.features.keys.mkString(",")} should be either be all bucket or non-bucketed aggregation functions.")
+        }
+        if (nonBucketedFeatures.isEmpty) {
+          WindowAggregationEvaluator.transform(transformer, df, featureNamePrefixPairs, featureAnchorWithSource, inputDateInterval)
+        } else {
+          BucketedWindowAggregationEvaluator.transform(transformer, df, featureNamePrefixPairs, featureAnchorWithSource, keyColumnExprAndAlias)
+        }
       case transformer: SimpleAnchorExtractorSpark =>
         // transform from avro tensor to FDS format, avro tensor can be shared by online/offline
         // so that transformation logic can be written only once
@@ -350,7 +361,7 @@ private[offline] object FeatureTransformation {
         (prevTransformedResult, featureAnchorWithSource) => {
           val requestedFeatures = featureAnchorWithSource.selectedFeatures
           val transformedResultWithoutKey =
-            transformSingleAnchorDF(featureAnchorWithSource, prevTransformedResult.df, requestedFeatures, inputDateInterval, mvelContext)
+            transformSingleAnchorDF(featureAnchorWithSource, prevTransformedResult.df, requestedFeatures, inputDateInterval, mvelContext, outputJoinKeyColumnNames.zip(outputJoinKeyColumnNames))
           val namePrefixPairs = prevTransformedResult.featureNameAndPrefixPairs ++ transformedResultWithoutKey.featureNameAndPrefixPairs
           val columnNameToFeatureNameAndType = prevTransformedResult.inferredFeatureTypes ++ transformedResultWithoutKey.inferredFeatureTypes
           val featureColumnFormats = prevTransformedResult.featureColumnFormats ++ transformedResultWithoutKey.featureColumnFormats
