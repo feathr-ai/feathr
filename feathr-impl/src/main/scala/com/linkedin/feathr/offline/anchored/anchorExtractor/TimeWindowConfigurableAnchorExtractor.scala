@@ -61,7 +61,7 @@ private[offline] class TimeWindowConfigurableAnchorExtractor(@JsonProperty("feat
    */
   override def aggregateAsColumns(groupedDataFrame: DataFrame): Seq[(String, Column)] = {
     val columnPairs = aggFeatures.collect {
-      case (featureName, featureDef) =>
+      case (featureName, featureDef) if !featureDef.timeWindowFeatureDefinition.aggregationType.toString.startsWith("BUCKETED_") =>
         // for basic sliding window aggregation
         // no complex aggregation will be defined
         if (featureDef.swaFeature.lateralView.isDefined) {

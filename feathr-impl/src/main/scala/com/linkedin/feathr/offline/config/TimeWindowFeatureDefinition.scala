@@ -35,6 +35,7 @@ case class TimeWindowFeatureDefinition(
     `def`: String,
     aggregationType: AggregationType.Value,
     window: Duration,
+    window_str: String,
     groupBy: Option[String],
     limit: Option[Int],
     filter: Option[String],
@@ -80,6 +81,11 @@ class TimeWindowFeatureDefinitionDeserializer extends JsonDeserializer[TimeWindo
           },
           node.get("window") match {
             case field: TextNode => WindowTimeUnit.parseWindowTime(field.textValue())
+            case _ =>
+              throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, s"'window' field is required in aggregation feature but is not provided $node.")
+          },
+          node.get("window") match {
+            case field: TextNode => field.textValue()
             case _ =>
               throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, s"'window' field is required in aggregation feature but is not provided $node.")
           },

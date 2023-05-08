@@ -1,0 +1,97 @@
+{
+  "schema": {
+    "type": "record",
+    "name": "NTVObs",
+    "doc": "Daily or multi-day aggregated a activity features generated from similar data sources.",
+    "namespace": "com.linkedin.feathr.offline.data",
+    "fields": [
+      {
+        "name": "x",
+        "type": [
+          "null",
+          "string"
+        ],
+        "doc": ""
+      },
+      {
+        "name": "y",
+        "type": "string",
+        "doc": ""
+      },
+      {
+        "name": "timestamp",
+        "type": "string"
+      },
+      {
+        "name": "utc_timestamp",
+        "type": "long"
+      }
+    ]
+  },
+  "data": [
+    {
+      "x": {
+        "string": "1"
+      },
+      "y": "a",
+      "timestamp": "2023-05-01 00:00:00.123",
+      "utc_timestamp":1682899200000
+    }, {
+      "x": {
+        "string": "1"
+      },
+      "y": "b",
+      "timestamp": "2023-05-01 00:01:00.123",
+      "utc_timestamp":1682899260000
+    }, {
+      "x": {
+        "string": "1"
+      },
+      "y": "b",
+      "timestamp": "2023-05-01 00:02:00.123",
+      "utc_timestamp":1682899320000
+    }, {
+      "x": {
+        "string": "1"
+      },
+      "y": "c",
+      "timestamp": "2023-05-01 00:03:00.123",
+      "utc_timestamp":1682899380000
+    }, {
+      "x": {
+        "string": "1"
+      },
+      "y": "d",
+      "timestamp": "2023-05-01 00:05:00.123",
+      "utc_timestamp":1682899500000
+    }, {
+      "x": {
+        "string": "1"
+      },
+      "y": "e",
+      "timestamp": "2023-05-01 00:06:00.123",
+      "utc_timestamp":1682899560000
+    }, {
+      "x": {
+        "string": "1"
+      },
+      "y": "a",
+      "timestamp": "2023-05-01 00:06:30.123",
+      "utc_timestamp":1682899590000
+    }, {
+      "x": {
+        "string": "1"
+      },
+      "y": "f",
+      "timestamp": "2023-05-01 00:10:00.123",
+      "utc_timestamp":1682899800000
+    }, {
+      "x": {
+        "string": "1"
+      },
+      "y": "b",
+      "timestamp": "2023-05-01 00:10:05.123",
+      "utc_timestamp":1682899805000
+    }
+  ]
+}
