@@ -820,6 +820,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
   }
 
+  @Test
   def testSWAWithMissingFeatureDataFlag(): Unit = {
     setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
     val joinConfigAsString =
