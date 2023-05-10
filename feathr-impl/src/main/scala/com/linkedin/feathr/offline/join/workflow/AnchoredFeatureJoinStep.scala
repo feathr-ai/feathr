@@ -111,7 +111,7 @@ private[offline] class AnchoredFeatureJoinStep(
     val withMissingFeaturesSubstituted = if (shouldAddDefault) {
         val missingFeatures = features.map(x => x.getFeatureName).filter(x => {
         val containsFeature: Seq[Boolean] = anchorDFMap.map(y => y._1.selectedFeatures.contains(x)).toSeq
-        containsFeature.contains(false)
+        !containsFeature.contains(true)
       })
       val missingAnchoredFeatures = ctx.featureGroups.allAnchoredFeatures.filter(featureName => missingFeatures.contains(featureName._1))
       substituteDefaultsForDataMissingFeatures(ctx.sparkSession, observationDF, ctx.logicalPlan,
