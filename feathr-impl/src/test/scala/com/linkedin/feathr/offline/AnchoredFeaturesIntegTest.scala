@@ -409,7 +409,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |   key: a_id
           |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "featureWithNull3", "featureWithNull4",
           |    "featureWithNull5", "derived_featureWithNull2", "featureWithNull6", "featureWithNull7", "derived_featureWithNull7"
-          |    "aEmbedding", "memberEmbeddingAutoTZ"]
+          |    "aEmbedding", "memberEmbeddingAutoTZ", "aEmbedding", "featureWithNullSql"]
           | }
       """.stripMargin,
       featureDefAsString =
@@ -434,6 +434,17 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |}
           |
           | anchors: {
+          | swaAnchor: {
+          |    source: "geneation/daily"
+          |    key: "x"
+          |    features: {
+          |      aEmbedding: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |      }
+          |    }
+          |  }
           |  anchor1: {
           |    source: "anchorAndDerivations/nullVaueSource.avro.json"
           |    key: "toUpperCaseExt(mId)"
@@ -473,6 +484,14 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |    key: "toUpperCaseExt(mId)"
           |    features: {
           |      featureWithNull2: "isPresent(value) ? toNumeric(value) : 0"
+          |    }
+          |  }
+          |
+          |  anchor3: {
+          |    source: "anchorAndDerivations/nullValueSource.avro.json"
+          |    key.sqlExpr: mId
+          |    features: {
+          |      featureWithNullSql.def.sqlExpr: value
           |    }
           |  }
           |  swaAnchor: {
@@ -530,6 +549,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       Row(mutable.WrappedArray.make(Array()), mutable.WrappedArray.empty))
     assertEquals(featureList(0).getAs[Row]("derived_featureWithNull2"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
+    assertEquals(featureList(0).getAs[Row]("featureWithNullSql"), 1.0f)
     setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
@@ -543,7 +563,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
         """
           | features: {
           |   key: a_id
-          |   featureList: ["featureWithNull"]
+          |   featureList: ["platoScore", "maxLoginScore". "profileHasPicture", "ipDataCountryCode"]
           | }
       """.stripMargin,
       featureDefAsString =
@@ -564,6 +584,227 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
             |          }
           |         }
           |       }
+          |  }
+          |
+          |  platoFlatFeatureVector: {
+          |        source:"/tmp/fraud/jobs-fraud-model/atoscoresandfeaturesAvroPCV2"
+          |        key.sqlExpr: ["memberId", "substring(date, 0, 10)"]
+          |        features: {
+          |            platoScore: {
+          |                def.sqlExpr: "score",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            }
+          |        }
+          |    }
+          |    fraudJobsRatioPerIPFeatures: {
+          |        source: "/jobs/fraud/zirannia/tf_home_dir/jobs-fraud-model/fraudJobsRatioPerIPFeature"
+          |        key.sqlExpr: ["jobPostingIP", "date"]
+          |        features: {
+          |            fraudJobsIPFeaturesFedexNumJobs: {
+          |                def.sqlExpr: "numJobs",
+          |                default: -1.0,
+          |                type: "NUMERIC"
+          |            },
+          |            fraudJobsIPFeaturesFedexNumFraudJobs: {
+          |                def.sqlExpr: "numFraudJobs",
+          |                default: -1.0,
+          |                type: "NUMERIC"
+          |            },
+          |            fraudJobsIPFeaturesFedexFraudJobsRatio: {
+          |                def.sqlExpr: "fraudJobsRatio"
+          |                default: -1.0,
+          |                type: "NUMERIC"
+          |            }
+          |        }
+          |    }
+          |
+          |    paramsFeatures: {
+          |        source: "/jobs/fraud/zirannia/tf_home_dir/jobs-fraud-model/paramsFeatures"
+          |        key.sqlExpr: ["jobId", "memberId", "substring(date, 0, 10)"]
+          |        features: {
+          |            maxLoginScore: {
+          |                def.sqlExpr: "maxLoginScore",
+          |                default: -1.0,
+          |                type: "NUMERIC"
+          |            },
+          |            registrationScore: {
+          |                def.sqlExpr: "registrationScore",
+          |                default: -1.0,
+          |                type: "NUMERIC"
+          |            },
+          |            profileHasPicture: {
+          |                def.sqlExpr: "profileHasPicture"
+          |                default: true,
+          |                type: "BOOLEAN"
+          |            },
+          |            accountageindays: {
+          |                def.sqlExpr: "accountAgeInDays",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            ipabusescore: {
+          |                def.sqlExpr: "ipAbuseScore",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            countryabusescore: {
+          |                def.sqlExpr: "countryAbuseScore",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            passwordResetFailureCountByIP: {
+          |                def.sqlExpr: "passwordResetFailureCountByIP",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            passwordResetSuccessCountByIP: {
+          |                def.sqlExpr: "passwordResetSuccessCountByIP",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            isEmailDomainReputationAbusive: {
+          |                def.sqlExpr: "isEmailDomainReputationAbusive",
+          |                default: false,
+          |                type: "BOOLEAN"
+          |            }
+          |        }
+          |    }
+          |
+          |    restOfParamsFeatures: {
+          |        source: "/jobs/fraud/zirannia/tf_home_dir/jobs-fraud-model/restOfParamFeatures"
+          |        key.sqlExpr: ["job_id", "memberId", "substring(date, 0, 10)"]
+          |        features: {
+          |            asnIsAbusive: {
+          |                def.sqlExpr: "asnIsAbusive",
+          |                default: false,
+          |                type: "BOOLEAN"
+          |            },
+          |            jobAndMemberCountryMatch: {
+          |                def.sqlExpr: "jobAndMemberCountryMatch",
+          |                default: true,
+          |                type: "BOOLEAN"
+          |            },
+          |            companyCreationTime: {
+          |                def.sqlExpr: "companyCreationTime",
+          |                default: -1.0,
+          |                type: "NUMERIC"
+          |            },
+          |            asnIsOwnedByHostingService: {
+          |                def.sqlExpr: "asnIsOwnedByHostingService",
+          |                default: false,
+          |                type: "BOOLEAN"
+          |            },
+          |            companyFollowerCount: {
+          |                def.sqlExpr: "companyFollowerCount"
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            countryMismatchGoodMemberCountWithSpecifiedAge: {
+          |                def.sqlExpr: "countryMismatchGoodMemberCountWithSpecifiedAge",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            countryMismatchRestrictedMemberCountWithSpecifiedAge: {
+          |                def.sqlExpr: "countryMismatchRestrictedMemberCountWithSpecifiedAge",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            dfpScore: {
+          |                def.sqlExpr: "dfpScore",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            ipIsOwnedByHostingService: {
+          |                def.sqlExpr: "ipIsOwnedByHostingService",
+          |                default: false,
+          |                type: "BOOLEAN"
+          |            },
+          |            isEmailDomainReputationCorpOwned: {
+          |                def.sqlExpr: "isEmailDomainReputationCorpOwned",
+          |                default: false,
+          |                type: "BOOLEAN"
+          |            },
+          |            numDaysActive: {
+          |                def.sqlExpr: "numDaysActive",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            orgIsAbusive: {
+          |                def.sqlExpr: "orgIsAbusive",
+          |                default: false,
+          |                type: "BOOLEAN"
+          |            },
+          |            orgIsOwnedByHostingService: {
+          |                def.sqlExpr: "orgIsOwnedByHostingService",
+          |                default: false,
+          |                type: "BOOLEAN"
+          |            },
+          |            postingMemberConnectionCount: {
+          |                def.sqlExpr: "postingMemberConnectionCount",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            useragentabusescore: {
+          |                def.sqlExpr: "useragentabusescore",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            },
+          |            jobPostingEmailDomain: {
+          |                def.sqlExpr: "jobPostingEmailDomain",
+          |                default: "",
+          |                type: "CATEGORICAL"
+          |            },
+          |            ipDataCountryCode: {
+          |                def.sqlExpr: "ipDataCountryCode",
+          |                default: "",
+          |                type: "CATEGORICAL"
+          |            },
+          |            jobPostCountryCode: {
+          |                def.sqlExpr: "jobPostCountryCode",
+          |                default: "",
+          |                type: "CATEGORICAL"
+          |            },
+          |            authorCountryCode: {
+          |                def.sqlExpr: "authorCountryCode",
+          |                default: "",
+          |                type: "CATEGORICAL"
+          |            },
+          |            wasWarmRegistration: {
+          |                def.sqlExpr: "wasWarmRegistration",
+          |                default: true,
+          |                type: "BOOLEAN"
+          |            },
+          |            emailDomainReputationRestrictionRatio: {
+          |                def.sqlExpr: "emailDomainReputationRestrictionRatio",
+          |                default: 0.0,
+          |                type: "NUMERIC"
+          |            }
+          |        }
+          |    }
+          |
+          |    joinIpFeatures: {
+          |        source: "dalids:///u_secaggs.joinipfeatures_datepartitioned"
+          |        key.sqlExpr: ["memberid", "datepartition"]
+          |        features: {
+          |        joinIpFeaturesFedexFractionRestrictedReg: {
+          |            def.sqlExpr: "fractionrestrictedreg"
+          |            default: -1.0,
+          |            type: "NUMERIC"
+          |         }
+          |        }
+          |    }
+          |
+          |  SafireFeatures: {
+          |    source: "/tmp/fraud/jobs-fraud-model/safirescoresandfeaturesAvroPCV2"
+          |    key.sqlExpr: ["memberId", "substring(lastActivityDate, 0, 10)"]
+          |    features: {
+          |      safireScore: {
+          |        def.sqlExpr: "versionInfo.finalScore",
+          |        default: 0.0,
+          |        type: "NUMERIC"
+          |      }
+          |    }
           |  }
           |}
         """.stripMargin,
