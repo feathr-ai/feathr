@@ -10,7 +10,10 @@ public class AlienFeatureValue {
     this.floatValue = floatValue;
     this.stringValue = stringValue;
   }
-
+  public AlienFeatureValue() {
+    this.floatValue = null;
+    this.stringValue = null;
+  }
   public static AlienFeatureValue fromFloat(float floatValue) {
     return new AlienFeatureValue(floatValue, null);
   }

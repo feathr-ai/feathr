@@ -1,13 +1,16 @@
 package com.linkedin.feathr.offline.mvel
 
 import com.linkedin.feathr.common.{FeatureValue, FeatureVariableResolver}
+import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import org.mvel2.integration.VariableResolver
 import org.mvel2.integration.impl.BaseVariableResolverFactory
 
+import java.util.Optional
 import scala.collection.JavaConverters._
 
-private[offline] class FeatureVariableResolverFactory(features: Map[String, Option[FeatureValue]]) extends BaseVariableResolverFactory {
-  variableResolvers = features.mapValues(x => new FeatureVariableResolver(x.orNull)).asInstanceOf[Map[String, VariableResolver]].asJava
+private[offline] class FeatureVariableResolverFactory(features: Map[String, Option[FeatureValue]], mvelContext: Option[FeathrExpressionExecutionContext]) extends BaseVariableResolverFactory {
+
+  variableResolvers = features.mapValues(x => new FeatureVariableResolver(x.orNull, Optional.ofNullable(mvelContext.orNull))).asInstanceOf[Map[String, VariableResolver]].asJava
 
   override def isTarget(name: String): Boolean = features.contains(name)
 
