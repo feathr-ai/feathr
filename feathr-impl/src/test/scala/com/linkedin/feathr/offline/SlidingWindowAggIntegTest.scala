@@ -1,13 +1,9 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.offline.AssertFeatureUtils.{rowApproxEquals, validateRows}
-import com.linkedin.feathr.offline.client.FeathrClient
-import com.linkedin.feathr.offline.config.FeatureJoinConfig
-import com.linkedin.feathr.offline.job.FeatureJoinJob
-import com.linkedin.feathr.offline.job.LocalFeatureJoinJob.loadObservationAsFDS
 import com.linkedin.feathr.offline.transformation.MultiLevelAggregationTransform
+import com.linkedin.feathr.offline.util.FeathrUtils
 import com.linkedin.feathr.offline.util.FeathrUtils.{FILTER_NULLS, SKIP_MISSING_FEATURE, setFeathrJobParam}
-import com.linkedin.feathr.offline.util.{FeathrUtils, SuppressedExceptionHandlerUtils}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
@@ -88,10 +84,16 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   @Test
-  def testSWABucketedDistinctCount: Unit = {
+  def testSWABucketedAggregations: Unit = {
     val df = getDf()
-    val aggFunction = "BUCKETED_COUNT_DISTINCT"
-    val featureDefAggField = "value"
+    val aggFunctionAndField = Seq(("BUCKETED_COUNT_DISTINCT", "value"), ("BUCKETED_SUM", "length(value)"))
+    aggFunctionAndField.map { case (func, field) => {
+      testSWABucketedHelper(df, func, field)
+      }
+    }
+  }
+
+  def testSWABucketedHelper(df: DataFrame, aggFunction: String, featureDefAggField: String): Unit = {
     bucketedDistinctCount(df, "5m", featureDefAggField, aggFunction)
     bucketedDistinctCount(df, "1h", featureDefAggField, aggFunction)
     bucketedDistinctCount(df, "1d", featureDefAggField, aggFunction)

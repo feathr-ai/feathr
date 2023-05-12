@@ -5,7 +5,10 @@ import com.linkedin.feathr.common.{DateTimeParam, DateTimeUtils, JoiningFeatureP
 import com.linkedin.feathr.offline.anchored.anchorExtractor.TimeWindowConfigurableAnchorExtractor
 import com.linkedin.feathr.offline.job.FeatureGenSpec
 import com.linkedin.feathr.offline.logical.FeatureGroups
+import com.linkedin.feathr.offline.util.FeathrUtils
+import org.apache.spark.sql.SparkSession
 
+import java.time.Duration
 import scala.annotation.tailrec
 import scala.collection.convert.wrapAll._
 
@@ -100,15 +103,19 @@ private[offline] object FeatureGenKeyTagAnalyzer extends FeatureGenKeyTagAnalyze
       featureGenSpec: FeatureGenSpec,
       featureGroups: FeatureGroups): Seq[JoiningFeatureParams] = {
     val refTime = featureGenSpec.dateTimeParam
+    val ss = SparkSession.builder().getOrCreate()
+    val expand_days = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.EXPAND_DAYS_IN_FEATURE_GENERATION_CUTOFF_TIME).toInt
     taggedFeature.map(f => {
       val featureName = f.getFeatureName
       val featureAnchorWithSource = featureGroups.allAnchoredFeatures(featureName)
       val dateParam = featureAnchorWithSource.featureAnchor.extractor match {
         case extractor: TimeWindowConfigurableAnchorExtractor =>
           val aggFeature = extractor.features(featureName)
-          val dateTimeParam = DateTimeParam.shiftStartTime(refTime, aggFeature.window)
-          DateTimeUtils.toDateParam(dateTimeParam)
-        case _ =>
+          val dateTimeShifted = DateTimeParam.shiftStartTime(refTime, aggFeature.window)
+          val dateTimeParamExpandStart = DateTimeParam.shiftStartTime(dateTimeShifted, Duration.ofDays(expand_days*2))
+          val dateTimeParamExpandEnd = DateTimeParam.shiftEndTime(dateTimeParamExpandStart, Duration.ofDays(expand_days).negated())
+          DateTimeUtils.toDateParam(dateTimeParamExpandEnd)
+      case _ =>
           featureGenSpec.dateParam
       }
       new JoiningFeatureParams(f.getKeyTag, f.getFeatureName, Option(dateParam))

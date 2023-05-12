@@ -13,6 +13,7 @@ import com.linkedin.feathr.offline.transformation.FeatureColumnFormat
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
+import com.linkedin.feathr.swj.aggregate.AggregationType.AggregationType
 import com.linkedin.feathr.swj.{FactData, GroupBySpec, LateralViewParams, SlidingWindowFeature, WindowSpec}
 import com.linkedin.feathr.swj.aggregate.{AggregationType, AvgAggregate, AvgPoolingAggregate, CountAggregate, CountDistinctAggregate, DummyAggregate, LatestAggregate, MaxAggregate, MaxPoolingAggregate, MinAggregate, MinPoolingAggregate, SumAggregate}
 import org.apache.logging.log4j.LogManager
@@ -20,7 +21,6 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import org.apache.spark.util.sketch.BloomFilter
-
 import java.text.SimpleDateFormat
 import java.time._
 
@@ -40,6 +40,14 @@ private[offline] object SlidingWindowFeatureUtils {
   val UTC_TIMEZONE_OFFSET = "-0000" // PDT/PST
   val DEFAULT_TIME_DELAY = "Default-time-delay"
   val TIMESTAMP_PARTITION_COLUMN = "__feathr_timestamp_column_from_partition"
+
+  /**
+   * Check if an aggregation function is bucketed
+   * @param aggregateFunction function type
+   */
+  def isBucketedFunction(aggregateFunction: AggregationType): Boolean = {
+    aggregateFunction.toString.startsWith("BUCKETED")
+  }
 
   /**
    * Check if an anchor contains window aggregate features.
@@ -187,6 +195,7 @@ private[offline] object SlidingWindowFeatureUtils {
       case AggregationType.MIN_POOLING => new MinPoolingAggregate(featureDef)
       case AggregationType.AVG_POOLING => new AvgPoolingAggregate(featureDef)
       case AggregationType.BUCKETED_COUNT_DISTINCT => new DummyAggregate(featureDef)
+      case AggregationType.BUCKETED_SUM => new DummyAggregate(featureDef)
     }
     swj.SlidingWindowFeature(featureName, aggregationSpec, windowSpec, filter, groupBySpec, lateralViewParams)
   }
