@@ -20,64 +20,12 @@ from feathr.definition.dtype import FeatureType, str_to_value_type, value_type_t
 from feathr.definition.feature import Feature, FeatureBase
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.repo_definitions import RepoDefinitions
-from feathr.definition.source import GenericSource, HdfsSource, InputContext, JdbcSource, SnowflakeSource, Source, SparkSqlSource
+from feathr.definition.source import GenericSource, HdfsSource, InputContext, JdbcSource, SnowflakeSource, Source, SparkSqlSource, KafKaSource, KafkaConfig, AvroJsonSchema
 from feathr.definition.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
 from feathr.definition.typed_key import TypedKey
 from feathr.registry.feature_registry import FeathrRegistry
 from feathr.utils._file_utils import write_to_file
-
-def to_camel(s):
-    if not s:
-        return s
-    if isinstance(s, str):
-        if "_" in s:
-            s = sub(r"(_)+", " ", s).title().replace(" ", "")
-            return ''.join([s[0].lower(), s[1:]])
-        return s
-    elif isinstance(s, list):
-        return [to_camel(i) for i in s]
-    elif isinstance(s, dict):
-        return dict([(to_camel(k), s[k]) for k in s])
-
-
-def _topological_sort(derived_feature_list: List[DerivedFeature]) -> List[DerivedFeature]:
-    """
-    In the current registry implementation, we need to make sure all upstream are registered before registering one derived feature
-    Thus we need to sort derived features by the partial order of dependencies, upstream to downstream.
-    """
-    ret = []
-    # We don't want to destroy the input list
-    input = derived_feature_list.copy()
-
-    # Each round add the most downstream features into `ret`, so `ret` is in reversed order
-    while input:
-        # Process all remaining features
-        current = input.copy()
-
-        # In Python you should not alter content while iterating
-        current_copy = current.copy()
-
-        # Go over all remaining features to see if some feature depends on others
-        for f in current_copy:
-            for i in f.input_features:
-                if i in current:
-                    # Someone depends on feature `i`, so `i` is **not** the most downstream
-                    current.remove(i)
-
-        # Now `current` contains only the most downstream features in this round
-        ret.extend(current)
-
-        # Remove one level of dependency from input
-        for f in current:
-            input.remove(f)
-
-    # The ret was in a reversed order when it's generated
-    ret.reverse()
-
-    if len(set(ret)) != len(set(derived_feature_list)):
-        raise ValueError("Cyclic dependency detected")
-    return ret
-
+from feathr.registry.registry_utils import topological_sort, to_camel,source_to_def, anchor_to_def, transformation_to_def, feature_type_to_def, typed_key_to_def, feature_to_def, derived_feature_to_def, _correct_function_indentation
 
 class _FeatureRegistry(FeathrRegistry):
     def __init__(self, project_name: str, endpoint: str, project_tags: Dict[str, str] = None, credential=None, config_path=None):
@@ -120,7 +68,7 @@ class _FeatureRegistry(FeathrRegistry):
                     feature._registry_id = self._create_anchor_feature(
                         anchor._registry_id, feature)
         # 4. Create all derived features on the registry
-        for df in _topological_sort(derived_feature_list):
+        for df in topological_sort(derived_feature_list):
             if not hasattr(df, "_registry_id"):
                 df._registry_id = self._create_derived_feature(df)
         url = '/'.join(self.endpoint.split('/')[:3])       
@@ -228,58 +176,6 @@ def check(r):
     return r
 
 
-def source_to_def(v: Source) -> dict:
-    ret = {}
-    if v.name == INPUT_CONTEXT:
-        return {
-            "name": INPUT_CONTEXT,
-            "type": INPUT_CONTEXT,
-            "path": INPUT_CONTEXT,
-        }
-    elif isinstance(v, HdfsSource):
-        ret = {
-            "name": v.name,
-            "type": urlparse(v.path).scheme,
-            "path": v.path,
-        }
-    elif isinstance(v, SnowflakeSource):
-        ret = {
-            "name": v.name,
-            "type": "SNOWFLAKE",
-            "path": v.path,
-        }
-    elif isinstance(v, JdbcSource):
-        ret = {
-            "name": v.name,
-            "type": "jdbc",
-            "url": v.url,
-        }
-        if hasattr(v, "dbtable") and v.dbtable:
-            ret["dbtable"] = v.dbtable
-        if hasattr(v, "query") and v.query:
-            ret["query"] = v.query
-        if hasattr(v, "auth") and v.auth:
-            ret["auth"] = v.auth
-    elif isinstance(v, GenericSource):
-        ret = v.to_dict()
-        ret["name"] = v.name
-    elif isinstance(v, SparkSqlSource):
-        ret = v.to_dict()
-        ret["name"] = v.name
-    else:
-        raise ValueError(f"Unsupported source type {v.__class__}")
-    if hasattr(v, "preprocessing") and v.preprocessing:
-        ret["preprocessing"] = inspect.getsource(v.preprocessing)
-    if v.event_timestamp_column:
-        ret["eventTimestampColumn"] = v.event_timestamp_column
-        ret["event_timestamp_column"] = v.event_timestamp_column
-    if v.timestamp_format:
-        ret["timestampFormat"] = v.timestamp_format
-        ret["timestamp_format"] = v.timestamp_format
-    if v.registry_tags:
-        ret["tags"] = v.registry_tags
-    return ret
-
 
 def dict_to_source(v: dict) -> Source:
     id = UUID(v["guid"])
@@ -326,6 +222,10 @@ def dict_to_source(v: dict) -> Source:
                                 timestamp_format=v["attributes"].get(
                                     "timestampFormat"),
                                 registry_tags=v["attributes"].get("tags", {}))
+    elif type == "kafka":
+        # print('v["attributes"]', v["attributes"])
+        kafka_config = KafkaConfig(brokers=v["attributes"]["brokers"], topics=v["attributes"]["topics"], schema=AvroJsonSchema(schemaStr= v["attributes"]["schema"]))
+        source = KafKaSource(name=v["attributes"]["name"], kafkaConfig=kafka_config, registry_tags=v["attributes"].get("tags", {}))
     elif type == "generic":
         options = v["attributes"].copy()
         # These are not options
@@ -373,17 +273,6 @@ def dict_to_source(v: dict) -> Source:
     return source
 
 
-def anchor_to_def(v: FeatureAnchor) -> dict:
-    source_id = v.source._registry_id
-    ret = {
-        "name": v.name,
-        "sourceId": str(source_id),
-    }
-    if v.registry_tags:
-        ret["tags"] = v.registry_tags
-    return ret
-
-
 def dict_to_anchor(v: dict) -> FeatureAnchor:
     ret = FeatureAnchor(name=v["attributes"]["name"],
                         source=None,
@@ -397,27 +286,7 @@ def dict_to_anchor(v: dict) -> FeatureAnchor:
     return ret
 
 
-def transformation_to_def(v: Transformation) -> dict:
-    if isinstance(v, ExpressionTransformation):
-        return {
-            "transformExpr": v.expr
-        }
-    elif isinstance(v, WindowAggTransformation):
-        ret = {
-            "defExpr": v.def_expr,
-        }
-        if v.agg_func:
-            ret["aggFunc"] = v.agg_func
-        if v.window:
-            ret["window"] = v.window
-        if v.group_by:
-            ret["groupBy"] = v.group_by
-        if v.filter:
-            ret["filter"] = v.filter
-        if v.limit:
-            ret["limit"] = v.limit
-        return ret
-    raise ValueError("Unsupported Transformation type")
+
 
 
 def dict_to_transformation(v: dict) -> Transformation:
@@ -477,18 +346,6 @@ def dict_to_typed_key(v: dict) -> TypedKey:
                     key_column_alias=v.get("keyColumnAlias"))
 
 
-def feature_to_def(v: Feature) -> dict:
-    ret = {
-        "name": v.name,
-        "featureType": feature_type_to_def(v.feature_type),
-        "key": [typed_key_to_def(k) for k in v.key],
-    }
-    if v.transform:
-        ret["transformation"] = transformation_to_def(
-            v.transform)
-    if v.registry_tags:
-        ret["tags"] = v.registry_tags
-    return ret
 
 
 def dict_to_feature(v: dict) -> Feature:
@@ -584,30 +441,3 @@ def dict_to_project(v: dict) -> Tuple[List[FeatureAnchor], List[DerivedFeature]]
     return (list(anchors.values()), list(derived_features.values()))
 
 
-def _correct_function_indentation(user_func: str) -> str:
-    """
-    The function read from registry might have the wrong indentation. We need to correct those indentations.
-    More specifically, we are using the inspect module to copy the function body for UDF for further submission. In that case, there will be situations like this:
-
-    def feathr_udf1(df)
-        return df
-
-            def feathr_udf2(df)
-                return df
-
-    For example, in Feathr test cases, there are similar patterns for `feathr_udf2`, since it's defined in another function body (the registry_test_setup method).
-    This is not an ideal way of dealing with that, but we'll keep it here until we figure out a better way.
-    """
-    if user_func is None:
-        return None
-    # if user_func is a string, turn it into a list of strings so that it can be used below
-    temp_udf_source_code = user_func.split('\n')
-    # assuming the first line is the function name
-    leading_space_num = len(
-        temp_udf_source_code[0]) - len(temp_udf_source_code[0].lstrip())
-    # strip the lines to make sure the function has the correct indentation
-    udf_source_code_striped = [line[leading_space_num:]
-                               for line in temp_udf_source_code]
-    # append '\n' back since it was deleted due to the previous split
-    udf_source_code = [line+'\n' for line in udf_source_code_striped]
-    return " ".join(udf_source_code)
