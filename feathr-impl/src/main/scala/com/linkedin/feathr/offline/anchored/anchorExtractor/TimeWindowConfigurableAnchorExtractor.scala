@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.offline.config.{ComplexAggregationFeature, TimeWindowFeatureDefinition}
 import com.linkedin.feathr.offline.generation.aggregations._
-import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.convertFeathrDefToSwjDef
+import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.{convertFeathrDefToSwjDef, isBucketedFunction}
 import com.linkedin.feathr.sparkcommon.SimpleAnchorExtractorSpark
 import com.linkedin.feathr.swj.aggregate.AggregationType
 import com.typesafe.config.ConfigFactory
@@ -61,7 +61,7 @@ private[offline] class TimeWindowConfigurableAnchorExtractor(@JsonProperty("feat
    */
   override def aggregateAsColumns(groupedDataFrame: DataFrame): Seq[(String, Column)] = {
     val columnPairs = aggFeatures.collect {
-      case (featureName, featureDef) if !featureDef.timeWindowFeatureDefinition.aggregationType.toString.startsWith("BUCKETED_") =>
+      case (featureName, featureDef) if !isBucketedFunction(featureDef.timeWindowFeatureDefinition.aggregationType) =>
         // for basic sliding window aggregation
         // no complex aggregation will be defined
         if (featureDef.swaFeature.lateralView.isDefined) {

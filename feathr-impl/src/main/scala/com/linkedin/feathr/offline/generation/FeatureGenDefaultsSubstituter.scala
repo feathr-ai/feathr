@@ -5,6 +5,7 @@ import com.linkedin.feathr.offline.{FeatureDataFrame, FeatureDataWithJoinKeys}
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.job.FeatureTransformation
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter
+import com.linkedin.feathr.offline.util.FeathrUtils
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -43,7 +44,12 @@ private[offline] class FeatureGenDefaultsSubstituter() {
             withDefaultDF,
             featuresWithKeys.keys.map(FeatureTransformation.FEATURE_NAME_PREFIX + DataFrameColName.getEncodedFeatureRefStrForColName(_)).toSeq)
         //  If there're multiple rows with same join key, keep one record for these duplicate records(same behavior as Feature join API)
-        val withoutDupDF = withNullsDroppedDF.dropDuplicates(joinKeys)
+        val dropDuplicate = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.DROP_DUPLICATE_ROWS_FOR_KEYS_IN_FEATURE_GENERATION).toBoolean
+        val withoutDupDF = if (dropDuplicate) {
+          withNullsDroppedDF.dropDuplicates(joinKeys)
+        } else {
+          withNullsDroppedDF
+        }
         // Return features processed in this iteration
         featuresWithKeys.map(f => (f._1, (FeatureDataFrame(withoutDupDF, inferredTypeConfig), joinKeys)))
     }

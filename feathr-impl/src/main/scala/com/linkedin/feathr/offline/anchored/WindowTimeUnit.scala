@@ -22,6 +22,8 @@ private[offline] object WindowTimeUnit extends Enumeration {
         case H => Duration.ofHours(timeWindowStr.dropRight(1).trim.toLong)
         case M => Duration.ofMinutes(timeWindowStr.dropRight(1).trim.toLong)
         case S => Duration.ofSeconds(timeWindowStr.dropRight(1).trim.toLong)
+        case Y => Duration.ofDays(365*timeWindowStr.dropRight(1).trim.toLong)
+        case W => Duration.ofDays(7*timeWindowStr.dropRight(1).trim.toLong)
         case _ => Duration.ofSeconds(0)
       }
     } catch {

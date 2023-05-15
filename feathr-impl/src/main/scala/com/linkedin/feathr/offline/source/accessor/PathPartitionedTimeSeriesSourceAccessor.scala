@@ -81,7 +81,9 @@ private[offline] class PathPartitionedTimeSeriesSourceAccessor(
       throw new FeathrInputDataException(
         ErrorLabel.FEATHR_USER_ERROR,
         s"Trying to create TimeSeriesSource but no data " +
-          s"is found to create source data. Source path: ${source.path}, source type: ${source.sourceType}")
+          s"is found to create source data. Source path: ${source.path}, source type: ${source.sourceType}." +
+          s"Try to get dataframe from interval ${timeIntervalOpt}, " +
+          s"but source dataset time has interval ${datePartitions.map(_.dateInterval.toString).mkString(",")} ")
     }
     selectedPartitions
   }

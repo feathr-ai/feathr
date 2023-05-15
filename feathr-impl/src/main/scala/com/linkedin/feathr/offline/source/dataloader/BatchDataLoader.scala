@@ -110,7 +110,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
             } else {
               // Throwing exception to avoid dataLoaderHandler hook exception from being suppressed.
               throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} after ${initialNumOfRetries} retries" +
-                s" and retry time of ${retryWaitTime}ms.")
+                s" and retry time of ${retryWaitTime}ms. Error message: ${e.getMessage}")
             }
         }
     }

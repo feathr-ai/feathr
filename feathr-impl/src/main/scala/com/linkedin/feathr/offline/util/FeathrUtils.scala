@@ -53,7 +53,8 @@ private[feathr] object FeathrUtils {
   val SANITY_CHECK_MODE_ROW_COUNT = "sanity.check.row.count"
   val FILTER_NULLS = "filter.nulls"
   val STRING_PARAMETER_DELIMITER = ","
-
+  val EXPAND_DAYS_IN_FEATURE_GENERATION_CUTOFF_TIME = "expand.days.in.feature.generation.cutoff.time"
+  val DROP_DUPLICATE_ROWS_FOR_KEYS_IN_FEATURE_GENERATION = "drop.duplicate.rows.in.feature.generation"
   // Used to check if the current dataframe has satisfied the checkpoint frequency
   val checkPointSequenceNumber = new AtomicLong(0)
 
@@ -88,7 +89,9 @@ private[feathr] object FeathrUtils {
     SPARK_JOIN_MIN_PARALLELISM  -> (SQLConf.buildConf(getFullConfigKeyName(SPARK_JOIN_MIN_PARALLELISM )).stringConf.createOptional, "10"),
     ENABLE_SANITY_CHECK_MODE  -> (SQLConf.buildConf(getFullConfigKeyName(ENABLE_SANITY_CHECK_MODE )).stringConf.createOptional, "false"),
     SANITY_CHECK_MODE_ROW_COUNT  -> (SQLConf.buildConf(getFullConfigKeyName(SANITY_CHECK_MODE_ROW_COUNT )).stringConf.createOptional, "10"),
-    FILTER_NULLS  -> (SQLConf.buildConf(getFullConfigKeyName(FILTER_NULLS )).stringConf.createOptional, "false")
+    FILTER_NULLS  -> (SQLConf.buildConf(getFullConfigKeyName(FILTER_NULLS )).stringConf.createOptional, "false"),
+    EXPAND_DAYS_IN_FEATURE_GENERATION_CUTOFF_TIME  -> (SQLConf.buildConf(getFullConfigKeyName(EXPAND_DAYS_IN_FEATURE_GENERATION_CUTOFF_TIME )).stringConf.createOptional, "0"),
+    DROP_DUPLICATE_ROWS_FOR_KEYS_IN_FEATURE_GENERATION  -> (SQLConf.buildConf(getFullConfigKeyName(DROP_DUPLICATE_ROWS_FOR_KEYS_IN_FEATURE_GENERATION )).stringConf.createOptional, "true")
   )
 
   /**

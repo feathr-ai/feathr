@@ -15,6 +15,7 @@ import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.{DataSourceAccessor, NonTimeBasedDataSourceAccessor, TimeBasedDataSourceAccessor}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
+import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.isBucketedFunction
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
 import com.linkedin.feathr.offline.transformation._
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils.tensorTypeToDataFrameSchema
@@ -207,7 +208,7 @@ private[offline] object FeatureTransformation {
     val featureTypeConfigs = featureAnchorWithSource.featureAnchor.featureTypeConfigs
     val transformedFeatureData: TransformedResult = featureAnchorWithSource.featureAnchor.extractor match {
       case transformer: TimeWindowConfigurableAnchorExtractor =>
-        val nonBucketedFeatures = transformer.features.map(_._2.aggregationType).filter(agg => agg == AggregationType.BUCKETED_COUNT_DISTINCT)
+        val nonBucketedFeatures = transformer.features.map(_._2.aggregationType).filter(agg => isBucketedFunction(agg))
         if (!(nonBucketedFeatures.size != transformer.features || transformer.features.isEmpty)) {
           throw new FeathrFeatureTransformationException(
             ErrorLabel.FEATHR_USER_ERROR,
