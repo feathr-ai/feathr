@@ -1,9 +1,10 @@
 package com.linkedin.feathr.offline.transformation
 
-import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.constructTimeStampExpr
+import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.{constructTimeStampExpr, isBucketedFunction}
 import com.linkedin.feathr.offline.util.AnchorUtils.removeNonAlphaNumChars
 import com.linkedin.feathr.swj.aggregate.AggregationType
-import org.apache.spark.sql.expressions.Window
+import com.linkedin.feathr.swj.aggregate.AggregationType.AggregationType
+import org.apache.spark.sql.expressions.{Window, WindowSpec}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -101,13 +102,36 @@ class MultiLevelAggregationTransform(ss: SparkSession,
         Window.currentRow - 1
       )
 
-    val distinctCount = if (useHyperLogLog) {
-      withKeyColumnsDf.withColumn(outputFeatureColumnName,
-        approx_count_distinct(expr(featureDefFieldField)).over(windowSpec))
-    } else {
-      withKeyColumnsDf.withColumn(aggregatedItemsSoFarInCurrentBasicBucket,
-        collect_set(expr(featureDefFieldField)).over(windowSpec))
-        .withColumn(outputFeatureColumnName, size(col(aggregatedItemsSoFarInCurrentBasicBucket)))
+    val withFeatureDf: DataFrame = withOutputFeatures(featureDefFieldField, outputFeatureColumnName, withKeyColumnsDf, keyColumns, windowSpec, aggregateFunction)
+
+    val intermediateCols = Seq(UtcTimestampColumnName, utc_ts_string, oneHourBucketTimestampColumn, utc_min
+      , roundedMin, basicBucketColumnNameReadable, roundedBasicBucketTimestampColumn, aggregatedItemsSoFarInCurrentBasicBucket,
+      aggregatedItemsEveryFullBasicBucket, featureValueAtBasicLevelFullBucket, outputFeatureColumnName) ++ newKeyColumnExprs.map(_._2)
+    (withFeatureDf, intermediateCols)
+  }
+
+  /**
+   * produce output feature column with the aggregation function
+   */
+  private def withOutputFeatures(featureDefFieldField: String,
+                           outputFeatureColumnName: String,
+                           withKeyColumnsDf: DataFrame,
+                           keyColumns: Seq[String],
+                           windowSpec: WindowSpec,
+                           aggregateFunction: AggregationType): DataFrame = {
+    val withOutputFeatures = aggregateFunction match {
+      case AggregationType.BUCKETED_COUNT_DISTINCT =>
+        if (useHyperLogLog) {
+          withKeyColumnsDf.withColumn(outputFeatureColumnName,
+            approx_count_distinct(expr(featureDefFieldField)).over(windowSpec))
+        } else {
+          withKeyColumnsDf.withColumn(aggregatedItemsSoFarInCurrentBasicBucket,
+            collect_set(expr(featureDefFieldField)).over(windowSpec))
+            .withColumn(outputFeatureColumnName, coalesce(size(col(aggregatedItemsSoFarInCurrentBasicBucket)), lit(0)))
+        }
+      case AggregationType.BUCKETED_SUM =>
+        withKeyColumnsDf.withColumn(outputFeatureColumnName,
+          coalesce(sum(expr(featureDefFieldField)).over(windowSpec), lit(0)))
     }
     val fullBasicUnitWindowSpec = Window.partitionBy(keyColumns.head, keyColumns.tail: _*)
       .orderBy(col(roundedBasicBucketTimestampColumn))
@@ -115,21 +139,24 @@ class MultiLevelAggregationTransform(ss: SparkSession,
         Window.currentRow,
         Window.currentRow
       )
-    val withFeatureDf = distinctCount.withColumn(aggregatedItemsEveryFullBasicBucket,
-      collect_set(expr(featureDefFieldField)).over(fullBasicUnitWindowSpec)
-    ).withColumn(featureValueAtBasicLevelFullBucket, size(col(aggregatedItemsEveryFullBasicBucket)))
-    val intermediateCols = Seq(UtcTimestampColumnName, utc_ts_string, oneHourBucketTimestampColumn, utc_min
-      , roundedMin, basicBucketColumnNameReadable, roundedBasicBucketTimestampColumn, aggregatedItemsSoFarInCurrentBasicBucket,
-      aggregatedItemsEveryFullBasicBucket, featureValueAtBasicLevelFullBucket, outputFeatureColumnName) ++ newKeyColumnExprs.map(_._2)
-    (withFeatureDf, intermediateCols)
+    val withFeatureDf = aggregateFunction match {
+      case AggregationType.BUCKETED_COUNT_DISTINCT =>
+        withOutputFeatures.withColumn(aggregatedItemsEveryFullBasicBucket,
+          collect_set(expr(featureDefFieldField)).over(fullBasicUnitWindowSpec)
+        ).withColumn(featureValueAtBasicLevelFullBucket, size(col(aggregatedItemsEveryFullBasicBucket)))
+      case AggregationType.BUCKETED_SUM =>
+        withOutputFeatures.withColumn(featureValueAtBasicLevelFullBucket,
+          sum(expr(featureDefFieldField)).over(fullBasicUnitWindowSpec))
+    }
+    withFeatureDf
   }
 
   def multiLevelRollUpAggregate(rollUpLevels: Seq[RollUpLevelVal],
-                       df: DataFrame,
-                       keyColumns: Seq[String],
-                       featureDefAggField: String,
-                       basicLevelAggregationFeatureColumn: String,
-                       aggregationFunction: AggregationType.Value): DataFrame = {
+                                df: DataFrame,
+                                keyColumns: Seq[String],
+                                featureDefAggField: String,
+                                basicLevelAggregationFeatureColumn: String,
+                                aggregationFunction: AggregationType.Value): DataFrame = {
     val baseFeatureName = "agg_" + featureDefAggField
     val basicRollupOutputData = if (debug) {
       RollUpOutputData(df,
@@ -189,8 +216,8 @@ class MultiLevelAggregationTransform(ss: SparkSession,
     if (foundLevels.isEmpty) {
       throw new RuntimeException(s"Unsupported window ${window}")
     }
-    if (aggregateFunction != AggregationType.BUCKETED_COUNT_DISTINCT) {
-      throw new RuntimeException(s"Unsupported aggregation function ${aggregateFunc}")
+    if (!isBucketedFunction(aggregateFunction)) {
+      throw new RuntimeException(s"Unsupported aggregation function ${aggregateFunc}. Only Bucketed functions are supported.")
     }
 
     val highLevel = foundLevels.head
@@ -200,7 +227,7 @@ class MultiLevelAggregationTransform(ss: SparkSession,
       highLevel
     }
 
-    val basicAggFeatureName = "feathr_agg_" + removeNonAlphaNumChars(featureDefAggField) + "_" + basicLevel.name
+    val basicAggFeatureName = "feathr_agg_" + removeNonAlphaNumChars(featureDefAggField) + "_" + aggregateFunction + "_" + basicLevel.name
     val (withBasicLevelAggDf, intermediateBasicCols) = applyAggregationAtBasicLevel(df,
       keyColumnExprAndAlias,
       featureDefAggField,
@@ -336,19 +363,11 @@ class MultiLevelAggregationTransform(ss: SparkSession,
     */
       .withColumn(
         itemsInEveryFullBucketAtLowLevelOneHot,
-        if (debug) {
-          when(
-            // isTheFirstRecordInRounded5Minutes
-            isnull(col(previousRoundedBasicBucketInMin)) || col(roundedLowLevelBucketTimestampColumn) =!= col(previousRoundedBasicBucketInMin),
-            col(itemsForEveryFullBucketAtLowLevel)
-          ).otherwise(expr("array()"))
-        } else {
           when(
             // isTheFirstRecordInRounded5Minutes
             isnull(col(previousRoundedBasicBucketInMin)) || col(roundedLowLevelBucketTimestampColumn) =!= col(previousRoundedBasicBucketInMin),
             coalesce(col(featureValueForEveryFullBucketAtLowLevel), lit(0))
           ).otherwise(lit(0))
-        }
       )
     val windowSpec1Hour = Window.partitionBy(keyColumns.head, keyColumns.tail: _*)
       // TODO should sort by utcTimestampColumnName?
@@ -365,37 +384,11 @@ class MultiLevelAggregationTransform(ss: SparkSession,
     apply sum on itemsInEveryFullBucketAtLowLevelOneHot.
     */
     val withAllPreviousLowLevelBucketsDf = withPreviousAggedDataDf.withColumn(aggregatedDataFromAllPreviousLowLevelBuckets,
-      if (debug) {
-        collect_list(itemsInEveryFullBucketAtLowLevelOneHot).over(windowSpec1Hour)
-      } else {
         coalesce(sum(itemsInEveryFullBucketAtLowLevelOneHot).over(windowSpec1Hour), lit(0))
-      }
     )
-    // TODO fix the datatype and remove try
-    val withOutputFeatureDf =
-      if (debug) {
-        try (
-          withAllPreviousLowLevelBucketsDf
-            .withColumn(aggregateDataAtHighLevel,
-              array(array(col(itemsAtCurrentBucketAtLowLevelSoFar)), col(aggregatedDataFromAllPreviousLowLevelBuckets)))
-          ) catch {
-          case e =>
-            try (
-              withAllPreviousLowLevelBucketsDf
-                .withColumn(aggregateDataAtHighLevel,
-                  array(array(array(array(col(itemsAtCurrentBucketAtLowLevelSoFar)))), (col(aggregatedDataFromAllPreviousLowLevelBuckets))))
-              ) catch {
-              case e =>
-                withAllPreviousLowLevelBucketsDf
-                  .withColumn(aggregateDataAtHighLevel,
-                    array(array(array(array(array(col(itemsAtCurrentBucketAtLowLevelSoFar))))), (col(aggregatedDataFromAllPreviousLowLevelBuckets))))
-            }
-        }
-      } else {
-        withAllPreviousLowLevelBucketsDf
+    val withOutputFeatureDf = withAllPreviousLowLevelBucketsDf
           .withColumn(aggregateDataAtHighLevel,
             col(featureValueAtCurrentBucketAtLowLevelSoFar) + col(aggregatedDataFromAllPreviousLowLevelBuckets))
-      }
 
     // Create these output columns for next level roll up
     val itemsForEveryFullBucketAtHighLevel = "itemsForEveryFullBucketAtHighLevel_" + highLevelName
@@ -417,14 +410,9 @@ class MultiLevelAggregationTransform(ss: SparkSession,
       )
 
     val withHighLevelOutputColumnDf = withRoundedHighLevelBucketTimestampColumn.withColumn(itemsForEveryFullBucketAtHighLevel,
-      if(debug) {
-        collect_set(itemsInEveryFullBucketAtLowLevelOneHot).over(windowSpecHighLevel)
-      } else {
         sum(itemsInEveryFullBucketAtLowLevelOneHot).over(windowSpecHighLevel)
-      }
     )
 
-    val highLevelBucketIntervalInMinutes: Int = highLevelName.durationInSecond / 60
     val windowSpecAtHighLevelSoFar = Window.partitionBy(roundedHighLevelBucketTimestampColumn, keyColumns: _*)
       .orderBy(col(roundedLowLevelBucketTimestampColumn))
       .rangeBetween(
@@ -434,23 +422,12 @@ class MultiLevelAggregationTransform(ss: SparkSession,
     // e.g. if 5m -> 1h, this means all the full 5m within the current hour, it might be 0 - 11.
     val aggregatedDataFromAllPreviousLowLevelFullBuckets = "aggregatedDataFromAllPreviousLowLevelFullBuckets" + nameSuffix
     val withFullBucketLowLevelDf = withHighLevelOutputColumnDf.withColumn(aggregatedDataFromAllPreviousLowLevelFullBuckets,
-      if (debug) {
-        collect_set(itemsInEveryFullBucketAtLowLevelOneHot).over(windowSpecAtHighLevelSoFar)
-      } else {
         coalesce(sum(itemsInEveryFullBucketAtLowLevelOneHot).over(windowSpecAtHighLevelSoFar), lit(0))
-      }
     )
-    val withCurrentHighLevelBucketDf = if (debug) {
-      withFullBucketLowLevelDf.withColumn(itemsAtCurrentBucketAtHighSoFar,
-        concat(col(aggregatedDataFromAllPreviousLowLevelFullBuckets).cast("string"),
-          col(itemsAtCurrentBucketAtLowLevelSoFar).cast("string"))
-      )
-    } else {
+    val withCurrentHighLevelBucketDf =
       withFullBucketLowLevelDf.withColumn(itemsAtCurrentBucketAtHighSoFar,
         col(aggregatedDataFromAllPreviousLowLevelFullBuckets) +
-          col(featureValueAtCurrentBucketAtLowLevelSoFar)
-      )
-    }
+          col(featureValueAtCurrentBucketAtLowLevelSoFar))
 
     val intermediateOutputCols = Seq(previousRoundedBasicBucketInMin, itemsInEveryFullBucketAtLowLevelOneHot,
       aggregatedDataFromAllPreviousLowLevelBuckets, timeColumnName, roundedHighLevelBucketTimestampColumn,

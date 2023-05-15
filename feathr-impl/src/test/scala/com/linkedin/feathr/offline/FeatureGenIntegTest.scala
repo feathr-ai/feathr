@@ -1593,14 +1593,19 @@ class FeatureGenIntegTest extends FeathrIntegTest {
         |      g: {
         |        def: count   // the column that contains the raw view count
         |        aggregation: BUCKETED_COUNT_DISTINCT
-        |        window: "1d"
+        |        window: "1y"
+        |      }
+        |       h: {
+        |        def: count   // the column that contains the raw view count
+        |        aggregation: BUCKETED_SUM
+        |        window: "1y"
         |      }
         |    }
         |  }
         |}
       """.stripMargin
 
-    val features = Seq("g")
+    val features = Seq("g", "h")
     val keyField = "key0"
     val featureGenConfigStr =
       s"""
