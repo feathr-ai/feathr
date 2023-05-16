@@ -66,7 +66,7 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
         col(genFeatureColumnName(FEATURE_NAME_PREFIX + expansionFeatureName)))
       val missingFeature = derivedFeature.producedFeatureNames.head
       log.warn(s"Missing data for features ${missingFeature}. Default values will be populated for this column.")
-      SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs += missingFeature
+      SuppressedExceptionHandlerUtils.missingFeatures += missingFeature
       return seqJoinFeatureResultWithRenamed
     }
     val aggregationFunction = seqJoinDerivationFunction.aggregation

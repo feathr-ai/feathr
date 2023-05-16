@@ -114,7 +114,6 @@ private[offline] class AnchoredFeatureJoinStep(
         !containsFeature.contains(true)
       })
       log.warn(s"Missing data for features ${missingFeatures.mkString}. Default values will be populated for this column.")
-      SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs += missingFeatures.mkString
       SuppressedExceptionHandlerUtils.missingFeatures ++= missingFeatures
       val missingAnchoredFeatures = ctx.featureGroups.allAnchoredFeatures.filter(featureName => missingFeatures.contains(featureName._1))
       substituteDefaultsForDataMissingFeatures(ctx.sparkSession, observationDF, ctx.logicalPlan,

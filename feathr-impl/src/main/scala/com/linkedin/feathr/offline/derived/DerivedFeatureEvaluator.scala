@@ -10,7 +10,7 @@ import com.linkedin.feathr.offline.join.algorithms.{SequentialJoinConditionBuild
 import com.linkedin.feathr.offline.logical.FeatureGroups
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
-import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
+import com.linkedin.feathr.offline.util.{FeaturizedDatasetUtils, SuppressedExceptionHandlerUtils}
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
 import com.linkedin.feathr.sparkcommon.FeatureDerivationFunctionSpark
 import com.linkedin.feathr.{common, offline}
@@ -37,6 +37,9 @@ private[offline] class DerivedFeatureEvaluator(derivationStrategies: DerivationS
   def evaluate(keyTag: Seq[Int], keyTagList: Seq[String], contextDF: DataFrame, derivedFeature: DerivedFeature): FeatureDataFrame = {
     val tags = Some(keyTag.map(keyTagList).toList)
     val producedFeatureColName = DataFrameColName.genFeatureColumnName(derivedFeature.producedFeatureNames.head, tags)
+    if (derivedFeature.consumedFeatureNames.exists(x => SuppressedExceptionHandlerUtils.missingFeatures.contains(x.getFeatureName))) {
+      SuppressedExceptionHandlerUtils.missingFeatures.add(derivedFeature.producedFeatureNames.head)
+    }
 
     derivedFeature.derivation match {
       case g: SeqJoinDerivationFunction =>

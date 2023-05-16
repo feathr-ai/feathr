@@ -6,7 +6,7 @@ import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
-import com.linkedin.feathr.offline.util.FeathrTestUtils
+import com.linkedin.feathr.offline.util.{FeathrTestUtils, SuppressedExceptionHandlerUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.{ADD_DEFAULT_COL_FOR_MISSING_DATA, SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
@@ -560,6 +560,9 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     assertEquals(featureList(0).getAs[Row]("featureWithNullSql"), 1.0f)
     assertEquals(featureList(0).getAs[Row]("seqJoin_featureWithNull"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(1.0f))))
+    assertEquals(SuppressedExceptionHandlerUtils.missingFeatures,
+      Set("featureWithNull", "featureWithNull3", "featureWithNull5", "featureWithNull4", "featureWithNull7",
+        "aEmbedding", "featureWithNull6", "derived_featureWithNull", "seqJoin_featureWithNull"))
     setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
