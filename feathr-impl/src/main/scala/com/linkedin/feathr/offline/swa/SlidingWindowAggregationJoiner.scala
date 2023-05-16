@@ -179,7 +179,7 @@ private[offline] class SlidingWindowAggregationJoiner(
           res.map(emptyFeatures.add)
           val exceptionMsg = emptyFeatures.mkString
           log.warn(s"Missing data for features ${emptyFeatures}. Default values will be populated for this column.")
-          SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs += exceptionMsg
+          SuppressedExceptionHandlerUtils.missingFeatures ++= emptyFeatures
           anchors.map(anchor => (anchor, originalSourceDf))
         } else {
         val sourceDF: DataFrame = preprocessedDf match {
