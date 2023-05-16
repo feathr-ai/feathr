@@ -83,7 +83,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
   def joinFeaturesWithSuppressedExceptions(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset,
     jobContext: JoinJobContext = JoinJobContext()): (SparkFeaturizedDataset, Map[String, String]) = {
     (joinFeatures(joinConfig, obsData, jobContext), Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
-      -> SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs))
+      -> SuppressedExceptionHandlerUtils.missingFeatures.mkString))
   }
 
   /**
@@ -231,7 +231,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
 
     val (joinedDF, header) = doJoinObsAndFeatures(joinConfig, jobContext, obsData)
     (joinedDF, header, Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
-      -> SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs))
+      -> SuppressedExceptionHandlerUtils.missingFeatures.mkString))
   }
 
   /**
