@@ -17,7 +17,7 @@ import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
-import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils, FeaturizedDatasetUtils}
+import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils, FeaturizedDatasetUtils, SuppressedExceptionHandlerUtils}
 import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -113,10 +113,13 @@ private[offline] class AnchoredFeatureJoinStep(
         val containsFeature: Seq[Boolean] = anchorDFMap.map(y => y._1.selectedFeatures.contains(x)).toSeq
         !containsFeature.contains(true)
       })
+      log.warn(s"Missing data for features ${missingFeatures.mkString}. Default values will be populated for this column.")
+      SuppressedExceptionHandlerUtils.missingDataSuppressedExceptionMsgs += missingFeatures.mkString
+      SuppressedExceptionHandlerUtils.missingFeatures ++= missingFeatures
       val missingAnchoredFeatures = ctx.featureGroups.allAnchoredFeatures.filter(featureName => missingFeatures.contains(featureName._1))
       substituteDefaultsForDataMissingFeatures(ctx.sparkSession, observationDF, ctx.logicalPlan,
         missingAnchoredFeatures)
-    }else observationDF
+    } else observationDF
 
     val allAnchoredFeatures: Map[String, FeatureAnchorWithSource] = ctx.featureGroups.allAnchoredFeatures
     val joinStages = ctx.logicalPlan.joinStages

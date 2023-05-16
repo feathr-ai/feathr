@@ -86,7 +86,6 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
         } catch {
           case e: Exception => if (shouldSkipFeature || shouldAddDefaultCol) None else throw e
         }
-
         anchorsWithDate.map(anchor => (anchor, timeSeriesSource))
     })
   }

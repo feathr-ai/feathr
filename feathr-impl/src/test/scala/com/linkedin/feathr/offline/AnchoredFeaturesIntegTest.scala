@@ -409,7 +409,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |   key: a_id
           |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "featureWithNull3", "featureWithNull4",
           |    "featureWithNull5", "derived_featureWithNull2", "featureWithNull6", "featureWithNull7", "derived_featureWithNull7"
-          |    "aEmbedding", "memberEmbeddingAutoTZ", "aEmbedding", "featureWithNullSql"]
+          |    "aEmbedding", "memberEmbeddingAutoTZ", "aEmbedding", "featureWithNullSql", "seqJoin_featureWithNull"]
           | }
       """.stripMargin,
       featureDefAsString =
@@ -529,6 +529,14 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           | derived_featureWithNull: "featureWithNull * 2"
           | derived_featureWithNull2: "featureWithNull2 * 2"
           | derived_featureWithNull7: "featureWithNull7 * 2"
+          | seqJoin_featureWithNull: {
+          |         key: x
+          |         join: {
+          |           base: {key: x, feature: featureWithNull2}
+          |           expansion: {key: y, feature: featureWithNull5}
+          |         }
+          |         aggregation: "SUM"
+          |     }
           |}
         """.stripMargin,
       observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
@@ -550,6 +558,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     assertEquals(featureList(0).getAs[Row]("derived_featureWithNull2"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
     assertEquals(featureList(0).getAs[Row]("featureWithNullSql"), 1.0f)
+    assertEquals(featureList(0).getAs[Row]("seqJoin_featureWithNull"),
+      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(1.0f))))
     setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
