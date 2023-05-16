@@ -562,7 +562,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(1.0f))))
     assertEquals(SuppressedExceptionHandlerUtils.missingFeatures,
       Set("featureWithNull", "featureWithNull3", "featureWithNull5", "featureWithNull4", "featureWithNull7",
-        "aEmbedding", "featureWithNull6", "derived_featureWithNull", "seqJoin_featureWithNull"))
+        "aEmbedding", "featureWithNull6", "derived_featureWithNull", "seqJoin_featureWithNull", "derived_featureWithNull7"))
     setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
