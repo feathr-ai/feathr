@@ -11,8 +11,9 @@ import com.linkedin.feathr.offline.job.FeatureTransformation.FEATURE_NAME_PREFIX
 import com.linkedin.feathr.offline.join.algorithms.{SeqJoinExplodedJoinKeyColumnAppender, SequentialJoinConditionBuilder, SparkJoinWithJoinCondition}
 import com.linkedin.feathr.offline.logical.FeatureGroups
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
+import com.linkedin.feathr.offline.util.FeathrUtils
 import com.linkedin.feathr.offline.{TestFeathr, TestUtils}
-import org.apache.spark.SparkException
+import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import org.apache.spark.sql.functions.{when => _, _}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{AnalysisException, DataFrame, Row, SparkSession}
@@ -985,6 +986,12 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockDerivationFunction = mock[SeqJoinDerivationFunction]
     val mockBaseTaggedDependency = mock[BaseTaggedDependency]
     val mockTaggedDependency = mock[TaggedDependency]
+    val mockSparkContext = mock[SparkContext]
+    val mockSparkConf = mock[SparkConf]
+    when(mockSparkContext.getConf).thenReturn(mockSparkConf)
+    when(mockSparkSession.sparkContext).thenReturn(mockSparkContext)
+    when(mockSparkConf.get(s"${FeathrUtils.FEATHR_PARAMS_PREFIX}${FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA}", "false"))
+      .thenReturn("false")
     // mock derivation function
     when(mockDerivedFeature.derivation.asInstanceOf[SeqJoinDerivationFunction]).thenReturn(mockDerivationFunction)
     when(mockDerivedFeature.producedFeatureNames).thenReturn(Seq("seqJoinFeature"))
@@ -1059,6 +1066,13 @@ class TestSequentialJoinAsDerivation extends TestFeathr with MockitoSugar {
     val mockDerivationFunction = mock[SeqJoinDerivationFunction]
     val mockBaseTaggedDependency = mock[BaseTaggedDependency]
     val mockTaggedDependency = mock[TaggedDependency]
+    val mockSparkConf = mock[SparkConf]
+    val mockSparkContext = mock[SparkContext]
+    when(mockSparkSession.sparkContext).thenReturn(mockSparkContext)
+    when(mockSparkContext.getConf).thenReturn(mockSparkConf)
+    when(mockSparkConf.get(s"${FeathrUtils.FEATHR_PARAMS_PREFIX}${FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA}",
+      "false"))
+      .thenReturn("false")
     // mock derivation function
     when(mockDerivedFeature.derivation.asInstanceOf[SeqJoinDerivationFunction]).thenReturn(mockDerivationFunction)
     when(mockDerivedFeature.producedFeatureNames).thenReturn(Seq("seqJoinFeature"))
