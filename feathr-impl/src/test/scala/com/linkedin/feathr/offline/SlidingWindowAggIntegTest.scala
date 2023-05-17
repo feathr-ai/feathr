@@ -5,7 +5,6 @@ import com.linkedin.feathr.offline.transformation.MultiLevelAggregationTransform
 import com.linkedin.feathr.offline.util.FeathrUtils
 import com.linkedin.feathr.offline.util.FeathrUtils.{FILTER_NULLS, SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.testng.Assert._
@@ -19,10 +18,7 @@ import scala.collection.mutable
 
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StringType, TimestampType}
-
-import scala.concurrent.duration._
 class SlidingWindowAggIntegTest extends FeathrIntegTest {
 
   def getDf(): DataFrame = {
@@ -302,7 +298,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
           |    type: "PASSTHROUGH"
           |  }
           |  swaSource: {
-          |    location: { path: "slidingWindoAgg/localSWAAnchorTestFeatureData/daily" }
+          |    location: { path: "missingData/localSWAAnchorTestFeatureData/daily" }
           |    timePartitionPattern: "yyyy/MM/dd"
           |    timeWindowParameters: {
           |      timestampColumn: "timestamp"
