@@ -566,6 +566,94 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
+  /*
+   * Test features with fdsExtract.
+   */
+  @Test
+  def testFeaturesWithFdsExtract: Unit = {
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString =
+        """
+          | features: {
+          |   key: a_id
+          |   featureList: ["featureWithNullDerived"]
+          | }
+      """.stripMargin,
+      featureDefAsString =
+        """
+          | anchors: {
+          |  anchor1: {
+          |    source: "anchorAndDerivations/nullValueSource.avro.json"
+          |    key.sqlExpr: mId
+          |    features: {
+          |      featureWithNull {
+          |      def.sqlExpr: "FDSExtract(denseValue)"
+          |      type:{
+          |          type: TENSOR
+          |           tensorCategory: DENSE
+          |           shape: [2,5]
+          |           dimensionType: [INT, INT]
+          |           valType: STRING
+          |          }
+          |         }
+          |       }
+          |  }
+          |}
+          |derivations: {
+          |featureWithNullDerived:{
+          |        key: ["id"]
+          |        inputs:
+          |        {
+          |            fv: {key: ["id"], feature: featureWithNull}
+          |        }
+          |        definition.sqlExpr: "coalesce(fv,  ARRAY(ARRAY(\"aa\", \"bb\", \"cc\", \"dd\", \"ee\"), ARRAY(\"UNK\", \"UNK\", \"UNK\", \"UNK\", \"UNK\")))"
+          |        type:
+          |        {
+          |            type: TENSOR
+          |            tensorCategory: DENSE
+          |            shape: [2,5]
+          |            dimensionType: [INT, INT]
+          |            valType: STRING
+          |        }
+          |}
+          |}
+        """.stripMargin,
+      observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
+
+    val selectedColumns = Seq("a_id", "featureWithNullDerived")
+    val filteredDf = df.data.select(selectedColumns.head, selectedColumns.tail: _*)
+
+    val expectedDf = ss.createDataFrame(
+      ss.sparkContext.parallelize(
+        Seq(
+          Row(
+            // a_id
+            "1",
+            // featureWithNull
+            mutable.WrappedArray.make(Array(Array("aa", "bb", "cc", "dd", "ee"), Array("a", "a", "a", "a", "a"))),
+          ),
+          Row(
+            // a_id
+            "2",
+            // f3eatureWithNull
+            mutable.WrappedArray.make(Array(Array("aa", "bb", "cc", "dd", "ee"), Array("UNK", "UNK", "UNK", "UNK", "UNK")))
+          ),
+          Row(
+            // a_id
+            "3",
+            // featureWithNull
+            mutable.WrappedArray.make(Array(Array("aa", "bb", "cc", "dd", "ee"), Array("a", "a", "a", "a", "a")),
+            )))),
+      StructType(
+        List(
+          StructField("a_id", StringType, true),
+          StructField("featureWithNull", ArrayType(ArrayType(StringType, true), true), true)
+        )))
+
+    def cmpFunc(row: Row): String = row.get(0).toString
+
+    FeathrTestUtils.assertDataFrameApproximatelyEquals(filteredDf, expectedDf, cmpFunc)
+  }
 
   /*
    * Test features with null values.
