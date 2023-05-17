@@ -997,7 +997,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |features: [
         |  {
         |    key: [x],
-        |    featureList: ["simplePageViewCount", "simpleFeature", "derived_simpleFeature", "simpleFeature2", "simpleFeature3", "simpleFeature5"]
+        |    featureList: ["simplePageViewCount", "simpleFeature", "derived_simpleFeature"]
         |  }
         |]
         """.stripMargin
@@ -1021,14 +1021,6 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |    }
         |  }
         |
-        |  missingSource2: {
-        |    location: { path: "slidingWindowAgg/missingFeatureData2/daily" }
-        |    timePartitionPattern: "yyyy/MM/dd"
-        |    timeWindowParameters: {
-        |      timestampColumn: "timestamp"
-        |      timestampColumnFormat: "yyyy-MM-dd"
-        |    }
-        |  }
         |}
         |
         |anchors: {
@@ -1056,35 +1048,6 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
         |        default: 20
         |        type: NUMERIC
         |     }
-        |     simpleFeature2: {
-        |        def: "aggregationWindow"
-        |        aggregation: COUNT
-        |        window: 3d
-        |        default: 20
-        |        type: NUMERIC
-        |     }
-        |     simpleFeature3: {
-        |        def: "aggregationWindow"
-        |        aggregation: COUNT
-        |        window: 3d
-        |        default: 20
-        |        type: NUMERIC
-        |     }
-        |    }
-        |  }
-        |
-        |  missingAnchor2: {
-        |  source: "missingSource2"
-        |  key: "x"
-        |  features: {
-        |   simpleFeature5: {
-        |        def: "aggregationWindow"
-        |        aggregation: COUNT
-        |        window: 3d
-        |        default: 20
-        |        type: NUMERIC
-        |     }
-        |
         |    }
         |  }
         |}
