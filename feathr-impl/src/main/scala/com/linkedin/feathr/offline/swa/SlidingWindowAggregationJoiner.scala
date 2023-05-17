@@ -177,7 +177,6 @@ private[offline] class SlidingWindowAggregationJoiner(
         } else if (originalSourceDf.isEmpty && shouldAddDefaultColForMissingData) { // If add default col for missing data flag features
           // flag is set and there is a data related error, an empty dataframe will be returned.
           res.map(emptyFeatures.add)
-          val exceptionMsg = emptyFeatures.mkString
           log.warn(s"Missing data for features ${emptyFeatures}. Default values will be populated for this column.")
           SuppressedExceptionHandlerUtils.missingFeatures ++= emptyFeatures
           anchors.map(anchor => (anchor, originalSourceDf))
@@ -299,7 +298,7 @@ private[offline] class SlidingWindowAggregationJoiner(
           substituteDefaults(withFDSFeatureDF, defaults.keys.filter(joinedFeatures.contains).toSeq, defaults, userSpecifiedTypesConfig, ss)
 
         allInferredFeatureTypes ++= inferredTypes
-        contextDF = standardizeFeatureColumnNames(origContextObsColumns, withFeatureContextDF, joinedFeatures, keyTags.map(keyTagList))
+        contextDF = standardizeFeatureColumnNames(ss, origContextObsColumns, withFeatureContextDF, joinedFeatures, keyTags.map(keyTagList))
         if (shouldCheckPoint(ss)) {
           // checkpoint complicated dataframe for each stage to avoid Spark failure
           contextDF = contextDF.checkpoint(true)
@@ -325,13 +324,19 @@ private[offline] class SlidingWindowAggregationJoiner(
    * @return
    */
   def standardizeFeatureColumnNames(
+      ss: SparkSession,
       origContextObsColumns: Seq[String],
       withSWAFeatureDF: DataFrame,
       featureNames: Seq[String],
       keyTags: Seq[String]): DataFrame = {
     val inputColumnSize = origContextObsColumns.size
     val outputColumnNum = withSWAFeatureDF.columns.size
-    if (outputColumnNum != inputColumnSize + featureNames.size) {
+    val shouldAddDefaultColForMissingData = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf,
+      FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+
+    // Do not perform this check if shouldAddDefaultColForMissingData is true as we add the null values to all SWA features at once,
+    // and do not care for the SWA groupings.
+    if (!shouldAddDefaultColForMissingData && (outputColumnNum != inputColumnSize + featureNames.size)) {
       throw new FeathrIllegalStateException(
         s"Number of columns (${outputColumnNum}) in the dataframe returned by " +
           s"sliding window aggregation does not equal to number of columns in the observation data (${inputColumnSize}) " +

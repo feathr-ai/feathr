@@ -231,7 +231,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
 
     val (joinedDF, header) = doJoinObsAndFeatures(joinConfig, jobContext, obsData)
     (joinedDF, header, Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
-      -> SuppressedExceptionHandlerUtils.missingFeatures.mkString))
+      -> SuppressedExceptionHandlerUtils.missingFeatures.mkString(", ")))
   }
 
   /**
