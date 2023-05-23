@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Storing secrets in Azure Key Vault
+title: Using `SparkSQLSource` as Data Source
 parent: How-to Guides
 ---
 
@@ -19,7 +19,7 @@ sql_source = SparkSqlSource(name="sparkSqlQuerySource", sql="SELECT * FROM green
 
 ```
 
-1. SparkSQL table
+2. SparkSQL table
 If your source is already defined as a table in Databricks, you can directly use its name as data source in Feathr job.
 
 ```python
@@ -37,3 +37,5 @@ agg_anchor = FeatureAnchor(name="aggregationFeatures",
 ```
 
 When using SparkSQL table as data source, you need to make sure the table can be accessed by Spark session as the Feathr job.
+
+Similarly, tables in Blob storages can also be used as this `SparkSQLSrouce` when using synapse as spark provider. 
