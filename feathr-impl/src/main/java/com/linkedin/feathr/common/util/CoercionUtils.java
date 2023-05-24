@@ -183,7 +183,7 @@ public class CoercionUtils {
     } else if (item instanceof FeatureValueWrapper) {
       Object fv = ((FeatureValueWrapper) item).getFeatureValue();
       if (fv instanceof FeatureValue) {
-        return ((FeatureValue) item).getAsTermVector();
+        return ((FeatureValue) fv).getAsTermVector();
       } else {
         throw new RuntimeException("Input FeatureValueWrapper " + item + " cannot be converted to feature value.");
       }

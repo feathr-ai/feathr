@@ -35,7 +35,7 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
     val featureFeatureValueAsAlien = new FeathrFeatureValueAsAlien(featureValue)
     assertTrue(mvelContext.canConvert(FeatureValue.getClass, featureFeatureValueAsAlien.getClass))
     assertEquals(mvelContext.convert(featureFeatureValueAsAlien, FeatureValue.getClass), featureValue)
-    assertEquals(CoercionUtils.coerceToVector(featureValue),  Map("" -> 2.0f).asJava)
+    assertEquals(CoercionUtils.coerceToVector(featureFeatureValueAsAlien),  Map("" -> 2.0f).asJava)
   }
 
   @Test (enabled = true)
