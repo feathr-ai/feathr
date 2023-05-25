@@ -6,7 +6,7 @@ parent: Feathr Concepts
 
 # Feathr User Defined Functions (UDFs)
 
-Feathr supports a wide range of user defined functions (UDF) to allow flexible way of dealing with your data. Feathr supports two use cases:
+Feathr supports a wide range of user defined functions (UDF) to allow flexible ways of dealing with your data. Feathr supports two use cases:
 
 1. [UDF at input sources (also known as preprocessing functions)](#udfs-at-input-sources-also-known-as-preprocessing-functions)
 2. [UDF at individual features (using the `transform` parameters)](#udfs-at-individual-features-using-the-transform-parameters)
@@ -35,22 +35,22 @@ As you can see, there are two parts:
 1. A self-contained UDF function
 2. Calling that function in `preprocessing` parameter.
 
-### What happened behind the scene and what is the limitation?
+### What happens behind the scenes and what are the limitations?
 
-What's happening behind the scene is, Feathr will copy the function (`add_new_dropoff_and_fare_amount_column` in this case) and execute the function in the corresponding Spark cluster.
+What happens behind the scenes is that Feathr will copy the function (`add_new_dropoff_and_fare_amount_column` in this case) and execute it in the corresponding Spark cluster.
 
 The execution order will be:
 
-1. Read from source
-2. Execute UDF and produce new tables
-3. The new tables is used to define features
+1. Read from the source
+2. Execute the UDF and produce new tables
+3. Use the new tables to define features
 
 There are several limitations:
 
-1. The functions should be "self-contained". I.e. If you use any python module or Spark function, you should import the python module in the UDF function body. Although Feathr already imports all the [Spark SQL built-in functions](https://spark.apache.org/docs/latest/api/sql/index.html) in `pyspark.sql.functions` namespace, it is always a best practice to import the modules in the UDF body. They might be other python modules you use, for example `time`, regex, etc., or Spark SQL functions, such as the `from pyspark.sql.functions import dayofweek` line in the example below.
-2. The function should accept only one Spark Dataframe as input, and return one Spark Dataframe as the result. Multiple DataFrames are not supported. There's no limitation on names, and by convention it is usually called `df`, but you can use any name you want.
-3. The "contract" between users and Feathr here is - as long as you give the UDF a dataframe as an input and the output is a dataframe, then Feathr will accept and run this UDF function.
-4. For all the feature definitions, you should use the output of the UDF as the new column name (if you have changed the name of the columns). For example, you have the following code, then you won't be able to use `fare_amount_cents` in your feature definition, since it is not in the output dataframe of this UDF because it's dropped from the result dataframe. However, you will be able to use `f_day_of_week` in your feature definition, since it is a column that is created in the result dataframe..
+1. The functions should be "self-contained". I.e. If you use any python module or Spark function, you should import the python module in the UDF function body. Although Feathr already imports all the [Spark SQL built-in functions](https://spark.apache.org/docs/latest/api/sql/index.html) in `pyspark.sql.functions` namespace, it is always a best practice to import the modules in the UDF body. They might be other python modules such as `time`, regex, etc., or Spark SQL functions, such as the `from pyspark.sql.functions import dayofweek` line in the example below.
+2. The function should accept only one Spark Dataframe as input and return one Spark Dataframe as the result. Multiple DataFrames are not supported. There are no limitations on names, and by convention, it is usually called `df`, but you can use any name you want.
+3. The "contract" between users and Feathr here is that as long as you give the UDF a dataframe as an input and the output is a dataframe, Feathr will accept and run this UDF function.
+4. When defining features, you should use the output of the UDF as the new column name (if you have changed the column names). For example, if you have the following code, then you won't be able to use `fare_amount_cents` in your feature definition since it is not in the output dataframe of this UDF. It is dropped from the result dataframe. However, you will be able to use `f_day_of_week` in your feature definition, since it is a column that is created in the result dataframe..
 
 ```python
 def add_new_dropoff_and_fare_amount_column(df: DataFrame):
@@ -89,7 +89,7 @@ def add_new_dropoff_and_fare_amount_column(df: DataFrame):
 
 ### Best Practices
 
-One best practice is if you have multiple transformation that you want to define for one input source, you can define multiple UDFs. For example, for the same input source, you can define different input UDFs and define completely different features over those two UDFs. Refer to [Illustration on How Feathr UDF works](#illustration-on-how-feathr-udf-works) for an illustration.
+One best practice is if you have multiple transformations that you want to define for one input source, you can define multiple UDFs. For example, for the same input source, you can define different input UDFs and define completely different features over those two UDFs. Refer to [Illustration on How Feathr UDF works](#illustration-on-how-feathr-udf-works) for an illustration.
 
 ### UDF with PySpark Support
 
@@ -105,7 +105,7 @@ def add_new_dropoff_and_fare_amount_column(df: DataFrame):
 
 ### UDF with Spark SQL Support
 
-Feathr also supports using a SQL dialect to deal with your data. Below is the template, note that:
+Feathr also supports using a SQL dialect to deal with your data. In the template below, note that:
 
 1. You should declare a global "spark" session so that it can be called later
 2. You should call `createOrReplaceTempView` so that you can refer to this view in your SQL code
@@ -128,9 +128,9 @@ def feathr_udf_filter_location_id(df: DataFrame) -> DataFrame:
 
 ### UDF with Pandas Example
 
-Feathr also supports using pandas to deal with the data. Behind the scene it's using pandas-on-spark so some limitation applies here. Please refer to [Pandas-on-Spark's Best Practice](https://spark.apache.org/docs/latest/api/python/user_guide/pandas_on_spark/best_practices.html#best-practices) for more details.
+Feathr also supports using pandas to deal with the data. Behind the scene it's using pandas-on-spark so some limitations apply here. Please refer to [Pandas-on-Spark's Best Practice](https://spark.apache.org/docs/latest/api/python/user_guide/pandas_on_spark/best_practices.html#best-practices) for more details.
 
-Below is the template, note that:
+In the template below, note that:
 
 1. This is only available for Spark 3.2 and later, so make sure you submit to a spark cluster that has Spark 3.2 and later.
 2. You need to call something like `psdf = df.to_pandas_on_spark()` to convert a Spark dataframe to "pandas dataframe", and call `psdf.to_spark()` to convert the "pandas dataframe" to Spark dataframe.
