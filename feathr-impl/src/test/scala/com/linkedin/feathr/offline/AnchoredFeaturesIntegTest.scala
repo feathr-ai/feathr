@@ -407,8 +407,8 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |
           | features: {
           |   key: a_id
-          |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "featureWithNull3", "featureWithNull4",
-          |    "featureWithNull5", "derived_featureWithNull2", "featureWithNull6", "featureWithNull7", "derived_featureWithNull7"
+          |   featureList: ["featureWithNull4", "featureWithNull", "derived_featureWithNull", "featureWithNull2", "featureWithNull3",
+          |    "derived_featureWithNull2", "featureWithNull5", "featureWithNull7", "featureWithNull6", "derived_featureWithNull7"
           |    "aEmbedding", "memberEmbeddingAutoTZ", "aEmbedding", "featureWithNullSql", "seqJoin_featureWithNull"]
           | }
       """.stripMargin,
@@ -465,7 +465,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |      featureWithNull4: {
           |         def: "isPresent(value) ? toNumeric(value) : 0"
           |         type: TERM_VECTOR
-          |         default: {}
+          |         default: {"key": 1}
           |      }
           |      featureWithNull6: {
           |         def: "isPresent(value) ? toNumeric(value) : 0"
@@ -533,7 +533,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
           |         key: x
           |         join: {
           |           base: {key: x, feature: featureWithNull2}
-          |           expansion: {key: y, feature: featureWithNull5}
+          |           expansion: {key: y, feature: featureWithNull}
           |         }
           |         aggregation: "SUM"
           |     }
@@ -546,10 +546,10 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     assertEquals(featureList(0).getAs[Row]("aEmbedding"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
     assertEquals(featureList(0).getAs[Row]("featureWithNull3"), "null")
-    assertEquals(featureList(0).getAs[Row]("featureWithNull5"), mutable.Map("" -> 1.0f))
+    assertEquals(featureList(0).getAs[Row]("featureWithNull5"), null)
     assertEquals(featureList(0).getAs[Row]("featureWithNull7"), null)
     assertEquals(featureList(0).getAs[Row]("featureWithNull"),-1.0f)
-    assertEquals(featureList(0).getAs[Row]("featureWithNull4"),Map())
+    assertEquals(featureList(0).getAs[Row]("featureWithNull4"), null)
     assertEquals(featureList(0).getAs[Row]("featureWithNull2"),1.0f)
     assertEquals(featureList(0).getAs[Row]("derived_featureWithNull"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(-2.0f))))
