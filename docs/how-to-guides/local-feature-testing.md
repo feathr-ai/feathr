@@ -122,7 +122,7 @@ Your feature value is:
 
 But you may feel that the output feature aggregation is not ideal, then you can change aggregation from AVG to SUM to land on a different feature. After modify the features.conf, you can test it again with `feathr test`, then you will get your new results in a few seconds.
 
-## Troubleshoot Feature Fefinition
+## Troubleshoot Feature Definition
 
 Sometimes you might not get your feature definitions right at start. It may not produce feature values or may just not work. You can use local feature testing to help you troubleshoot as well. For example, I come up with this feature definition:
 
