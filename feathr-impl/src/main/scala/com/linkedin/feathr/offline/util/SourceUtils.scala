@@ -18,6 +18,7 @@ import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
 import com.linkedin.feathr.offline.source.dataloader.jdbc.{JdbcUtils, SnowflakeUtils}
 import com.linkedin.feathr.offline.source.pathutil.{PathChecker, TimeBasedHdfsPathAnalyzer, TimeBasedHdfsPathGenerator}
 import com.linkedin.feathr.offline.util.AclCheckUtils.getLatestPath
+import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
 import com.linkedin.feathr.offline.util.datetime.OfflineDateTimeUtils
 import org.apache.avro.generic.GenericData.{Array, Record}
 import org.apache.avro.generic.{GenericDatumReader, GenericRecord, IndexedRecord}
@@ -32,7 +33,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.NullWritable
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapreduce.Job
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.avro.SchemaConverters
@@ -51,7 +52,6 @@ import scala.collection.JavaConverters._
 import scala.io.Source
 import scala.reflect.ClassTag
 import scala.util.Try
-import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
 
 /**
  * Load "raw" not-yet-featurized data from HDFS data sets
@@ -60,7 +60,7 @@ private[offline] object SourceUtils {
   val HDFS_PREFIX = "/" // HDFS path always starts with "/"
   private final val conf: Configuration = new Configuration()
 
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
   // this path is defined by the feathr plugin
   val FEATURE_MP_DEF_CONFIG_BASE_PATH = "feathr-feature-configs/config/offline"
   val FEATURE_MP_DEF_CONFIG_SUFFIX = ".conf"
@@ -1003,6 +1003,22 @@ private[offline] object SourceUtils {
         res.foreach(num => {
           log.info(num)
         })
+    }
+  }
+
+  /**
+   * Check if it is in SanityCheck mode mode, if so, limit the DataFrame size for fast run.
+   * @param ss Spark session
+   * @param df Input source dataframe
+   * @return processed dataframe
+   */
+  def processSanityCheckMode(ss: SparkSession, df: DataFrame): DataFrame = {
+    val isSanityCheckMode = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ENABLE_SANITY_CHECK_MODE).toBoolean
+    if (isSanityCheckMode) {
+      val rowCount = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SANITY_CHECK_MODE_ROW_COUNT).toInt
+      df.limit(rowCount)
+    } else {
+      df
     }
   }
 }

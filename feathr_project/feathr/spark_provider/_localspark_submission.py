@@ -31,7 +31,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         debug_folder: str = "debug",
         clean_up: bool = True,
         retry: int = 3,
-        retry_sec: int = 5,
+        retry_sec: int = 30,
     ):
         """Initialize the Local Spark job launcher"""
         self.workspace_path = (workspace_path,)
@@ -82,8 +82,11 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
 
         # Get conf and package arguments
         cfg = configuration.copy() if configuration else {}
+        maven_dependency_without_feathr = f"{cfg.pop('spark.jars.packages', self.packages)}"
         maven_dependency = f"{cfg.pop('spark.jars.packages', self.packages)},{get_maven_artifact_fullname()}"
         spark_args = self._init_args(job_name=job_name, confs=cfg)
+        # Add additional repositories
+        spark_args.extend(["--repositories", "https://repository.mulesoft.org/nexus/content/repositories/public/,https://linkedin.jfrog.io/artifactory/open-source/"])
 
         if not main_jar_path:
             # We don't have the main jar, use Maven
@@ -103,10 +106,20 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 # This is a PySpark job, no more things to
                 if python_files.__len__() > 1:
                     spark_args.extend(["--py-files", ",".join(python_files[1:])])
-                print(python_files)
+                logger.info(f"Creating python files in {python_files}")
                 spark_args.append(python_files[0])
         else:
-            spark_args.extend(["--class", main_class_name, main_jar_path])
+            if not python_files:
+                # This is a JAR job
+                spark_args.extend(["--class", main_class_name, main_jar_path])
+            else:
+                spark_args.extend(["--jars", main_jar_path])
+                spark_args.extend(["--packages", maven_dependency_without_feathr])
+                # This is a PySpark job, no more things to
+                if python_files.__len__() > 1:
+                    spark_args.extend(["--py-files", ",".join(python_files[1:])])
+                spark_args.append(python_files[0])
+
 
         if arguments:
             spark_args.extend(arguments)
@@ -117,7 +130,9 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         cmd = " ".join(spark_args)
 
         log_append = open(f"{self.log_path}_{self.spark_job_num}.txt", "a")
-        proc = Popen(split(cmd), shell=False, stdout=log_append, stderr=STDOUT)
+        # remove stderr=STDOUT per https://stackoverflow.com/a/40046887
+        # reference code: https://github.com/lyft/airflow/blob/main/airflow/providers/apache/spark/hooks/spark_submit.py#L391
+        proc = Popen(split(cmd), shell=False, stdout=log_append)
         logger.info(f"Detail job stdout and stderr are in {self.log_path}.")
 
         self.spark_job_num += 1
@@ -178,15 +193,33 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         if proc.returncode == None:
             logger.warning(
                 f"Spark job with pid {self.latest_spark_proc.pid} not completed after {timeout_seconds} sec \
-                    time out setting. Please check."
+                    time out setting. Spark Logs:"
             )
+            with open(log_read.name) as f:
+                contents = f.read()
+                logger.error(contents)
             if self.clean_up:
                 self._clean_up()
                 proc.wait()
                 return True
         elif proc.returncode == 1:
-            logger.warning(f"Spark job with pid {self.latest_spark_proc.pid} is not successful. Please check.")
+            logger.warning(f"Spark job with pid {self.latest_spark_proc.pid} is not successful. Spark Logs:")
+            with open(log_read.name) as f:
+                contents = f.read()
+                logger.error(contents)
             return False
+        elif proc.returncode == 143:
+            # Handle the return code 143 separately.
+            # Normally, the Popen method will return a handle that we can poll, and the poll result will be "None" if it's still running, and will be other values if the subprocess is finished.
+            # However when calling `Popen` with `spark-submit`, for some reason, the poll result will always return "None", and the process will hang there forever
+            # due to this issue, additional handling is needed where we detect the output logs and see if the job is finished.
+            # If the logs gives out hint that the job is finished, even the poll result is None (indicating the process is still running) we will still terminate it.
+            # by calling `proc.terminate()`
+            # if the process is terminated with this way, the return code will be 143. We assume this will still be a successful run.
+            logger.info(
+                f"Spark job with pid {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds."
+            )
+            return True
         else:
             logger.info(
                 f"Spark job with pid {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds \
@@ -247,7 +280,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         prefix += datetime.now().strftime("%Y%m%d%H%M%S")
         debug_path = os.path.join(debug_folder, prefix)
 
-        print(debug_path)
+        logger.info(f"Spark log path is {debug_path}")
         if not os.path.exists(debug_path):
             os.makedirs(debug_path)
 

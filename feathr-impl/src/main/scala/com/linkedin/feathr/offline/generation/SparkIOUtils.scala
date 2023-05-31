@@ -1,12 +1,14 @@
 package com.linkedin.feathr.offline.generation
 
 import com.linkedin.feathr.offline.config.location.{DataLocation, SimplePath}
-import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
+import com.linkedin.feathr.offline.source.dataloader.hdfs.FileFormat
+import com.linkedin.feathr.offline.util.FeathrUtils
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+
 import scala.util.control.Breaks._
 
 object SparkIOUtils {
@@ -69,15 +71,19 @@ object SparkIOUtils {
       }
     }
     if(!dfWritten) {
+      val num_parts = parameters.get(FeathrUtils.DEBUG_OUTPUT_PART_NUM).getOrElse("10").toInt
+      // Honor the debug output part num config
+      val coalescedDf = outputDF.coalesce(num_parts)
       outputLocation match {
         case SimplePath(path) => {
-          val output_format = outputDF.sqlContext.getConf("spark.feathr.outputFormat", "avro")
+          val output_format = coalescedDf.sqlContext.getConf("spark.feathr.outputFormat", "avro")
           // if the output format is set by spark configurations "spark.feathr.outputFormat"
           // we will use that as the job output format; otherwise use avro as default for backward compatibility
-          outputDF.write.mode(SaveMode.Overwrite).format(output_format).save(path)
-          outputDF
+          if(!outputDF.isEmpty) {
+            coalescedDf.write.mode(SaveMode.Overwrite).format(output_format).save(path)
+          }
         }
-        case _ => outputLocation.writeDf(SparkSession.builder().getOrCreate(), outputDF, None)
+        case _ => outputLocation.writeDf(SparkSession.builder().getOrCreate(), coalescedDf, None)
       }
     }
     outputDF

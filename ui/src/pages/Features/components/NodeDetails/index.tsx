@@ -3,9 +3,10 @@ import React from 'react'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Spin, Typography } from 'antd'
 import { useQuery } from 'react-query'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
 import { fetchFeature, fetchDataSource } from '@/api'
+import { observer, useStore } from '@/hooks'
 import { FeatureType } from '@/utils/utils'
 
 import FeatureNodeDetail from './FeatureNodeDetail'
@@ -17,7 +18,8 @@ const { Paragraph } = Typography
 
 const NodeDetails = () => {
   const [searchParams] = useSearchParams()
-  const { project } = useParams()
+  const { globalStore } = useStore()
+  const { project } = globalStore
   const nodeId = searchParams.get('nodeId') as string
   const featureType = searchParams.get('featureType') as string
 
@@ -64,4 +66,4 @@ const NodeDetails = () => {
   )
 }
 
-export default NodeDetails
+export default observer(NodeDetails)

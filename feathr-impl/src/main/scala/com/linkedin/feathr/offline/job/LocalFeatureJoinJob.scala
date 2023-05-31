@@ -1,12 +1,12 @@
 package com.linkedin.feathr.offline.job
 
-import com.linkedin.feathr.offline.client.{FeathrClient, FeathrClient2}
+import com.linkedin.feathr.offline.client.FeathrClient
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
-import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
-import com.linkedin.feathr.offline.source.dataloader.DataLoaderFactory
+import com.linkedin.feathr.offline.source.dataloader.{DataLoaderFactory, DataLoaderHandler}
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
+import com.linkedin.feathr.offline.swa.SWAHandler
 import com.linkedin.feathr.offline.util.FeathrTestUtils.createSparkSession
 import com.linkedin.feathr.offline.util.{FeaturizedDatasetMetadata, SparkFeaturizedDataset}
 import org.apache.spark.sql.SparkSession
@@ -37,10 +37,11 @@ object LocalFeatureJoinJob {
       extraParams: Array[String] = Array(),
       ss: SparkSession = ss,
       dataPathHandlers: List[DataPathHandler],
-      mvelContext: Option[FeathrExpressionExecutionContext]): SparkFeaturizedDataset = {
+      mvelContext: Option[FeathrExpressionExecutionContext],
+      swaHandler: Option[SWAHandler]): SparkFeaturizedDataset = {
     val joinConfig = FeatureJoinConfig.parseJoinConfig(joinConfigAsHoconString)
     val feathrClient = FeathrClient.builder(ss).addFeatureDef(featureDefAsString).addDataPathHandlers(dataPathHandlers)
-      .addFeathrExpressionContext(mvelContext).build()
+      .addFeathrExpressionContext(mvelContext).addSWAHandler(swaHandler).build()
     val outputPath: String = FeatureJoinJob.SKIP_OUTPUT
 
     val defaultParams = Array(
@@ -51,7 +52,7 @@ object LocalFeatureJoinJob {
       outputPath)
 
     val jobContext = FeatureJoinJob.parseInputArgument(defaultParams ++ extraParams).jobJoinContext
-    SparkFeaturizedDataset(feathrClient.joinFeatures(joinConfig, observationData, jobContext).data, FeaturizedDatasetMetadata())
+    SparkFeaturizedDataset(feathrClient.joinFeaturesWithSuppressedExceptions(joinConfig, observationData, jobContext)._1.data, FeaturizedDatasetMetadata())
   }
 
   /**
@@ -68,10 +69,11 @@ object LocalFeatureJoinJob {
       extraParams: Array[String] = Array(),
       ss: SparkSession = ss,
       dataPathHandlers: List[DataPathHandler],
-      mvelContext: Option[FeathrExpressionExecutionContext]=None): SparkFeaturizedDataset = {
+      mvelContext: Option[FeathrExpressionExecutionContext]=None,
+      swaHandler: Option[SWAHandler] = None): SparkFeaturizedDataset = {
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
     val obsDf = loadObservationAsFDS(ss, observationDataPath,dataLoaderHandlers=dataLoaderHandlers)
-    joinWithObsDFAndHoconJoinConfig(joinConfigAsHoconString, featureDefAsString, obsDf, extraParams, ss, dataPathHandlers=dataPathHandlers, mvelContext)
+    joinWithObsDFAndHoconJoinConfig(joinConfigAsHoconString, featureDefAsString, obsDf, extraParams, ss, dataPathHandlers=dataPathHandlers, mvelContext, swaHandler)
   }
 
   /**

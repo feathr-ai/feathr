@@ -2,26 +2,28 @@ package com.linkedin.feathr.offline.join
 
 import com.linkedin.feathr.common._
 import com.linkedin.feathr.offline
+import com.linkedin.feathr.offline.anchored.keyExtractor.SQLSourceKeyExtractor
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.client.DataFrameColName.getFeatureAlias
 import com.linkedin.feathr.offline.config.FeatureJoinConfig
+import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.derived.DerivedFeatureEvaluator
 import com.linkedin.feathr.offline.job.FeatureTransformation.transformSingleAnchorDF
 import com.linkedin.feathr.offline.job.{FeatureTransformation, TransformedResult}
 import com.linkedin.feathr.offline.join.algorithms._
 import com.linkedin.feathr.offline.join.util.{FrequentItemEstimatorFactory, FrequentItemEstimatorType}
 import com.linkedin.feathr.offline.join.workflow._
-import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan}
+import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlan, MultiStageJoinPlanner}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
-import com.linkedin.feathr.offline.swa.SlidingWindowAggregationJoiner
+import com.linkedin.feathr.offline.swa.{SWAHandler, SlidingWindowAggregationJoiner}
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
 import com.linkedin.feathr.offline.util.FeathrUtils
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{ErasedEntityTaggedFeature, FeatureDataFrame}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
 
@@ -31,8 +33,9 @@ import scala.collection.JavaConverters._
  * Joiner to join observation with feature data using Spark DataFrame API
  * @param logicalPlan analyzed feature info
  */
-private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext]) extends Serializable {
-  @transient lazy val log = Logger.getLogger(getClass.getName)
+private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, dataPathHandlers: List[DataPathHandler],
+  mvelContext: Option[FeathrExpressionExecutionContext], swaHandler: Option[SWAHandler]) extends Serializable {
+  @transient lazy val log = LogManager.getLogger(getClass.getName)
   @transient lazy val anchorToDataSourceMapper = new AnchorToDataSourceMapper(dataPathHandlers)
   private val windowAggFeatureStages = logicalPlan.windowAggFeatureStages
   private val joinStages = logicalPlan.joinStages
@@ -56,7 +59,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
   def joinAnchoredPassthroughFeatures(ss: SparkSession, contextDF: DataFrame, featureGroups: FeatureGroups): FeatureDataFrame = {
     val allAnchoredPassthroughFeatures =
       featureGroups.allPassthroughFeatures.filter(feature => allRequiredFeatures.map(_.getFeatureName).contains(feature._1))
-    if (allAnchoredPassthroughFeatures.nonEmpty) {
+    val withFeatureDf = if (allAnchoredPassthroughFeatures.nonEmpty) {
       // collect anchored passthrough feature information
       val passthroughFeatureMapping = allAnchoredPassthroughFeatures
         .groupBy(_._2)
@@ -70,7 +73,14 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
           (dfWithFeatureNames, featureAnchorWithSourcePair) => {
             val featureAnchorWithSource = featureAnchorWithSourcePair._1
             val requestedFeatures = featureAnchorWithSourcePair._2.toSeq
-            val resultWithoutKey = transformSingleAnchorDF(featureAnchorWithSource, dfWithFeatureNames.df, requestedFeatures, None, mvelContext)
+            val keyColumnNames = featureAnchorWithSourcePair._1.featureAnchor.sourceKeyExtractor.getKeyColumnNames()
+            val keyColumnExprAndAlias = if (featureAnchorWithSourcePair._1.featureAnchor.sourceKeyExtractor.isInstanceOf[SQLSourceKeyExtractor]) {
+              val keyExprs = featureAnchorWithSourcePair._1.featureAnchor.sourceKeyExtractor.asInstanceOf[SQLSourceKeyExtractor].keyExprs
+              keyExprs.zip(keyColumnNames)
+            } else {
+              keyColumnNames.zip(keyColumnNames)
+            }
+            val resultWithoutKey = transformSingleAnchorDF(featureAnchorWithSource, dfWithFeatureNames.df, requestedFeatures, None, mvelContext, keyColumnExprAndAlias)
             val namePrefixPairs = dfWithFeatureNames.featureNameAndPrefixPairs ++ resultWithoutKey.featureNameAndPrefixPairs
             val inferredFeatureTypeConfigs = dfWithFeatureNames.inferredFeatureTypes ++ resultWithoutKey.inferredFeatureTypes
             val featureColumnFormats = resultWithoutKey.featureColumnFormats ++ dfWithFeatureNames.featureColumnFormats
@@ -98,6 +108,10 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
     } else {
       offline.FeatureDataFrame(contextDF, Map())
     }
+    val featureNames = allAnchoredPassthroughFeatures.map(_._1).toSet
+    FeathrUtils.dumpDebugInfo(ss, withFeatureDf.df, featureNames, "context DF after joining passthrough feature",
+      featureNames.mkString("_") + "_after_join_with_passthrough_features")
+    withFeatureDf
   }
 
   /**
@@ -189,12 +203,27 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         .toIndexedSeq
         .map(featureGroups.allAnchoredFeatures),
       failOnMissingPartition)
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val updatedSourceAccessorMap = anchorSourceAccessorMap.filter(anchorEntry => anchorEntry._2.isDefined)
+      .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
+
+    // 3. Join sliding window aggregation features
+    val (FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes), skippedFeatures) =
+      joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime, swaHandler)
+
+    // Update the feature groups based on the missing features. Certain SWA features can be skipped because of missing data issue, we need to skip
+    // the corresponding derived, seq join features which could depend on this SWA feature.
+    val (updatedFeatureGroups, updatedLogicalPlan) = if (shouldSkipFeature) {
+      val (newFeatureGroups, newKeyTaggedFeatures) = FeatureGroupsUpdater().removeMissingFeatures(featureGroups,
+        updatedSourceAccessorMap.keySet.flatMap(featureAnchorWithSource => featureAnchorWithSource.featureAnchor.features).toSeq, skippedFeatures, keyTaggedFeatures)
+
+      val newLogicalPlan = MultiStageJoinPlanner().getLogicalPlan(newFeatureGroups, newKeyTaggedFeatures)
+      (newFeatureGroups, newLogicalPlan)
+    } else (featureGroups, logicalPlan)
 
     implicit val joinExecutionContext: JoinExecutionContext =
-      JoinExecutionContext(ss, logicalPlan, featureGroups, bloomFilters, Some(saltedJoinFrequentItemDFs))
-    // 3. Join sliding window aggregation features
-    val FeatureDataFrame(withWindowAggFeatureDF, inferredSWAFeatureTypes) =
-      joinSWAFeatures(ss, obsToJoinWithFeatures, joinConfig, featureGroups, failOnMissingPartition, bloomFilters, swaObsTime)
+      JoinExecutionContext(ss, updatedLogicalPlan, updatedFeatureGroups, bloomFilters, Some(saltedJoinFrequentItemDFs))
+
 
     // 4. Join basic anchored features
     val anchoredFeatureJoinStep =
@@ -210,7 +239,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
           SparkJoinWithJoinCondition(EqualityJoinConditionBuilder), mvelContext)
       }
     val FeatureDataFrameOutput(FeatureDataFrame(withAllBasicAnchoredFeatureDF, inferredBasicAnchoredFeatureTypes)) =
-      anchoredFeatureJoinStep.joinFeatures(requiredRegularFeatureAnchors, AnchorJoinStepInput(withWindowAggFeatureDF, anchorSourceAccessorMap))
+      anchoredFeatureJoinStep.joinFeatures(requiredRegularFeatureAnchors, AnchorJoinStepInput(withWindowAggFeatureDF, updatedSourceAccessorMap))
     // 5. If useSlickJoin, restore(join back) all observation fields before we evaluate post derived features, sequential join and passthrough
     // anchored features, as they might require other columns in the original observation data, while the current observation
     // dataset does not have these fields (were removed in the preProcessObservation)
@@ -257,10 +286,8 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         } // preserve all non-feature columns, they are from observation
       !requested
     }): _*)
-    if (log.isDebugEnabled) {
-      log.debug(s"After removing unwanted columns, cleanedDF:")
-      cleanedDF.show(false)
-    }
+    FeathrUtils.dumpDebugInfo(ss, cleanedDF, Set(), "context DF after join and " +
+        "remove unwanted columns", "context_after_join_and_clean")
 
     val allInferredFeatureTypes = anchoredPassthroughFeatureTypes ++
       inferredBasicAnchoredFeatureTypes ++ inferredSWAFeatureTypes ++ inferredDerivedFeatureTypes
@@ -283,10 +310,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         featureGroups.allDerivedFeatures,
         allInferredFeatureTypes)
 
-    if (log.isDebugEnabled) {
-      log.debug(s"joinFeaturesAsDF returned:")
-      finalDF.show(false)
-    }
+    FeathrUtils.dumpDebugInfo(ss, finalDF, Set(), "final df", "final_df_returned")
     (finalDF, header)
   }
 
@@ -300,7 +324,7 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
    * @param failOnMissingPartition flag to indicate if the join job should fail if a missing date partition is found.
    * @param bloomFilters bloomfilters, map string key tag ids to bloomfilter
    * @param swaObsTime observation start and end time for sliding window aggregation, if not None, will try to infer
-   * @return observation data joined with sliding window aggregation features
+   * @return observation data joined with sliding window aggregation features and the list of skipped features
    */
   def joinSWAFeatures(
       ss: SparkSession,
@@ -309,9 +333,10 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
       featureGroups: FeatureGroups,
       failOnMissingPartition: Boolean,
       bloomFilters: Option[Map[Seq[Int], BloomFilter]],
-      swaObsTime: Option[DateTimeInterval]): FeatureDataFrame = {
+      swaObsTime: Option[DateTimeInterval],
+      swaHandler: Option[SWAHandler]): (FeatureDataFrame, Seq[String]) = {
     if (windowAggFeatureStages.isEmpty) {
-      offline.FeatureDataFrame(obsToJoinWithFeatures, Map())
+      (offline.FeatureDataFrame(obsToJoinWithFeatures, Map()), Seq())
     } else {
       val swaJoiner = new SlidingWindowAggregationJoiner(featureGroups.allWindowAggFeatures, anchorToDataSourceMapper)
       swaJoiner.joinWindowAggFeaturesAsDF(
@@ -323,7 +348,8 @@ private[offline] class DataFrameFeatureJoiner(logicalPlan: MultiStageJoinPlan, d
         requiredWindowAggFeatures,
         bloomFilters,
         swaObsTime,
-        failOnMissingPartition)
+        failOnMissingPartition,
+        swaHandler)
     }
   }
 }

@@ -8,10 +8,11 @@ import com.linkedin.feathr.offline.source.pathutil.{PathChecker, PathInfo, TimeB
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
 import com.linkedin.feathr.offline.transformation.DataFrameExt._
 import com.linkedin.feathr.offline.util.PartitionLimiter
+import com.linkedin.feathr.offline.util.SourceUtils.processSanityCheckMode
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
-import org.apache.log4j.Logger
-import org.apache.spark.sql.DataFrame
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.{DataFrame, SparkSession}
 /**
  * representation of a source that is comprised of a time series of datasets
  * the idea is that we can call getSourceData with different time window parameter to get a slice of a time series dataset,
@@ -31,6 +32,7 @@ import org.apache.spark.sql.functions.lit
  * @param partitionLimiter the partition limiter
  */
 private[offline] class PathPartitionedTimeSeriesSourceAccessor(
+    ss: SparkSession,
     datePartitions: Seq[DatePartition],
     source: DataSource,
     sourceTimeInterval: DateTimeInterval,
@@ -59,7 +61,7 @@ private[offline] class PathPartitionedTimeSeriesSourceAccessor(
     }
     val df = dataFrames.reduce((x, y) => x.fuzzyUnion(y))
 
-    partitionLimiter.limitPartition(df)
+    processSanityCheckMode(ss, partitionLimiter.limitPartition(df))
   }
 
   /**
@@ -79,7 +81,9 @@ private[offline] class PathPartitionedTimeSeriesSourceAccessor(
       throw new FeathrInputDataException(
         ErrorLabel.FEATHR_USER_ERROR,
         s"Trying to create TimeSeriesSource but no data " +
-          s"is found to create source data. Source path: ${source.path}, source type: ${source.sourceType}")
+          s"is found to create source data. Source path: ${source.path}, source type: ${source.sourceType}." +
+          s"Try to get dataframe from interval ${timeIntervalOpt}, " +
+          s"but source dataset time has interval ${datePartitions.map(_.dateInterval.toString).mkString(",")} ")
     }
     selectedPartitions
   }
@@ -109,7 +113,7 @@ private[offline] class PathPartitionedTimeSeriesSourceAccessor(
 
 private[offline] object PathPartitionedTimeSeriesSourceAccessor {
 
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   /**
    * create time series/composite source that contains multiple day/hour data from a file URI.
@@ -125,6 +129,7 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
    * @return a TimeSeriesSource
    */
   def apply(
+      ss: SparkSession,
       pathChecker: PathChecker,
       fileLoaderFactory: DataLoaderFactory,
       partitionLimiter: PartitionLimiter,
@@ -147,6 +152,7 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
       val df = fileLoaderFactory.create(path).loadDataFrame()
       (df, interval)
     })
+    log.info(s"Reading datasets for interval ${timeInterval} from paths: ${pathList.mkString(", ")}")
 
     if (dataframes.isEmpty) {
       val errMsg = s"Input data is empty for creating TimeSeriesSource. No available " +
@@ -165,6 +171,7 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
         DatePartition(df, interval)
     }
     new PathPartitionedTimeSeriesSourceAccessor(
+      ss,
       datePartitions,
       source,
       timeInterval,

@@ -1,9 +1,12 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.offline.AssertFeatureUtils.{rowApproxEquals, validateRows}
-import org.apache.spark.sql.Row
+import com.linkedin.feathr.offline.transformation.MultiLevelAggregationTransform
+import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.util.FeathrUtils.{FILTER_NULLS, SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.testng.Assert._
 import org.testng.annotations._
 
@@ -12,7 +15,88 @@ import scala.collection.mutable
 /**
  * Integ tests for sliding window aggregation functionality
  */
+
+
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.{StringType, TimestampType}
 class SlidingWindowAggIntegTest extends FeathrIntegTest {
+
+  def getDf(): DataFrame = {
+    // Create a SparkSession
+    val spark = SparkSession.builder().appName("CreateDataFrame").getOrCreate()
+
+    // Define the schema
+    val schema = StructType(
+      Seq(
+        StructField("id", LongType, true),
+        StructField("time", TimestampType, true),
+        StructField("value", StringType, true)
+      )
+    )
+    // Create some sample data
+    val data = Seq(
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:00:00.123"), "a"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:01:00.123"), "b"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:02:00.123"), "b"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:03:00.123"), "c"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:05:00.123"), "d"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:06:00.123"), "e"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:06:30.123"), "a"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:10:00.123"), "f"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:10:05.123"), "b"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:10:06.123"), "c"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:12:00.123"), "g"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:13:00.123"), "h"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 00:30:00.123"), "i"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 01:00:00.123"), "j"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 01:15:00.123"), "k"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 03:00:00.123"), "l"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 05:15:00.123"), "m"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-01 05:20:00.123"), "n"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-02 01:00:00.123"), "o"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-02 22:15:00.123"), "p"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-05-05 03:00:00.123"), "q"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-06-01 01:15:00.123"), "r"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-06-01 05:15:00.123"), "s"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-09-01 05:15:00.123"), "t"),
+      Row(1L, java.sql.Timestamp.valueOf("2023-10-01 05:15:00.123"), "u"),
+      Row(1L, java.sql.Timestamp.valueOf("2024-10-01 05:15:00.123"), "v"),
+      Row(1L, java.sql.Timestamp.valueOf("2024-10-02 05:15:00.123"), "w"),
+      Row(2L, java.sql.Timestamp.valueOf("2023-05-01 01:15:00.123"), "x"),
+    )
+    // Create a DataFrame from the data and schema
+    spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
+  }
+
+  def bucketedDistinctCount(df: DataFrame, window: String, featureDefAggField: String, aggFunction: String): Unit = {
+    val outputFeatureColumnName = "count_distinct_value_" + window
+    val keyColumnExprAndAlias = Seq(("id", "id"))
+    val timeColumnName = "time"
+    val timeStampFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+    val evaluator = new MultiLevelAggregationTransform(ss)
+    evaluator.applyAggregate(df, featureDefAggField, outputFeatureColumnName, window,
+      keyColumnExprAndAlias, timeColumnName, timeStampFormat, aggFunction)
+      .show(200, false)
+  }
+
+  @Test
+  def testSWABucketedAggregations: Unit = {
+    val df = getDf()
+    val aggFunctionAndField = Seq(("BUCKETED_COUNT_DISTINCT", "value"), ("BUCKETED_SUM", "length(value)"))
+    aggFunctionAndField.map { case (func, field) => {
+      testSWABucketedHelper(df, func, field)
+      }
+    }
+  }
+
+  def testSWABucketedHelper(df: DataFrame, aggFunction: String, featureDefAggField: String): Unit = {
+    bucketedDistinctCount(df, "5m", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1h", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1d", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1w", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1M", featureDefAggField, aggFunction)
+    bucketedDistinctCount(df, "1y", featureDefAggField, aggFunction)
+  }
 
   /**
    * test SWA with lateralview parameters
@@ -172,6 +256,415 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
   /**
+   * test SWA with lateralview parameters and ADD_DEFAULT_COL_FOR_MISSING_DATA flag set
+   */
+  @Test
+  def testLocalAnchorSWATestWithDataMissingFlagSet: Unit = {
+    setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString =
+        """
+          | settings: {
+          |  observationDataTimeSettings: {
+          |     absoluteTimeRange: {
+          |         startTime: "2018-05-01"
+          |         endTime: "2018-05-03"
+          |         timeFormat: "yyyy-MM-dd"
+          |     }
+          |  }
+          |  joinTimeSettings: {
+          |     timestampColumn: {
+          |       def: timestamp
+          |       format: "yyyy-MM-dd"
+          |     }
+          |  }
+          |}
+          |
+          |features: [
+          |   {
+          |       key: [x],
+          |       featureList: ["f1", "f1Sum", "f2", "f1f1"]
+          |   },
+          |   {
+          |        key: [x, y]
+          |        featureList: ["f3", "f4"]
+          |   }
+          |]
+    """.stripMargin,
+      featureDefAsString =
+        """
+          |sources: {
+          |  ptSource: {
+          |    type: "PASSTHROUGH"
+          |  }
+          |  swaSource: {
+          |    location: { path: "missingData/localSWAAnchorTestFeatureData/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |}
+          |
+          |anchors: {
+          |  ptAnchor: {
+          |     source: "ptSource"
+          |     key: "x"
+          |     features: {
+          |       f1f1: {
+          |         def: "([$.term:$.value] in passthroughFeatures if $.name == 'f1f1')"
+          |       }
+          |     }
+          |  }
+          |  swaAnchor: {
+          |    source: "swaSource"
+          |    key: "substring(x, 0)"
+          |    lateralViewParameters: {
+          |      lateralViewDef: explode(features)
+          |      lateralViewItemAlias: feature
+          |    }
+          |    features: {
+          |      f1: {
+          |        def: "feature.col.value"
+          |        filter: "feature.col.name = 'f1'"
+          |        aggregation: SUM
+          |        groupBy: "feature.col.term"
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |
+          |  swaAnchor2: {
+          |    source: "swaSource"
+          |    key: "x"
+          |    lateralViewParameters: {
+          |      lateralViewDef: explode(features)
+          |      lateralViewItemAlias: feature
+          |    }
+          |    features: {
+          |      f1Sum: {
+          |        def: "feature.col.value"
+          |        filter: "feature.col.name = 'f1'"
+          |        aggregation: SUM
+          |        groupBy: "feature.col.term"
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |  swaAnchorWithKeyExtractor: {
+          |    source: "swaSource"
+          |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
+          |    features: {
+          |      f3: {
+          |        def: "aggregationWindow"
+          |        aggregation: SUM
+          |        window: 3d
+          |      }
+          |    }
+          |   }
+          |  swaAnchorWithKeyExtractor2: {
+          |      source: "swaSource"
+          |      keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
+          |      features: {
+          |        f4: {
+          |           def: "aggregationWindow"
+          |           aggregation: SUM
+          |           window: 3d
+          |       }
+          |     }
+          |   }
+          |  swaAnchorWithKeyExtractor3: {
+          |    source: "swaSource"
+          |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor2"
+          |    lateralViewParameters: {
+          |      lateralViewDef: explode(features)
+          |      lateralViewItemAlias: feature
+          |    }
+          |    features: {
+          |      f2: {
+          |        def: "feature.col.value"
+          |        filter: "feature.col.name = 'f2'"
+          |        aggregation: SUM
+          |        groupBy: "feature.col.term"
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |}
+      """.stripMargin,
+      "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    df.show()
+
+    // validate output in name term value format
+    val featureList = df.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("x") else "null")
+    val row0 = featureList(0)
+    val row0f1 = row0.getAs[Row]("f1")
+    assertEquals(row0f1, null)
+    val row0f2 = row0.getAs[Row]("f2")
+    assertEquals(row0f2, null)
+    setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
+  }
+
+  /**
+   * test SWA with lateralview parameters
+   */
+  @Test
+  def testLocalAnchorBucketedSWATest: Unit = {
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString = """
+                             |features: [
+                             |   {
+                             |       key: [x],
+                             |       featureList: ["count_distinct_value_5m", count_distinct_value_1d]
+                             |   },
+                             |]
+    """.stripMargin,
+      featureDefAsString = """
+                             |sources: {
+                             |  ptSource: {
+                             |    type: "PASSTHROUGH"
+                             |    timeWindowParameters: {
+                             |      timestampColumn: "timestamp"
+                             |      timestampColumnFormat: "yyyy-MM-dd HH:mm:ss.SSS"
+                             |    }
+                             |  }
+                             |}
+                             |
+                             |anchors: {
+                             |  swaAnchor: {
+                             |    source: "ptSource"
+                             |    key: "concat(x, '1')"
+                             |    features: {
+                             |      count_distinct_value_5m: {
+                             |        def: y
+                             |        aggregation: BUCKETED_COUNT_DISTINCT
+                             |        window: "5m"
+                             |        type: NUMERIC
+                             |     }
+                             |      count_distinct_value_1d: {
+                             |        def: y
+                             |        type: NUMERIC
+                             |        aggregation: BUCKETED_COUNT_DISTINCT
+                             |        window: "1d"
+                             |      }
+                             |    }
+                             |  }
+                             |
+                             |}
+      """.stripMargin,
+      "slidingWindowAgg/localAnchorTestBucketedObsData.avro.json").data
+    val featureList = df.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("timestamp") else "null")
+    val row0 = featureList.last
+    val row0f1 = row0.getAs[Float]("count_distinct_value_1d")
+    val row0f2 = row0.getAs[Float]("count_distinct_value_5m")
+    assertTrue(Math.abs(row0f1 - 6.0f) <= 1e-6)
+    assertTrue(Math.abs(row0f2 - 1.0f) <= 1e-6)
+  }
+
+  /**
+   * test bucketed SWA with ms timestamp
+   */
+  @Test
+  def testLocalAnchorBucketedSWAInMsTest: Unit = {
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString = """
+                             |features: [
+                             |   {
+                             |       key: [x],
+                             |       featureList: ["count_distinct_value_5m"]
+                             |   },
+                             |]
+    """.stripMargin,
+      featureDefAsString = """
+                             |sources: {
+                             |  ptSource: {
+                             |    type: "PASSTHROUGH"
+                             |    timeWindowParameters: {
+                             |      timestampColumn: "utc_timestamp"
+                             |      timestampColumnFormat: "epoch_millis"
+                             |    }
+                             |  }
+                             |}
+                             |
+                             |anchors: {
+                             |  swaAnchor: {
+                             |    source: "ptSource"
+                             |    key: x
+                             |    features: {
+                             |      count_distinct_value_5m: {
+                             |        type: NUMERIC
+                             |        def: y
+                             |        aggregation: BUCKETED_COUNT_DISTINCT
+                             |        window: "5m"
+                             |      }
+                             |    }
+                             |  }
+                             |
+                             |}
+      """.stripMargin,
+      "slidingWindowAgg/localAnchorTestBucketedObsData.avro.json").data
+      val featureList = df.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("timestamp") else "null")
+      val row0 = featureList.last
+      val row0f1 = row0.getAs[Float]("count_distinct_value_5m")
+      assertTrue(Math.abs(row0f1 - 1.0f) <= 1e-6)
+  }
+
+  /**
+   * test SWA with lateralview parameters
+   */
+  @Test
+  def testLocalAnchorSWAWithNullsTest: Unit = {
+    setFeathrJobParam(FILTER_NULLS, "true")
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString =
+        """
+          | settings: {
+          |  observationDataTimeSettings: {
+          |     absoluteTimeRange: {
+          |         startTime: "2018-05-01"
+          |         endTime: "2018-05-03"
+          |         timeFormat: "yyyy-MM-dd"
+          |     }
+          |  }
+          |  joinTimeSettings: {
+          |     timestampColumn: {
+          |       def: timestamp
+          |       format: "yyyy-MM-dd"
+          |     }
+          |  }
+          |}
+          |
+          |features: [
+          |   {
+          |       key: [x],
+          |       featureList: ["f1", "f1Sum", "f2", "f1f1"]
+          |   },
+          |   {
+          |        key: [x, "substring(y, 0)"]
+          |        featureList: ["f3", "f4"]
+          |   }
+          |]
+    """.stripMargin,
+      featureDefAsString =
+        """
+          |sources: {
+          |  ptSource: {
+          |    type: "PASSTHROUGH"
+          |  }
+          |  swaSource: {
+          |    location: { path: "slidingWindowAgg/localSWAAnchorTestFeatureData/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |}
+          |
+          |anchors: {
+          |  ptAnchor: {
+          |     source: "ptSource"
+          |     key: "x"
+          |     features: {
+          |       f1f1: {
+          |         def: "([$.term:$.value] in passthroughFeatures if $.name == 'f1f1')"
+          |       }
+          |     }
+          |  }
+          |  swaAnchor: {
+          |    source: "swaSource"
+          |    key: "substring(x, 0)"
+          |    lateralViewParameters: {
+          |      lateralViewDef: explode(features)
+          |      lateralViewItemAlias: feature
+          |    }
+          |    features: {
+          |      f1: {
+          |        def: "feature.col.value"
+          |        filter: "feature.col.name = 'f1'"
+          |        aggregation: SUM
+          |        groupBy: "feature.col.term"
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |
+          |  swaAnchor2: {
+          |    source: "swaSource"
+          |    key: "x"
+          |    lateralViewParameters: {
+          |      lateralViewDef: explode(features)
+          |      lateralViewItemAlias: feature
+          |    }
+          |    features: {
+          |      f1Sum: {
+          |        def: "feature.col.value"
+          |        filter: "feature.col.name = 'f1'"
+          |        aggregation: SUM
+          |        groupBy: "feature.col.term"
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |  swaAnchorWithKeyExtractor: {
+          |    source: "swaSource"
+          |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
+          |    features: {
+          |      f3: {
+          |        def: "aggregationWindow"
+          |        aggregation: SUM
+          |        window: 3d
+          |      }
+          |    }
+          |   }
+          |  swaAnchorWithKeyExtractor2: {
+          |      source: "swaSource"
+          |      keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor"
+          |      features: {
+          |        f4: {
+          |           def: "aggregationWindow"
+          |           aggregation: SUM
+          |           window: 3d
+          |       }
+          |     }
+          |   }
+          |  swaAnchorWithKeyExtractor3: {
+          |    source: "swaSource"
+          |    keyExtractor: "com.linkedin.feathr.offline.anchored.keyExtractor.SimpleSampleKeyExtractor2"
+          |    lateralViewParameters: {
+          |      lateralViewDef: explode(features)
+          |      lateralViewItemAlias: feature
+          |    }
+          |    features: {
+          |      f2: {
+          |        def: "feature.col.value"
+          |        filter: "feature.col.name = 'f2'"
+          |        aggregation: SUM
+          |        groupBy: "feature.col.term"
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |}
+      """.stripMargin,
+      "slidingWindowAgg/nullObsData.avro.json").data
+    df.show()
+
+    // validate output in name term value format
+    assertEquals(df.count(), 5)
+    val featureList = df.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("x") else "null")
+    val row0 = featureList(0)
+    val row0f1 = row0.getAs[Row]("f1")
+    assertEquals(row0f1, TestUtils.build1dSparseTensorFDSRow(Array("f1t1", "f1t2"), Array(5.0f, 6.0f)))
+    val row0f2 = row0.getAs[Row]("f2")
+    assertEquals(row0f2, TestUtils.build1dSparseTensorFDSRow(Array("f2t1"), Array(7.0f)))
+    val row0f1f1 = row0.getAs[Row]("f1f1")
+    assertEquals(row0f1f1, TestUtils.build1dSparseTensorFDSRow(Array("f1t1"), Array(12.0f)))
+    setFeathrJobParam(FILTER_NULLS, "false")
+  }
+
+  /**
    * test SWA with dense vector feature
    * The feature dataset generation/daily has different but compatible schema for different partitions,
    * this is supported by fuzzyUnion
@@ -313,6 +806,257 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     val df = res.collect()(0)
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
     assertEquals(df.getAs[Float]("simpleFeature"), 20f)
+  }
+
+  /**
+   * SWA test when path does not have daily attached to it. It should work as expected.
+   */
+  @Test
+  def testSwaWithMalformedPath(): Unit = {
+    val joinConfigAsString =
+      """
+        | settings: {
+        |  observationDataTimeSettings: {
+        |   absoluteTimeRange: {
+        |     timeFormat: yyyy-MM-dd
+        |     startTime: "2018-05-01"
+        |     endTime: "2018-05-03"
+        |   }
+        |  }
+        |  joinTimeSettings: {
+        |   timestampColumn: {
+        |     def: timestamp
+        |     format: yyyy-MM-dd
+        |   }
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [x],
+        |    featureList: ["simplePageViewCount", "simpleFeature"]
+        |  }
+        |]
+      """.stripMargin
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      simplePageViewCount: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 10
+        |      }
+        |      simpleFeature: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 20
+        |      }
+        |    }
+        |  }
+        |}
+      """.stripMargin
+    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    res.show()
+    val df = res.collect()(0)
+    assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
+    assertEquals(df.getAs[Float]("simpleFeature"), 20f)
+  }
+
+  /**
+   * SWA test with skip missing features.
+   */
+  @Test
+  def testSWAWithMissingFeatureData(): Unit = {
+    setFeathrJobParam(FeathrUtils.SKIP_MISSING_FEATURE, "true")
+    val joinConfigAsString =
+      """
+        | settings: {
+        |  observationDataTimeSettings: {
+        |   absoluteTimeRange: {
+        |     timeFormat: yyyy-MM-dd
+        |     startTime: "2018-05-01"
+        |     endTime: "2018-05-03"
+        |   }
+        |  }
+        |  joinTimeSettings: {
+        |   timestampColumn: {
+        |     def: timestamp
+        |     format: yyyy-MM-dd
+        |   }
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [x],
+        |    featureList: ["simplePageViewCount", "simpleFeature", "derived_simpleFeature"]
+        |  }
+        |]
+      """.stripMargin
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |  missingSource: {
+        |    location: { path: "slidingWindowAgg/missingFeatureData/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      simplePageViewCount: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 10
+        |      }
+        |    }
+        |  }
+        |  missingAnchor: {
+        |  source: "missingSource"
+        |  key: "x"
+        |  features: {
+        |   simpleFeature: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 20
+        |     }
+        |    }
+        |  }
+        |}
+        |derivations: {
+        | derived_simpleFeature: simpleFeature
+        |}
+      """.stripMargin
+    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    res.show()
+    val df = res.collect()(0)
+    assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
+    assert(!res.columns.contains("simpleFeature"))
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
+  }
+
+  @Test
+  def testSWAWithMissingFeatureDataFlag(): Unit = {
+    setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
+    val joinConfigAsString =
+      """
+        | settings: {
+        |  observationDataTimeSettings: {
+        |   absoluteTimeRange: {
+        |     timeFormat: yyyy-MM-dd
+        |     startTime: "2018-05-01"
+        |     endTime: "2018-05-03"
+        |   }
+        |  }
+        |  joinTimeSettings: {
+        |   timestampColumn: {
+        |     def: timestamp
+        |     format: yyyy-MM-dd
+        |   }
+        |  }
+        |}
+        |
+        |features: [
+        |  {
+        |    key: [x],
+        |    featureList: ["simplePageViewCount", "simpleFeature", "derived_simpleFeature"]
+        |  }
+        |]
+        """.stripMargin
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "slidingWindowAgg/localSWADefaultTest/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |  missingSource: {
+        |    location: { path: "slidingWindowAgg/missingFeatureData/daily" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |
+        |}
+        |
+        |anchors: {
+        |  swaAnchor: {
+        |    source: "swaSource"
+        |    key: "x"
+        |    features: {
+        |      simplePageViewCount: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 10
+        |        type: NUMERIC
+        |      }
+        |    }
+        |  }
+        |  missingAnchor: {
+        |  source: "missingSource"
+        |  key: "x"
+        |  features: {
+        |   simpleFeature: {
+        |        def: "aggregationWindow"
+        |        aggregation: COUNT
+        |        window: 3d
+        |        default: 20
+        |        type: NUMERIC
+        |     }
+        |    }
+        |  }
+        |}
+        |derivations: {
+        | derived_simpleFeature: simpleFeature
+        |}
+        """.stripMargin
+    val res = runLocalFeatureJoinForTest(joinConfigAsString, featureDefAsString, observationDataPath = "slidingWindowAgg/localAnchorTestObsData.avro.json").data
+    res.show()
+    val df = res.collect()(0)
+    assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
+    assertEquals(df.getAs[Float]("simpleFeature"), Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(20.0f))))
+    setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
   /**
@@ -1000,7 +1744,6 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
   }
 
 
-  /**
   @Test
   def testSWACountDistinct(): Unit = {
     val featureDefAsString =
@@ -1080,5 +1823,5 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     val dfs = runLocalFeatureJoinForTest(featureJoinAsString, featureDefAsString, "featuresWithFilterObs.avro.json").data
 
     validateRows(dfs.select(keyField, features: _*).collect().sortBy(row => row.getAs[Int](keyField)), expectedRows)
-  }*/
+  }
 }

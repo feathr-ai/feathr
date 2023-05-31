@@ -6,11 +6,13 @@ import com.linkedin.feathr.offline.config.location.SimplePath
 import com.linkedin.feathr.offline.generation.SparkIOUtils
 import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.dataloader.{AvroJsonDataLoader, CsvDataLoader}
-import com.linkedin.feathr.offline.util.FeathrTestUtils
+import com.linkedin.feathr.offline.util.{FeathrTestUtils, SuppressedExceptionHandlerUtils}
+import com.linkedin.feathr.offline.util.FeathrUtils.{ADD_DEFAULT_COL_FOR_MISSING_DATA, SKIP_MISSING_FEATURE, setFeathrJobParam}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
-import org.testng.Assert.assertTrue
+import org.scalatest.Ignore
+import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.{BeforeClass, Test}
 
 import scala.collection.mutable
@@ -279,6 +281,382 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
   }
 
   /*
+   * Test skipping combination of anchored, derived and swa features.
+   */
+  @Test
+  def testSkipAnchoredFeatures: Unit = {
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "true")
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString =
+        """
+          |settings: {
+          |  joinTimeSettings: {
+          |    timestampColumn: {
+          |       def: "timestamp"
+          |       format: "yyyy-MM-dd"
+          |    }
+          |    simulateTimeDelay: 1d
+          |  }
+          |}
+          |
+          | features: {
+          |   key: a_id
+          |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "derived_featureWithNull2",
+          |    "aEmbedding", "memberEmbeddingAutoTZ"]
+          | }
+      """.stripMargin,
+      featureDefAsString =
+        """
+          | sources: {
+          |  swaSource: {
+          |    location: { path: "generaion/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |  swaSource1: {
+          |    location: { path: "generation/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |}
+          |
+          | anchors: {
+          |  anchor1: {
+          |    source: "anchorAndDerivations/nullVaueSource.avro.json"
+          |    key: "toUpperCaseExt(mId)"
+          |    features: {
+          |      featureWithNull: "isPresent(value) ? toNumeric(value) : 0"
+          |    }
+          |  }
+          |  anchor2: {
+          |    source: "anchorAndDerivations/nullValueSource.avro.json"
+          |    key: "toUpperCaseExt(mId)"
+          |    features: {
+          |      featureWithNull2: "isPresent(value) ? toNumeric(value) : 0"
+          |    }
+          |  }
+          |  swaAnchor: {
+          |    source: "swaSource"
+          |    key: "x"
+          |    features: {
+          |      aEmbedding: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |  swaAnchor1: {
+          |    source: "swaSource1"
+          |    key: "x"
+          |    features: {
+          |      memberEmbeddingAutoTZ: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |        type: {
+          |          type: TENSOR
+          |          tensorCategory: SPARSE
+          |          dimensionType: [INT]
+          |          valType: FLOAT
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+          |derivations: {
+          |
+          | derived_featureWithNull: "featureWithNull * 2"
+          | derived_featureWithNull2: "featureWithNull2 * 2"
+          |}
+        """.stripMargin,
+      observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
+
+    assertTrue(!df.data.columns.contains("featureWithNull"))
+    assertTrue(!df.data.columns.contains("derived_featureWithNull"))
+    assertTrue(df.data.columns.contains("derived_featureWithNull2"))
+    assertTrue(df.data.columns.contains("featureWithNull2"))
+    assertTrue(!df.data.columns.contains("aEmbedding"))
+    assertTrue(df.data.columns.contains("memberEmbeddingAutoTZ"))
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
+  }
+
+  /*
+   * Test skipping combination of anchored, derived and swa features. Also, test it with different default value types.
+   */
+  @Ignore
+  def testAddDefaultForMissingAnchoredFeatures: Unit = {
+    setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString =
+        """
+          |settings: {
+          |  joinTimeSettings: {
+          |    timestampColumn: {
+          |       def: "timestamp"
+          |       format: "yyyy-MM-dd"
+          |    }
+          |    simulateTimeDelay: 1d
+          |  }
+          |}
+          |
+          | features: {
+          |   key: a_id
+          |   featureList: ["featureWithNull", "derived_featureWithNull", "featureWithNull2", "featureWithNull3", "featureWithNull4",
+          |    "featureWithNull5", "derived_featureWithNull2", "featureWithNull6", "featureWithNull7", "derived_featureWithNull7"
+          |    "aEmbedding", "memberEmbeddingAutoTZ", "aEmbedding", "featureWithNullSql", "seqJoin_featureWithNull"]
+          | }
+      """.stripMargin,
+      featureDefAsString =
+        """
+          | sources: {
+          |  swaSource: {
+          |    location: { path: "generaion/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |  swaSource1: {
+          |    location: { path: "generation/daily" }
+          |    timePartitionPattern: "yyyy/MM/dd"
+          |    timeWindowParameters: {
+          |      timestampColumn: "timestamp"
+          |      timestampColumnFormat: "yyyy-MM-dd"
+          |    }
+          |  }
+          |}
+          |
+          | anchors: {
+          | swaAnchor: {
+          |    source: "geneation/daily"
+          |    key: "x"
+          |    features: {
+          |      aEmbedding: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |      }
+          |    }
+          |  }
+          |  anchor1: {
+          |    source: "anchorAndDerivations/nullVaueSource.avro.json"
+          |    key: "toUpperCaseExt(mId)"
+          |    features: {
+          |      featureWithNull: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         type: NUMERIC
+          |         default: -1
+          |      }
+          |      featureWithNull3: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         type: CATEGORICAL
+          |         default: "null"
+          |      }
+          |      featureWithNull7: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |      }
+          |      featureWithNull4: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         type: TERM_VECTOR
+          |         default: {}
+          |      }
+          |      featureWithNull6: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         type: DENSE_VECTOR
+          |         default: [1, 2, 3]
+          |      }
+          |      featureWithNull5: {
+          |         def: "isPresent(value) ? toNumeric(value) : 0"
+          |         default: 1
+          |      }
+          |    }
+          |  }
+          |
+          |  anchor2: {
+          |    source: "anchorAndDerivations/nullValueSource.avro.json"
+          |    key: "toUpperCaseExt(mId)"
+          |    features: {
+          |      featureWithNull2: "isPresent(value) ? toNumeric(value) : 0"
+          |    }
+          |  }
+          |
+          |  anchor3: {
+          |    source: "anchorAndDerivations/nullValueSource.avro.json"
+          |    key.sqlExpr: mId
+          |    features: {
+          |      featureWithNullSql.def.sqlExpr: value
+          |    }
+          |  }
+          |  swaAnchor: {
+          |    source: "swaSource"
+          |    key: "x"
+          |    features: {
+          |      aEmbedding: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |        default: 2
+          |      }
+          |    }
+          |  }
+          |  swaAnchor1: {
+          |    source: "swaSource1"
+          |    key: "x"
+          |    features: {
+          |      memberEmbeddingAutoTZ: {
+          |        def: "embedding"
+          |        aggregation: LATEST
+          |        window: 3d
+          |        type: {
+          |          type: TENSOR
+          |          tensorCategory: SPARSE
+          |          dimensionType: [INT]
+          |          valType: FLOAT
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+          |derivations: {
+          |
+          | derived_featureWithNull: "featureWithNull * 2"
+          | derived_featureWithNull2: "featureWithNull2 * 2"
+          | derived_featureWithNull7: "featureWithNull7 * 2"
+          | seqJoin_featureWithNull: {
+          |         key: x
+          |         join: {
+          |           base: {key: x, feature: featureWithNull2}
+          |           expansion: {key: y, feature: featureWithNull5}
+          |         }
+          |         aggregation: "SUM"
+          |     }
+          |}
+        """.stripMargin,
+      observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
+
+    df.data.show()
+    val featureList = df.data.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("a_id") else "null")
+    assertEquals(featureList(0).getAs[Row]("aEmbedding"),
+      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
+    assertEquals(featureList(0).getAs[Row]("featureWithNull3"), "null")
+    assertEquals(featureList(0).getAs[Row]("featureWithNull5"), mutable.Map("" -> 1.0f))
+    assertEquals(featureList(0).getAs[Row]("featureWithNull7"), null)
+    assertEquals(featureList(0).getAs[Row]("featureWithNull"),-1.0f)
+    assertEquals(featureList(0).getAs[Row]("featureWithNull4"),Map())
+    assertEquals(featureList(0).getAs[Row]("featureWithNull2"),1.0f)
+    assertEquals(featureList(0).getAs[Row]("derived_featureWithNull"),
+      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(-2.0f))))
+    assertEquals(featureList(0).getAs[Row]("derived_featureWithNull7"),
+      Row(mutable.WrappedArray.make(Array()), mutable.WrappedArray.empty))
+    assertEquals(featureList(0).getAs[Row]("derived_featureWithNull2"),
+      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
+    assertEquals(featureList(0).getAs[Row]("featureWithNullSql"), 1.0f)
+    assertEquals(featureList(0).getAs[Row]("seqJoin_featureWithNull"),
+      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(1.0f))))
+    assertEquals(SuppressedExceptionHandlerUtils.missingFeatures,
+      Set("featureWithNull", "featureWithNull3", "featureWithNull5", "featureWithNull4", "featureWithNull7",
+        "aEmbedding", "featureWithNull6", "derived_featureWithNull", "seqJoin_featureWithNull", "derived_featureWithNull7"))
+    setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
+  }
+
+  /*
+   * Test features with fdsExtract.
+   */
+  @Test
+  def testFeaturesWithFdsExtract: Unit = {
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString =
+        """
+          | features: {
+          |   key: a_id
+          |   featureList: ["featureWithNullDerived"]
+          | }
+      """.stripMargin,
+      featureDefAsString =
+        """
+          | anchors: {
+          |  anchor1: {
+          |    source: "anchorAndDerivations/nullValueSource.avro.json"
+          |    key.sqlExpr: mId
+          |    features: {
+          |      featureWithNull {
+          |      def.sqlExpr: "FDSExtract(denseValue)"
+          |      type:{
+          |          type: TENSOR
+          |           tensorCategory: DENSE
+          |           shape: [2,5]
+          |           dimensionType: [INT, INT]
+          |           valType: STRING
+          |          }
+          |         }
+          |       }
+          |  }
+          |}
+          |derivations: {
+          |featureWithNullDerived:{
+          |        key: ["id"]
+          |        inputs:
+          |        {
+          |            fv: {key: ["id"], feature: featureWithNull}
+          |        }
+          |        definition.sqlExpr: "coalesce(fv,  ARRAY(ARRAY(\"aa\", \"bb\", \"cc\", \"dd\", \"ee\"), ARRAY(\"UNK\", \"UNK\", \"UNK\", \"UNK\", \"UNK\")))"
+          |        type:
+          |        {
+          |            type: TENSOR
+          |            tensorCategory: DENSE
+          |            shape: [2,5]
+          |            dimensionType: [INT, INT]
+          |            valType: STRING
+          |        }
+          |}
+          |}
+        """.stripMargin,
+      observationDataPath = "anchorAndDerivations/testMVELLoopExpFeature-observations.csv")
+
+    val selectedColumns = Seq("a_id", "featureWithNullDerived")
+    val filteredDf = df.data.select(selectedColumns.head, selectedColumns.tail: _*)
+
+    val expectedDf = ss.createDataFrame(
+      ss.sparkContext.parallelize(
+        Seq(
+          Row(
+            // a_id
+            "1",
+            // featureWithNull
+            mutable.WrappedArray.make(Array(Array("aa", "bb", "cc", "dd", "ee"), Array("a", "a", "a", "a", "a"))),
+          ),
+          Row(
+            // a_id
+            "2",
+            // f3eatureWithNull
+            mutable.WrappedArray.make(Array(Array("aa", "bb", "cc", "dd", "ee"), Array("UNK", "UNK", "UNK", "UNK", "UNK")))
+          ),
+          Row(
+            // a_id
+            "3",
+            // featureWithNull
+            mutable.WrappedArray.make(Array(Array("aa", "bb", "cc", "dd", "ee"), Array("a", "a", "a", "a", "a")),
+            )))),
+      StructType(
+        List(
+          StructField("a_id", StringType, true),
+          StructField("featureWithNull", ArrayType(ArrayType(StringType, true), true), true)
+        )))
+
+    def cmpFunc(row: Row): String = row.get(0).toString
+
+    FeathrTestUtils.assertDataFrameApproximatelyEquals(filteredDf, expectedDf, cmpFunc)
+  }
+
+  /*
    * Test features with null values.
    */
   @Test
@@ -294,7 +672,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
                              | anchors: {
                              |  anchor1: {
                              |    source: "anchorAndDerivations/nullValueSource.avro.json"
-                             |    key: "mId"
+                             |    key: "toUpperCaseExt(mId)"
                              |    features: {
                              |      featureWithNull: "isPresent(value) ? toNumeric(value) : 0"
                              |    }

@@ -35,6 +35,7 @@ class TestDerivedFeatureJoinStep extends TestFeathr with MockitoSugar {
     when(mockLogicalPlan.convertErasedEntityTaggedToJoinStage(any())).thenReturn(Seq.empty) // post join derived is empty
     when(mockFeatureGroups.allAnchoredFeatures).thenReturn(Map.empty[String, FeatureAnchorWithSource])
     when(mockFeatureGroups.allDerivedFeatures).thenReturn(Map.empty[String, DerivedFeature])
+    when(mockExecutionContext.sparkSession).thenReturn(ss)
 
     // mock derived join step input
     val mockDerivedStepInput = mock[DataFrameJoinStepInput]
@@ -70,6 +71,7 @@ class TestDerivedFeatureJoinStep extends TestFeathr with MockitoSugar {
     // mock execution context invocations
     when(mockExecutionContext.logicalPlan).thenReturn(mockLogicalPlan)
     when(mockExecutionContext.featureGroups).thenReturn(mockFeatureGroups)
+    when(mockExecutionContext.sparkSession).thenReturn(ss)
     // mock logical plan invocations
     // stage derived features is non empty while post join derived is empty
     when(mockLogicalPlan.joinStages).thenReturn(Seq((Seq(0), Seq("feature1"))))
@@ -119,6 +121,7 @@ class TestDerivedFeatureJoinStep extends TestFeathr with MockitoSugar {
     // mock execution context invocations
     when(mockExecutionContext.logicalPlan).thenReturn(mockLogicalPlan)
     when(mockExecutionContext.featureGroups).thenReturn(mockFeatureGroups)
+    when(mockExecutionContext.sparkSession).thenReturn(ss)
     // mock get derived features
     when(mockLogicalPlan.joinStages).thenReturn(Seq((Seq(0), Seq("feature1", "feature3"))))
     when(mockLogicalPlan.convertErasedEntityTaggedToJoinStage(any())).thenReturn(Seq((Seq(0), Seq("feature2"))))

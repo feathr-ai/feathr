@@ -10,7 +10,8 @@ import com.typesafe.config.ConfigValueType;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.SourceVersion;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.producer.anchors.AnchorConfig.*;
 
@@ -19,7 +20,7 @@ import static com.linkedin.feathr.core.config.producer.anchors.AnchorConfig.*;
  * Builds AnchorConfig objects that have features that are extracted via a udf class (an extractor)
  */
 class AnchorConfigWithExtractorBuilder extends BaseAnchorConfigBuilder {
-  private final static Logger logger = Logger.getLogger(AnchorConfigWithExtractorBuilder.class);
+  private final static Logger logger = LogManager.getLogger(AnchorConfigWithExtractorBuilder.class);
 
   private AnchorConfigWithExtractorBuilder() {
   }

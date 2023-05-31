@@ -288,7 +288,7 @@ class JdbcSource(Source):
                     anonymous: true
                     {% endif %}
                 }
-                {% if source.event_timestamp_column is defined %}
+                {% if source.event_timestamp_column %}
                     timeWindowParameters: {
                         timestampColumn: "{{source.event_timestamp_column}}"
                         timestampColumnFormat: "{{source.timestamp_format}}"
@@ -342,8 +342,8 @@ class KafkaConfig:
 class KafKaSource(Source):
     """A kafka source object. Used in streaming feature ingestion."""
 
-    def __init__(self, name: str, kafkaConfig: KafkaConfig):
-        super().__init__(name)
+    def __init__(self, name: str, kafkaConfig: KafkaConfig,  registry_tags: Optional[Dict[str, str]] = None):
+        super().__init__(name, registry_tags=registry_tags)
         self.config = kafkaConfig
 
     def to_feature_config(self) -> str:
@@ -403,7 +403,7 @@ class SparkSqlSource(Source):
                     table: "{{source.table}}"
                     {% endif %}
                 }
-                {% if source.event_timestamp_column is defined %}
+                {% if source.event_timestamp_column %}
                 timeWindowParameters: {
                     timestampColumn: "{{source.event_timestamp_column}}"
                     timestampColumnFormat: "{{source.timestamp_format}}"
@@ -418,11 +418,11 @@ class SparkSqlSource(Source):
         return []
 
     def to_dict(self) -> Dict[str, str]:
-        ret = self.options.copy()
+        ret = {}
         ret["type"] = "sparksql"
-        if self.sql:
+        if hasattr(self, "sql"):
             ret["sql"] = self.sql
-        elif self.table:
+        elif hasattr(self, "table"):
             ret["table"] = self.table
         return ret        
     
@@ -458,11 +458,11 @@ class GenericSource(Source):
                     {% if source.mode is defined %}
                     mode: "{{source.mode}}"
                     {% endif %}
-                    {% for option in source.options %}
-                    {{option.key}}: "{{option.value}}"
+                    {% for key,value in source.options.items() %}
+                    "{{key}}":"{{value}}"
                     {% endfor %}
                 }
-                {% if source.event_timestamp_column is defined %}
+                {% if source.event_timestamp_column %}
                 timeWindowParameters: {
                     timestampColumn: "{{source.event_timestamp_column}}"
                     timestampColumnFormat: "{{source.timestamp_format}}"

@@ -2,6 +2,8 @@ package com.linkedin.feathr.common.util;
 
 import com.linkedin.feathr.common.FeatureTypes;
 import com.linkedin.feathr.common.FeatureValue;
+import com.linkedin.feathr.offline.mvel.plugins.FeatureValueWrapper;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -178,7 +180,14 @@ public class CoercionUtils {
     if (item instanceof FeatureValue) {
       // if input is already a FeatureValue, then just return its term vector representation
       return ((FeatureValue) item).getAsTermVector();
-    } else if (item instanceof Collection) {
+    } else if (item instanceof FeatureValueWrapper) {
+      Object fv = ((FeatureValueWrapper) item).getFeatureValue();
+      if (fv instanceof FeatureValue) {
+        return ((FeatureValue) fv).getAsTermVector();
+      } else {
+        throw new RuntimeException("Input FeatureValueWrapper " + item + " cannot be converted to feature value.");
+      }
+    }else if (item instanceof Collection) {
       Collection<?> collection = (Collection<?>) item;
       if (collection.isEmpty()) {
         return Collections.emptyMap();
@@ -314,7 +323,7 @@ public class CoercionUtils {
 
   private static <T> void checkNotNull(T item) {
     if (null == item) {
-      throw new RuntimeException("Unexpected null");
+      throw new NullPointerException("Unexpected null");
     }
   }
 

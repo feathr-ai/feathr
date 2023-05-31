@@ -9,7 +9,6 @@ import java.time.format.DateTimeFormatter
  * @param pathChecker the path checker is used to check whether a file path exists.
  */
 private[offline] class TimeBasedHdfsPathGenerator(pathChecker: PathChecker) {
-
   /**
    * Helper function for generating file names for daily and hourly format data
    * Supported path format include:
@@ -35,7 +34,7 @@ private[offline] class TimeBasedHdfsPathGenerator(pathChecker: PathChecker) {
         .map(offset => pathInfo.basePath + formatter.format(factDataStartTime.plus(offset, chronUnit)) + postfixPath).distinct
 
     if (ignoreMissingFiles) {
-      filePaths.filter(pathChecker.exists)
+      filePaths.filter(filePath => pathChecker.exists(filePath) && pathChecker.nonEmpty(filePath))
     } else {
       filePaths
     }

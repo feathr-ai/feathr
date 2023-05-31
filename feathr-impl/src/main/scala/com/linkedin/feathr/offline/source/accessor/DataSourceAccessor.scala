@@ -6,6 +6,7 @@ import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.source.{DataSource, SourceFormatType}
 import com.linkedin.feathr.offline.util.PartitionLimiter
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.io.File
@@ -27,6 +28,7 @@ private[offline] abstract class DataSourceAccessor(val source: DataSource) {
 
 private[offline] object DataSourceAccessor {
 
+  private val log = LogManager.getLogger(getClass)
   /**
    * create time series/composite source that contains multiple day/hour data
    *
@@ -49,7 +51,8 @@ private[offline] object DataSourceAccessor {
       addTimestampColumn: Boolean = false,
       isStreaming: Boolean = false,
       dataPathHandlers: List[DataPathHandler]): DataSourceAccessor = { //TODO: Add tests
-
+    val info = s"DataSourceAccessor handling ${source}, with interval ${dateIntervalOpt.getOrElse("None")}"
+    log.info(info)
     val dataAccessorHandlers: List[DataAccessorHandler] = dataPathHandlers.map(_.dataAccessorHandler)
     val dataLoaderHandlers: List[DataLoaderHandler] = dataPathHandlers.map(_.dataLoaderHandler)
 
@@ -62,7 +65,7 @@ private[offline] object DataSourceAccessor {
       new NonTimeBasedDataSourceAccessor(ss, dataLoaderFactory, source, expectDatumType)
     } else {
       import scala.util.control.Breaks._
-      
+
       val timeInterval = dateIntervalOpt.get
       var dataAccessorOpt: Option[DataSourceAccessor] = None
       breakable {
@@ -110,6 +113,7 @@ private[offline] object DataSourceAccessor {
       // case 1: the timePartitionPattern exists
       val pathInfo = pathAnalyzer.analyze(source.path, source.timePartitionPattern.get)
       PathPartitionedTimeSeriesSourceAccessor(
+        ss,
         pathChecker,
         fileLoaderFactory,
         partitionLimiter,
@@ -124,6 +128,7 @@ private[offline] object DataSourceAccessor {
         // case 2: if it's daily/hourly data, load the partitions
         val pathInfo = pathAnalyzer.analyze(source.path)
         PathPartitionedTimeSeriesSourceAccessor(
+          ss,
           pathChecker,
           fileLoaderFactory,
           partitionLimiter,
@@ -147,7 +152,7 @@ private[offline] object DataSourceAccessor {
  */
 private[offline] case class DataAccessorHandler(
   validatePath: String => Boolean,
-  getAccessor: 
+  getAccessor:
   (
     SparkSession,
     DataSource,
@@ -167,3 +172,4 @@ private[offline] case class DataPathHandler(
   dataAccessorHandler: DataAccessorHandler,
   dataLoaderHandler: DataLoaderHandler
 )
+

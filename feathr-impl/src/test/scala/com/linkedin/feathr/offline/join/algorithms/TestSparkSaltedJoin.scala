@@ -3,7 +3,7 @@ package com.linkedin.feathr.offline.join.algorithms
 import com.linkedin.feathr.common.exception.FeathrFeatureJoinException
 import com.linkedin.feathr.offline.AssertFeatureUtils._
 import com.linkedin.feathr.offline.join.util.{FrequentItemEstimatorFactory, FrequentItemEstimatorType, PreComputedFrequentItemEstimator, SparkFrequentItemEstimator}
-import com.linkedin.feathr.offline.util.{FeathrUtils, HdfsUtils}
+import com.linkedin.feathr.offline.util.HdfsUtils
 import com.linkedin.feathr.offline.{TestFeathr, TestUtils}
 import org.apache.commons.math3.distribution.ZipfDistribution
 import org.apache.spark.sql.DataFrame
@@ -44,7 +44,7 @@ class TestSparkSaltedJoin extends TestFeathr with MockitoSugar {
     val right = Seq((1, "1"), (3, "2")).toDF("key", "value")
 
     val mockFrequentItemsResult = Seq((2)).toDF("key")
-    when(mockFrequentItemEstimator.estimateFrequentItems(left, "key", FeathrUtils.defaultParams(FeathrUtils.SALTED_JOIN_FREQ_ITEM_THRESHOLD).toFloat))
+    when(mockFrequentItemEstimator.estimateFrequentItems(left, "key", 0.0002f))
       .thenReturn(mockFrequentItemsResult)
 
     val saltedJoin = new SaltedSparkJoin(ss, mockFrequentItemEstimator)

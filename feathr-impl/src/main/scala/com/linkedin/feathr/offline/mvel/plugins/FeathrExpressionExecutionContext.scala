@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline.mvel.plugins
 
 import com.linkedin.feathr.common.FeatureValue
+import com.linkedin.feathr.offline.mvel.MvelContext
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.mvel2.ConversionHandler
@@ -8,6 +9,7 @@ import org.mvel2.conversion.ArrayHandler
 import org.mvel2.util.ReflectionUtil.{isAssignableFrom, toNonPrimitiveType}
 
 import java.io.Serializable
+import java.util.Optional
 import scala.collection.mutable
 
 /**
@@ -43,13 +45,21 @@ class FeathrExpressionExecutionContext extends Serializable {
    * @param typeAdaptor the type adaptor that can convert between the "other" representation and {@link FeatureValue}
    * @param <           T> type parameter for the "other" feature value class
    */
-  def setupExecutorMvelContext[T](clazz: Class[T], typeAdaptor: FeatureValueTypeAdaptor[T], sc: SparkContext): Unit = {
+  def setupExecutorMvelContext[T](clazz: Class[T],
+                                  typeAdaptor: FeatureValueTypeAdaptor[T],
+                                  sc: SparkContext,
+                                  mvelExtContext: Option[Class[Any]] = None): Unit = {
     localFeatureValueTypeAdaptors.put(clazz.getCanonicalName, typeAdaptor.asInstanceOf[FeatureValueTypeAdaptor[AnyRef]])
     featureValueTypeAdaptors = sc.broadcast(localFeatureValueTypeAdaptors)
     // Add a converter that can convert external data to feature value
     addConversionHandler(classOf[FeatureValue], new ExternalDataToFeatureValueHandler(featureValueTypeAdaptors), sc)
     // Add a converter that can convert a feature value to external data
     addConversionHandler(clazz, new FeatureValueToExternalDataHandler(typeAdaptor), sc)
+    MvelContext.mvelAlienUDFRegisterClazz = if (mvelExtContext.isDefined) {
+      Optional.of(sc.broadcast(mvelExtContext.get))
+    } else {
+      Optional.empty()
+    }
   }
 
   /**
@@ -60,6 +70,7 @@ class FeathrExpressionExecutionContext extends Serializable {
    */
   def canConvert(toType: Class[_], convertFrom: Class[_]): Boolean = {
     if (isAssignableFrom(toType, convertFrom)) return true
+    if (isAssignableFrom(classOf[FeatureValueWrapper[toType.type]], convertFrom)) return true
     if (converters.value.contains(toType.getCanonicalName)) {
       converters.value.get(toType.getCanonicalName).get.canConvertFrom(toNonPrimitiveType(convertFrom))
     } else if (toType.isArray && canConvert(toType.getComponentType, convertFrom)) {
@@ -67,6 +78,28 @@ class FeathrExpressionExecutionContext extends Serializable {
     } else {
       false
     }
+  }
+
+  /**
+   * Check if there is registered converters that can handle the conversion.
+   * @param inputValue input value to check
+   * @return whether it can be converted or not
+   */
+  def canConvertFromAny(inputValue: AnyRef): Boolean = {
+    val result = converters.value.filter(converter => converter._2.canConvertFrom(inputValue.getClass))
+    result.nonEmpty
+  }
+
+  /**
+   * Convert the input Check if there is registered converters that can handle the conversion.
+   * @param inputValue input value to convert
+   * @return return all converted values produced by registered converters
+   */
+  def convertFromAny(inputValue: AnyRef): List[AnyRef] = {
+    converters.value.collect {
+      case converter if converter._2.canConvertFrom(inputValue.getClass) =>
+        converter._2.convertFrom(inputValue)
+    }.toList
   }
 
   /**
@@ -78,6 +111,9 @@ class FeathrExpressionExecutionContext extends Serializable {
    */
   def convert[T](in: Any, toType: Class[T]): T = {
     if ((toType eq in.getClass) || toType.isAssignableFrom(in.getClass)) return in.asInstanceOf[T]
+    if (isAssignableFrom(classOf[FeatureValueWrapper[toType.type]], in.getClass)) {
+      return in.asInstanceOf[FeatureValueWrapper[_]].getFeatureValue().asInstanceOf[T]
+    }
     val converter = if (converters.value != null) {
       converters.value.get(toType.getCanonicalName).get
     } else {

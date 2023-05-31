@@ -1,10 +1,11 @@
 package com.linkedin.feathr.offline.transformation
 
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions.{lit, monotonically_increasing_id, row_number}
 import org.apache.spark.sql.types.StructField
 
-private[offline] object DataFrameExt {
+private[feathr] object DataFrameExt {
   implicit class DataFrameMethods(df: DataFrame) {
 
     /**
@@ -37,6 +38,55 @@ private[offline] object DataFrameExt {
       val extendedDf: DataFrame = extendDf(df, schema)
       val extendedOtherDf = extendDf(other, schema)
       extendedDf.unionByName(extendedOtherDf)
+    }
+
+
+    /**
+     * Copy the value of rightJoinColumns from rightDF to the current DataFrame, and rename as leftJoinColumns columns
+     * e.g.
+     * left          right
+     * id1 id2 v1 v2       id3 id4 v3
+     * 0    5  a   b        0   5   e
+     * 1    6  c   d        10  11  f
+     *
+     * will return:
+     * id1 id2 v1 v2
+     * 0  5  a  b
+     * 1  6  c  d
+     * 0  5  a  b
+     * 10  11  c d
+     *
+     * @param leftJoinColumns
+     * @param rightJoinColumns
+     * @param rightDF
+     * @return
+     */
+    def appendRows(leftJoinColumns: Seq[String], rightJoinColumns: Seq[String], rightDF: DataFrame): DataFrame = {
+      // Add a few more rows to observation data by copying the feature key from the feature dataset
+      // This ensures the join will have matched results between observation and feature data
+      val dfCount = df.count()
+      val rightCount = rightDF.count()
+      val leftDf = if (dfCount < rightCount && dfCount > 0 && rightCount > 0) {
+        val ratio = rightCount.toDouble / dfCount
+        df.sample(true, ratio, 2)
+      } else {
+        df
+      }
+      val indexIdColExpr = row_number.over(Window.orderBy(monotonically_increasing_id)) - 1
+      val indexColName = "sanity_check_run_join_index_col"
+      val withIndexLeftDF = leftDf.withColumn(indexColName, indexIdColExpr)
+      val withIndexRightJoinKeysDF = rightDF.select(rightJoinColumns.head, rightJoinColumns.tail: _*)
+        .withColumn(indexColName, indexIdColExpr)
+      // Rename rightDF column to avoid clash with current DF after join
+      val newRightJoinColumns = rightJoinColumns.map(col => "_temp_right_" + col)
+      val renamedWithIndexRightJoinKeysDF = rightJoinColumns.zip(newRightJoinColumns).foldLeft(withIndexRightJoinKeysDF)((baseDF, joinKeyColPair) =>
+        baseDF.withColumnRenamed(joinKeyColPair._1, joinKeyColPair._2)
+        )
+      val leftWithRightJoinKeyDF = withIndexLeftDF.join(renamedWithIndexRightJoinKeysDF, indexColName)
+        .drop(leftJoinColumns : _*).drop(indexColName)
+      val renamedLeftDf = leftJoinColumns.zip(newRightJoinColumns).foldLeft(leftWithRightJoinKeyDF)((baseDF, joinKeyColPair) =>
+        baseDF.withColumnRenamed(joinKeyColPair._2, joinKeyColPair._1))
+      leftDf.unionByName(renamedLeftDf)
     }
   }
 }

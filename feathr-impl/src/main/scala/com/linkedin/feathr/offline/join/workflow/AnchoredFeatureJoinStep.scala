@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.join.workflow
 
-import com.linkedin.feathr.common.{ErasedEntityTaggedFeature, FeatureTypeConfig}
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrFeatureJoinException}
+import com.linkedin.feathr.common.{ErasedEntityTaggedFeature, FeatureTypeConfig, FeatureTypes}
 import com.linkedin.feathr.offline
 import com.linkedin.feathr.offline.FeatureDataFrame
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
@@ -12,13 +12,16 @@ import com.linkedin.feathr.offline.job.KeyedTransformedResult
 import com.linkedin.feathr.offline.join._
 import com.linkedin.feathr.offline.join.algorithms._
 import com.linkedin.feathr.offline.join.util.FrequentItemEstimatorFactory
+import com.linkedin.feathr.offline.logical.{LogicalPlan, MultiStageJoinPlan}
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
-import com.linkedin.feathr.offline.util.FeathrUtils
-import org.apache.log4j.Logger
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.lit
+import com.linkedin.feathr.offline.transformation.DataFrameExt._
+import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils, FeaturizedDatasetUtils, SuppressedExceptionHandlerUtils}
+import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
+import org.apache.logging.log4j.LogManager
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions.{col, lit}
 
 /**
  * An abstract class provides default implementation of anchored feature join step
@@ -35,10 +38,66 @@ private[offline] class AnchoredFeatureJoinStep(
     joiner: SparkJoinWithJoinCondition,
     mvelContext: Option[FeathrExpressionExecutionContext])
     extends FeatureJoinStep[AnchorJoinStepInput, DataFrameJoinStepOutput] {
-  @transient lazy val log = Logger.getLogger(getClass.getName)
+  @transient lazy val log = LogManager.getLogger(getClass.getName)
+
+  /**
+   * When the add.default.col.for.missing.data flag is turned, some features could be skipped because of missing data.
+   * For such anchored features, we will add a feature column with a configured default value (if present in the feature anchor) or
+   * a null value column.
+   * @param sparkSession  spark session
+   * @param dataframe     the original observation dataframe
+   * @param logicalPlan   logical plan generated using the join config
+   * @param missingFeatures Map of missing feature names to the corresponding featureAnchorWithSource object.
+   * @return  Dataframe with the missing feature columns added
+   */
+  def substituteDefaultsForDataMissingFeatures(sparkSession: SparkSession, dataframe: DataFrame, logicalPlan: MultiStageJoinPlan,
+    missingFeatures: Map[String, FeatureAnchorWithSource]): DataFrame = {
+    // Create a map of feature name to corresponding defaults. If a feature does not have default value, it would be missing
+    // from this map and we would add a default column of nulls for those features.
+    val defaults = missingFeatures.flatMap(s => s._2.featureAnchor.defaults)
+
+    // Create a map of feature to their feature type if configured.
+    val featureTypes = missingFeatures
+      .map(x => Some(x._2.featureAnchor.featureTypeConfigs))
+      .foldLeft(Map.empty[String, FeatureTypeConfig])((a, b) => a ++ b.getOrElse(Map.empty[String, FeatureTypeConfig]))
+
+    // We try to guess the column data type from the configured feature type. If feature type is not present, we will default to
+    // default feathr behavior of returning a map column of string to float.
+    val obsDfWithDefaultNullColumn = missingFeatures.keys.foldLeft(dataframe) { (observationDF, featureName) =>
+      val featureColumnType = if (featureTypes.contains(featureName)) {
+        featureTypes(featureName).getFeatureType match {
+          case FeatureTypes.NUMERIC => "float"
+          case FeatureTypes.BOOLEAN => "boolean"
+          case FeatureTypes.DENSE_VECTOR => "array<float>"
+          case FeatureTypes.CATEGORICAL => "string"
+          case FeatureTypes.CATEGORICAL_SET => "array<string>"
+          case FeatureTypes.TERM_VECTOR => "map<string,float>"
+          case FeatureTypes.UNSPECIFIED => "map<string,float>"
+          case _ => "map<string,float>"
+        }
+      } else { // feature type is not configured
+        "map<string,float>"
+      }
+      observationDF.withColumn(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName), lit(null).cast(featureColumnType))
+    }
+
+    val dataframeWithDefaults = substituteDefaults(obsDfWithDefaultNullColumn, missingFeatures.keys.toSeq, defaults, featureTypes,
+      sparkSession, (s: String) => s"${FEATURE_NAME_PREFIX}$s")
+
+    // We want to duplicate this column with the correct feathr supported feature name which is required for further processing.
+    // For example, if feature name is abc and the corresponding key is x, the column name would be __feathr_feature_abc_x.
+    // This column will be dropped after all the joins are done.
+    missingFeatures.keys.foldLeft(dataframeWithDefaults) { (dataframeWithDefaults, featureName) =>
+      val keyTags = logicalPlan.joinStages.filter(kv => kv._2.contains(featureName)).head._1
+      val keyStr = keyTags.map(logicalPlan.keyTagIntsToStrings).toList
+      dataframeWithDefaults.withColumn(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName, Some(keyStr)),
+        col(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName)))
+    }
+  }
 
   /**
    * Join anchored features to the observation passed as part of the input context.
+   *
    * @param features  Non-window aggregation, basic anchored features.
    * @param input     input context for this step.
    * @param ctx       environment variable that contains join job execution context.
@@ -47,11 +106,24 @@ private[offline] class AnchoredFeatureJoinStep(
   override def joinFeatures(features: Seq[ErasedEntityTaggedFeature], input: AnchorJoinStepInput)(
       implicit ctx: JoinExecutionContext): FeatureDataFrameOutput = {
     val AnchorJoinStepInput(observationDF, anchorDFMap) = input
+    val shouldAddDefault = FeathrUtils.getFeathrJobParam(ctx.sparkSession.sparkContext.getConf,
+      FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+    val withMissingFeaturesSubstituted = if (shouldAddDefault) {
+        val missingFeatures = features.map(x => x.getFeatureName).filter(x => {
+        val containsFeature: Seq[Boolean] = anchorDFMap.map(y => y._1.selectedFeatures.contains(x)).toSeq
+        !containsFeature.contains(true)
+      })
+      log.warn(s"Missing data for features ${missingFeatures.mkString}. Default values will be populated for this column.")
+      SuppressedExceptionHandlerUtils.missingFeatures ++= missingFeatures
+      val missingAnchoredFeatures = ctx.featureGroups.allAnchoredFeatures.filter(featureName => missingFeatures.contains(featureName._1))
+      substituteDefaultsForDataMissingFeatures(ctx.sparkSession, observationDF, ctx.logicalPlan,
+        missingAnchoredFeatures)
+    } else observationDF
+
     val allAnchoredFeatures: Map[String, FeatureAnchorWithSource] = ctx.featureGroups.allAnchoredFeatures
     val joinStages = ctx.logicalPlan.joinStages
-    val enableCheckPoint = FeathrUtils.getFeathrJobParam(ctx.sparkSession, FeathrUtils.ENABLE_CHECKPOINT).toBoolean
     val joinOutput = joinStages
-      .foldLeft(FeatureDataFrame(observationDF, Map.empty[String, FeatureTypeConfig]))((accFeatureDataFrame, joinStage) => {
+      .foldLeft(FeatureDataFrame(withMissingFeaturesSubstituted, Map.empty[String, FeatureTypeConfig]))((accFeatureDataFrame, joinStage) => {
         val (keyTags: Seq[Int], featureNames: Seq[String]) = joinStage
         val FeatureDataFrame(contextDF, inferredFeatureTypeMap) = accFeatureDataFrame
         // map feature name to its transformed dataframe and the join key of the dataframe
@@ -62,10 +134,10 @@ private[offline] class AnchoredFeatureJoinStep(
         // Note that dataframe.join() can handle string type join with numeric type correctly, so we don't need to cast all
         // key types to string explicitly as what we did for the RDD version
         val (leftJoinColumns, contextDFWithJoinKey) = if (isSaltedJoinRequiredForKeys(keyTags)) {
-          SaltedJoinKeyColumnAppender.appendJoinKeyColunmns(tagsInfo, contextDF)
-        } else {
-          leftJoinColumnExtractor.appendJoinKeyColunmns(tagsInfo, contextDF)
-        }
+            SaltedJoinKeyColumnAppender.appendJoinKeyColunmns(tagsInfo, contextDF)
+          } else {
+            leftJoinColumnExtractor.appendJoinKeyColunmns(tagsInfo, contextDF)
+          }
 
         // Compute default values and feature types, for the features joined in the stage
         val anchoredDFThisStage = anchorDFMap.filterKeys(featureNames.filter(allAnchoredFeatures.contains).map(allAnchoredFeatures).toSet)
@@ -97,7 +169,7 @@ private[offline] class AnchoredFeatureJoinStep(
           log.debug("contextDF after dropping left join key columns:")
           withNoLeftJoinKeyDF.show(false)
         }
-        val checkpointDF = if (enableCheckPoint) {
+        val checkpointDF = if (shouldCheckPoint(ctx.sparkSession)) {
           // checkpoint complicated dataframe for each stage to avoid Spark failure
           withNoLeftJoinKeyDF.checkpoint(true)
         } else {
@@ -170,24 +242,56 @@ private[offline] class AnchoredFeatureJoinStep(
           inputDF.withColumn(nameAndfield._1, lit(null).cast(nameAndfield._2.dataType))
         })
     } else {
-      if (isSaltedJoinRequiredForKeys(keyTags)) {
+      val isSanityCheckMode = FeathrUtils.getFeathrJobParam(ctx.sparkSession.sparkContext.getConf, FeathrUtils.ENABLE_SANITY_CHECK_MODE).toBoolean
+      if (isSanityCheckMode) {
+        log.info("Running in sanity check mode.")
+      }
+      val featureNames = featureToDFAndJoinKey._1.toSet
+      FeathrUtils.dumpDebugInfo(ctx.sparkSession, contextDF, featureNames, "observation for anchored feature",
+        featureNames.mkString("_") + "_observation_for_anchored")
+      FeathrUtils.dumpDebugInfo(ctx.sparkSession, featureDF, featureNames, "anchored feature before join",
+        featureNames.mkString("_") + "_anchored_feature_before_join")
+      val shouldFilterNulls = FeathrUtils.getFeathrJobParam(ctx.sparkSession.sparkContext.getConf, FeathrUtils.FILTER_NULLS).toBoolean
+      var nullDf = ctx.sparkSession.emptyDataFrame
+      val joinedDf = if (isSaltedJoinRequiredForKeys(keyTags)) {
         val (rightJoinColumns, rightDF) = SaltedJoinKeyColumnAppender.appendJoinKeyColunmns(rawRightJoinKeys, featureDF)
-        log.trace(s"rightJoinColumns= [${rightJoinColumns.mkString(", ")}] features= [${featureToDFAndJoinKey._1.mkString(", ")}]")
+        log.trace(s"Salted join: rightJoinColumns= [${rightJoinColumns.mkString(", ")}] features= [${featureToDFAndJoinKey._1.mkString(", ")}]")
         val saltedJoinFrequentItemDF = ctx.frequentItemEstimatedDFMap.get(keyTags)
         val saltedJoiner = new SaltedSparkJoin(ctx.sparkSession, FrequentItemEstimatorFactory.createFromCache(saltedJoinFrequentItemDF))
-        saltedJoiner.join(leftJoinColumns, contextDF, rightJoinColumns, rightDF, JoinType.left_outer)
+        val refinedContextDF = if (isSanityCheckMode) {
+          contextDF.appendRows(leftJoinColumns, rightJoinColumns, rightDF)
+        } else {
+          contextDF
+        }
+        saltedJoiner.join(leftJoinColumns, refinedContextDF, rightJoinColumns, rightDF, JoinType.left_outer)
       } else {
         val (rightJoinColumns, rightDF) = rightJoinColumnExtractor.appendJoinKeyColunmns(rawRightJoinKeys, featureDF)
-        log.trace(s"rightJoinColumns= [${rightJoinColumns.mkString(", ")}] features= [${featureToDFAndJoinKey._1.mkString(", ")}]")
-        joiner.join(leftJoinColumns, contextDF, rightJoinColumns, rightDF, JoinType.left_outer)
+        log.trace(s"Spark default join: rightJoinColumns= [${rightJoinColumns.mkString(", ")}] features= [${featureToDFAndJoinKey._1.mkString(", ")}]")
+        val refinedContextDF = if (isSanityCheckMode) {
+          contextDF.appendRows(leftJoinColumns, rightJoinColumns, rightDF)
+        } else {
+          contextDF
+        }
+        val filteredLeftDf = if (shouldFilterNulls) DataFrameUtils.filterNulls(refinedContextDF, leftJoinColumns) else refinedContextDF
+        nullDf = if (shouldFilterNulls) DataFrameUtils.filterNonNulls(refinedContextDF, leftJoinColumns) else nullDf
+        joiner.join(leftJoinColumns, filteredLeftDf, rightJoinColumns, rightDF, JoinType.left_outer)
       }
 
+      val dfWithNullRowsAdded = if (shouldFilterNulls && !nullDf.isEmpty) {
+        val nullDfWithFeatureCols = featureNames.foldLeft(joinedDf)((s, x) => s.withColumn(x, lit(null)))
+        contextDF.union(nullDfWithFeatureCols)
+      } else joinedDf
+
+      FeathrUtils.dumpDebugInfo(ctx.sparkSession, dfWithNullRowsAdded, featureNames, "anchored feature after join",
+        featureNames.mkString("_") + "_anchored_feature_after_join")
+      dfWithNullRowsAdded
     }
   }
 
   /**
    * Post-join pruning and renaming columns. Rename the feature columns by adding tags
    * and drop unnecessary columns from the feature data.
+   *
    * @param tagsInfo               key tags as strings.
    * @param contextDF              observation and features joined.
    * @param featureToDFAndJoinKey  feature DataFrame and feature join key.

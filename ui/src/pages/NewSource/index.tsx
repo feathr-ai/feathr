@@ -1,14 +1,14 @@
 import React from 'react'
 
 import { PageHeader } from 'antd'
-import { useSearchParams } from 'react-router-dom'
+
+import { observer, useStore } from '@/hooks'
 
 import ScourceForm from './components/SourceForm'
 
 const NewFeature = () => {
-  const [searchParams] = useSearchParams()
-
-  const project = searchParams.get('project') || ''
+  const { globalStore } = useStore()
+  const { project } = globalStore
 
   return (
     <div className="page">
@@ -19,4 +19,4 @@ const NewFeature = () => {
   )
 }
 
-export default NewFeature
+export default observer(NewFeature)

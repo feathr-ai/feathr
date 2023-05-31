@@ -14,10 +14,18 @@ from feathr import WindowAggTransformation
 from feathr import TypedKey
 from pyspark.sql import DataFrame
 import feathr
+from pathlib import Path
+
 print(feathr.__version__)
 
 os.environ['SPARK_LOCAL_IP'] = "127.0.0.1"
 os.environ['REDIS_PASSWORD'] = "foobared"  # default password for Redis
+
+# Make sure we get the Feathr jar name, assuming we just have one jar file.
+
+import glob
+jar_name = glob.glob("./*.jar")[0]
+print(f"Found jar file at {jar_name}")
 
 yaml_config = f"""
 api_version: 1
@@ -30,7 +38,7 @@ spark_config:
   spark_result_output_parts: '1'
   local:
     master: 'local[*]'
-    feathr_runtime_location:
+    feathr_runtime_location: "{jar_name}"
 
 online_store:
   redis:
@@ -43,12 +51,12 @@ feature_registry:
   # The API endpoint of the registry service
   api_endpoint: "http://127.0.0.1:8000/api/v1"
 """
+feathr_workspace_folder = Path("./feathr_config.yaml")
+feathr_workspace_folder.parent.mkdir(exist_ok=True, parents=True)
+feathr_workspace_folder.write_text(yaml_config)
 
-tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
-with open(tmp.name, "w") as text_file:
-    text_file.write(yaml_config)
 
-client = FeathrClient(tmp.name)
+client = FeathrClient(str(feathr_workspace_folder))
 DATA_FILE_PATH = "/tmp/green_tripdata_2020-04_with_index.csv"
 from feathr.datasets.utils import maybe_download
 from feathr.datasets.constants import NYC_TAXI_SMALL_URL
@@ -185,12 +193,12 @@ feature_names = [feature.name for feature in features + agg_features]
 feature_names
 
 
-# # Try to register the service after the spark run (so that the Feathr API can start with sufficient time)
-# try:
-#     client.register_features()
-# except Exception as e:
-#     print(e)
-# print(client.list_registered_features(project_name=client.project_name))
+# Try to register the service after the spark run (so that the Feathr API can start with sufficient time)
+try:
+    client.register_features()
+except Exception as e:
+    print(e)
+print(client.list_registered_features(project_name=client.project_name))
 
 
 now = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -213,3 +221,7 @@ client.get_offline_features(
 )
 
 client.wait_job_to_finish(timeout_sec=5000)
+
+from feathr.utils.job_utils import get_result_df
+res_df = get_result_df(client)
+print(res_df.head())

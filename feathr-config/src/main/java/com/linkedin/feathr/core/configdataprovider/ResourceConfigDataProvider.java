@@ -7,7 +7,8 @@ import java.io.Reader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.utils.Utils.*;
 
@@ -18,7 +19,7 @@ import static com.linkedin.feathr.core.utils.Utils.*;
  * in a custom {@link ClassLoader} object when resources need to be loaded from a specific or isolated namespace.
  */
 public class ResourceConfigDataProvider extends BaseConfigDataProvider {
-  private static final Logger logger = Logger.getLogger(ResourceConfigDataProvider.class);
+  private static final Logger logger = LogManager.getLogger(ResourceConfigDataProvider.class);
 
   private final List<String> _resourceNames;
   private final ClassLoader _classLoader;

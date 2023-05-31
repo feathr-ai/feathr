@@ -22,7 +22,7 @@ import com.linkedin.feathr.offline.util.FeatureValueTypeValidator
 import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark, SourceKeyExtractor}
 import com.linkedin.feathr.swj.LateralViewParams
 import com.typesafe.config.ConfigFactory
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 
 import java.io.File
 import java.net.URL
@@ -112,10 +112,10 @@ private[offline] object FeathrConfigLoader {
  * @param sources optional map of sources, the key are the source names; the value is the source definition
  */
 case class FeathrConfig(
-                                         @JsonProperty("sources") sources: Option[Map[String, DataSource]],
-                                         @JsonProperty("anchors") anchors: Map[String, FeatureAnchor],
-                                         @JsonProperty("derivations") derivationsArg: Option[Map[String, DerivedFeature]],
-                                         @JsonProperty("advancedDerivations") multiDerivationsArg: Option[Seq[DerivedFeature]]) {
+                                         @JsonProperty("sources") sources: Option[Map[String, DataSource]] = None,
+                                         @JsonProperty("anchors") anchors: Map[String, FeatureAnchor] = Map(),
+                                         @JsonProperty("derivations") derivationsArg: Option[Map[String, DerivedFeature]] = None,
+                                         @JsonProperty("advancedDerivations") multiDerivationsArg: Option[Seq[DerivedFeature]] = None) {
   val jackson: ObjectMapper = new ObjectMapper(new HoconFactory)
     .registerModule(FeathrJacksonScalaModule) // DefaultScalaModule causes a fail on holdem
     .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
@@ -166,13 +166,21 @@ case class FeathrConfig(
         anchor => anchor.getProvidedFeatureNames.map(_ -> FeatureAnchorWithSource(anchor, sources)))
       .toMap
   } else {
-    throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, s"section 'anchors' is missing in the config.")
+    Map()
   }
 
   private def getAllFeatures() = {
     val derivations = derivationsArg.getOrElse(Map()).values ++ multiDerivationsArg.getOrElse(Seq())
-    val derivedFeatureList = derivations.flatMap(derivation => derivation.producedFeatureNames)
-    val anchoredFeatureList = anchors.values.flatMap(anchor => anchor.getProvidedFeatureNames)
+    val derivedFeatureList = if (derivations != null) {
+      derivations.flatMap(derivation => derivation.producedFeatureNames)
+    } else {
+      Seq()
+    }
+    val anchoredFeatureList = if (anchors != null) {
+      anchors.values.flatMap(anchor => anchor.getProvidedFeatureNames)
+    } else {
+      Seq()
+    }
     derivedFeatureList ++ anchoredFeatureList
   }
 }
@@ -181,7 +189,7 @@ case class FeathrConfig(
  * Loads an Anchor from a json-like config
  */
 private[offline] class AnchorLoader extends JsonDeserializer[FeatureAnchor] {
-  val log: Logger = Logger.getLogger(getClass)
+  val log: Logger = LogManager.getLogger(getClass)
 
   val LATERAL_VIEW_PARAMETERS = "lateralViewParameters"
   val LATERAL_VIEW_DEF = "lateralViewDef"
@@ -541,7 +549,7 @@ private[offline] class DerivedFeatureConfigLoader extends JsonDeserializer[Deriv
  * (must be a subtype of FeatureDerivation).
  */
 private[offline] class DerivationLoader extends JsonDeserializer[DerivedFeature] {
-  val log: Logger = Logger.getLogger(getClass)
+  val log: Logger = LogManager.getLogger(getClass)
 
   override def deserialize(p: JsonParser, ctxt: DeserializationContext): DerivedFeature = {
     val codec = p.getCodec

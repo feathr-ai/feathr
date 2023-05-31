@@ -4,12 +4,13 @@ import com.linkedin.feathr.offline.util.{HdfsUtils, LocalFeatureJoinUtils, Sourc
 import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import org.apache.hadoop.conf.Configuration
 
+import java.io.File
+
 /**
  * path checker for local test files.
  * @param hadoopConf hadoop configuration
  */
 private[offline] class LocalPathChecker(hadoopConf: Configuration, dataLoaderHandlers: List[DataLoaderHandler]) extends PathChecker {
-
   private val TEST_AVRO_JSON_FILE = "/data.avro.json"
 
   /**
@@ -35,7 +36,7 @@ private[offline] class LocalPathChecker(hadoopConf: Configuration, dataLoaderHan
         if (dataLoaderHandler.validatePath(path)) {
           isExternalDataSourceFlag = true
           break
-        } 
+        }
       }
     }
     isExternalDataSourceFlag
@@ -52,5 +53,26 @@ private[offline] class LocalPathChecker(hadoopConf: Configuration, dataLoaderHan
     if (getClass.getClassLoader.getResource(path) != null) return true
     if (getClass.getClassLoader.getResource(path + TEST_AVRO_JSON_FILE) != null) return true
     false
+  }
+
+  /**
+   * Checks if the given path is non empty. If the path is a directory, check if it has files listed under it. Else, just check the
+   * file length.
+   * @param path input path
+   * @return true if the path is non empty.
+   */
+  override def nonEmpty(path: String): Boolean = {
+    if (!isExternalDataSource(path) && HdfsUtils.nonEmpty(path)) return true
+    val filePath = if (LocalFeatureJoinUtils.getMockPathIfExist(path, hadoopConf, None).isDefined) {
+      new File(LocalFeatureJoinUtils.getMockPathIfExist(path, hadoopConf, None).get)
+    } else {
+      new File(getClass.getClassLoader.getResource(path).toURI)
+    }
+
+    if (filePath.isDirectory) { // we do not need to check if the file have any length
+      filePath.listFiles().length > 0
+    } else {
+      filePath.length() > 0
+    }
   }
 }

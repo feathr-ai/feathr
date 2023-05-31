@@ -20,7 +20,7 @@ except IOError:
     print("Failed to load Feathr version file for packaging.",
           file=sys.stderr)
     # Temp workaround for conda build. For long term fix, Jay will need to update manifest.in file.
-    VERSION = "0.10.4-rc1"
+    VERSION = "1.0.0"
 
 VERSION = __version__  # noqa
 os.environ["FEATHR_VERSION"] = VERSION
@@ -41,7 +41,7 @@ extras_require=dict(
         "papermill>=2.1.2,<3",      # to test run notebooks
         "scrapbook>=0.5.0,<1.0.0",  # to scrap notebook outputs
         "scikit-learn",             # for notebook examples
-        "plotly",                   # for plotting
+        "plotly"                   # for plotting
     ],
 )
 extras_require["all"] = list(set(sum([*extras_require.values()], [])))
@@ -74,7 +74,7 @@ setup(
         "pyyaml<=6.0",
         "Jinja2<=3.1.2",
         "pyarrow<=9.0.0",
-        "pyspark>=3.1.2",
+        "pyspark>=3.1.2",  # TODO upgrade the version once pyspark publishes new release to resolve `AttributeError: module 'numpy' has no attribute 'bool'`
         "python-snappy<=0.6.1",
         "deltalake>=0.6.2",
         "graphlib_backport<=1.0.3",
@@ -100,6 +100,9 @@ setup(
         # it brings a different version of msrest(0.7.0) which is incompatible with azure-core==1.22.1. Hence we need to pin it.
         # See this for more details: https://github.com/Azure/azure-sdk-for-python/issues/24765
         "msrest<=0.6.21",
+        "typing_extensions>=4.2.0",
+        "ipython",                  # for chat in notebook
+        "revChatGPT" 
     ],
     tests_require=[  # TODO: This has been depricated
         "pytest",

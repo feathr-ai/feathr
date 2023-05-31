@@ -72,7 +72,7 @@ parent: Developer Guides
 
                   ```
 ---
-3. Increase version number in gradle.properties and build.gradle files, and replace the version number with the next version number.
+3. Increase version number in `gradle.properties`, and replace the version number with the next version number.
     *   ```
         version="0.6.0"
         ```

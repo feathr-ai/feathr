@@ -1,18 +1,19 @@
 package com.linkedin.feathr.swj
 
-import com.linkedin.feathr.offline.evaluator.datasource.DataSourceNodeEvaluator.getClass
+import com.linkedin.feathr.offline.transformation.DataFrameExt._
+import com.linkedin.feathr.offline.util.FeathrUtils
 import com.linkedin.feathr.swj.join.{FeatureColumnMetaData, SlidingWindowJoinIterator}
 import com.linkedin.feathr.swj.transformer.FeatureTransformer
 import com.linkedin.feathr.swj.transformer.FeatureTransformer._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 object SlidingWindowJoin {
 
-  val log = Logger.getLogger(getClass)
+  val log = LogManager.getLogger(getClass)
   lazy val spark: SparkSession = SparkSession.builder().getOrCreate()
 
   private val LABEL_VIEW_NAME = "label_data"
@@ -40,9 +41,8 @@ object SlidingWindowJoin {
 
     val labelDF = addLabelDataCols(labelDataset.dataSource, labelDataset)
     // Partition the label DataFrame by join_key and sort each partition with (join_key, timestamp)
-    var result = labelDF.repartition(numPartitions, labelDF.col(JOIN_KEY_COL_NAME))
+    val labelDFPartitioned = labelDF.repartition(numPartitions, labelDF.col(JOIN_KEY_COL_NAME))
       .sortWithinPartitions(JOIN_KEY_COL_NAME, TIMESTAMP_COL_NAME)
-      .rdd
     var resultSchema = labelDF.schema
     // Pass label data join key and timestamp column index to SlidingWindowJoinIterator
     // so these 2 columns from label data Rows can be accessed with index instead of field name.
@@ -55,6 +55,10 @@ object SlidingWindowJoin {
     // sorting. The result is iteratively sliding-window-joined with either the original label
     // data or result from previous iteration. In addition, the StructType of the final DataFrame
     // is also iteratively constructed.
+    val isSanityCheckMode = FeathrUtils.getFeathrJobParam(spark.sparkContext.getConf, FeathrUtils.ENABLE_SANITY_CHECK_MODE).toBoolean
+    var result = handleSanityCheckModeLabelDf(factDatasets, numPartitions, labelDFPartitioned, isSanityCheckMode)
+
+    dumpDebugInfo(factDatasets, numPartitions, labelDFPartitioned)
     factDatasets.foreach(factDataset => {
       // Transform the input fact DataFrame into standardized feature DataFrame. Then partition
       // the feature DataFrame by join_key and sort each partition with (join_key, timestamp)
@@ -62,6 +66,7 @@ object SlidingWindowJoin {
         val factRDD = factDF.repartition(numPartitions, factDF.col(JOIN_KEY_COL_NAME))
           .sortWithinPartitions(JOIN_KEY_COL_NAME, TIMESTAMP_COL_NAME)
           .rdd
+
         val factSchema = factDF.schema
         // Use zipPartition to perform the join. Preserve partition to avoid unnecessary shuffle.
         if (!factDataset.dataSource.isEmpty) {
@@ -97,7 +102,61 @@ object SlidingWindowJoin {
         resultSchema = StructType(resultSchema ++ featureSchema)
 
     })
-    spark.createDataFrame(result, resultSchema).drop(JOIN_KEY_COL_NAME, TIMESTAMP_COL_NAME)
+    val joinedDF = spark.createDataFrame(result, resultSchema).drop(JOIN_KEY_COL_NAME, TIMESTAMP_COL_NAME)
+    val featureNames = factDatasets.flatMap(_.aggFeatures.map(_.name)).toSet
+    FeathrUtils.dumpDebugInfo(spark, joinedDF, featureNames, s"SWA after joined with feature ${featureNames.mkString("_")}",
+      s"observation_after_joined_SWA_feature_${featureNames.mkString("_")}")
+    joinedDF
+  }
+
+  /**
+   * Check and handle the label df for SanityCheck mode
+   * @param factDatasets feature datasets to join
+   * @param numPartitions number of partitions in during join
+   * @param labelDFPartitioned already partitioned label df
+   * @param isSanityCheckMode if it is for SanityCheck mode
+   * @return label dataframe as Rdd
+   */
+  private def handleSanityCheckModeLabelDf(factDatasets: List[FactData],
+                               numPartitions: Int,
+                               labelDFPartitioned: Dataset[Row],
+                               isSanityCheckMode: Boolean): RDD[Row] = {
+    if (isSanityCheckMode && factDatasets.nonEmpty) {
+      val factDF = FeatureTransformer.transformFactData(factDatasets.head)
+      val refinedContextDF = if (isSanityCheckMode) {
+        labelDFPartitioned.appendRows(Seq(JOIN_KEY_COL_NAME), Seq(JOIN_KEY_COL_NAME), factDF)
+      } else {
+        labelDFPartitioned
+      }
+      val refinedLabelDFPartitioned = refinedContextDF.repartition(numPartitions, refinedContextDF.col(JOIN_KEY_COL_NAME))
+        .sortWithinPartitions(JOIN_KEY_COL_NAME, TIMESTAMP_COL_NAME)
+      refinedLabelDFPartitioned.rdd
+    } else {
+      labelDFPartitioned.rdd
+    }
+  }
+
+  /**
+   * If debugging mode is enabled, dump the dataframe information for debugging
+ *
+   * @param factDatasets source datasets for window aggregation features
+   * @param numPartitions num of partitions need for source datasets
+   * @param labelDFPartitioned partitioned observation data
+   */
+  private def dumpDebugInfo(factDatasets: List[FactData], numPartitions: Int, labelDFPartitioned: Dataset[Row]) = {
+    val isDebugMode = FeathrUtils.getFeathrJobParam(spark.sparkContext.getConf, FeathrUtils.ENABLE_DEBUG_OUTPUT).toBoolean
+    if (isDebugMode && factDatasets.nonEmpty) {
+      val factDataset = factDatasets.head
+      val factDF = FeatureTransformer.transformFactData(factDataset)
+      val factTransformedDf = factDF.repartition(numPartitions, factDF.col(JOIN_KEY_COL_NAME))
+        .sortWithinPartitions(JOIN_KEY_COL_NAME, TIMESTAMP_COL_NAME)
+      val featureNames = factDataset.aggFeatures.map(_.name).toSet
+      val pathBaseSuffix = "features_" + featureNames.mkString("_")
+      val leftJoinColumns = Seq(JOIN_KEY_COL_NAME)
+      val leftKeyDf = labelDFPartitioned.select(leftJoinColumns.head, leftJoinColumns.tail: _*)
+      FeathrUtils.dumpDebugInfo(spark, leftKeyDf, featureNames, "observation data", pathBaseSuffix + "for_SWA_before_join" )
+      FeathrUtils.dumpDebugInfo(spark, factTransformedDf, featureNames, "SWA feature data", pathBaseSuffix + "_swa_feature")
+    }
   }
 
   /**

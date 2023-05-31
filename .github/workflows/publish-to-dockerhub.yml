@@ -3,7 +3,7 @@
 #   1. daily i.e. runs everyday at specific time.
 #   2. Anytime a new branch is created under releases
 
-name: Publish Feathr Docker image to DockerHub
+name: Publish to Docker Hub
 
 on:
   schedule:
@@ -14,10 +14,11 @@ on:
     # For every push against the releases/** branch, usually would happen at release time, Tag example - releases/v0.7.0
     branches:
       - 'releases/**'
+  workflow_dispatch:
 
 jobs:
-  build_and_push_image_to_registry:
-    name: Push Docker image to Docker Hub
+  build_and_push_feathr_registry_image:
+    name: Push Feathr registry image to Docker Hub
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -75,7 +76,7 @@ jobs:
   # Trigger Azure Web App webhooks to pull the latest nightly image
   deploy:
     runs-on: ubuntu-latest
-    needs: build_and_push_image_to_registry
+    needs: build_and_push_feathr_registry_image
 
     steps:
       - name: Deploy to Azure Web App feathr-registry-purview

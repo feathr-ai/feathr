@@ -10,7 +10,7 @@ import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.common.{DateParam, FeatureRef, FeathrJacksonScalaModule, JoiningFeatureParams}
 import com.linkedin.feathr.offline.anchored.WindowTimeUnit
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, DateTimeParseException}
 import java.time.temporal.ChronoField
@@ -162,7 +162,7 @@ class TimeWindowJoinConfigSettingDefinitionDeserializer extends JsonDeserializer
   val FEATURES_OVERRIDE = "featuresOverride"
   val FEATURES = "features"
 
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   private def parseFeaturesOverride(arrayNode: ArrayNode, featuresToTimeDelayMap: mutable.Map[String, Duration]): Map[String, Duration] = {
     val x = arrayNode.elements.asScala.foreach(node => {
@@ -283,8 +283,9 @@ case class DateTimeRange(startTime: LocalDateTime, endTime: LocalDateTime)
  * Join config settings, consists of [[ObservationDataTimeSettings]] class, and [[JoinTimeSettings]] class (both optional).
  * @param observationDataTimeSetting  Settings which have parameters specifying how to load the observation data.
  * @param joinTimeSetting Settings which have parameters specifying how to join the observation data with the feature data.
+ * @param conflictsAutoCorrectionSetting Settings which have parameters specifying how to solve feature names conflicts with dataset automatically
  */
-private[feathr] case class JoinConfigSettings(observationDataTimeSetting: Option[ObservationDataTimeSetting], joinTimeSetting: Option[JoinTimeSetting]) {}
+private[feathr] case class JoinConfigSettings(observationDataTimeSetting: Option[ObservationDataTimeSetting], joinTimeSetting: Option[JoinTimeSetting], conflictsAutoCorrectionSetting: Option[ConflictsAutoCorrectionSetting]) {}
 
 /**
  * ObservationDataTimeSetting Definition class with parameters required to load time partitioned observation data used for the feature join.
@@ -307,6 +308,14 @@ private[offline] case class ObservationDataTimeSetting(dateParam: DateParam, tim
  */
 @JsonDeserialize(using = classOf[JoinTimeConfigSettingDefinitionDeserializer])
 private[offline] case class JoinTimeSetting(timestampColumn: TimestampColumn, simulateTimeDelay: Option[Duration], useLatestFeatureData: Boolean)
+
+/**
+ * ConflictsAutoCorrectionSetting object. This object contains parameters related to auto correct name conflicts among feature names and dataset.
+ * @param renameFeatureList If rename feature list. 'False' by default which means to rename dataset
+ * @param suffix            Suffix used to rename conflicted names
+ */
+@JsonDeserialize(using = classOf[ConflictsAutoCorrectionSettingDeserializer])
+private[offline] case class ConflictsAutoCorrectionSetting(renameFeatureList: Boolean, suffix: String)
 
 /**
  * Timestamp column object

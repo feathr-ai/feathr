@@ -11,20 +11,37 @@ import com.linkedin.feathr.offline.config.FeatureJoinConfig
 import com.linkedin.feathr.offline.exception.FeathrIllegalStateException
 import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
+import com.linkedin.feathr.offline.source.DataSource
+import com.linkedin.feathr.offline.source.accessor.DataSourceAccessor
 import com.linkedin.feathr.offline.transformation.AnchorToDataSourceMapper
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
-import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.util.{DataFrameUtils, FeathrUtils, SuppressedExceptionHandlerUtils}
+import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import com.linkedin.feathr.offline.util.datetime.DateTimeInterval
 import com.linkedin.feathr.offline.{FeatureDataFrame, JoinStage}
-import com.linkedin.feathr.swj.{LabelData, SlidingWindowJoin}
+import com.linkedin.feathr.swj.{FactData, LabelData, SlidingWindowJoin}
 import com.linkedin.feathr.{common, offline}
-import org.apache.log4j.Logger
-import org.apache.spark.sql.functions.col
+import org.apache.logging.log4j.LogManager
+import org.apache.spark.sql.functions.{col, lit}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.sketch.BloomFilter
 
 import scala.collection.mutable
 
+/**
+ * Case class containing other SWA handler methods
+ * @param join
+ */
+private[offline] case class SWAHandler(
+  /**
+   * The SWA join method
+   */
+  join:
+  (
+    LabelData,
+      List[FactData]
+    ) => DataFrame
+)
 /**
  * Sliding window aggregation joiner
  * @param allWindowAggFeatures all window aggregation features
@@ -32,7 +49,7 @@ import scala.collection.mutable
 private[offline] class SlidingWindowAggregationJoiner(
     allWindowAggFeatures: Map[String, FeatureAnchorWithSource],
     anchorToDataSourceMapper: AnchorToDataSourceMapper) {
-  private val log = Logger.getLogger(getClass)
+  private val log = LogManager.getLogger(getClass)
 
   /**
    * Join observation data with time-based window aggregation features.
@@ -53,6 +70,7 @@ private[offline] class SlidingWindowAggregationJoiner(
    *         it can be converted to a pair RDD of (observation data record, feature record),
    *         each feature resides in a column and it is named using DataFrameColName.genFeatureColumnName(..)
    *         2) inferred feature types
+   *         Also, returns the list of skipped features
    */
   def joinWindowAggFeaturesAsDF(
       ss: SparkSession,
@@ -63,7 +81,8 @@ private[offline] class SlidingWindowAggregationJoiner(
       requiredWindowAggFeatures: Seq[common.ErasedEntityTaggedFeature],
       bloomFilters: Option[Map[Seq[Int], BloomFilter]],
       swaObsTimeOpt: Option[DateTimeInterval],
-      failOnMissingPartition: Boolean): FeatureDataFrame = {
+      failOnMissingPartition: Boolean,
+      swaHandler: Option[SWAHandler]): (FeatureDataFrame, Seq[String]) = {
     val joinConfigSettings = joinConfig.settings
     // extract time window settings
     if (joinConfigSettings.isEmpty) {
@@ -76,10 +95,13 @@ private[offline] class SlidingWindowAggregationJoiner(
         "joinTimeSettings section is not defined in join config," +
           " cannot perform window aggregation operation")
     }
-    val enableCheckPoint = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.ENABLE_CHECKPOINT).toBoolean
 
     val timeWindowJoinSettings = joinConfigSettings.get.joinTimeSetting.get
     val simulatedDelay = timeWindowJoinSettings.simulateTimeDelay
+    val shouldFilterNulls = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.FILTER_NULLS).toBoolean
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+    val shouldAddDefaultColForMissingData = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf,
+      FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
 
     if (simulatedDelay.isEmpty && !joinConfig.featuresToTimeDelayMap.isEmpty) {
       throw new FeathrConfigException(
@@ -115,6 +137,13 @@ private[offline] class SlidingWindowAggregationJoiner(
         case (source, grouped) => (source, grouped.map(_._2))
       })
 
+    // If the skip_missing_features flag is set, we will skip joining the features whose is not mature, and maintain this list.
+    val notJoinedFeatures = new mutable.HashSet[String]()
+
+    // If the add_default_col_for_missing_data flag is turned off,
+    // we will add a null feature column and substitute it with the defaults if present.
+    val emptyFeatures = new mutable.HashSet[String]()
+
     // For each source, we calculate the maximum window duration that needs to be loaded across all
     // required SWA features defined on this source.
     // Then we load the source only once.
@@ -141,6 +170,17 @@ private[offline] class SlidingWindowAggregationJoiner(
               featuresToDelayImmutableMap.values.toArray,
               failOnMissingPartition)
 
+        // If skip missing features flag is set and there is a data related error, an empty dataframe will be returned.
+        if (originalSourceDf.isEmpty && shouldSkipFeature) {
+          res.map(notJoinedFeatures.add)
+          anchors.map(anchor => (anchor, originalSourceDf))
+        } else if (originalSourceDf.isEmpty && shouldAddDefaultColForMissingData) { // If add default col for missing data flag features
+          // flag is set and there is a data related error, an empty dataframe will be returned.
+          res.map(emptyFeatures.add)
+          log.warn(s"Missing data for features ${emptyFeatures}. Default values will be populated for this column.")
+          SuppressedExceptionHandlerUtils.missingFeatures ++= emptyFeatures
+          anchors.map(anchor => (anchor, originalSourceDf))
+        } else {
         val sourceDF: DataFrame = preprocessedDf match {
           case Some(existDf) => existDf
           case None => originalSourceDf
@@ -156,12 +196,23 @@ private[offline] class SlidingWindowAggregationJoiner(
         }
 
         anchors.map(anchor => (anchor, withKeyDF))
+    }}
+    )
+
+    // Filter out features dataframe if they are empty.
+    val updatedWindowAggAnchorDFMap = windowAggAnchorDFMap.filter(x => {
+      val df = x._2
+      !df.head(1).isEmpty
     })
 
     val allInferredFeatureTypes = mutable.Map.empty[String, FeatureTypeConfig]
 
     windowAggFeatureStages.foreach({
       case (keyTags: Seq[Int], featureNames: Seq[String]) =>
+        // Remove the features that are going to be skipped.
+        val joinedFeatures = featureNames.diff(notJoinedFeatures.toSeq)
+        if (joinedFeatures.nonEmpty) {
+          log.warn(s"----SKIPPED ADDING FEATURES : ${notJoinedFeatures} ------")
         val stringKeyTags = keyTags.map(keyTagList).map(k => s"CAST (${k} AS string)") // restore keyTag to column names in join config
 
         // get the bloom filter for the key combinations in this stage
@@ -177,25 +228,29 @@ private[offline] class SlidingWindowAggregationJoiner(
           "unix_timestamp()" // if useLatestFeatureData=true, return the current unix timestamp (w.r.t UTC time zone)
         }
 
-        val labelDataDef = LabelData(contextDF, stringKeyTags, timeStampExpr)
+
+        val (nullFilteredLabelData, factDataRowsWithNulls) = if (shouldFilterNulls) (DataFrameUtils.filterNulls(contextDF, keyTags.map(keyTagList)),
+          DataFrameUtils.filterNonNulls(contextDF, keyTags.map(keyTagList))) else (contextDF, ss.emptyDataFrame)
+        val labelDataDef = LabelData(nullFilteredLabelData, stringKeyTags, timeStampExpr)
 
         if (ss.sparkContext.isLocal && log.isDebugEnabled) {
           log.debug(
             s"*********Sliding window aggregation feature join stage with key: ${stringKeyTags} for feature " +
-              s"${featureNames.mkString(",")}*********")
+              s"${joinedFeatures.mkString(",")}*********")
           log.debug(
             s"First 3 rows in observation dataset :\n " +
               s"${labelDataDef.dataSource.collect().take(3).map(_.toString()).mkString("\n ")}")
         }
-        val windowAggAnchorsThisStage = featureNames.map(allWindowAggFeatures)
-        val windowAggAnchorDFThisStage = windowAggAnchorDFMap.filterKeys(windowAggAnchorsThisStage.toSet)
+        val windowAggAnchorsThisStage = joinedFeatures.map(allWindowAggFeatures)
+        val windowAggAnchorDFThisStage = updatedWindowAggAnchorDFMap.filterKeys(windowAggAnchorsThisStage.toSet)
 
         val factDataDefs =
           SlidingWindowFeatureUtils.getSWAAnchorGroups(windowAggAnchorDFThisStage).map {
             anchorWithSourceToDFMap =>
-              val selectedFeatures = anchorWithSourceToDFMap.keySet.flatMap(_.selectedFeatures).filter(featureNames.contains(_))
+              val selectedFeatures = anchorWithSourceToDFMap.keySet.flatMap(_.selectedFeatures).filter(joinedFeatures.contains(_))
               val factData = anchorWithSourceToDFMap.head._2
               val anchor = anchorWithSourceToDFMap.head._1
+              val keyColumnsList = anchor.featureAnchor.sourceKeyExtractor.getKeyColumnNames(None)
               val filteredFactData = bloomFilter match {
                 case None => factData // no bloom filter: use data as it
                 case Some(filter) =>
@@ -203,7 +258,6 @@ private[offline] class SlidingWindowAggregationJoiner(
                   if (anchor.featureAnchor.sourceKeyExtractor.isInstanceOf[MVELSourceKeyExtractor]) {
                     throw new FeathrConfigException(ErrorLabel.FEATHR_USER_ERROR, "MVELSourceKeyExtractor is not supported in sliding window aggregation")
                   }
-                  val keyColumnsList = anchor.featureAnchor.sourceKeyExtractor.getKeyColumnNames(None)
                   // generate the same concatenated-key column for bloom filtering
                   val (bfFactKeyColName, factDataWithKeys) =
                     DataFrameKeyCombiner().combine(factData, keyColumnsList)
@@ -215,8 +269,18 @@ private[offline] class SlidingWindowAggregationJoiner(
               SlidingWindowFeatureUtils.getFactDataDef(filteredFactData, anchorWithSourceToDFMap.keySet.toSeq, featuresToDelayImmutableMap, selectedFeatures)
           }
         val origContextObsColumns = labelDataDef.dataSource.columns
-        contextDF = SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
-        val defaults = windowAggAnchorDFThisStage.flatMap(s => s._1.featureAnchor.defaults)
+
+        contextDF = if (swaHandler.isDefined) swaHandler.get.join(labelDataDef, factDataDefs.toList) else SlidingWindowJoin.join(labelDataDef, factDataDefs.toList)
+
+        contextDF = if (shouldFilterNulls && !factDataRowsWithNulls.isEmpty) {
+          val nullDfWithFeatureCols = joinedFeatures.foldLeft(factDataRowsWithNulls)((s, x) => s.withColumn(x, lit(null)))
+          contextDF.union(nullDfWithFeatureCols)
+        } else contextDF
+
+        val defaults = windowAggAnchorDFThisStage.flatMap(s => s._1.featureAnchor.defaults) ++ windowAggAnchorDFMap.filter(x => {
+          val features = x._1.selectedFeatures
+          emptyFeatures.contains(features.head)
+        }).flatMap(s => s._1.featureAnchor.defaults) // populate the defaults for features whose data was missing
         val userSpecifiedTypesConfig = windowAggAnchorDFThisStage.flatMap(_._1.featureAnchor.featureTypeConfigs)
 
         // Create a map from the feature name to the column format, ie - RAW or FDS_TENSOR
@@ -224,15 +288,18 @@ private[offline] class SlidingWindowAggregationJoiner(
           nameToFeatureAnchor._2.featureAnchor.extractor
           .asInstanceOf[TimeWindowConfigurableAnchorExtractor].features(nameToFeatureAnchor._1).columnFormat)
 
+        contextDF = emptyFeatures.foldLeft(contextDF) { (contextDF, featureName) =>
+          contextDF.withColumn(featureName, lit(null))
+        }
         val FeatureDataFrame(withFDSFeatureDF, inferredTypes) =
-          SlidingWindowFeatureUtils.convertSWADFToFDS(contextDF, featureNames.toSet, featureNameToColumnFormat, userSpecifiedTypesConfig)
+          SlidingWindowFeatureUtils.convertSWADFToFDS(contextDF, joinedFeatures.toSet, featureNameToColumnFormat, userSpecifiedTypesConfig)
         // apply default on FDS dataset
         val withFeatureContextDF =
-          substituteDefaults(withFDSFeatureDF, defaults.keys.filter(featureNames.contains).toSeq, defaults, userSpecifiedTypesConfig, ss)
+          substituteDefaults(withFDSFeatureDF, defaults.keys.filter(joinedFeatures.contains).toSeq, defaults, userSpecifiedTypesConfig, ss)
 
         allInferredFeatureTypes ++= inferredTypes
-        contextDF = standardizeFeatureColumnNames(origContextObsColumns, withFeatureContextDF, featureNames, keyTags.map(keyTagList))
-        if (enableCheckPoint) {
+        contextDF = standardizeFeatureColumnNames(ss, origContextObsColumns, withFeatureContextDF, joinedFeatures, keyTags.map(keyTagList))
+        if (shouldCheckPoint(ss)) {
           // checkpoint complicated dataframe for each stage to avoid Spark failure
           contextDF = contextDF.checkpoint(true)
         }
@@ -244,8 +311,8 @@ private[offline] class SlidingWindowAggregationJoiner(
                   s"${factDataDef.dataSource.collect().take(3).map(_.toString()).mkString("\n ")}")
           }
         }
-    })
-    offline.FeatureDataFrame(contextDF, allInferredFeatureTypes.toMap)
+    }})
+    (offline.FeatureDataFrame(contextDF, allInferredFeatureTypes.toMap), notJoinedFeatures.toSeq)
   }
 
   /**
@@ -257,13 +324,19 @@ private[offline] class SlidingWindowAggregationJoiner(
    * @return
    */
   def standardizeFeatureColumnNames(
+      ss: SparkSession,
       origContextObsColumns: Seq[String],
       withSWAFeatureDF: DataFrame,
       featureNames: Seq[String],
       keyTags: Seq[String]): DataFrame = {
     val inputColumnSize = origContextObsColumns.size
     val outputColumnNum = withSWAFeatureDF.columns.size
-    if (outputColumnNum != inputColumnSize + featureNames.size) {
+    val shouldAddDefaultColForMissingData = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf,
+      FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+
+    // Do not perform this check if shouldAddDefaultColForMissingData is true as we add the null values to all SWA features at once,
+    // and do not care for the SWA groupings.
+    if (!shouldAddDefaultColForMissingData && (outputColumnNum != inputColumnSize + featureNames.size)) {
       throw new FeathrIllegalStateException(
         s"Number of columns (${outputColumnNum}) in the dataframe returned by " +
           s"sliding window aggregation does not equal to number of columns in the observation data (${inputColumnSize}) " +

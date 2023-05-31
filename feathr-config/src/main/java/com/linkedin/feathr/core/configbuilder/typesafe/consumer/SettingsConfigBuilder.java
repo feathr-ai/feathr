@@ -4,7 +4,8 @@ import com.linkedin.feathr.core.config.consumer.JoinTimeSettingsConfig;
 import com.linkedin.feathr.core.config.consumer.ObservationDataTimeSettingsConfig;
 import com.linkedin.feathr.core.config.consumer.SettingsConfig;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.linkedin.feathr.core.config.consumer.SettingsConfig.*;
 
@@ -13,7 +14,7 @@ import static com.linkedin.feathr.core.config.consumer.SettingsConfig.*;
  * Builds a {@link SettingsConfig} object
  */
 class SettingsConfigBuilder {
-  private final static Logger logger = Logger.getLogger(SettingsConfigBuilder.class);
+  private final static Logger logger = LogManager.getLogger(SettingsConfigBuilder.class);
 
   private SettingsConfigBuilder() {
   }

@@ -1,7 +1,7 @@
 package com.linkedin.feathr.offline.client
 
 import com.linkedin.feathr.common.exception._
-import com.linkedin.feathr.common.{FeatureInfo, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
+import com.linkedin.feathr.common.{FeatureInfo, FeatureTypeConfig, Header, InternalApi, JoiningFeatureParams, RichConfig, TaggedFeatureName}
 import com.linkedin.feathr.offline.config.sources.FeatureGroupsUpdater
 import com.linkedin.feathr.offline.config.{FeathrConfig, FeathrConfigLoader, FeatureGroupsGenerator, FeatureJoinConfig}
 import com.linkedin.feathr.offline.generation.{DataFrameFeatureGenerator, FeatureGenKeyTagAnalyzer, StreamingFeatureGenerator}
@@ -11,11 +11,15 @@ import com.linkedin.feathr.offline.logical.{FeatureGroups, MultiStageJoinPlanner
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.DataSource
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
+import com.linkedin.feathr.offline.swa.SWAHandler
+import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.util._
-import org.apache.log4j.Logger
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.logging.log4j.LogManager
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.internal.SQLConf
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
+import java.util.UUID
 import scala.util.{Failure, Success}
 
 /**
@@ -28,8 +32,9 @@ import scala.util.{Failure, Success}
  *
  */
 class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: FeatureGroups, logicalPlanner: MultiStageJoinPlanner,
-  featureGroupsUpdater: FeatureGroupsUpdater, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext]) {
-  private val log = Logger.getLogger(getClass)
+  featureGroupsUpdater: FeatureGroupsUpdater, dataPathHandlers: List[DataPathHandler], mvelContext: Option[FeathrExpressionExecutionContext],
+  swaHandler: Option[SWAHandler]) {
+  private val log = LogManager.getLogger(getClass)
 
   type KeyTagStringTuple = Seq[String]
   private[offline] val allAnchoredFeatures = featureGroups.allAnchoredFeatures
@@ -63,6 +68,22 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
 
     val (joinedDF, header) = doJoinObsAndFeatures(joinConfig, jobContext, obsData.data)
     SparkFeaturizedDataset(joinedDF, FeaturizedDatasetMetadata(header=Some(header)))
+  }
+
+  /**
+   * API which joins features and also returns any suppressed exception msgs.
+   *
+   * @param joinConfig feathr offline's [[FeatureJoinConfig]]
+   * @param obsData    Observation data taken in as a [[SparkFeaturizedDataset]].
+   * @param jobContext [[JoinJobContext]]
+   * @return Joined observation and feature data as a SparkFeaturizedDataset and a map of suppressed exceptions along with
+   *         type of exception.
+   */
+  @InternalApi
+  def joinFeaturesWithSuppressedExceptions(joinConfig: FeatureJoinConfig, obsData: SparkFeaturizedDataset,
+    jobContext: JoinJobContext = JoinJobContext()): (SparkFeaturizedDataset, Map[String, String]) = {
+    (joinFeatures(joinConfig, obsData, jobContext), Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
+      -> SuppressedExceptionHandlerUtils.missingFeatures.mkString))
   }
 
   /**
@@ -197,6 +218,23 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
   }
 
   /**
+   * API which joins features and also returns any suppressed exception msgs.
+   *
+   * @param joinConfig feathr offline's [[FeatureJoinConfig]]
+   * @param obsData    Observation data taken in as a [[SparkFeaturizedDataset]].
+   * @param jobContext [[JoinJobContext]]
+   * @return Joined observation and feature data as a SparkFeaturizedDataset and a map of suppressed exceptions along with
+   *         type of exception.
+   */
+  private[offline] def doJoinObsAndFeaturesWithSuppressedExceptions(joinConfig: FeatureJoinConfig, jobContext: JoinJobContext,
+    obsData: DataFrame): (DataFrame, Header, Map[String, String]) = {
+
+    val (joinedDF, header) = doJoinObsAndFeatures(joinConfig, jobContext, obsData)
+    (joinedDF, header, Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
+      -> SuppressedExceptionHandlerUtils.missingFeatures.mkString(", ")))
+  }
+
+  /**
    * Find feature names that are the same as the field names (from observation data)
    * @param keyTaggedFeatures request features
    * @param fieldNames observation data field names
@@ -204,6 +242,43 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
    */
   private def findConflictFeatureNames(keyTaggedFeatures: Seq[JoiningFeatureParams], fieldNames: Seq[String]): Seq[String] = {
    keyTaggedFeatures.map(_.featureName).intersect(fieldNames)
+  }
+
+  /**
+   * Rename feature names conflicting with data set column names
+   * by applying provided suffix
+   * Eg. If have the feature name 'example' and the suffix '1',
+   * it will become 'example_1" after renaming
+   *
+   * @param df                original dataframe
+   * @param header            original header
+   * @param conflictFeatureNames conflicted feature names
+   * @param suffix            suffix to apply to feature names
+   *
+   * @return pair of renamed (dataframe, header)
+   */
+  private[offline] def renameFeatureNames(
+                                           df: DataFrame,
+                                           header: Header,
+                                           conflictFeatureNames: Seq[String],
+                                           suffix: String): (DataFrame, Header) = {
+    val uuid = UUID.randomUUID()
+    var renamedDF = df
+    conflictFeatureNames.foreach(name => {
+      renamedDF = renamedDF.withColumnRenamed(name, name + '_' + uuid)
+      renamedDF = renamedDF.withColumnRenamed(name + '_' + suffix, name)
+      renamedDF = renamedDF.withColumnRenamed(name + '_' + uuid, name + '_' + suffix)
+    })
+
+    val featuresInfoMap = header.featureInfoMap.map {
+      case (featureName, featureInfo) =>
+        val name = featureInfo.columnName
+        val conflict = conflictFeatureNames.contains(name)
+        val fi = if (conflict) new FeatureInfo(name + '_' + suffix, featureInfo.featureType) else featureInfo
+        val fn = if (conflict) new TaggedFeatureName(featureName.getKeyTag, name + '_' + suffix) else featureName
+        fn -> fi
+    }
+    (renamedDF, new Header(featuresInfoMap))
   }
 
   /**
@@ -235,17 +310,30 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
      */
     val updatedFeatureGroups = featureGroupsUpdater.updateFeatureGroups(featureGroups, keyTaggedFeatures)
 
-    val logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
-
+    var logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
+    val shouldSkipFeature = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
+//    val shouldAddDefault = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+    var leftRenamed = left
+    val featureToPathsMap = (for {
+      requiredFeature <- logicalPlan.allRequiredFeatures
+      featureAnchorWithSource <- allAnchoredFeatures.get(requiredFeature.getFeatureName)
+    } yield (requiredFeature.getFeatureName -> featureAnchorWithSource.source.path)).toMap
     if (!sparkSession.sparkContext.isLocal) {
       // Check read authorization for all required features
-      AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures) match {
-        case Failure(exception) =>
-          throw new FeathrInputDataException(
-            ErrorLabel.FEATHR_USER_ERROR,
-            "Unable to verify " +
-              "read authorization on feature data, it can be due to the following reasons: 1) input not exist, 2) no permission.",
-            exception)
+      val featurePathsTest = AclCheckUtils.checkReadAuthorization(sparkSession, logicalPlan.allRequiredFeatures, allAnchoredFeatures)
+      featurePathsTest._1 match {
+        case Failure(exception) => // If skip feature, remove the corresponding anchored feature from the feature group and produce a new logical plan
+          if (shouldSkipFeature) {
+            val featureGroupsWithoutInvalidFeatures = FeatureGroupsUpdater()
+              .getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap, updatedFeatureGroups, featurePathsTest._2)
+            logicalPlanner.getLogicalPlan(featureGroupsWithoutInvalidFeatures, keyTaggedFeatures)
+          } else {
+            throw new FeathrInputDataException(
+              ErrorLabel.FEATHR_USER_ERROR,
+              "Unable to verify " +
+                "read authorization on feature data, it can be due to the following reasons: 1) input not exist, 2) no permission.",
+              exception)
+          }
         case Success(_) => log.debug("Checked read authorization on all feature data")
       }
     }
@@ -256,16 +344,46 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
         "Feature names must conform to " +
           s"regular expression: ${AnchorUtils.featureNamePattern}, but found feature names: $invalidFeatureNames")
     }
-    val conflictFeatureNames: Seq[String] = findConflictFeatureNames(keyTaggedFeatures, left.schema.fieldNames)
-    if (conflictFeatureNames.nonEmpty) {
-      throw new FeathrConfigException(
-        ErrorLabel.FEATHR_USER_ERROR,
-        "Feature names must be different from field names in the observation data. " +
-          s"Please rename feature ${conflictFeatureNames} or rename the same field names in the observation data.")
-    }
 
-    val joiner = new DataFrameFeatureJoiner(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers, mvelContext)
-    joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, left, rowBloomFilterThreshold)
+    val joiner = new DataFrameFeatureJoiner(logicalPlan=logicalPlan,dataPathHandlers=dataPathHandlers, mvelContext, swaHandler)
+    // Check conflicts between feature names and data set column names
+    val conflictFeatureNames: Seq[String] = findConflictFeatureNames(keyTaggedFeatures, left.schema.fieldNames)
+    val joinConfigSettings = joinConfig.settings
+    val conflictsAutoCorrectionSetting = if(joinConfigSettings.isDefined) joinConfigSettings.get.conflictsAutoCorrectionSetting else None
+    if (conflictFeatureNames.nonEmpty) {
+      if(!conflictsAutoCorrectionSetting.isDefined) {
+        throw new FeathrConfigException(
+          ErrorLabel.FEATHR_USER_ERROR,
+          "Feature names must be different from field names in the observation data. " +
+            s"Please rename feature ${conflictFeatureNames} or rename the same field names in the observation data.")
+      }
+
+      // If auto correction is required, will solve conflicts automatically
+      val renameFeatures = conflictsAutoCorrectionSetting.get.renameFeatureList
+      val suffix = conflictsAutoCorrectionSetting.get.suffix
+      log.warn(s"Found conflicted field names: ${conflictFeatureNames}. Will auto correct them by applying suffix: ${suffix}")
+      conflictFeatureNames.foreach(name => {
+        leftRenamed = leftRenamed.withColumnRenamed(name, name+'_'+suffix)
+      })
+      val conflictFeatureNames2: Seq[String] = findConflictFeatureNames(keyTaggedFeatures, leftRenamed.schema.fieldNames)
+      if (conflictFeatureNames2.nonEmpty) {
+          throw new FeathrConfigException(
+            ErrorLabel.FEATHR_USER_ERROR,
+            s"Failed to apply auto correction to solve conflicts. Still got conflicts after applying provided suffix ${suffix} for fields: " +
+              s"${conflictFeatureNames}. Please provide another suffix or solve conflicts manually.")
+      }
+      val (df, header) = joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, leftRenamed,
+        rowBloomFilterThreshold)
+      if(renameFeatures) {
+        log.warn(s"Suffix :${suffix} is applied into feature names: ${conflictFeatureNames} to avoid conflicts in outputs")
+        renameFeatureNames(df, header, conflictFeatureNames, suffix)
+      } else {
+        log.warn(s"Suffix :${suffix} is applied into dataset Column names: ${conflictFeatureNames} to avoid conflicts in outputs")
+        (df, header)
+      }
+    }
+    else
+      joiner.joinFeaturesAsDF(sparkSession, joinConfig, updatedFeatureGroups, keyTaggedFeatures, left, rowBloomFilterThreshold)
   }
 
   private[offline] def getFeatureGroups(): FeatureGroups = {
@@ -339,6 +457,7 @@ object FeathrClient {
     private var featureDefConfs: List[FeathrConfig] = List()
     private var dataPathHandlers: List[DataPathHandler] = List()
     private var mvelContext: Option[FeathrExpressionExecutionContext] = None;
+    private var swaHandler: Option[SWAHandler] = None;
 
 
     /**
@@ -503,6 +622,16 @@ object FeathrClient {
     }
 
     /**
+     * Add an optional SWA handler method to allow support for external SWA library handling.
+     * @param _swaHandler
+     * @return
+     */
+    def addSWAHandler(_swaHandler: Option[SWAHandler]): Builder = {
+      this.swaHandler = _swaHandler
+      this
+    }
+
+    /**
      * Build a new instance of the FeathrClient from the added feathr definition configs and any local overrides.
      *
      * @throws [[IllegalArgumentException]] an error when no feature definitions nor local overrides are configured.
@@ -535,7 +664,8 @@ object FeathrClient {
       featureDefConfigs = featureDefConfigs ++ featureDefConfs
 
       val featureGroups = FeatureGroupsGenerator(featureDefConfigs, Some(localDefConfigs)).getFeatureGroups()
-      val feathrClient = new FeathrClient(sparkSession, featureGroups, MultiStageJoinPlanner(), FeatureGroupsUpdater(), dataPathHandlers, mvelContext)
+      val feathrClient = new FeathrClient(sparkSession, featureGroups, MultiStageJoinPlanner(), FeatureGroupsUpdater(),
+        dataPathHandlers, mvelContext, swaHandler)
 
       feathrClient
     }

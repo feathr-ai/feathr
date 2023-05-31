@@ -6,7 +6,7 @@ parent: Feathr How-to Guides
 
 # Using Snowflake with Feathr
 
-Currently, feathr supports using Snowflake as a source.
+Currently, feathr supports using Snowflake(SF) as a source.
 
 # Using Snowflake as a source
 

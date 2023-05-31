@@ -73,7 +73,7 @@ def test_feathr_materialize_with_time_partition_pattern():
     else:
         source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_test/df0/daily/'
       
-    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path)
+    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path,local_workspace_dir="test_materialize_tpp")
     
     backfill_time_tpp = BackfillTime(start=datetime(
         2020, 5, 2), end=datetime(2020, 5, 2), step=timedelta(days=1))
@@ -90,7 +90,7 @@ def test_feathr_materialize_with_time_partition_pattern():
                                        backfill_time=backfill_time_tpp)
     client.materialize_features(settings_tpp)
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
-
+    
     res_df = get_result_df(client, data_format="avro", res_url=output_path_tpp + "/df0/daily/2020/05/02")
     assert res_df.shape[0] > 0
      
@@ -107,7 +107,7 @@ def test_feathr_materialize_with_time_partition_pattern_postfix_path():
     else:
         source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_postfix_test/df0/daily/'
     
-    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path, postfix_path='postfixPath')
+    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path,local_workspace_dir="test_materialize_tpp_postfix", postfix_path='postfixPath')
 
     backfill_time_pf = BackfillTime(start=datetime(
         2020, 5, 2), end=datetime(2020, 5, 2), step=timedelta(days=1))
@@ -141,7 +141,7 @@ def test_feathr_materialize_with_time_partition_pattern_hourly():
     else:
         source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_hourly_test/df0/daily/'
     
-    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path, 'HOURLY')
+    client: FeathrClient = time_partition_pattern_feature_gen_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path,local_workspace_dir="test_materialize_hourly", resolution='HOURLY')
 
     backfill_time_tpp = BackfillTime(start=datetime(
         2020, 5, 2), end=datetime(2020, 5, 2), step=timedelta(days=1))
@@ -176,7 +176,7 @@ def test_feathr_get_offline_with_time_partition_pattern_postfix_path():
     else:
         source_path = 'abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/timePartitionPattern_postfix_test/df0/daily/'
     
-    [client, feature_query, settings] = time_partition_pattern_feature_join_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path, postfix_path='postfixPath')
+    [client, feature_query, settings] = time_partition_pattern_feature_join_test_setup(os.path.join(test_workspace_dir, "feathr_config.yaml"), source_path, local_workspace_dir="test_offline_tpp",postfix_path='postfixPath')
 
     now = datetime.now()
     if client.spark_runtime == 'databricks':
@@ -191,3 +191,4 @@ def test_feathr_get_offline_with_time_partition_pattern_postfix_path():
 
     res_df = get_result_df(client, data_format="avro", res_url = output_path)
     assert res_df.shape[0] > 0
+    

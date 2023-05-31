@@ -7,6 +7,7 @@ import com.linkedin.feathr.common.{FeatureAggregationType, FeatureValue}
 import com.linkedin.feathr.offline.PostTransformationUtil
 import com.linkedin.feathr.offline.anchored.feature.FeatureAnchorWithSource
 import com.linkedin.feathr.offline.client.DataFrameColName
+import com.linkedin.feathr.offline.client.DataFrameColName.genFeatureColumnName
 import com.linkedin.feathr.offline.derived.DerivedFeature
 import com.linkedin.feathr.offline.derived.functions.SeqJoinDerivationFunction
 import com.linkedin.feathr.offline.derived.strategies.SequentialJoinAsDerivation._
@@ -18,9 +19,9 @@ import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.DataPathHandler
 import com.linkedin.feathr.offline.transformation.DataFrameDefaultValueSubstituter.substituteDefaults
 import com.linkedin.feathr.offline.transformation.{AnchorToDataSourceMapper, MvelDefinition}
-import com.linkedin.feathr.offline.util.{CoercionUtilsScala, DataFrameSplitterMerger, FeathrUtils, FeaturizedDatasetUtils}
+import com.linkedin.feathr.offline.util.{CoercionUtilsScala, DataFrameSplitterMerger, FeathrUtils, FeaturizedDatasetUtils, SuppressedExceptionHandlerUtils}
 import com.linkedin.feathr.sparkcommon.{ComplexAggregation, SeqJoinCustomAggregation}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, Row, SparkSession}
@@ -37,7 +38,7 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
                                                   dataPathHandlers: List[DataPathHandler])
     extends SequentialJoinDerivationStrategy
     with Serializable {
-  @transient private val log = Logger.getLogger(getClass)
+  @transient private val log = LogManager.getLogger(getClass)
   private val colPrefix = "_feathr_seq_join_coerced_left_join_key_"
 
   override def apply(
@@ -52,6 +53,22 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
     val seqJoinDerivationFunction = derivationFunction
     val baseFeatureName = seqJoinDerivationFunction.left.feature
     val expansionFeatureName = seqJoinDerivationFunction.right.feature
+    val shouldAddDefault = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+
+    // If expansion feature is missing because of data issues, then we just copy the expansion feature column to be the final feature value.
+    if (shouldAddDefault && SuppressedExceptionHandlerUtils.missingFeatures.contains(expansionFeatureName)) {
+      val seqJoinedFeatureResult = df.withColumn(genFeatureColumnName(FEATURE_NAME_PREFIX + derivedFeature.producedFeatureNames.head),
+        col(genFeatureColumnName(FEATURE_NAME_PREFIX + expansionFeatureName)))
+
+      // Add the additional column with the keytags to mimic the exact behavior of the seq join flow, this will get dropped later.
+      val seqJoinFeatureResultWithRenamed = seqJoinedFeatureResult.withColumn(genFeatureColumnName(FEATURE_NAME_PREFIX
+        + derivedFeature.producedFeatureNames.head, Some(keyTags.map(keyTagList).toList)),
+        col(genFeatureColumnName(FEATURE_NAME_PREFIX + expansionFeatureName)))
+      val missingFeature = derivedFeature.producedFeatureNames.head
+      log.warn(s"Missing data for features ${missingFeature}. Default values will be populated for this column.")
+      SuppressedExceptionHandlerUtils.missingFeatures += missingFeature
+      return seqJoinFeatureResultWithRenamed
+    }
     val aggregationFunction = seqJoinDerivationFunction.aggregation
     val tagStrList = Some(keyTags.map(keyTagList).toList)
     val outputKey = seqJoinDerivationFunction.left.outputKey
@@ -217,9 +234,11 @@ private[offline] class SequentialJoinAsDerivation(ss: SparkSession,
     val ss = SparkSession.builder().getOrCreate()
     val failOnMissingPartition = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.FAIL_ON_MISSING_PARTITION).toBoolean
     val anchorDFMap1 = anchorToDataSourceMapper.getBasicAnchorDFMapForJoin(ss, Seq(featureAnchor), failOnMissingPartition)
+    val updatedAnchorDFMap = anchorDFMap1.filter(anchorEntry => anchorEntry._2.isDefined)
+      .map(anchorEntry => anchorEntry._1 -> anchorEntry._2.get)
     val featureInfo = FeatureTransformation.directCalculate(
       anchorGroup: AnchorFeatureGroups,
-      anchorDFMap1(featureAnchor),
+      updatedAnchorDFMap(featureAnchor),
       featureAnchor.featureAnchor.sourceKeyExtractor,
       None,
       None,

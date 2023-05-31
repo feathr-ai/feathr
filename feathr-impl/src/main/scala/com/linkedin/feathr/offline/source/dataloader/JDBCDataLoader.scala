@@ -1,9 +1,8 @@
 package com.linkedin.feathr.offline.source.dataloader
 
-import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException}
 import com.linkedin.feathr.offline.source.dataloader.jdbc.JdbcUtils
+import com.linkedin.feathr.offline.util.SourceUtils.processSanityCheckMode
 import org.apache.avro.Schema
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -20,6 +19,7 @@ private[offline] class JdbcDataLoader(ss: SparkSession, url: String) extends Dat
    * load the source data as DataFrame
    */
   override def loadDataFrame(): DataFrame = {
-    JdbcUtils.loadDataFrame(ss, url)
+    val df = JdbcUtils.loadDataFrame(ss, url)
+    processSanityCheckMode(ss, df)
   }
 }

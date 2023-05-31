@@ -49,8 +49,8 @@ private[offline] object FDSConversionUtils {
           // 1D sparse tensor
           case targetType: StructType if targetType.fields.size == 2 =>
             convertRawValueTo1DFDSSparseTensorRow(rawFeatureValue, targetType)
-          // 1D dense tensor
-          case targetType: ArrayType if !targetType.elementType.isInstanceOf[ArrayType] =>
+            // dense tensor
+          case targetType: ArrayType =>
             convertRawValueTo1DFDSDenseTensorRow(rawFeatureValue, targetType)
           case otherType =>
             throw new FeathrException(ErrorLabel.FEATHR_ERROR, s"Converting ${rawFeatureValue} to FDS Tensor type " +
@@ -279,6 +279,8 @@ private[offline] object FDSConversionUtils {
       case _: FloatType =>
         // If it's FloatType, then we know it's autoTz rules.
         convertRawValueTo1DFDSDenseTensorRowAutoTz(rawFeatureValue)
+      case _: ArrayType =>
+        rawFeatureValue.asInstanceOf[Array[_]]
       case _ =>
         convertRawValueTo1DFDSDenseTensorRowTz(rawFeatureValue)
     }

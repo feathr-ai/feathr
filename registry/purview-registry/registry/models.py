@@ -433,7 +433,7 @@ class SourceAttributes(Attributes):
                  qualified_name: str,
                  name: str,
                  type: str,
-                 path: str,
+                 path: str = None,
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
@@ -698,9 +698,12 @@ class ProjectDef:
 class SourceDef:
     def __init__(self,
                  name: str,
-                 path: str,
                  type: str,
                  qualified_name: str = "",
+                 path: str = None,
+                 brokers: List[str] = None,
+                 topics: List[str] = None,
+                 schema: str = None,
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
@@ -709,6 +712,9 @@ class SourceDef:
         self.name = name
         self.path = path
         self.type = type
+        self.brokers = brokers
+        self.topics = topics
+        self.schema = schema
         self.preprocessing = preprocessing
         self.event_timestamp_column = event_timestamp_column
         self.timestamp_format = timestamp_format

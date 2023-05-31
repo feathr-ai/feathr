@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrConfigException}
 import com.linkedin.feathr.offline.config.{ComplexAggregationFeature, TimeWindowFeatureDefinition}
 import com.linkedin.feathr.offline.generation.aggregations._
-import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.convertFeathrDefToSwjDef
+import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.{convertFeathrDefToSwjDef, isBucketedFunction}
 import com.linkedin.feathr.sparkcommon.SimpleAnchorExtractorSpark
 import com.linkedin.feathr.swj.aggregate.AggregationType
 import com.typesafe.config.ConfigFactory
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{Column, DataFrame}
@@ -43,7 +43,7 @@ private[offline] class TimeWindowConfigurableAnchorExtractor(@JsonProperty("feat
     _keyAlias = keyAlias
   }
 
-  @transient private lazy val log = Logger.getLogger(getClass)
+  @transient private lazy val log = LogManager.getLogger(getClass)
 
   // make it lazy, as _keyAlias is not be initialized when loading the config
   lazy private val aggFeatures = features.map {
@@ -61,7 +61,7 @@ private[offline] class TimeWindowConfigurableAnchorExtractor(@JsonProperty("feat
    */
   override def aggregateAsColumns(groupedDataFrame: DataFrame): Seq[(String, Column)] = {
     val columnPairs = aggFeatures.collect {
-      case (featureName, featureDef) =>
+      case (featureName, featureDef) if !isBucketedFunction(featureDef.timeWindowFeatureDefinition.aggregationType) =>
         // for basic sliding window aggregation
         // no complex aggregation will be defined
         if (featureDef.swaFeature.lateralView.isDefined) {

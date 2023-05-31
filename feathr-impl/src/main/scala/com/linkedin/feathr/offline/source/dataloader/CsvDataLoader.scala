@@ -12,6 +12,7 @@ import java.io.File
 import scala.collection.JavaConverters._
 import scala.collection.convert.wrapAll._
 import com.linkedin.feathr.offline.util.DelimiterUtils.checkDelimiterOption
+import com.linkedin.feathr.offline.util.SourceUtils.processSanityCheckMode
 
 import scala.io.Source
 
@@ -43,13 +44,15 @@ private[offline] class CsvDataLoader(ss: SparkSession, path: String) extends Dat
       log.debug(s"Loading CSV path :${path}")
       val absolutePath = new File(path).getPath
       log.debug(s"Got absolute CSV path: ${absolutePath}, loading..")
-      ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(absolutePath)
+      val df = ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(absolutePath)
+      processSanityCheckMode(ss, df)
     } catch {
       case _: Throwable =>
         log.debug(s"Loading CSV failed, retry with class loader..")
         val absolutePath = getClass.getClassLoader.getResource(path).getPath
         log.debug(s"Got absolution CSV path from class loader: ${absolutePath}, loading.. ")
-        ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(absolutePath)
+        val df = ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(absolutePath)
+        processSanityCheckMode(ss, df)
     }
   }
 

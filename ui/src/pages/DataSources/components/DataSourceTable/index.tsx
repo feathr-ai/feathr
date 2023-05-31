@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef } from 'react'
+import React, { forwardRef } from 'react'
 
 import { DeleteOutlined } from '@ant-design/icons'
 import { Button, message, notification, Popconfirm, Space } from 'antd'
@@ -10,17 +10,15 @@ import ResizeTable, { ResizeColumnType } from '@/components/ResizeTable'
 import { DataSource } from '@/models/model'
 
 export interface DataSourceTableProps {
-  project?: string
+  project: string
 }
 const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
   const navigate = useNavigate()
 
   const { project } = props
 
-  const projectRef = useRef(project)
-
   const getDetialUrl = (guid: string) => {
-    return `/projects/${projectRef.current}/dataSources/${guid}`
+    return `/${project}/datasources/${guid}`
   }
 
   const columns: ResizeColumnType<DataSource>[] = [
@@ -89,7 +87,7 @@ const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
     {
       title: 'Action',
       fixed: 'right',
-      width: 200,
+      width: 240,
       resize: false,
       render: (record: DataSource) => {
         const { guid } = record
@@ -131,7 +129,6 @@ const DataSourceTable = (props: DataSourceTableProps, ref: any) => {
     ['dataSources', project],
     async () => {
       if (project) {
-        projectRef.current = project
         return await fetchDataSources(project)
       } else {
         return []

@@ -3,14 +3,17 @@ import { useState } from 'react'
 import { PageHeader } from 'antd'
 import { useSearchParams } from 'react-router-dom'
 
+import { observer, useStore } from '@/hooks'
+
 import FeatureTable from './components/FeatureTable'
 import SearchBar, { SearchValue } from './components/SearchBar'
 
 const Feature = () => {
   const [searchParams] = useSearchParams()
+  const { globalStore } = useStore()
+  const { project } = globalStore
 
   const [search, setProject] = useState<SearchValue>({
-    project: searchParams.get('project') || undefined,
     keyword: searchParams.get('keyword') || undefined
   })
 
@@ -21,11 +24,11 @@ const Feature = () => {
   return (
     <div className="page">
       <PageHeader ghost={false} title="Features">
-        <SearchBar defaultValues={search} onSearch={onSearch} />
-        <FeatureTable project={search.project} keyword={search.keyword} />
+        <SearchBar project={project} keyword={search.keyword} onSearch={onSearch} />
+        <FeatureTable project={project} keyword={search.keyword} />
       </PageHeader>
     </div>
   )
 }
 
-export default Feature
+export default observer(Feature)

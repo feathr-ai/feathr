@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import tempfile
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union, Set
 
 from azure.identity import DefaultAzureCredential
 from jinja2 import Template
@@ -21,7 +21,7 @@ from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.materialization_settings import MaterializationSettings
 from feathr.definition.monitoring_settings import MonitoringSettings
 from feathr.definition.query_feature_list import FeatureQuery
-from feathr.definition.settings import ObservationSettings
+from feathr.definition.settings import ObservationSettings, ConflictsAutoCorrection
 from feathr.definition.sink import HdfsSink, Sink
 from feathr.definition.source import InputContext
 from feathr.definition.transformation import WindowAggTransformation
@@ -39,6 +39,8 @@ from feathr.utils._file_utils import write_to_file
 from feathr.utils.feature_printer import FeaturePrinter
 from feathr.utils.spark_job_params import FeatureGenerationJobParams, FeatureJoinJobParams
 from feathr.version import get_version
+import importlib.util
+
 
 
 class FeathrClient(object):
@@ -63,24 +65,26 @@ class FeathrClient(object):
         local_workspace_dir: str = None,
         credential: Any = None,
         project_registry_tag: Dict[str, str] = None,
-        use_env_vars: bool = True,
         secret_manager_client = None
     ):
         """Initialize Feathr Client.
+        Configuration values used by the Feathr are evaluated in the following precedence, with items higher on the list taking priority.
+            1. Environment variables
+            2. Values in the configuration file
+            3. Values in the Azure Key Vault
 
         Args:
             config_path (optional): Config yaml file path. See [Feathr Config Template](https://github.com/feathr-ai/feathr/blob/main/feathr_project/feathrcli/data/feathr_user_workspace/feathr_config.yaml) for more details.  Defaults to "./feathr_config.yaml".
             local_workspace_dir (optional): Set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
             credential (optional): Azure credential to access cloud resources, most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
-            project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project leve. Default is empty
-            use_env_vars (optional): Whether to use environment variables to set up the client. If set to False, the client will not use environment variables to set up the client. Defaults to True.
+            project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project level. Default is empty
              secret_manager_client: the secret manager client initialized outside of Feathr.  End users need to initialize the secret manager outside of Feathr and pass it to Feathr so Feathr can use it to get required secrets.
         """
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
         self._COMPOSITE_KEY_SEPARATOR = '#'
-        self.env_config = EnvConfigReader(config_path=config_path, use_env_vars=use_env_vars, secret_manager_client=None)
+        self.env_config = EnvConfigReader(config_path=config_path, secret_manager_client=None)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
@@ -96,13 +100,19 @@ class FeathrClient(object):
         self.project_name = self.env_config.get(
             'project_config__project_name')
 
-        # Redis configs
-        self.redis_host = self.env_config.get(
-            'online_store__redis__host')
-        self.redis_port = self.env_config.get(
-            'online_store__redis__port')
-        self.redis_ssl_enabled = self.env_config.get(
-            'online_store__redis__ssl_enabled')
+        # Redis configs. This is optional unless users have configured Redis host.
+        if self.env_config.get('online_store__redis__host'):
+            # For illustrative purposes.
+            spec = importlib.util.find_spec("redis")
+            if spec is None:
+                self.logger.warning('You have configured Redis host, but there is no local Redis client package. Install the package using "pip install redis". ')
+            self.redis_host = self.env_config.get(
+                'online_store__redis__host')
+            self.redis_port = self.env_config.get(
+                'online_store__redis__port')
+            self.redis_ssl_enabled = self.env_config.get(
+                'online_store__redis__ssl_enabled')
+            self._construct_redis_client()
 
         # Offline store enabled configs; false by default
         self.s3_enabled = self.env_config.get(
@@ -184,7 +194,6 @@ class FeathrClient(object):
                 master = self.env_config.get('spark_config__local__master')
                 )
 
-        self._construct_redis_client()
 
         self.secret_names = []
 
@@ -306,7 +315,7 @@ class FeathrClient(object):
 
         Args:
             feature_table: the name of the feature table.
-            key: the key/key list of the entity; 
+            key: the key/key list of the entity;
                  for key list, please make sure the order is consistent with the one in feature's definition;
                  the order can be found by 'get_features_from_registry'.
             feature_names: list of feature names to fetch
@@ -450,15 +459,16 @@ class FeathrClient(object):
             key = self._COMPOSITE_KEY_SEPARATOR.join(key)
         return feature_table + self._KEY_SEPARATOR + key
 
-    def _str_to_bool(self, s):
+    def _str_to_bool(self, s: str, variable_name = None):
         """Define a function to detect convert string to bool, since Redis client sometimes require a bool and sometimes require a str
         """
-        if s == 'True' or s == True:
+        if (isinstance(s, str) and s.casefold() == 'True'.casefold()) or s == True:
             return True
-        elif s == 'False' or s == False:
+        elif (isinstance(s, str) and s.casefold() == 'False'.casefold()) or s == False:
             return False
         else:
-            raise ValueError # evil ValueError that doesn't tell you what the wrong value was
+            self.logger.warning(f'{s} is not a valid Bool value. Maybe you want to double check if it is set correctly for {variable_name}.')
+            return s
 
     def _construct_redis_client(self):
         """Constructs the Redis client. The host, port, credential and other parameters can be set via environment
@@ -469,13 +479,12 @@ class FeathrClient(object):
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
 
-        self.redis_client = redis.Redis(
+        self.self.redis_client = redis.Redis(
             host=host,
             port=port,
             password=password,
-            ssl=self._str_to_bool(ssl_enabled))
+            ssl=self._str_to_bool(ssl_enabled, "ssl_enabled"))
         self.logger.info('Redis connection is successful and completed.')
-
 
     def get_offline_features(self,
                              observation_settings: ObservationSettings,
@@ -483,6 +492,7 @@ class FeathrClient(object):
                              output_path: Union[str, Sink],
                              execution_configurations: Union[SparkExecutionConfiguration ,Dict[str,str]] = {},
                              config_file_name:str = "feature_join_conf/feature_join.conf",
+                             dataset_column_names: Set[str] = None,
                              verbose: bool = False
                              ):
         """
@@ -493,13 +503,30 @@ class FeathrClient(object):
             output_path: output path of job, i.e. the observation data with features attached.
             execution_configurations: a dict that will be passed to spark job when the job starts up, i.e. the "spark configurations". Note that not all of the configuration will be honored since some of the configurations are managed by the Spark platform, such as Databricks or Azure Synapse. Refer to the [spark documentation](https://spark.apache.org/docs/latest/configuration.html) for a complete list of spark configurations.
             config_file_name: the name of the config file that will be passed to the spark job. The config file is used to configure the spark job. The default value is "feature_join_conf/feature_join.conf".
+            dataset_column_names: column names of observation data set. Will be used to check conflicts with feature names if cannot get real column names from observation data set.
         """
         feature_queries = feature_query if isinstance(feature_query, List) else [feature_query]
         feature_names = []
         for feature_query in feature_queries:
             for feature_name in feature_query.feature_list:
                 feature_names.append(feature_name)
-
+        
+        if len(feature_names) > 0 and observation_settings.conflicts_auto_correction is None:
+            import feathr.utils.job_utils as job_utils
+            dataset_column_names_from_path = job_utils.get_cloud_file_column_names(self, observation_settings.observation_path, observation_settings.file_format,observation_settings.is_file_path)
+            if (dataset_column_names_from_path is None or len(dataset_column_names_from_path) == 0) and dataset_column_names is None:
+                self.logger.warning(f"Feathr is unable to read the Observation data from {observation_settings.observation_path} due to permission issue or invalid path. Please either grant the permission or supply the observation column names in the filed: observation_column_names.")
+            else:
+                if dataset_column_names_from_path is not None and len(dataset_column_names_from_path) > 0:
+                    dataset_column_names = dataset_column_names_from_path
+                conflict_names = []
+                for feature_name in feature_names:
+                    if feature_name in dataset_column_names:
+                        conflict_names.append(feature_name)
+                if len(conflict_names) != 0:
+                    conflict_names = ",".join(conflict_names)
+                    raise RuntimeError(f"Feature names exist conflicts with dataset column names: {conflict_names}")
+           
         udf_files = _PreprocessingPyudfManager.prepare_pyspark_udf_files(feature_names, self.local_workspace_dir)
 
         # produce join config
@@ -998,3 +1025,4 @@ class FeathrClient(object):
             return "'{" + config_str + "}'"
         else:
             return config_str
+ 

@@ -5,7 +5,8 @@ import com.linkedin.feathr.common.configObj.generation.OfflineOperationalConfig;
 import com.linkedin.feathr.common.configObj.generation.OperationalConfig;
 import com.linkedin.feathr.common.configObj.generation.OutputProcessorConfig;
 import com.typesafe.config.Config;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.time.Duration;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class OperationalConfigBuilder {
 
-    private final static Logger logger = Logger.getLogger(OperationalConfigBuilder.class);
+    private final static Logger logger = LogManager.getLogger(OperationalConfigBuilder.class);
     private static final String NAME = "name";
     private static final String RETENTION = "retention";
     private static final String OUTPUT = "output";

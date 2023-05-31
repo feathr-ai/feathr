@@ -11,7 +11,7 @@ import com.linkedin.feathr.offline.source.dataloader.DataLoaderHandler
 import com.linkedin.feathr.offline.testfwk.{FeatureDefMockContext, SourceMockParam, TestFwkUtils}
 import com.linkedin.feathr.offline.util.{FeathrTestUtils, SparkFeaturizedDataset}
 import com.typesafe.config.ConfigFactory
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
@@ -26,7 +26,7 @@ import scala.collection.JavaConverters._
  */
 class FeathrGenTestComponent(resourceLocation: Map[String, List[String]], dataPathHandlers: List[DataPathHandler], extraParams: Array[String] = Array()) {
   val ss = FeathrTestUtils.getSparkSession()
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   /**
    * run test case with resource [[resourceLocation]]

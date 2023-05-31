@@ -1,4 +1,4 @@
-name: Feathr UI Lint and Format Checks
+name: UI Code Lint and Format Checks
 
 on:
   push:
@@ -11,17 +11,14 @@ on:
     paths:
       - "ui/**/*"
 
-  pull_request_target:
-    branches: [main]
-    paths:
-      - "ui/**/*"
 
 jobs:
   eslint:
     name: eslint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
       - uses: reviewdog/action-eslint@v1
         with:
           eslint_flags: "src/"
@@ -32,7 +29,8 @@ jobs:
     name: prettier_code_formatter
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2 # Check out the repository first.
+      - name: Checkout
+        uses: actions/checkout@v3
       - uses: actionsx/prettier@v2
         with:
           # prettier CLI arguments.

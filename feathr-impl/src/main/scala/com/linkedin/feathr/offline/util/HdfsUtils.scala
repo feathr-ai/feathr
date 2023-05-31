@@ -1,14 +1,14 @@
 package com.linkedin.feathr.offline.util
 
+import com.linkedin.feathr.offline.util.HdfsUtils.conf
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{Path,LocatedFileStatus,FileSystem,PathFilter,RemoteIterator}
+import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
 import org.apache.log4j.{Logger, PatternLayout, WriterAppender}
 
 import java.io.{FileSystem => _, _}
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{LocalDateTime, ZoneId, ZoneOffset}
-
 import scala.annotation.tailrec
 
 
@@ -146,8 +146,8 @@ object HdfsUtils {
    * @return A normalized (no multiple consecutive or trailing "/") String with all the identifiers replaced with the provided localDateTime in the given format
    */
   def replaceTimestamp(inputPath: String,
-                       localDateTime: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC),
-                       dateTimeFormatterPattern: DateTimeFormatter = timeStampFormatter): String = {
+    localDateTime: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC),
+    dateTimeFormatterPattern: DateTimeFormatter = timeStampFormatter): String = {
     validatePath(inputPath, timestampIdentifier)
 
     val dateTimeString = localDateTime.format(dateTimeFormatterPattern)
@@ -185,10 +185,10 @@ object HdfsUtils {
    * @return A Seq of paths under basePath covering the period [startInclusive, endExclusive).
    */
   def getPaths(
-                basePath: String,
-                startInclusive: LocalDateTime,
-                endExclusive: LocalDateTime,
-                unit: ChronoUnit): Seq[String] = {
+    basePath: String,
+    startInclusive: LocalDateTime,
+    endExclusive: LocalDateTime,
+    unit: ChronoUnit): Seq[String] = {
     val formatter = unit match {
       case ChronoUnit.DAYS =>
         TemporalPathFormats.Daily.formatter
@@ -211,11 +211,11 @@ object HdfsUtils {
    * @return A Seq of paths under basePath covering the period [startInclusive, endExclusive).
    */
   def getPaths(
-                basePath: String,
-                startInclusive: LocalDateTime,
-                endExclusive: LocalDateTime,
-                unit: ChronoUnit,
-                formatter: DateTimeFormatter): Seq[String] = {
+    basePath: String,
+    startInclusive: LocalDateTime,
+    endExclusive: LocalDateTime,
+    unit: ChronoUnit,
+    formatter: DateTimeFormatter): Seq[String] = {
     getTemporalRange(startInclusive, endExclusive, unit)
       .map { time => createStringPath(basePath, formatter.format(time)) }
   }
@@ -255,15 +255,15 @@ object HdfsUtils {
    * that starts with either `.` or `_`.
    */
   def listFiles(path: String,
-                recursive: Boolean = true,
-                excludeFilesPrefixList: Seq[String] = List(".", "_"),
-                conf: Configuration = conf): Seq[String] = {
+    recursive: Boolean = true,
+    excludeFilesPrefixList: Seq[String] = List(".", "_"),
+    conf: Configuration = conf): Seq[String] = {
 
     @tailrec
     def traverseIterator(path: String,
-                         iter: RemoteIterator[LocatedFileStatus],
-                         accumulator: List[String],
-                         conf: Configuration = conf): Seq[String] = {
+      iter: RemoteIterator[LocatedFileStatus],
+      accumulator: List[String],
+      conf: Configuration = conf): Seq[String] = {
       if (!iter.hasNext) {
         accumulator
       } else {
@@ -292,11 +292,11 @@ object HdfsUtils {
    * any char in excludeFilesPrefixList, it will be excluded.
    */
   def getAllFilesOfGivenType(path: String,
-                             fileType: String = "",
-                             recursive: Boolean = true,
-                             errorOnMissingFiles: Boolean = true,
-                             excludeFilesPrefixList: Seq[String] = List(".", "_"),
-                             conf: Configuration = conf): Seq[String] = {
+    fileType: String = "",
+    recursive: Boolean = true,
+    errorOnMissingFiles: Boolean = true,
+    excludeFilesPrefixList: Seq[String] = List(".", "_"),
+    conf: Configuration = conf): Seq[String] = {
     def filterFileName(fileName: String): Boolean = {
       val lastComponent = fileName.split("/").last
       fileName.endsWith(fileType)
@@ -320,9 +320,9 @@ object HdfsUtils {
    * @return A Seq of LocalDateTime covering the period [startInclusive, endExclusive).
    */
   private def getTemporalRange(
-                                startInclusive: LocalDateTime,
-                                endExclusive: LocalDateTime,
-                                unit: ChronoUnit): Seq[LocalDateTime] = {
+    startInclusive: LocalDateTime,
+    endExclusive: LocalDateTime,
+    unit: ChronoUnit): Seq[LocalDateTime] = {
     if (startInclusive.truncatedTo(unit) != startInclusive) {
       throw new IllegalArgumentException(
         s"Invalid argument: The startInclusive (${startInclusive}}) " +
@@ -377,7 +377,7 @@ object HdfsUtils {
    * @return modified output path with a date representation.
    */
   def appendDateFormatted(outputPath: String, dateTimeFormatter: DateTimeFormatter,
-                          localDateTime: LocalDateTime): String = {
+    localDateTime: LocalDateTime): String = {
     val dateFormattedExtension = dateTimeFormatter.format(localDateTime)
 
     HdfsUtils.createStringPath(outputPath, dateFormattedExtension)
@@ -402,11 +402,12 @@ object HdfsUtils {
    * @return A List[String] containing the paths of the subfolders sorted in reverse lexicographical order
    */
   private def getSortedSubfolderPaths(basePath: String,
-                                      excludeDirsPrefixList: Seq[String] = List(".", "_"),
-                                      conf: Configuration = conf): Seq[String] = {
+    excludeDirsPrefixList: Seq[String] = List(".", "_"),
+    conf: Configuration = conf): Seq[String] = {
     val fs: FileSystem = FileSystem.get(conf)
     val directories: Seq[String] = fs.listStatus(new Path(basePath))
       .filter(_.isDirectory)
+      .filter(x => fs.getContentSummary(x.getPath).getLength > 0) // Filter out empty directories.
       .map(_.getPath.getName)
       .filter(dirName =>
         !excludeDirsPrefixList.exists(prefix => dirName.startsWith(prefix)))
@@ -460,8 +461,8 @@ object HdfsUtils {
    * @return Array[String]
    */
   def hdfsSubdir(inputPath: String,
-                 excludePathsPrefixList: Seq[String] = List(".", "_"),
-                 conf: Configuration = conf): Array[String] = {
+    excludePathsPrefixList: Seq[String] = List(".", "_"),
+    conf: Configuration = conf): Array[String] = {
     val filter = new PathFilter() {
       override def accept(path : Path): Boolean =
         !excludePathsPrefixList.exists(prefix => path.getName.startsWith(prefix))
@@ -480,6 +481,25 @@ object HdfsUtils {
   }
 
   /**
+   * For a given input path, check if it is non-empty. If the path is a directory, check if it has any files within the directory.
+   * Otherwise, check if the file is non-empty.
+   *
+   * @param conf      Hadoop Configuration
+   * @param inputPath input path
+   * @return true if nonEmpty
+   */
+  def nonEmpty(inputPath: String, conf: Configuration = conf): Boolean = {
+    val fs = FileSystem.get(conf)
+    val path = new Path(inputPath)
+    if (!exists(inputPath)) return false
+    if (fs.getFileStatus(path).isDirectory) {
+      fs.listStatus(path).length > 0
+    } else {
+      fs.getFileStatus(path).getLen > 0
+    }
+  }
+
+  /**
    * Creaete directories as needed
    */
   def hdfsCreateDirectoriesAsNeeded(dir: String, conf: Configuration = conf): Unit = {
@@ -494,7 +514,7 @@ object HdfsUtils {
    * Returns temp file path
    */
   def hdfsCreateTempFile(User: String, tempDir: String, prefix: String, suffix: String,
-                         attempts: Int = maxAttempts, conf: Configuration = conf):  // scalaStyle:off magic.number
+    attempts: Int = maxAttempts, conf: Configuration = conf):  // scalaStyle:off magic.number
   Option[String] = {
     val usePrefix = if (prefix.nonEmpty) prefix else "file"
     val useSuffix = if (suffix.nonEmpty) suffix else "tmp"
@@ -525,7 +545,7 @@ object HdfsUtils {
    * Converts Iterator to InputStream on HDFS
    */
   def hdfsConvertIteratorToInputStream(User: String, tempDirPrefix: String,
-                                       iter: Iterator[String], attempts: Int = maxAttempts, conf: Configuration = conf):
+    iter: Iterator[String], attempts: Int = maxAttempts, conf: Configuration = conf):
   Option[InputStream] = {
     val tempPathOpt = hdfsCreateTempFile(User, tempDirPrefix,
       "iter", "tmp", attempts)

@@ -1,18 +1,20 @@
 package com.linkedin.feathr.offline.join.workflow
 
 import com.linkedin.feathr.common.FeatureTypeConfig
-import com.linkedin.feathr.{common, offline}
 import com.linkedin.feathr.offline.FeatureDataFrame
 import com.linkedin.feathr.offline.client.DataFrameColName
 import com.linkedin.feathr.offline.derived.DerivedFeatureEvaluator
 import com.linkedin.feathr.offline.join.JoinExecutionContext
-import org.apache.log4j.Logger
+import com.linkedin.feathr.offline.util.FeathrUtils
+import com.linkedin.feathr.offline.util.FeathrUtils.isDebugMode
+import com.linkedin.feathr.{common, offline}
+import org.apache.logging.log4j.LogManager
 
 /**
  * A step in Feature Join Workflow that joins the derived features.
  */
 class DerivedFeatureJoinStep(derivedFeatureEvaluator: DerivedFeatureEvaluator) extends FeatureJoinStep[DataFrameJoinStepInput, FeatureDataFrameOutput] {
-  @transient lazy val log = Logger.getLogger(getClass.getName)
+  @transient lazy val log = LogManager.getLogger(getClass.getName)
 
   override def joinFeatures(features: Seq[common.ErasedEntityTaggedFeature], input: DataFrameJoinStepInput)(
       implicit ctx: JoinExecutionContext): FeatureDataFrameOutput = {
@@ -41,7 +43,7 @@ class DerivedFeatureJoinStep(derivedFeatureEvaluator: DerivedFeatureEvaluator) e
             val FeatureDataFrame(withDerivedContextDF, newInferredTypes) =
               derivedFeatureEvaluator.evaluate(keyTags, ctx.logicalPlan.keyTagIntsToStrings, baseDF, derived)
 
-            if (log.isDebugEnabled) {
+            if (isDebugMode(ctx.sparkSession)) {
               log.debug(s"Final output after joining non-SWA features:")
               contextDF.show(false)
             }
@@ -51,7 +53,11 @@ class DerivedFeatureJoinStep(derivedFeatureEvaluator: DerivedFeatureEvaluator) e
           }
         })
       })
-    FeatureDataFrameOutput(resultFeatureDataFrame)
+    val result = FeatureDataFrameOutput(resultFeatureDataFrame)
+    val featureNames = features.map(_.getFeatureName).toSet
+    FeathrUtils.dumpDebugInfo(ctx.sparkSession, result.obsAndFeatures.df, featureNames, "derived feature",
+       featureNames.mkString("_") + "_derived_feature")
+    result
   }
 }
 

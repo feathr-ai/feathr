@@ -37,9 +37,9 @@ public class MvelContextUDFs {
   private MvelContextUDFs() { }
 
   // register all the udfs defined in this class to the specific parser config
-  public static void registerUDFs(ParserConfiguration parserConfig) {
+  public static void registerUDFs(Class<?> clazz, ParserConfiguration parserConfig) {
     // Scans the class (MvelContextUDFs) for any methods annotated with ExportToMvel
-    for (Method method : MvelContextUDFs.class.getMethods()) {
+    for (Method method : clazz.getMethods()) {
       if (method.isAnnotationPresent(ExportToMvel.class)) {
         if (!Modifier.isStatic(method.getModifiers())) {
           throw new Error("MVEL context set up incorrectly. Imported method " + method + " must be static but is not.");
@@ -53,7 +53,7 @@ public class MvelContextUDFs {
   // parser context. Basically this is a way of adding UDFs.
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
-  private @interface ExportToMvel { }
+  public @interface ExportToMvel { }
 
   /**
    * Get the class type of the input object

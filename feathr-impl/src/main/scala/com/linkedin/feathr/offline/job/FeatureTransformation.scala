@@ -15,6 +15,7 @@ import com.linkedin.feathr.offline.join.DataFrameKeyCombiner
 import com.linkedin.feathr.offline.mvel.plugins.FeathrExpressionExecutionContext
 import com.linkedin.feathr.offline.source.accessor.{DataSourceAccessor, NonTimeBasedDataSourceAccessor, TimeBasedDataSourceAccessor}
 import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils
+import com.linkedin.feathr.offline.swa.SlidingWindowFeatureUtils.isBucketedFunction
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat.FeatureColumnFormat
 import com.linkedin.feathr.offline.transformation._
 import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils.tensorTypeToDataFrameSchema
@@ -25,7 +26,7 @@ import com.linkedin.feathr.sparkcommon.{SimpleAnchorExtractorSpark, SourceKeyExt
 import com.linkedin.feathr.swj.aggregate.AggregationType
 import com.linkedin.feathr.{common, offline}
 import org.apache.avro.generic.IndexedRecord
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -77,7 +78,7 @@ private[offline] case class TransformedResult(
 private[offline] case class KeyedTransformedResult(joinKey: JoinKeys, transformedResult: TransformedResult)
 
 private[offline] object FeatureTransformation {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   val FEATURE_DATA_JOIN_KEY_COL_PREFIX = "FeathrFeatureJoinKeyCol_"
   val FEATURE_NAME_PREFIX = "__feathr_feature_"
@@ -198,7 +199,8 @@ private[offline] object FeatureTransformation {
       df: DataFrame,
       requestedFeatureRefString: Seq[String],
       inputDateInterval: Option[DateTimeInterval],
-      mvelContext: Option[FeathrExpressionExecutionContext]): TransformedResult = {
+      mvelContext: Option[FeathrExpressionExecutionContext],
+      keyColumnExprAndAlias: Seq[(String, String)] = Seq.empty[(String, String)]): TransformedResult = {
     val featureNamePrefix = getFeatureNamePrefix(featureAnchorWithSource.featureAnchor.extractor)
     val featureNamePrefixPairs = requestedFeatureRefString.map((_, featureNamePrefix))
 
@@ -206,7 +208,17 @@ private[offline] object FeatureTransformation {
     val featureTypeConfigs = featureAnchorWithSource.featureAnchor.featureTypeConfigs
     val transformedFeatureData: TransformedResult = featureAnchorWithSource.featureAnchor.extractor match {
       case transformer: TimeWindowConfigurableAnchorExtractor =>
-        WindowAggregationEvaluator.transform(transformer, df, featureNamePrefixPairs, featureAnchorWithSource, inputDateInterval)
+        val nonBucketedFeatures = transformer.features.map(_._2.aggregationType).filter(agg => isBucketedFunction(agg))
+        if (!(nonBucketedFeatures.size != transformer.features || transformer.features.isEmpty)) {
+          throw new FeathrFeatureTransformationException(
+            ErrorLabel.FEATHR_USER_ERROR,
+            s"All features ${transformer.features.keys.mkString(",")} should be either be all bucket or non-bucketed aggregation functions.")
+        }
+        if (nonBucketedFeatures.isEmpty) {
+          WindowAggregationEvaluator.transform(transformer, df, featureNamePrefixPairs, featureAnchorWithSource, inputDateInterval)
+        } else {
+          BucketedWindowAggregationEvaluator.transform(transformer, df, featureNamePrefixPairs, featureAnchorWithSource, keyColumnExprAndAlias)
+        }
       case transformer: SimpleAnchorExtractorSpark =>
         // transform from avro tensor to FDS format, avro tensor can be shared by online/offline
         // so that transformation logic can be written only once
@@ -350,7 +362,7 @@ private[offline] object FeatureTransformation {
         (prevTransformedResult, featureAnchorWithSource) => {
           val requestedFeatures = featureAnchorWithSource.selectedFeatures
           val transformedResultWithoutKey =
-            transformSingleAnchorDF(featureAnchorWithSource, prevTransformedResult.df, requestedFeatures, inputDateInterval, mvelContext)
+            transformSingleAnchorDF(featureAnchorWithSource, prevTransformedResult.df, requestedFeatures, inputDateInterval, mvelContext, outputJoinKeyColumnNames.zip(outputJoinKeyColumnNames))
           val namePrefixPairs = prevTransformedResult.featureNameAndPrefixPairs ++ transformedResultWithoutKey.featureNameAndPrefixPairs
           val columnNameToFeatureNameAndType = prevTransformedResult.inferredFeatureTypes ++ transformedResultWithoutKey.inferredFeatureTypes
           val featureColumnFormats = prevTransformedResult.featureColumnFormats ++ transformedResultWithoutKey.featureColumnFormats
@@ -888,7 +900,6 @@ private[offline] object FeatureTransformation {
     val features = transformers map {
       case extractor: AnchorExtractor[IndexedRecord] =>
         val features = extractor.getFeatures(record)
-        print(features)
         FeatureValueTypeValidator.validate(features, featureTypeConfigs)
         features
       case extractor =>
@@ -1359,7 +1370,7 @@ private[offline] object FeatureTransformation {
   def parseMultiDimTensorExpr(featureDef: String): String = {
     // String char should be one more than the len of the keyword to account for '('. The end should be 1 less than length of feature string
     // to account for ')'.
-    featureDef.substring(featureDef.indexOf("(") + 1, featureDef.indexOf(")"))
+    featureDef.substring(featureDef.indexOf("(") + 1, featureDef.lastIndexOf(")"))
   }
 
 
@@ -1423,7 +1434,6 @@ private[offline] object FeatureTransformation {
     val features = transformers map {
       case extractor: AnchorExtractor[Any] =>
         val features = extractor.getFeatures(row)
-        print(features)
         FeatureValueTypeValidator.validate(features, featureTypeConfigs)
         features
       case extractor =>

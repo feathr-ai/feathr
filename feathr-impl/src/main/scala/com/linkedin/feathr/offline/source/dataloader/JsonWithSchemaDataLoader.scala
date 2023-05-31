@@ -2,6 +2,7 @@ package com.linkedin.feathr.offline.source.dataloader
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jasonclawson.jackson.dataformat.hocon.HoconFactory
+import com.linkedin.feathr.offline.util.SourceUtils.processSanityCheckMode
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -35,7 +36,8 @@ private[offline] class JsonWithSchemaDataLoader(ss: SparkSession, path: String) 
    */
   override def loadDataFrame(): DataFrame = {
     val res = parseJsonAsAvroRDD()
-    AvroJsonDataLoader.convertRDD2DF(ss, res)
+    val df = AvroJsonDataLoader.convertRDD2DF(ss, res)
+    processSanityCheckMode(ss, df)
   }
 
   /**

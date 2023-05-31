@@ -43,6 +43,8 @@ class TestAnchoredFeatureJoinStep extends TestFeathr with MockitoSugar {
       .thenReturn("false")
     when(mockSparkContext.getConf).thenReturn(mockSparkConf)
     when(mockSparkSession.sparkContext).thenReturn(mockSparkContext)
+    when(mockSparkConf.get(s"${FeathrUtils.FEATHR_PARAMS_PREFIX}${FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA}",
+      "false")).thenReturn("false")
     when(mockExecutionContext.sparkSession).thenReturn(mockSparkSession)
     when(mockLogicalPlan.joinStages).thenReturn(Seq.empty)
 
@@ -124,6 +126,7 @@ class TestAnchoredFeatureJoinStep extends TestFeathr with MockitoSugar {
   def testJoinOnSingleDFWhenSaltedJoin(): Unit = {
     val mockExecutionContext = mock[JoinExecutionContext] // mock execution context
     when(mockExecutionContext.frequentItemEstimatedDFMap).thenReturn(None)
+    when(mockExecutionContext.sparkSession).thenReturn(ss)
 
     // mock feature DF
     val mockTransformedResult = mock[TransformedResult]

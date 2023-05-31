@@ -20,7 +20,7 @@ class TestTimeBasedJoin extends TestFeathr {
   def testStartEndDatePath(): Unit = {
     val inputData1 = InputData("/test/path/", SourceFormatType.TIME_PATH, startDate = Some("20170908"), endDate = Some("20170910"))
     val pathList11 = getPathList(inputData1.sourceType, inputData1.inputPath, ss, inputData1.dateParam, dataLoaderHandlers=List())
-    val actualPathList = List("/test/path/datepartition=2017-09-08-00", "/test/path/datepartition=2017-09-09-00", "/test/path/datepartition=2017-09-10-00")
+    val actualPathList = List("/test/path/2017/09/08", "/test/path/2017/09/09", "/test/path/2017/09/10")
     assert(pathList11 == actualPathList)
   }
 
@@ -75,7 +75,7 @@ class TestTimeBasedJoin extends TestFeathr {
 
     val featureDataRelative2 = InputData("FEATHR_TEST_ONLY/path/", SourceFormatType.TIME_PATH, startDate = Some("20180227"), endDate = Some("20180227"))
 
-    val pathListRelative = 
+    val pathListRelative =
     getPathList(featureDataRelative.sourceType, featureDataRelative.inputPath, ss, featureDataRelative.dateParam, targetDate=Some(observationStartDate), dataLoaderHandlers=List())
     val pathListRelative2 = getPathList(featureDataRelative2.sourceType, featureDataRelative2.inputPath, ss, featureDataRelative2.dateParam,dataLoaderHandlers=List())
 
@@ -86,7 +86,7 @@ class TestTimeBasedJoin extends TestFeathr {
     val startDate = "20180225"
     val endDate = "20180225"
     val featureDataSpecific = InputData("FEATHR_TEST_ONLY/path/", SourceFormatType.TIME_PATH, startDate = Some(startDate), endDate = Some(endDate))
-    val pathListSpecific = 
+    val pathListSpecific =
     getPathList(featureDataSpecific.sourceType, featureDataSpecific.inputPath, ss, featureDataSpecific.dateParam, targetDate=Some(observationStartDate), dataLoaderHandlers=List())
     val pathListSpecific2 = getPathList(featureDataSpecific.sourceType, featureDataSpecific.inputPath, ss, featureDataSpecific.dateParam, dataLoaderHandlers=List())
 

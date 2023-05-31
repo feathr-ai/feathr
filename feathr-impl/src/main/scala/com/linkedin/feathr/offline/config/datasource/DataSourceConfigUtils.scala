@@ -3,14 +3,14 @@ package com.linkedin.feathr.offline.config.datasource
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.linkedin.feathr.offline.util.CmdLineParser
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
 import scala.io.Source
 
 object DataSourceConfigUtils {
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
 
   private val yamlMapper = new ObjectMapper(new YAMLFactory())
   val featureStoreConfig: FeathrStoreConfig = loadYamlConfig("feathr_project/data/feathr_user_workspace/feathr_config.yaml")

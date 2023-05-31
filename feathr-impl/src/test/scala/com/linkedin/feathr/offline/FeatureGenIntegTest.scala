@@ -4,12 +4,13 @@ import com.linkedin.feathr.common.exception.FeathrException
 import com.linkedin.feathr.offline.AssertFeatureUtils._
 import com.linkedin.feathr.offline.job.PreprocessedDataFrameManager
 import com.linkedin.feathr.offline.source.dataloader.CsvDataLoader
+import com.linkedin.feathr.offline.util.FeathrUtils.{SKIP_MISSING_FEATURE, setFeathrJobParam}
 import com.linkedin.feathr.offline.util.{FeathrTestUtils, FeatureGenConstants}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
-import org.testng.Assert.{assertEquals, assertNotNull}
+import org.testng.Assert.{assertEquals, assertNotNull, assertTrue}
 import org.testng.annotations.Test
 
 import scala.collection.mutable
@@ -22,6 +23,18 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     """
       |  swaSource: {
       |    location: { path: "generation/daily/" }
+      |    timePartitionPattern: "yyyy/MM/dd"
+      |    timeWindowParameters: {
+      |      timestampColumn: "timestamp"
+      |      timestampColumnFormat: "yyyy-MM-dd"
+      |    }
+      |  }
+    """.stripMargin
+
+  private val malformedSource =
+    """
+      |  swaSource11: {
+      |    location: { path: "generation/daiy/" }
       |    timePartitionPattern: "yyyy/MM/dd"
       |    timeWindowParameters: {
       |      timestampColumn: "timestamp"
@@ -818,6 +831,66 @@ class FeatureGenIntegTest extends FeathrIntegTest {
   }
 
   /**
+   * test sliding window aggregation feature with malformed source and the skip missing feature flag turned on.
+   * The feature with the malformed source should be skipped.
+   */
+  @Test
+  def testSWAFeatureWithMalformedSource(): Unit = {
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "true")
+    val swaApplicationConfig = generateSimpleApplicationConfig(features = "f3, f4, f5, f6", endTime = "2019-05-21")
+    val swaFeatureDefConfig =
+      s"""
+         |sources: {
+         |  ${defaultSwaSource}
+         |  ${malformedSource}
+         |}
+         |anchors: {
+         |  swaAnchor1: {
+         |    source: "swaSource11"
+         |    key: x
+         |    features: {
+         |      f3: {
+         |        def: "count"
+         |        aggregation: SUM
+         |        window: 1d
+         |      }
+         |    }
+         |  }
+         |
+         |  swaAnchor2: {
+         |    source: "swaSource"
+         |    key: x
+         |    features: {
+         |      f4: {
+         |        def: "count"
+         |        aggregation: SUM
+         |        window: 1d
+         |      }
+         |      f5: {
+         |        def: "count"
+         |        aggregation: SUM
+         |        window: 3d
+         |      }
+         |
+         |      f6: {
+         |        def: "count"
+         |        aggregation: LATEST
+         |        window: 3d
+         |      }
+         |    }
+         |  }
+         |}
+    """.stripMargin
+    val dfs = localFeatureGenerate(swaApplicationConfig, swaFeatureDefConfig)
+    // group by dataframe
+    val dfCount = dfs.groupBy(_._2.data).size
+    assertEquals(dfCount, 2)
+    // Assert that the feature is skipped.
+    assertTrue(!dfs.keySet.map(x => x.getFeatureName).contains("f3"))
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
+  }
+
+  /**
    * test sliding window aggregation feature with different anchors
    */
   @Test
@@ -1415,18 +1488,18 @@ class FeatureGenIntegTest extends FeathrIntegTest {
         |    source: "swaSource"
         |    key: [x]
         |    features: {
-        |      f: {
-        |        def: count   // the column that contains the raw view count
+        |     f: {
+        |       def: count   // the column that contains the raw view count
         |        filter: "Id in (10, 11)"
         |        aggregation: SUM
         |        window: 3d
-        |      }
-        |      g: {
+        |        }
+        |        g: {
         |        def: count   // the column that contains the raw view count
         |        filter: "Id in (9)"
         |        aggregation: SUM
         |        window: 3d
-        |      }
+        |     }
         |    }
         |  }
         |}
@@ -1496,6 +1569,62 @@ class FeatureGenIntegTest extends FeathrIntegTest {
       .sortBy(row => row.getAs[Int](keyField))
 
     validateRows(actualRowsG, expectedRowsG)
+  }
+
+  @Test
+  def testBucketedCountDistinct(): Unit = {
+    val featureDefAsString =
+      """
+        |sources: {
+        |  swaSource: {
+        |    location: { path: "generation/daily/" }
+        |    timePartitionPattern: "yyyy/MM/dd"
+        |    timeWindowParameters: {
+        |      timestampColumn: "timestamp"
+        |      timestampColumnFormat: "yyyy-MM-dd"
+        |    }
+        |  }
+        |}
+        |anchors: {
+        |  swaAnchorWithKeyExtractor: {
+        |    source: "swaSource"
+        |    key: [x]
+        |    features: {
+        |      g: {
+        |        def: count   // the column that contains the raw view count
+        |        aggregation: BUCKETED_COUNT_DISTINCT
+        |        window: "1y"
+        |      }
+        |       h: {
+        |        def: count   // the column that contains the raw view count
+        |        aggregation: BUCKETED_SUM
+        |        window: "1y"
+        |      }
+        |    }
+        |  }
+        |}
+      """.stripMargin
+
+    val features = Seq("g", "h")
+    val keyField = "key0"
+    val featureGenConfigStr =
+      s"""
+         |operational: {
+         |  name: generateWithDefaultParams
+         |  endTime: "2019-05-23"
+         |  endTimeFormat: "yyyy-MM-dd"
+         |  resolution: DAILY
+         |  output:[ ]
+         |}
+         |features: [${features.mkString(",")}]
+  """.stripMargin
+
+    val dfs = localFeatureGenerate(featureGenConfigStr, featureDefAsString)
+    dfs.foreach(x => {
+      x._2.data.show()
+    })
+    // Verify that requested features appear in the output
+    assertEquals(dfs.size, features.size)
   }
 
   /**
@@ -1704,7 +1833,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     val featureDefConf =
       """
         |anchors: {
-        |  -local: {
+        |  local: {
         |   source: "anchorAndDerivations/derivations/featureGeneration/Data.avro.json"
         |   key: ["x", "y"]
         |   features: {
@@ -1763,6 +1892,68 @@ class FeatureGenIntegTest extends FeathrIntegTest {
             nullable = true))))
     def cmpFunc(row: Row): String = row.get(1).toString
     FeathrTestUtils.assertDataFrameApproximatelyEquals(groupedOutput.head._1, expectedDf, cmpFunc)
+  }
+
+  /**
+   * This test validates that derived features with multiple keys are supported
+   * if and only if all dependent features have the same keys.
+   * To enable this test, set the value of FeatureUtils.SKIP_MISSING_FEATURE to True. From
+   * Spark 3.1, SparkContext.updateConf() is not supported.
+   */
+  @Test
+  def testDerivedFeatureGenWithSkipFeatureFlagOn(): Unit = {
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "true")
+    val featureDefConf =
+      """
+        |anchors: {
+        |  local: {
+        |   source: "anchorAndDerivations/derivations/featureGeneation/Data.avro.json"
+        |   key: ["x", "y"]
+        |   features: {
+        |    a_z: "z"
+        |   }
+        |  }
+        |  local1: {
+        |   source: "anchorAndDerivations/derivations/featureGeneration/Data.avro.json"
+        |   key: ["x", "y"]
+        |   features: {
+        |    a_z1: "z"
+        |   }
+        |  }
+        |}
+        |
+        |derivations: {
+        |  a_derived_z: {
+        |    key: ["x", "Id"]
+        |    inputs: {
+        |     arg1:  { key: ["x", "Id"], feature: a_z }
+        |    }
+        |    definition: arg1
+        |  }
+        |}
+        |
+    """.stripMargin
+    val features = Seq("a_derived_z", "a_z", "a_z1")
+    val output = localFeatureGenerateForSeqOfFeatures(features, featureDefConf)
+
+    /**
+     * Expected Output:
+     * +----------+--------+---------------------------+
+     * |x|x|a_derived_z|
+     * +----------+--------+---------------------------+
+     * |         2|       1|         [b -> 1.0]|
+     * |         5|       2|       [e -> 1.0]|
+     * |         1|       1|       [a ->...|
+     * |         4|       2|        [d -> 1.0]|
+     * |         6|       3|             [f -> 1.0]|
+     * |         3|       2|           [c -> 1.0]|
+     * +----------+--------+---------------------------+
+     */
+    val groupedOutput = output.groupBy(_._2.data)
+    assertEquals(groupedOutput.size, 1) // features should be generated on a single DF
+    assertEquals(groupedOutput.head._2.size, 1) // Only 1 feature was generated
+    assertEquals(groupedOutput.head._2.keySet.head.getFeatureName, "a_z1") // Only 1 feature was generated
+    setFeathrJobParam(SKIP_MISSING_FEATURE, "false")
   }
 
   /**
@@ -1980,6 +2171,7 @@ class FeatureGenIntegTest extends FeathrIntegTest {
     assertEquals(featureList.size, 4)
     assertEquals(featureList(0).getAs[Float]("f3"), 1f, 1e-5)
   }
+
 
   /**
    * Naive validator method that validates the actual rows returned match the expectation.
