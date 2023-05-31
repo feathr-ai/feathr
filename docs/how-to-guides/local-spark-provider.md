@@ -5,32 +5,38 @@ parent: How-to Guides
 ---
 
 ## Background
-Feathr Community has received several asks about how to use local spark environments. Based on Feathr contributors [local debug habit](#local-debug-guide), a local spark provider is added in Feathr Client now. 
+
+Feathr Community has received several asks about how to use local spark environments. Based on Feathr contributors [local debug habit](#local-debug-guide), a local spark provider is added in Feathr Client now.
 This provider only support [limited functions](#supported-use-case) right now, and feedbacks on local spark use cases are welcomed to help us prioritize and improve features.
 
 ## Local Debug Guide
+
 Local spark is frequently used when Feathr contributors test their code changes. The main purpose of it is not to include every features but make sure the basic e2e flow works.
 
 The local spark provider only requires users to have a [local spark environment](#environment-setup) and set `spark_cluster` to `local` in [Feathr Config](#local-feathr-config) for feature join jobs. In case of feature gen job, users need to set online store params.
 
-
 ### Environment Setup
-Please make sure that `Spark` and `feathr` are installed and the `SPARK_LOCAL_IP` is set. 
+
+Please make sure that `Spark` and `feathr` are installed and the `SPARK_LOCAL_IP` is set.
 `JAVA_HOME` and Java environment is also required.
 
 ### Local Feathr Config
+
 To use local spark environment, user need to set `spark_cluster: 'local'`. If `feathr_runtime_location` is not set, Feathr will use default Maven package instead.
+
 ```yaml
 spark_config:
   # choice for spark runtime. Currently support: azure_synapse, databricks, local
-  spark_cluster: 'local'
-  spark_result_output_parts: '1'
+  spark_cluster: "local"
+  spark_result_output_parts: "1"
   local:
     feathr_runtime_location:
 ```
 
 ### Sample spark-submit.sh
+
 A spark-submit script will auto generated in your workspace under `debug` folder like below:
+
 ```sh
 #!/bin/sh
 
@@ -48,43 +54,49 @@ spark-submit \
         --feature-config feature_conf/auto_generated_request_features.conf,feature_conf/auto_generated_anchored_features.conf,feature_conf/auto_generated_derived_features.conf\
         --num-parts 1 \
 ```
+
 You can also call the script directly:
+
 ```bash
 sh debug/local_spark_feathr_feature_join_job20220914160251/command.sh
 ```
+
 You may also refer to
 [submitting-applications docs](https://spark.apache.org/docs/latest/submitting-applications.html) to customize your scripts.
 
 ### Logs
+
 logs are automatically stored in `debug` folder of your workspace for further debugging.
 
 ### Usage
+
 The usage of local spark provider is almost the same with cloud spark providers. You could refer to [test_local_spark_e2e.py](../../feathr_project/test/test_local_spark_e2e.py) for usage samples.
 
 In short, the `submit_feathr_job()` in local spark mode will return a Popen object, which `stdout` and `stderr` are set to local log file. You can track the jobs with your custom code. Or, you could try the following python code which will process output for you.
+
 ```python
 results = client.wait_job_to_finish()
 ```
 
-
 ## Supported Use Case
-In this version of local spark provider, users are only able to test `get_offline_features()` with Feathr Client. 
 
-`local-spark-provider` enable users to test features without deploying any cloud resources. However, please use it ONLY in test or trial scenarios. For production usage, cloud spark providers are highly recommended. 
+In this version of local spark provider, users are only able to test `get_offline_features()` with Feathr Client.
 
-### Tips:
+`local-spark-provider` enable users to test features without deploying any cloud resources. However, please use it ONLY in test or trial scenarios. For production usage, cloud spark providers are highly recommended.
+
+### Tips
+
 - If you want to submit more customized params to Spark, a workaround is to generate a sample script and then update it with your own params.
 - Cold start will be slow since it needs to download quite a few Maven packages to local environment. But after that it should be very fast to use it locally
 - Windows is currently not supported. Linux/MacOS is fully tested. If you are on Windows machine, consider using WSL.
-### Use Cases:
+
+### Use Cases
+
 Following use cases are covered in CI test:
+
 - `get_offline_features()` without UDFs
 - `get_offline_features()` with UDFs
 - `get_offline_features()` with local observation path
 - `get_offline_features()` with wasb observation path
-
-### Coming soon:
 - `materialize_features()` into online store with local spark environment.
 - advanced `udf` support
-- more data sources
-
