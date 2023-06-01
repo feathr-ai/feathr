@@ -434,6 +434,9 @@ class SourceAttributes(Attributes):
                  name: str,
                  type: str,
                  path: str = None,
+                 brokers: List[str] = None,
+                 topics: List[str] = None,
+                 schema_str: str = None,
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
@@ -442,6 +445,9 @@ class SourceAttributes(Attributes):
         self.name = name
         self.type = type
         self.path = path
+        self.brokers = brokers
+        self.topics = topics
+        self.schema_str = schema_str
         self.preprocessing = preprocessing
         self.event_timestamp_column = event_timestamp_column
         self.timestamp_format = timestamp_format
@@ -459,6 +465,12 @@ class SourceAttributes(Attributes):
             "path": self.path,
             "tags": self.tags,
         }
+        if self.brokers is not None:
+            ret["brokers"] = self.brokers
+        if self.topics is not None:
+            ret["topics"] = self.topics
+        if self.schema_str is not None:
+            ret["schemaStr"] = self.schema_str
         if self.preprocessing is not None:
             ret["preprocessing"] = self.preprocessing
         if self.event_timestamp_column is not None:
@@ -703,7 +715,7 @@ class SourceDef:
                  path: str = None,
                  brokers: List[str] = None,
                  topics: List[str] = None,
-                 schema: str = None,
+                 schema_str: str = None,
                  preprocessing: Optional[str] = None,
                  event_timestamp_column: Optional[str] = None,
                  timestamp_format: Optional[str] = None,
@@ -714,7 +726,7 @@ class SourceDef:
         self.type = type
         self.brokers = brokers
         self.topics = topics
-        self.schema = schema
+        self.schema_str = schema_str
         self.preprocessing = preprocessing
         self.event_timestamp_column = event_timestamp_column
         self.timestamp_format = timestamp_format
@@ -725,6 +737,9 @@ class SourceDef:
                                 name=self.name,
                                 type=self.type,
                                 path=self.path,
+                                brokers=self.brokers,
+                                topics=self.topics,
+                                schema_str=self.schema_str,
                                 preprocessing=self.preprocessing,
                                 event_timestamp_column=self.event_timestamp_column,
                                 timestamp_format=self.timestamp_format,
