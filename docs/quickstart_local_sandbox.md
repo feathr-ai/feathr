@@ -23,7 +23,7 @@ The Sandbox is ideal for:
 
 ### Prerequisites
 
-Make sure Docker is installed on your machine. You can find official installation guide [here]. (https://docs.docker.com/get-docker/#supported-platforms). To make sure Docker is successfully installed on your machine, run a test container as follows:
+Make sure Docker is installed on your machine. You can find official installation guide [here](https://docs.docker.com/get-docker/#supported-platforms). To make sure Docker is successfully installed on your machine, run a test container as follows:
 
 ```bash
 docker run hello-world
@@ -40,7 +40,6 @@ To get started using Feathr, simply run the command below. Note that the image i
 docker run -it --rm -p 8888:8888 -p 8081:80 -p 7080:7080 -e GRANT_SUDO=yes feathrfeaturestore/feathr-sandbox:releases-v1.0.0
 ```
 
-
 If you see errors like below, simply change the `-p 8081:80` part to `-p <new port>:80` so the Feathr UI will be redirected to the new port.
 
 `docker: Error response from daemon: driver failed programming external connectivity on endpoint hardcore_bose (ae107e924cddce6b942f96f2654369345b027ac82e5e44929a9f132e2af71746): Bind for 0.0.0.0:8081 failed: port is already allocated.`
@@ -48,6 +47,7 @@ If you see errors like below, simply change the `-p 8081:80` part to `-p <new po
 ### Step 2: Run Quickstart Sample Notebooks
 
 Open jupyter notebook with below link and click the triangle button on the Jupyter notebook and the whole notebook will run locally.
+
 ```bash
 http://localhost:8888/lab/workspaces/auto-w/tree/local_quickstart_notebook.ipynb
 ```
@@ -55,6 +55,7 @@ http://localhost:8888/lab/workspaces/auto-w/tree/local_quickstart_notebook.ipynb
 ![Feathr Notebook](./images/feathr-sandbox.png)
 
 ### Step 3: Browse Features in Feathr UI
+
 After running the Notebooks, all the features will be registered in the UI, and you can visit the Feathr UI at:
 
 ```bash
@@ -69,6 +70,7 @@ You should be able to see a project called `product_recommendation` created in t
 ## Components
 
 The Feathr sandbox comes with:
+
 - Built-in Jupyter Notebook
 - Pre-installed data science packages such as `interpret` so that data science development becomes easy
 - Pre-installed Feathr package
@@ -98,7 +100,7 @@ Feathr Sandbox is ideal for local development purpose as well, as it provides a 
 
 ### Python Client Development
 
-For folks who are changing the code on the Feathr Python client side (i.e. files under the [`feathr_project` folder](../feathr_project/)), Feathr Sandbox has this python client pre-installed with `pip install -e` option, which means you can do interactive development in the python package. For example you want to validate changes, instead of setting up the environment, you can simply go to the folder and edit those files. In those cases, the Feathr client installation in the python environment will reload automatically. 
+For folks who are changing the code on the Feathr Python client side (i.e. files under the [`feathr_project` folder](../feathr_project/)), Feathr Sandbox has this python client pre-installed with `pip install -e` option, which means you can do interactive development in the python package. For example you want to validate changes, instead of setting up the environment, you can simply go to the folder and edit those files. In those cases, the Feathr client installation in the python environment will reload automatically.
 
 Pleas also note that if you are using Jupyter Notebooks to validate the Python package development, you need to restart your Jupyter Notebook in order to force Jupyter Notebook to reload the python package.
 
