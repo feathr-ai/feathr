@@ -22,6 +22,7 @@ import com.linkedin.feathr.offline.util.FeathrUtils.shouldCheckPoint
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions.{col, lit}
+import org.apache.spark.sql.types.{ArrayType, BooleanType, FloatType, StringType, StructField, StructType}
 
 /**
  * An abstract class provides default implementation of anchored feature join step
@@ -66,18 +67,23 @@ private[offline] class AnchoredFeatureJoinStep(
     val obsDfWithDefaultNullColumn = missingFeatures.keys.foldLeft(dataframe) { (observationDF, featureName) =>
       val featureColumnType = if (featureTypes.contains(featureName)) {
         featureTypes(featureName).getFeatureType match {
-          case FeatureTypes.NUMERIC => "float"
-          case FeatureTypes.BOOLEAN => "boolean"
-          case FeatureTypes.DENSE_VECTOR => "array<float>"
-          case FeatureTypes.CATEGORICAL => "string"
-          case FeatureTypes.CATEGORICAL_SET => "array<string>"
-          case FeatureTypes.TERM_VECTOR => "map<string,float>"
-          case FeatureTypes.UNSPECIFIED => "map<string,float>"
-          case _ => "map<string,float>"
+          case FeatureTypes.NUMERIC => FloatType
+          case FeatureTypes.BOOLEAN => BooleanType
+          case FeatureTypes.DENSE_VECTOR => ArrayType(FloatType)
+          case FeatureTypes.CATEGORICAL => StringType
+          case FeatureTypes.CATEGORICAL_SET => ArrayType(StringType)
+          case FeatureTypes.TERM_VECTOR => ArrayType(StructType(Seq(StructField("key", StringType), StructField("value", FloatType))))
+          case FeatureTypes.TENSOR => ArrayType(StructType(Seq(StructField("key", StringType),StructField("value", FloatType))))
+          case FeatureTypes.UNSPECIFIED => ArrayType(StructType(Seq(StructField("key", StringType),StructField("value", FloatType))))
+          case _ => ArrayType(StructType(Seq(StructField("key", StringType),StructField("value", FloatType))))
         }
       } else { // feature type is not configured
-        "map<string,float>"
+        ArrayType(StructType(Seq(StructField("key", StringType),StructField("value", FloatType))))
       }
+      val tensorColumnSchema = ArrayType(StructType(Seq(
+        StructField("indices0", StringType),
+        StructField("value", FloatType)
+      )))
       observationDF.withColumn(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName), lit(null).cast(featureColumnType))
     }
 
