@@ -231,7 +231,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
 
     val (joinedDF, header) = doJoinObsAndFeatures(joinConfig, jobContext, obsData)
     (joinedDF, header, Map(SuppressedExceptionHandlerUtils.MISSING_DATA_EXCEPTION
-      -> SuppressedExceptionHandlerUtils.missingFeatures.mkString))
+      -> SuppressedExceptionHandlerUtils.missingFeatures.mkString(", ")))
   }
 
   /**
@@ -312,7 +312,7 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
 
     var logicalPlan = logicalPlanner.getLogicalPlan(updatedFeatureGroups, keyTaggedFeatures)
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
-    val shouldAddDefault = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+//    val shouldAddDefault = FeathrUtils.getFeathrJobParam(sparkSession.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
     var leftRenamed = left
     val featureToPathsMap = (for {
       requiredFeature <- logicalPlan.allRequiredFeatures
@@ -327,8 +327,6 @@ class FeathrClient private[offline] (sparkSession: SparkSession, featureGroups: 
             val featureGroupsWithoutInvalidFeatures = FeatureGroupsUpdater()
               .getUpdatedFeatureGroupsWithoutInvalidPaths(featureToPathsMap, updatedFeatureGroups, featurePathsTest._2)
             logicalPlanner.getLogicalPlan(featureGroupsWithoutInvalidFeatures, keyTaggedFeatures)
-          } else if (shouldAddDefault) {
-            // dont throw error if this flag is set, the missing data will be handled at a later step.
           } else {
             throw new FeathrInputDataException(
               ErrorLabel.FEATHR_USER_ERROR,

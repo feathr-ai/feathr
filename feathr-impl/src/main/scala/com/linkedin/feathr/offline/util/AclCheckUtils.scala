@@ -70,6 +70,7 @@ private[offline] object AclCheckUtils {
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
     val shouldAddDefaultCol = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
     log.info(s"THE VALUE OF SHOULDSKIPFEATURE is ${shouldSkipFeature}")
+//    val shouldAddDefaultCol = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
     val invalidPaths = AclCheckUtils.checkReadAuthorization(conf, allRequiredPaths.distinct)
     if (invalidPaths.isEmpty) {
       (Success(()), invalidPaths.map(_._2))

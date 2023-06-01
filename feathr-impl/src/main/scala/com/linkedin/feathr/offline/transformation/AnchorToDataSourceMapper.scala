@@ -37,7 +37,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
       requiredFeatureAnchors: Seq[FeatureAnchorWithSource],
       failOnMissingPartition: Boolean): Map[FeatureAnchorWithSource, Option[DataSourceAccessor]] = {
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
-    val shouldAddDefaultCol = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+//    val shouldAddDefaultCol = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
 
     // get a Map from each source to a list of all anchors based on this source
     val sourceToAnchor = requiredFeatureAnchors
@@ -76,7 +76,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
 
           // If it is a nonTime based source, we will load the dataframe at runtime, however this is too late to decide if the
           // feature should be skipped. So, we will try to take the first row here, and see if it succeeds.
-          if (dataSource.isInstanceOf[NonTimeBasedDataSourceAccessor] && (shouldSkipFeature || shouldAddDefaultCol)) {
+          if (dataSource.isInstanceOf[NonTimeBasedDataSourceAccessor] && (shouldSkipFeature)) {
             if (dataSource.get().take(1).isEmpty) None else {
               Some(dataSource)
             }
@@ -84,7 +84,7 @@ private[offline] class AnchorToDataSourceMapper(dataPathHandlers: List[DataPathH
             Some(dataSource)
           }
         } catch {
-          case e: Exception => if (shouldSkipFeature || shouldAddDefaultCol) None else throw e
+          case e: Exception => if (shouldSkipFeature) None else throw e
         }
         anchorsWithDate.map(anchor => (anchor, timeSeriesSource))
     })

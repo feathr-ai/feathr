@@ -9,7 +9,7 @@ from feathr.definition.feature import Feature
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.source import HdfsSource, JdbcSource, Source, SnowflakeSource
 from pyapacheatlas.core import AtlasProcess,AtlasEntity
-
+from feathr.definition.source import GenericSource, HdfsSource, JdbcSource, SnowflakeSource, Source, SparkSqlSource, KafKaSource, CosmosDbSource, ElasticSearchSource
 from feathr.definition.transformation import ExpressionTransformation, Transformation, WindowAggTransformation
 from feathr.definition.typed_key import TypedKey
 def to_camel(s):
@@ -24,54 +24,72 @@ def to_camel(s):
         return [to_camel(i) for i in s]
     elif isinstance(s, dict):
         return dict([(to_camel(k), s[k]) for k in s])
-                                  
-def source_to_def(v: Source) -> dict:
-    # Note that after this method, attributes are Camel cased (eventTimestampColumn). 
-    # If the old logic works with snake case (event_timestamp_column), make sure you handle them manually. 
+
+
+# TODO: need to update the other sources to make the code cleaner           
+def source_to_def(source: Source) -> dict:
     ret = {}
-    if v.name == INPUT_CONTEXT:
+    if source.name == INPUT_CONTEXT:
         return {
             "name": INPUT_CONTEXT,
             "type": INPUT_CONTEXT,
             "path": INPUT_CONTEXT,
         }
-    elif isinstance(v, HdfsSource):
+    elif isinstance(source, HdfsSource):
         ret = {
-            "name": v.name,
-            "type": "hdfs",
-            "path": v.path,
+            "name": source.name,
+            "type": urlparse(source.path).scheme,
+            "path": source.path,
         }
-    elif isinstance(v, SnowflakeSource):
+    elif isinstance(source, KafKaSource):
         ret = {
-            "name": v.name,
+            "name": source.name,
+            "type": "kafka",
+            "brokers":source.config.brokers,
+            "topics":source.config.topics,
+            "schemaStr":source.config.schema.schemaStr
+        }
+        print("ret is", ret)
+    elif isinstance(source, SnowflakeSource):
+        ret = {
+            "name": source.name,
             "type": "SNOWFLAKE",
-            "path": v.path,
+            "path": source.path,
         }
-    elif isinstance(v, JdbcSource):
+    elif isinstance(source, JdbcSource):
         ret = {
-            "name": v.name,
+            "name": source.name,
             "type": "jdbc",
-            "url": v.url,
+            "url": source.url,
         }
-        if hasattr(v, "dbtable") and v.dbtable:
-            ret["dbtable"] = v.dbtable
-        if hasattr(v, "query") and v.query:
-            ret["query"] = v.query
-        if hasattr(v, "auth") and v.auth:
-            ret["auth"] = v.auth
+        if hasattr(source, "dbtable") and source.dbtable:
+            ret["dbtable"] = source.dbtable
+        if hasattr(source, "query") and source.query:
+            ret["query"] = source.query
+        if hasattr(source, "auth") and source.auth:
+            ret["auth"] = source.auth
+    elif isinstance(source, GenericSource):
+        ret = source.to_dict()
+        ret["name"] = source.name
+    elif isinstance(source, SparkSqlSource):
+        ret = source.to_dict()
+        ret["name"] = source.name
     else:
-        raise ValueError(f"Unsupported source type {v.__class__}")
-    if hasattr(v, "preprocessing") and v.preprocessing:
-        ret["preprocessing"] = inspect.getsource(v.preprocessing)
-    if v.event_timestamp_column:
-        ret["eventTimestampColumn"] = v.event_timestamp_column
-        ret["event_timestamp_column"] = v.event_timestamp_column
-    if v.timestamp_format:
-        ret["timestampFormat"] = v.timestamp_format
-        ret["timestamp_format"] = v.timestamp_format
-    if v.registry_tags:
-        ret["tags"] = v.registry_tags
+        raise ValueError(f"Unsupported source type {source.__class__}")
+    
+    
+    if hasattr(source, "preprocessing") and source.preprocessing:
+        ret["preprocessing"] = inspect.getsource(source.preprocessing)
+    if source.event_timestamp_column:
+        ret["eventTimestampColumn"] = source.event_timestamp_column
+        ret["event_timestamp_column"] = source.event_timestamp_column
+    if source.timestamp_format:
+        ret["timestampFormat"] = source.timestamp_format
+        ret["timestamp_format"] = source.timestamp_format
+    if source.registry_tags:
+        ret["tags"] = source.registry_tags
     return ret
+
     
 def anchor_to_def(v: FeatureAnchor) -> dict:
     # Note that after this method, attributes are Camel cased (eventTimestampColumn). 
@@ -84,6 +102,35 @@ def anchor_to_def(v: FeatureAnchor) -> dict:
     if v.registry_tags:
         ret["tags"] = v.registry_tags
     return ret
+
+
+def _correct_function_indentation(user_func: str) -> str:
+    """
+    The function read from registry might have the wrong indentation. We need to correct those indentations.
+    More specifically, we are using the inspect module to copy the function body for UDF for further submission. In that case, there will be situations like this:
+
+    def feathr_udf1(df)
+        return df
+
+            def feathr_udf2(df)
+                return df
+
+    For example, in Feathr test cases, there are similar patterns for `feathr_udf2`, since it's defined in another function body (the registry_test_setup method).
+    This is not an ideal way of dealing with that, but we'll keep it here until we figure out a better way.
+    """
+    if user_func is None:
+        return None
+    # if user_func is a string, turn it into a list of strings so that it can be used below
+    temp_udf_source_code = user_func.split('\n')
+    # assuming the first line is the function name
+    leading_space_num = len(
+        temp_udf_source_code[0]) - len(temp_udf_source_code[0].lstrip())
+    # strip the lines to make sure the function has the correct indentation
+    udf_source_code_striped = [line[leading_space_num:]
+                               for line in temp_udf_source_code]
+    # append '\n' back since it was deleted due to the previous split
+    udf_source_code = [line+'\n' for line in udf_source_code_striped]
+    return " ".join(udf_source_code)
 
 def transformation_to_def(v: Transformation) -> dict:
     if isinstance(v, ExpressionTransformation):
