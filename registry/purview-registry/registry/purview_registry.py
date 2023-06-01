@@ -524,6 +524,12 @@ class PurviewRegistry(Registry):
 
                 AtlasAttributeDef(
                     name="path", typeName="string", cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="brokers",
+                                  typeName="array<string>", cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="topics",
+                                  typeName="array<string>", cardinality=Cardinality.SINGLE),
+                AtlasAttributeDef(name="schemaStr",
+                                  typeName="string", cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="event_timestamp_column",
                                   typeName="string", cardinality=Cardinality.SINGLE),
                 AtlasAttributeDef(name="timestamp_format",

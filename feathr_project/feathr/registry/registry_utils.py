@@ -47,7 +47,7 @@ def source_to_def(source: Source) -> dict:
             "type": "kafka",
             "brokers":source.config.brokers,
             "topics":source.config.topics,
-            "schema":source.config.schema.schemaStr
+            "schemaStr":source.config.schema.schemaStr
         }
         print("ret is", ret)
     elif isinstance(source, SnowflakeSource):

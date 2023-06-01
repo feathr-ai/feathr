@@ -224,7 +224,7 @@ def dict_to_source(v: dict) -> Source:
                                 registry_tags=v["attributes"].get("tags", {}))
     elif type == "kafka":
         # print('v["attributes"]', v["attributes"])
-        kafka_config = KafkaConfig(brokers=v["attributes"]["brokers"], topics=v["attributes"]["topics"], schema=AvroJsonSchema(schemaStr= v["attributes"]["schema"]))
+        kafka_config = KafkaConfig(brokers=v["attributes"].get("brokers", []), topics=v["attributes"].get ("topics", []), schema=AvroJsonSchema(schemaStr= v["attributes"].get("schemaStr", "")))
         source = KafKaSource(name=v["attributes"]["name"], kafkaConfig=kafka_config, registry_tags=v["attributes"].get("tags", {}))
     elif type == "generic":
         options = v["attributes"].copy()
