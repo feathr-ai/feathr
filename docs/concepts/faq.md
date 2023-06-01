@@ -1,199 +1,88 @@
 ---
 layout: default
-title: Capabilities
-parent: Feathr FAQ
+title: Feathr FAQ
+parent: Feathr Concepts
 ---
 
 # Feathr FAQ
 
-This page covered the most asked questions that we've heard from end users.
+This page addresses the most frequently asked questions we receive from end users.
 
-## when do you need a feature store and when do you don't?
+## When is a feature store needed, and when is it not?
 
-when you have entities/keys you usually need it (like for deep learning etc.)
+A feature store is typically needed when you have entities/keys (e.g. you are trying to model a user's behavior, an account behavior, for a specific item, etc.). However, it's likely not necessary for tasks like regular image recognition.
 
-when you don't (say just doing regular image recognition task) you probably don't need feature store.
+## What is a key, and what types of features require one?
 
-## What is a key and which kind of features need this?
+In Feathr, each feature is typically associated with a specific key. Keys are also referred to as `Entities` in many other feature stores, signifying that a feature is connected to a specific entity. For instance, if you are creating a recommendation system, you may have `f_item_sales_1_week` for item sales, and `f_user_location` for historical user purchasing data. In this case, `f_item_sales_1_week` should be linked to `item_id`, and `f_user_location` should be associated with `user_id`. This is because each feature represents something specific to a particular `Entity` (item or user, in this case).
 
-For Feathr keys, think that every feature needs it by default, i.e. think each Feathr Feature is associated with a certain key.
+When querying features, you'll need to specify the key if you're seeking item-related features, such as `f_item_sales_1_week`. The exception to this rule is for features defined in `INPUT_CONTEXT`, which generally do not require keys as they're directly computed from observation data and aren't typically reused.
 
-Key is also called `Entity` in many other feature store, so think a Feature is "associated" with a certain entity. For example, if you are building a recommendation system, you probably have `f_item_sales_1_week` for item sales, and `f_user_location` for user historical buying, so `f_item_sales_1_week` should be "keyed" to `item_id`, and `f_user_location` should be "keyed" to `user_id`. The reason is - each feature is only representing something for a particular `Entity` (item or user, in the above case), so the features must be associated with them. Otherwise, it doesn't make sense to use `f_user_location` on items, or use `f_item_sales_1_week` on users.
+## What is the role of Feature Anchors in Purview? Are we actually generating feature values to display as a view?
 
-That's why when querying features, if you want to get a bunch of item related features, say `f_item_sales_1_week` and others, you will need to specify the key as well.
+Feature `Anchors` can be likened to "views" in standard SQL terms. They don't store the feature value; instead, they are a collection of features with individual `Features` being columns in the view. Hence, when grouping features together, it's important to note that they are essentially feature groupings.
 
-The only exception here would be Features defined in `INPUT_CONTEXT` don't need keys, the reason being that they will usually not be "reused", and are directly computed on observation data, so doesn't make sense to have keys.
+## What are `key_column` and `full_name`? Where are they used?
 
-## What is the essence of Feature Anchors in Purview? Are we really generating feature values to show it as a view ?
+`key_column` is a map to the source table, while `full_name` is used for reference.
 
-Think `Anchors` like just "views" in regular SQL terms, where it doesn't store the feature value, but it's merely a group of features; individual `Feature` is just a column in that view. That's why when you "group" features together, you need to
+## In transformation, can we include more than one column name?
 
-Think they are just feature grouping
+Yes, although it may lead to errors if the source table splits.
 
-## What are key_column and full_name? where used?
+## What is a DerivedFeature?
 
-key_column: maps to source table. Ignore full_name (used for reference)
+DerivedFeatures are features calculated from other features. They could be computed from anchored features or other derived features.
 
-Feature
 
-name: f_day_of_week
+## What does the `client.get_offline_features()` function do?
 
-key:
+This function joins observation data with a feature list.
 
-feature_type: INT32
+## Why isn't FeatureAnchor input to the call?
 
-transformation: "dayofweek(lpep_dropoff_datetime)"
+FeatureAnchor is implicitly used. The method uses anchors and features created using `build_features`.
 
+## Are multiple queries fired in parallel to retrieve data?
 
-## transform - can we have more than one column name in transform?
+Yes, multiple queries may be initiated simultaneously.
 
-yes (can be error prone - if source table splits)
+## What does `client.register_features()` do?
 
-## why no key in the example?
+This function registers features that were part of built features in `client.build()` or features from configuration files.
 
-INPUT_CONTEXT needs no key
+## Are any actions or scheduled jobs required to get updated feature data?
 
-DerivedFeature
+Only for online data.
 
-Features that are computed from other features. They could be computed from anchored features, or other derived features
+## What is the purpose of the online backfill API? Is it for the latest feature only?
 
-name
+Yes, the online backfill API is specifically for the latest feature.
 
-feature_type
+## Can Feathr be used to retrieve a feature set that has multiple columns?
 
-input_features= array/list of features
+Yes, this is referred to as a "Feathr Anchor".
 
-transform
+## Is it possible to modify a feature retrieved from the Registry (Purview) and update it in the registry using Feathr Client?
 
-FeatureAnchor (feature view)
+This would involve using the `get_features_from_registry` function of FeathrClient for a specific project name, viewing the feature code, and modifying the feature.
 
-It is a collection of features. Contains:
+## Is there a way to handle identity pass through for Feathr?
 
-name
+This becomes important when using features from the registry in the consumption flow, as the user must have access to all source data files before the feature can be utilized. This can be challenging, particularly in our data lake and DDS setup.
 
-source
+## Can multiple UDF functions be passed in preprocessing?
 
-feature list
+Currently, it seems that only one function can be passed, but this is subject to change based on specific requirements.
 
-FeatureQuery
+## What does the error message "java.lang.RuntimeException: The 0th field 'key0' of input row cannot be null" mean?
 
-feature list
-
-key
-
-question
-## why is key needed since Features have it?
-
-advanced usecases in linkedin
-
-client.get_offline_features()
-
-Joins observation data with feature list
-
-observation settings: source, time stamp column in source
-
-feature query
-
-output path
-
-Questions:
-
-Is FeatureAnchor not input to the call?
-
-it is implicitly. This method uses anchors and features built using build_features.
-
-What if Feature A is in a different source and Feature B is in different source? get_offline_features accepts only one source?
-
-You can have different anchors associated with different sources.
-
-the feature list in sample has sample features and agg features. Are multiple queries fired in parallel to get data?
-
-Yes multiple queries may be fired.
-
-client.register_features()
-
-Registers the features (a) which were part of built features in client.build() OR (b) features from configuration files.
-question:
-
-how do i load registered features?
-
-Docs will be published soon
-
-Questions
-
-any action/scheduled job needed to get updated feature data?
-
-Only for online data
-
-online backfill api: only latest feature?
-
-yes
-
-API
-
-## online store
-
-backfill_time = BackfillTime(start=datetime(
-
-    2020, 5, 20), end=datetime(2020, 5, 20), step=timedelta(days=1))
-
-redisSink = RedisSink(table_name="nycTaxiDemoFeature")
-
-settings = MaterializationSettings("nycTaxiTable",
-
-                                   backfill_time=backfill_time,
-
-                                   sinks=[redisSink],
-
-                                   feature_names=["f_location_avg_fare", "f_location_max_fare"])
-
-client.materialize_features(settings)
-
-## Offline transformation:
-
-Does it support popular transformations (e.g. MinMaxScaler for numerical data or one-hot encoding (mapping categories to integers)?
-Does is support customized transformations (e.g. quantile clipping)?
-
-Online transformation:
-Does is support to store necessary information to transform new streaming data (e.g. min and max values of offline data (training set), which is used for model training to normalize new data or integers used before to map categorical data (men → 0 and women → 1)?
-
-1. Assuming that feature set has multiple columns, is it possible to retrieve feature set with Feathr?
-   Yes (that’s called “Feathr Anchor” (link to the motivation)
-
-2. We use location in both batch source and observation settings, how differently are these locations used?
-   It’s also explained here, but basically in observation setting you only need two columns: an ID column, and a timestamp column. Other fields are all optional.
-   The existing NYC driver sample is a bit confusing since we are using a same file for two purpose. I’ll update them shortly to make sure it’s less confusing.
-
-## Is it possible to update the feature got from Registry(Purview)?
-
-Consider I have got the features from purview with get_features_from_registry function of FeathrClient for a particular project name. Now I would like to see the code of the feature, modify the feature and update the feature in registry with Feathr Client.
-
-## Identity pass thru for Feathr
-
-While using features from registry in consumption flow, it is required that the user has access to all the source datafiles before the feature can be used. This will be tricky especially in our datalake and DDS setup. Any way to handle this
-
-## Multiple UDF functions?
-how he can pass a list in preprocessing to execute multiple UDF functions currently it looks like it only supports passing in a single function
-
-
-Each event or observation will have keys like UserId and TenantId which we can use to define features on. (for example: time since last login for each user). We will use feathr to precompute and store these values in the offline store, then when we request a feature feathr will join those user or tenant based features back with the event/observation data with point in time correctness. However, it is my understanding that we would never want to store features on eventId as a key, since the volume is so large and eventIds are not reused. Instead we should instead build features on INPUT_CONTEXT. Feathr will serve these features "on-demand".
-
-Does it make sense to use INPUT_CONTEXT for features like the following? Is there a better way?
-
-- mapping of categorical values to machine understandable format like enum values or one hot encoding
-
-- simple feature extraction like "does column x in observation data contain string y?"
-
-- aggregation of column x across all observations - ex: avg request time
-
-
-
-## Error message: java.lang.RuntimeException: The 0th field 'key0' of input row cannot be null.
-This error message means the input data have some rows without key and users should add a filter to the source to exclude all such rows since they cannot be used anyway. 
+This error message signifies that some rows in the input data lack a key. Users should add a filter to the source to exclude these rows as they cannot be utilized.
 
 ## Do keys need to be unique in the input data?
-The key needs not to be unique for input data, but it should not be null. The output dataset is a k/v map and the key is what you specified here, And the value is the combination of all features you requested, for each key. You can think the materialization is the process of grouping/bucketing
 
-## If I am going to materialize the feature data into offline storage, how could I read that through Feathr API?
+Keys do not have to be unique for input data, but they cannot be null. The output dataset is a key-value map with the key specified, and the value is the combination of all requested features for each key. This process can be viewed as grouping or bucketing.
 
-The offline store is just a plain table, so far the offline store is just parquet/avro files on hdfs. So users can just read the table in offline storage without Feathr API. 
+## If I'm going to materialize the feature data into offline storage, how can I read that through the Feathr API?
+
+The offline store is simply a standard table. Currently, the offline store consists of parquet/avro files on hdfs. Users can read the table in offline storage without the Feathr API.
