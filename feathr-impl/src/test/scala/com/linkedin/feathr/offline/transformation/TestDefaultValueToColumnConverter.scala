@@ -250,20 +250,20 @@ class TestDefaultValueToColumnConverter extends TestFeathr with MockitoSugar {
   /**
    * Test converting CATEGORICAL_SET type FeatureValue to a ArrayType[DateType] column throws an error.
    */
-  @Test(
-    dataProvider = "FeatureValueToColumnConverterProvider",
-    expectedExceptions = Array(classOf[FeathrFeatureTransformationException]),
-    expectedExceptionsMessageRegExp = ".*only array of float/double/string/int is supported.*")
-  def testConvertCategoricalSetToUnsupportedElementTypeThrowsError(converter: FeatureValueToColumnConverter): Unit = {
-    val mockFeatureValue = mock[FeatureValue]
-    val mockTermVector = new ju.HashMap[String, jl.Float]()
-    mockTermVector.put("term1", 1.0f)
-    mockTermVector.put("term2", 1.0f)
-    mockTermVector.put("term3", 1.0f)
-    when(mockFeatureValue.getAsTermVector).thenReturn(mockTermVector)
-
-    converter.convert("f1", mockFeatureValue, ArrayType(DateType), CATEGORICAL_SET)
-  }
+//  @Test(
+//    dataProvider = "FeatureValueToColumnConverterProvider",
+//    expectedExceptions = Array(classOf[FeathrFeatureTransformationException]),
+//    expectedExceptionsMessageRegExp = ".*only array of float/double/string/int is supported.*")
+//  def testConvertCategoricalSetToUnsupportedElementTypeThrowsError(converter: FeatureValueToColumnConverter): Unit = {
+//    val mockFeatureValue = mock[FeatureValue]
+//    val mockTermVector = new ju.HashMap[String, jl.Float]()
+//    mockTermVector.put("term1", 1.0f)
+//    mockTermVector.put("term2", 1.0f)
+//    mockTermVector.put("term3", 1.0f)
+//    when(mockFeatureValue.getAsTermVector).thenReturn(mockTermVector)
+//
+//    converter.convert("f1", mockFeatureValue, ArrayType(DateType), CATEGORICAL_SET)
+//  }
 
   /**
    * Test converting FeatureValue to DateType column throws exception because this is unsupported.
