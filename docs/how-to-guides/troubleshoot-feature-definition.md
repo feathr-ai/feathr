@@ -79,7 +79,7 @@ You figure out that you mistyped your aggregation as `SVG` but instead it should
 
 The above errors are usually easier to troubleshoot. Feature transformation expression(`def`, `key` part) involves actual data transformation and thus is harder to troubleshoot. Based on the transformation types, we divide the troubleshooting into 3 parts that corresponds to 3 typical feature engineering scenarios: row-level features, aggregation features, and derived features.
 
-## Row-lelve Transformation
+## Row-level Transformation
 
 For non-aggregation feature, the feature transformation part and the key part are just row-level transformation. For row-level transformations, you only transform one row at a time.
 

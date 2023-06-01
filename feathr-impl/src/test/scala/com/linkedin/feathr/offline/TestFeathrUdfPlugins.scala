@@ -1,6 +1,7 @@
 package com.linkedin.feathr.offline
 
 import com.linkedin.feathr.common.FeatureValue
+import com.linkedin.feathr.common.util.CoercionUtils
 import com.linkedin.feathr.offline.anchored.keyExtractor.AlienSourceKeyExtractorAdaptor
 import com.linkedin.feathr.offline.client.plugins.FeathrUdfPluginContext
 import com.linkedin.feathr.offline.derived.AlienDerivationFunctionAdaptor
@@ -12,6 +13,8 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{FloatType, StringType, StructField, StructType}
 import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.{BeforeClass, Test}
+import scala.collection.JavaConverters._
+
 class TestFeathrUdfPlugins extends FeathrIntegTest {
 
   val MULTILINE_QUOTE = "\"\"\""
@@ -32,6 +35,7 @@ class TestFeathrUdfPlugins extends FeathrIntegTest {
     val featureFeatureValueAsAlien = new FeathrFeatureValueAsAlien(featureValue)
     assertTrue(mvelContext.canConvert(FeatureValue.getClass, featureFeatureValueAsAlien.getClass))
     assertEquals(mvelContext.convert(featureFeatureValueAsAlien, FeatureValue.getClass), featureValue)
+    assertEquals(CoercionUtils.coerceToVector(featureFeatureValueAsAlien),  Map("" -> 2.0f).asJava)
   }
 
   @Test (enabled = true)

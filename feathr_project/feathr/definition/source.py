@@ -342,8 +342,8 @@ class KafkaConfig:
 class KafKaSource(Source):
     """A kafka source object. Used in streaming feature ingestion."""
 
-    def __init__(self, name: str, kafkaConfig: KafkaConfig):
-        super().__init__(name)
+    def __init__(self, name: str, kafkaConfig: KafkaConfig,  registry_tags: Optional[Dict[str, str]] = None):
+        super().__init__(name, registry_tags=registry_tags)
         self.config = kafkaConfig
 
     def to_feature_config(self) -> str:

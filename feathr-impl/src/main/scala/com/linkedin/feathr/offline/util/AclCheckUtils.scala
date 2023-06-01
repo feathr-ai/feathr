@@ -68,12 +68,12 @@ private[offline] object AclCheckUtils {
     } yield featureAnchorWithSource.source.path
 
     val shouldSkipFeature = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.SKIP_MISSING_FEATURE).toBoolean
-    val shouldAddDefaultCol = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
+//    val shouldAddDefaultCol = FeathrUtils.getFeathrJobParam(ss.sparkContext.getConf, FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
     val invalidPaths = AclCheckUtils.checkReadAuthorization(conf, allRequiredPaths.distinct)
     if (invalidPaths.isEmpty) {
       (Success(()), invalidPaths.map(_._2))
     } else {
-      if (!shouldSkipFeature && !shouldAddDefaultCol) {
+      if (!shouldSkipFeature) {
         (Failure(
           new RuntimeException(
             "Can not verify read authorization on the following paths. This can be due to" +

@@ -62,7 +62,7 @@ const Home = () => {
         <Title level={2}>Welcome to Feathr Feature Store</Title>
         <span>
           You can use Feathr UI to search features, identify data sources, track feature lineages
-          and manage access controls.
+          and manage access controls.&nbsp;
           <a
             target="_blank"
             href="https://feathr-ai.github.io/feathr/concepts/feature-registry.html#accessing-feathr-ui"
@@ -158,7 +158,7 @@ const Home = () => {
               </li>
             </ul>
             <p>
-              Visit
+              Visit&nbsp;
               <a
                 target="_blank"
                 rel="noreferrer"

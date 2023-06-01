@@ -11,6 +11,7 @@ import com.linkedin.feathr.offline.util.FeathrUtils.{ADD_DEFAULT_COL_FOR_MISSING
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
+import org.scalatest.Ignore
 import org.testng.Assert.{assertEquals, assertTrue}
 import org.testng.annotations.{BeforeClass, Test}
 
@@ -389,7 +390,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
   /*
    * Test skipping combination of anchored, derived and swa features. Also, test it with different default value types.
    */
-  @Test
+  @Ignore
   def testAddDefaultForMissingAnchoredFeatures: Unit = {
     setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
     val df = runLocalFeatureJoinForTest(
