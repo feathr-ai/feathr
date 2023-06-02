@@ -137,10 +137,11 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       |  multiply_a_b: "toNumeric(aa) * toNumeric(bb)"
       |
       |  categorical_b: {
-      |    key: [foo]
-      |    inputs: { foo_b: { key: foo, feature: bb } }
-      |    definition: "toCategorical(foo_b)"
-      |  }
+      |      key: [foo]
+      |      inputs: { foo_b: { key: foo, feature: bb } }
+      |                definition: "toCategorical(foo_b)"
+      |       }
+      |
       |}
       """.stripMargin.format(trainingData, featureData)
   @BeforeClass
@@ -390,7 +391,6 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
   /*
    * Test skipping combination of anchored, derived and swa features. Also, test it with different default value types.
    */
-  @Ignore
   def testAddDefaultForMissingAnchoredFeatures: Unit = {
     setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
     val df = runLocalFeatureJoinForTest(

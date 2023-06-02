@@ -65,26 +65,10 @@ private[offline] class AnchoredFeatureJoinStep(
     // We try to guess the column data type from the configured feature type. If feature type is not present, we will default to
     // default feathr behavior of returning a map column of string to float.
     val obsDfWithDefaultNullColumn = missingFeatures.keys.foldLeft(dataframe) { (observationDF, featureName) =>
-      val featureColumnType = if (featureTypes.contains(featureName)) {
-        featureTypes(featureName).getFeatureType match {
-          case FeatureTypes.NUMERIC => FloatType
-          case FeatureTypes.BOOLEAN => BooleanType
-          case FeatureTypes.DENSE_VECTOR => ArrayType(FloatType)
-          case FeatureTypes.CATEGORICAL => StringType
-          case FeatureTypes.CATEGORICAL_SET => ArrayType(StringType)
-          case FeatureTypes.TERM_VECTOR => ArrayType(StructType(Seq(StructField("key", StringType), StructField("value", FloatType))))
-          case FeatureTypes.TENSOR => ArrayType(StructType(Seq(StructField("key", StringType),StructField("value", FloatType))))
-          case FeatureTypes.UNSPECIFIED => ArrayType(StructType(Seq(StructField("key", StringType),StructField("value", FloatType))))
-          case _ => ArrayType(StructType(Seq(StructField("key", StringType),StructField("value", FloatType))))
-        }
-      } else { // feature type is not configured
-        ArrayType(StructType(Seq(StructField("key", StringType),StructField("value", FloatType))))
-      }
-      val tensorColumnSchema = ArrayType(StructType(Seq(
-        StructField("indices0", StringType),
-        StructField("value", FloatType)
-      )))
-      observationDF.withColumn(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName), lit(null).cast(featureColumnType))
+      val withColumDf = observationDF.withColumn(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName), lit(null))
+      val featureTypeConfig = missingFeatures(featureName).featureAnchor.featureTypeConfigs.getOrElse(featureName, FeatureTypeConfig.UNDEFINED_TYPE_CONFIG)
+      FeaturizedDatasetUtils.convertRawDFtoQuinceFDS(withColumDf, Map(DataFrameColName.genFeatureColumnName(FEATURE_NAME_PREFIX + featureName) ->
+        (featureName, featureTypeConfig)))
     }
 
     val dataframeWithDefaults = substituteDefaults(obsDfWithDefaultNullColumn, missingFeatures.keys.toSeq, defaults, featureTypes,
@@ -114,7 +98,7 @@ private[offline] class AnchoredFeatureJoinStep(
     val AnchorJoinStepInput(observationDF, anchorDFMap) = input
     val shouldAddDefault = FeathrUtils.getFeathrJobParam(ctx.sparkSession.sparkContext.getConf,
       FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA).toBoolean
-    val withMissingFeaturesSubstituted = if (shouldAddDefault) {
+    val (withMissingFeaturesSubstituted, missingFeatures) = if (shouldAddDefault) {
         val missingFeatures = features.map(x => x.getFeatureName).filter(x => {
         val containsFeature: Seq[Boolean] = anchorDFMap.map(y => y._1.selectedFeatures.contains(x)).toSeq
         !containsFeature.contains(true)
@@ -122,12 +106,13 @@ private[offline] class AnchoredFeatureJoinStep(
       log.warn(s"Missing data for features ${missingFeatures.mkString}. Default values will be populated for this column.")
       SuppressedExceptionHandlerUtils.missingFeatures ++= missingFeatures
       val missingAnchoredFeatures = ctx.featureGroups.allAnchoredFeatures.filter(featureName => missingFeatures.contains(featureName._1))
-      substituteDefaultsForDataMissingFeatures(ctx.sparkSession, observationDF, ctx.logicalPlan,
-        missingAnchoredFeatures)
-    } else observationDF
+      (substituteDefaultsForDataMissingFeatures(ctx.sparkSession, observationDF, ctx.logicalPlan,
+        missingAnchoredFeatures), missingFeatures)
+    } else (observationDF, Seq())
 
     val allAnchoredFeatures: Map[String, FeatureAnchorWithSource] = ctx.featureGroups.allAnchoredFeatures
-    val joinStages = ctx.logicalPlan.joinStages
+    val joinStages = ctx.logicalPlan.joinStages.map(keyValue => (keyValue._1, keyValue._2.filter(featuresAtThisStage =>
+      !missingFeatures.contains(featuresAtThisStage))))
     val joinOutput = joinStages
       .foldLeft(FeatureDataFrame(withMissingFeaturesSubstituted, Map.empty[String, FeatureTypeConfig]))((accFeatureDataFrame, joinStage) => {
         val (keyTags: Seq[Int], featureNames: Seq[String]) = joinStage
