@@ -281,14 +281,14 @@ private[offline] class SlidingWindowAggregationJoiner(
           val features = x._1.selectedFeatures
           emptyFeatures.contains(features.head)
         }).flatMap(s => s._1.featureAnchor.defaults) // populate the defaults for features whose data was missing
-        val userSpecifiedTypesConfig = windowAggAnchorDFThisStage.flatMap(_._1.featureAnchor.featureTypeConfigs)
+        val userSpecifiedTypesConfig = windowAggAnchorDFMap.flatMap(_._1.featureAnchor.featureTypeConfigs)
 
         // Create a map from the feature name to the column format, ie - RAW or FDS_TENSOR
         val featureNameToColumnFormat = allWindowAggFeatures.map (nameToFeatureAnchor => nameToFeatureAnchor._1 ->
           nameToFeatureAnchor._2.featureAnchor.extractor
           .asInstanceOf[TimeWindowConfigurableAnchorExtractor].features(nameToFeatureAnchor._1).columnFormat)
 
-        contextDF = emptyFeatures.foldLeft(contextDF) { (contextDF, featureName) =>
+        contextDF = emptyFeatures.intersect(joinedFeatures.toSet).foldLeft(contextDF) { (contextDF, featureName) =>
           contextDF.withColumn(featureName, lit(null))
         }
         val FeatureDataFrame(withFDSFeatureDF, inferredTypes) =

@@ -1055,7 +1055,7 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     res.show()
     val df = res.collect()(0)
     assertEquals(df.getAs[Float]("simplePageViewCount"), 10f)
-    assertEquals(df.getAs[Float]("simpleFeature"), Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(20.0f))))
+    assertEquals(df.getAs[Float]("simpleFeature"), 20.0f)
     setFeathrJobParam(FeathrUtils.ADD_DEFAULT_COL_FOR_MISSING_DATA, "false")
   }
 
