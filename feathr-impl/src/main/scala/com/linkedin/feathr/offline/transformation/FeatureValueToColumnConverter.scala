@@ -118,7 +118,10 @@ private[transformation] object FeatureValueToRawColumnConverter extends FeatureV
           case _: StringType =>
             typedLit(defaultValue.getAsTermVector.asScala.keys.toSeq)
           case eType =>
-            lit(null)
+            throw new FeathrFeatureTransformationException(
+              ErrorLabel.FEATHR_USER_ERROR,
+              s"Cannot convert Array of {$eType} to name-term-value FeatureValue," +
+                s" only array of float/double/string/int is supported")
         }
       case fType =>
         throw new FeathrFeatureTransformationException(
