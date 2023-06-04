@@ -3,9 +3,8 @@ package com.linkedin.feathr.offline.transformation
 import com.linkedin.feathr.common.exception.{ErrorLabel, FeathrException, FeathrFeatureTransformationException}
 import com.linkedin.feathr.common.{FeatureTypes, FeatureValue}
 import com.linkedin.feathr.offline.transformation.FeatureColumnFormat._
-import com.linkedin.feathr.offline.util.FeathrUtils
 import org.apache.spark.sql.Column
-import org.apache.spark.sql.functions.{lit, typedLit}
+import org.apache.spark.sql.functions.typedLit
 import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
@@ -52,7 +51,6 @@ private[offline] object FeatureValueToFDSColumnConverter extends FeatureValueToC
 private[transformation] object FeatureValueToRawColumnConverter extends FeatureValueToColumnConverter {
 
   override def convert(featureName: String, defaultValue: FeatureValue, targetDataType: DataType, featureType: FeatureTypes): Column = {
-
     targetDataType match {
       // If the field is StringType, treat it is as CATEGORICAL and get the "term".
       case _: StringType =>
