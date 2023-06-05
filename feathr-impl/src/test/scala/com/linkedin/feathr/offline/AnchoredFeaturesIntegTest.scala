@@ -137,10 +137,11 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
       |  multiply_a_b: "toNumeric(aa) * toNumeric(bb)"
       |
       |  categorical_b: {
-      |    key: [foo]
-      |    inputs: { foo_b: { key: foo, feature: bb } }
-      |    definition: "toCategorical(foo_b)"
-      |  }
+      |      key: [foo]
+      |      inputs: { foo_b: { key: foo, feature: bb } }
+      |                definition: "toCategorical(foo_b)"
+      |       }
+      |
       |}
       """.stripMargin.format(trainingData, featureData)
   @BeforeClass
@@ -390,7 +391,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
   /*
    * Test skipping combination of anchored, derived and swa features. Also, test it with different default value types.
    */
-  @Ignore
+  @Test
   def testAddDefaultForMissingAnchoredFeatures: Unit = {
     setFeathrJobParam(ADD_DEFAULT_COL_FOR_MISSING_DATA, "true")
     val df = runLocalFeatureJoinForTest(
@@ -546,11 +547,14 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     val featureList = df.data.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("a_id") else "null")
     assertEquals(featureList(0).getAs[Row]("aEmbedding"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
-    assertEquals(featureList(0).getAs[Row]("featureWithNull3"), "null")
-    assertEquals(featureList(0).getAs[Row]("featureWithNull5"), null)
+    assertEquals(featureList(0).getAs[Row]("featureWithNull3"),
+      Row(mutable.WrappedArray.make(Array("null")), mutable.WrappedArray.make(Array(1.0f))))
+    assertEquals(featureList(0).getAs[Row]("featureWithNull5"),
+      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(1.0f))))
     assertEquals(featureList(0).getAs[Row]("featureWithNull7"), null)
     assertEquals(featureList(0).getAs[Row]("featureWithNull"),-1.0f)
-    assertEquals(featureList(0).getAs[Row]("featureWithNull4"), null)
+    assertEquals(featureList(0).getAs[Row]("featureWithNull4"),
+      Row(mutable.WrappedArray.make(Array("key")), mutable.WrappedArray.make(Array(1.0f))))
     assertEquals(featureList(0).getAs[Row]("featureWithNull2"),1.0f)
     assertEquals(featureList(0).getAs[Row]("derived_featureWithNull"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(-2.0f))))
@@ -559,8 +563,7 @@ class AnchoredFeaturesIntegTest extends FeathrIntegTest {
     assertEquals(featureList(0).getAs[Row]("derived_featureWithNull2"),
       Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(2.0f))))
     assertEquals(featureList(0).getAs[Row]("featureWithNullSql"), 1.0f)
-    assertEquals(featureList(0).getAs[Row]("seqJoin_featureWithNull"),
-      Row(mutable.WrappedArray.make(Array("")), mutable.WrappedArray.make(Array(1.0f))))
+    assertEquals(featureList(0).getAs[Row]("seqJoin_featureWithNull"), -1.0f)
     assertEquals(SuppressedExceptionHandlerUtils.missingFeatures,
       Set("featureWithNull", "featureWithNull3", "featureWithNull5", "featureWithNull4", "featureWithNull7",
         "aEmbedding", "featureWithNull6", "derived_featureWithNull", "seqJoin_featureWithNull", "derived_featureWithNull7"))
