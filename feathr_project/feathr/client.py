@@ -65,6 +65,7 @@ class FeathrClient(object):
         local_workspace_dir: str = None,
         credential: Any = None,
         project_registry_tag: Dict[str, str] = None,
+        secret_manager_client = None
     ):
         """Initialize Feathr Client.
         Configuration values used by the Feathr are evaluated in the following precedence, with items higher on the list taking priority.
@@ -77,12 +78,13 @@ class FeathrClient(object):
             local_workspace_dir (optional): Set where is the local work space dir. If not set, Feathr will create a temporary folder to store local workspace related files.
             credential (optional): Azure credential to access cloud resources, most likely to be the returned result of DefaultAzureCredential(). If not set, Feathr will initialize DefaultAzureCredential() inside the __init__ function to get credentials.
             project_registry_tag (optional): Adding tags for project in Feathr registry. This might be useful if you want to tag your project as deprecated, or allow certain customizations on project level. Default is empty
+             secret_manager_client: the secret manager client initialized outside of Feathr.  End users need to initialize the secret manager outside of Feathr and pass it to Feathr so Feathr can use it to get required secrets.
         """
         self.logger = logging.getLogger(__name__)
         # Redis key separator
         self._KEY_SEPARATOR = ':'
         self._COMPOSITE_KEY_SEPARATOR = '#'
-        self.env_config = EnvConfigReader(config_path=config_path)
+        self.env_config = EnvConfigReader(config_path=config_path, secret_manager_client=None)
         if local_workspace_dir:
             self.local_workspace_dir = local_workspace_dir
         else:
@@ -214,17 +216,6 @@ class FeathrClient(object):
             logger.info("Feathr registry is not configured. Consider setting the Feathr registry component for richer feature store experience.")
 
         logger.info(f"Feathr client {get_version()} initialized successfully.")
-
-    def _check_required_environment_variables_exist(self):
-        """Checks if the required environment variables(form feathr_config.yaml) is set.
-
-        Some required information has to be set via environment variables so the client can work.
-        """
-        props = self.secret_names
-        for required_field in (self.required_fields + props):
-            if required_field not in os.environ:
-                raise RuntimeError(f'{required_field} is not set in environment variable. All required environment '
-                                   f'variables are: {self.required_fields}.')
 
     def register_features(self, from_context: bool = True):
         """Registers features based on the current workspace
@@ -487,7 +478,8 @@ class FeathrClient(object):
         host = self.redis_host
         port = self.redis_port
         ssl_enabled = self.redis_ssl_enabled
-        self.redis_client = redis.Redis(
+
+        self.self.redis_client = redis.Redis(
             host=host,
             port=port,
             password=password,
@@ -676,7 +668,7 @@ class FeathrClient(object):
     # Should search in both 'derived_feature_list' and 'anchor_list'
     # Return related keys(key_column list) or None if cannot find the feature
     def _get_feature_key(self, feature_name: str):
-        features = []
+        features: List[FeatureBase] = []
         if 'derived_feature_list' in dir(self):
             features += self.derived_feature_list
         if 'anchor_list' in dir(self):

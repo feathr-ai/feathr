@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple
 
 
+
 class SparkJobLauncher(ABC):
     """This is the abstract class for all the spark launchers. All the Spark launcher should implement those interfaces
     """
@@ -52,8 +53,5 @@ class SparkJobLauncher(ABC):
 
         Returns:
             str: Status of the current job
-
-        Returns:
-            str: _description_
         """
         pass

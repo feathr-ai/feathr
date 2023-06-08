@@ -131,14 +131,14 @@ def conflicts_auto_correction_setup(config_path: str):
 
     return client
 
-def composite_keys_test_setup(config_path: str):
+def secret_test_setup(config_path: str, secret_manager_client):
 
     now = datetime.now()
     # set workspace folder by time; make sure we don't have write conflict if there are many CI tests running
     os.environ['SPARK_CONFIG__DATABRICKS__WORK_DIR'] = ''.join(['dbfs:/feathrazure_cijob','_', str(now.minute), '_', str(now.second), '_', str(now.microsecond)]) 
     os.environ['SPARK_CONFIG__AZURE_SYNAPSE__WORKSPACE_DIR'] = ''.join(['abfss://feathrazuretest3fs@feathrazuretest3storage.dfs.core.windows.net/feathr_github_ci','_', str(now.minute), '_', str(now.second) ,'_', str(now.microsecond)]) 
     
-    client = FeathrClient(config_path=config_path)
+    client = FeathrClient(config_path=config_path, secret_manager_client=secret_manager_client)
     batch_source = HdfsSource(name="nycTaxiBatchSource",
                               path="wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04.csv",
                               event_timestamp_column="lpep_dropoff_datetime",
@@ -181,12 +181,8 @@ def composite_keys_test_setup(config_path: str):
                            key_column_type=ValueType.INT32,
                            description="location id in NYC",
                            full_name="nyc_taxi.location_id")
-    pu_location_id = TypedKey(key_column="PULocationID",
-                          key_column_type=ValueType.INT32,
-                          description="location id in NYC",
-                          full_name="nyc_taxi.location_id")
     agg_features = [Feature(name="f_location_avg_fare",
-                            key=[location_id,pu_location_id],
+                            key=location_id,
                             feature_type=FLOAT,
                             transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
                                                               agg_func="AVG",
@@ -194,7 +190,7 @@ def composite_keys_test_setup(config_path: str):
                                                               filter="fare_amount > 0"
                                                               )),
                     Feature(name="f_location_max_fare",
-                            key=[location_id,pu_location_id],
+                            key=location_id,
                             feature_type=FLOAT,
                             transform=WindowAggTransformation(agg_expr="cast_float(fare_amount)",
                                                               agg_func="MAX",
