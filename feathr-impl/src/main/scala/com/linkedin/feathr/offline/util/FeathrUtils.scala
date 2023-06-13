@@ -18,6 +18,7 @@ private[feathr] object FeathrUtils {
   val DEBUG_FEATURE_NAMES = "debug.feature.names"
   val DEBUG_OUTPUT_PATH = "debug.output.path"
   val DEBUG_OUTPUT_PART_NUM = "debug.output.num.parts"
+  val OUTPUT_PARALLELISM = "output.parallelism"
   val FEATHR_PARAMS_PREFIX = "spark.feathr."
   /*
    * The execution config controls feathr-offline behavior when loading date partitioned feature data.
@@ -67,6 +68,7 @@ private[feathr] object FeathrUtils {
     // Check point every {CHECKPOINT_FREQUENCY} dataframes
     CHECKPOINT_FREQUENCY  -> (SQLConf.buildConf(getFullConfigKeyName(CHECKPOINT_FREQUENCY )).stringConf.createOptional, "10"),
     DEBUG_OUTPUT_PART_NUM  -> (SQLConf.buildConf(getFullConfigKeyName(DEBUG_OUTPUT_PART_NUM )).stringConf.createOptional, "200"),
+    OUTPUT_PARALLELISM  -> (SQLConf.buildConf(getFullConfigKeyName(OUTPUT_PARALLELISM )).stringConf.createOptional, "200"),
     FAIL_ON_MISSING_PARTITION  -> (SQLConf.buildConf(getFullConfigKeyName(FAIL_ON_MISSING_PARTITION )).stringConf.createOptional, "false"),
     SEQ_JOIN_ARRAY_EXPLODE_ENABLED  -> (SQLConf.buildConf(getFullConfigKeyName(SEQ_JOIN_ARRAY_EXPLODE_ENABLED )).stringConf.createOptional, "true"),
     ENABLE_SALTED_JOIN  -> (SQLConf.buildConf(getFullConfigKeyName(ENABLE_SALTED_JOIN )).stringConf.createOptional, "false"),

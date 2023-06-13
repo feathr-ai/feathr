@@ -71,19 +71,19 @@ object SparkIOUtils {
       }
     }
     if(!dfWritten) {
-      val num_parts = parameters.get(FeathrUtils.DEBUG_OUTPUT_PART_NUM).getOrElse("10").toInt
-      // Honor the debug output part num config
-      val coalescedDf = outputDF.coalesce(num_parts)
+      val ss = SparkSession.builder().getOrCreate()
+      val num_parts = FeathrUtils.getFeathrJobParam(ss, FeathrUtils.OUTPUT_PARALLELISM).toInt
+      val repartitionedDf = outputDF.repartition(num_parts)
       outputLocation match {
         case SimplePath(path) => {
-          val output_format = coalescedDf.sqlContext.getConf("spark.feathr.outputFormat", "avro")
+          val output_format = repartitionedDf.sqlContext.getConf("spark.feathr.outputFormat", "avro")
           // if the output format is set by spark configurations "spark.feathr.outputFormat"
           // we will use that as the job output format; otherwise use avro as default for backward compatibility
           if(!outputDF.isEmpty) {
-            coalescedDf.write.mode(SaveMode.Overwrite).format(output_format).save(path)
+            repartitionedDf.write.mode(SaveMode.Overwrite).format(output_format).save(path)
           }
         }
-        case _ => outputLocation.writeDf(SparkSession.builder().getOrCreate(), coalescedDf, None)
+        case _ => outputLocation.writeDf(SparkSession.builder().getOrCreate(), repartitionedDf, None)
       }
     }
     outputDF
