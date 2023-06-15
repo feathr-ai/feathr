@@ -19,7 +19,6 @@ plugins {
   // See https://issues.sonatype.org/browse/OSSRH-86507 for more details.
   id "com.vanniktech.maven.publish" version "0.22.0"
   id 'signing'
-  id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
 repositories {
@@ -53,6 +52,7 @@ jar {
   // Explicitly exclude com/linkedin/data and org/apache/hadoop files from the final jar. They can cause issues in other downstream applications.
   exclude 'com/linkedin/data/**'
   exclude 'org/apache/hadoop/**'
+  exclude 'com/google/**'
   zip64 = true
 }
 
@@ -187,11 +187,4 @@ allprojects {
       }
     }
   }
-}
-
-apply plugin: 'com.github.johnrengelman.shadow'
-
-shadowJar {
-  configurations = [project.configurations.shadow]
-  relocate "com.google.protobuf", "com.linkedin.feathr.com.google.protobuf"
 }
