@@ -20,21 +20,13 @@ FRAUD_DETECTION_UNTAGGED_TRANSACTIONS_URL = (
 
 # Product recommendation sample datasets.
 # Ref:
-PRODUCT_RECOMMENDATION_USER_OBSERVATION_URL = (
-    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/product_recommendation_sample/user_observation_mock_data.csv"
-)
+PRODUCT_RECOMMENDATION_USER_OBSERVATION_URL = "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/product_recommendation_sample/user_observation_mock_data.csv"
 
-PRODUCT_RECOMMENDATION_USER_PROFILE_URL = (
-    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/product_recommendation_sample/user_profile_mock_data.csv"
-)
+PRODUCT_RECOMMENDATION_USER_PROFILE_URL = "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/product_recommendation_sample/user_profile_mock_data.csv"
 
-PRODUCT_RECOMMENDATION_USER_PURCHASE_HISTORY_URL = (
-    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/product_recommendation_sample/user_purchase_history_mock_data.csv"
-)
+PRODUCT_RECOMMENDATION_USER_PURCHASE_HISTORY_URL = "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/product_recommendation_sample/user_purchase_history_mock_data.csv"
 
-PRODUCT_RECOMMENDATION_PRODUCT_DETAIL_URL = (
-    "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/product_recommendation_sample/product_detail_mock_data.csv"
-)
+PRODUCT_RECOMMENDATION_PRODUCT_DETAIL_URL = "https://azurefeathrstorage.blob.core.windows.net/public/sample_data/product_recommendation_sample/product_detail_mock_data.csv"
 
 # Hotel review sample datasets.
 # Ref: https://www.kaggle.com/datasets/datafiniti/hotel-reviews

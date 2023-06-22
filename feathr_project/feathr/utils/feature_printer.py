@@ -5,9 +5,10 @@ from feathr.definition.anchor import FeatureAnchor
 from feathr.definition.query_feature_list import FeatureQuery
 from feathr.definition.materialization_settings import MaterializationSettings
 
+
 class FeaturePrinter:
     """The class for pretty-printing features"""
-    
+
     @staticmethod
     def pretty_print_anchors(anchor_list: List[FeatureAnchor]) -> None:
         """Pretty print features
@@ -18,8 +19,7 @@ class FeaturePrinter:
 
         if all(isinstance(anchor, FeatureAnchor) for anchor in anchor_list):
             for anchor in anchor_list:
-                pprint("%s is the achor of %s" % \
-                        (anchor.name, [feature.name for feature in anchor.features]))
+                pprint("%s is the achor of %s" % (anchor.name, [feature.name for feature in anchor.features]))
         else:
             raise TypeError("anchor_list must be FeatureAnchor or List[FeatureAnchor]")
 

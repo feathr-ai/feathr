@@ -7,12 +7,14 @@ from loguru import logger
 from azure.core.exceptions import ResourceNotFoundError
 from feathr.secrets.akv_client import AzureKeyVaultClient
 
+
 class EnvConfigReader(object):
     """A utility class to read Feathr environment variables either from os environment variables,
     the config yaml file or Azure Key Vault.
     If a key is set in the environment variable, ConfigReader will return the value of that environment variable.
     """
-    akv_name: str = None      # Azure Key Vault name to use for retrieving config values.
+
+    akv_name: str = None  # Azure Key Vault name to use for retrieving config values.
     yaml_config: dict = None  # YAML config file content.
 
     def __init__(self, config_path: str):
@@ -57,7 +59,9 @@ class EnvConfigReader(object):
         if val is not None:
             return val
         else:
-            logger.info(f"Config {key} is not found in the environment variable, configuration file, or the remote key value store. Returning the default value: {default}.")
+            logger.info(
+                f"Config {key} is not found in the environment variable, configuration file, or the remote key value store. Returning the default value: {default}."
+            )
             return default
 
     def get_from_env_or_akv(self, key: str) -> str:

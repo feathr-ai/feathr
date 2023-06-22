@@ -1,10 +1,11 @@
-from jinja2 import Template 
+from jinja2 import Template
 from feathr.definition.materialization_settings import MaterializationSettings
 
 
 def _to_materialization_config(settings: MaterializationSettings):
     # produce materialization config
-    tm = Template("""
+    tm = Template(
+        """
             operational: {
             name: {{ settings.name }}
             endTime: "{{ settings.backfill_time.end.strftime('%Y-%m-%d %H:%M:%S') }}"
@@ -20,6 +21,7 @@ def _to_materialization_config(settings: MaterializationSettings):
                 ]
             }
         features: [{{','.join(settings.feature_names)}}]
-    """)
+    """
+    )
     msg = tm.render(settings=settings)
     return msg

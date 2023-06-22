@@ -12,21 +12,20 @@ from feathr.definition.source import HdfsSource
 
 
 # Some metadata that are only needed by Feathr
-FEATHR_PYSPARK_METADATA = 'generated_feathr_pyspark_metadata'
+FEATHR_PYSPARK_METADATA = "generated_feathr_pyspark_metadata"
 # UDFs that are provided by users and persisted by Feathr into this file.
 # It will be uploaded into the Pyspark cluster as a dependency for execution
-FEATHR_CLIENT_UDF_FILE_NAME = 'client_udf_repo.py'
+FEATHR_CLIENT_UDF_FILE_NAME = "client_udf_repo.py"
 # Pyspark driver code that is executed by the Pyspark driver
-FEATHR_PYSPARK_DRIVER_FILE_NAME = 'feathr_pyspark_driver.py'
-FEATHR_PYSPARK_DRIVER_TEMPLATE_FILE_NAME = 'feathr_pyspark_driver_template.py'
+FEATHR_PYSPARK_DRIVER_FILE_NAME = "feathr_pyspark_driver.py"
+FEATHR_PYSPARK_DRIVER_TEMPLATE_FILE_NAME = "feathr_pyspark_driver_template.py"
 # Feathr provided imports for pyspark UDFs all go here
-PROVIDED_IMPORTS = ['\nfrom pyspark.sql import SparkSession, DataFrame\n'] + \
-                   ['from pyspark.sql.functions import *\n']
+PROVIDED_IMPORTS = ["\nfrom pyspark.sql import SparkSession, DataFrame\n"] + ["from pyspark.sql.functions import *\n"]
 
 
 class _PreprocessingPyudfManager(object):
-    """This class manages Pyspark UDF preprocessing related artifacts, like UDFs from users, the pyspark_client etc.
-    """
+    """This class manages Pyspark UDF preprocessing related artifacts, like UDFs from users, the pyspark_client etc."""
+
     @staticmethod
     def build_anchor_preprocessing_metadata(anchor_list: List[FeatureAnchor], local_workspace_dir):
         """When the client build features, UDFs and features that need preprocessing will be stored as metadata. Those
@@ -43,7 +42,7 @@ class _PreprocessingPyudfManager(object):
         pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)
 
         # delete the file if it already exists to avoid caching previous results
-        for f in [client_udf_repo_path, metadata_path,  pyspark_driver_path]:
+        for f in [client_udf_repo_path, metadata_path, pyspark_driver_path]:
             if os.path.exists(f):
                 os.remove(f)
 
@@ -57,9 +56,11 @@ class _PreprocessingPyudfManager(object):
                 feature_names = [feature.name for feature in anchor.features]
                 features_with_preprocessing = features_with_preprocessing + feature_names
                 feature_names.sort()
-                string_feature_list = ','.join(feature_names)
+                string_feature_list = ",".join(feature_names)
                 if isinstance(anchor.source.preprocessing, str):
-                    feature_names_to_func_mapping[string_feature_list] = _PreprocessingPyudfManager._parse_function_str_for_name(anchor.source.preprocessing)
+                    feature_names_to_func_mapping[
+                        string_feature_list
+                    ] = _PreprocessingPyudfManager._parse_function_str_for_name(anchor.source.preprocessing)
                 else:
                     # it's a callable function
                     feature_names_to_func_mapping[string_feature_list] = anchor.source.preprocessing.__name__
@@ -67,15 +68,16 @@ class _PreprocessingPyudfManager(object):
         if not features_with_preprocessing:
             return
 
-        _PreprocessingPyudfManager.write_feature_names_to_udf_name_file(feature_names_to_func_mapping, local_workspace_dir)
+        _PreprocessingPyudfManager.write_feature_names_to_udf_name_file(
+            feature_names_to_func_mapping, local_workspace_dir
+        )
 
         # Save necessary preprocessing-related metadata locally in your workspace
         # Typically it's used as a metadata for join/gen job to figure out if there is preprocessing UDF
         # exist for the features requested
         feathr_pyspark_metadata_abs_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_METADATA)
-        with open(feathr_pyspark_metadata_abs_path, 'wb') as file:
+        with open(feathr_pyspark_metadata_abs_path, "wb") as file:
             pickle.dump(features_with_preprocessing, file)
-
 
     @staticmethod
     def _parse_function_str_for_name(fn_str: str) -> str:
@@ -100,7 +102,6 @@ class _PreprocessingPyudfManager(object):
         # Get the function name from the function definition.
         return tree.body[0].name
 
-
     @staticmethod
     def persist_pyspark_udf_to_file(user_func, local_workspace_dir):
         """persist the pyspark UDF to a file in `local_workspace_dir` for later usage.
@@ -116,7 +117,7 @@ class _PreprocessingPyudfManager(object):
         # Some basic imports will be provided
         lines = lines + PROVIDED_IMPORTS
         lines = lines + udf_source_code
-        lines.append('\n')
+        lines.append("\n")
 
         client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
 
@@ -134,13 +135,15 @@ class _PreprocessingPyudfManager(object):
         """
         # indent in since python needs correct indentation
         # Don't change the indentation
-        tm = Template("""
+        tm = Template(
+            """
 feature_names_funcs = {
 {% for key, value in func_maps.items() %}
     "{{key}}" : {{value}},
 {% endfor %}
 }
-        """)
+        """
+        )
         new_file = tm.render(func_maps=feature_names_to_func_mapping)
 
         full_file_name = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
@@ -163,7 +166,7 @@ feature_names_funcs = {
         # if the preprocessing metadata file doesn't exist or is empty, then we just skip
         if not Path(feathr_pyspark_metadata_abs_path).is_file():
             return py_udf_files
-        with open(feathr_pyspark_metadata_abs_path, 'rb') as pyspark_metadata_file:
+        with open(feathr_pyspark_metadata_abs_path, "rb") as pyspark_metadata_file:
             features_with_preprocessing = pickle.load(pyspark_metadata_file)
         # if there is not features that needs preprocessing, just return.
         if not features_with_preprocessing:
@@ -180,22 +183,24 @@ feature_names_funcs = {
 
         if has_py_udf_preprocessing:
             pyspark_driver_path = os.path.join(local_workspace_dir, FEATHR_PYSPARK_DRIVER_FILE_NAME)
-            pyspark_driver_template_abs_path = str(Path(Path(__file__).parent / FEATHR_PYSPARK_DRIVER_TEMPLATE_FILE_NAME).absolute())
+            pyspark_driver_template_abs_path = str(
+                Path(Path(__file__).parent / FEATHR_PYSPARK_DRIVER_TEMPLATE_FILE_NAME).absolute()
+            )
             client_udf_repo_path = os.path.join(local_workspace_dir, FEATHR_CLIENT_UDF_FILE_NAME)
             # write pyspark_driver_template_abs_path and then client_udf_repo_path
             filenames = [pyspark_driver_template_abs_path, client_udf_repo_path]
 
-            with open(pyspark_driver_path, 'w') as outfile:
+            with open(pyspark_driver_path, "w") as outfile:
                 for fname in filenames:
                     with open(fname) as infile:
                         for line in infile:
                             outfile.write(line)
             lines = [
-                '\n',
+                "\n",
                 'print("pyspark_client.py: Preprocessing via UDFs and submit Spark job.")\n',
-                'submit_spark_job(feature_names_funcs)\n',
+                "submit_spark_job(feature_names_funcs)\n",
                 'print("pyspark_client.py: Feathr Pyspark job completed.")\n',
-                '\n',
+                "\n",
             ]
             with open(pyspark_driver_path, "a") as handle:
                 print("".join(lines), file=handle)

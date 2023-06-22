@@ -5,6 +5,7 @@ class Aggregation(Enum):
     """
     The built-in aggregation functions for LookupFeature
     """
+
     # No operation
     NOP = 0
     # Average

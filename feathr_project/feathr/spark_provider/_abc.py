@@ -3,8 +3,7 @@ from typing import Dict, List, Optional, Tuple
 
 
 class SparkJobLauncher(ABC):
-    """This is the abstract class for all the spark launchers. All the Spark launcher should implement those interfaces
-    """
+    """This is the abstract class for all the spark launchers. All the Spark launcher should implement those interfaces"""
 
     @abstractmethod
     def upload_or_get_cloud_path(self, local_path_or_http_path: str):
@@ -16,9 +15,17 @@ class SparkJobLauncher(ABC):
         pass
 
     @abstractmethod
-    def submit_feathr_job(self, job_name: str, main_jar_path: str,  main_class_name: str, arguments: List[str],
-                          reference_files_path: List[str], job_tags: Dict[str, str] = None,
-                          configuration: Dict[str, str] = {}, properties: Dict[str, str] = None):
+    def submit_feathr_job(
+        self,
+        job_name: str,
+        main_jar_path: str,
+        main_class_name: str,
+        arguments: List[str],
+        reference_files_path: List[str],
+        job_tags: Dict[str, str] = None,
+        configuration: Dict[str, str] = {},
+        properties: Dict[str, str] = None,
+    ):
         """
         Submits the feathr job
 
