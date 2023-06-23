@@ -25,7 +25,7 @@ TEST_CONFIG_AKV_VAL = "test_akv_val"
         (None, TEST_CONFIG_FILE_CONTENT, TEST_CONFIG_AKV_VAL, TEST_CONFIG_FILE_VAL),
         (None, "", TEST_CONFIG_AKV_VAL, TEST_CONFIG_AKV_VAL),
         (None, "", None, "default"),
-    ]
+    ],
 )
 def test__envvariableutil__get(
     mocker: MockerFixture,
@@ -34,13 +34,16 @@ def test__envvariableutil__get(
     akv_value: str,
     expected_value: str,
 ):
-    """Test `get` method if it returns the expected value.
-    """
+    """Test `get` method if it returns the expected value."""
     # Mock env variables
-    mocker.patch.object(feathr.utils._env_config_reader.os, "environ", {
-        TEST_CONFIG_KEY: env_value,
-        "secrets__azure_key_vault__name": "test_akv_name",
-    })
+    mocker.patch.object(
+        feathr.utils._env_config_reader.os,
+        "environ",
+        {
+            TEST_CONFIG_KEY: env_value,
+            "secrets__azure_key_vault__name": "test_akv_name",
+        },
+    )
     # Mock AKS
     mocker.patch.object(
         feathr.utils._env_config_reader.AzureKeyVaultClient,
@@ -62,7 +65,7 @@ def test__envvariableutil__get(
         (TEST_CONFIG_ENV_VAL, TEST_CONFIG_AKV_VAL, TEST_CONFIG_ENV_VAL),
         (None, TEST_CONFIG_AKV_VAL, TEST_CONFIG_AKV_VAL),
         (None, None, None),
-    ]
+    ],
 )
 def test__envvariableutil__get_from_env_or_akv(
     mocker: MockerFixture,
@@ -70,13 +73,16 @@ def test__envvariableutil__get_from_env_or_akv(
     akv_value: str,
     expected_value: str,
 ):
-    """Test `get_from_env_or_akv` method if it returns the expected value.
-    """
+    """Test `get_from_env_or_akv` method if it returns the expected value."""
     # Mock env variables
-    mocker.patch.object(feathr.utils._env_config_reader.os, "environ", {
-        TEST_CONFIG_KEY: env_value,
-        "secrets__azure_key_vault__name": "test_akv_name",
-    })
+    mocker.patch.object(
+        feathr.utils._env_config_reader.os,
+        "environ",
+        {
+            TEST_CONFIG_KEY: env_value,
+            "secrets__azure_key_vault__name": "test_akv_name",
+        },
+    )
     # Mock AKS
     mocker.patch.object(
         feathr.utils._env_config_reader.AzureKeyVaultClient,

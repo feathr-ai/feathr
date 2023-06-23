@@ -42,12 +42,16 @@ def spark() -> SparkSession:
     """Generate a spark session for tests."""
     # Set ui port other than the default one (4040) so that feathr spark job may not fail.
     spark_session = (
-        SparkSession.builder
-        .appName("tests")
-        .config("spark.jars.packages", ",".join([
-            "org.apache.spark:spark-avro_2.12:3.3.0",
-            "io.delta:delta-core_2.12:2.1.1",
-        ]))
+        SparkSession.builder.appName("tests")
+        .config(
+            "spark.jars.packages",
+            ",".join(
+                [
+                    "org.apache.spark:spark-avro_2.12:3.3.0",
+                    "io.delta:delta-core_2.12:2.1.1",
+                ]
+            ),
+        )
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
         .config("spark.ui.port", "8080")

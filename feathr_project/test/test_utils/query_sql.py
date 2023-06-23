@@ -3,6 +3,7 @@ from feathr.utils._env_config_reader import EnvConfigReader
 
 # script to query SQL database for debugging purpose
 
+
 def show_table(cursor, table_name):
     cursor.execute("select * from " + table_name + ";")
     print(cursor.fetchall())
@@ -23,7 +24,7 @@ host = "featuremonitoring.postgres.database.azure.com"
 dbname = "postgres"
 user = "demo"
 env_config = EnvConfigReader(config_path=None)
-password = env_config.get_from_env_or_akv('SQL_TEST_PASSWORD')
+password = env_config.get_from_env_or_akv("SQL_TEST_PASSWORD")
 sslmode = "require"
 
 # Construct connection string

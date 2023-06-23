@@ -17,10 +17,11 @@ def local_spark_job_launcher(tmp_path) -> _FeathrLocalSparkJobLauncher:
 
 
 @pytest.mark.parametrize(
-    "job_tags,expected_result_uri", [
+    "job_tags,expected_result_uri",
+    [
         (None, None),
         ({OUTPUT_PATH_TAG: "output"}, "output"),
-    ]
+    ],
 )
 def test__local_spark_job_launcher__submit_feathr_job(
     mocker: MockerFixture,
@@ -51,9 +52,7 @@ def test__local_spark_job_launcher__submit_feathr_job(
     assert local_spark_job_launcher.get_job_result_uri() == expected_result_uri
 
 
-@pytest.mark.parametrize(
-    "confs", [{}, {"spark.feathr.outputFormat": "parquet"}]
-)
+@pytest.mark.parametrize("confs", [{}, {"spark.feathr.outputFormat": "parquet"}])
 def test__local_spark_job_launcher__init_args(
     local_spark_job_launcher: _FeathrLocalSparkJobLauncher,
     confs: Dict[str, str],

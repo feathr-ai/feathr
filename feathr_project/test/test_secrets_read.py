@@ -4,13 +4,22 @@ from pathlib import Path
 from unittest import result
 
 from click.testing import CliRunner
-from feathr import (BOOLEAN, FLOAT, INT32, FeatureQuery, ObservationSettings,
-                    SparkExecutionConfiguration, TypedKey, ValueType)
+from feathr import (
+    BOOLEAN,
+    FLOAT,
+    INT32,
+    FeatureQuery,
+    ObservationSettings,
+    SparkExecutionConfiguration,
+    TypedKey,
+    ValueType,
+)
 from feathr.client import FeathrClient
 from feathr.utils.job_utils import get_result_df
 
 from test_fixture import basic_test_setup
 from feathr.constants import OUTPUT_FORMAT
+
 
 # test parquet file read/write without an extension name
 def test_feathr_get_secrets_from_key_vault():
@@ -18,7 +27,7 @@ def test_feathr_get_secrets_from_key_vault():
     Test if the program can read the key vault secrets as expected
     """
     # TODO: need to test get_environment_variable() as well
-    os.environ['SECRETS__AZURE_KEY_VAULT__NAME'] = 'feathrazuretest3-kv'
+    os.environ["SECRETS__AZURE_KEY_VAULT__NAME"] = "feathrazuretest3-kv"
 
     # the config below doesn't have `ONLINE_STORE__REDIS__HOST` for testing purpose
     yaml_config = """
@@ -65,4 +74,3 @@ def test_feathr_get_secrets_from_key_vault():
     client = FeathrClient(config_path="/tmp/feathr_config.yaml")
     # `redis_host` should be there since it's not available in the environment variable, and not in the config file, we expect we get it from azure key_vault
     assert client.redis_host is not None
-

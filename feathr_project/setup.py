@@ -17,18 +17,17 @@ else:
 try:
     exec(open("feathr/version.py").read())
 except IOError:
-    print("Failed to load Feathr version file for packaging.",
-          file=sys.stderr)
+    print("Failed to load Feathr version file for packaging.", file=sys.stderr)
     # Temp workaround for conda build. For long term fix, Jay will need to update manifest.in file.
     VERSION = "1.0.0"
 
 VERSION = __version__  # noqa
 os.environ["FEATHR_VERSION"] = VERSION
 
-extras_require=dict(
+extras_require = dict(
     dev=[
-        "black>=22.1.0",    # formatter
-        "isort",            # sort import statements
+        "black>=22.1.0",  # formatter
+        "isort",  # sort import statements
         "pytest>=7",
         "pytest-cov",
         "pytest-xdist",
@@ -38,16 +37,16 @@ extras_require=dict(
         "azure-cli==2.37.0",
         "jupyter>=1.0.0",
         "matplotlib>=3.6.1",
-        "papermill>=2.1.2,<3",      # to test run notebooks
+        "papermill>=2.1.2,<3",  # to test run notebooks
         "scrapbook>=0.5.0,<1.0.0",  # to scrap notebook outputs
-        "scikit-learn",             # for notebook examples
-        "plotly"                   # for plotting
+        "scikit-learn",  # for notebook examples
+        "plotly",  # for plotting
     ],
 )
 extras_require["all"] = list(set(sum([*extras_require.values()], [])))
 
 setup(
-    name='feathr',
+    name="feathr",
     version=VERSION,
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -99,20 +98,18 @@ setup(
         # See this for more details: https://github.com/Azure/azure-sdk-for-python/issues/24765
         "msrest<=0.6.21",
         "typing_extensions>=4.2.0",
-        "ipython",                  # for chat in notebook
-        "revChatGPT" 
+        "ipython",  # for chat in notebook
+        "revChatGPT",
     ],
     tests_require=[  # TODO: This has been depricated
         "pytest",
     ],
     extras_require=extras_require,
-    entry_points={
-        'console_scripts': ['feathr=feathrcli.cli:cli']
-    },
+    entry_points={"console_scripts": ["feathr=feathrcli.cli:cli"]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.7"
+    python_requires=">=3.7",
 )

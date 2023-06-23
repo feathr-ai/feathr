@@ -10,7 +10,8 @@ from feathr.datasets.utils import maybe_download
 
 @pytest.mark.parametrize(
     # 3924447 is the nyc_taxi sample data's bytes
-    "expected_bytes", [3924447, None]
+    "expected_bytes",
+    [3924447, None],
 )
 def test__maybe_download(expected_bytes: int):
     """Test maybe_download utility function w/ nyc_taxi data cached at Azure blob."""

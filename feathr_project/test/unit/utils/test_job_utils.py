@@ -53,7 +53,8 @@ def test__get_result_spark_df(mocker: MockerFixture):
 
 
 @pytest.mark.parametrize(
-    "is_databricks,spark_runtime,res_url,local_cache_path,expected_local_cache_path", [
+    "is_databricks,spark_runtime,res_url,local_cache_path,expected_local_cache_path",
+    [
         # For local spark results, res_url must be a local path and local_cache_path will be ignored.
         (False, "local", "some_res_url", None, "some_res_url"),
         (False, "local", "some_res_url", "some_local_cache_path", "some_res_url"),
@@ -63,7 +64,7 @@ def test__get_result_spark_df(mocker: MockerFixture):
         (True, "databricks", "dbfs:/some_res_url", "some_local_cache_path", "/dbfs/some_res_url"),
         (False, "databricks", "dbfs:/some_res_url", None, "mocked_temp_path"),
         (False, "databricks", "dbfs:/some_res_url", "some_local_cache_path", "some_local_cache_path"),
-    ]
+    ],
 )
 def test__get_result_df__with_local_cache_path(
     mocker: MockerFixture,
@@ -98,7 +99,8 @@ def test__get_result_df__with_local_cache_path(
 
 
 @pytest.mark.parametrize(
-    "is_databricks,spark_runtime,res_url,data_format,expected_error", [
+    "is_databricks,spark_runtime,res_url,data_format,expected_error",
+    [
         # Test RuntimeError when the function is running at Databricks but client.spark_runtime is not databricks
         (True, "local", "some_url", "some_format", RuntimeError),
         (True, "azure_synapse", "some_url", "some_format", RuntimeError),
@@ -116,7 +118,7 @@ def test__get_result_df__with_local_cache_path(
         (False, "local", "some_url", None, ValueError),
         (False, "azure_synapse", "some_url", None, ValueError),
         (False, "databricks", "some_url", None, ValueError),
-    ]
+    ],
 )
 def test__get_result_df__exceptions(
     mocker: MockerFixture,
@@ -158,13 +160,18 @@ def test__get_result_df__exceptions(
 
 
 @pytest.mark.parametrize(
-    "data_format,output_filename,expected_count", [
+    "data_format,output_filename,expected_count",
+    [
         ("csv", "output.csv", 5),
-        ("csv", "output_dir.csv", 4),  # TODO add a header to the csv file and change expected_count to 5 after fixing the bug https://github.com/feathr-ai/feathr/issues/811
+        (
+            "csv",
+            "output_dir.csv",
+            4,
+        ),  # TODO add a header to the csv file and change expected_count to 5 after fixing the bug https://github.com/feathr-ai/feathr/issues/811
         ("parquet", "output.parquet", 5),
         ("avro", "output.avro", 5),
         ("delta", "output-delta", 5),
-    ]
+    ],
 )
 def test__get_result_df(
     workspace_dir: str,
@@ -200,13 +207,18 @@ def test__get_result_df(
 
 
 @pytest.mark.parametrize(
-    "data_format,output_filename,expected_count", [
+    "data_format,output_filename,expected_count",
+    [
         ("csv", "output.csv", 5),
-        ("csv", "output_dir.csv", 4),  # TODO add a header to the csv file and change expected_count = 5 after fixing the bug https://github.com/feathr-ai/feathr/issues/811
+        (
+            "csv",
+            "output_dir.csv",
+            4,
+        ),  # TODO add a header to the csv file and change expected_count = 5 after fixing the bug https://github.com/feathr-ai/feathr/issues/811
         ("parquet", "output.parquet", 5),
         ("avro", "output.avro", 5),
         ("delta", "output-delta", 5),
-    ]
+    ],
 )
 def test__get_result_df__with_spark_session(
     workspace_dir: str,
@@ -240,9 +252,10 @@ def test__get_result_df__with_spark_session(
 
 
 @pytest.mark.parametrize(
-    "format,output_filename,expected_count", [
+    "format,output_filename,expected_count",
+    [
         ("csv", "output.csv", 5),
-    ]
+    ],
 )
 def test__get_result_df__arg_alias(
     workspace_dir: str,
