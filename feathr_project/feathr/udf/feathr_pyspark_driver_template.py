@@ -1,4 +1,3 @@
-
 from pyspark.sql import SparkSession, DataFrame, SQLContext
 import sys
 from pyspark.sql.functions import *
@@ -6,12 +5,11 @@ from pyspark.sql.functions import *
 # This is executed in Spark driver
 # The logger doesn't work in Pyspark so we just use print
 print("Feathr Pyspark job started.")
-spark = SparkSession.builder.appName('FeathrPyspark').getOrCreate()
+spark = SparkSession.builder.appName("FeathrPyspark").getOrCreate()
 
 
 def to_java_string_array(arr):
-    """Convert a Python string list to a Java String array.
-    """
+    """Convert a Python string list to a Java String array."""
     jarr = spark._sc._gateway.new_array(spark._sc._jvm.java.lang.String, len(arr))
     for i in range(len(arr)):
         jarr[i] = arr[i]
@@ -34,15 +32,16 @@ def submit_spark_job(feature_names_funcs):
     # For example: ['pyspark_client.py', '--join-config', 'abfss://...', ...]
     has_gen_config = False
     has_join_config = False
-    if '--generation-config' in sys.argv:
+    if "--generation-config" in sys.argv:
         has_gen_config = True
-    if '--join-config' in sys.argv:
+    if "--join-config" in sys.argv:
         has_join_config = True
 
     py4j_feature_job = None
     if has_gen_config and has_join_config:
-        raise RuntimeError("Both FeatureGenConfig and FeatureJoinConfig are provided. "
-                           "Only one of them should be provided.")
+        raise RuntimeError(
+            "Both FeatureGenConfig and FeatureJoinConfig are provided. " "Only one of them should be provided."
+        )
     elif has_gen_config:
         py4j_feature_job = spark._jvm.com.linkedin.feathr.offline.job.FeatureGenJob
         print("FeatureGenConfig is provided. Executing FeatureGenJob.")
@@ -50,8 +49,9 @@ def submit_spark_job(feature_names_funcs):
         py4j_feature_job = spark._jvm.com.linkedin.feathr.offline.job.FeatureJoinJob
         print("FeatureJoinConfig is provided. Executing FeatureJoinJob.")
     else:
-        raise RuntimeError("None of FeatureGenConfig and FeatureJoinConfig are provided. "
-                           "One of them should be provided.")
+        raise RuntimeError(
+            "None of FeatureGenConfig and FeatureJoinConfig are provided. " "One of them should be provided."
+        )
     job_param_java_array = to_java_string_array(sys.argv)
 
     print("submit_spark_job: feature_names_funcs: ")
@@ -61,7 +61,9 @@ def submit_spark_job(feature_names_funcs):
 
     print("submit_spark_job: Load DataFrame from Scala engine.")
 
-    dataframeFromSpark = py4j_feature_job.loadSourceDataframe(job_param_java_array, set(feature_names_funcs.keys())) # TODO: Add data handler support here
+    dataframeFromSpark = py4j_feature_job.loadSourceDataframe(
+        job_param_java_array, set(feature_names_funcs.keys())
+    )  # TODO: Add data handler support here
     print("Submit_spark_job: dataframeFromSpark: ")
     print(dataframeFromSpark)
 
@@ -84,4 +86,3 @@ def submit_spark_job(feature_names_funcs):
 
     py4j_feature_job.mainWithPreprocessedDataFrame(job_param_java_array, new_preprocessed_df_map)
     return None
-

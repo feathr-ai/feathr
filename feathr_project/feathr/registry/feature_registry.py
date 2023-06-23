@@ -4,20 +4,19 @@ from typing import List, Tuple
 from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.anchor import FeatureAnchor
 
+
 class FeathrRegistry(ABC):
-    """This is the abstract class for all the feature registries. All the feature registries should implement those interfaces.
-    """
+    """This is the abstract class for all the feature registries. All the feature registries should implement those interfaces."""
 
     @abstractmethod
-    def register_features(self, anchor_list: List[FeatureAnchor] =[], derived_feature_list: List[DerivedFeature]=[]):
+    def register_features(self, anchor_list: List[FeatureAnchor] = [], derived_feature_list: List[DerivedFeature] = []):
         """Registers features based on the current workspace
 
-                Args:
-                anchor_list: List of FeatureAnchors
-                derived_feature_list: List of DerivedFeatures
+        Args:
+        anchor_list: List of FeatureAnchors
+        derived_feature_list: List of DerivedFeatures
         """
         pass
-
 
     @abstractmethod
     def list_registered_features(self, project_name: str) -> List[str]:
@@ -51,5 +50,3 @@ class FeathrRegistry(ABC):
             bool: Returns true if the job completed successfully, otherwise False
         """
         pass
-
-

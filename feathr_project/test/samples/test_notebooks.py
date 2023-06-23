@@ -2,6 +2,7 @@ from pathlib import Path
 import yaml
 
 import pytest
+
 try:
     import papermill as pm
     import scrapbook as sb
@@ -9,13 +10,10 @@ except ImportError:
     pass  # disable error while collecting tests for non-notebook environments
 
 
-SAMPLES_DIR = (
-    Path(__file__)
-    .parent     # .../samples
-    .parent     # .../test
-    .parent     # .../feathr_project
-    .parent     # .../feathr (root of the repo)
-    .joinpath("docs", "samples")
+SAMPLES_DIR = Path(
+    __file__
+).parent.parent.parent.parent.joinpath(  # .../samples  # .../test  # .../feathr_project  # .../feathr (root of the repo)
+    "docs", "samples"
 )
 NOTEBOOK_PATHS = {
     "nyc_taxi_demo": str(SAMPLES_DIR.joinpath("nyc_taxi_demo.ipynb")),
@@ -49,10 +47,10 @@ def test__nyc_taxi_demo(config_path, tmp_path):
     nb = sb.read_notebook(output_notebook_path)
     outputs = nb.scraps
 
-    assert outputs["materialized_feature_values"].data["239"] == pytest.approx([1480., 5707.], abs=1.)
-    assert outputs["materialized_feature_values"].data["265"] == pytest.approx([4160., 10000.], abs=1.)
-    assert outputs["rmse"].data == pytest.approx(5., abs=2.)
-    assert outputs["mae"].data == pytest.approx(2., abs=1.)
+    assert outputs["materialized_feature_values"].data["239"] == pytest.approx([1480.0, 5707.0], abs=1.0)
+    assert outputs["materialized_feature_values"].data["265"] == pytest.approx([4160.0, 10000.0], abs=1.0)
+    assert outputs["rmse"].data == pytest.approx(5.0, abs=2.0)
+    assert outputs["mae"].data == pytest.approx(2.0, abs=1.0)
 
 
 @pytest.mark.databricks
@@ -98,7 +96,7 @@ def test__fraud_detection_demo(config_path, tmp_path):
     nb = sb.read_notebook(output_notebook_path)
     outputs = nb.scraps
 
-    assert outputs["materialized_feature_values"].data == pytest.approx([False, 0, 9, 239.0, 1, 1, 239.0, 0.0], abs=1.)
+    assert outputs["materialized_feature_values"].data == pytest.approx([False, 0, 9, 239.0, 1, 1, 239.0, 0.0], abs=1.0)
     assert outputs["precision"].data > 0.5
     assert outputs["recall"].data > 0.5
     assert outputs["f1"].data > 0.5

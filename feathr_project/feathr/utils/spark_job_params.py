@@ -3,6 +3,7 @@ from typing import List
 from feathr.definition.sink import Sink
 from feathr.definition.source import Source
 
+
 class FeatureJoinJobParams:
     """Parameters related to feature join job.
 
@@ -13,7 +14,7 @@ class FeatureJoinJobParams:
         job_output_path: Absolute path in Cloud that you want your output data to be in.
     """
 
-    def __init__(self, join_config_path, observation_path, feature_config, job_output_path, secrets:List[str]=[]):
+    def __init__(self, join_config_path, observation_path, feature_config, job_output_path, secrets: List[str] = []):
         self.secrets = secrets
         self.join_config_path = join_config_path
         if isinstance(observation_path, str):
@@ -33,6 +34,7 @@ class FeatureJoinJobParams:
                 self.secrets.extend(job_output_path.get_required_properties())
         else:
             raise TypeError("job_output_path must be a string or a Sink")
+
 
 class FeatureGenerationJobParams:
     """Parameters related to feature generation job.

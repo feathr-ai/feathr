@@ -4,13 +4,16 @@ from abc import ABC, abstractmethod
 from jinja2 import Template
 from feathr.definition.feathrconfig import HoconConvertible
 
+
 class Transformation(HoconConvertible):
     """Base class for all transformations that produce feature values."""
+
     pass
 
 
 class RowTransformation(Transformation):
     """Base class for all row-level transformations."""
+
     pass
 
 
@@ -20,18 +23,21 @@ class ExpressionTransformation(RowTransformation):
     Attributes:
         expr: expression that transforms the raw value into a new value, e.g. amount * 10.
     """
+
     def __init__(self, expr: str) -> None:
         super().__init__()
         self.expr = expr
 
     def to_feature_config(self, with_def_field_name: Optional[bool] = True) -> str:
-        tm = Template("""
+        tm = Template(
+            """
 {% if with_def_field_name %}
 def.sqlExpr: "{{expr}}"
 {% else %}
 "{{expr}}"
 {% endif %}
-        """)
+        """
+        )
         return tm.render(expr=self.expr, with_def_field_name=with_def_field_name)
 
 
@@ -45,7 +51,16 @@ class WindowAggTransformation(Transformation):
         group_by: Feathr expressions applied after the `agg_expr` transformation as groupby field, before aggregation, same as 'group by' in SQL
         filter: Feathr expression applied to each row as a filter before aggregation. This should be a string and a valid Spark SQL Expression. For example: filter = 'age > 3'. This is similar to PySpark filter operation and more details can be learned here: https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.filter.html
     """
-    def __init__(self, agg_expr: str, agg_func: str, window: str, group_by: Optional[str] = None, filter: Optional[str] = None, limit: Optional[int] = None) -> None:
+
+    def __init__(
+        self,
+        agg_expr: str,
+        agg_func: str,
+        window: str,
+        group_by: Optional[str] = None,
+        filter: Optional[str] = None,
+        limit: Optional[int] = None,
+    ) -> None:
         super().__init__()
         self.def_expr = agg_expr
         self.agg_func = agg_func
@@ -55,7 +70,8 @@ class WindowAggTransformation(Transformation):
         self.limit = limit
 
     def to_feature_config(self, with_def_field_name: Optional[bool] = True) -> str:
-        tm = Template("""
+        tm = Template(
+            """
 def:"{{windowAgg.def_expr}}"
 window: {{windowAgg.window}}
 aggregation: {{windowAgg.agg_func}}
@@ -68,8 +84,9 @@ aggregation: {{windowAgg.agg_func}}
 {% if windowAgg.limit is not none %}
     limit: {{windowAgg.limit}}
 {% endif %}
-        """)
-        return tm.render(windowAgg = self)
+        """
+        )
+        return tm.render(windowAgg=self)
 
 
 class UdfTransform(Transformation):
@@ -78,6 +95,7 @@ class UdfTransform(Transformation):
     Attributes:
         name: name of the user defined function
     """
+
     def __init__(self, name: str) -> None:
         """
 
@@ -85,5 +103,6 @@ class UdfTransform(Transformation):
         """
         super().__init__()
         self.name = name
+
     def to_feature_config(self) -> str:
         pass

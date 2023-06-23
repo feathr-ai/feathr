@@ -86,7 +86,12 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
         maven_dependency = f"{cfg.pop('spark.jars.packages', self.packages)},{get_maven_artifact_fullname()}"
         spark_args = self._init_args(job_name=job_name, confs=cfg)
         # Add additional repositories
-        spark_args.extend(["--repositories", "https://repository.mulesoft.org/nexus/content/repositories/public/,https://linkedin.jfrog.io/artifactory/open-source/"])
+        spark_args.extend(
+            [
+                "--repositories",
+                "https://repository.mulesoft.org/nexus/content/repositories/public/,https://linkedin.jfrog.io/artifactory/open-source/",
+            ]
+        )
 
         if not main_jar_path:
             # We don't have the main jar, use Maven
@@ -94,7 +99,9 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 # This is a JAR job
                 # Azure Synapse/Livy doesn't allow JAR job starts from Maven directly, we must have a jar file uploaded.
                 # so we have to use a dummy jar as the main file.
-                logger.info(f"Main JAR file is not set, using default package '{get_maven_artifact_fullname()}' from Maven")
+                logger.info(
+                    f"Main JAR file is not set, using default package '{get_maven_artifact_fullname()}' from Maven"
+                )
                 # Use the no-op jar as the main file
                 # This is a dummy jar which contains only one `org.example.Noop` class with one empty `main` function
                 # which does nothing
@@ -119,7 +126,6 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
                 if python_files.__len__() > 1:
                     spark_args.extend(["--py-files", ",".join(python_files[1:])])
                 spark_args.append(python_files[0])
-
 
         if arguments:
             spark_args.extend(arguments)
@@ -216,9 +222,7 @@ class _FeathrLocalSparkJobLauncher(SparkJobLauncher):
             # If the logs gives out hint that the job is finished, even the poll result is None (indicating the process is still running) we will still terminate it.
             # by calling `proc.terminate()`
             # if the process is terminated with this way, the return code will be 143. We assume this will still be a successful run.
-            logger.info(
-                f"Spark job with pid {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds."
-            )
+            logger.info(f"Spark job with pid {self.latest_spark_proc.pid} finished in: {int(job_duration)} seconds.")
             return True
         else:
             logger.info(

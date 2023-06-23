@@ -27,7 +27,7 @@ DEFAULT_FEATHR_CONFIG = {
             "port": "6380",
             "ssl_enabled": "true",
         }
-    }
+    },
 }
 
 # New databricks job cluster config
@@ -162,8 +162,9 @@ def _set_azure_synapse_config(
         config["spark_config"]["azure_synapse"]["dev_url"] = f"https://{resource_prefix}syws.dev.azuresynapse.net"
 
     if not config["spark_config"]["azure_synapse"].get("workspace_dir"):
-        config["spark_config"]["azure_synapse"]["workspace_dir"] =\
-            f"abfss://{resource_prefix}fs@{resource_prefix}dls.dfs.core.windows.net/{project_name}"
+        config["spark_config"]["azure_synapse"][
+            "workspace_dir"
+        ] = f"abfss://{resource_prefix}fs@{resource_prefix}dls.dfs.core.windows.net/{project_name}"
 
     for k, v in DEFAULT_AZURE_SYNAPSE_SPARK_POOL_CONFIG.items():
         if not config["spark_config"]["azure_synapse"].get(k):
@@ -235,13 +236,13 @@ def _verify_config(config: Dict):
         if not os.environ.get("ADLS_KEY"):
             raise ValueError("ADLS_KEY must be set in environment variables")
         elif (
-            not os.environ.get("SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL") and
-            config["spark_config"]["azure_synapse"].get("dev_url") is None
+            not os.environ.get("SPARK_CONFIG__AZURE_SYNAPSE__DEV_URL")
+            and config["spark_config"]["azure_synapse"].get("dev_url") is None
         ):
             raise ValueError("Azure Synapse dev endpoint is not provided.")
         elif (
-            not os.environ.get("SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME") and
-            config["spark_config"]["azure_synapse"].get("pool_name") is None
+            not os.environ.get("SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME")
+            and config["spark_config"]["azure_synapse"].get("pool_name") is None
         ):
             raise ValueError("Azure Synapse pool name is not provided.")
 
@@ -249,8 +250,8 @@ def _verify_config(config: Dict):
         if not os.environ.get("DATABRICKS_WORKSPACE_TOKEN_VALUE"):
             raise ValueError("Databricks workspace token is not provided.")
         elif (
-            not os.environ.get("SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL") and
-            config["spark_config"]["databricks"].get("workspace_instance_url") is None
+            not os.environ.get("SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL")
+            and config["spark_config"]["databricks"].get("workspace_instance_url") is None
         ):
             raise ValueError("Databricks workspace url is not provided.")
 

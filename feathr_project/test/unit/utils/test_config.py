@@ -9,7 +9,8 @@ from feathr.utils.config import generate_config
 
 
 @pytest.mark.parametrize(
-    "output_filepath", [None, "config.yml"],
+    "output_filepath",
+    [None, "config.yml"],
 )
 def test__generate_config__output_filepath(
     output_filepath: str,
@@ -60,7 +61,7 @@ def test__generate_config__output_filepath(
                 spark_config__azure_synapse__pool_name="pool_name",
             ),
         ),
-    ]
+    ],
 )
 def test__generate_config__spark_cluster(
     mocker: MockerFixture,
@@ -88,7 +89,7 @@ def test__generate_config__spark_cluster(
         ("some_key", "some_name", None),
         (None, "some_name", ValueError),
         ("some_key", None, ValueError),
-    ]
+    ],
 )
 def test__generate_config__azure_synapse_exceptions(
     mocker: MockerFixture,
@@ -99,10 +100,13 @@ def test__generate_config__azure_synapse_exceptions(
     """Test if exceptions are raised when databricks url and token are not provided."""
 
     # Either env vars or argument should yield the same result
-    for environ in [{"ADLS_KEY": adls_key}, {
-        "ADLS_KEY": adls_key,
-        "SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME": pool_name,
-    }]:
+    for environ in [
+        {"ADLS_KEY": adls_key},
+        {
+            "ADLS_KEY": adls_key,
+            "SPARK_CONFIG__AZURE_SYNAPSE__POOL_NAME": pool_name,
+        },
+    ]:
         # Mock the os.environ to return the specified env vars
         mocker.patch.object(feathr.utils.config.os, "environ", environ)
 
@@ -135,7 +139,7 @@ def test__generate_config__azure_synapse_exceptions(
         ("some_token", "some_url", None),
         (None, "some_url", ValueError),
         ("some_token", None, ValueError),
-    ]
+    ],
 )
 def test__generate_config__databricks_exceptions(
     mocker: MockerFixture,
@@ -146,10 +150,13 @@ def test__generate_config__databricks_exceptions(
     """Test if exceptions are raised when databricks url and token are not provided."""
 
     # Either env vars or argument should yield the same result
-    for environ in [{"DATABRICKS_WORKSPACE_TOKEN_VALUE": databricks_token}, {
-        "DATABRICKS_WORKSPACE_TOKEN_VALUE": databricks_token,
-        "SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL": workspace_url,
-    }]:
+    for environ in [
+        {"DATABRICKS_WORKSPACE_TOKEN_VALUE": databricks_token},
+        {
+            "DATABRICKS_WORKSPACE_TOKEN_VALUE": databricks_token,
+            "SPARK_CONFIG__DATABRICKS__WORKSPACE_INSTANCE_URL": workspace_url,
+        },
+    ]:
         # Mock the os.environ to return the specified env vars
         mocker.patch.object(feathr.utils.config.os, "environ", environ)
 

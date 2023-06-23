@@ -45,7 +45,8 @@ def test__nyc_taxi__get_pandas_df(
 
 
 @pytest.mark.parametrize(
-    "local_cache_path", [
+    "local_cache_path",
+    [
         NYC_TAXI_FILE_PATH,  # full filepath
         str(Path(NYC_TAXI_FILE_PATH).parent),  # directory
     ],
@@ -62,25 +63,36 @@ def test__nyc_taxi__get_spark_df(
     df = nyc_taxi.get_spark_df(spark=spark, local_cache_path=local_cache_path)
     assert df.count() == 35612
 
-    mocked_maybe_download.assert_called_once_with(
-        src_url=nyc_taxi.NYC_TAXI_SMALL_URL, dst_filepath=NYC_TAXI_FILE_PATH
-    )
+    mocked_maybe_download.assert_called_once_with(src_url=nyc_taxi.NYC_TAXI_SMALL_URL, dst_filepath=NYC_TAXI_FILE_PATH)
 
 
 @pytest.mark.parametrize(
-    "local_cache_path, expected_python_cache_path, expected_spark_cache_path", [
+    "local_cache_path, expected_python_cache_path, expected_spark_cache_path",
+    [
         # With file path
         ("test_dir/test.csv", "/dbfs/test_dir/test.csv", "dbfs:/test_dir/test.csv"),
         # With directory path
-        ("test_dir", "/dbfs/test_dir/green_tripdata_2020-04_with_index.csv", "dbfs:/test_dir/green_tripdata_2020-04_with_index.csv"),
+        (
+            "test_dir",
+            "/dbfs/test_dir/green_tripdata_2020-04_with_index.csv",
+            "dbfs:/test_dir/green_tripdata_2020-04_with_index.csv",
+        ),
         # With databricks python file path
         ("/dbfs/test_dir/test.csv", "/dbfs/test_dir/test.csv", "dbfs:/test_dir/test.csv"),
         # With databricks python directory path
-        ("/dbfs/test_dir", "/dbfs/test_dir/green_tripdata_2020-04_with_index.csv", "dbfs:/test_dir/green_tripdata_2020-04_with_index.csv"),
+        (
+            "/dbfs/test_dir",
+            "/dbfs/test_dir/green_tripdata_2020-04_with_index.csv",
+            "dbfs:/test_dir/green_tripdata_2020-04_with_index.csv",
+        ),
         # With databricks spark file path
         ("dbfs:/test_dir/test.csv", "/dbfs/test_dir/test.csv", "dbfs:/test_dir/test.csv"),
         # With databricks spark directory path
-        ("dbfs:/test_dir", "/dbfs/test_dir/green_tripdata_2020-04_with_index.csv", "dbfs:/test_dir/green_tripdata_2020-04_with_index.csv"),
+        (
+            "dbfs:/test_dir",
+            "/dbfs/test_dir/green_tripdata_2020-04_with_index.csv",
+            "dbfs:/test_dir/green_tripdata_2020-04_with_index.csv",
+        ),
     ],
 )
 def test__nyc_taxi__get_spark_df__with_databricks(

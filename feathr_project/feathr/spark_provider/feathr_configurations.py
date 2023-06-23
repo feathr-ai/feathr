@@ -8,5 +8,6 @@ class SparkExecutionConfiguration:
     Returns:
         dict[str, str]
     """
-    def __new__(cls, spark_execution_configuration = Dict[str, str]) -> Dict[str, str]:
+
+    def __new__(cls, spark_execution_configuration=Dict[str, str]) -> Dict[str, str]:
         return spark_execution_configuration
