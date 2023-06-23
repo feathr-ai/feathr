@@ -2,9 +2,9 @@ name: Black Code Formatter
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   black:
@@ -22,6 +22,6 @@ jobs:
         run: |
           cd feathr_project
           pip install .[dev]
-          
+
       - name: Run Black
         run: black --check feathr_project --config feathr_project/pyproject.toml
