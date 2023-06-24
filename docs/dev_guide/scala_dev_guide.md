@@ -40,6 +40,12 @@ To compile, run
 ./gradlew build
 ```
 
+When compiling, gradlew automatically runs tests which can take a long time to run. If you wish to skip tests to reduce your build time, you can run
+
+```
+./gradlew build -x test  
+```
+
 To compile with certain java version, run
 ```
 ./gradlew build -Dorg.gradle.java.home=/JDK_PATH
