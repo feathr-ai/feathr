@@ -286,8 +286,7 @@ object FeatureJoinJob {
       "blob-config" -> OptionParam("bc", "Authentication config for Azure Blob Storage (wasb)", "BLOB_CONFIG", ""),
       "sql-config" -> OptionParam("sqlc", "Authentication config for Azure SQL Database (jdbc)", "SQL_CONFIG", ""),
       "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", ""),
-      "use-fcm" -> OptionParam("ufcm", "If set to true, use FCM client, else use Feathr Client", "USE_FCM", "false"),
-      "snowflake-config" -> OptionParam("sfc", "Authentication config for Snowflake Database (jdbc)", "SNOWFLAKE_CONFIG", ""),
+      "use-fcm" -> OptionParam("ufcm", "If set to true, use FCM client, else use Feathr Client", "USE_FCM", "false"),      
       "system-properties" -> OptionParam("sps", "Additional System Properties", "SYSTEM_PROPERTIES_CONFIG", "")
     )
 
