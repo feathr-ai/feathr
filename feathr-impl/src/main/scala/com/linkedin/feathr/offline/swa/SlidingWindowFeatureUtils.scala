@@ -187,7 +187,7 @@ private[offline] object SlidingWindowFeatureUtils {
         val rewrittenDef = s"CASE WHEN ${featureDef} IS NOT NULL THEN 1 ELSE 0 END"
         new CountAggregate(rewrittenDef)
       case AggregationType.COUNT_DISTINCT =>
-        var rewrittenDef = s"CASE WHEN ${featureDef} IS NOT NULL THEN CAST(CONV(MD5(${featureDef}), 16, 10) AS INT)  ELSE 0 END"
+        val rewrittenDef = s"CASE WHEN ${featureDef} IS NOT NULL THEN hash(${featureDef}) ELSE 0 END"
         new CountDistinctAggregate(rewrittenDef)
       case AggregationType.AVG => new AvgAggregate(featureDef)
       case AggregationType.MAX => new MaxAggregate(featureDef)
