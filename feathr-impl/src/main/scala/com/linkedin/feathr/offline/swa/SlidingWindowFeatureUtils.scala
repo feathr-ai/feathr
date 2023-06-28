@@ -186,7 +186,9 @@ private[offline] object SlidingWindowFeatureUtils {
         // In Feathr's use case, we want to treat the count aggregation as simple count of non-null items.
         val rewrittenDef = s"CASE WHEN ${featureDef} IS NOT NULL THEN 1 ELSE 0 END"
         new CountAggregate(rewrittenDef)
-      case AggregationType.COUNT_DISTINCT => new CountDistinctAggregate(featureDef)
+      case AggregationType.COUNT_DISTINCT =>
+        val rewrittenDef = s"CASE WHEN ${featureDef} IS NOT NULL THEN hash(${featureDef}) ELSE 0 END"
+        new CountDistinctAggregate(rewrittenDef)
       case AggregationType.AVG => new AvgAggregate(featureDef)
       case AggregationType.MAX => new MaxAggregate(featureDef)
       case AggregationType.MIN => new MinAggregate(featureDef)
