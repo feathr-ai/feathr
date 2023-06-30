@@ -24,6 +24,18 @@ class TestTimeBasedHdfsPathGenerator extends TestFeathr with MockitoSugar{
     verifyNoMoreInteractions(mockPathChecker)
   }
 
+  @Test(description = "test generate daily file list with latest")
+  def testGenerateDailyFilesWithLatest() : Unit = {
+    val mockPathChecker = mock[PathChecker]
+    val pathGenerator = new TimeBasedHdfsPathGenerator(mockPathChecker)
+
+    val pathInfo = PathInfo("src/test/resources/generation/#LATEST/yyyy/MM/dd", DateTimeResolution.DAILY, "yyyy/MM/dd")
+    val interval = TestUtils.createDailyInterval("2019-05-18", "2019-05-20")
+    val pathList = pathGenerator.generate(pathInfo, interval, false)
+    assertEquals(pathList.toList, List("src/test/resources/generation/hourly/2019/05/18", "src/test/resources/generation/hourly/2019/05/19"))
+    verifyNoMoreInteractions(mockPathChecker)
+  }
+
   @Test(description = "test generate hourly file list")
   def testGenerateHourlyFiles() : Unit = {
     val mockPathChecker = mock[PathChecker]

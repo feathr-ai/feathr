@@ -255,6 +255,69 @@ class SlidingWindowAggIntegTest extends FeathrIntegTest {
     assertEquals(row1f1f1, TestUtils.build1dSparseTensorFDSRow(Array("f1t1"), Array(12.0f)))
   }
 
+
+  /**
+   * test SWA with lateralview parameters
+   */
+  @Test
+  def testLocalAnchorSWAWithLatest: Unit = {
+    val df = runLocalFeatureJoinForTest(
+      joinConfigAsString = """
+                             | settings: {
+                             |  observationDataTimeSettings: {
+                             |     absoluteTimeRange: {
+                             |         startTime: "2018-05-01"
+                             |         endTime: "2018-05-03"
+                             |         timeFormat: "yyyy-MM-dd"
+                             |     }
+                             |  }
+                             |  joinTimeSettings: {
+                             |     timestampColumn: {
+                             |       def: timestamp
+                             |       format: "yyyy-MM-dd"
+                             |     }
+                             |  }
+                             |}
+                             |
+                             |features: [
+                             |   {
+                             |       key: [x],
+                             |       featureList: ["f1"]
+                             |    }
+                             |]
+    """.stripMargin,
+      featureDefAsString = """
+                             |sources: {
+                             |  swaSource: {
+                             |    location: { path: "src/test/resources/slidingWindowAgg/localSWAAnchorTestFeatureData/daily/yyyy/MM/dd/postfixPath/#LATEST" }
+                             |    timePartitionPattern: "yyyy/MM/dd"
+                             |  }
+                             |}
+                             |
+                             |anchors: {
+                             |  swaAnchor: {
+                             |    source: "swaSource"
+                             |    key: "id"
+                             |    features: {
+                             |      f1: {
+                             |        def: "int_value"
+                             |        window: 3d
+                             |        aggregation: LATEST
+                             |      }
+                             |    }
+                             |  }
+                             |}
+      """.stripMargin,
+      "slidingWindowAgg/localAnchorTestObsData2.avro.json").data
+    df.show()
+
+    // validate output in name term value format
+    val featureList = df.collect().sortBy(row => if (row.get(0) != null) row.getAs[String]("x") else "null")
+    val row0 = featureList(0)
+    val row0f1 = row0.getAs[Float]("f1")
+    assertEquals(row0f1, 1.0f)
+  }
+
   /**
    * test SWA with lateralview parameters and ADD_DEFAULT_COL_FOR_MISSING_DATA flag set
    */

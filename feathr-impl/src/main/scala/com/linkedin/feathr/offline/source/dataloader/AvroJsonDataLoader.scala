@@ -105,7 +105,8 @@ private[offline] object AvroJsonDataLoader {
     val sc = ss.sparkContext
     require(sc.isLocal)
     require(path.endsWith(".avro.json"))
-    val contents = Source.fromResource(path).getLines().mkString
+    val source = Source.fromResource(path)
+    val contents = source.getLines().mkString
     val jackson = new ObjectMapper(new HoconFactory)
     val tree = jackson.readTree(contents)
     val jsonDataArray = tree.get("data")

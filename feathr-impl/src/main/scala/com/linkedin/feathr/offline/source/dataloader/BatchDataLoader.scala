@@ -99,18 +99,23 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
     } catch {
       case _: Throwable =>
         try {
-         ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(dataPath)
+          new AvroJsonDataLoader(ss, dataPath + "/data.avro.json").loadDataFrame()
         } catch {
           case e: Exception =>
-            // If data loading from source failed, retry it automatically, as it might due to data source still being written into.
-            log.info(s"Loading ${location} failed, retrying for ${retry}-th time..")
-            if (retry > 0) {
-              Thread.sleep(retryWaitTime)
-              loadDataFrameWithRetry(dataIOParameters, jobConf, retry - 1)
-            } else {
-              // Throwing exception to avoid dataLoaderHandler hook exception from being suppressed.
-              throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} after ${initialNumOfRetries} retries" +
-                s" and retry time of ${retryWaitTime}ms. Error message: ${e.getMessage}")
+            try {
+              ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(dataPath)
+            } catch {
+              case e: Exception =>
+                // If data loading from source failed, retry it automatically, as it might due to data source still being written into.
+                log.info(s"Loading ${location} failed, retrying for ${retry}-th time..")
+                if (retry > 0) {
+                  Thread.sleep(retryWaitTime)
+                  loadDataFrameWithRetry(dataIOParameters, jobConf, retry - 1)
+                } else {
+                  // Throwing exception to avoid dataLoaderHandler hook exception from being suppressed.
+                  throw new FeathrInputDataException(ErrorLabel.FEATHR_USER_ERROR, s"Failed to load ${dataPath} after ${initialNumOfRetries} retries" +
+                    s" and retry time of ${retryWaitTime}ms. Error message: ${e.getMessage}")
+                }
             }
         }
     }
