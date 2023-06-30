@@ -1,8 +1,11 @@
 package com.linkedin.feathr.offline.source.pathutil
 
+import com.linkedin.feathr.offline.source.DataSource.resolveLatest
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
+import org.apache.spark.sql.SparkSession
 
 import java.time.format.DateTimeFormatter
+import scala.util.{Failure, Success, Try}
 
 /**
  * Generate a list of paths based on the given time interval
@@ -30,8 +33,25 @@ private[offline] class TimeBasedHdfsPathGenerator(pathChecker: PathChecker) {
     val chronUnit = OfflineDateTimeUtils.dateTimeResolutionToChronoUnit(dateTimeResolution)
     val numUnits = chronUnit.between(factDataStartTime, factDataEndTime).toInt
     val formatter = DateTimeFormatter.ofPattern(pathInfo.datePathPattern).withZone(OfflineDateTimeUtils.DEFAULT_ZONE_ID)
+    val ss = SparkSession.builder().getOrCreate()
     val filePaths = (0 until numUnits)
-        .map(offset => pathInfo.basePath + formatter.format(factDataStartTime.plus(offset, chronUnit)) + postfixPath).distinct
+        .map(offset => {
+          val time = formatter.format(factDataStartTime.plus(offset, chronUnit))
+          val withTimePath = if (pathInfo.basePath.contains(pathInfo.datePathPattern)) {
+            pathInfo.basePath.replaceAll(pathInfo.datePathPattern, time)
+          } else {
+            pathInfo.basePath + time + postfixPath
+          }
+          Try {
+            resolveLatest(ss, withTimePath, None)
+          } match {
+            case Success(resolvedPath) => resolvedPath
+            case Failure(_) => {
+              withTimePath
+            }
+          }
+          // Resolve latest again
+        }).distinct
 
     if (ignoreMissingFiles) {
       filePaths.filter(filePath => pathChecker.exists(filePath) && pathChecker.nonEmpty(filePath))

@@ -146,7 +146,12 @@ private[offline] object PathPartitionedTimeSeriesSourceAccessor {
     val timeFormatString = pathInfo.datePathPattern
 
     val dataframes = pathList.map(path => {
-      val timeStr = path.substring(path.length - (timeFormatString.length + postfixPath.length), path.length - postfixPath.length)
+      val timeStr = if (pathInfo.basePath.contains(pathInfo.datePathPattern)) {
+        val idx = pathInfo.basePath.indexOf(pathInfo.datePathPattern)
+        path.substring(idx, idx + pathInfo.datePathPattern.length)
+      } else {
+        path.substring(path.length - (timeFormatString.length + postfixPath.length), path.length - postfixPath.length)
+      }
       val time = OfflineDateTimeUtils.createTimeFromString(timeStr, timeFormatString)
       val interval = DateTimeInterval.createFromInclusive(time, time, dateTimeResolution)
       val df = fileLoaderFactory.create(path).loadDataFrame()
