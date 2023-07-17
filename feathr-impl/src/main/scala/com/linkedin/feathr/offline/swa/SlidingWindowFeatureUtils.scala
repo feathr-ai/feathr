@@ -15,7 +15,7 @@ import com.linkedin.feathr.offline.util.FeaturizedDatasetUtils
 import com.linkedin.feathr.offline.util.datetime.{DateTimeInterval, OfflineDateTimeUtils}
 import com.linkedin.feathr.swj.aggregate.AggregationType.AggregationType
 import com.linkedin.feathr.swj.{FactData, GroupBySpec, LateralViewParams, SlidingWindowFeature, WindowSpec}
-import com.linkedin.feathr.swj.aggregate.{AggregationType, AvgAggregate, AvgPoolingAggregate, CountAggregate, CountDistinctAggregate, DummyAggregate, LatestAggregate, MaxAggregate, MaxPoolingAggregate, MinAggregate, MinPoolingAggregate, SumAggregate}
+import com.linkedin.feathr.swj.aggregate.{AggregationType, AvgAggregate, AvgPoolingAggregate, CountAggregate, CountDistinctAggregate, DistinctAggregate, DummyAggregate, LatestAggregate, MaxAggregate, MaxPoolingAggregate, MinAggregate, MinPoolingAggregate, SumAggregate}
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.UserDefinedFunction
@@ -198,6 +198,10 @@ private[offline] object SlidingWindowFeatureUtils {
       case AggregationType.AVG_POOLING => new AvgPoolingAggregate(featureDef)
       case AggregationType.BUCKETED_COUNT_DISTINCT => new DummyAggregate(featureDef)
       case AggregationType.BUCKETED_SUM => new DummyAggregate(featureDef)
+      case AggregationType.DISTINCT =>
+        // val rewrittenDef = s"CASE WHEN ${featureDef} IS NOT NULL THEN array(${featureDef}) ELSE NULL END "
+        val rewrittenDef = s"CASE WHEN ${featureDef} IS NOT NULL THEN array(${featureDef}) ELSE NULL END "
+        new DistinctAggregate(rewrittenDef)
     }
     swj.SlidingWindowFeature(featureName, aggregationSpec, windowSpec, filter, groupBySpec, lateralViewParams)
   }
