@@ -199,7 +199,6 @@ private[offline] object SlidingWindowFeatureUtils {
       case AggregationType.BUCKETED_COUNT_DISTINCT => new DummyAggregate(featureDef)
       case AggregationType.BUCKETED_SUM => new DummyAggregate(featureDef)
       case AggregationType.DISTINCT =>
-        // val rewrittenDef = s"CASE WHEN ${featureDef} IS NOT NULL THEN array(${featureDef}) ELSE NULL END "
         val rewrittenDef = s"CASE WHEN ${featureDef} IS NOT NULL THEN array(${featureDef}) ELSE NULL END "
         new DistinctAggregate(rewrittenDef)
     }

@@ -187,7 +187,6 @@ object AssertFeatureUtils {
   def validateComplexRows(actualRows: Array[Row], expectedRows: Array[GenericRowWithSchema]): Unit = {
     assertNotNull(actualRows)
     assertEquals(actualRows.length, expectedRows.length)
-    // val expected_modified = expectedRows.map(row => Row(row.get(0), row.get(1).asInstanceOf[Array[Float]].toArray))
     for ((actual, expected) <- actualRows zip expectedRows) {
         for( (field, index) <- expected.schema.fields.zipWithIndex) {
           val actualValue = actual.get(index)
@@ -199,7 +198,7 @@ object AssertFeatureUtils {
           } else if(field.dataType == ArrayType(StringType, false)) {
             assertStringArrayEquals(actualValue.asInstanceOf[Array[String]], expectedValue.asInstanceOf[Array[String]])
           } else {
-            // Unsupported
+            
           }
       }
     }
