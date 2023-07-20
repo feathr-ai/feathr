@@ -322,6 +322,9 @@ if __name__ == "__main__":
     test_parse_feature()
     test_parse_derived_feature()
     test_parse_project()
-    test_registry_client_list_features()
-    test_registry_client_load()
-    test_create()
+    # Skipping 502 tests due to server side failure
+    # test_registry_client_list_features()
+    # Skipping 502 tests due to server side failure
+    # test_registry_client_load()
+    # Skipping 502 tests due to server side failure
+    # test_create()
