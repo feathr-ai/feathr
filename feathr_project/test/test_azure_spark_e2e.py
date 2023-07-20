@@ -322,10 +322,11 @@ def test_feathr_get_offline_features_to_sql_with_token():
     client.wait_job_to_finish(timeout_sec=Constants.SPARK_JOB_TIMEOUT_SECONDS)
 
 
-@pytest.mark.skipif(
-    os.environ.get("SPARK_CONFIG__SPARK_CLUSTER") == "databricks",
-    reason="Due to package conflicts, the CosmosDB test doesn't work on databricks clusters, refer to https://github.com/feathr-ai/feathr/blob/main/docs/how-to-guides/jdbc-cosmos-notes.md#using-cosmosdb-as-the-online-store for more details",
-)
+# @pytest.mark.skipif(
+#     os.environ.get("SPARK_CONFIG__SPARK_CLUSTER") == "databricks",
+#     reason="Due to package conflicts, the CosmosDB test doesn't work on databricks clusters, refer to https://github.com/feathr-ai/feathr/blob/main/docs/how-to-guides/jdbc-cosmos-notes.md#using-cosmosdb-as-the-online-store for more details",
+# )
+@pytest.mark.skip(reason="Marked as skipped as we need to setup resources for this test")
 def test_feathr_materialize_to_cosmosdb():
     """
     Test FeathrClient() CosmosDbSink.
