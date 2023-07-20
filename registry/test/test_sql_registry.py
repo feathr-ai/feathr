@@ -68,7 +68,7 @@ class SqlRegistryTest(unittest.TestCase):
         af1_downstream_entities = self.registry.get_dependent_entities(af_id)
         assert len(af1_downstream_entities) > 0
         return df_id
-
+    @pytest.mark.skip(reason="Skip since we cannot connect to external database")
     def test_registry(self):
         self.setup()
         now = datetime.now()
