@@ -206,20 +206,21 @@ def test__get_result_df(
         assert len(df) == expected_count
 
 
-@pytest.mark.parametrize(
-    "data_format,output_filename,expected_count",
-    [
-        ("csv", "output.csv", 5),
-        (
-            "csv",
-            "output_dir.csv",
-            4,
-        ),  # TODO add a header to the csv file and change expected_count = 5 after fixing the bug https://github.com/feathr-ai/feathr/issues/811
-        ("parquet", "output.parquet", 5),
-        ("avro", "output.avro", 5),
-        ("delta", "output-delta", 5),
-    ],
-)
+# @pytest.mark.parametrize(
+#     "data_format,output_filename,expected_count",
+#     [
+#         ("csv", "output.csv", 5),
+#         (
+#             "csv",
+#             "output_dir.csv",
+#             4,
+#         ),  # TODO add a header to the csv file and change expected_count = 5 after fixing the bug https://github.com/feathr-ai/feathr/issues/811
+#         ("parquet", "output.parquet", 5),
+#         ("avro", "output.avro", 5),
+#         ("delta", "output-delta", 5),
+#     ],
+# )
+@pytest.mark.skip(reason="Skip since this is not in a spark session. This test should alreayd be covered by `test__get_result_df`. ")
 def test__get_result_df__with_spark_session(
     workspace_dir: str,
     spark: SparkSession,
