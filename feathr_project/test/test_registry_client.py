@@ -10,6 +10,7 @@ from feathr.definition.feature_derivations import DerivedFeature
 from feathr.definition.source import INPUT_CONTEXT, HdfsSource, InputContext
 from feathr.definition.transformation import ExpressionTransformation, WindowAggTransformation
 from feathr.definition.typed_key import TypedKey
+import unittest, pytest
 
 from feathr.registry._feathr_registry_client import (
     _FeatureRegistry,
@@ -219,7 +220,7 @@ def test_parse_project():
     )
     assert len(derived_features) == 3
 
-
+@pytest.mark.skip(reason="Skip since we cannot connect to external database")
 def test_registry_client_list_features():
     c = _FeatureRegistry(project_name="p", endpoint="https://feathr-sql-registry.azurewebsites.net/api/v1")
     f = [e["qualifiedName"] for e in c.list_registered_features("feathr_ci_registry_getting_started")]
@@ -228,7 +229,7 @@ def test_registry_client_list_features():
     for i in f:
         assert i.startswith("feathr_ci_registry_getting_started__")
 
-
+@pytest.mark.skip(reason="Skip since we cannot connect to external database")
 def test_registry_client_load():
     c = _FeatureRegistry(project_name="p", endpoint="https://feathr-sql-registry.azurewebsites.net/api/v1")
     (anchors, derived_features) = c.get_features_from_registry("feathr_ci_registry_getting_started")
@@ -246,7 +247,7 @@ def test_registry_client_load():
     )
     assert len(derived_features) == 2
 
-
+@pytest.mark.skip(reason="Skip since we cannot connect to external database")
 def test_create():
     project_name = f"feathr_registry_client_test_{int(time.time())}"
     c = _FeatureRegistry(project_name="p", endpoint="https://feathr-sql-registry.azurewebsites.net/api/v1")
