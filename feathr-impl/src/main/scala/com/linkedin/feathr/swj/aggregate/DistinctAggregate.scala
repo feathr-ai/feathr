@@ -6,7 +6,7 @@ import org.apache.spark.sql.types._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-/*
+/**
   * DISTINCT aggregation implementation.
   *
   * @param metricCol Name of the metric column or a Spark SQL column expression for derived metric

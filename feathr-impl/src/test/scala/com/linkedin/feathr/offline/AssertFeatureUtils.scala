@@ -198,6 +198,7 @@ object AssertFeatureUtils {
           } else if(field.dataType == ArrayType(StringType, false)) {
             assertStringArrayEquals(actualValue.asInstanceOf[Array[String]], expectedValue.asInstanceOf[Array[String]])
           } else {
+            
           }
       }
     }
