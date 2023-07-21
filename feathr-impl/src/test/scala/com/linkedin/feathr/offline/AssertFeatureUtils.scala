@@ -6,7 +6,7 @@ import com.linkedin.feathr.offline.util.SparkFeaturizedDataset
 import org.apache.avro.generic.{GenericArray, GenericData, GenericRecord}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.catalyst.parser.LegacyTypeStringParser
-import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.types.{ArrayType, DataType, FloatType, IntegerType, LongType, StringType, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.testng.Assert._
 
@@ -176,7 +176,31 @@ object AssertFeatureUtils {
     assertEquals(actualRows.length, expectedRows.length)
 
     for ((actual, expected) <- actualRows zip expectedRows) {
-      assertEquals(actual, expected)
+      if (actual.isInstanceOf[Array[Float]]) {
+        assertFloatArrayEquals(actual.asInstanceOf[Array[Float]], expected.asInstanceOf[Array[Float]])
+      } else {
+        assertEquals(actual, expected)
+      }
+    }
+  }
+
+  def validateComplexRows(actualRows: Array[Row], expectedRows: Array[GenericRowWithSchema]): Unit = {
+    assertNotNull(actualRows)
+    assertEquals(actualRows.length, expectedRows.length)
+    for ((actual, expected) <- actualRows zip expectedRows) {
+        for( (field, index) <- expected.schema.fields.zipWithIndex) {
+          val actualValue = actual.get(index)
+          val expectedValue = expected.get(index)
+          if(field.dataType == FloatType || field.dataType == IntegerType || field.dataType == LongType || field.dataType == StringType) {
+            assertEquals(actualValue, expectedValue)
+          } else if(field.dataType == ArrayType(FloatType, false)) {
+            assertFloatArrayEquals(actualValue.asInstanceOf[Array[Float]], expectedValue.asInstanceOf[Array[Float]])
+          } else if(field.dataType == ArrayType(StringType, false)) {
+            assertStringArrayEquals(actualValue.asInstanceOf[Array[String]], expectedValue.asInstanceOf[Array[String]])
+          } else {
+            
+          }
+      }
     }
   }
 
@@ -242,6 +266,11 @@ object AssertFeatureUtils {
   def assertFloatArrayEquals(one: Seq[Float], other: Seq[Float]) = {
     assertEquals(one.length, other.length)
     one.zip(other).foreach { case (a, b) => assertTrue(Math.abs(a - b) < 0.0001) }
+  }
+
+  def assertStringArrayEquals(one: Seq[String], other: Seq[String]) = {
+    assertEquals(one.length, other.length)
+    one.zip(other).foreach { case (a, b) => assertTrue(a.equals(b)) }
   }
 
   // Get the current test method name

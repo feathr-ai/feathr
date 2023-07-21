@@ -15,6 +15,9 @@
       "name": "Id",
       "type": "int"
     }, {
+      "name": "user",
+      "type": "string"
+    }, {
       "name": "count",
       "type": "int"
     }, {
@@ -36,6 +39,7 @@
     "Id3": {"int": 10},
     "Id2": {"int": 10},
     "Id": 10,
+    "user": "user10",
     "count": 1,
     "embedding": {
       "array" : [ 4.5, 4.8 ]
@@ -46,6 +50,7 @@
     "Id3": {"int": 10},
     "Id2": null,
     "Id": 11,
+    "user": "user11",
     "count": 2,
     "embedding": {
       "array" : [ 5.5, 5.8 ]
@@ -56,6 +61,7 @@
     "Id3": {"int": 10},
     "Id2": {"int": 10},
     "Id": 10,
+    "user": "user10",
     "count": 3,
     "embedding": {
       "array" : [ 6.5, 6.8 ]
@@ -66,6 +72,7 @@
     "Id3": {"int": 10},
     "Id2": {"int":  11},
     "Id": 11,
+    "user": "user11",
     "count": 4,
     "embedding": {
       "array" : [ 7.5, 7.7 ]

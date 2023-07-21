@@ -12,6 +12,9 @@
       "name": "Id",
       "type": "int"
     }, {
+      "name": "user",
+      "type": "string"
+    }, {
       "name": "count",
       "type": "int"
     }, {
@@ -32,6 +35,7 @@
     "x": 3,
     "Id2": {"int": 9},
     "Id": 9,
+    "user": "user9",
     "count": 5,
     "embedding": {
       "array" : [ 3.6, 3.9 ]
