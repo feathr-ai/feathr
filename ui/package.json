@@ -62,7 +62,7 @@
     "postcss-less": "^6.0.0",
     "prettier": "^2.7.1",
     "react-scripts": "5.0.1",
-    "stylelint": "^15.10.1",
+    "stylelint": "^14.14.0",
     "stylelint-config-css-modules": "^4.1.0",
     "stylelint-config-prettier": "^9.0.3",
     "stylelint-config-rational-order": "^0.1.2",
