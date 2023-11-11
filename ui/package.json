@@ -17,7 +17,7 @@
     "@azure/msal-browser": "^2.24.0",
     "@azure/msal-react": "^1.4.0",
     "antd": "^4.23.6",
-    "axios": "^0.27.2",
+    "axios": "^1.6.0",
     "classnames": "^2.3.2",
     "dagre": "^0.8.5",
     "dayjs": "^1.11.5",
