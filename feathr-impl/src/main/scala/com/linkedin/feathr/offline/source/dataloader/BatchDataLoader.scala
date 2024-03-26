@@ -97,7 +97,8 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
       }
       df
     } catch {
-      case _: Throwable =>
+      case e: Throwable =>
+        e.printStackTrace() // This prints the stack trace of the Throwable
         try {
           new AvroJsonDataLoader(ss, dataPath + "/data.avro.json").loadDataFrame()
         } catch {
@@ -106,6 +107,7 @@ private[offline] class BatchDataLoader(ss: SparkSession, location: DataLocation,
               ss.read.format("csv").option("header", "true").option("delimiter", csvDelimiterOption).load(dataPath)
             } catch {
               case e: Exception =>
+                e.printStackTrace()
                 // If data loading from source failed, retry it automatically, as it might due to data source still being written into.
                 log.info(s"Loading ${location} failed, retrying for ${retry}-th time..")
                 if (retry > 0) {

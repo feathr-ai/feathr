@@ -33,7 +33,7 @@ private[offline] object AclCheckUtils {
   // Check read authorization on a path string
   def checkReadAuthorization(conf: Configuration, pathName: String): Try[Unit] = {
     // no way to check jdbc auth yet
-    if (pathName.startsWith("jdbc:")) {
+    if (pathName.startsWith("jdbc:") || pathName.startsWith("unity:")) {
       Success(())
     } else {
       val path = new Path(pathName)
