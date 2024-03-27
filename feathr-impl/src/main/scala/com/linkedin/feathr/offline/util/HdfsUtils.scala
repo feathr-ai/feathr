@@ -6,6 +6,7 @@ import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, PathFilter, Re
 import org.apache.log4j.{Logger, PatternLayout, WriterAppender}
 
 import java.io.{FileSystem => _, _}
+import java.net.URI
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{LocalDateTime, ZoneId, ZoneOffset}
@@ -451,7 +452,7 @@ object HdfsUtils {
    * @return true if exists else false.
    */
   def exists(path: String, conf: Configuration = conf): Boolean = {
-    FileSystem.get(conf).exists(new Path(path))
+    FileSystem.get(URI.create(path), conf).exists(new Path(path))
   }
 
   /**
@@ -489,7 +490,7 @@ object HdfsUtils {
    * @return true if nonEmpty
    */
   def nonEmpty(inputPath: String, conf: Configuration = conf): Boolean = {
-    val fs = FileSystem.get(conf)
+    val fs = FileSystem.get(URI.create(inputPath), conf)
     val path = new Path(inputPath)
     if (!exists(inputPath)) return false
     if (fs.getFileStatus(path).isDirectory) {
