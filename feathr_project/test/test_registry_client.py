@@ -220,6 +220,7 @@ def test_parse_project():
     )
     assert len(derived_features) == 3
 
+
 @pytest.mark.skip(reason="Skip since we cannot connect to external database")
 def test_registry_client_list_features():
     c = _FeatureRegistry(project_name="p", endpoint="https://feathr-sql-registry.azurewebsites.net/api/v1")
@@ -228,6 +229,7 @@ def test_registry_client_list_features():
     assert len(f) == 9
     for i in f:
         assert i.startswith("feathr_ci_registry_getting_started__")
+
 
 @pytest.mark.skip(reason="Skip since we cannot connect to external database")
 def test_registry_client_load():
@@ -246,6 +248,7 @@ def test_registry_client_load():
         == "wasbs://public@azurefeathrstorage.blob.core.windows.net/sample_data/green_tripdata_2020-04_with_index.csv"
     )
     assert len(derived_features) == 2
+
 
 @pytest.mark.skip(reason="Skip since we cannot connect to external database")
 def test_create():

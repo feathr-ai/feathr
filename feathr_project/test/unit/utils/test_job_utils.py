@@ -220,7 +220,9 @@ def test__get_result_df(
 #         ("delta", "output-delta", 5),
 #     ],
 # )
-@pytest.mark.skip(reason="Skip since this is not in a spark session. This test should alreayd be covered by `test__get_result_df`. ")
+@pytest.mark.skip(
+    reason="Skip since this is not in a spark session. This test should alreayd be covered by `test__get_result_df`. "
+)
 def test__get_result_df__with_spark_session(
     workspace_dir: str,
     spark: SparkSession,

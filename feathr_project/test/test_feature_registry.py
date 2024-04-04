@@ -79,6 +79,7 @@ class FeatureRegistryTests(unittest.TestCase):
 
                 # <ExceptionInfo RuntimeError('Failed to call registry API, status is 409, error is {"message":"Entity feathr_ci_registry_53_3_476999__request_features__f_is_long_trip_distance already exists"}')
             assert "status is 409" in str(exc_info.value)
+
     @pytest.mark.skip(reason="Skipping 502 tests due to server side failure")
     def test_feathr_register_features_partially(self):
         """

@@ -37,7 +37,7 @@ FeatureValue = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _FEATUREVALUE,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.FeatureValue)
     },
 )
@@ -48,7 +48,7 @@ BooleanArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _BOOLEANARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.BooleanArray)
     },
 )
@@ -59,7 +59,7 @@ StringArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _STRINGARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.StringArray)
     },
 )
@@ -70,7 +70,7 @@ DoubleArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _DOUBLEARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.DoubleArray)
     },
 )
@@ -81,7 +81,7 @@ FloatArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _FLOATARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.FloatArray)
     },
 )
@@ -92,7 +92,7 @@ IntegerArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _INTEGERARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.IntegerArray)
     },
 )
@@ -103,7 +103,7 @@ LongArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _LONGARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.LongArray)
     },
 )
@@ -114,7 +114,7 @@ BytesArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _BYTESARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.BytesArray)
     },
 )
@@ -125,7 +125,7 @@ SparseStringArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _SPARSESTRINGARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.SparseStringArray)
     },
 )
@@ -136,7 +136,7 @@ SparseBoolArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _SPARSEBOOLARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.SparseBoolArray)
     },
 )
@@ -147,7 +147,7 @@ SparseIntegerArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _SPARSEINTEGERARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.SparseIntegerArray)
     },
 )
@@ -158,7 +158,7 @@ SparseLongArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _SPARSELONGARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.SparseLongArray)
     },
 )
@@ -169,7 +169,7 @@ SparseDoubleArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _SPARSEDOUBLEARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.SparseDoubleArray)
     },
 )
@@ -180,7 +180,7 @@ SparseFloatArray = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _SPARSEFLOATARRAY,
-        "__module__": "featureValue_pb2"
+        "__module__": "featureValue_pb2",
         # @@protoc_insertion_point(class_scope:protobuf.SparseFloatArray)
     },
 )

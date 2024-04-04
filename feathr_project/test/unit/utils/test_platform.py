@@ -2,6 +2,7 @@
 Currently, we only test the negative cases, running on non-notebook platform.
 We may submit the test codes to databricks and synapse cluster to confirm the behavior in the future.
 """
+
 from feathr.utils.platform import is_jupyter, is_databricks, is_synapse
 
 

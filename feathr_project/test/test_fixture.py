@@ -367,9 +367,9 @@ def registry_test_setup(config_path: str):
     # Use a new project name every time to make sure all features are registered correctly
     # Project name example: feathr_ci_registry_2022_09_24_01_02_30
     now = datetime.now()
-    os.environ[
-        "project_config__project_name"
-    ] = f'feathr_ci_registry_{str(now)[:19].replace(" ", "_").replace(":", "_").replace("-", "_")}'
+    os.environ["project_config__project_name"] = (
+        f'feathr_ci_registry_{str(now)[:19].replace(" ", "_").replace(":", "_").replace("-", "_")}'
+    )
 
     client = FeathrClient(config_path=config_path, project_registry_tag={"for_test_purpose": "true"})
     request_anchor, agg_anchor, derived_feature_list = generate_entities()
