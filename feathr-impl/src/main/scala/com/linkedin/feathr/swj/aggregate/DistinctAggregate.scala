@@ -21,72 +21,37 @@ class DistinctAggregate(val metricCol: String) extends AggregationSpec {
 
   override def isCalculateAggregateNeeded: Boolean = true
 
-
   override def calculateAggregate(aggregate: Any, dataType: DataType): Any = {
     if (aggregate == null) {
       aggregate
     } else {
-      dataType match {
-        case ArrayType(IntegerType, false) => aggregate
-        case ArrayType(LongType, false) => aggregate
-        case ArrayType(DoubleType, false) => aggregate
-        case ArrayType(FloatType, false) => aggregate
-        case ArrayType(StringType, false) => aggregate
-        case _ => throw new RuntimeException(s"Invalid data type for DISTINCT metric col $metricCol. " +
-          s"Only Array[Int], Array[Long], Array[Double], Array[Float] and Array[String] are supported, but got ${dataType.typeName}")
+      val result = dataType match {
+        case IntegerType => aggregate.asInstanceOf[Set[Int]]
+        case LongType => aggregate.asInstanceOf[Set[Long]]
+        case DoubleType => aggregate.asInstanceOf[Set[Double]]
+        case FloatType => aggregate.asInstanceOf[Set[Float]]
+        case StringType => aggregate.asInstanceOf[Set[String]]
+        case _ => throw new RuntimeException(s"Invalid data type for COUNT_DISTINCT metric col $metricCol. " +
+          s"Only Int, Long, Double, Float, and String are supported, but got ${dataType.typeName}")
       }
+      result.mkString(",")
     }
   }
 
-  /*
-    Record is what we get from SlidingWindowFeatureUtils. Aggregate is what we return here for first time.
-    The datatype of both should match. This is a limitation of Feathr
-   */
-   override def agg(aggregate: Any, record: Any, dataType: DataType): Any = {
+  override def agg(aggregate: Any, record: Any, dataType: DataType): Any = {
     if (aggregate == null) {
-      val wrappedArray = record.asInstanceOf[mutable.WrappedArray[Int]]
-      return ArrayBuffer(wrappedArray: _*)
+      Set(record)
     } else if (record == null) {
       aggregate
     } else {
       dataType match {
-        case ArrayType(IntegerType, false) =>
-          val set1 = aggregate.asInstanceOf[mutable.ArrayBuffer[Int]].toSet
-          val set2 = record.asInstanceOf[mutable.WrappedArray[Int]].toArray.toSet
-          val set3 = set1.union(set2)
-          val new_aggregate = ArrayBuffer(set3.toSeq: _*)
-          return new_aggregate
-
-        case ArrayType(LongType, false) =>
-          val set1 = aggregate.asInstanceOf[mutable.WrappedArray[Long]]toSet
-          val set2 = record.asInstanceOf[mutable.WrappedArray[Long]]toSet
-          val set3 = set1.union(set2)
-          val new_aggregate = ArrayBuffer(set3.toSeq: _*)
-          return new_aggregate
-
-        case ArrayType(DoubleType, false) =>
-          val set1 = aggregate.asInstanceOf[mutable.WrappedArray[Double]].toSet
-          val set2 = record.asInstanceOf[mutable.WrappedArray[Double]].toSet
-          val set3 = set1.union(set2)
-          val new_aggregate = ArrayBuffer(set3.toSeq: _*)
-          return new_aggregate
-
-        case ArrayType(FloatType, false) =>
-          val set1 = aggregate.asInstanceOf[mutable.WrappedArray[Float]].toSet
-          val set2 = record.asInstanceOf[mutable.WrappedArray[Float]].toSet
-          val set3 = set1.union(set2)
-          val new_aggregate = ArrayBuffer(set3.toSeq: _*)
-          return new_aggregate
-
-        case ArrayType(StringType, false) =>
-          val set1 = aggregate.asInstanceOf[mutable.ArrayBuffer[String]].toSet
-          val set2 = record.asInstanceOf[mutable.WrappedArray[String]].toArray.toSet
-          val set3 = set1.union(set2)
-          val new_aggregate = ArrayBuffer(set3.toSeq: _*)
-          return new_aggregate
-
+        case IntegerType => aggregate.asInstanceOf[Set[Int]] + record.asInstanceOf[Int]
+        case LongType => aggregate.asInstanceOf[Set[Long]] + record.asInstanceOf[Long]
+        case DoubleType => aggregate.asInstanceOf[Set[Double]] + record.asInstanceOf[Double]
+        case FloatType => aggregate.asInstanceOf[Set[Float]] + record.asInstanceOf[Float]
+        case StringType=> aggregate.asInstanceOf[Set[String]] + record.asInstanceOf[String]
         case _ => throw new RuntimeException(s"Invalid data type for DISTINCT metric col $metricCol. " +
-          s"Only Array[Int], Array[Long], Array[Double], Array[Float] and Array[String] are supported, but got ${dataType.typeName}")
+          s"Only Int, Long, Double, Float, and String are supported, but got ${dataType.typeName}")
       }
     }
   }
