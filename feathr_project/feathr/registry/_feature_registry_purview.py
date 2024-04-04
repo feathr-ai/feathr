@@ -1124,9 +1124,11 @@ class _PurviewRegistry(FeathrRegistry):
                 {
                     "and": [
                         {
-                            "or": [{"entityType": TYPEDEF_FEATHR_PROJECT}]
-                            if TYPEDEF_FEATHR_PROJECT in entity_type_list
-                            else None
+                            "or": (
+                                [{"entityType": TYPEDEF_FEATHR_PROJECT}]
+                                if TYPEDEF_FEATHR_PROJECT in entity_type_list
+                                else None
+                            )
                         },
                         {"attributeName": "qualifiedName", "operator": "startswith", "attributeValue": project_name},
                     ]

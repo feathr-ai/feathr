@@ -58,9 +58,9 @@ class _PreprocessingPyudfManager(object):
                 feature_names.sort()
                 string_feature_list = ",".join(feature_names)
                 if isinstance(anchor.source.preprocessing, str):
-                    feature_names_to_func_mapping[
-                        string_feature_list
-                    ] = _PreprocessingPyudfManager._parse_function_str_for_name(anchor.source.preprocessing)
+                    feature_names_to_func_mapping[string_feature_list] = (
+                        _PreprocessingPyudfManager._parse_function_str_for_name(anchor.source.preprocessing)
+                    )
                 else:
                     # it's a callable function
                     feature_names_to_func_mapping[string_feature_list] = anchor.source.preprocessing.__name__
